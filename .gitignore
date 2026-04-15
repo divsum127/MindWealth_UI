@@ -1,7 +1,9 @@
 venv
 
-src/__pycache__
-chatbot/__pycache__
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
 
 # Local env (API keys) — never commit
 .env

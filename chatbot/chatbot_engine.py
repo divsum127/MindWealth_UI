@@ -1430,11 +1430,14 @@ Please answer the user's query based on the comprehensive analysis report above.
             else:
                 logger.info("[_fetch_signal_data] No specific tickers — will load ALL assets")
 
+        if assets is not None:
+            assets = [str(a).strip().upper() for a in assets if a] or None
+
         has_claude_report = "claude_report" in selected_signal_types
         table_signal_types = [st for st in selected_signal_types if st != "claude_report"]
 
         columns_data = extraction_result.get("columns", {})
-        columns_by_signal_type: Dict[str, List] = {}
+        columns_by_signal_type: Dict[str, Any] = {}
         reasoning_by_signal_type: Dict[str, str] = {}
         indices_by_signal_type: Dict[str, List] = {}
 
@@ -1453,11 +1456,26 @@ Please answer the user's query based on the comprehensive analysis report above.
                         indices_by_signal_type[signal_type] = indices
                     logger.info(f"[_fetch_signal_data] {signal_type.upper()}: {len(cols)} columns")
 
-        if not columns_by_signal_type and not has_claude_report:
-            logger.warning("[_fetch_signal_data] No columns selected for any signal type")
+        # Models often omit all columns when claude_report is bundled (legacy prompt said "null for all").
+        # Table fetches must still run: use full CSV columns when subset is missing or empty.
+        for signal_type in table_signal_types:
+            cols = columns_by_signal_type.get(signal_type)
+            if not cols:
+                columns_by_signal_type[signal_type] = None
+                indices_by_signal_type.pop(signal_type, None)
+                reasoning_by_signal_type.setdefault(
+                    signal_type,
+                    "Fallback: extractor returned no column subset; loading all columns for this signal type.",
+                )
+                logger.info(
+                    f"[_fetch_signal_data] {signal_type.upper()}: no column subset from extractor; "
+                    "will fetch all columns."
+                )
+
+        if not table_signal_types:
+            logger.warning("[_fetch_signal_data] No table signal types (e.g. claude_report-only); skipping CSV fetch.")
             return {}, {
-                "warning": "no_columns",
-                "error": "Could not determine required columns for your query.",
+                "warning": "no_table_signal_types",
                 "selected_signal_types": selected_signal_types,
             }
 
@@ -1471,14 +1489,14 @@ Please answer the user's query based on the comprehensive analysis report above.
         total_rows = 0
 
         for signal_type in table_signal_types:
-            if signal_type not in columns_by_signal_type:
-                continue
             required_cols = columns_by_signal_type[signal_type]
-            if not required_cols:
+            if isinstance(required_cols, list) and len(required_cols) == 0:
                 continue
-
-            col_indices = indices_by_signal_type.get(signal_type)
-            indices_dict = {signal_type: col_indices} if col_indices else None
+            if required_cols is None:
+                indices_dict = None
+            else:
+                col_indices = indices_by_signal_type.get(signal_type)
+                indices_dict = {signal_type: col_indices} if col_indices else None
 
             signal_result = self.smart_data_fetcher.fetch_data(
                 signal_types=[signal_type],
@@ -1504,13 +1522,14 @@ Please answer the user's query based on the comprehensive analysis report above.
             fetched_data = {}
             total_rows = 0
             for signal_type in table_signal_types:
-                if signal_type not in columns_by_signal_type:
-                    continue
                 required_cols = columns_by_signal_type[signal_type]
-                if not required_cols:
+                if isinstance(required_cols, list) and len(required_cols) == 0:
                     continue
-                col_indices = indices_by_signal_type.get(signal_type)
-                indices_dict = {signal_type: col_indices} if col_indices else None
+                if required_cols is None:
+                    indices_dict = None
+                else:
+                    col_indices = indices_by_signal_type.get(signal_type)
+                    indices_dict = {signal_type: col_indices} if col_indices else None
                 signal_result = self.smart_data_fetcher.fetch_data(
                     signal_types=[signal_type],
                     required_columns=required_cols,
@@ -1550,13 +1569,14 @@ Please answer the user's query based on the comprehensive analysis report above.
                     "retrying without date filters."
                 )
                 for signal_type in table_signal_types:
-                    if signal_type not in columns_by_signal_type:
-                        continue
                     required_cols = columns_by_signal_type[signal_type]
-                    if not required_cols:
+                    if isinstance(required_cols, list) and len(required_cols) == 0:
                         continue
-                    col_indices = indices_by_signal_type.get(signal_type)
-                    indices_dict = {signal_type: col_indices} if col_indices else None
+                    if required_cols is None:
+                        indices_dict = None
+                    else:
+                        col_indices = indices_by_signal_type.get(signal_type)
+                        indices_dict = {signal_type: col_indices} if col_indices else None
                     signal_result = self.smart_data_fetcher.fetch_data(
                         signal_types=[signal_type],
                         required_columns=required_cols,
@@ -1597,14 +1617,15 @@ Please answer the user's query based on the comprehensive analysis report above.
                 logger.info(
                     f"[_fetch_signal_data] Expanded window: {expanded_from_date} → {expanded_to_date}"
                 )
-                for signal_type in selected_signal_types:
-                    if signal_type not in columns_by_signal_type:
-                        continue
+                for signal_type in table_signal_types:
                     required_cols = columns_by_signal_type[signal_type]
-                    if not required_cols:
+                    if isinstance(required_cols, list) and len(required_cols) == 0:
                         continue
-                    col_indices = indices_by_signal_type.get(signal_type)
-                    indices_dict = {signal_type: col_indices} if col_indices else None
+                    if required_cols is None:
+                        indices_dict = None
+                    else:
+                        col_indices = indices_by_signal_type.get(signal_type)
+                        indices_dict = {signal_type: col_indices} if col_indices else None
                     signal_result = self.smart_data_fetcher.fetch_data(
                         signal_types=[signal_type],
                         required_columns=required_cols,

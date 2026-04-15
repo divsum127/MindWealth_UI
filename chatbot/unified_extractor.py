@@ -179,13 +179,13 @@ Available Tickers/Assets:
    - If user asks about "market breadth", "sentiment" → include "breadth"
    - If user asks about "Claude report", "Claude analysis", "comprehensive report", "recommendations" → include "claude_report"
    - Default: ["entry", "exit", "portfolio_target_achieved"]
-   - SPECIAL: If "claude_report" is selected, DO NOT extract functions, tickers, or columns (return null for all)
+   - SPECIAL (claude_report): If **only** "claude_report" is selected (no entry/exit/breadth/portfolio_target_achieved), return null for functions, tickers, and columns. If "claude_report" appears **together with** other signal types, you MUST still extract functions, tickers, and column subsets for entry/exit/breadth/portfolio_target_achieved as usual — only skip column data for claude_report itself (omit a "claude_report" key under "columns" or leave it empty).
 
 2. FUNCTIONS:
    - Extract ONLY function names mentioned in the query
    - Use EXACT names from available functions list
    - If NO specific functions mentioned → return null (means ALL functions)
-   - If signal type is "claude_report" → return null (not applicable)
+   - If **only** claude_report was selected → return null. Otherwise ignore claude_report for this field and extract normally for the table-backed signal types.
 
 3. TICKERS:
    - If SPECIFIC tickers mentioned (e.g., "AAPL", "MSFT") → return those tickers
@@ -196,7 +196,7 @@ Available Tickers/Assets:
      * "Toronto" or "Canadian" → tickers ending with ".TO"
      * "US" or "American" → tickers without country suffixes
    - IMPORTANT: When conversation history is provided, use it to resolve ambiguous references like "those", "them", "it", "the same"
-   - If signal type is "claude_report" → return null (not applicable)
+   - If **only** claude_report was selected → return null. Otherwise return tickers for any asset named in the query (e.g. AAPL → ["AAPL"]) even when claude_report is also selected.
 
 4. COLUMNS:
    - For EACH signal type, select relevant columns
@@ -205,7 +205,7 @@ Available Tickers/Assets:
      * [1] Symbol, Signal, Signal Date/Price[$]
    - Include columns needed to answer the query
    - Use BOTH index number AND column name for accuracy
-   - If signal type is "claude_report" → DO NOT include any columns (not applicable)
+   - Do not add a "claude_report" entry under "columns" (report is text, not CSV columns). For every other selected table signal type (entry, exit, breadth, portfolio_target_achieved), you MUST include a columns object with at least the mandatory columns.
 
 === RESPONSE FORMAT ===
 
@@ -235,8 +235,8 @@ Return ONLY valid JSON with this EXACT structure:
 IMPORTANT:
 - Return ONLY JSON, no other text
 - Use null (not empty array) when no specific functions/tickers mentioned
-- Include columns ONLY for selected signal types
-- Always include mandatory columns (Function and Symbol)
+- Include a "columns" entry for each selected **table** signal type (entry, exit, breadth, portfolio_target_achieved), never omit them when those types appear in signal_types
+- Always include mandatory columns (Function and Symbol, Signal, Signal Date/Price[$]) for each table signal type you include under "columns"
 
 Respond now:"""
 
@@ -368,6 +368,8 @@ Respond now:"""
                 suffix = tickers[0]
                 tickers = [t for t in self.available_tickers if t.endswith(suffix)]
                 logger.info(f"Expanded region filter '{suffix}' to {len(tickers)} tickers")
+            else:
+                tickers = [str(t).strip().upper() for t in tickers if t]
         result["tickers"] = tickers
         
         # Normalize columns - add indices list

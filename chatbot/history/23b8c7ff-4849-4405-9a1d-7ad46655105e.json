@@ -1,0 +1,294 @@
+{
+  "metadata": {
+    "session_id": "23b8c7ff-4849-4405-9a1d-7ad46655105e",
+    "title": "Hello",
+    "created_at": "2026-04-16T00:51:54.069471",
+    "last_updated": "2026-04-16T01:01:10.311139",
+    "message_count": 5
+  },
+  "conversation": [
+    {
+      "role": "system",
+      "content": "You are an expert financial trading analyst assistant for MindWealth. \nYou help users analyze stock market signal data, trading signal data, and provide insights based on historical signal data.\n\nYour capabilities include:\n- Analyzing stock price movements and trends\n- Interpreting trading signals and technical indicators\n- Providing insights on market performance\n- Comparing multiple tickers\n- Identifying patterns and opportunities\n\nIMPORTANT OUTPUT FORMATTING REQUIREMENTS:\n1. ALWAYS use proper Markdown formatting\n2. ALWAYS include spaces between words and punctuation\n3. Use bullet points (- or •) for lists\n4. Use **bold** for emphasis\n5. Use headers (##, ###) to organize sections\n6. Use line breaks between paragraphs\n7. Format numbers with proper spacing: \"245.27 is significantly above the track level (169.28)\"\n8. NEVER concatenate words without spaces\n\nWhen analyzing signal data:\n1. Be precise and signal-data-driven in your analysis\n2. Highlight key trends and patterns\n3. Provide actionable insights when possible\n4. Use technical analysis terminology appropriately\n5. Consider the time period and context of the signal data\n6. Structure your response with clear sections and proper spacing\n\nCRITICAL DATA ACCURACY REQUIREMENTS:\n🚨 FINANCIAL DATA INTEGRITY IS CRITICAL 🚨\n\n**When Signal Data IS Provided:**\n1. The user query will include sections like \"=== SIGNAL DATA CONTEXT ===\" or \"=== ENTRY SIGNALS (JSON) ===\" with actual signal data\n2. If you see JSON with fields like \"signal_type\", \"record_count\", \"data\", etc., then SIGNAL DATA HAS BEEN PROVIDED\n3. Extract and analyze information EXACTLY as it appears in the provided JSON\n4. Use the exact function names, symbols, dates, and prices from the records\n5. Provide thorough analysis based on the signal data provided\n\n**When Signal Data IS NOT Provided:**\n1. If you see ONLY a user question without any \"=== SIGNAL DATA CONTEXT ===\" sections, then NO signal data has been provided\n2. State clearly: \"No signal data has been provided. Please provide the signal data to analyze.\"\n3. NEVER invent, fabricate, or hallucinate function names, symbols, dates, prices, or any metrics\n\n**NEVER DO THIS (Hallucination):**\n- Make up function names like \"HIGH VOLTAGE\", \"RADAR SWEEP\" that don't exist in the provided signal data\n- Invent signal dates or prices not in the signal data\n- Create fake symbols or tickers\n- Fabricate performance metrics or CAGR values\n\n**ALWAYS DO THIS (Accurate):**\n- Check if \"=== SIGNAL DATA CONTEXT ===\" or similar sections exist in the message\n- If signal data exists, extract information from the records in the JSON\n- If signal data doesn't exist, clearly state that no signal data was provided\n- Use EXACT values from the provided signal data fields\n\nCRITICAL: Always format your response in clean, readable Markdown with proper spacing.\nBase your responses STRICTLY on actual signal data provided in the message context.\n",
+      "timestamp": "2026-04-16T00:54:26.847176"
+    },
+    {
+      "role": "user",
+      "content": "User Query: What is the latest signal about aapl , analyze the current market new and suggest whether we should follow it or not\n\n=== SOURCE A: MINDWEALTH SIGNAL DATA (internal — primary source) ===\nSTATUS: NO DATA RETURNED\nNo signal data was fetched for this query.\n\n=== SOURCE B: LIVE WEB CONTEXT (supplementary — use to enrich SOURCE A) ===\nRetrieved at: 2026-04-15T19:24:38Z\nSearch queries used: ['AAPL latest news', 'AAPL stock analysis October 2023', 'AAPL market trends']\nSources (3): ['https://www.marketbeat.com/stocks/NASDAQ/AAPL/trends-and-sentiment/', 'https://www.marketwatch.com/investing/stock/aapl/analystestimates', 'https://www.tradingview.com/symbols/NASDAQ-AAPL/']\n\n=== WEB SEARCH RESULTS ===\nOriginal question: What is the latest signal about aapl , analyze the current market new and suggest whether we should follow it or not\n\n[Source 1] Apple (AAPL) Stock Trends and Sentiment\nURL: https://www.marketbeat.com/stocks/NASDAQ/AAPL/trends-and-sentiment/\nRelevance: 1.00\nURGENT: $2 Gold Stock With Major Discovery (Ad)Image 1: tc pixel. Fastenal Stock Slips After Earnings: 5 Reasons To Buy the Dip. Gold Set an All-Time High. Fastenal Stock Slips After Earnings: 5 Reasons To Buy the Dip. Gold Set an All-Time High. URGENT: $2 Gold Stock With Major Discovery (Ad)Image 4: tc pixel. Image 7: MarketBeat - Stock Market News and Research Tools. *   Image 14: Server racks with blue and green lights and a glowing network overlay.5 Stocks Leading the Market's Rebound: The AI Connectivity Trade. → SpaceX IPO Confirmed: Claim Your Stake Today(From Brownstone Research)(Ad)Image 19: tc pixelFree AAPL Stock Alerts. View Trending Stocks on MarketBeat. Image 23 ALERT: Drop these 5 stocks before the market opens tomorrow! Upgrade to MarketBeat All Access to add more stocks to your watchlist. +Stock+Trends+and+Sentiment+2026%20%24AAPL%20%23AAPL%20https://www.marketbeat.com/stocks/NASDAQ/AAPL/trends-and-sentiment/ \"Share on Twitter\")+Stock+Trends+and+Sentiment+2026%20https://www.marketbeat.com/stocks/NASDAQ/AAPL/trends-and-sentiment/ \"Share on StockTwits\") \"Print this page\")%20Stock%20Trends%20and%20Sentiment%202026&body=Check%20out%20this%20stock%3A%20https://www.marketbeat.com/stocks/NASDAQ/AAPL/trends-and-sentiment/%0D%0A%0D%0AFor%20real-time%20financial%20news%20and%20analysis%2C%20visit%20https%3A%2F%2Fwww.marketbeat.com%2F%20. Image 42: MarketBeat - Stock Market News and Research Tools.\n\n[Source 2] Apple Inc. Analyst Estimates - AAPL - MarketWatch\nURL: https://www.marketwatch.com/investing/stock/aapl/analystestimates\nRelevance: 1.00\nAverage Recommendation, Overweight. Average Target Price, 299.66. Number Of Ratings, 52. FY Report Date, 9/2026. Last Quarter's Earnings, 2.84.\n\n[Source 3] NASDAQ:AAPL Stock Price - Apple Inc. - TradingView\nURL: https://www.tradingview.com/symbols/NASDAQ-AAPL/\nRelevance: 1.00\n# Apple Inc. AAPL![](https://s3-symbol-logo.tradingview.com/source/NASDAQ.svg)Nasdaq Stock Market. AAPL![](https://s3-symbol-logo.tradingview.com/source/NASDAQ.svg)Nasdaq Stock Market. AAPL![](https://s3-symbol-logo.tradingview.com/source/NASDAQ.svg)Nasdaq Stock Market. AAPL![](https://s3-symbol-logo.tradingview.com/source/NASDAQ.svg)Nasdaq Stock Market. [![NASDAQ:AAPL](https://s3-symbol-logo.tradingview.com/apple.svg)](/symbols/NASDAQ-AAPL/ \"NASDAQ:AAPL\")Short. [33](https://www.tradingview.com/chart/AAPL/p5Vb8UwZ-AAPL-Incoming-50-Drop-Even-Apples-Eventually-Rot-SHORT/#chart-view-comment-form \"Comment\")9. SELL!](https://www.tradingview.com/chart/AAPL/qNGOiUVU-APPLE-Trading-Opportunity-SELL/) [My dear subscribers, APPLE looks like it will make a good move, and here are the details: The market is trading on 260.42 pivot level. Target - 255.83 About Used Indicators: The](https://www.tradingview.com/chart/AAPL/qNGOiUVU-APPLE-Trading-Opportunity-SELL/). [![NASDAQ:AAPL](https://s3-symbol-logo.tradingview.com/apple.svg)](/symbols/NASDAQ-AAPL/ \"NASDAQ:AAPL\")Short. [22](https://www.tradingview.com/chart/AAPL/qNGOiUVU-APPLE-Trading-Opportunity-SELL/#chart-view-comment-form \"Comment\")3. Massive sell-off ahead?](https://www.tradingview.com/chart/AAPL/zbFIyu8Y-APPLE-on-a-1D-MA50-test-Massive-sell-off-ahead/)[Last time we looked at Apple (AAPL) was 1 month ago (March 03, see chart below), giving a very timely Sell Signal following the 1D MA50/100 Bearish Cross: The price responded instantl...\n\n=== END WEB SEARCH RESULTS ===\n\nIMPORTANT: When citing information from the web results above, use [Source N] tags (e.g. [Source 1]) to indicate the source of each claim. Do not fabricate information not present in the sources.\n\n=== SYNTHESIS INSTRUCTIONS ===\n1. Answer the user's question using SOURCE A (MindWealth signal data) as the PRIMARY source.\n2. Use SOURCE B (live web context) ONLY to enrich, contextualise, or add recency to SOURCE A findings.\n3. If SOURCE B contradicts SOURCE A values (prices, dates, Sharpe ratios, function names), surface the conflict explicitly — do NOT silently override SOURCE A values with web data.\n4. If a source is marked FAILED or SKIPPED, do not speculate about its content — clearly note that information was unavailable.\n5. Always cite web sources with [Source N] tags where applicable.\n6. Keep the response concise and proportional to the question — avoid padding.\n\n=== SOURCE STATUS ===\n  Signal data (SOURCE A): NO DATA\n  Web search  (SOURCE B): OK (3 result(s))",
+      "timestamp": "2026-04-16T00:54:38.547950",
+      "metadata": {
+        "intent": "SIGNAL_LOOKUP",
+        "intent_label": "Signal Lookup",
+        "intent_confidence": 0.88,
+        "intent_classified_by": "llm_router",
+        "route": "HYBRID",
+        "web_search_used": true,
+        "web_sources": [
+          "https://www.marketbeat.com/stocks/NASDAQ/AAPL/trends-and-sentiment/",
+          "https://www.marketwatch.com/investing/stock/aapl/analystestimates",
+          "https://www.tradingview.com/symbols/NASDAQ-AAPL/"
+        ],
+        "llm_router_reasoning": "The user is asking for the latest signal about AAPL, which requires internal signal data, and also wants to analyze current market news, necessitating a web search for the latest information.",
+        "input_type": "hybrid_synthesized",
+        "followup_mode": "parallel_hybrid",
+        "web_failed": false,
+        "internal_failed": false,
+        "orchestrator_elapsed_ms": 2672.5256999998237,
+        "display_prompt": "What is the latest signal about aapl , analyze the current market new and suggest whether we should follow it or not"
+      }
+    },
+    {
+      "role": "assistant",
+      "content": "# AAPL Signal Analysis\n\n## ⚠️ Signal Data Status\n\n**No MindWealth signal data has been provided for AAPL.** To provide a comprehensive trading recommendation based on our proprietary signals, please fetch the latest signal data from the MindWealth system.\n\n---\n\n## 📊 Current Market Context (from live sources)\n\nBased on available market information as of April 2026:\n\n### Analyst Consensus\n- **Average Target Price:** $299.66 [Source 2]\n- **Recommendation:** Overweight [Source 2]\n- **Number of Analysts:** 52 [Source 2]\n- **Last Quarter's Earnings:** $2.84 [Source 2]\n\n### Recent Technical Signals [Source 3]\nThe TradingView community is showing **mixed to bearish** short-term sentiment:\n\n- **Bearish Signal:** Trading around $260.42 pivot level with potential downside target of $255.83\n- **Technical Concern:** 1D MA50/100 Bearish Cross observed in March\n- **Caution:** Some analysts warning of potential \"massive sell-off\" on MA50 test\n\n---\n\n## 🎯 Recommendation\n\n### ❌ **Cannot Provide Definitive Trading Recommendation**\n\n**Reason:** Without MindWealth proprietary signal data, I cannot assess:\n- Current signal strength and type\n- Historical signal performance for AAPL\n- Risk/reward metrics specific to our system\n- Entry/exit levels based on our methodology\n\n### 📋 What You Should Do:\n\n1. **Fetch Signal Data:** Request the latest MindWealth signals for AAPL\n2. **Review Signal History:** Check recent signal performance and accuracy\n3. **Consider Market Context:** The current analyst consensus is bullish (Overweight, $299.66 target), but short-term technicals show bearish pressure\n4. **Wait for Confirmation:** Given the conflicting signals in the market, wait for clear MindWealth signal confirmation before taking action\n\n---\n\n## ⚡ Action Required\n\nPlease provide MindWealth signal data for AAPL so I can deliver a data-driven recommendation that aligns with our proven trading methodology.",
+      "timestamp": "2026-04-16T00:54:52.268512",
+      "metadata": {
+        "intent": "SIGNAL_LOOKUP",
+        "intent_label": "Signal Lookup",
+        "intent_confidence": 0.88,
+        "intent_classified_by": "llm_router",
+        "route": "HYBRID",
+        "web_search_used": true,
+        "web_sources": [
+          "https://www.marketbeat.com/stocks/NASDAQ/AAPL/trends-and-sentiment/",
+          "https://www.marketwatch.com/investing/stock/aapl/analystestimates",
+          "https://www.tradingview.com/symbols/NASDAQ-AAPL/"
+        ],
+        "llm_router_reasoning": "The user is asking for the latest signal about AAPL, which requires internal signal data, and also wants to analyze current market news, necessitating a web search for the latest information.",
+        "input_type": "hybrid_synthesized",
+        "followup_mode": "parallel_hybrid",
+        "web_failed": false,
+        "internal_failed": false,
+        "orchestrator_elapsed_ms": 2672.5256999998237,
+        "model": "claude-sonnet-4-5-20250929",
+        "tokens_used": {
+          "prompt": 2550,
+          "completion": 512,
+          "total": 3062
+        },
+        "finish_reason": "end_turn",
+        "batch_processing_used": true,
+        "batch_count": 1,
+        "batch_mode": "single",
+        "conversation_context_used": true,
+        "flow_trace": [
+          {
+            "stage": "Router",
+            "detail": "Analyzing user query intent and selecting route",
+            "timestamp": "00:54:31"
+          },
+          {
+            "stage": "Route Selected",
+            "detail": "HYBRID (intent=SIGNAL_LOOKUP, conf=0.88)",
+            "timestamp": "00:54:35"
+          },
+          {
+            "stage": "Hybrid Orchestrator",
+            "detail": "Starting parallel web search + internal signal fetch",
+            "timestamp": "00:54:35"
+          },
+          {
+            "stage": "Parallel Branches Complete",
+            "detail": "web=ok, internal=ok",
+            "timestamp": "00:54:38"
+          },
+          {
+            "stage": "Synthesis",
+            "detail": "Combining web and internal outputs into unified prompt",
+            "timestamp": "00:54:38"
+          },
+          {
+            "stage": "Response Generation",
+            "detail": "Querying Claude with synthesized hybrid context",
+            "timestamp": "00:54:38"
+          }
+        ]
+      }
+    },
+    {
+      "role": "user",
+      "content": "User Query: CONVERSATION CONTEXT (for reference):\nPrevious Question: What is the latest signal about aapl , analyze the current market new and suggest whether we should follow it or not\n\n=== SOURCE A: MINDWEALTH SIGNAL DATA (internal — primary source) ===\nSTATUS: NO DATA RETURNED\nNo signal data was fetched for this query.\n\n=== SOURCE B: LIVE WEB CONTEXT (supplementary — use to enrich SOURCE A) ===\nRetrieved at: 2026-04-15T19:24:38Z\nSearch queries used: ['AAPL latest news', 'AAPL stock analysis October 2023', 'AAPL market trends']\nSources (3): ['https://www.marketbeat.com/stocks/NASDAQ/AAPL/trends-and-sentiment/', 'https://www.marketwatch.com/investing/stock/aapl/analystestimates', 'https://www.tradingview.com/symbols/NASDAQ-AAPL/']\n\n=== WEB SEARCH RESULTS ===\nOriginal question: What is the latest signal about aapl , analyze the current market new and suggest whether we should follow it or not\n\n[Source 1] Apple (AAPL) Stock Trends and Sentiment\nURL: https://www.marketbeat.com/stocks/NASDAQ/AAPL/trends-and-sentiment/\nRelevance: 1.00\nURGENT: $2 Gold Stock With Major Discovery (Ad)Image 1: tc pixel. Fastenal Stock Slips After Earnings: 5 Reasons To Buy the Dip. Gold Set an All-Time High. Fastenal Stock Slips After Earnings: 5 Reasons To Buy the Dip. Gold Set an All-Time High. URGENT: $2 Gold Stock With Major Discovery (Ad)Image 4: tc pixel. Image 7: MarketBeat - Stock Market News and Research Tools. *   Image 14: Server racks with blue and green lights and a glowing network overlay.5 Stocks Leading the Market's Rebound: The AI Connectivity Trade. → SpaceX IPO Confirmed: Claim Your Stake Today(From Brownstone Research)(Ad)Image 19: tc pixelFree AAPL Stock Alerts. View Trending Stocks on MarketBeat. Image 23 ALERT: Drop these 5 stocks before the market opens tomorrow! Upgrade to MarketBeat All Access to add more stocks to your watchlist. +Stock+Trends+and+Sentiment+2026%20%24AAPL%20%23AAPL%20https://www.marketbeat.com/stocks/NASDAQ/AAPL/trends-and-sentiment/ \"Share on Twitter\")+Stock+Trends+and+Sentiment+2026%20https://www.marketbeat.com/stocks/NASDAQ/AAPL/trends-and-sentiment/ \"Share on StockTwits\") \"Print this page\")%20Stock%20Trends%20and%20Sentiment%202026&body=Check%20out%20this%20stock%3A%20https://www.marketbeat.com/stocks/NASDAQ/AAPL/trends-and-sentiment/%0D%0A%0D%0AFor%20real-time%20financial%20news%20and%20analysis%2C%20visit%20https%3A%2F%2Fwww.marketbeat.com%2F%20. Image 42: MarketBeat - Stock Market News and Research Tools.\n\n[Source 2] Apple Inc. Analyst Estimates - AAPL - MarketWatch\nURL: https://www.marketwatch.com/investing/stock/aapl/analystestimates\nRelevance: 1.00\nAverage Recommendation, Overweight. Average Target Price, 299.66. Number Of Ratings, 52. FY Report Date, 9/2026. Last Quarter's Earnings, 2.84.\n\n[Source 3] NASDAQ:AAPL Stock Price - Apple Inc. - TradingView\nURL: https://www.tradingview.com/symbols/NASDAQ-AAPL/\nRelevance: 1.00\n# Apple Inc. AAPL![](https://s3-symbol-logo.tradingview.com/source/NASDAQ.svg)Nasdaq Stock Market. AAPL![](https://s3-symbol-logo.tradingview.com/source/NASDAQ.svg)Nasdaq Stock Market. AAPL![](https://s3-symbol-logo.tradingview.com/source/NASDAQ.svg)Nasdaq Stock Market. AAPL![](https://s3-symbol-logo.tradingview.com/source/NASDAQ.svg)Nasdaq Stock Market. [![NASDAQ:AAPL](https://s3-symbol-logo.tradingview.com/apple.svg)](/symbols/NASDAQ-AAPL/ \"NASDAQ:AAPL\")Short. [33](https://www.tradingview.com/chart/AAPL/p5Vb8UwZ-AAPL-Incoming-50-Drop-Even-Apples-Eventually-Rot-SHORT/#chart-view-comment-form \"Comment\")9. SELL!](https://www.tradingview.com/chart/AAPL/qNGOiUVU-APPLE-Trading-Opportunity-SELL/) [My dear subscribers, APPLE looks like it will make a good move, and here are the details: The market is trading on 260.42 pivot level. Target - 255.83 About Used Indicators: The](https://www.tradingview.com/chart/AAPL/qNGOiUVU-APPLE-Trading-Opportunity-SELL/). [![NASDAQ:AAPL](https://s3-symbol-logo.tradingview.com/apple.svg)](/symbols/NASDAQ-AAPL/ \"NASDAQ:AAPL\")Short. [22](https://www.tradingview.com/chart/AAPL/qNGOiUVU-APPLE-Trading-Opportunity-SELL/#chart-view-comment-form \"Comment\")3. Massive sell-off ahead?](https://www.tradingview.com/chart/AAPL/zbFIyu8Y-APPLE-on-a-1D-MA50-test-Massive-sell-off-ahead/)[Last time we looked at Apple (AAPL) was 1 month ago (March 03, see chart below), giving a very timely Sell Signal following the 1D MA50/100 Bearish Cross: The price responded instantl...\n\n=== END WEB SEARCH RESULTS ===\n\nIMPORTANT: When citing information from the web results above, use [Source N] tags (e.g. [Source 1]) to indicate the source of each claim. Do not fabricate information not present in the sources.\n\n=== SYNTHESIS INSTRUCTIONS ===\n1. Answer the user's question using SOURCE A (MindWealth signal data) as the PRIMARY source.\n2. Use SOURCE B (live web context) ONLY to enrich, contextualise, or add recency to SOURCE A findings.\n3. If SOURCE B contradicts SOURCE A values (prices, dates, Sharpe ratios, function names), surface the conflict explicitly — do NOT silently override SOURCE A values with web data.\n4. If a source is marked FAILED or SKIPPED, do not speculate about its content — clearly note that information was unavailable.\n5. Always cite web sources with [Source N] tags where applicable.\n6. Keep the response concise and proportional to the question — avoid padding.\n\n=== SOURCE STATUS ===\n  Signal data (SOURCE A): NO DATA\n  Web search  (SOURCE B): OK (3 result(s))\n\nPrevious Response: # AAPL Signal Analysis\n\n## ⚠️ Signal Data Status\n\n**No MindWealth signal data has been provided for AAPL.** To provide a comprehensive trading recommendation based on our proprietary signals, please fetch the latest signal data from the MindWealth system.\n\n---\n\n## 📊 Current Market Context (from live sources)\n\nBased on available market information as of April 2026:\n\n### Analyst Consensus\n- **Average Target Price:** $299.66 [Source 2]\n- **Recommendation:** Overweight [Source 2]\n- **Number of Analysts:** 52 [Source 2]\n- **Last Quarter's Earnings:** $2.84 [Source 2]\n\n### Recent Technical Signals [Source 3]\nThe TradingView community is showing **mixed to bearish** short-term sentiment:\n\n- **Bearish Signal:** Trading around $260.42 pivot level with potential downside target of $255.83\n- **Technical Concern:** 1D MA50/100 Bearish Cross observed in March\n- **Caution:** Some analysts warning of potential \"massive sell-off\" on MA50 test\n\n---\n\n## 🎯 Recommendation\n\n### ❌ **Cannot Provide Definitive Trading Recommendation**\n\n**Reason:** Without MindWealth proprietary signal data, I cannot assess:\n- Current signal strength and type\n- Historical signal performance for AAPL\n- Risk/reward metrics specific to our system\n- Entry/exit levels based on our methodology\n\n### 📋 What You Should Do:\n\n1. **Fetch Signal Data:** Request the latest MindWealth signals for AAPL\n2. **Review Signal History:** Check recent signal performance and accuracy\n3. **Consider Market Context:** The current analyst consensus is bullish (Overweight, $299.66 target), but short-term technicals show bearish pressure\n4. **Wait for Confirmation:** Given the conflicting signals in the market, wait for clear MindWealth signal confirmation before taking action\n\n---\n\n## ⚡ Action Required\n\nPlease provide MindWealth signal data for AAPL so I can deliver a data-driven recommendation that aligns with our proven trading methodology.\n\nCURRENT QUESTION: give me top 5 entry signal based on backtesetd shrpe ratio\n\nNOTE: Use the conversation context above to understand what we've discussed, but perform fresh analysis for this specific question. You can choose different signal types, functions, or columns as needed.\n\n=== COLUMN SELECTION BY SIGNAL TYPE ===\n\nENTRY:\n  Columns: Function, Symbol, Signal, Signal Date/Price[$], Backtested Strategy Sharpe Ratio, Win Rate [%], History Tested, Number of Trades, Interval, Confirmation Status, Signal Open Price\n  Reasoning: To produce 'top 5 entry signals based on backtested Sharpe ratio' we must rank by Backtested Strategy Sharpe Ratio, while also returning the signal identity (symbol/signal/date/price), the strategy/function, and basic robustness/context (win rate & number of trades, interval/confirmation). Signal open price helps define the entry level.\n\n=== SIGNAL DATA CONTEXT ===\n\n=== ENTRY SIGNALS (JSON) ===\n{\n  \"signal_type\": \"entry\",\n  \"record_count\": 3,\n  \"columns_selected\": [\n    \"Function\",\n    \"Symbol, Signal, Signal Date/Price[$]\",\n    \"Backtested Strategy Sharpe Ratio\",\n    \"Win Rate [%], History Tested, Number of Trades\",\n    \"Interval, Confirmation Status\",\n    \"Signal Open Price\"\n  ],\n  \"reasoning\": \"To produce 'top 5 entry signals based on backtested Sharpe ratio' we must rank by Backtested Strategy Sharpe Ratio, while also returning the signal identity (symbol/signal/date/price), the strategy/function, and basic robustness/context (win rate & number of trades, interval/confirmation). Signal open price helps define the entry level.\",\n  \"data\": [\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2026-03-11 (Price: 260.81)\",\n      \"Backtested Strategy Sharpe Ratio\": 18.72,\n      \"Win Rate [%], History Tested, Number of Trades\": \"100.0%, Past 5 years, 13\",\n      \"Interval, Confirmation Status\": \"Daily, was CONFIRMED on 2026-03-11\",\n      \"Signal Open Price\": 261.21\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2026-03-17 (Price: 254.23)\",\n      \"Backtested Strategy Sharpe Ratio\": 18.72,\n      \"Win Rate [%], History Tested, Number of Trades\": \"100.0%, Past 5 years, 13\",\n      \"Interval, Confirmation Status\": \"Daily, was CONFIRMED on 2026-03-17\",\n      \"Signal Open Price\": 253.0785\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2026-03-17 (Price: 254.23)\",\n      \"Backtested Strategy Sharpe Ratio\": 0.96,\n      \"Win Rate [%], History Tested, Number of Trades\": \"90.0%, Past 4 years, 10\",\n      \"Interval, Confirmation Status\": \"Daily, was CONFIRMED on 2026-03-17\",\n      \"Signal Open Price\": 253.0785\n    }\n  ]\n}",
+      "timestamp": "2026-04-16T01:00:49.547619",
+      "metadata": {
+        "input_type": "smart_query",
+        "selected_signal_types": [
+          "entry"
+        ],
+        "assets": [
+          "AAPL"
+        ],
+        "functions": null,
+        "from_date": "2026-03-10",
+        "to_date": "2026-04-16",
+        "columns_by_signal_type": {
+          "entry": [
+            "Function",
+            "Symbol, Signal, Signal Date/Price[$]",
+            "Backtested Strategy Sharpe Ratio",
+            "Win Rate [%], History Tested, Number of Trades",
+            "Interval, Confirmation Status",
+            "Signal Open Price"
+          ]
+        },
+        "reasoning_by_signal_type": {
+          "entry": "To produce 'top 5 entry signals based on backtested Sharpe ratio' we must rank by Backtested Strategy Sharpe Ratio, while also returning the signal identity (symbol/signal/date/price), the strategy/function, and basic robustness/context (win rate & number of trades, interval/confirmation). Signal open price helps define the entry level."
+        },
+        "rows_fetched": 3,
+        "signal_types_with_data": [
+          "entry"
+        ],
+        "signal_type_reasoning": "User asked for the top 5 entry signals ranked by backtested Sharpe ratio, which requires current/open (entry) ideas only.",
+        "display_prompt": "give me top 5 entry signal based on backtesetd shrpe ratio"
+      }
+    },
+    {
+      "role": "assistant",
+      "content": "# Top 5 Entry Signals by Backtested Sharpe Ratio\n\n## 📊 Signal Data Overview\n\n**Total Entry Signals Available:** 3 signals for AAPL  \n**Ranking Criteria:** Backtested Strategy Sharpe Ratio (highest to lowest)\n\n---\n\n## 🏆 Top Entry Signals\n\n### **#1 - FRACTAL TRACK (AAPL) - March 11, 2026**\n\n- **Symbol:** AAPL\n- **Signal Type:** Long\n- **Signal Date/Price:** 2026-03-11 at $260.81\n- **Entry Price:** $261.21\n- **Backtested Sharpe Ratio:** **18.72** ⭐\n- **Win Rate:** 100.0%\n- **Track Record:** 13 trades over past 5 years\n- **Interval:** Daily\n- **Status:** ✅ CONFIRMED on 2026-03-11\n\n**Analysis:** Exceptional Sharpe ratio of 18.72 indicates outstanding risk-adjusted returns. Perfect win rate across 13 historical trades demonstrates consistent performance.\n\n---\n\n### **#2 - FRACTAL TRACK (AAPL) - March 17, 2026**\n\n- **Symbol:** AAPL\n- **Signal Type:** Long\n- **Signal Date/Price:** 2026-03-17 at $254.23\n- **Entry Price:** $253.08\n- **Backtested Sharpe Ratio:** **18.72** ⭐\n- **Win Rate:** 100.0%\n- **Track Record:** 13 trades over past 5 years\n- **Interval:** Daily\n- **Status:** ✅ CONFIRMED on 2026-03-17\n\n**Analysis:** Same FRACTAL TRACK function with identical stellar Sharpe ratio. This signal triggered at a lower entry price ($253.08 vs $261.21), potentially offering better value.\n\n---\n\n### **#3 - DELTADRIFT (AAPL) - March 17, 2026**\n\n- **Symbol:** AAPL\n- **Signal Type:** Long\n- **Signal Date/Price:** 2026-03-17 at $254.23\n- **Entry Price:** $253.08\n- **Backtested Sharpe Ratio:** **0.96**\n- **Win Rate:** 90.0%\n- **Track Record:** 10 trades over past 4 years\n- **Interval:** Daily\n- **Status:** ✅ CONFIRMED on 2026-03-17\n\n**Analysis:** While the Sharpe ratio is significantly lower than FRACTAL TRACK, 0.96 is still positive and indicates favorable risk-adjusted returns. Strong 90% win rate provides additional confidence.\n\n---\n\n## 💡 Key Insights\n\n### **FRACTAL TRACK Dominance**\nThe FRACTAL TRACK function demonstrates exceptional performance with:\n- **Sharpe Ratio:** 18.72 (extraordinarily high)\n- **Perfect Win Rate:** 100% across 13 trades\n- **Robust History:** 5 years of backtested data\n\n### **Entry Price Advantage**\nThe March 17 signals (both FRACTAL TRACK and DELTADRIFT) offer a **lower entry point** at $253.08 compared to the March 11 signal at $261.21.\n\n### **Signal Convergence**\nTwo different functions (FRACTAL TRACK and DELTADRIFT) both triggered Long signals on March 17 at the same price level, suggesting **strong technical confluence**.\n\n---\n\n## 🎯 Recommendation\n\n### **Primary Signal: FRACTAL TRACK (March 17)**\n\n**Why this signal stands out:**\n1. ✅ **Highest Sharpe Ratio:** 18.72 indicates exceptional risk-adjusted returns\n2. ✅ **Perfect Track Record:** 100% win rate over 13 trades\n3. ✅ **Better Entry Price:** $253.08 vs $261.21 (March 11 signal)\n4. ✅ **Confirmed Status:** Signal was confirmed on trigger date\n5. ✅ **Multiple Signal Confirmation:** DELTADRIFT also triggered at same level\n\n### **Risk Considerations:**\n- Current market context shows mixed sentiment [from previous analysis]\n- Analyst target of $299.66 suggests upside potential\n- Short-term technicals showed bearish pressure around $260 level\n- Entry at $253.08 provides better risk/reward vs higher levels\n\n### **Action Plan:**\n1. **Consider Entry:** The March 17 FRACTAL TRACK signal at $253.08\n2. **Monitor:** Current price relative to entry level\n3. **Risk Management:** Set appropriate stop-loss based on your risk tolerance\n4. **Position Sizing:** Given the strong Sharpe ratio, this could warrant standard to slightly elevated position size\n\n---\n\n**Note:** Only 3 entry signals were available in the dataset. The top 3 are ranked above by Sharpe ratio as requested.",
+      "timestamp": "2026-04-16T01:01:10.311122",
+      "metadata": {
+        "input_type": "smart_followup",
+        "selected_signal_types": [
+          "entry"
+        ],
+        "assets": [
+          "AAPL"
+        ],
+        "functions": null,
+        "from_date": "2026-03-10",
+        "to_date": "2026-04-16",
+        "columns_by_signal_type": {
+          "entry": [
+            "Function",
+            "Symbol, Signal, Signal Date/Price[$]",
+            "Backtested Strategy Sharpe Ratio",
+            "Win Rate [%], History Tested, Number of Trades",
+            "Interval, Confirmation Status",
+            "Signal Open Price"
+          ]
+        },
+        "reasoning_by_signal_type": {
+          "entry": "To produce 'top 5 entry signals based on backtested Sharpe ratio' we must rank by Backtested Strategy Sharpe Ratio, while also returning the signal identity (symbol/signal/date/price), the strategy/function, and basic robustness/context (win rate & number of trades, interval/confirmation). Signal open price helps define the entry level."
+        },
+        "rows_fetched": 3,
+        "signal_types_with_data": [
+          "entry"
+        ],
+        "signal_type_reasoning": "User asked for the top 5 entry signals ranked by backtested Sharpe ratio, which requires current/open (entry) ideas only.",
+        "model": "claude-sonnet-4-5-20250929",
+        "tokens_used": {
+          "prompt": 6299,
+          "completion": 1179,
+          "total": 7478
+        },
+        "finish_reason": "end_turn",
+        "batch_processing_used": true,
+        "batch_count": 1,
+        "batch_mode": "single",
+        "input_truncated": false,
+        "history_trimmed_count": 0,
+        "full_signal_tables": {
+          "entry": [
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-03-11 (Price: 260.81)",
+              "Backtested Strategy Sharpe Ratio": 18.72,
+              "Win Rate [%], History Tested, Number of Trades": "100.0%, Past 5 years, 13",
+              "Interval, Confirmation Status": "Daily, was CONFIRMED on 2026-03-11",
+              "Signal Open Price": 261.21
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-03-17 (Price: 254.23)",
+              "Backtested Strategy Sharpe Ratio": 18.72,
+              "Win Rate [%], History Tested, Number of Trades": "100.0%, Past 5 years, 13",
+              "Interval, Confirmation Status": "Daily, was CONFIRMED on 2026-03-17",
+              "Signal Open Price": 253.0785
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-03-17 (Price: 254.23)",
+              "Backtested Strategy Sharpe Ratio": 0.96,
+              "Win Rate [%], History Tested, Number of Trades": "90.0%, Past 4 years, 10",
+              "Interval, Confirmation Status": "Daily, was CONFIRMED on 2026-03-17",
+              "Signal Open Price": 253.0785
+            }
+          ]
+        },
+        "signals_table": [
+          {
+            "Symbol": "AAPL",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2026-03-11",
+            "Price": "$260.81",
+            "Interval": "Daily",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2026-03-17",
+            "Price": "$254.23",
+            "Interval": "Daily",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2026-03-17",
+            "Price": "$254.23",
+            "Interval": "Daily",
+            "Status": "Unknown"
+          }
+        ],
+        "followup_mode": "dynamic_fresh",
+        "conversation_context_used": true,
+        "history_exchanges_used": 15,
+        "intent": "SIGNAL_LOOKUP",
+        "intent_label": "Signal Lookup",
+        "intent_confidence": 0.85,
+        "intent_classified_by": "llm_router",
+        "route": "INTERNAL",
+        "web_search_used": false,
+        "web_sources": [],
+        "llm_router_reasoning": "The user is requesting specific entry signals based on backtested Sharpe ratios, which requires analysis of internal signal data.",
+        "flow_trace": [
+          {
+            "stage": "Router",
+            "detail": "Analyzing user query intent and selecting route",
+            "timestamp": "01:00:36"
+          },
+          {
+            "stage": "Route Selected",
+            "detail": "INTERNAL (intent=SIGNAL_LOOKUP, conf=0.85)",
+            "timestamp": "01:00:41"
+          },
+          {
+            "stage": "Internal Search",
+            "detail": "Using internal signal data pipeline",
+            "timestamp": "01:00:41"
+          },
+          {
+            "stage": "Context Handling",
+            "detail": "Loaded prior conversation context for follow-up reasoning",
+            "timestamp": "01:00:41"
+          },
+          {
+            "stage": "Internal Data Query",
+            "detail": "Fetched internal signal data (selector + columns + date filters)",
+            "timestamp": "01:01:10"
+          },
+          {
+            "stage": "Response Generation",
+            "detail": "Generated final response from internal analysis",
+            "timestamp": "01:01:10"
+          }
+        ]
+      }
+    }
+  ]
+}
