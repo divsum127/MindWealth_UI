@@ -1,0 +1,16 @@
+[Unit]
+Description=MindWealth Streamlit
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/uiv2/MindWealth_UI
+Environment="PATH=/home/ubuntu/uiv2/MindWealth_UI/.venv/bin:/usr/bin"
+ExecStart=/home/ubuntu/uiv2/MindWealth_UI/.venv/bin/streamlit run app.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

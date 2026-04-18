@@ -4,6 +4,8 @@ Configuration for chatbot functionality.
 
 import os
 from pathlib import Path
+from typing import Optional
+
 from dotenv import load_dotenv
 
 # Try loading from Streamlit secrets first (for deployed apps)
@@ -31,13 +33,44 @@ if not USING_STREAMLIT_SECRETS:
 # Base directories
 BASE_DIR = project_root
 
+
+def _resolve_flagged_pairs_dir() -> Path:
+    """
+    Where flagged user/assistant JSON files are written (Streamlit "Flag this exchange").
+
+    Resolution order when Streamlit secrets exist: ``[paths] FLAGGED_PAIRS_DIR`` or top-level
+    ``FLAGGED_PAIRS_DIR`` in secrets.toml, then ``$FLAGGED_PAIRS_DIR``, then default
+    ``chatbot/flagged_pairs`` under the project root.
+
+    Set an absolute path on EC2 (e.g. ``/home/ubuntu/uiv2/MindWealth_UI/chatbot/flagged_pairs``)
+    via systemd ``Environment=`` or secrets so deploys do not depend on cwd.
+    """
+    raw: Optional[str] = None
+    if USING_STREAMLIT_SECRETS:
+        try:
+            import streamlit as st
+
+            if "paths" in st.secrets and "FLAGGED_PAIRS_DIR" in st.secrets["paths"]:
+                raw = str(st.secrets["paths"]["FLAGGED_PAIRS_DIR"]).strip()
+            elif "FLAGGED_PAIRS_DIR" in st.secrets:
+                raw = str(st.secrets["FLAGGED_PAIRS_DIR"]).strip()
+        except Exception:
+            pass
+    if not raw:
+        raw = os.getenv("FLAGGED_PAIRS_DIR", "chatbot/flagged_pairs")
+    p = Path(raw).expanduser()
+    if p.is_absolute():
+        return p
+    return BASE_DIR / p
+
+
 # Directory configuration from environment
 CHATBOT_DATA_DIR = BASE_DIR / os.getenv("CHATBOT_DATA_DIR", "chatbot/data")  # Base data directory
 STOCK_DATA_DIR = BASE_DIR / os.getenv("STOCK_DATA_DIR", "trade_store/stock_data")  # Stock data directory
 TRADE_STORE_DIR = BASE_DIR / os.getenv("TRADE_STORE_DIR", "trade_store")  # Trade store directory
 HISTORY_DIR = BASE_DIR / os.getenv("HISTORY_DIR", "chatbot/history")  # Chat history directory
-# Flagged Q/R JSON exports (absolute path on disk; on EC2, browse this folder via RDP/SSH)
-FLAGGED_PAIRS_DIR = BASE_DIR / os.getenv("FLAGGED_PAIRS_DIR", "chatbot/flagged_pairs")
+# Flagged Q/R JSON exports (see _resolve_flagged_pairs_dir)
+FLAGGED_PAIRS_DIR = _resolve_flagged_pairs_dir()
 
 # Data file names from environment
 ENTRY_CSV_NAME = os.getenv("ENTRY_CSV_NAME", "entry.csv")

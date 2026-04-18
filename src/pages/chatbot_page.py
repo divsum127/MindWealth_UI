@@ -6,8 +6,9 @@ import streamlit as st
 import sys
 import logging
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
+from zoneinfo import ZoneInfo
 import pandas as pd
 
 # Add project root to path
@@ -21,6 +22,30 @@ from chatbot.flagged_export import save_flagged_pair
 from chatbot.agents.intent_classifier import INTENT_LABELS
 
 logger = logging.getLogger(__name__)
+
+_EASTERN_TZ = ZoneInfo("America/New_York")
+
+
+def utc_now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def format_message_time_est(timestamp_iso: Optional[str]) -> str:
+    """Format a stored ISO-8601 instant for display in US Eastern (EST or EDT)."""
+    try:
+        if not timestamp_iso:
+            return ""
+        else:
+            s = timestamp_iso.strip()
+            if s.endswith("Z"):
+                s = s[:-1] + "+00:00"
+            dt = datetime.fromisoformat(s)
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+        return dt.astimezone(_EASTERN_TZ).strftime("%Y-%m-%d %I:%M:%S %p %Z")
+    except (ValueError, TypeError, OSError):
+        return ""
+
 
 def get_signal_type_label(signal_type: str, uppercase: bool = False) -> str:
     """Return a user-facing label for a signal type key."""
@@ -583,7 +608,8 @@ def render_chatbot_page():
                     st.session_state.chat_history.append({
                         'role': msg['role'],
                         'content': content,
-                        'metadata': metadata
+                        'metadata': metadata,
+                        'timestamp': msg.get('timestamp'),
                     })
             
             st.session_state.last_settings = None
@@ -625,16 +651,21 @@ def render_chatbot_page():
         st.session_state.last_signal_reason = ai_reason
         
         # Add user message to chat history
+        user_ts = utc_now_iso()
         st.session_state.chat_history.append({
             'role': 'user',
             'content': analysis_prompt,
-            'metadata': {'display_prompt': analysis_prompt}
+            'metadata': {'display_prompt': analysis_prompt},
+            'timestamp': user_ts,
         })
         
         # Display user message immediately (clean version only)
         with st.chat_message("user"):
             # Use extract_user_prompt to show only the clean question
             clean_prompt = extract_user_prompt(analysis_prompt, {'display_prompt': analysis_prompt})
+            ts = format_message_time_est(user_ts)
+            if ts:
+                st.caption(ts)
             st.markdown(clean_prompt)
         
         # Get AI response
@@ -657,6 +688,10 @@ def render_chatbot_page():
                     signal_type_reasoning=ai_reason,
                 )
 
+                resp_ts = utc_now_iso()
+                rts = format_message_time_est(resp_ts)
+                if rts:
+                    st.caption(rts)
                 # Display response
                 st.markdown(response)
                 show_input_limit_notice(metadata)
@@ -693,7 +728,8 @@ def render_chatbot_page():
                 st.session_state.chat_history.append({
                     'role': 'assistant',
                     'content': response,
-                    'metadata': metadata
+                    'metadata': metadata,
+                    'timestamp': resp_ts,
                 })
 
             except Exception as e:
@@ -724,16 +760,21 @@ def render_chatbot_page():
         st.session_state.last_signal_reason = ai_reason
         
         # Add user message to chat history
+        user_ts = utc_now_iso()
         st.session_state.chat_history.append({
             'role': 'user',
             'content': insights_prompt,
-            'metadata': {'display_prompt': insights_prompt}
+            'metadata': {'display_prompt': insights_prompt},
+            'timestamp': user_ts,
         })
         
         # Display user message immediately (clean version only)
         with st.chat_message("user"):
             # Use extract_user_prompt to show only the clean question
             clean_prompt = extract_user_prompt(insights_prompt, {'display_prompt': insights_prompt})
+            ts = format_message_time_est(user_ts)
+            if ts:
+                st.caption(ts)
             st.markdown(clean_prompt)
         
         # Get AI response
@@ -755,6 +796,10 @@ def render_chatbot_page():
                     signal_type_reasoning=ai_reason,
                 )
 
+                resp_ts = utc_now_iso()
+                rts = format_message_time_est(resp_ts)
+                if rts:
+                    st.caption(rts)
                 # Display response
                 st.markdown(response)
                 show_input_limit_notice(metadata)
@@ -788,7 +833,8 @@ def render_chatbot_page():
                 st.session_state.chat_history.append({
                     'role': 'assistant',
                     'content': response,
-                    'metadata': metadata
+                    'metadata': metadata,
+                    'timestamp': resp_ts,
                 })
 
             except Exception as e:
@@ -819,16 +865,21 @@ def render_chatbot_page():
         st.session_state.last_signal_reason = ai_reason
         
         # Add user message to chat history
+        user_ts = utc_now_iso()
         st.session_state.chat_history.append({
             'role': 'user',
             'content': breadth_prompt,
-            'metadata': {'display_prompt': breadth_prompt}
+            'metadata': {'display_prompt': breadth_prompt},
+            'timestamp': user_ts,
         })
         
         # Display user message immediately (clean version only)
         with st.chat_message("user"):
             # Use extract_user_prompt to show only the clean question
             clean_prompt = extract_user_prompt(breadth_prompt, {'display_prompt': breadth_prompt})
+            ts = format_message_time_est(user_ts)
+            if ts:
+                st.caption(ts)
             st.markdown(clean_prompt)
         
         # Get AI response
@@ -850,6 +901,10 @@ def render_chatbot_page():
                     signal_type_reasoning=ai_reason,
                 )
 
+                resp_ts = utc_now_iso()
+                rts = format_message_time_est(resp_ts)
+                if rts:
+                    st.caption(rts)
                 # Display response
                 st.markdown(response)
                 show_input_limit_notice(metadata)
@@ -875,7 +930,8 @@ def render_chatbot_page():
                 st.session_state.chat_history.append({
                     'role': 'assistant',
                     'content': response,
-                    'metadata': metadata
+                    'metadata': metadata,
+                    'timestamp': resp_ts,
                 })
 
             except Exception as e:
@@ -1243,9 +1299,15 @@ Date Range: {from_date.strftime('%Y-%m-%d')} to {to_date.strftime('%Y-%m-%d')}""
                 with st.chat_message("user"):
                     # Extract clean user prompt for display
                     clean_content = extract_user_prompt(message['content'], message.get('metadata'))
+                    ts = format_message_time_est(message.get('timestamp'))
+                    if ts:
+                        st.caption(ts)
                     st.markdown(clean_content)
             else:
                 with st.chat_message("assistant"):
+                    ts = format_message_time_est(message.get('timestamp'))
+                    if ts:
+                        st.caption(ts)
                     st.markdown(message['content'])
                     show_input_limit_notice(message.get('metadata'))
 
@@ -1425,16 +1487,21 @@ Date Range: {from_date.strftime('%Y-%m-%d')} to {to_date.strftime('%Y-%m-%d')}""
         st.session_state.last_signal_reason = "Analyzing..."
         
         # Add user message to history (store clean user input for UI display)
+        user_ts = utc_now_iso()
         st.session_state.chat_history.append({
             'role': 'user',
             'content': user_input,
-            'metadata': {'display_prompt': user_input}
+            'metadata': {'display_prompt': user_input},
+            'timestamp': user_ts,
         })
         
         # Display user message immediately (clean version only)
         with st.chat_message("user"):
             # Use extract_user_prompt to show only the clean question
             clean_prompt = extract_user_prompt(user_input, {'display_prompt': user_input})
+            ts = format_message_time_est(user_ts)
+            if ts:
+                st.caption(ts)
             st.markdown(clean_prompt)
         
         # Get AI response
@@ -1462,6 +1529,11 @@ Date Range: {from_date.strftime('%Y-%m-%d')} to {to_date.strftime('%Y-%m-%d')}""
                 if ai_selected_signal_types:
                     st.session_state.last_signal_types = ai_selected_signal_types
                     st.session_state.last_signal_reason = ai_reason
+
+                resp_ts = utc_now_iso()
+                rts = format_message_time_est(resp_ts)
+                if rts:
+                    st.caption(rts)
 
                 # Display AI signal type selection at the top
                 if ai_selected_signal_types:
@@ -1546,7 +1618,8 @@ Date Range: {from_date.strftime('%Y-%m-%d')} to {to_date.strftime('%Y-%m-%d')}""
                 st.session_state.chat_history.append({
                     'role': 'assistant',
                     'content': response,
-                    'metadata': metadata
+                    'metadata': metadata,
+                    'timestamp': resp_ts,
                 })
 
                 # Rerun to update chat display

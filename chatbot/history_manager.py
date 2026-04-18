@@ -5,7 +5,7 @@ History manager for maintaining conversation context.
 import json
 import logging
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Dict, Optional
 from uuid import uuid4
 
@@ -57,7 +57,7 @@ class HistoryManager:
         message = {
             "role": role,
             "content": content,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
         
         if metadata:

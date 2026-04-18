@@ -1,16 +1,18 @@
-venv
+# Virtual environments
+venv/
+.venv/
+env/
 
 # Python bytecode and caches
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
+.Python
 
-# Local env (API keys) — never commit
-.env
-.env.*
-
-# Streamlit secrets (never commit — use local file only)
+# Streamlit secrets
 .streamlit/secrets.toml
+
 
 # Flagged exports (kept on server disk, e.g. EC2; do not commit)
 chatbot/flagged_pairs/*.json
