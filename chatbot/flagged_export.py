@@ -165,12 +165,9 @@ def save_flagged_pair(
     max_rows_sample: int = 50,
 ) -> Path:
     """
-    Write one JSON file under FLAGGED_PAIRS_DIR.
-
-    Returns the path written.
+    Write one JSON file under ``FLAGGED_PAIRS_DIR`` (on EC2 this is on the instance disk;
+    override with env ``FLAGGED_PAIRS_DIR`` if you want e.g. ``/var/lib/mindwealth/flagged_pairs``).
     """
-    FLAGGED_PAIRS_DIR.mkdir(parents=True, exist_ok=True)
-
     payload = build_flagged_payload(
         session_id=session_id,
         notes=notes,
@@ -179,6 +176,8 @@ def save_flagged_pair(
         include_full_tables=include_full_tables,
         max_rows_sample=max_rows_sample,
     )
+
+    FLAGGED_PAIRS_DIR.mkdir(parents=True, exist_ok=True)
 
     date_part = datetime.now().strftime("%Y%m%d")
     short_id = uuid4().hex[:8]

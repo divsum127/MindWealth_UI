@@ -36,7 +36,8 @@ CHATBOT_DATA_DIR = BASE_DIR / os.getenv("CHATBOT_DATA_DIR", "chatbot/data")  # B
 STOCK_DATA_DIR = BASE_DIR / os.getenv("STOCK_DATA_DIR", "trade_store/stock_data")  # Stock data directory
 TRADE_STORE_DIR = BASE_DIR / os.getenv("TRADE_STORE_DIR", "trade_store")  # Trade store directory
 HISTORY_DIR = BASE_DIR / os.getenv("HISTORY_DIR", "chatbot/history")  # Chat history directory
-FLAGGED_PAIRS_DIR = BASE_DIR / os.getenv("FLAGGED_PAIRS_DIR", "chatbot/flagged_pairs")  # Flagged Q/R JSON exports
+# Flagged Q/R JSON exports (absolute path on disk; on EC2, browse this folder via RDP/SSH)
+FLAGGED_PAIRS_DIR = BASE_DIR / os.getenv("FLAGGED_PAIRS_DIR", "chatbot/flagged_pairs")
 
 # Data file names from environment
 ENTRY_CSV_NAME = os.getenv("ENTRY_CSV_NAME", "entry.csv")
@@ -63,6 +64,7 @@ FLAGGED_PAIRS_DIR.mkdir(parents=True, exist_ok=True)
 
 # Max lines of Python logging attached to response metadata per request (flagged JSON export)
 ENGINE_LOG_LINES_CAP = int(os.getenv("ENGINE_LOG_LINES_CAP", "1500"))
+
 
 # Helper function to get API key from Streamlit secrets (DEPRECATED - using Claude now)
 def get_api_key() -> str:

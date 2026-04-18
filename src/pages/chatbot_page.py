@@ -16,7 +16,7 @@ sys.path.insert(0, str(project_root))
 
 from chatbot import ChatbotEngine, SessionManager
 from chatbot.signal_type_selector import SIGNAL_TYPE_DESCRIPTIONS, DEFAULT_SIGNAL_TYPES
-from chatbot.config import MAX_CHATS_DISPLAY, ENGINE_LOG_LINES_CAP
+from chatbot.config import MAX_CHATS_DISPLAY, ENGINE_LOG_LINES_CAP, FLAGGED_PAIRS_DIR
 from chatbot.flagged_export import save_flagged_pair
 from chatbot.agents.intent_classifier import INTENT_LABELS
 
@@ -1379,6 +1379,10 @@ Date Range: {from_date.strftime('%Y-%m-%d')} to {to_date.strftime('%Y-%m-%d')}""
                                 "Engine log lines are only captured for queries run in this session. "
                                 "Older messages still include flow_trace and metadata from the saved session."
                             )
+                            st.caption(
+                                f"Files are written under **`{FLAGGED_PAIRS_DIR.resolve()}`** on this machine "
+                                "(e.g. EC2 disk—open that folder in Remote Desktop or copy via SCP)."
+                            )
                             flag_notes = st.text_area(
                                 "Notes (issue description)",
                                 key=f"flag_notes_{sid}_{idx}",
@@ -1400,7 +1404,7 @@ Date Range: {from_date.strftime('%Y-%m-%d')} to {to_date.strftime('%Y-%m-%d')}""
                                         include_full_tables=flag_full_tables,
                                         max_rows_sample=50,
                                     )
-                                    st.success(f"Saved: {out_path}")
+                                    st.success(f"Saved: `{out_path.resolve()}`")
                                 except Exception as exc:
                                     st.error(f"Could not save: {exc}")
     

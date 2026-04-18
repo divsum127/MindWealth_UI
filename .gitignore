@@ -12,5 +12,5 @@ __pycache__/
 # Streamlit secrets (never commit — use local file only)
 .streamlit/secrets.toml
 
-# Local flagged query/response exports (debug)
-chatbot/flagged_pairs/
+# Flagged exports (kept on server disk, e.g. EC2; do not commit)
+chatbot/flagged_pairs/*.json
