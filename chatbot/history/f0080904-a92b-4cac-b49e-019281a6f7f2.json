@@ -1,16 +1,1495 @@
 {
   "metadata": {
     "session_id": "f0080904-a92b-4cac-b49e-019281a6f7f2",
-    "title": "New Chat",
+    "title": "User Query: show me all the short signals in this...",
     "created_at": "2026-04-16T01:37:37.067953",
-    "last_updated": "2026-04-16T01:37:39.987177",
-    "message_count": 1
+    "last_updated": "2026-04-17T03:31:53.266757",
+    "message_count": 3
   },
   "conversation": [
     {
       "role": "system",
       "content": "You are an expert financial trading analyst assistant for MindWealth. \nYou help users analyze stock market signal data, trading signal data, and provide insights based on historical signal data.\n\nYour capabilities include:\n- Analyzing stock price movements and trends\n- Interpreting trading signals and technical indicators\n- Providing insights on market performance\n- Comparing multiple tickers\n- Identifying patterns and opportunities\n\nIMPORTANT OUTPUT FORMATTING REQUIREMENTS:\n1. ALWAYS use proper Markdown formatting\n2. ALWAYS include spaces between words and punctuation\n3. Use bullet points (- or •) for lists\n4. Use **bold** for emphasis\n5. Use headers (##, ###) to organize sections\n6. Use line breaks between paragraphs\n7. Format numbers with proper spacing: \"245.27 is significantly above the track level (169.28)\"\n8. NEVER concatenate words without spaces\n\nWhen analyzing signal data:\n1. Be precise and signal-data-driven in your analysis\n2. Highlight key trends and patterns\n3. Provide actionable insights when possible\n4. Use technical analysis terminology appropriately\n5. Consider the time period and context of the signal data\n6. Structure your response with clear sections and proper spacing\n\nCRITICAL DATA ACCURACY REQUIREMENTS:\n🚨 FINANCIAL DATA INTEGRITY IS CRITICAL 🚨\n\n**When Signal Data IS Provided:**\n1. The user query will include sections like \"=== SIGNAL DATA CONTEXT ===\" or \"=== ENTRY SIGNALS (JSON) ===\" with actual signal data\n2. If you see JSON with fields like \"signal_type\", \"record_count\", \"data\", etc., then SIGNAL DATA HAS BEEN PROVIDED\n3. Extract and analyze information EXACTLY as it appears in the provided JSON\n4. Use the exact function names, symbols, dates, and prices from the records\n5. Provide thorough analysis based on the signal data provided\n\n**When Signal Data IS NOT Provided:**\n1. If you see ONLY a user question without any \"=== SIGNAL DATA CONTEXT ===\" sections, then NO signal data has been provided\n2. State clearly: \"No signal data has been provided. Please provide the signal data to analyze.\"\n3. NEVER invent, fabricate, or hallucinate function names, symbols, dates, prices, or any metrics\n\n**NEVER DO THIS (Hallucination):**\n- Make up function names like \"HIGH VOLTAGE\", \"RADAR SWEEP\" that don't exist in the provided signal data\n- Invent signal dates or prices not in the signal data\n- Create fake symbols or tickers\n- Fabricate performance metrics or CAGR values\n\n**ALWAYS DO THIS (Accurate):**\n- Check if \"=== SIGNAL DATA CONTEXT ===\" or similar sections exist in the message\n- If signal data exists, extract information from the records in the JSON\n- If signal data doesn't exist, clearly state that no signal data was provided\n- Use EXACT values from the provided signal data fields\n\nCRITICAL: Always format your response in clean, readable Markdown with proper spacing.\nBase your responses STRICTLY on actual signal data provided in the message context.\n",
       "timestamp": "2026-04-16T01:37:39.987164"
+    },
+    {
+      "role": "user",
+      "content": "User Query: show me all the short signals in this timeframe\n\n=== COLUMN SELECTION BY SIGNAL TYPE ===\n\nENTRY:\n  Columns: Function, Symbol, Signal, Signal Date/Price[$], SignalType\n  Reasoning: Need to list short-side entry signals and identify them as short via SignalType, along with the core function and symbol/date/price fields.\n\nEXIT:\n  Columns: Function, Symbol, Signal, Signal Date/Price[$], Exit Signal Date/Price[$], SignalType\n  Reasoning: Need to list short-side signals that have exited within the timeframe; include exit date/price plus SignalType to filter for shorts.\n\nPORTFOLIO_TARGET_ACHIEVED:\n  Columns: Function, Symbol, Signal, Signal Date/Price[$], Target for which Price has achieved over 90 percent of gain %, SignalType\n  Reasoning: Need to list short-side portfolio positions where targets were achieved; include the achieved-target descriptor and SignalType to filter for shorts.\n\n=== SIGNAL DATA CONTEXT ===\n\n=== ENTRY SIGNALS (JSON) ===\n{\n  \"signal_type\": \"entry\",\n  \"record_count\": 35,\n  \"columns_selected\": [\n    \"Function\",\n    \"Symbol, Signal, Signal Date/Price[$]\",\n    \"SignalType\"\n  ],\n  \"reasoning\": \"Need to list short-side entry signals and identify them as short via SignalType, along with the core function and symbol/date/price fields.\",\n  \"data\": [\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AVGO, Short, 2026-04-14 (Price: 380.78)\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"SOXX, Short, 2026-04-14 (Price: 401.24)\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"CNR.TO, Short, 2026-04-13 (Price: 152.89)\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"CNR.TO, Short, 2026-04-13 (Price: 152.89)\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"MX.TO, Short, 2026-04-12 (Price: 82.76)\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"TRI.TO, Short, 2026-04-10 (Price: 115.28)\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"MX.TO, Short, 2026-04-10 (Price: 82.76)\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"TRI.TO, Short, 2026-04-10 (Price: 115.28)\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"TRI.TO, Short, 2026-04-10 (Price: 115.28)\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"MX.TO, Short, 2026-04-10 (Price: 82.76)\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"TRI.TO, Short, 2026-04-10 (Price: 115.28)\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"MX.TO, Short, 2026-04-10 (Price: 82.76)\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"TRI.TO, Short, 2026-04-10 (Price: 115.28)\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"ORCL, Short, 2026-04-08 (Price: 143.66)\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"ORCL, Short, 2026-04-08 (Price: 143.66)\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"ORCL, Short, 2026-04-08 (Price: 143.66)\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"ORCL, Short, 2026-04-08 (Price: 143.66)\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"ORCL, Short, 2026-04-08 (Price: 143.66)\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"IMO.TO, Short, 2026-04-05 (Price: 181.66)\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"IMO.TO, Short, 2026-04-05 (Price: 181.66)\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"IMO.TO, Short, 2026-04-05 (Price: 181.66)\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"IMO.TO, Short, 2026-04-05 (Price: 181.66)\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"IMO.TO, Short, 2026-04-05 (Price: 181.66)\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"IMO.TO, Short, 2026-04-05 (Price: 181.66)\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"IMO.TO, Short, 2026-04-05 (Price: 181.66)\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"^STI, Short, 2026-04-03 (Price: 4947.5)\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"IMO.TO, Short, 2026-04-03 (Price: 181.66)\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"GDX, Short, 2026-04-03 (Price: 94.59)\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"000660.KS, Short, 2026-04-03 (Price: 876000.0)\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"000660.KS, Short, 2026-04-03 (Price: 876000.0)\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"IMO.TO, Short, 2026-04-03 (Price: 181.66)\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"GDX, Short, 2026-04-03 (Price: 94.59)\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"005930.KS, Short, 2026-04-02 (Price: 178400.0)\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"000660.KS, Short, 2026-04-02 (Price: 830000.0)\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"GDX, Short, 2026-04-02 (Price: 94.59)\",\n      \"SignalType\": \"entry\"\n    }\n  ]\n}\n\n=== EXIT SIGNALS (JSON) ===\n{\n  \"signal_type\": \"exit\",\n  \"record_count\": 36,\n  \"columns_selected\": [\n    \"Function\",\n    \"Symbol, Signal, Signal Date/Price[$]\",\n    \"Exit Signal Date/Price[$]\",\n    \"SignalType\"\n  ],\n  \"reasoning\": \"Need to list short-side signals that have exited within the timeframe; include exit date/price plus SignalType to filter for shorts.\",\n  \"data\": [\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"NFLX, Short, 2025-12-31 (Price: 93.76)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-14 (Price: 106.28)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"3033.HK, Short, 2026-03-01 (Price: 5.03)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-14 (Price: 4.75)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"SPOT, Short, 2026-03-20 (Price: 474.54)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-14 (Price: 511.36)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"WPM, Short, 2026-03-31 (Price: 131.01)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-14 (Price: 147.69)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"SFTBY, Short, 2026-03-31 (Price: 12.09)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-14 (Price: 13.93)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"GOOG, Short, 2026-03-31 (Price: 286.86)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-14 (Price: 330.58)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"MX.TO, Short, 2026-04-12 (Price: 82.76)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-14 (Price: 78.5)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"ORCL, Short, 2026-04-08 (Price: 143.66)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-13 (Price: 155.62)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"ORCL, Short, 2026-03-30 (Price: 138.8)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-13 (Price: 155.62)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"ORCL, Short, 2026-04-08 (Price: 143.66)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-13 (Price: 155.62)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"NFLX, Short, 2025-12-31 (Price: 93.76)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-13 (Price: 103.16)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"3033.HK, Short, 2026-03-01 (Price: 5.03)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-13 (Price: 4.724)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"ORCL, Short, 2026-03-30 (Price: 138.8)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-13 (Price: 155.62)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"000660.KS, Short, 2026-03-31 (Price: 807000.0)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-13 (Price: 1040000.0)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"GOOG, Short, 2026-03-31 (Price: 286.86)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-13 (Price: 319.21)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"WPM, Short, 2026-03-31 (Price: 131.01)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-13 (Price: 144.83)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"INDY, Short, 2026-03-15 (Price: 43.16)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-12 (Price: 44.18)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"INDY, Short, 2026-03-29 (Price: 41.24)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-12 (Price: 44.18)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"INDY, Short, 2026-03-29 (Price: 41.24)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-12 (Price: 44.18)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"INDY, Short, 2026-03-15 (Price: 43.16)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-12 (Price: 44.18)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"000660.KS, Short, 2026-03-31 (Price: 807000.0)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-10 (Price: 1027000.0)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"000660.KS, Short, 2026-03-31 (Price: 807000.0)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-10 (Price: 1027000.0)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"GOOG, Short, 2026-03-31 (Price: 286.86)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-10 (Price: 315.72)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"WPM, Short, 2026-03-31 (Price: 131.01)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-10 (Price: 144.84)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"WPM, Short, 2026-03-31 (Price: 131.01)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-10 (Price: 144.84)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"GOOG, Short, 2026-03-31 (Price: 286.86)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-10 (Price: 315.72)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"WPM, Short, 2026-03-31 (Price: 131.01)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-10 (Price: 144.84)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"000660.KS, Short, 2026-03-31 (Price: 807000.0)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-10 (Price: 1027000.0)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"GOOG, Short, 2026-03-31 (Price: 286.86)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-10 (Price: 315.72)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"000660.KS, Short, 2026-03-31 (Price: 807000.0)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-09 (Price: 998000.0)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"GOOG, Short, 2026-03-31 (Price: 286.86)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-09 (Price: 316.37)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"INDY, Short, 2026-03-15 (Price: 43.16)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-09 (Price: 44.36)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"INDY, Short, 2026-03-29 (Price: 41.24)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-09 (Price: 44.36)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"000660.KS, Short, 2026-03-31 (Price: 807000.0)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-09 (Price: 1009000.0)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"000660.KS, Short, 2026-03-31 (Price: 807000.0)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-08 (Price: 1033000.0)\",\n      \"SignalType\": \"exit\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"000660.KS, Short, 2026-03-31 (Price: 807000.0)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-08 (Price: 1033000.0)\",\n      \"SignalType\": \"exit\"\n    }\n  ]\n}\n\n=== PORTFOLIO_TARGET_ACHIEVED SIGNALS (JSON) ===\n{\n  \"signal_type\": \"portfolio_target_achieved\",\n  \"record_count\": 19,\n  \"columns_selected\": [\n    \"Function\",\n    \"Symbol, Signal, Signal Date/Price[$]\",\n    \"Target for which Price has achieved over 90 percent of gain %\",\n    \"SignalType\"\n  ],\n  \"reasoning\": \"Need to list short-side portfolio positions where targets were achieved; include the achieved-target descriptor and SignalType to filter for shorts.\",\n  \"data\": [\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"SOXX, Short, 2026-04-14 (Price: 401.24)\",\n      \"Target for which Price has achieved over 90 percent of gain %\": \"No Price Target\",\n      \"SignalType\": \"portfolio_target_achieved\"\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"CNR.TO, Short, 2026-04-13 (Price: 152.89)\",\n      \"Target for which Price has achieved over 90 percent of gain %\": \"No Price Target\",\n      \"SignalType\": \"portfolio_target_achieved\"\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"CNR.TO, Short, 2026-04-13 (Price: 152.89)\",\n      \"Target for which Price has achieved over 90 percent of gain %\": \"No Price Target\",\n      \"SignalType\": \"portfolio_target_achieved\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"ORCL, Short, 2026-03-30 (Price: 138.8)\",\n      \"Target for which Price has achieved over 90 percent of gain %\": \"No Price Target\",\n      \"SignalType\": \"portfolio_target_achieved\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"ORCL, Short, 2026-03-30 (Price: 138.8)\",\n      \"Target for which Price has achieved over 90 percent of gain %\": \"No Price Target\",\n      \"SignalType\": \"portfolio_target_achieved\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"ORCL, Short, 2026-03-30 (Price: 138.8)\",\n      \"Target for which Price has achieved over 90 percent of gain %\": \"No Price Target\",\n      \"SignalType\": \"portfolio_target_achieved\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"SPOT, Short, 2026-03-20 (Price: 474.54)\",\n      \"Target for which Price has achieved over 90 percent of gain %\": \"No Price Target\",\n      \"SignalType\": \"portfolio_target_achieved\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"ORCL, Short, 2026-03-30 (Price: 138.8)\",\n      \"Target for which Price has achieved over 90 percent of gain %\": \"No Price Target\",\n      \"SignalType\": \"portfolio_target_achieved\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"SPOT, Short, 2026-03-20 (Price: 474.54)\",\n      \"Target for which Price has achieved over 90 percent of gain %\": \"No Price Target\",\n      \"SignalType\": \"portfolio_target_achieved\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"ORCL, Short, 2026-03-30 (Price: 138.8)\",\n      \"Target for which Price has achieved over 90 percent of gain %\": \"No Price Target\",\n      \"SignalType\": \"portfolio_target_achieved\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"SPOT, Short, 2026-03-20 (Price: 474.54)\",\n      \"Target for which Price has achieved over 90 percent of gain %\": \"No Price Target\",\n      \"SignalType\": \"portfolio_target_achieved\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"ORCL, Short, 2026-03-30 (Price: 138.8)\",\n      \"Target for which Price has achieved over 90 percent of gain %\": \"No Price Target\",\n      \"SignalType\": \"portfolio_target_achieved\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"SPOT, Short, 2026-03-20 (Price: 474.54)\",\n      \"Target for which Price has achieved over 90 percent of gain %\": \"No Price Target\",\n      \"SignalType\": \"portfolio_target_achieved\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"ORCL, Short, 2026-03-30 (Price: 138.8)\",\n      \"Target for which Price has achieved over 90 percent of gain %\": \"No Price Target\",\n      \"SignalType\": \"portfolio_target_achieved\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"SPOT, Short, 2026-03-20 (Price: 474.54)\",\n      \"Target for which Price has achieved over 90 percent of gain %\": \"No Price Target\",\n      \"SignalType\": \"portfolio_target_achieved\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"ORCL, Short, 2026-03-30 (Price: 138.8)\",\n      \"Target for which Price has achieved over 90 percent of gain %\": \"No Price Target\",\n      \"SignalType\": \"portfolio_target_achieved\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"SPOT, Short, 2026-03-20 (Price: 474.54)\",\n      \"Target for which Price has achieved over 90 percent of gain %\": \"No Price Target\",\n      \"SignalType\": \"portfolio_target_achieved\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"ORCL, Short, 2026-03-30 (Price: 138.8)\",\n      \"Target for which Price has achieved over 90 percent of gain %\": \"No Price Target\",\n      \"SignalType\": \"portfolio_target_achieved\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"SPOT, Short, 2026-03-20 (Price: 474.54)\",\n      \"Target for which Price has achieved over 90 percent of gain %\": \"No Price Target\",\n      \"SignalType\": \"portfolio_target_achieved\"\n    }\n  ]\n}",
+      "timestamp": "2026-04-17T03:31:25.852719",
+      "metadata": {
+        "input_type": "smart_query",
+        "selected_signal_types": [
+          "entry",
+          "exit",
+          "portfolio_target_achieved"
+        ],
+        "position_side": "short",
+        "assets": null,
+        "functions": null,
+        "from_date": "2026-04-02",
+        "to_date": "2026-04-17",
+        "columns_by_signal_type": {
+          "entry": [
+            "Function",
+            "Symbol, Signal, Signal Date/Price[$]",
+            "SignalType"
+          ],
+          "exit": [
+            "Function",
+            "Symbol, Signal, Signal Date/Price[$]",
+            "Exit Signal Date/Price[$]",
+            "SignalType"
+          ],
+          "portfolio_target_achieved": [
+            "Function",
+            "Symbol, Signal, Signal Date/Price[$]",
+            "Target for which Price has achieved over 90 percent of gain %",
+            "SignalType"
+          ]
+        },
+        "reasoning_by_signal_type": {
+          "entry": "Need to list short-side entry signals and identify them as short via SignalType, along with the core function and symbol/date/price fields.",
+          "exit": "Need to list short-side signals that have exited within the timeframe; include exit date/price plus SignalType to filter for shorts.",
+          "portfolio_target_achieved": "Need to list short-side portfolio positions where targets were achieved; include the achieved-target descriptor and SignalType to filter for shorts."
+        },
+        "rows_fetched": 90,
+        "signal_types_with_data": [
+          "entry",
+          "exit",
+          "portfolio_target_achieved"
+        ],
+        "signal_type_reasoning": "User asked for all short signals within a timeframe; short signals can exist as open ideas (entry), completed trades (exit), or portfolio positions where targets were achieved (portfolio_target_achieved).",
+        "display_prompt": "show me all the short signals in this timeframe"
+      }
+    },
+    {
+      "role": "assistant",
+      "content": "# Short Signals Analysis\n\nBased on the provided signal data, here's a comprehensive breakdown of all short signals in this timeframe:\n\n---\n\n## 📊 Summary Statistics\n\n- **Total Entry Signals**: 35 short positions initiated\n- **Total Exit Signals**: 36 short positions closed\n- **Portfolio Targets Achieved**: 19 positions (all showing \"No Price Target\")\n- **Date Range**: April 2-14, 2026 (with some exits from positions opened earlier)\n\n---\n\n## 🔴 Entry Signals (35 Total)\n\n### By Function:\n\n**DELTADRIFT (17 signals)**\n- **AVGO**: Short on 2026-04-14 at $380.78\n- **SOXX**: Short on 2026-04-14 at $401.24\n- **CNR.TO**: Short on 2026-04-13 at $152.89 (2 entries)\n- **MX.TO**: Short on 2026-04-10 and 2026-04-12 at $82.76 (5 total entries)\n- **IMO.TO**: Short on 2026-04-03 and 2026-04-05 at $181.66 (9 total entries)\n\n**TRENDPULSE (8 signals)**\n- **TRI.TO**: Short on 2026-04-10 at $115.28 (5 entries)\n- **ORCL**: Short on 2026-04-08 at $143.66 (5 entries)\n\n**FRACTAL TRACK (10 signals)**\n- **^STI**: Short on 2026-04-03 at $4,947.50\n- **GDX**: Short on 2026-04-02 and 2026-04-03 at $94.59 (3 entries)\n- **000660.KS**: Short on 2026-04-02 at $830,000 and 2026-04-03 at $876,000 (3 entries)\n- **005930.KS**: Short on 2026-04-02 at $178,400\n\n---\n\n## 🟢 Exit Signals (36 Total)\n\n### Profitable Exits (Shorts that gained):\n\n**DELTADRIFT**\n- **MX.TO**: Entered 2026-04-12 at $82.76 → Exited 2026-04-14 at $78.50 (**+5.1% gain**)\n\n**TRENDPULSE**\n- **3033.HK**: Entered 2026-03-01 at $5.03 → Exited 2026-04-14 at $4.75 (**+5.6% gain**)\n- **INDY**: Multiple exits showing gains (entered $41.24-$43.16, exited $44.18-$44.36)\n\n### Losing Exits (Shorts that lost):\n\n**FRACTAL TRACK**\n- **NFLX**: Entered 2025-12-31 at $93.76 → Exited 2026-04-14 at $106.28 (**-13.4% loss**)\n- **WPM**: Entered 2026-03-31 at $131.01 → Exited 2026-04-14 at $147.69 (**-12.7% loss**)\n- **GOOG**: Entered 2026-03-31 at $286.86 → Exited 2026-04-14 at $330.58 (**-15.2% loss**)\n- **SFTBY**: Entered 2026-03-31 at $12.09 → Exited 2026-04-14 at $13.93 (**-15.2% loss**)\n- **000660.KS**: Entered 2026-03-31 at $807,000 → Exited 2026-04-13 at $1,040,000 (**-28.9% loss**)\n\n**TRENDPULSE**\n- **SPOT**: Entered 2026-03-20 at $474.54 → Exited 2026-04-14 at $511.36 (**-7.8% loss**)\n- **ORCL**: Entered 2026-03-30 at $138.80 → Exited 2026-04-13 at $155.62 (**-12.1% loss**)\n\n---\n\n## 🎯 Key Observations\n\n### Most Active Symbols:\n1. **IMO.TO** - 9 DELTADRIFT entry signals\n2. **ORCL** - 5 TRENDPULSE entry signals  \n3. **TRI.TO** - 5 TRENDPULSE entry signals\n4. **MX.TO** - 5 DELTADRIFT entry signals\n\n### Function Performance Patterns:\n- **DELTADRIFT**: Mixed results; MX.TO showed profit, but many positions still open\n- **TRENDPULSE**: Several losing exits on ORCL and SPOT\n- **FRACTAL TRACK**: Multiple significant losses on tech stocks (GOOG, NFLX) and Korean equities (000660.KS)\n\n### Geographic Distribution:\n- **Canadian (.TO)**: CNR.TO, MX.TO, IMO.TO, TRI.TO\n- **US Equities**: AVGO, SOXX, ORCL, NFLX, SPOT, GOOG, WPM, GDX\n- **Asian Markets**: 3033.HK, 000660.KS, 005930.KS, ^STI\n\n---\n\n## ⚠️ Risk Considerations\n\nThe exit data shows several concerning trends:\n- Large losses on Korean semiconductor stocks (000660.KS with -28.9%)\n- Technology shorts experiencing significant adverse moves (GOOG -15.2%, NFLX -13.4%)\n- Multiple FRACTAL TRACK exits showing losses, suggesting potential trend reversals\n\nThe high concentration of entries in IMO.TO, ORCL, and TRI.TO may indicate position sizing risks if these positions move adversely.",
+      "timestamp": "2026-04-17T03:31:53.266729",
+      "metadata": {
+        "input_type": "smart_followup",
+        "selected_signal_types": [
+          "entry",
+          "exit",
+          "portfolio_target_achieved"
+        ],
+        "position_side": "short",
+        "assets": null,
+        "functions": null,
+        "from_date": "2026-04-02",
+        "to_date": "2026-04-17",
+        "columns_by_signal_type": {
+          "entry": [
+            "Function",
+            "Symbol, Signal, Signal Date/Price[$]",
+            "SignalType"
+          ],
+          "exit": [
+            "Function",
+            "Symbol, Signal, Signal Date/Price[$]",
+            "Exit Signal Date/Price[$]",
+            "SignalType"
+          ],
+          "portfolio_target_achieved": [
+            "Function",
+            "Symbol, Signal, Signal Date/Price[$]",
+            "Target for which Price has achieved over 90 percent of gain %",
+            "SignalType"
+          ]
+        },
+        "reasoning_by_signal_type": {
+          "entry": "Need to list short-side entry signals and identify them as short via SignalType, along with the core function and symbol/date/price fields.",
+          "exit": "Need to list short-side signals that have exited within the timeframe; include exit date/price plus SignalType to filter for shorts.",
+          "portfolio_target_achieved": "Need to list short-side portfolio positions where targets were achieved; include the achieved-target descriptor and SignalType to filter for shorts."
+        },
+        "rows_fetched": 90,
+        "signal_types_with_data": [
+          "entry",
+          "exit",
+          "portfolio_target_achieved"
+        ],
+        "signal_type_reasoning": "User asked for all short signals within a timeframe; short signals can exist as open ideas (entry), completed trades (exit), or portfolio positions where targets were achieved (portfolio_target_achieved).",
+        "model": "claude-sonnet-4-5-20250929",
+        "tokens_used": {
+          "prompt": 8778,
+          "completion": 1496,
+          "total": 10274
+        },
+        "finish_reason": "end_turn",
+        "batch_processing_used": true,
+        "batch_count": 1,
+        "batch_mode": "single",
+        "input_truncated": false,
+        "history_trimmed_count": 0,
+        "full_signal_tables": {
+          "entry": [
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "AVGO, Short, 2026-04-14 (Price: 380.78)",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "SOXX, Short, 2026-04-14 (Price: 401.24)",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "CNR.TO, Short, 2026-04-13 (Price: 152.89)",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "CNR.TO, Short, 2026-04-13 (Price: 152.89)",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "MX.TO, Short, 2026-04-12 (Price: 82.76)",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "TRI.TO, Short, 2026-04-10 (Price: 115.28)",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "MX.TO, Short, 2026-04-10 (Price: 82.76)",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "TRI.TO, Short, 2026-04-10 (Price: 115.28)",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "TRI.TO, Short, 2026-04-10 (Price: 115.28)",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "MX.TO, Short, 2026-04-10 (Price: 82.76)",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "TRI.TO, Short, 2026-04-10 (Price: 115.28)",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "MX.TO, Short, 2026-04-10 (Price: 82.76)",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "TRI.TO, Short, 2026-04-10 (Price: 115.28)",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "ORCL, Short, 2026-04-08 (Price: 143.66)",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "ORCL, Short, 2026-04-08 (Price: 143.66)",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "ORCL, Short, 2026-04-08 (Price: 143.66)",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "ORCL, Short, 2026-04-08 (Price: 143.66)",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "ORCL, Short, 2026-04-08 (Price: 143.66)",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "IMO.TO, Short, 2026-04-05 (Price: 181.66)",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "IMO.TO, Short, 2026-04-05 (Price: 181.66)",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "IMO.TO, Short, 2026-04-05 (Price: 181.66)",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "IMO.TO, Short, 2026-04-05 (Price: 181.66)",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "IMO.TO, Short, 2026-04-05 (Price: 181.66)",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "IMO.TO, Short, 2026-04-05 (Price: 181.66)",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "IMO.TO, Short, 2026-04-05 (Price: 181.66)",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "^STI, Short, 2026-04-03 (Price: 4947.5)",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "IMO.TO, Short, 2026-04-03 (Price: 181.66)",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "GDX, Short, 2026-04-03 (Price: 94.59)",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "000660.KS, Short, 2026-04-03 (Price: 876000.0)",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "000660.KS, Short, 2026-04-03 (Price: 876000.0)",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "IMO.TO, Short, 2026-04-03 (Price: 181.66)",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "GDX, Short, 2026-04-03 (Price: 94.59)",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "005930.KS, Short, 2026-04-02 (Price: 178400.0)",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "000660.KS, Short, 2026-04-02 (Price: 830000.0)",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "GDX, Short, 2026-04-02 (Price: 94.59)",
+              "SignalType": "entry"
+            }
+          ],
+          "exit": [
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "NFLX, Short, 2025-12-31 (Price: 93.76)",
+              "Exit Signal Date/Price[$]": "2026-04-14 (Price: 106.28)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "3033.HK, Short, 2026-03-01 (Price: 5.03)",
+              "Exit Signal Date/Price[$]": "2026-04-14 (Price: 4.75)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "SPOT, Short, 2026-03-20 (Price: 474.54)",
+              "Exit Signal Date/Price[$]": "2026-04-14 (Price: 511.36)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "WPM, Short, 2026-03-31 (Price: 131.01)",
+              "Exit Signal Date/Price[$]": "2026-04-14 (Price: 147.69)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "SFTBY, Short, 2026-03-31 (Price: 12.09)",
+              "Exit Signal Date/Price[$]": "2026-04-14 (Price: 13.93)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "GOOG, Short, 2026-03-31 (Price: 286.86)",
+              "Exit Signal Date/Price[$]": "2026-04-14 (Price: 330.58)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "MX.TO, Short, 2026-04-12 (Price: 82.76)",
+              "Exit Signal Date/Price[$]": "2026-04-14 (Price: 78.5)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "ORCL, Short, 2026-04-08 (Price: 143.66)",
+              "Exit Signal Date/Price[$]": "2026-04-13 (Price: 155.62)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "ORCL, Short, 2026-03-30 (Price: 138.8)",
+              "Exit Signal Date/Price[$]": "2026-04-13 (Price: 155.62)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "ORCL, Short, 2026-04-08 (Price: 143.66)",
+              "Exit Signal Date/Price[$]": "2026-04-13 (Price: 155.62)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "NFLX, Short, 2025-12-31 (Price: 93.76)",
+              "Exit Signal Date/Price[$]": "2026-04-13 (Price: 103.16)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "3033.HK, Short, 2026-03-01 (Price: 5.03)",
+              "Exit Signal Date/Price[$]": "2026-04-13 (Price: 4.724)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "ORCL, Short, 2026-03-30 (Price: 138.8)",
+              "Exit Signal Date/Price[$]": "2026-04-13 (Price: 155.62)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "000660.KS, Short, 2026-03-31 (Price: 807000.0)",
+              "Exit Signal Date/Price[$]": "2026-04-13 (Price: 1040000.0)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "GOOG, Short, 2026-03-31 (Price: 286.86)",
+              "Exit Signal Date/Price[$]": "2026-04-13 (Price: 319.21)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "WPM, Short, 2026-03-31 (Price: 131.01)",
+              "Exit Signal Date/Price[$]": "2026-04-13 (Price: 144.83)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "INDY, Short, 2026-03-15 (Price: 43.16)",
+              "Exit Signal Date/Price[$]": "2026-04-12 (Price: 44.18)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "INDY, Short, 2026-03-29 (Price: 41.24)",
+              "Exit Signal Date/Price[$]": "2026-04-12 (Price: 44.18)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "INDY, Short, 2026-03-29 (Price: 41.24)",
+              "Exit Signal Date/Price[$]": "2026-04-12 (Price: 44.18)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "INDY, Short, 2026-03-15 (Price: 43.16)",
+              "Exit Signal Date/Price[$]": "2026-04-12 (Price: 44.18)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "000660.KS, Short, 2026-03-31 (Price: 807000.0)",
+              "Exit Signal Date/Price[$]": "2026-04-10 (Price: 1027000.0)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "000660.KS, Short, 2026-03-31 (Price: 807000.0)",
+              "Exit Signal Date/Price[$]": "2026-04-10 (Price: 1027000.0)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "GOOG, Short, 2026-03-31 (Price: 286.86)",
+              "Exit Signal Date/Price[$]": "2026-04-10 (Price: 315.72)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "WPM, Short, 2026-03-31 (Price: 131.01)",
+              "Exit Signal Date/Price[$]": "2026-04-10 (Price: 144.84)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "WPM, Short, 2026-03-31 (Price: 131.01)",
+              "Exit Signal Date/Price[$]": "2026-04-10 (Price: 144.84)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "GOOG, Short, 2026-03-31 (Price: 286.86)",
+              "Exit Signal Date/Price[$]": "2026-04-10 (Price: 315.72)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "WPM, Short, 2026-03-31 (Price: 131.01)",
+              "Exit Signal Date/Price[$]": "2026-04-10 (Price: 144.84)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "000660.KS, Short, 2026-03-31 (Price: 807000.0)",
+              "Exit Signal Date/Price[$]": "2026-04-10 (Price: 1027000.0)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "GOOG, Short, 2026-03-31 (Price: 286.86)",
+              "Exit Signal Date/Price[$]": "2026-04-10 (Price: 315.72)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "000660.KS, Short, 2026-03-31 (Price: 807000.0)",
+              "Exit Signal Date/Price[$]": "2026-04-09 (Price: 998000.0)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "GOOG, Short, 2026-03-31 (Price: 286.86)",
+              "Exit Signal Date/Price[$]": "2026-04-09 (Price: 316.37)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "INDY, Short, 2026-03-15 (Price: 43.16)",
+              "Exit Signal Date/Price[$]": "2026-04-09 (Price: 44.36)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "INDY, Short, 2026-03-29 (Price: 41.24)",
+              "Exit Signal Date/Price[$]": "2026-04-09 (Price: 44.36)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "000660.KS, Short, 2026-03-31 (Price: 807000.0)",
+              "Exit Signal Date/Price[$]": "2026-04-09 (Price: 1009000.0)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "000660.KS, Short, 2026-03-31 (Price: 807000.0)",
+              "Exit Signal Date/Price[$]": "2026-04-08 (Price: 1033000.0)",
+              "SignalType": "exit"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "000660.KS, Short, 2026-03-31 (Price: 807000.0)",
+              "Exit Signal Date/Price[$]": "2026-04-08 (Price: 1033000.0)",
+              "SignalType": "exit"
+            }
+          ],
+          "portfolio_target_achieved": [
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "SOXX, Short, 2026-04-14 (Price: 401.24)",
+              "Target for which Price has achieved over 90 percent of gain %": "No Price Target",
+              "SignalType": "portfolio_target_achieved"
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "CNR.TO, Short, 2026-04-13 (Price: 152.89)",
+              "Target for which Price has achieved over 90 percent of gain %": "No Price Target",
+              "SignalType": "portfolio_target_achieved"
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "CNR.TO, Short, 2026-04-13 (Price: 152.89)",
+              "Target for which Price has achieved over 90 percent of gain %": "No Price Target",
+              "SignalType": "portfolio_target_achieved"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "ORCL, Short, 2026-03-30 (Price: 138.8)",
+              "Target for which Price has achieved over 90 percent of gain %": "No Price Target",
+              "SignalType": "portfolio_target_achieved"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "ORCL, Short, 2026-03-30 (Price: 138.8)",
+              "Target for which Price has achieved over 90 percent of gain %": "No Price Target",
+              "SignalType": "portfolio_target_achieved"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "ORCL, Short, 2026-03-30 (Price: 138.8)",
+              "Target for which Price has achieved over 90 percent of gain %": "No Price Target",
+              "SignalType": "portfolio_target_achieved"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "SPOT, Short, 2026-03-20 (Price: 474.54)",
+              "Target for which Price has achieved over 90 percent of gain %": "No Price Target",
+              "SignalType": "portfolio_target_achieved"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "ORCL, Short, 2026-03-30 (Price: 138.8)",
+              "Target for which Price has achieved over 90 percent of gain %": "No Price Target",
+              "SignalType": "portfolio_target_achieved"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "SPOT, Short, 2026-03-20 (Price: 474.54)",
+              "Target for which Price has achieved over 90 percent of gain %": "No Price Target",
+              "SignalType": "portfolio_target_achieved"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "ORCL, Short, 2026-03-30 (Price: 138.8)",
+              "Target for which Price has achieved over 90 percent of gain %": "No Price Target",
+              "SignalType": "portfolio_target_achieved"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "SPOT, Short, 2026-03-20 (Price: 474.54)",
+              "Target for which Price has achieved over 90 percent of gain %": "No Price Target",
+              "SignalType": "portfolio_target_achieved"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "ORCL, Short, 2026-03-30 (Price: 138.8)",
+              "Target for which Price has achieved over 90 percent of gain %": "No Price Target",
+              "SignalType": "portfolio_target_achieved"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "SPOT, Short, 2026-03-20 (Price: 474.54)",
+              "Target for which Price has achieved over 90 percent of gain %": "No Price Target",
+              "SignalType": "portfolio_target_achieved"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "ORCL, Short, 2026-03-30 (Price: 138.8)",
+              "Target for which Price has achieved over 90 percent of gain %": "No Price Target",
+              "SignalType": "portfolio_target_achieved"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "SPOT, Short, 2026-03-20 (Price: 474.54)",
+              "Target for which Price has achieved over 90 percent of gain %": "No Price Target",
+              "SignalType": "portfolio_target_achieved"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "ORCL, Short, 2026-03-30 (Price: 138.8)",
+              "Target for which Price has achieved over 90 percent of gain %": "No Price Target",
+              "SignalType": "portfolio_target_achieved"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "SPOT, Short, 2026-03-20 (Price: 474.54)",
+              "Target for which Price has achieved over 90 percent of gain %": "No Price Target",
+              "SignalType": "portfolio_target_achieved"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "ORCL, Short, 2026-03-30 (Price: 138.8)",
+              "Target for which Price has achieved over 90 percent of gain %": "No Price Target",
+              "SignalType": "portfolio_target_achieved"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "SPOT, Short, 2026-03-20 (Price: 474.54)",
+              "Target for which Price has achieved over 90 percent of gain %": "No Price Target",
+              "SignalType": "portfolio_target_achieved"
+            }
+          ]
+        },
+        "signals_table": [
+          {
+            "Symbol": "AVGO",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-14",
+            "Price": "$380.78",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "SOXX",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-14",
+            "Price": "$401.24",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "CNR.TO",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-13",
+            "Price": "$152.89",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "CNR.TO",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-13",
+            "Price": "$152.89",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "MX.TO",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-12",
+            "Price": "$82.76",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "TRI.TO",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-10",
+            "Price": "$115.28",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "MX.TO",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-10",
+            "Price": "$82.76",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "TRI.TO",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-10",
+            "Price": "$115.28",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "TRI.TO",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-10",
+            "Price": "$115.28",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "MX.TO",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-10",
+            "Price": "$82.76",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "TRI.TO",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-10",
+            "Price": "$115.28",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "MX.TO",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-10",
+            "Price": "$82.76",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "TRI.TO",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-10",
+            "Price": "$115.28",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "ORCL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-08",
+            "Price": "$143.66",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "ORCL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-08",
+            "Price": "$143.66",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "ORCL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-08",
+            "Price": "$143.66",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "ORCL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-08",
+            "Price": "$143.66",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "ORCL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-08",
+            "Price": "$143.66",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "IMO.TO",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-05",
+            "Price": "$181.66",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "IMO.TO",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-05",
+            "Price": "$181.66",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "IMO.TO",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-05",
+            "Price": "$181.66",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "IMO.TO",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-05",
+            "Price": "$181.66",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "IMO.TO",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-05",
+            "Price": "$181.66",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "IMO.TO",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-05",
+            "Price": "$181.66",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "IMO.TO",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-05",
+            "Price": "$181.66",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "^STI",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-03",
+            "Price": "$4947.5",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "IMO.TO",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-03",
+            "Price": "$181.66",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "GDX",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-03",
+            "Price": "$94.59",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "000660.KS",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-03",
+            "Price": "$876000.0",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "000660.KS",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-03",
+            "Price": "$876000.0",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "IMO.TO",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-03",
+            "Price": "$181.66",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "GDX",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-03",
+            "Price": "$94.59",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "005930.KS",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-02",
+            "Price": "$178400.0",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "000660.KS",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-02",
+            "Price": "$830000.0",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "GDX",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-02",
+            "Price": "$94.59",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "NFLX",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2025-12-31",
+            "Price": "$93.76",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "3033.HK",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-01",
+            "Price": "$5.03",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "SPOT",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-20",
+            "Price": "$474.54",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "WPM",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-31",
+            "Price": "$131.01",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "SFTBY",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-31",
+            "Price": "$12.09",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "GOOG",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-31",
+            "Price": "$286.86",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "MX.TO",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-12",
+            "Price": "$82.76",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "ORCL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-08",
+            "Price": "$143.66",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "ORCL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-30",
+            "Price": "$138.8",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "ORCL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-08",
+            "Price": "$143.66",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "NFLX",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2025-12-31",
+            "Price": "$93.76",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "3033.HK",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-01",
+            "Price": "$5.03",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "ORCL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-30",
+            "Price": "$138.8",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "000660.KS",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-31",
+            "Price": "$807000.0",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "GOOG",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-31",
+            "Price": "$286.86",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "WPM",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-31",
+            "Price": "$131.01",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "INDY",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-15",
+            "Price": "$43.16",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "INDY",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-29",
+            "Price": "$41.24",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "INDY",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-29",
+            "Price": "$41.24",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "INDY",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-15",
+            "Price": "$43.16",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "000660.KS",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-31",
+            "Price": "$807000.0",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "000660.KS",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-31",
+            "Price": "$807000.0",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "GOOG",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-31",
+            "Price": "$286.86",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "WPM",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-31",
+            "Price": "$131.01",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "WPM",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-31",
+            "Price": "$131.01",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "GOOG",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-31",
+            "Price": "$286.86",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "WPM",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-31",
+            "Price": "$131.01",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "000660.KS",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-31",
+            "Price": "$807000.0",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "GOOG",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-31",
+            "Price": "$286.86",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "000660.KS",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-31",
+            "Price": "$807000.0",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "GOOG",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-31",
+            "Price": "$286.86",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "INDY",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-15",
+            "Price": "$43.16",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "INDY",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-29",
+            "Price": "$41.24",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "000660.KS",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-31",
+            "Price": "$807000.0",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "000660.KS",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-31",
+            "Price": "$807000.0",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "000660.KS",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-31",
+            "Price": "$807000.0",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "SOXX",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "PORTFOLIO_TARGET_ACHIEVED",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-14",
+            "Price": "$401.24",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "CNR.TO",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "PORTFOLIO_TARGET_ACHIEVED",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-13",
+            "Price": "$152.89",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "CNR.TO",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "PORTFOLIO_TARGET_ACHIEVED",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-13",
+            "Price": "$152.89",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "ORCL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "PORTFOLIO_TARGET_ACHIEVED",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-30",
+            "Price": "$138.8",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "ORCL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "PORTFOLIO_TARGET_ACHIEVED",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-30",
+            "Price": "$138.8",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "ORCL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "PORTFOLIO_TARGET_ACHIEVED",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-30",
+            "Price": "$138.8",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "SPOT",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "PORTFOLIO_TARGET_ACHIEVED",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-20",
+            "Price": "$474.54",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "ORCL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "PORTFOLIO_TARGET_ACHIEVED",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-30",
+            "Price": "$138.8",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "SPOT",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "PORTFOLIO_TARGET_ACHIEVED",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-20",
+            "Price": "$474.54",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "ORCL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "PORTFOLIO_TARGET_ACHIEVED",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-30",
+            "Price": "$138.8",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "SPOT",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "PORTFOLIO_TARGET_ACHIEVED",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-20",
+            "Price": "$474.54",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "ORCL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "PORTFOLIO_TARGET_ACHIEVED",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-30",
+            "Price": "$138.8",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "SPOT",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "PORTFOLIO_TARGET_ACHIEVED",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-20",
+            "Price": "$474.54",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "ORCL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "PORTFOLIO_TARGET_ACHIEVED",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-30",
+            "Price": "$138.8",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "SPOT",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "PORTFOLIO_TARGET_ACHIEVED",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-20",
+            "Price": "$474.54",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "ORCL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "PORTFOLIO_TARGET_ACHIEVED",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-30",
+            "Price": "$138.8",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "SPOT",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "PORTFOLIO_TARGET_ACHIEVED",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-20",
+            "Price": "$474.54",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "ORCL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "PORTFOLIO_TARGET_ACHIEVED",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-30",
+            "Price": "$138.8",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "SPOT",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "PORTFOLIO_TARGET_ACHIEVED",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-03-20",
+            "Price": "$474.54",
+            "Status": "Unknown"
+          }
+        ],
+        "intent": "SIGNAL_LOOKUP",
+        "intent_label": "Signal Lookup",
+        "intent_confidence": 0.85,
+        "intent_classified_by": "llm_router",
+        "route": "INTERNAL",
+        "web_search_used": false,
+        "web_sources": [],
+        "llm_router_reasoning": "The user is asking for specific trading signals related to short positions within a certain timeframe, which requires accessing their internal data.",
+        "followup_mode": "dynamic_fresh",
+        "conversation_context_used": false,
+        "history_exchanges_used": 0,
+        "flow_trace": [
+          {
+            "stage": "Router",
+            "detail": "Analyzing user query intent and selecting route",
+            "timestamp": "03:31:13"
+          },
+          {
+            "stage": "Route Selected",
+            "detail": "INTERNAL (intent=SIGNAL_LOOKUP, conf=0.85)",
+            "timestamp": "03:31:18"
+          },
+          {
+            "stage": "Internal Search",
+            "detail": "Using internal signal data pipeline",
+            "timestamp": "03:31:18"
+          },
+          {
+            "stage": "Context Handling",
+            "detail": "No prior context found; running fresh internal smart query",
+            "timestamp": "03:31:18"
+          },
+          {
+            "stage": "Internal Data Query",
+            "detail": "Fetched internal signal data (selector + columns + date filters)",
+            "timestamp": "03:31:53"
+          },
+          {
+            "stage": "Response Generation",
+            "detail": "Generated final response from internal analysis",
+            "timestamp": "03:31:53"
+          }
+        ]
+      }
     }
   ]
 }

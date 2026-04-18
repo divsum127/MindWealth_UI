@@ -45,7 +45,11 @@ from .config import (
 from .data_processor import DataProcessor
 from .history_manager import HistoryManager
 from .unified_extractor import UnifiedExtractor
-from .smart_data_fetcher import SmartDataFetcher
+from .smart_data_fetcher import (
+    SmartDataFetcher,
+    infer_position_side_from_query,
+    normalize_position_side,
+)
 from .signal_extractor import SignalExtractor
 from .signal_type_selector import SignalTypeSelector
 from .memory_manager import RollingMemoryLog, extract_memory_from_conversation
@@ -977,6 +981,13 @@ Please answer the user's query based on the comprehensive analysis report above.
                     logger.info(f"Extracted tickers: {assets[:10]}{'...' if len(assets) > 10 else ''}")
                 else:
                     logger.info("No specific tickers mentioned - will load ALL assets")
+
+            _pos_infer_src = (display_prompt_override or user_message or "").strip()
+            position_side = normalize_position_side(
+                extraction_result.get("position_side")
+            ) or infer_position_side_from_query(_pos_infer_src)
+            if position_side:
+                logger.info(f"Position side filter (Short/Long): {position_side}")
             
             # Extract columns and reasoning per signal type
             columns_data = extraction_result.get("columns", {})
@@ -1044,7 +1055,8 @@ Please answer the user's query based on the comprehensive analysis report above.
                     from_date=from_date,
                     to_date=to_date,
                     limit_rows=MAX_ROWS_TO_INCLUDE,
-                    column_indices=indices_dict
+                    column_indices=indices_dict,
+                    position_side=position_side,
                 )
                 
                 if signal_data and signal_type in signal_data:
@@ -1078,6 +1090,7 @@ Please answer the user's query based on the comprehensive analysis report above.
                         to_date=None,
                         limit_rows=MAX_ROWS_TO_INCLUDE,
                         column_indices=indices_dict,
+                        position_side=position_side,
                     )
                     if signal_data and signal_type in signal_data:
                         fetched_data[signal_type] = signal_data[signal_type]
@@ -1117,6 +1130,7 @@ Please answer the user's query based on the comprehensive analysis report above.
                             to_date=None,
                             limit_rows=MAX_ROWS_TO_INCLUDE,
                             column_indices=indices_dict,
+                            position_side=position_side,
                         )
                         if signal_data and signal_type in signal_data:
                             fetched_data[signal_type] = signal_data[signal_type]
@@ -1136,7 +1150,7 @@ Please answer the user's query based on the comprehensive analysis report above.
                     logger.info(f"Retrying with expanded date range: {expanded_from_date} to {expanded_to_date}")
                     
                     # Retry fetching with expanded date range
-                    for signal_type in selected_signal_types:
+                    for signal_type in table_signal_types:
                         if signal_type not in columns_by_signal_type:
                             continue
                         
@@ -1156,7 +1170,8 @@ Please answer the user's query based on the comprehensive analysis report above.
                             from_date=expanded_from_date,
                             to_date=expanded_to_date,
                             limit_rows=MAX_ROWS_TO_INCLUDE,
-                            column_indices=indices_dict
+                            column_indices=indices_dict,
+                            position_side=position_side,
                         )
                         
                         if signal_data and signal_type in signal_data:
@@ -1210,6 +1225,7 @@ Please answer the user's query based on the comprehensive analysis report above.
             metadata = {
                 "input_type": "smart_query",
                 "selected_signal_types": selected_signal_types,
+                "position_side": position_side,
                 "assets": assets,
                 "functions": functions,
                 "from_date": from_date,
@@ -1433,6 +1449,12 @@ Please answer the user's query based on the comprehensive analysis report above.
         if assets is not None:
             assets = [str(a).strip().upper() for a in assets if a] or None
 
+        position_side = normalize_position_side(
+            extraction_result.get("position_side")
+        ) or infer_position_side_from_query((user_message or "").strip())
+        if position_side:
+            logger.info(f"[_fetch_signal_data] Position side filter (Short/Long): {position_side}")
+
         has_claude_report = "claude_report" in selected_signal_types
         table_signal_types = [st for st in selected_signal_types if st != "claude_report"]
 
@@ -1507,6 +1529,7 @@ Please answer the user's query based on the comprehensive analysis report above.
                 to_date=to_date,
                 limit_rows=MAX_ROWS_TO_INCLUDE,
                 column_indices=indices_dict,
+                position_side=position_side,
             )
             if signal_result and signal_type in signal_result:
                 fetched_data[signal_type] = signal_result[signal_type]
@@ -1539,6 +1562,7 @@ Please answer the user's query based on the comprehensive analysis report above.
                     to_date=None,
                     limit_rows=MAX_ROWS_TO_INCLUDE,
                     column_indices=indices_dict,
+                    position_side=position_side,
                 )
                 if signal_result and signal_type in signal_result:
                     fetched_data[signal_type] = signal_result[signal_type]
@@ -1586,6 +1610,7 @@ Please answer the user's query based on the comprehensive analysis report above.
                         to_date=None,
                         limit_rows=MAX_ROWS_TO_INCLUDE,
                         column_indices=indices_dict,
+                        position_side=position_side,
                     )
                     if signal_result and signal_type in signal_result:
                         fetched_data[signal_type] = signal_result[signal_type]
@@ -1635,6 +1660,7 @@ Please answer the user's query based on the comprehensive analysis report above.
                         to_date=expanded_to_date,
                         limit_rows=MAX_ROWS_TO_INCLUDE,
                         column_indices=indices_dict,
+                        position_side=position_side,
                     )
                     if signal_result and signal_type in signal_result:
                         fetched_data[signal_type] = signal_result[signal_type]
@@ -1655,6 +1681,7 @@ Please answer the user's query based on the comprehensive analysis report above.
 
         extraction_metadata = {
             "selected_signal_types": selected_signal_types,
+            "position_side": position_side,
             "columns_by_signal_type": columns_by_signal_type,
             "reasoning_by_signal_type": reasoning_by_signal_type,
             "functions": functions,

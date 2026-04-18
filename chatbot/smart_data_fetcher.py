@@ -7,6 +7,7 @@ import pandas as pd
 from pathlib import Path
 from typing import List, Dict, Optional, Union
 import logging
+import re
 from datetime import datetime
 
 import os
@@ -28,6 +29,34 @@ from config import (
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Compound column in consolidated CSVs: "SYMBOL, Long|Short, YYYY-MM-DD (Price: ...)"
+SYMBOL_SIGNAL_COMPOUND_COL = "Symbol, Signal, Signal Date/Price[$]"
+
+
+def normalize_position_side(raw: Optional[str]) -> Optional[str]:
+    """Return 'short', 'long', or None."""
+    if raw is None or (isinstance(raw, str) and not raw.strip()):
+        return None
+    s = str(raw).strip().lower()
+    if s in ("short", "long"):
+        return s
+    return None
+
+
+def infer_position_side_from_query(text: str) -> Optional[str]:
+    """
+    Detect Short vs Long intent from natural language (short selling vs long).
+    Avoid matching unrelated phrases like 'short term' by requiring signal/position wording.
+    """
+    if not text or not str(text).strip():
+        return None
+    low = text.lower()
+    if re.search(r"\bshort\s+signals?\b", low) or re.search(r"\bshort\s+positions?\b", low):
+        return "short"
+    if re.search(r"\blong\s+signals?\b", low) or re.search(r"\blong\s+positions?\b", low):
+        return "long"
+    return None
 
 
 class SmartDataFetcher:
@@ -67,7 +96,8 @@ class SmartDataFetcher:
         from_date: Optional[str] = None,
         to_date: Optional[str] = None,
         limit_rows: Optional[int] = None,
-        column_indices: Optional[Dict[str, List[int]]] = None
+        column_indices: Optional[Dict[str, List[int]]] = None,
+        position_side: Optional[str] = None,
     ) -> Dict[str, pd.DataFrame]:
         """
         Fetch data from specified signal types with the required columns or ALL columns.
@@ -83,6 +113,7 @@ class SmartDataFetcher:
             to_date: Optional end date (YYYY-MM-DD)
             limit_rows: Optional limit on number of rows per signal type
             column_indices: Optional dict mapping signal_type to list of column indices for precise selection
+            position_side: Optional 'short' or 'long' — filter rows by position in the compound symbol column
 
         Returns:
             Dictionary mapping signal_type to DataFrame with fetched data
@@ -110,7 +141,8 @@ class SmartDataFetcher:
                     from_date=from_date,
                     to_date=to_date,
                     limit_rows=limit_rows,
-                    column_indices=column_indices
+                    column_indices=column_indices,
+                    position_side=position_side,
                 )
 
         # Fall back to folder-based approach
@@ -258,7 +290,8 @@ class SmartDataFetcher:
         from_date: Optional[str] = None,
         to_date: Optional[str] = None,
         limit_rows: Optional[int] = None,
-        column_indices: Optional[Dict[str, List[int]]] = None
+        column_indices: Optional[Dict[str, List[int]]] = None,
+        position_side: Optional[str] = None,
     ) -> Dict[str, pd.DataFrame]:
         """
         Fetch data from consolidated CSV files.
@@ -298,7 +331,8 @@ class SmartDataFetcher:
                         from_date=from_date,
                         to_date=to_date,
                         limit_rows=limit_rows,
-                        column_indices=signal_col_indices
+                        column_indices=signal_col_indices,
+                        position_side=position_side,
                     )
 
                 if not df.empty:
@@ -319,7 +353,8 @@ class SmartDataFetcher:
         from_date: Optional[str] = None,
         to_date: Optional[str] = None,
         limit_rows: Optional[int] = None,
-        column_indices: Optional[List[int]] = None
+        column_indices: Optional[List[int]] = None,
+        position_side: Optional[str] = None,
     ) -> pd.DataFrame:
         """
         Fetch data from consolidated CSV for a signal type (entry/exit/target).
@@ -349,8 +384,7 @@ class SmartDataFetcher:
             if df.empty:
                 return pd.DataFrame()
 
-            # Extract symbol from "Symbol, Signal, Signal Date/Price[$]" column
-            symbol_col = 'Symbol, Signal, Signal Date/Price[$]'
+            symbol_col = SYMBOL_SIGNAL_COMPOUND_COL
             if symbol_col in df.columns and assets:
                 # Extract symbol (first part before comma)
                 df['_extracted_symbol'] = df[symbol_col].str.split(',').str[0].str.strip()
@@ -383,13 +417,23 @@ class SmartDataFetcher:
                         logger.info(f"Filtering for dates <= {to_date_obj}")
                         df = df[df['_extracted_date'] <= to_date_obj]
                         logger.info(f"Rows after to_date filter: {len(df)}")
-
-                    df = df.drop(columns=['_extracted_date'])
+                    # Keep _extracted_date for sort + fair row cap (do not drop yet)
                 else:
                     logger.warning(
                         f"No suitable date source column found for {signal_type}; skipping date filter"
                     )
                 logger.info(f"DataFrame shape after date filtering: {df.shape}")
+
+            ps = normalize_position_side(position_side)
+            if ps and symbol_col in df.columns:
+                marker = f", {ps.title()}, "
+                before_ps = len(df)
+                df = df[df[symbol_col].astype(str).str.contains(marker, na=False, regex=False)]
+                logger.info(f"Position filter ({ps}): {before_ps} -> {len(df)} rows")
+
+            if "_extracted_date" in df.columns:
+                df = df.sort_values("_extracted_date", ascending=False, na_position="last")
+                df = df.drop(columns=["_extracted_date"])
 
             # Apply column selection - use indices if provided for 100% accuracy
             if column_indices and len(column_indices) > 0:

@@ -16,7 +16,8 @@ sys.path.insert(0, str(project_root))
 
 from chatbot import ChatbotEngine, SessionManager
 from chatbot.signal_type_selector import SIGNAL_TYPE_DESCRIPTIONS, DEFAULT_SIGNAL_TYPES
-from chatbot.config import MAX_CHATS_DISPLAY
+from chatbot.config import MAX_CHATS_DISPLAY, ENGINE_LOG_LINES_CAP
+from chatbot.flagged_export import save_flagged_pair
 from chatbot.agents.intent_classifier import INTENT_LABELS
 
 logger = logging.getLogger(__name__)
@@ -244,6 +245,20 @@ def render_route_badge(metadata: dict):
                 st.markdown(f"[Source {i}]({url})", unsafe_allow_html=False)
 
 
+class _ChatbotLogCaptureHandler(logging.Handler):
+    """Buffers formatted log lines for the ``chatbot`` logger subtree during one engine call."""
+
+    def __init__(self, lines: list) -> None:
+        super().__init__(logging.INFO)
+        self._lines = lines
+
+    def emit(self, record: logging.LogRecord) -> None:
+        try:
+            self._lines.append(self.format(record))
+        except Exception:
+            self.handleError(record)
+
+
 def run_smart_followup_with_progress(
     chatbot: Any,
     *,
@@ -256,27 +271,46 @@ def run_smart_followup_with_progress(
 
     ``st.spinner`` does not flush intermediate UI; ``st.status`` does, so users
     see router / web / internal steps instead of a frozen loading line.
+
+    Attaches a temporary handler to the ``chatbot`` logger and stores capped
+    lines in ``metadata["engine_log_lines"]`` on success.
     """
-    if hasattr(st, "status"):
-        with st.status(status_title, expanded=True) as status:
-            st.caption(status_caption)
+    log_lines: list = []
+    log_handler = _ChatbotLogCaptureHandler(log_lines)
+    log_handler.setFormatter(
+        logging.Formatter("%(asctime)s | %(name)s | %(levelname)s | %(message)s")
+    )
+    root_chatbot = logging.getLogger("chatbot")
+    root_chatbot.addHandler(log_handler)
 
-            def _live(stage: str, detail: str) -> None:
-                st.markdown(f"**{stage}** — {detail}")
+    result_tuple: Any = None
+    try:
+        if hasattr(st, "status"):
+            with st.status(status_title, expanded=True) as status:
+                st.caption(status_caption)
 
-            try:
-                result = chatbot.smart_followup_query(
-                    **followup_kwargs,
-                    on_flow_step=_live,
-                )
-                status.update(label="Done", state="complete")
-                return result
-            except Exception:
-                status.update(label="Error", state="error")
-                raise
+                def _live(stage: str, detail: str) -> None:
+                    st.markdown(f"**{stage}** — {detail}")
 
-    with st.spinner("🤔 Analyzing your query with conversation context..."):
-        return chatbot.smart_followup_query(**followup_kwargs)
+                try:
+                    result_tuple = chatbot.smart_followup_query(
+                        **followup_kwargs,
+                        on_flow_step=_live,
+                    )
+                    status.update(label="Done", state="complete")
+                except Exception:
+                    status.update(label="Error", state="error")
+                    raise
+        else:
+            with st.spinner("🤔 Analyzing your query with conversation context..."):
+                result_tuple = chatbot.smart_followup_query(**followup_kwargs)
+    finally:
+        root_chatbot.removeHandler(log_handler)
+
+    response, metadata = result_tuple
+    if isinstance(metadata, dict):
+        metadata["engine_log_lines"] = log_lines[-ENGINE_LOG_LINES_CAP:]
+    return response, metadata
 
 
 def render_flow_trace(metadata: Optional[dict]) -> None:
@@ -1204,7 +1238,7 @@ Date Range: {from_date.strftime('%Y-%m-%d')} to {to_date.strftime('%Y-%m-%d')}""
     # Display chat messages
     chat_container = st.container()
     with chat_container:
-        for message in st.session_state.chat_history:
+        for idx, message in enumerate(st.session_state.chat_history):
             if message['role'] == 'user':
                 with st.chat_message("user"):
                     # Extract clean user prompt for display
@@ -1327,6 +1361,48 @@ Date Range: {from_date.strftime('%Y-%m-%d')} to {to_date.strftime('%Y-%m-%d')}""
                                 st.caption(f"✨ Multi-batch results synthesized into single response | Total: {tokens_used.get('prompt', 0):,} prompt + {tokens_used.get('completion', 0):,} completion tokens")
                             else:
                                 st.caption(f"💡 Prompt: {tokens_used.get('prompt', 0):,} tokens | Completion: {tokens_used.get('completion', 0):,} tokens")
+
+                    prev_is_user = (
+                        idx > 0
+                        and st.session_state.chat_history[idx - 1].get("role") == "user"
+                    )
+                    if prev_is_user:
+                        um = st.session_state.chat_history[idx - 1]
+                        am = message
+                        sid = (
+                            st.session_state.get("current_session_id")
+                            or getattr(chatbot.history_manager, "session_id", "")
+                            or ""
+                        )
+                        with st.expander("Flag this exchange for debugging", expanded=False):
+                            st.caption(
+                                "Engine log lines are only captured for queries run in this session. "
+                                "Older messages still include flow_trace and metadata from the saved session."
+                            )
+                            flag_notes = st.text_area(
+                                "Notes (issue description)",
+                                key=f"flag_notes_{sid}_{idx}",
+                                height=100,
+                                placeholder="Describe the issue…",
+                            )
+                            flag_full_tables = st.checkbox(
+                                "Include full signal tables in JSON",
+                                value=False,
+                                key=f"flag_full_tables_{sid}_{idx}",
+                            )
+                            if st.button("Save JSON", key=f"flag_save_{sid}_{idx}"):
+                                try:
+                                    out_path = save_flagged_pair(
+                                        session_id=sid,
+                                        notes=flag_notes,
+                                        user_message=um,
+                                        assistant_message=am,
+                                        include_full_tables=flag_full_tables,
+                                        max_rows_sample=50,
+                                    )
+                                    st.success(f"Saved: {out_path}")
+                                except Exception as exc:
+                                    st.error(f"Could not save: {exc}")
     
     # Chat input
     st.markdown("### 💬 Ask a Question")

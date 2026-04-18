@@ -187,7 +187,12 @@ Available Tickers/Assets:
    - If NO specific functions mentioned → return null (means ALL functions)
    - If **only** claude_report was selected → return null. Otherwise ignore claude_report for this field and extract normally for the table-backed signal types.
 
-3. TICKERS:
+3. POSITION SIDE (Short selling vs long):
+   - If the user asks for "short signals", "short positions", "short side" → "position_side": "short"
+   - If the user asks for "long signals", "long positions", "long side" → "position_side": "long"
+   - Otherwise → "position_side": null
+
+3b. TICKERS:
    - If SPECIFIC tickers mentioned (e.g., "AAPL", "MSFT") → return those tickers
    - If the query references previous context (e.g., "those", "the same", "for it") → check conversation history and extract tickers from there
    - If NO specific tickers mentioned AND no contextual reference → return null (means ALL tickers)
@@ -216,6 +221,7 @@ Return ONLY valid JSON with this EXACT structure:
   "signal_types_reasoning": "Brief explanation of why these signal types",
   "functions": ["TRENDPULSE"] OR null,
   "tickers": ["AAPL", "MSFT"] OR null OR [".NZ"],
+  "position_side": "short" OR "long" OR null,
   "columns": {{
     "entry": {{
       "required_columns": [
@@ -371,6 +377,14 @@ Respond now:"""
             else:
                 tickers = [str(t).strip().upper() for t in tickers if t]
         result["tickers"] = tickers
+
+        # position_side: short / long (short selling vs long); null when not specified
+        ps = result.get("position_side")
+        if ps is None or ps == "null" or (isinstance(ps, str) and not ps.strip()):
+            result["position_side"] = None
+        else:
+            ps_l = str(ps).strip().lower()
+            result["position_side"] = ps_l if ps_l in ("short", "long") else None
         
         # Normalize columns - add indices list
         # For claude_report signal type, columns might be None or empty

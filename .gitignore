@@ -9,5 +9,8 @@ __pycache__/
 .env
 .env.*
 
-# Streamlit secrets
+# Streamlit secrets (never commit — use local file only)
 .streamlit/secrets.toml
+
+# Local flagged query/response exports (debug)
+chatbot/flagged_pairs/
