@@ -1,0 +1,1240 @@
+{
+  "metadata": {
+    "session_id": "bfe11ded-b6b6-4df1-bd11-b96e4aae42d7",
+    "title": "User Query: latest aapl signals \n\n=== COLUMN...",
+    "created_at": "2026-05-01T09:56:18.600787",
+    "last_updated": "2026-05-01T09:57:15.535893",
+    "message_count": 3
+  },
+  "conversation": [
+    {
+      "role": "system",
+      "content": "You are an expert financial trading analyst assistant for MindWealth. \nYou help users analyze stock market signal data, trading signal data, and provide insights based on historical signal data.\n\nYour capabilities include:\n- Analyzing stock price movements and trends\n- Interpreting trading signals and technical indicators\n- Providing insights on market performance\n- Comparing multiple tickers\n- Identifying patterns and opportunities\n\nIMPORTANT OUTPUT FORMATTING REQUIREMENTS:\n1. ALWAYS use proper Markdown formatting\n2. ALWAYS include spaces between words and punctuation\n3. Use bullet points (- or •) for lists\n4. Use **bold** for emphasis\n5. Use headers (##, ###) to organize sections\n6. Use line breaks between paragraphs\n7. Format numbers with proper spacing: \"245.27 is significantly above the track level (169.28)\"\n8. NEVER concatenate words without spaces\n\nWhen analyzing signal data:\n1. Be precise and signal-data-driven in your analysis\n2. Highlight key trends and patterns\n3. Provide actionable insights when possible\n4. Use technical analysis terminology appropriately\n5. Consider the time period and context of the signal data\n6. Structure your response with clear sections and proper spacing\n\nCRITICAL DATA ACCURACY REQUIREMENTS:\n🚨 FINANCIAL DATA INTEGRITY IS CRITICAL 🚨\n\n**When Signal Data IS Provided:**\n1. The user query will include sections like \"=== SIGNAL DATA CONTEXT ===\" or \"=== ENTRY SIGNALS (JSON) ===\" with actual signal data\n2. If you see JSON with fields like \"signal_type\", \"record_count\", \"data\", etc., then SIGNAL DATA HAS BEEN PROVIDED\n3. Extract and analyze information EXACTLY as it appears in the provided JSON\n4. Use the exact function names, symbols, dates, and prices from the records\n5. Provide thorough analysis based on the signal data provided\n\n**When Signal Data IS NOT Provided:**\n1. If you see ONLY a user question without any \"=== SIGNAL DATA CONTEXT ===\" sections, then NO signal data has been provided\n2. State clearly: \"No signal data has been provided. Please provide the signal data to analyze.\"\n3. NEVER invent, fabricate, or hallucinate function names, symbols, dates, prices, or any metrics\n\n**NEVER DO THIS (Hallucination):**\n- Make up function names like \"HIGH VOLTAGE\", \"RADAR SWEEP\" that don't exist in the provided signal data\n- Invent signal dates or prices not in the signal data\n- Create fake symbols or tickers\n- Fabricate performance metrics or CAGR values\n\n**ALWAYS DO THIS (Accurate):**\n- Check if \"=== SIGNAL DATA CONTEXT ===\" or similar sections exist in the message\n- If signal data exists, extract information from the records in the JSON\n- If signal data doesn't exist, clearly state that no signal data was provided\n- Use EXACT values from the provided signal data fields\n\nCRITICAL: Always format your response in clean, readable Markdown with proper spacing.\nBase your responses STRICTLY on actual signal data provided in the message context.\n",
+      "timestamp": "2026-05-01T09:56:19.012605+00:00"
+    },
+    {
+      "role": "user",
+      "content": "User Query: latest aapl signals \n\n=== COLUMN SELECTION BY SIGNAL TYPE ===\n\nENTRY:\n  Columns: Function, Symbol, Signal, Signal Date/Price[$], Interval, Confirmation Status, Today Trading Date/Price[$], Today Price vs Signal\n  Reasoning: To show the latest open AAPL signals, we need the strategy (Function), the signal identifier including date/price and direction, plus confirmation status and the latest available price context vs the signal.\n\nEXIT:\n  Columns: Function, Symbol, Signal, Signal Date/Price[$], Exit Signal Date/Price[$], Interval, Confirmation Status\n  Reasoning: To show the latest completed AAPL signals, we need the original signal details plus the exit date/price, and confirmation status to interpret signal validity.\n\nPORTFOLIO_TARGET_ACHIEVED:\n  Columns: Function, Symbol, Signal, Signal Date/Price[$], Target for which Price has achieved over 90 percent of gain %, Backtested Target Exit Date, Today Trading Date/Price[$], Today Price vs Signal\n  Reasoning: To show the latest AAPL target-hit events, we need the signal identifier plus which target was achieved, when the target exit is expected (backtested), and the latest price context.\n\n=== SIGNAL DATA CONTEXT ===\n\n=== ENTRY SIGNALS (JSON) ===\n{\n  \"signal_type\": \"entry\",\n  \"record_count\": 35,\n  \"columns_selected\": [\n    \"Function\",\n    \"Symbol, Signal, Signal Date/Price[$]\",\n    \"Interval, Confirmation Status\",\n    \"Today Trading Date/Price[$], Today Price vs Signal\"\n  ],\n  \"reasoning\": \"To show the latest open AAPL signals, we need the strategy (Function), the signal identifier including date/price and direction, plus confirmation status and the latest available price context vs the signal.\",\n  \"data\": [\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2026-01-12 (Price: 260.25)\",\n      \"Interval, Confirmation Status\": \"Daily, is CONFIRMED on 2026-01-12\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 3.83% above\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2026-01-12 (Price: 260.25)\",\n      \"Interval, Confirmation Status\": \"Daily, is CONFIRMED on 2026-01-12\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 3.83% above\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2025-12-31 (Price: 271.86)\",\n      \"Interval, Confirmation Status\": \"Quarterly, is CONFIRMED on 2025-12-31\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 0.60% below\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2025-12-02 (Price: 286.19)\",\n      \"Interval, Confirmation Status\": \"Daily, is CONFIRMED on 2025-12-02\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 5.58% below\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2025-11-25 (Price: 276.97)\",\n      \"Interval, Confirmation Status\": \"Daily, is CONFIRMED on 2025-11-25\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 2.43% below\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2025-10-31 (Price: 270.37)\",\n      \"Interval, Confirmation Status\": \"Quarterly, will be confirmed as valid at the end of this quarter\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 0.05% below\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2025-12-31 (Price: 271.86)\",\n      \"Interval, Confirmation Status\": \"Quarterly, was CONFIRMED on 2025-12-31\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 0.60% below\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2025-12-31 (Price: 271.86)\",\n      \"Interval, Confirmation Status\": \"Quarterly, was CONFIRMED on 2025-12-31\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 0.60% below\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2025-12-31 (Price: 271.86)\",\n      \"Interval, Confirmation Status\": \"Quarterly, was CONFIRMED on 2025-12-31\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 0.60% below\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2025-12-31 (Price: 271.86)\",\n      \"Interval, Confirmation Status\": \"Quarterly, was CONFIRMED on 2025-12-31\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 0.60% below\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2025-12-31 (Price: 271.86)\",\n      \"Interval, Confirmation Status\": \"Quarterly, was CONFIRMED on 2025-12-31\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 0.60% below\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2025-12-31 (Price: 271.86)\",\n      \"Interval, Confirmation Status\": \"Quarterly, was CONFIRMED on 2025-12-31\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 0.60% below\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2025-12-31 (Price: 271.86)\",\n      \"Interval, Confirmation Status\": \"Quarterly, was CONFIRMED on 2025-12-31\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 0.60% below\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2025-12-31 (Price: 271.86)\",\n      \"Interval, Confirmation Status\": \"Quarterly, was CONFIRMED on 2025-12-31\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 0.60% below\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2025-12-31 (Price: 271.86)\",\n      \"Interval, Confirmation Status\": \"Quarterly, was CONFIRMED on 2025-12-31\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 0.60% below\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2025-12-31 (Price: 271.86)\",\n      \"Interval, Confirmation Status\": \"Quarterly, was CONFIRMED on 2025-12-31\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 0.60% below\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2025-12-31 (Price: 271.86)\",\n      \"Interval, Confirmation Status\": \"Quarterly, was CONFIRMED on 2025-12-31\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 0.60% below\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2025-12-31 (Price: 271.86)\",\n      \"Interval, Confirmation Status\": \"Quarterly, was CONFIRMED on 2025-12-31\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 0.60% below\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2025-12-31 (Price: 271.86)\",\n      \"Interval, Confirmation Status\": \"Quarterly, was CONFIRMED on 2025-12-31\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 0.60% below\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2025-12-31 (Price: 271.86)\",\n      \"Interval, Confirmation Status\": \"Quarterly, was CONFIRMED on 2025-12-31\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 0.60% below\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2025-12-31 (Price: 271.86)\",\n      \"Interval, Confirmation Status\": \"Quarterly, was CONFIRMED on 2025-12-31\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 0.60% below\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2025-12-31 (Price: 271.86)\",\n      \"Interval, Confirmation Status\": \"Quarterly, was CONFIRMED on 2025-12-31\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 0.60% below\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2026-02-06 (Price: 275.91)\",\n      \"Interval, Confirmation Status\": \"Weekly, is CONFIRMED on 2026-02-06\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 2.06% below\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2025-12-31 (Price: 271.86)\",\n      \"Interval, Confirmation Status\": \"Quarterly, was CONFIRMED on 2025-12-31\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 0.60% below\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2026-02-08 (Price: 278.12)\",\n      \"Interval, Confirmation Status\": \"Weekly, was CONFIRMED on 2026-02-08\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 2.84% below\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2025-12-31 (Price: 271.86)\",\n      \"Interval, Confirmation Status\": \"Quarterly, was CONFIRMED on 2025-12-31\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 0.60% below\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2026-02-08 (Price: 278.12)\",\n      \"Interval, Confirmation Status\": \"Weekly, was CONFIRMED on 2026-02-08\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 2.84% below\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2025-12-31 (Price: 271.86)\",\n      \"Interval, Confirmation Status\": \"Quarterly, was CONFIRMED on 2025-12-31\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 0.60% below\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2026-02-08 (Price: 275.91)\",\n      \"Interval, Confirmation Status\": \"Weekly, was CONFIRMED on 2026-02-08\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 2.06% below\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2026-02-08 (Price: 278.12)\",\n      \"Interval, Confirmation Status\": \"Weekly, was CONFIRMED on 2026-02-08\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 2.84% below\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2026-02-08 (Price: 278.12)\",\n      \"Interval, Confirmation Status\": \"Weekly, was CONFIRMED on 2026-02-08\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 2.84% below\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2026-02-08 (Price: 278.12)\",\n      \"Interval, Confirmation Status\": \"Weekly, was CONFIRMED on 2026-02-08\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 2.84% below\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2026-03-11 (Price: 260.81)\",\n      \"Interval, Confirmation Status\": \"Daily, was CONFIRMED on 2026-03-11\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 3.61% above\"\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2026-03-17 (Price: 254.23)\",\n      \"Interval, Confirmation Status\": \"Daily, was CONFIRMED on 2026-03-17\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 6.29% above\"\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2026-03-17 (Price: 254.23)\",\n      \"Interval, Confirmation Status\": \"Daily, was CONFIRMED on 2026-03-17\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-04-17 (Price: 270.2300), 6.29% above\"\n    }\n  ]\n}\n\n=== EXIT SIGNALS (JSON) ===\n{\n  \"signal_type\": \"exit\",\n  \"record_count\": 31,\n  \"columns_selected\": [\n    \"Function\",\n    \"Symbol, Signal, Signal Date/Price[$]\",\n    \"Exit Signal Date/Price[$]\",\n    \"Interval, Confirmation Status\"\n  ],\n  \"reasoning\": \"To show the latest completed AAPL signals, we need the original signal details plus the exit date/price, and confirmation status to interpret signal validity.\",\n  \"data\": [\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2024-09-30 (Price: 233.0)\",\n      \"Exit Signal Date/Price[$]\": \"2026-01-02 (Price: 271.01)\",\n      \"Interval, Confirmation Status\": \"Monthly, is CONFIRMED on 2024-09-30\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2024-07-31 (Price: 222.08)\",\n      \"Exit Signal Date/Price[$]\": \"2025-12-01 (Price: 283.1)\",\n      \"Interval, Confirmation Status\": \"Monthly, is CONFIRMED on 2024-07-31\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2025-11-25 (Price: 276.97)\",\n      \"Exit Signal Date/Price[$]\": \"2025-12-05 (Price: 278.78)\",\n      \"Interval, Confirmation Status\": \"Daily, is CONFIRMED on 2025-11-25\"\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2026-01-22 (Price: 248.35)\",\n      \"Exit Signal Date/Price[$]\": \"2026-01-26 (Price: 255.41)\",\n      \"Interval, Confirmation Status\": \"Daily, was CONFIRMED on 2026-01-22\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2024-09-30 (Price: 233.0)\",\n      \"Exit Signal Date/Price[$]\": \"2026-01-27 (Price: 260.17)\",\n      \"Interval, Confirmation Status\": \"Monthly, is CONFIRMED on 2024-09-30\"\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2026-01-22 (Price: 248.35)\",\n      \"Exit Signal Date/Price[$]\": \"2026-01-26 (Price: 255.41)\",\n      \"Interval, Confirmation Status\": \"Daily, was CONFIRMED on 2026-01-22\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2024-09-30 (Price: 233.0)\",\n      \"Exit Signal Date/Price[$]\": \"2026-01-27 (Price: 258.27)\",\n      \"Interval, Confirmation Status\": \"Monthly, is CONFIRMED on 2024-09-30\"\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2026-01-22 (Price: 248.35)\",\n      \"Exit Signal Date/Price[$]\": \"2026-01-26 (Price: 255.41)\",\n      \"Interval, Confirmation Status\": \"Daily, was CONFIRMED on 2026-01-22\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2024-09-30 (Price: 233.0)\",\n      \"Exit Signal Date/Price[$]\": \"2026-01-27 (Price: 258.27)\",\n      \"Interval, Confirmation Status\": \"Monthly, is CONFIRMED on 2024-09-30\"\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2026-01-22 (Price: 248.35)\",\n      \"Exit Signal Date/Price[$]\": \"2026-01-26 (Price: 255.41)\",\n      \"Interval, Confirmation Status\": \"Daily, was CONFIRMED on 2026-01-22\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2024-09-30 (Price: 233.0)\",\n      \"Exit Signal Date/Price[$]\": \"2026-01-27 (Price: 258.27)\",\n      \"Interval, Confirmation Status\": \"Monthly, is CONFIRMED on 2024-09-30\"\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2026-01-22 (Price: 248.35)\",\n      \"Exit Signal Date/Price[$]\": \"2026-01-26 (Price: 255.41)\",\n      \"Interval, Confirmation Status\": \"Daily, was CONFIRMED on 2026-01-22\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2024-09-30 (Price: 233.0)\",\n      \"Exit Signal Date/Price[$]\": \"2026-01-27 (Price: 258.27)\",\n      \"Interval, Confirmation Status\": \"Monthly, is CONFIRMED on 2024-09-30\"\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2026-01-22 (Price: 248.35)\",\n      \"Exit Signal Date/Price[$]\": \"2026-01-26 (Price: 255.41)\",\n      \"Interval, Confirmation Status\": \"Daily, was CONFIRMED on 2026-01-22\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2024-09-30 (Price: 233.0)\",\n      \"Exit Signal Date/Price[$]\": \"2026-01-27 (Price: 258.27)\",\n      \"Interval, Confirmation Status\": \"Monthly, is CONFIRMED on 2024-09-30\"\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2026-01-22 (Price: 248.35)\",\n      \"Exit Signal Date/Price[$]\": \"2026-01-26 (Price: 255.41)\",\n      \"Interval, Confirmation Status\": \"Daily, was CONFIRMED on 2026-01-22\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2024-09-30 (Price: 233.0)\",\n      \"Exit Signal Date/Price[$]\": \"2026-01-28 (Price: 256.44)\",\n      \"Interval, Confirmation Status\": \"Monthly, is CONFIRMED on 2024-09-30\"\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2026-01-22 (Price: 248.35)\",\n      \"Exit Signal Date/Price[$]\": \"2026-01-26 (Price: 255.41)\",\n      \"Interval, Confirmation Status\": \"Daily, was CONFIRMED on 2026-01-22\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2024-09-30 (Price: 233.0)\",\n      \"Exit Signal Date/Price[$]\": \"2026-01-29 (Price: 258.28)\",\n      \"Interval, Confirmation Status\": \"Monthly, is CONFIRMED on 2024-09-30\"\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2026-01-22 (Price: 248.35)\",\n      \"Exit Signal Date/Price[$]\": \"2026-01-26 (Price: 255.41)\",\n      \"Interval, Confirmation Status\": \"Daily, was CONFIRMED on 2026-01-22\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2024-09-30 (Price: 233.0)\",\n      \"Exit Signal Date/Price[$]\": \"2026-01-29 (Price: 258.28)\",\n      \"Interval, Confirmation Status\": \"Monthly, is CONFIRMED on 2024-09-30\"\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2026-01-22 (Price: 248.35)\",\n      \"Exit Signal Date/Price[$]\": \"2026-01-26 (Price: 255.41)\",\n      \"Interval, Confirmation Status\": \"Daily, was CONFIRMED on 2026-01-22\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2024-09-30 (Price: 233.0)\",\n      \"Exit Signal Date/Price[$]\": \"2026-01-29 (Price: 258.28)\",\n      \"Interval, Confirmation Status\": \"Monthly, is CONFIRMED on 2024-09-30\"\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2026-01-22 (Price: 248.35)\",\n      \"Exit Signal Date/Price[$]\": \"2026-01-26 (Price: 255.41)\",\n      \"Interval, Confirmation Status\": \"Daily, was CONFIRMED on 2026-01-22\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2024-09-30 (Price: 233.0)\",\n      \"Exit Signal Date/Price[$]\": \"2026-01-29 (Price: 258.28)\",\n      \"Interval, Confirmation Status\": \"Monthly, is CONFIRMED on 2024-09-30\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2024-09-30 (Price: 233.0)\",\n      \"Exit Signal Date/Price[$]\": \"2026-01-30 (Price: 258.28)\",\n      \"Interval, Confirmation Status\": \"Monthly, is CONFIRMED on 2024-09-30\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2024-09-30 (Price: 233.0)\",\n      \"Exit Signal Date/Price[$]\": \"2026-01-30 (Price: 258.28)\",\n      \"Interval, Confirmation Status\": \"Monthly, is CONFIRMED on 2024-09-30\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2024-09-30 (Price: 233.0)\",\n      \"Exit Signal Date/Price[$]\": \"2026-01-31 (Price: 259.48)\",\n      \"Interval, Confirmation Status\": \"Monthly, is CONFIRMED on 2024-09-30\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2024-09-30 (Price: 233.0)\",\n      \"Exit Signal Date/Price[$]\": \"2026-01-31 (Price: 259.48)\",\n      \"Interval, Confirmation Status\": \"Monthly, is CONFIRMED on 2024-09-30\"\n    },\n    {\n      \"Function\": \"BAND MATRIX\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2026-01-07 (Price: 260.33)\",\n      \"Exit Signal Date/Price[$]\": \"2026-02-12 (Price: 261.98)\",\n      \"Interval, Confirmation Status\": \"Daily, was CONFIRMED on 2026-01-07\"\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AAPL, Long, 2026-03-17 (Price: 254.23)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-09 (Price: 260.49)\",\n      \"Interval, Confirmation Status\": \"Daily, was CONFIRMED on 2026-03-17\"\n    }\n  ]\n}",
+      "timestamp": "2026-05-01T09:56:42.873756+00:00",
+      "metadata": {
+        "input_type": "smart_query",
+        "selected_signal_types": [
+          "entry",
+          "exit",
+          "portfolio_target_achieved"
+        ],
+        "position_side": null,
+        "assets": [
+          "AAPL"
+        ],
+        "functions": null,
+        "from_date": "2026-04-16",
+        "to_date": "2026-05-01",
+        "columns_by_signal_type": {
+          "entry": [
+            "Function",
+            "Symbol, Signal, Signal Date/Price[$]",
+            "Interval, Confirmation Status",
+            "Today Trading Date/Price[$], Today Price vs Signal"
+          ],
+          "exit": [
+            "Function",
+            "Symbol, Signal, Signal Date/Price[$]",
+            "Exit Signal Date/Price[$]",
+            "Interval, Confirmation Status"
+          ],
+          "portfolio_target_achieved": [
+            "Function",
+            "Symbol, Signal, Signal Date/Price[$]",
+            "Target for which Price has achieved over 90 percent of gain %",
+            "Backtested Target Exit Date",
+            "Today Trading Date/Price[$], Today Price vs Signal"
+          ]
+        },
+        "reasoning_by_signal_type": {
+          "entry": "To show the latest open AAPL signals, we need the strategy (Function), the signal identifier including date/price and direction, plus confirmation status and the latest available price context vs the signal.",
+          "exit": "To show the latest completed AAPL signals, we need the original signal details plus the exit date/price, and confirmation status to interpret signal validity.",
+          "portfolio_target_achieved": "To show the latest AAPL target-hit events, we need the signal identifier plus which target was achieved, when the target exit is expected (backtested), and the latest price context."
+        },
+        "rows_fetched": 66,
+        "signal_types_with_data": [
+          "entry",
+          "exit"
+        ],
+        "signal_type_reasoning": "User asked for the latest AAPL signals; by default include open (entry), completed (exit), and target-hit (portfolio_target_achieved) signal tables to capture the most recent signal activity across lifecycle states.",
+        "display_prompt": "latest aapl signals"
+      }
+    },
+    {
+      "role": "assistant",
+      "content": "# Latest AAPL Signals Analysis\n\n## 📊 Overview\nAs of **April 17, 2026**, AAPL is trading at **$270.23**. The analysis shows **35 active entry signals** and **31 recently completed exit signals** across multiple trading strategies and timeframes.\n\n---\n\n## 🟢 Active Entry Signals (35 Total)\n\n### **Most Recent Signals**\nThe latest entry signals were generated in **mid-March 2026**, showing strong bullish momentum:\n\n- **FRACTAL TRACK** - Long signal on **March 17, 2026** at **$254.23**\n  - Status: CONFIRMED on 2026-03-17\n  - Current Performance: **+6.29% gain**\n  - Interval: Daily\n\n- **DELTADRIFT** - Long signal on **March 17, 2026** at **$254.23**\n  - Status: CONFIRMED on 2026-03-17\n  - Current Performance: **+6.29% gain**\n  - Interval: Daily\n\n- **FRACTAL TRACK** - Long signal on **March 11, 2026** at **$260.81**\n  - Status: CONFIRMED on 2026-03-11\n  - Current Performance: **+3.61% gain**\n  - Interval: Daily\n\n### **Key Active Signals by Strategy**\n\n#### **DELTADRIFT Strategy**\n- **January 12, 2026** entry at **$260.25** (Daily)\n  - Status: CONFIRMED on 2026-01-12\n  - Current Performance: **+3.83% above entry**\n\n#### **FRACTAL TRACK Strategy**\nMultiple active signals across different timeframes:\n- **Daily Signals**: Strong recent entries showing positive momentum\n- **Weekly Signals**: February 2026 entries at **$275.91** and **$278.12**\n  - Currently **2.06% to 2.84% below** entry prices\n- **Quarterly Signals**: December 31, 2025 entry at **$271.86**\n  - Currently **0.60% below** entry price\n  - Status: CONFIRMED on 2025-12-31\n\n#### **TRENDPULSE Strategy**\n- **December 2, 2025** entry at **$286.19** (Daily)\n  - Status: CONFIRMED on 2025-12-02\n  - Current Performance: **5.58% below entry**\n  \n- **November 25, 2025** entry at **$276.97** (Daily)\n  - Status: CONFIRMED on 2025-11-25\n  - Current Performance: **2.43% below entry**\n\n---\n\n## 🔴 Recent Exit Signals (31 Total)\n\n### **Most Recent Exits**\n\n- **DELTADRIFT** - Exited **April 9, 2026** at **$260.49**\n  - Entry: March 17, 2026 at **$254.23**\n  - Gain: **+2.46%** (6 days holding period)\n  - Status: CONFIRMED signal\n\n- **BAND MATRIX** - Exited **February 12, 2026** at **$261.98**\n  - Entry: January 7, 2026 at **$260.33**\n  - Gain: **+0.63%** (36 days holding period)\n  - Status: CONFIRMED signal\n\n### **Notable Completed Trades**\n\n#### **TRENDPULSE Monthly Strategy**\nMultiple exits from the **September 30, 2024** entry at **$233.00**:\n- Exit dates ranging from **January 2026** to **January 31, 2026**\n- Exit prices: **$256.44 to $271.01**\n- Gains: **+10.04% to +16.31%**\n- Holding period: ~15-16 months\n\n#### **TRENDPULSE Strategy Performance**\n- **July 31, 2024** entry at **$222.08**\n  - Exit: December 1, 2025 at **$283.10**\n  - Gain: **+27.47%**\n  - Holding period: ~16 months\n  - Status: CONFIRMED signal\n\n- **November 25, 2025** entry at **$276.97** (Daily)\n  - Exit: December 5, 2025 at **$278.78**\n  - Gain: **+0.65%**\n  - Holding period: 10 days\n  - Status: CONFIRMED signal\n\n#### **DELTADRIFT Quick Trades**\n- **January 22, 2026** entry at **$248.35**\n  - Exit: January 26, 2026 at **$255.41**\n  - Gain: **+2.84%**\n  - Holding period: 4 days\n  - Status: CONFIRMED signal\n\n---\n\n## 💡 Key Insights\n\n### **Signal Distribution**\n- **FRACTAL TRACK**: Dominant strategy with multiple timeframes (Daily, Weekly, Quarterly)\n- **DELTADRIFT**: Active on daily timeframe with recent strong performance\n- **TRENDPULSE**: Longer-term monthly signals showing substantial gains\n- **BAND MATRIX**: Limited activity with one recent exit\n\n### **Performance Trends**\n1. **Recent entries (March 2026)** are performing well with **+3.61% to +6.29%** gains\n2. **Longer-term positions** from late 2025 are showing mixed results, some slightly underwater\n3. **Completed trades** demonstrate strong performance, particularly monthly TRENDPULSE signals with **+10% to +27%** gains\n\n### **Current Market Position**\n- Current price **$270.23** is near the middle of recent trading range\n- Multiple confirmed signals across timeframes suggest bullish bias\n- Recent March entries showing positive momentum\n- Some older signals from November-December 2025 are slightly below water, suggesting potential consolidation phase\n\n### **Strategy Effectiveness**\n- **Monthly TRENDPULSE**: Excellent for longer-term trends (16+ months, 10-27% gains)\n- **Daily DELTADRIFT**: Effective for short-term momentum (4-6 days, 2-7% gains)\n- **FRACTAL TRACK**: Multi-timeframe approach providing diverse entry opportunities\n\n---\n\n## ⚠️ Considerations\n\n- Several weekly and quarterly FRACTAL TRACK signals from late 2025/early 2026 are currently **0.60% to 2.84% below** entry prices\n- Watch for potential resistance around **$278-$286** levels (previous TRENDPULSE entries)\n- Recent March signals showing strongest performance, indicating renewed bullish momentum\n- Multiple confirmation statuses suggest high-quality signal generation across strategies",
+      "timestamp": "2026-05-01T09:57:15.535873+00:00",
+      "metadata": {
+        "input_type": "smart_followup",
+        "selected_signal_types": [
+          "entry",
+          "exit",
+          "portfolio_target_achieved"
+        ],
+        "position_side": null,
+        "assets": [
+          "AAPL"
+        ],
+        "functions": null,
+        "from_date": "2026-04-16",
+        "to_date": "2026-05-01",
+        "columns_by_signal_type": {
+          "entry": [
+            "Function",
+            "Symbol, Signal, Signal Date/Price[$]",
+            "Interval, Confirmation Status",
+            "Today Trading Date/Price[$], Today Price vs Signal"
+          ],
+          "exit": [
+            "Function",
+            "Symbol, Signal, Signal Date/Price[$]",
+            "Exit Signal Date/Price[$]",
+            "Interval, Confirmation Status"
+          ],
+          "portfolio_target_achieved": [
+            "Function",
+            "Symbol, Signal, Signal Date/Price[$]",
+            "Target for which Price has achieved over 90 percent of gain %",
+            "Backtested Target Exit Date",
+            "Today Trading Date/Price[$], Today Price vs Signal"
+          ]
+        },
+        "reasoning_by_signal_type": {
+          "entry": "To show the latest open AAPL signals, we need the strategy (Function), the signal identifier including date/price and direction, plus confirmation status and the latest available price context vs the signal.",
+          "exit": "To show the latest completed AAPL signals, we need the original signal details plus the exit date/price, and confirmation status to interpret signal validity.",
+          "portfolio_target_achieved": "To show the latest AAPL target-hit events, we need the signal identifier plus which target was achieved, when the target exit is expected (backtested), and the latest price context."
+        },
+        "rows_fetched": 66,
+        "signal_types_with_data": [
+          "entry",
+          "exit"
+        ],
+        "signal_type_reasoning": "User asked for the latest AAPL signals; by default include open (entry), completed (exit), and target-hit (portfolio_target_achieved) signal tables to capture the most recent signal activity across lifecycle states.",
+        "model": "claude-sonnet-4-5-20250929",
+        "tokens_used": {
+          "prompt": 8852,
+          "completion": 1603,
+          "total": 10455
+        },
+        "finish_reason": "end_turn",
+        "batch_processing_used": true,
+        "batch_count": 1,
+        "batch_mode": "single",
+        "input_truncated": false,
+        "history_trimmed_count": 0,
+        "full_signal_tables": {
+          "entry": [
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-01-12 (Price: 260.25)",
+              "Interval, Confirmation Status": "Daily, is CONFIRMED on 2026-01-12",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 3.83% above"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-01-12 (Price: 260.25)",
+              "Interval, Confirmation Status": "Daily, is CONFIRMED on 2026-01-12",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 3.83% above"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2025-12-31 (Price: 271.86)",
+              "Interval, Confirmation Status": "Quarterly, is CONFIRMED on 2025-12-31",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 0.60% below"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2025-12-02 (Price: 286.19)",
+              "Interval, Confirmation Status": "Daily, is CONFIRMED on 2025-12-02",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 5.58% below"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2025-11-25 (Price: 276.97)",
+              "Interval, Confirmation Status": "Daily, is CONFIRMED on 2025-11-25",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 2.43% below"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2025-10-31 (Price: 270.37)",
+              "Interval, Confirmation Status": "Quarterly, will be confirmed as valid at the end of this quarter",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 0.05% below"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2025-12-31 (Price: 271.86)",
+              "Interval, Confirmation Status": "Quarterly, was CONFIRMED on 2025-12-31",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 0.60% below"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2025-12-31 (Price: 271.86)",
+              "Interval, Confirmation Status": "Quarterly, was CONFIRMED on 2025-12-31",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 0.60% below"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2025-12-31 (Price: 271.86)",
+              "Interval, Confirmation Status": "Quarterly, was CONFIRMED on 2025-12-31",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 0.60% below"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2025-12-31 (Price: 271.86)",
+              "Interval, Confirmation Status": "Quarterly, was CONFIRMED on 2025-12-31",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 0.60% below"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2025-12-31 (Price: 271.86)",
+              "Interval, Confirmation Status": "Quarterly, was CONFIRMED on 2025-12-31",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 0.60% below"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2025-12-31 (Price: 271.86)",
+              "Interval, Confirmation Status": "Quarterly, was CONFIRMED on 2025-12-31",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 0.60% below"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2025-12-31 (Price: 271.86)",
+              "Interval, Confirmation Status": "Quarterly, was CONFIRMED on 2025-12-31",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 0.60% below"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2025-12-31 (Price: 271.86)",
+              "Interval, Confirmation Status": "Quarterly, was CONFIRMED on 2025-12-31",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 0.60% below"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2025-12-31 (Price: 271.86)",
+              "Interval, Confirmation Status": "Quarterly, was CONFIRMED on 2025-12-31",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 0.60% below"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2025-12-31 (Price: 271.86)",
+              "Interval, Confirmation Status": "Quarterly, was CONFIRMED on 2025-12-31",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 0.60% below"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2025-12-31 (Price: 271.86)",
+              "Interval, Confirmation Status": "Quarterly, was CONFIRMED on 2025-12-31",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 0.60% below"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2025-12-31 (Price: 271.86)",
+              "Interval, Confirmation Status": "Quarterly, was CONFIRMED on 2025-12-31",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 0.60% below"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2025-12-31 (Price: 271.86)",
+              "Interval, Confirmation Status": "Quarterly, was CONFIRMED on 2025-12-31",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 0.60% below"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2025-12-31 (Price: 271.86)",
+              "Interval, Confirmation Status": "Quarterly, was CONFIRMED on 2025-12-31",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 0.60% below"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2025-12-31 (Price: 271.86)",
+              "Interval, Confirmation Status": "Quarterly, was CONFIRMED on 2025-12-31",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 0.60% below"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2025-12-31 (Price: 271.86)",
+              "Interval, Confirmation Status": "Quarterly, was CONFIRMED on 2025-12-31",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 0.60% below"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-02-06 (Price: 275.91)",
+              "Interval, Confirmation Status": "Weekly, is CONFIRMED on 2026-02-06",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 2.06% below"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2025-12-31 (Price: 271.86)",
+              "Interval, Confirmation Status": "Quarterly, was CONFIRMED on 2025-12-31",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 0.60% below"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-02-08 (Price: 278.12)",
+              "Interval, Confirmation Status": "Weekly, was CONFIRMED on 2026-02-08",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 2.84% below"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2025-12-31 (Price: 271.86)",
+              "Interval, Confirmation Status": "Quarterly, was CONFIRMED on 2025-12-31",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 0.60% below"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-02-08 (Price: 278.12)",
+              "Interval, Confirmation Status": "Weekly, was CONFIRMED on 2026-02-08",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 2.84% below"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2025-12-31 (Price: 271.86)",
+              "Interval, Confirmation Status": "Quarterly, was CONFIRMED on 2025-12-31",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 0.60% below"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-02-08 (Price: 275.91)",
+              "Interval, Confirmation Status": "Weekly, was CONFIRMED on 2026-02-08",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 2.06% below"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-02-08 (Price: 278.12)",
+              "Interval, Confirmation Status": "Weekly, was CONFIRMED on 2026-02-08",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 2.84% below"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-02-08 (Price: 278.12)",
+              "Interval, Confirmation Status": "Weekly, was CONFIRMED on 2026-02-08",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 2.84% below"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-02-08 (Price: 278.12)",
+              "Interval, Confirmation Status": "Weekly, was CONFIRMED on 2026-02-08",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 2.84% below"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-03-11 (Price: 260.81)",
+              "Interval, Confirmation Status": "Daily, was CONFIRMED on 2026-03-11",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 3.61% above"
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-03-17 (Price: 254.23)",
+              "Interval, Confirmation Status": "Daily, was CONFIRMED on 2026-03-17",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 6.29% above"
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-03-17 (Price: 254.23)",
+              "Interval, Confirmation Status": "Daily, was CONFIRMED on 2026-03-17",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-04-17 (Price: 270.2300), 6.29% above"
+            }
+          ],
+          "exit": [
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2024-09-30 (Price: 233.0)",
+              "Exit Signal Date/Price[$]": "2026-01-02 (Price: 271.01)",
+              "Interval, Confirmation Status": "Monthly, is CONFIRMED on 2024-09-30"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2024-07-31 (Price: 222.08)",
+              "Exit Signal Date/Price[$]": "2025-12-01 (Price: 283.1)",
+              "Interval, Confirmation Status": "Monthly, is CONFIRMED on 2024-07-31"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2025-11-25 (Price: 276.97)",
+              "Exit Signal Date/Price[$]": "2025-12-05 (Price: 278.78)",
+              "Interval, Confirmation Status": "Daily, is CONFIRMED on 2025-11-25"
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-01-22 (Price: 248.35)",
+              "Exit Signal Date/Price[$]": "2026-01-26 (Price: 255.41)",
+              "Interval, Confirmation Status": "Daily, was CONFIRMED on 2026-01-22"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2024-09-30 (Price: 233.0)",
+              "Exit Signal Date/Price[$]": "2026-01-27 (Price: 260.17)",
+              "Interval, Confirmation Status": "Monthly, is CONFIRMED on 2024-09-30"
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-01-22 (Price: 248.35)",
+              "Exit Signal Date/Price[$]": "2026-01-26 (Price: 255.41)",
+              "Interval, Confirmation Status": "Daily, was CONFIRMED on 2026-01-22"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2024-09-30 (Price: 233.0)",
+              "Exit Signal Date/Price[$]": "2026-01-27 (Price: 258.27)",
+              "Interval, Confirmation Status": "Monthly, is CONFIRMED on 2024-09-30"
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-01-22 (Price: 248.35)",
+              "Exit Signal Date/Price[$]": "2026-01-26 (Price: 255.41)",
+              "Interval, Confirmation Status": "Daily, was CONFIRMED on 2026-01-22"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2024-09-30 (Price: 233.0)",
+              "Exit Signal Date/Price[$]": "2026-01-27 (Price: 258.27)",
+              "Interval, Confirmation Status": "Monthly, is CONFIRMED on 2024-09-30"
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-01-22 (Price: 248.35)",
+              "Exit Signal Date/Price[$]": "2026-01-26 (Price: 255.41)",
+              "Interval, Confirmation Status": "Daily, was CONFIRMED on 2026-01-22"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2024-09-30 (Price: 233.0)",
+              "Exit Signal Date/Price[$]": "2026-01-27 (Price: 258.27)",
+              "Interval, Confirmation Status": "Monthly, is CONFIRMED on 2024-09-30"
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-01-22 (Price: 248.35)",
+              "Exit Signal Date/Price[$]": "2026-01-26 (Price: 255.41)",
+              "Interval, Confirmation Status": "Daily, was CONFIRMED on 2026-01-22"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2024-09-30 (Price: 233.0)",
+              "Exit Signal Date/Price[$]": "2026-01-27 (Price: 258.27)",
+              "Interval, Confirmation Status": "Monthly, is CONFIRMED on 2024-09-30"
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-01-22 (Price: 248.35)",
+              "Exit Signal Date/Price[$]": "2026-01-26 (Price: 255.41)",
+              "Interval, Confirmation Status": "Daily, was CONFIRMED on 2026-01-22"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2024-09-30 (Price: 233.0)",
+              "Exit Signal Date/Price[$]": "2026-01-27 (Price: 258.27)",
+              "Interval, Confirmation Status": "Monthly, is CONFIRMED on 2024-09-30"
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-01-22 (Price: 248.35)",
+              "Exit Signal Date/Price[$]": "2026-01-26 (Price: 255.41)",
+              "Interval, Confirmation Status": "Daily, was CONFIRMED on 2026-01-22"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2024-09-30 (Price: 233.0)",
+              "Exit Signal Date/Price[$]": "2026-01-28 (Price: 256.44)",
+              "Interval, Confirmation Status": "Monthly, is CONFIRMED on 2024-09-30"
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-01-22 (Price: 248.35)",
+              "Exit Signal Date/Price[$]": "2026-01-26 (Price: 255.41)",
+              "Interval, Confirmation Status": "Daily, was CONFIRMED on 2026-01-22"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2024-09-30 (Price: 233.0)",
+              "Exit Signal Date/Price[$]": "2026-01-29 (Price: 258.28)",
+              "Interval, Confirmation Status": "Monthly, is CONFIRMED on 2024-09-30"
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-01-22 (Price: 248.35)",
+              "Exit Signal Date/Price[$]": "2026-01-26 (Price: 255.41)",
+              "Interval, Confirmation Status": "Daily, was CONFIRMED on 2026-01-22"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2024-09-30 (Price: 233.0)",
+              "Exit Signal Date/Price[$]": "2026-01-29 (Price: 258.28)",
+              "Interval, Confirmation Status": "Monthly, is CONFIRMED on 2024-09-30"
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-01-22 (Price: 248.35)",
+              "Exit Signal Date/Price[$]": "2026-01-26 (Price: 255.41)",
+              "Interval, Confirmation Status": "Daily, was CONFIRMED on 2026-01-22"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2024-09-30 (Price: 233.0)",
+              "Exit Signal Date/Price[$]": "2026-01-29 (Price: 258.28)",
+              "Interval, Confirmation Status": "Monthly, is CONFIRMED on 2024-09-30"
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-01-22 (Price: 248.35)",
+              "Exit Signal Date/Price[$]": "2026-01-26 (Price: 255.41)",
+              "Interval, Confirmation Status": "Daily, was CONFIRMED on 2026-01-22"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2024-09-30 (Price: 233.0)",
+              "Exit Signal Date/Price[$]": "2026-01-29 (Price: 258.28)",
+              "Interval, Confirmation Status": "Monthly, is CONFIRMED on 2024-09-30"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2024-09-30 (Price: 233.0)",
+              "Exit Signal Date/Price[$]": "2026-01-30 (Price: 258.28)",
+              "Interval, Confirmation Status": "Monthly, is CONFIRMED on 2024-09-30"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2024-09-30 (Price: 233.0)",
+              "Exit Signal Date/Price[$]": "2026-01-30 (Price: 258.28)",
+              "Interval, Confirmation Status": "Monthly, is CONFIRMED on 2024-09-30"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2024-09-30 (Price: 233.0)",
+              "Exit Signal Date/Price[$]": "2026-01-31 (Price: 259.48)",
+              "Interval, Confirmation Status": "Monthly, is CONFIRMED on 2024-09-30"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2024-09-30 (Price: 233.0)",
+              "Exit Signal Date/Price[$]": "2026-01-31 (Price: 259.48)",
+              "Interval, Confirmation Status": "Monthly, is CONFIRMED on 2024-09-30"
+            },
+            {
+              "Function": "BAND MATRIX",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-01-07 (Price: 260.33)",
+              "Exit Signal Date/Price[$]": "2026-02-12 (Price: 261.98)",
+              "Interval, Confirmation Status": "Daily, was CONFIRMED on 2026-01-07"
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-03-17 (Price: 254.23)",
+              "Exit Signal Date/Price[$]": "2026-04-09 (Price: 260.49)",
+              "Interval, Confirmation Status": "Daily, was CONFIRMED on 2026-03-17"
+            }
+          ]
+        },
+        "signals_table": [
+          {
+            "Symbol": "AAPL",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2026-01-12",
+            "Price": "$260.25",
+            "Interval": "Daily",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2026-01-12",
+            "Price": "$260.25",
+            "Interval": "Daily",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2025-12-31",
+            "Price": "$271.86",
+            "Interval": "Quarterly",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2025-12-02",
+            "Price": "$286.19",
+            "Interval": "Daily",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2025-11-25",
+            "Price": "$276.97",
+            "Interval": "Daily",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2025-10-31",
+            "Price": "$270.37",
+            "Interval": "Quarterly",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2025-12-31",
+            "Price": "$271.86",
+            "Interval": "Quarterly",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2025-12-31",
+            "Price": "$271.86",
+            "Interval": "Quarterly",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2025-12-31",
+            "Price": "$271.86",
+            "Interval": "Quarterly",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2025-12-31",
+            "Price": "$271.86",
+            "Interval": "Quarterly",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2025-12-31",
+            "Price": "$271.86",
+            "Interval": "Quarterly",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2025-12-31",
+            "Price": "$271.86",
+            "Interval": "Quarterly",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2025-12-31",
+            "Price": "$271.86",
+            "Interval": "Quarterly",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2025-12-31",
+            "Price": "$271.86",
+            "Interval": "Quarterly",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2025-12-31",
+            "Price": "$271.86",
+            "Interval": "Quarterly",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2025-12-31",
+            "Price": "$271.86",
+            "Interval": "Quarterly",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2025-12-31",
+            "Price": "$271.86",
+            "Interval": "Quarterly",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2025-12-31",
+            "Price": "$271.86",
+            "Interval": "Quarterly",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2025-12-31",
+            "Price": "$271.86",
+            "Interval": "Quarterly",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2025-12-31",
+            "Price": "$271.86",
+            "Interval": "Quarterly",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2025-12-31",
+            "Price": "$271.86",
+            "Interval": "Quarterly",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2025-12-31",
+            "Price": "$271.86",
+            "Interval": "Quarterly",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2026-02-06",
+            "Price": "$275.91",
+            "Interval": "Weekly",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2025-12-31",
+            "Price": "$271.86",
+            "Interval": "Quarterly",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2026-02-08",
+            "Price": "$278.12",
+            "Interval": "Weekly",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2025-12-31",
+            "Price": "$271.86",
+            "Interval": "Quarterly",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2026-02-08",
+            "Price": "$278.12",
+            "Interval": "Weekly",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2025-12-31",
+            "Price": "$271.86",
+            "Interval": "Quarterly",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2026-02-08",
+            "Price": "$275.91",
+            "Interval": "Weekly",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2026-02-08",
+            "Price": "$278.12",
+            "Interval": "Weekly",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2026-02-08",
+            "Price": "$278.12",
+            "Interval": "Weekly",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2026-02-08",
+            "Price": "$278.12",
+            "Interval": "Weekly",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2026-03-11",
+            "Price": "$260.81",
+            "Interval": "Daily",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2026-03-17",
+            "Price": "$254.23",
+            "Interval": "Daily",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2026-03-17",
+            "Price": "$254.23",
+            "Interval": "Daily",
+            "Status": "Unknown"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2024-09-30",
+            "Price": "$233.0",
+            "Interval": "Monthly",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2024-07-31",
+            "Price": "$222.08",
+            "Interval": "Monthly",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2025-11-25",
+            "Price": "$276.97",
+            "Interval": "Daily",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2026-01-22",
+            "Price": "$248.35",
+            "Interval": "Daily",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2024-09-30",
+            "Price": "$233.0",
+            "Interval": "Monthly",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2026-01-22",
+            "Price": "$248.35",
+            "Interval": "Daily",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2024-09-30",
+            "Price": "$233.0",
+            "Interval": "Monthly",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2026-01-22",
+            "Price": "$248.35",
+            "Interval": "Daily",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2024-09-30",
+            "Price": "$233.0",
+            "Interval": "Monthly",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2026-01-22",
+            "Price": "$248.35",
+            "Interval": "Daily",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2024-09-30",
+            "Price": "$233.0",
+            "Interval": "Monthly",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2026-01-22",
+            "Price": "$248.35",
+            "Interval": "Daily",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2024-09-30",
+            "Price": "$233.0",
+            "Interval": "Monthly",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2026-01-22",
+            "Price": "$248.35",
+            "Interval": "Daily",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2024-09-30",
+            "Price": "$233.0",
+            "Interval": "Monthly",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2026-01-22",
+            "Price": "$248.35",
+            "Interval": "Daily",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2024-09-30",
+            "Price": "$233.0",
+            "Interval": "Monthly",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2026-01-22",
+            "Price": "$248.35",
+            "Interval": "Daily",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2024-09-30",
+            "Price": "$233.0",
+            "Interval": "Monthly",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2026-01-22",
+            "Price": "$248.35",
+            "Interval": "Daily",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2024-09-30",
+            "Price": "$233.0",
+            "Interval": "Monthly",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2026-01-22",
+            "Price": "$248.35",
+            "Interval": "Daily",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2024-09-30",
+            "Price": "$233.0",
+            "Interval": "Monthly",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2026-01-22",
+            "Price": "$248.35",
+            "Interval": "Daily",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2024-09-30",
+            "Price": "$233.0",
+            "Interval": "Monthly",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2024-09-30",
+            "Price": "$233.0",
+            "Interval": "Monthly",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2024-09-30",
+            "Price": "$233.0",
+            "Interval": "Monthly",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2024-09-30",
+            "Price": "$233.0",
+            "Interval": "Monthly",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2024-09-30",
+            "Price": "$233.0",
+            "Interval": "Monthly",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "BAND MATRIX",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2026-01-07",
+            "Price": "$260.33",
+            "Interval": "Daily",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "AAPL",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2026-03-17",
+            "Price": "$254.23",
+            "Interval": "Daily",
+            "Status": "Closed"
+          }
+        ],
+        "intent": "SIGNAL_LOOKUP",
+        "intent_label": "Signal Lookup",
+        "intent_confidence": 0.85,
+        "intent_classified_by": "llm_router",
+        "route": "INTERNAL",
+        "web_search_used": false,
+        "web_sources": [],
+        "llm_router_reasoning": "The user is asking for the latest trading signals for AAPL, which requires accessing internal data specific to their trading signals.",
+        "followup_mode": "dynamic_fresh",
+        "conversation_context_used": false,
+        "history_exchanges_used": 0,
+        "flow_trace": [
+          {
+            "stage": "Router",
+            "detail": "Analyzing user query intent and selecting route",
+            "timestamp": "09:56:31"
+          },
+          {
+            "stage": "Route Selected",
+            "detail": "INTERNAL (intent=SIGNAL_LOOKUP, conf=0.85)",
+            "timestamp": "09:56:34"
+          },
+          {
+            "stage": "Internal Search",
+            "detail": "Using internal signal data pipeline",
+            "timestamp": "09:56:34"
+          },
+          {
+            "stage": "Context Handling",
+            "detail": "No prior context found; running fresh internal smart query",
+            "timestamp": "09:56:34"
+          },
+          {
+            "stage": "Internal Data Query",
+            "detail": "Fetched internal signal data (selector + columns + date filters)",
+            "timestamp": "09:57:15"
+          },
+          {
+            "stage": "Response Generation",
+            "detail": "Generated final response from internal analysis",
+            "timestamp": "09:57:15"
+          }
+        ]
+      }
+    }
+  ]
+}

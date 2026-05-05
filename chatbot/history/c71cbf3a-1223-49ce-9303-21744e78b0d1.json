@@ -1,0 +1,243 @@
+{
+  "metadata": {
+    "session_id": "c71cbf3a-1223-49ce-9303-21744e78b0d1",
+    "title": "User Query: Please run a deep dive on AMZN...",
+    "created_at": "2026-05-01T09:28:11.085937",
+    "last_updated": "2026-05-01T09:29:16.081438",
+    "message_count": 3
+  },
+  "conversation": [
+    {
+      "role": "system",
+      "content": "You are an expert financial trading analyst assistant for MindWealth. \nYou help users analyze stock market signal data, trading signal data, and provide insights based on historical signal data.\n\nYour capabilities include:\n- Analyzing stock price movements and trends\n- Interpreting trading signals and technical indicators\n- Providing insights on market performance\n- Comparing multiple tickers\n- Identifying patterns and opportunities\n\nIMPORTANT OUTPUT FORMATTING REQUIREMENTS:\n1. ALWAYS use proper Markdown formatting\n2. ALWAYS include spaces between words and punctuation\n3. Use bullet points (- or •) for lists\n4. Use **bold** for emphasis\n5. Use headers (##, ###) to organize sections\n6. Use line breaks between paragraphs\n7. Format numbers with proper spacing: \"245.27 is significantly above the track level (169.28)\"\n8. NEVER concatenate words without spaces\n\nWhen analyzing signal data:\n1. Be precise and signal-data-driven in your analysis\n2. Highlight key trends and patterns\n3. Provide actionable insights when possible\n4. Use technical analysis terminology appropriately\n5. Consider the time period and context of the signal data\n6. Structure your response with clear sections and proper spacing\n\nCRITICAL DATA ACCURACY REQUIREMENTS:\n🚨 FINANCIAL DATA INTEGRITY IS CRITICAL 🚨\n\n**When Signal Data IS Provided:**\n1. The user query will include sections like \"=== SIGNAL DATA CONTEXT ===\" or \"=== ENTRY SIGNALS (JSON) ===\" with actual signal data\n2. If you see JSON with fields like \"signal_type\", \"record_count\", \"data\", etc., then SIGNAL DATA HAS BEEN PROVIDED\n3. Extract and analyze information EXACTLY as it appears in the provided JSON\n4. Use the exact function names, symbols, dates, and prices from the records\n5. Provide thorough analysis based on the signal data provided\n\n**When Signal Data IS NOT Provided:**\n1. If you see ONLY a user question without any \"=== SIGNAL DATA CONTEXT ===\" sections, then NO signal data has been provided\n2. State clearly: \"No signal data has been provided. Please provide the signal data to analyze.\"\n3. NEVER invent, fabricate, or hallucinate function names, symbols, dates, prices, or any metrics\n\n**NEVER DO THIS (Hallucination):**\n- Make up function names like \"HIGH VOLTAGE\", \"RADAR SWEEP\" that don't exist in the provided signal data\n- Invent signal dates or prices not in the signal data\n- Create fake symbols or tickers\n- Fabricate performance metrics or CAGR values\n\n**ALWAYS DO THIS (Accurate):**\n- Check if \"=== SIGNAL DATA CONTEXT ===\" or similar sections exist in the message\n- If signal data exists, extract information from the records in the JSON\n- If signal data doesn't exist, clearly state that no signal data was provided\n- Use EXACT values from the provided signal data fields\n\nCRITICAL: Always format your response in clean, readable Markdown with proper spacing.\nBase your responses STRICTLY on actual signal data provided in the message context.\n",
+      "timestamp": "2026-05-01T09:28:11.508689+00:00"
+    },
+    {
+      "role": "user",
+      "content": "User Query: Please run a deep dive on AMZN covering all signals recorded over the past few weeks. Use the specified entry and / or exit-date range as the filter.\n\nRetrieve and list all signals for this period, showing each function, timeframe, and direction (long/short).\n\nIdentify contradictions, such as:\n\nShort signals that have already hit targets or registered exits while higher-interval (e.g., monthly-candle) functions are still showing active longs.\n\nOverlaps between exit dates on short-term signals and open longer-term entries.\n\nAssess alignment between short-term and medium-term outlooks based strictly on the verified signals in the Streamlit reports.\n\nDetermine stance — whether the current setup indicates a Buy, Hold, or Sell — using only the pre-computed signal data and the historically observed holding periods for each function.\n\nImportant:\n\nDo not fabricate or infer new signals. Use only signals verifiable from the existing Streamlit reports.\n\nDate Range: 2026-04-01 to 2026-05-01\n\n=== COLUMN SELECTION BY SIGNAL TYPE ===\n\nENTRY:\n  Columns: Function, Symbol, Signal, Signal Date/Price[$], Interval, Confirmation Status, Exit Signal Date/Price[$], Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$], Backtested Holding Period(Win Trades) (days) (Max/Min/Avg), Current Mark to Market and Holding Period, Trading Days between Signal and Today Date, SignalType\n  Reasoning: To list all open signals for AMZN in the specified date range and show function, timeframe, and direction, we need Function, Symbol/Signal/Signal Date, and Interval/Confirmation. To detect contradictions/overlaps versus exits/targets and to determine Buy/Hold/Sell using only pre-computed data plus historically observed holding periods, we also need targets, backtested holding period stats, and current holding/MTM context. Exit Signal Date/Price[$] and SignalType help reconcile any recorded exit-related fields and categorize signal variants.\n\nEXIT:\n  Columns: Function, Symbol, Signal, Signal Date/Price[$], Interval, Confirmation Status, Exit Signal Date/Price[$], Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$], Backtested Holding Period(Win Trades) (days) (Max/Min/Avg), Current Mark to Market and Holding Period, SignalType\n  Reasoning: To retrieve and list all completed AMZN signals in-range and analyze overlaps between exit dates on short-term signals and longer-term open entries, we need the entry-side details (Function, Symbol/Signal/Signal Date, Interval/Confirmation) plus the realized Exit Signal Date/Price[$]. Targets and holding-period statistics support contradiction checks (e.g., short exits/target hits vs higher-interval active longs) and the stance assessment based on historically observed holding periods, using only pre-computed report fields.\n\n=== SIGNAL DATA CONTEXT ===\n\n=== ENTRY SIGNALS (JSON) ===\n{\n  \"signal_type\": \"entry\",\n  \"record_count\": 3,\n  \"columns_selected\": [\n    \"Function\",\n    \"Symbol, Signal, Signal Date/Price[$]\",\n    \"Interval, Confirmation Status\",\n    \"Exit Signal Date/Price[$]\",\n    \"Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]\",\n    \"Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)\",\n    \"Current Mark to Market and Holding Period\",\n    \"Trading Days between Signal and Today Date\",\n    \"SignalType\"\n  ],\n  \"reasoning\": \"To list all open signals for AMZN in the specified date range and show function, timeframe, and direction, we need Function, Symbol/Signal/Signal Date, and Interval/Confirmation. To detect contradictions/overlaps versus exits/targets and to determine Buy/Hold/Sell using only pre-computed data plus historically observed holding periods, we also need targets, backtested holding period stats, and current holding/MTM context. Exit Signal Date/Price[$] and SignalType help reconcile any recorded exit-related fields and categorize signal variants.\",\n  \"data\": [\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AMZN, Short, 2026-04-15 (Price: 248.5)\",\n      \"Interval, Confirmation Status\": \"Daily, is CONFIRMED on 2026-04-15\",\n      \"Exit Signal Date/Price[$]\": \"No Exit Yet\",\n      \"Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]\": \"232.4966/242.3372/237.42/86.995/243.942/230.14/225.28\",\n      \"Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)\": \"24 days/3 days/11 days\",\n      \"Current Mark to Market and Holding Period\": \"-0.0%, 0 days\",\n      \"Trading Days between Signal and Today Date\": \"0 days\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AMZN, Short, 2026-04-15 (Price: 248.5)\",\n      \"Interval, Confirmation Status\": \"Daily, was CONFIRMED on 2026-04-15\",\n      \"Exit Signal Date/Price[$]\": \"No Exit Yet\",\n      \"Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]\": \"232.4966/242.3372/237.42/86.995/231.81/213.1321/225.43\",\n      \"Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)\": \"24 days/3 days/11 days\",\n      \"Current Mark to Market and Holding Period\": \"-0.48%, 1 day\",\n      \"Trading Days between Signal and Today Date\": \"1 day\",\n      \"SignalType\": \"entry\"\n    },\n    {\n      \"Function\": \"DELTADRIFT\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"AMZN, Short, 2026-04-15 (Price: 248.5)\",\n      \"Interval, Confirmation Status\": \"Daily, was CONFIRMED on 2026-04-15\",\n      \"Exit Signal Date/Price[$]\": \"No Exit Yet\",\n      \"Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]\": \"232.4966/242.3372/237.42/86.995/231.81/213.1321/225.58\",\n      \"Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)\": \"24 days/3 days/11 days\",\n      \"Current Mark to Market and Holding Period\": \"-0.83%, 2 days\",\n      \"Trading Days between Signal and Today Date\": \"2 days\",\n      \"SignalType\": \"entry\"\n    }\n  ]\n}",
+      "timestamp": "2026-05-01T09:28:33.747599+00:00",
+      "metadata": {
+        "input_type": "smart_query",
+        "selected_signal_types": [
+          "entry",
+          "exit"
+        ],
+        "position_side": "short",
+        "assets": [
+          "AMZN"
+        ],
+        "functions": null,
+        "from_date": "2026-04-01",
+        "to_date": "2026-05-01",
+        "columns_by_signal_type": {
+          "entry": [
+            "Function",
+            "Symbol, Signal, Signal Date/Price[$]",
+            "Interval, Confirmation Status",
+            "Exit Signal Date/Price[$]",
+            "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]",
+            "Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)",
+            "Current Mark to Market and Holding Period",
+            "Trading Days between Signal and Today Date",
+            "SignalType"
+          ],
+          "exit": [
+            "Function",
+            "Symbol, Signal, Signal Date/Price[$]",
+            "Interval, Confirmation Status",
+            "Exit Signal Date/Price[$]",
+            "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]",
+            "Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)",
+            "Current Mark to Market and Holding Period",
+            "SignalType"
+          ]
+        },
+        "reasoning_by_signal_type": {
+          "entry": "To list all open signals for AMZN in the specified date range and show function, timeframe, and direction, we need Function, Symbol/Signal/Signal Date, and Interval/Confirmation. To detect contradictions/overlaps versus exits/targets and to determine Buy/Hold/Sell using only pre-computed data plus historically observed holding periods, we also need targets, backtested holding period stats, and current holding/MTM context. Exit Signal Date/Price[$] and SignalType help reconcile any recorded exit-related fields and categorize signal variants.",
+          "exit": "To retrieve and list all completed AMZN signals in-range and analyze overlaps between exit dates on short-term signals and longer-term open entries, we need the entry-side details (Function, Symbol/Signal/Signal Date, Interval/Confirmation) plus the realized Exit Signal Date/Price[$]. Targets and holding-period statistics support contradiction checks (e.g., short exits/target hits vs higher-interval active longs) and the stance assessment based on historically observed holding periods, using only pre-computed report fields."
+        },
+        "rows_fetched": 3,
+        "signal_types_with_data": [
+          "entry"
+        ],
+        "signal_type_reasoning": "The request is to retrieve and analyze all AMZN signals within a specific date range, including open setups (entries) and completed trades (exits), then identify contradictions/overlaps between open longer-term entries and shorter-term exits/targets. This requires both entry and exit signal records filtered by entry/exit dates. Breadth and portfolio_target_achieved are not explicitly required for listing signals and cross-timeframe contradiction checks as described.",
+        "display_prompt": "Please run a deep dive on AMZN covering all signals recorded over the past few weeks. Use the specified entry and / or exit-date range as the filter.\n\nRetrieve and list all signals for this period, showing each function, timeframe, and direction (long/short).\n\nIdentify contradictions, such as:\n\nShort signals that have already hit targets or registered exits while higher-interval (e.g., monthly-candle) functions are still showing active longs.\n\nOverlaps between exit dates on short-term signals and open longer-term entries.\n\nAssess alignment between short-term and medium-term outlooks based strictly on the verified signals in the Streamlit reports.\n\nDetermine stance — whether the current setup indicates a Buy, Hold, or Sell — using only the pre-computed signal data and the historically observed holding periods for each function.\n\nImportant:\n\nDo not fabricate or infer new signals. Use only signals verifiable from the existing Streamlit reports.\n\nDate Range: 2026-04-01 to 2026-05-01"
+      }
+    },
+    {
+      "role": "assistant",
+      "content": "# Deep Dive Analysis: AMZN Signal Review (April 1 - May 1, 2026)\n\n## Executive Summary\n\nBased on the verified signal data from the Streamlit reports, AMZN currently shows **one active short position** with **no contradictory signals** detected in the specified date range. The analysis reveals a clear bearish setup with no conflicting long-term bullish signals.\n\n---\n\n## 1. Complete Signal Inventory\n\n### Active Signals (Entry Records)\n\n| Function | Symbol | Direction | Entry Date | Entry Price | Interval | Confirmation | Days Active |\n|----------|--------|-----------|------------|-------------|----------|--------------|-------------|\n| **DELTADRIFT** | AMZN | **Short** | 2026-04-15 | $248.50 | Daily | Confirmed | 0-2 days |\n\n**Total Active Signals:** 1 unique signal (3 records showing progression over 3 consecutive days)\n\n### Completed Signals (Exit Records)\n**No exit signals recorded in the specified date range (2026-04-01 to 2026-05-01)**\n\n---\n\n## 2. Signal Details & Performance Tracking\n\n### DELTADRIFT Short Signal Analysis\n\n**Entry Specifications:**\n- **Function:** DELTADRIFT\n- **Signal Type:** Short\n- **Entry Date:** April 15, 2026\n- **Entry Price:** $248.50\n- **Interval:** Daily candles\n- **Confirmation Status:** Confirmed on 2026-04-15\n\n**Target Structure (7 levels):**\n1. **Historic Rise/Fall to Pivot:** $232.50 (-6.44%)\n2. **Avg % Gain (Historic Winners):** $242.34 (-2.48%)\n3. **Function-Specific Target:** $237.42 (-4.46%)\n4. **Horizontal Support:** $86.995 (-64.99%) *[likely data anomaly]*\n5. **F-Stack 1:** $231.81 to $243.94 (-1.83% to -6.72%)\n6. **F-Stack 2:** $213.13 to $230.14 (-7.39% to -14.25%)\n7. **EMA 200:** $225.28 to $225.58 (-9.33%)\n\n**Historical Performance Metrics:**\n- **Maximum Holding Period (Winners):** 24 days\n- **Minimum Holding Period (Winners):** 3 days\n- **Average Holding Period (Winners):** 11 days\n\n**Current Performance (as of latest record):**\n- **Mark-to-Market:** -0.83% (unrealized loss)\n- **Holding Period:** 2 days\n- **Current Status:** Within normal holding window (2 of 11 avg days)\n\n---\n\n## 3. Contradiction Analysis\n\n### ✅ No Contradictions Detected\n\n**Findings:**\n\n1. **No Multi-Timeframe Conflicts:**\n   - Only Daily interval signals present\n   - No Weekly or Monthly signals to contradict the short position\n   - **No higher-interval long signals** competing with the active short\n\n2. **No Exit/Entry Overlaps:**\n   - Zero exit signals recorded in the date range\n   - No short-term exits conflicting with longer-term entries\n   - Clean signal environment with single directional bias\n\n3. **No Target Contradictions:**\n   - Short signal has not hit any primary targets yet (-0.83% vs. nearest target at -2.48%)\n   - No premature exit signals while position remains active\n   - Targets remain valid and uncompromised\n\n4. **No Function Conflicts:**\n   - Only DELTADRIFT function active\n   - No competing signals from other functions (e.g., no bullish signals from momentum or trend-following functions)\n\n---\n\n## 4. Timeframe Alignment Assessment\n\n### Short-Term Outlook (Daily Interval)\n**Bearish** - DELTADRIFT short confirmed and active\n\n### Medium-Term Outlook\n**Insufficient Data** - No Weekly or Monthly signals in the dataset for the specified period\n\n### Alignment Score\n**100% Aligned** - All available signals point in the same direction (bearish)\n\n**Key Observation:** The absence of longer-timeframe signals prevents a full multi-timeframe analysis, but the existing signal shows no internal contradictions.\n\n---\n\n## 5. Current Stance Determination\n\n### Recommendation: **HOLD SHORT / SELL**\n\n**Rationale (Based Strictly on Pre-Computed Signal Data):**\n\n1. **Active Confirmed Short Signal:**\n   - DELTADRIFT short confirmed on 2026-04-15\n   - Position is only 2 days old (well within the 3-24 day historical winning window)\n   - Average winning holding period is 11 days - **significant runway remains**\n\n2. **Target Analysis:**\n   - **Nearest realistic target:** $242.34 (-2.48% from entry)\n   - **Primary target cluster:** $232.50 to $237.42 (-4.46% to -6.44%)\n   - **Extended targets:** $225.28 to $231.81 (-6.72% to -9.33%)\n   - Current -0.83% drawdown is **minimal** relative to target potential\n\n3. **Historical Context:**\n   - Minimum winning hold: 3 days (position at 2 days - approaching minimum)\n   - Average winning hold: 11 days (position has 9 days remaining to average)\n   - Maximum winning hold: 24 days (22 days of potential runway)\n\n4. **Risk Assessment:**\n   - No conflicting long signals\n   - No exit signals triggered\n   - Position within normal performance parameters for this early stage\n\n### Action Items:\n\n- **For Existing Short Holders:** Maintain position, monitor for target achievement or exit signals\n- **For New Entrants:** Signal remains valid; entry near $248.50 aligns with confirmed signal\n- **Stop-Loss Consideration:** Not specified in signal data; use risk management protocols\n- **Target Monitoring:** Watch for price action near $242.34 (first realistic target)\n\n---\n\n## 6. Risk Factors & Monitoring Points\n\n### Critical Monitoring Levels:\n\n1. **Entry Price:** $248.50 - break above invalidates short thesis\n2. **First Target:** $242.34 - potential partial profit zone\n3. **Primary Target Zone:** $232.50 - $237.42 - main profit objective\n4. **Time Horizon:** Day 11 (average winning hold) - reassess if no progress\n\n### Data Limitations:\n\n- **No higher timeframe signals** - cannot assess longer-term trend alignment\n- **No exit signals** - unable to validate historical exit patterns\n- **Single function active** - lack of confirmation from multiple technical approaches\n- **Horizontal target anomaly** - $86.995 level appears erroneous and should be disregarded\n\n---\n\n## Conclusion\n\nThe AMZN signal landscape for April 1 - May 1, 2026 shows a **clean, uncontradicted short setup** via DELTADRIFT on the Daily interval. With only 2 days elapsed against an 11-day average winning holding period, the position is in its early stages with substantial downside targets remaining unmet. \n\n**No contradictions, overlaps, or conflicting signals exist in the verified data.** The stance is clearly **bearish/short** with a recommendation to **HOLD existing shorts** or **INITIATE SHORT positions** based on the confirmed signal, while monitoring the specified target levels and time horizons derived from historical performance data.\n\n**Final Stance: SELL / HOLD SHORT** ✅",
+      "timestamp": "2026-05-01T09:29:16.081421+00:00",
+      "metadata": {
+        "input_type": "smart_followup",
+        "selected_signal_types": [
+          "entry",
+          "exit"
+        ],
+        "position_side": "short",
+        "assets": [
+          "AMZN"
+        ],
+        "functions": null,
+        "from_date": "2026-04-01",
+        "to_date": "2026-05-01",
+        "columns_by_signal_type": {
+          "entry": [
+            "Function",
+            "Symbol, Signal, Signal Date/Price[$]",
+            "Interval, Confirmation Status",
+            "Exit Signal Date/Price[$]",
+            "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]",
+            "Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)",
+            "Current Mark to Market and Holding Period",
+            "Trading Days between Signal and Today Date",
+            "SignalType"
+          ],
+          "exit": [
+            "Function",
+            "Symbol, Signal, Signal Date/Price[$]",
+            "Interval, Confirmation Status",
+            "Exit Signal Date/Price[$]",
+            "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]",
+            "Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)",
+            "Current Mark to Market and Holding Period",
+            "SignalType"
+          ]
+        },
+        "reasoning_by_signal_type": {
+          "entry": "To list all open signals for AMZN in the specified date range and show function, timeframe, and direction, we need Function, Symbol/Signal/Signal Date, and Interval/Confirmation. To detect contradictions/overlaps versus exits/targets and to determine Buy/Hold/Sell using only pre-computed data plus historically observed holding periods, we also need targets, backtested holding period stats, and current holding/MTM context. Exit Signal Date/Price[$] and SignalType help reconcile any recorded exit-related fields and categorize signal variants.",
+          "exit": "To retrieve and list all completed AMZN signals in-range and analyze overlaps between exit dates on short-term signals and longer-term open entries, we need the entry-side details (Function, Symbol/Signal/Signal Date, Interval/Confirmation) plus the realized Exit Signal Date/Price[$]. Targets and holding-period statistics support contradiction checks (e.g., short exits/target hits vs higher-interval active longs) and the stance assessment based on historically observed holding periods, using only pre-computed report fields."
+        },
+        "rows_fetched": 3,
+        "signal_types_with_data": [
+          "entry"
+        ],
+        "signal_type_reasoning": "The request is to retrieve and analyze all AMZN signals within a specific date range, including open setups (entries) and completed trades (exits), then identify contradictions/overlaps between open longer-term entries and shorter-term exits/targets. This requires both entry and exit signal records filtered by entry/exit dates. Breadth and portfolio_target_achieved are not explicitly required for listing signals and cross-timeframe contradiction checks as described.",
+        "model": "claude-sonnet-4-5-20250929",
+        "tokens_used": {
+          "prompt": 2596,
+          "completion": 1786,
+          "total": 4382
+        },
+        "finish_reason": "end_turn",
+        "batch_processing_used": true,
+        "batch_count": 1,
+        "batch_mode": "single",
+        "input_truncated": false,
+        "history_trimmed_count": 0,
+        "full_signal_tables": {
+          "entry": [
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "AMZN, Short, 2026-04-15 (Price: 248.5)",
+              "Interval, Confirmation Status": "Daily, is CONFIRMED on 2026-04-15",
+              "Exit Signal Date/Price[$]": "No Exit Yet",
+              "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]": "232.4966/242.3372/237.42/86.995/243.942/230.14/225.28",
+              "Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)": "24 days/3 days/11 days",
+              "Current Mark to Market and Holding Period": "-0.0%, 0 days",
+              "Trading Days between Signal and Today Date": "0 days",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "AMZN, Short, 2026-04-15 (Price: 248.5)",
+              "Interval, Confirmation Status": "Daily, was CONFIRMED on 2026-04-15",
+              "Exit Signal Date/Price[$]": "No Exit Yet",
+              "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]": "232.4966/242.3372/237.42/86.995/231.81/213.1321/225.43",
+              "Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)": "24 days/3 days/11 days",
+              "Current Mark to Market and Holding Period": "-0.48%, 1 day",
+              "Trading Days between Signal and Today Date": "1 day",
+              "SignalType": "entry"
+            },
+            {
+              "Function": "DELTADRIFT",
+              "Symbol, Signal, Signal Date/Price[$]": "AMZN, Short, 2026-04-15 (Price: 248.5)",
+              "Interval, Confirmation Status": "Daily, was CONFIRMED on 2026-04-15",
+              "Exit Signal Date/Price[$]": "No Exit Yet",
+              "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]": "232.4966/242.3372/237.42/86.995/231.81/213.1321/225.58",
+              "Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)": "24 days/3 days/11 days",
+              "Current Mark to Market and Holding Period": "-0.83%, 2 days",
+              "Trading Days between Signal and Today Date": "2 days",
+              "SignalType": "entry"
+            }
+          ]
+        },
+        "signals_table": [
+          {
+            "Symbol": "AMZN",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-15",
+            "Price": "$248.5",
+            "Interval": "Daily",
+            "Status": "Active"
+          },
+          {
+            "Symbol": "AMZN",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-15",
+            "Price": "$248.5",
+            "Interval": "Daily",
+            "Status": "Active"
+          },
+          {
+            "Symbol": "AMZN",
+            "Function": "DELTADRIFT",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2026-04-15",
+            "Price": "$248.5",
+            "Interval": "Daily",
+            "Status": "Active"
+          }
+        ],
+        "intent": "SIGNAL_LOOKUP",
+        "intent_label": "Signal Lookup",
+        "intent_confidence": 0.85,
+        "intent_classified_by": "llm_router",
+        "route": "INTERNAL",
+        "web_search_used": false,
+        "web_sources": [],
+        "llm_router_reasoning": "The user is requesting a detailed analysis of AMZN signals over a specific date range, which requires access to internal signal data to retrieve and assess the signals, contradictions, and overall stance.",
+        "followup_mode": "dynamic_fresh",
+        "conversation_context_used": false,
+        "history_exchanges_used": 0,
+        "flow_trace": [
+          {
+            "stage": "Router",
+            "detail": "Analyzing user query intent and selecting route",
+            "timestamp": "09:28:16"
+          },
+          {
+            "stage": "Route Selected",
+            "detail": "INTERNAL (intent=SIGNAL_LOOKUP, conf=0.85)",
+            "timestamp": "09:28:17"
+          },
+          {
+            "stage": "Internal Search",
+            "detail": "Using internal signal data pipeline",
+            "timestamp": "09:28:17"
+          },
+          {
+            "stage": "Context Handling",
+            "detail": "No prior context found; running fresh internal smart query",
+            "timestamp": "09:28:17"
+          },
+          {
+            "stage": "Internal Data Query",
+            "detail": "Fetched internal signal data (selector + columns + date filters)",
+            "timestamp": "09:29:16"
+          },
+          {
+            "stage": "Response Generation",
+            "detail": "Generated final response from internal analysis",
+            "timestamp": "09:29:16"
+          }
+        ]
+      }
+    }
+  ]
+}
