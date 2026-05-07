@@ -2,7 +2,7 @@
 
 [server]
 headless = true
-port = 8504
+port = 8506
 # Leave CORS at default (true) so it stays compatible with enableXsrfProtection (default true).
 
 [browser]
