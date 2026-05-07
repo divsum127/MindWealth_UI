@@ -1,10 +1,17 @@
 {
   "metadata": {
     "session_id": "aeee6640-01df-4442-884c-c32afbf23ffe",
+<<<<<<< HEAD
     "title": "Hello",
     "created_at": "2026-05-05T07:21:20.647665",
     "last_updated": "2026-05-07T02:36:36.221375",
     "message_count": 5
+=======
+    "title": "HEllo",
+    "created_at": "2026-05-05T07:21:20.647665",
+    "last_updated": "2026-05-05T13:07:45.393283",
+    "message_count": 3
+>>>>>>> chatbot-dev
   },
   "conversation": [
     {
@@ -14,8 +21,13 @@
     },
     {
       "role": "user",
+<<<<<<< HEAD
       "content": "Hello ",
       "timestamp": "2026-05-07T02:35:26.337914+00:00",
+=======
+      "content": "HEllo ",
+      "timestamp": "2026-05-05T13:07:39.258067+00:00",
+>>>>>>> chatbot-dev
       "metadata": {
         "intent": "CONVERSATIONAL",
         "intent_label": "Conversational",
@@ -24,15 +36,26 @@
         "route": "CONVERSATIONAL",
         "web_search_used": false,
         "web_sources": [],
+<<<<<<< HEAD
         "llm_router_reasoning": "The user has initiated a conversation without asking for specific data or information.",
         "input_type": "conversational",
         "display_prompt": "Hello"
+=======
+        "llm_router_reasoning": "The user greeted, and no specific request for information or data was made.",
+        "input_type": "conversational",
+        "display_prompt": "HEllo"
+>>>>>>> chatbot-dev
       }
     },
     {
       "role": "assistant",
+<<<<<<< HEAD
       "content": "Hello! 👋 Welcome to MindWealth Financial Analysis.\n\nI'm here to help you analyze stock market signals, trading data, and provide insights based on historical signal information.\n\n## How I Can Help You:\n\n- **Analyze Trading Signals** - Review entry and exit signals for specific tickers\n- **Market Trend Analysis** - Identify patterns and trends in stock movements\n- **Technical Indicators** - Interpret various trading signals and indicators\n- **Performance Insights** - Evaluate historical performance of trading strategies\n- **Multi-Ticker Comparison** - Compare signals across different stocks\n- **Pattern Recognition** - Spot opportunities and market patterns\n\n## To Get Started:\n\nPlease provide me with:\n- Specific ticker symbols you'd like to analyze\n- Time periods of interest\n- Any particular signals or patterns you want to explore\n- Questions about specific trading strategies\n\n**Note:** For the most accurate analysis, please share the relevant signal data you'd like me to examine. I'll provide detailed, data-driven insights based on the actual signals and market information you provide.\n\nWhat would you like to analyze today?",
       "timestamp": "2026-05-07T02:35:37.347216+00:00",
+=======
+      "content": "Hello! 👋 Welcome to MindWealth Financial Analysis!\n\nI'm here to help you analyze stock market signals, trading data, and provide insights based on historical signal information.\n\n## How I Can Help You:\n\n- **Analyze Trading Signals** - Review entry and exit signals for specific tickers\n- **Market Trend Analysis** - Identify patterns and trends in stock performance\n- **Technical Indicators** - Interpret various trading signals and indicators\n- **Multi-Ticker Comparison** - Compare performance across different stocks\n- **Signal Data Insights** - Provide actionable insights from your signal data\n\n## To Get Started:\n\nPlease provide me with signal data or ask me a question about:\n- Specific ticker symbols you'd like to analyze\n- Trading signals you want to review\n- Market trends or patterns you're interested in\n- Performance comparisons between stocks\n\n**Note:** For the most accurate analysis, please share the relevant signal data context with your question. Without signal data, I can only provide general guidance.\n\nWhat would you like to analyze today?",
+      "timestamp": "2026-05-05T13:07:45.393264+00:00",
+>>>>>>> chatbot-dev
       "metadata": {
         "intent": "CONVERSATIONAL",
         "intent_label": "Conversational",
@@ -41,6 +64,7 @@
         "route": "CONVERSATIONAL",
         "web_search_used": false,
         "web_sources": [],
+<<<<<<< HEAD
         "llm_router_reasoning": "The user has initiated a conversation without asking for specific data or information.",
         "input_type": "conversational",
         "model": "claude-sonnet-4-5-20250929",
@@ -48,6 +72,15 @@
           "prompt": 707,
           "completion": 244,
           "total": 951
+=======
+        "llm_router_reasoning": "The user greeted, and no specific request for information or data was made.",
+        "input_type": "conversational",
+        "model": "claude-sonnet-4-5-20250929",
+        "tokens_used": {
+          "prompt": 709,
+          "completion": 232,
+          "total": 941
+>>>>>>> chatbot-dev
         },
         "finish_reason": "end_turn",
         "batch_processing_used": true,
@@ -57,16 +90,25 @@
           {
             "stage": "Router",
             "detail": "Analyzing user query intent and selecting route",
+<<<<<<< HEAD
             "timestamp": "02:35:21"
+=======
+            "timestamp": "13:07:35"
+>>>>>>> chatbot-dev
           },
           {
             "stage": "Route Selected",
             "detail": "CONVERSATIONAL (intent=CONVERSATIONAL, conf=0.92)",
+<<<<<<< HEAD
             "timestamp": "02:35:26"
+=======
+            "timestamp": "13:07:39"
+>>>>>>> chatbot-dev
           },
           {
             "stage": "Conversation Mode",
             "detail": "Using conversation history only (no web/internal data fetch)",
+<<<<<<< HEAD
             "timestamp": "02:35:26"
           }
         ],
@@ -319,6 +361,10 @@
           "2026-05-07 02:36:36,226 | chatbot.history_manager | INFO | Saved history for session aeee6640-01df-4442-884c-c32afbf23ffe",
           "2026-05-07 02:36:36,226 | chatbot.chatbot_engine | INFO | [FLOW 7/7] Claude response received  |  tokens=4467  total_elapsed=11740ms (orchestrator only)",
           "2026-05-07 02:36:36,226 | chatbot.chatbot_engine | INFO | ============================================================"
+=======
+            "timestamp": "13:07:39"
+          }
+>>>>>>> chatbot-dev
         ]
       }
     }

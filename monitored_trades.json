@@ -1,5 +1,9 @@
 {
+<<<<<<< HEAD
   "last_updated": "2026-05-07T02:34:13.213547",
+=======
+  "last_updated": "2026-05-07T02:11:41.621951",
+>>>>>>> chatbot-dev
   "trades": [
     {
       "Symbol": "BAC",
@@ -15,7 +19,11 @@
       "Buy_Hold_Sharpe": 0.64,
       "Trade_ID": "BAC_2025-11-25_Daily_Long_FRACTAL_TRACK",
       "Added_Date": "2025-11-27T03:08:00.716770",
+<<<<<<< HEAD
       "Last_Updated": "2026-05-07T02:34:13.097100",
+=======
+      "Last_Updated": "2026-05-07T02:11:41.515041",
+>>>>>>> chatbot-dev
       "Exit_Date": null,
       "Exit_Price": null,
       "Current_Price": 53.59999847412109,
@@ -65,7 +73,11 @@
       "Buy_Hold_Sharpe": 0.48,
       "Trade_ID": "SFTBY_2025-11-26_Quarterly_Short_FRACTAL_TRACK",
       "Added_Date": "2025-11-27T03:44:09.899147",
+<<<<<<< HEAD
       "Last_Updated": "2026-05-07T02:34:13.113299",
+=======
+      "Last_Updated": "2026-05-07T02:11:41.527139",
+>>>>>>> chatbot-dev
       "Exit_Date": null,
       "Exit_Price": null,
       "Current_Price": 19.8799991607666,
@@ -115,7 +127,11 @@
       "Buy_Hold_Sharpe": 0.92,
       "Trade_ID": "NFLX_2025-11-26_Monthly_Short_FRACTAL_TRACK",
       "Added_Date": "2025-11-27T03:51:45.934963",
+<<<<<<< HEAD
       "Last_Updated": "2026-05-07T02:34:13.137777",
+=======
+      "Last_Updated": "2026-05-07T02:11:41.547036",
+>>>>>>> chatbot-dev
       "Exit_Date": null,
       "Exit_Price": null,
       "Current_Price": 88.2699966430664,
@@ -165,7 +181,11 @@
       "Buy_Hold_Sharpe": 0.35,
       "Trade_ID": "_BVSP_2025-11-25_Daily_Long_FRACTAL_TRACK",
       "Added_Date": "2025-11-27T03:52:55.973295",
+<<<<<<< HEAD
       "Last_Updated": "2026-05-07T02:34:13.155281",
+=======
+      "Last_Updated": "2026-05-07T02:11:41.562073",
+>>>>>>> chatbot-dev
       "Exit_Date": null,
       "Exit_Price": null,
       "Current_Price": 187690.859375,
@@ -215,7 +235,11 @@
       "Buy_Hold_Sharpe": -0.54,
       "Trade_ID": "NZDUSD_X_2025-11-26_Daily_Long_OSCILLATOR_DELTA",
       "Added_Date": "2025-11-27T03:55:06.879921",
+<<<<<<< HEAD
       "Last_Updated": "2026-05-07T02:34:13.172253",
+=======
+      "Last_Updated": "2026-05-07T02:11:41.577303",
+>>>>>>> chatbot-dev
       "Exit_Date": null,
       "Exit_Price": null,
       "Current_Price": 0.5959475636482239,
@@ -265,7 +289,11 @@
       "Buy_Hold_Sharpe": 0.8,
       "Trade_ID": "META_2025-11-26_Monthly_Short_FRACTAL_TRACK",
       "Added_Date": "2025-11-27T03:55:27.797035",
+<<<<<<< HEAD
       "Last_Updated": "2026-05-07T02:34:13.183267",
+=======
+      "Last_Updated": "2026-05-07T02:11:41.589467",
+>>>>>>> chatbot-dev
       "Exit_Date": null,
       "Exit_Price": null,
       "Current_Price": 612.8800048828125,
@@ -315,7 +343,11 @@
       "Buy_Hold_Sharpe": 0.89,
       "Trade_ID": "NFLX_2025-11-26_Quarterly_Short_FRACTAL_TRACK",
       "Added_Date": "2025-11-27T03:59:50.095753",
+<<<<<<< HEAD
       "Last_Updated": "2026-05-07T02:34:13.198026",
+=======
+      "Last_Updated": "2026-05-07T02:11:41.606485",
+>>>>>>> chatbot-dev
       "Exit_Date": null,
       "Exit_Price": null,
       "Current_Price": 88.2699966430664,
@@ -365,7 +397,11 @@
       "Buy_Hold_Sharpe": 0.48,
       "Trade_ID": "FSF_NZ_2025-11-26_Daily_Long_FRACTAL_TRACK",
       "Added_Date": "2025-11-27T04:13:23.151733",
+<<<<<<< HEAD
       "Last_Updated": "2026-05-07T02:34:13.208004",
+=======
+      "Last_Updated": "2026-05-07T02:11:41.616295",
+>>>>>>> chatbot-dev
       "Exit_Date": null,
       "Exit_Price": null,
       "Current_Price": 6.599999904632568,
