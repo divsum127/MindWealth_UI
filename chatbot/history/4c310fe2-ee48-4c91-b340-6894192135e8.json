@@ -4,7 +4,8 @@
     "title": "hello",
     "created_at": "2026-04-18T05:22:52.191085",
     "last_updated": "2026-04-18T05:23:52.134845",
-    "message_count": 5
+    "message_count": 5,
+    "summary": "Trading analysis: hello"
   },
   "conversation": [
     {

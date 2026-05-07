@@ -32,6 +32,12 @@ logger = logging.getLogger(__name__)
 
 # Compound column in consolidated CSVs: "SYMBOL, Long|Short, YYYY-MM-DD (Price: ...)"
 SYMBOL_SIGNAL_COMPOUND_COL = "Symbol, Signal, Signal Date/Price[$]"
+BREADTH_REQUIRED_COLUMNS = [
+    "Date",
+    "Function",
+    "Bullish Asset vs Total Asset (%)",
+    "Bullish Signal vs Total Signal (%)",
+]
 
 
 def normalize_position_side(raw: Optional[str]) -> Optional[str]:
@@ -49,14 +55,51 @@ def infer_position_side_from_query(text: str) -> Optional[str]:
     Detect Short vs Long intent from natural language (short selling vs long).
     Avoid matching unrelated phrases like 'short term' by requiring signal/position wording.
     """
-    if not text or not str(text).strip():
-        return None
-    low = text.lower()
-    if re.search(r"\bshort\s+signals?\b", low) or re.search(r"\bshort\s+positions?\b", low):
-        return "short"
-    if re.search(r"\blong\s+signals?\b", low) or re.search(r"\blong\s+positions?\b", low):
-        return "long"
+    for side in ("short", "long"):
+        if is_explicit_position_side_request(text, side):
+            return side
     return None
+
+
+def is_explicit_position_side_request(text: str, side: Optional[str] = None) -> bool:
+    """
+    Return True only when the query explicitly asks to filter by a side.
+    This avoids false positives from comparative prompts that mention both
+    long and short (e.g. "identify contradictions between short and long").
+    """
+    if not text or not str(text).strip():
+        return False
+
+    low = text.lower()
+
+    def _mentioned(s: str) -> bool:
+        return bool(
+            re.search(rf"\b{s}\s+(signals?|positions?|trades?|setups?)\b", low)
+            or re.search(rf"\b{s}\b", low)
+        )
+
+    mentioned_short = _mentioned("short")
+    mentioned_long = _mentioned("long")
+
+    # If both directions are discussed, default to no direction filter.
+    if mentioned_short and mentioned_long:
+        return False
+
+    sides_to_check = [normalize_position_side(side)] if side else ["short", "long"]
+
+    exclusivity = bool(re.search(r"\b(only|just|exclusively|specifically|strictly)\b", low))
+    filter_verbs = r"(show|list|retrieve|find|get|analy[sz]e|filter)"
+    instruments = r"(signals?|positions?|trades?|setups?)"
+
+    for s in [x for x in sides_to_check if x]:
+        if not _mentioned(s):
+            continue
+        if exclusivity:
+            return True
+        if re.search(rf"\b{filter_verbs}\b[\s\S]{{0,40}}\b{s}\s+{instruments}\b", low):
+            return True
+
+    return False
 
 
 class SmartDataFetcher:
@@ -274,6 +317,16 @@ class SmartDataFetcher:
             return pd.DataFrame()
         
         combined_df = pd.concat(all_data, ignore_index=True)
+
+        for pct_col in [
+            "Bullish Asset vs Total Asset (%)",
+            "Bullish Signal vs Total Signal (%)",
+        ]:
+            if pct_col in combined_df.columns:
+                combined_df[f"{pct_col} [numeric]"] = pd.to_numeric(
+                    combined_df[pct_col].astype(str).str.replace("%", "", regex=False).str.strip(),
+                    errors="coerce",
+                )
         
         # Apply row limit if specified
         if limit_rows and len(combined_df) > limit_rows:
@@ -575,13 +628,30 @@ class SmartDataFetcher:
             # Apply column selection
             if required_columns:
                 available_columns = df.columns.tolist()
-                columns_to_keep = [col for col in required_columns if col in available_columns]
+                merged_required = []
+                seen = set()
+                for col in [*required_columns, *BREADTH_REQUIRED_COLUMNS]:
+                    if col and col not in seen:
+                        merged_required.append(col)
+                        seen.add(col)
+                columns_to_keep = [col for col in merged_required if col in available_columns]
                 if columns_to_keep:
                     df = df[columns_to_keep]
                 else:
                     logger.warning("None of the required columns found in breadth consolidated CSV")
                     return pd.DataFrame()
             # If required_columns is None, keep all columns
+
+            # Normalize key breadth ratio columns to numeric for robust percentile analysis.
+            for pct_col in [
+                "Bullish Asset vs Total Asset (%)",
+                "Bullish Signal vs Total Signal (%)",
+            ]:
+                if pct_col in df.columns:
+                    df[f"{pct_col} [numeric]"] = pd.to_numeric(
+                        df[pct_col].astype(str).str.replace("%", "", regex=False).str.strip(),
+                        errors="coerce",
+                    )
 
             # Apply row limit
             if limit_rows and len(df) > limit_rows:

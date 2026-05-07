@@ -4,7 +4,8 @@
     "title": "User Query: Show me top entry signals by Sharpe...",
     "created_at": "2026-04-15T06:09:31.839211",
     "last_updated": "2026-04-15T06:10:00.334409",
-    "message_count": 3
+    "message_count": 3,
+    "summary": "Signal lookup: Show me top entry signals by Sharpe for tech names..."
   },
   "conversation": [
     {

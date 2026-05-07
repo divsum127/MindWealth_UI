@@ -48,6 +48,7 @@ from .unified_extractor import UnifiedExtractor
 from .smart_data_fetcher import (
     SmartDataFetcher,
     infer_position_side_from_query,
+    is_explicit_position_side_request,
     normalize_position_side,
 )
 from .signal_extractor import SignalExtractor
@@ -57,6 +58,13 @@ from .prompt_changelog import PromptChangelog
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+BREADTH_MANDATORY_COLUMNS = [
+    "Date",
+    "Function",
+    "Bullish Asset vs Total Asset (%)",
+    "Bullish Signal vs Total Signal (%)",
+]
 
 
 def _query_implies_full_list_ignore_ui_dates(user_message: str) -> bool:
@@ -983,9 +991,14 @@ Please answer the user's query based on the comprehensive analysis report above.
                     logger.info("No specific tickers mentioned - will load ALL assets")
 
             _pos_infer_src = (display_prompt_override or user_message or "").strip()
-            position_side = normalize_position_side(
+            position_side_candidate = normalize_position_side(
                 extraction_result.get("position_side")
             ) or infer_position_side_from_query(_pos_infer_src)
+            position_side = (
+                position_side_candidate
+                if is_explicit_position_side_request(_pos_infer_src, position_side_candidate)
+                else None
+            )
             if position_side:
                 logger.info(f"Position side filter (Short/Long): {position_side}")
             
@@ -1019,6 +1032,21 @@ Please answer the user's query based on the comprehensive analysis report above.
                         all_required_columns.update(cols)
                         logger.info(f"{signal_type.upper()}: Selected {len(cols)} columns")
                         logger.info(f"  Reasoning: {reasoning[:100]}...")
+
+            # Guardrail for breadth analysis: always include core ratio columns.
+            if "breadth" in table_signal_types:
+                breadth_cols = columns_by_signal_type.get("breadth") or []
+                merged_cols = []
+                seen = set()
+                for col in [*breadth_cols, *BREADTH_MANDATORY_COLUMNS]:
+                    if col and col not in seen:
+                        merged_cols.append(col)
+                        seen.add(col)
+                columns_by_signal_type["breadth"] = merged_cols
+                reasoning_by_signal_type["breadth"] = (
+                    (reasoning_by_signal_type.get("breadth", "") + " ").strip()
+                    + "Guardrail: mandatory breadth ratio columns included."
+                ).strip()
             
             # Only validate columns if we have non-claude_report signal types
             if not columns_by_signal_type and not has_claude_report:
@@ -1449,9 +1477,15 @@ Please answer the user's query based on the comprehensive analysis report above.
         if assets is not None:
             assets = [str(a).strip().upper() for a in assets if a] or None
 
-        position_side = normalize_position_side(
+        _pos_infer_src = (user_message or "").strip()
+        position_side_candidate = normalize_position_side(
             extraction_result.get("position_side")
-        ) or infer_position_side_from_query((user_message or "").strip())
+        ) or infer_position_side_from_query(_pos_infer_src)
+        position_side = (
+            position_side_candidate
+            if is_explicit_position_side_request(_pos_infer_src, position_side_candidate)
+            else None
+        )
         if position_side:
             logger.info(f"[_fetch_signal_data] Position side filter (Short/Long): {position_side}")
 
@@ -1493,6 +1527,28 @@ Please answer the user's query based on the comprehensive analysis report above.
                     f"[_fetch_signal_data] {signal_type.upper()}: no column subset from extractor; "
                     "will fetch all columns."
                 )
+
+        # Guardrail for breadth analysis in internal fetch path too.
+        if "breadth" in table_signal_types:
+            breadth_cols = columns_by_signal_type.get("breadth")
+            if breadth_cols is None:
+                # Keep None -> fetch all columns path.
+                reasoning_by_signal_type["breadth"] = (
+                    (reasoning_by_signal_type.get("breadth", "") + " ").strip()
+                    + "Guardrail: breadth uses full column set including mandatory ratio fields."
+                ).strip()
+            else:
+                merged_cols = []
+                seen = set()
+                for col in [*breadth_cols, *BREADTH_MANDATORY_COLUMNS]:
+                    if col and col not in seen:
+                        merged_cols.append(col)
+                        seen.add(col)
+                columns_by_signal_type["breadth"] = merged_cols
+                reasoning_by_signal_type["breadth"] = (
+                    (reasoning_by_signal_type.get("breadth", "") + " ").strip()
+                    + "Guardrail: mandatory breadth ratio columns included."
+                ).strip()
 
         if not table_signal_types:
             logger.warning("[_fetch_signal_data] No table signal types (e.g. claude_report-only); skipping CSV fetch.")

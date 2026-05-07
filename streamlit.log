@@ -1,0 +1,16 @@
+nohup: ignoring input
+
+  You can now view your Streamlit app in your browser.
+
+  URL: http://0.0.0.0:8504
+
+ERROR:chatbot.session_manager:Error reading session 2e1f0f18-32a3-4723-9850-1af7a9cc8511.json: Expecting value: line 93 column 23 (char 14836)
+INFO:chatbot.history_manager:Loaded history for session a995813f-3b04-422c-bf6e-161d10027ef4 with 3 messages
+INFO:chatbot.unified_extractor:Set 183 available tickers for unified extraction
+INFO:chatbot.chatbot_engine:Initialized ChatbotEngine with session a995813f-3b04-422c-bf6e-161d10027ef4
+ERROR:chatbot.session_manager:Error reading session 2e1f0f18-32a3-4723-9850-1af7a9cc8511.json: Expecting value: line 93 column 23 (char 14836)
+ERROR:chatbot.session_manager:Error reading session 2e1f0f18-32a3-4723-9850-1af7a9cc8511.json: Expecting value: line 93 column 23 (char 14836)
+INFO:chatbot.history_manager:Loaded history for session a995813f-3b04-422c-bf6e-161d10027ef4 with 3 messages
+INFO:chatbot.unified_extractor:Set 183 available tickers for unified extraction
+INFO:chatbot.chatbot_engine:Initialized ChatbotEngine with session a995813f-3b04-422c-bf6e-161d10027ef4
+ERROR:chatbot.session_manager:Error reading session 2e1f0f18-32a3-4723-9850-1af7a9cc8511.json: Expecting value: line 93 column 23 (char 14836)

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-APP_DIR="/home/ubuntu/uiv2/MindWealth_UI"
+APP_DIR="/home/ubuntu/uiv2/git/MindWealth_UI"
 VENV_STREAMLIT="$APP_DIR/.venv/bin/streamlit"
 PORT=8504
 

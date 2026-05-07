@@ -4,7 +4,8 @@
     "title": "User Query: give me top 5 entry signal based on...",
     "created_at": "2026-01-27T21:31:13.998159",
     "last_updated": "2026-01-27T21:39:13.307388",
-    "message_count": 7
+    "message_count": 7,
+    "summary": "Trading analysis (entry): give me top 5 entry signal based on backtesetd shr..."
   },
   "conversation": [
     {

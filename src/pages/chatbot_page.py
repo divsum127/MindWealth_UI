@@ -284,11 +284,134 @@ class _ChatbotLogCaptureHandler(logging.Handler):
             self.handleError(record)
 
 
+# ── Investor-friendly translation for the engine flow_trace ─────────────────
+# The chatbot engine emits technical stage names ("Router", "Hybrid
+# Orchestrator", "Synthesis"…) that are useful for debugging but read as
+# engineering jargon to financial investors and analysts. The map below
+# converts each stage into a plain-English label + analyst-style description
+# without changing the underlying engine flow_trace (which is still saved to
+# session JSON for support / audit purposes).
+_FRIENDLY_FLOW_STEPS: dict = {
+    "Router": (
+        "🔍",
+        "Understanding your question",
+        "Reading your request to identify what insights you need",
+    ),
+    "Conversation Mode": (
+        "💬",
+        "Continuing the conversation",
+        "Answering from our earlier discussion — no new data needed",
+    ),
+    "Web Search": (
+        "🌐",
+        "Researching the markets",
+        "Searching the web for the latest news, prices and market context",
+    ),
+    "Web Search Fallback": (
+        "🔁",
+        "Switching to internal data",
+        "Live web research wasn't available — using your signal data instead",
+    ),
+    "Hybrid Orchestrator": (
+        "⚡",
+        "Gathering insights",
+        "Pulling the latest market updates and your signal data at the same time",
+    ),
+    "Hybrid (Sequential)": (
+        "⏳",
+        "Gathering insights",
+        "Combining market research with your signal data",
+    ),
+    "Synthesis": (
+        "🧩",
+        "Connecting the dots",
+        "Bringing market context together with your signal data",
+    ),
+    "Internal Search": (
+        "📊",
+        "Reviewing your signal data",
+        "Pulling the relevant trading signals and analytics",
+    ),
+    "Context Handling": (
+        "📚",
+        "Reviewing earlier discussion",
+        "Loading prior conversation so this answer stays consistent",
+    ),
+    "Internal Data Query": (
+        "📈",
+        "Pulling signal data",
+        "Selected the relevant signals, columns and date range",
+    ),
+    "Response Generation": (
+        "✍️",
+        "Preparing your insights",
+        "Drafting your final analysis-ready response",
+    ),
+}
+
+# Internal route codes → investor-facing strategy descriptions
+_FRIENDLY_ROUTE_DESCRIPTIONS: dict = {
+    "HYBRID":         "Combining live market research with your signal data",
+    "WEB_RAG":        "Looking up live market information online",
+    "INTERNAL":       "Using your internal trading signal data",
+    "CONVERSATIONAL": "Continuing our conversation",
+}
+
+
+def _humanize_flow_step(stage: str, detail: str) -> tuple:
+    """Translate an engine flow step into (icon, friendly_stage, friendly_detail).
+
+    The engine's ``flow_trace`` uses technical names such as ``"Router"``,
+    ``"Hybrid Orchestrator"`` or ``"Synthesis"``. Financial investors and
+    analysts shouldn't have to read pipeline jargon, so we map every known
+    stage to a plain-English label + description here. Unknown stages fall
+    back to a lightly cleaned-up version of the original text.
+    """
+    stage = (stage or "").strip()
+    detail = (detail or "").strip()
+
+    if stage == "Route Selected":
+        # Detail looks like: "HYBRID (intent=SIGNAL_LOOKUP, conf=0.88)"
+        route_code = detail.split(" ", 1)[0] if detail else ""
+        intent_label = ""
+        if "intent=" in detail:
+            try:
+                intent_code = detail.split("intent=", 1)[1].split(",", 1)[0].strip(") ")
+                intent_label = INTENT_LABELS.get(intent_code, intent_code.replace("_", " ").title())
+            except Exception:
+                intent_label = ""
+
+        strategy = _FRIENDLY_ROUTE_DESCRIPTIONS.get(route_code, "Selecting the best approach")
+        if intent_label:
+            friendly_detail = f"{strategy} (your question looks like: {intent_label})"
+        else:
+            friendly_detail = strategy
+        return ("🎯", "Approach chosen", friendly_detail)
+
+    if stage == "Parallel Branches Complete":
+        # Detail like: "web=ok, internal=ok"
+        web_ok = "web=ok" in detail.lower()
+        internal_ok = "internal=ok" in detail.lower()
+        web_mark = "✓" if web_ok else "—"
+        internal_mark = "✓" if internal_ok else "—"
+        friendly_detail = (
+            f"Market research {web_mark}  |  Signal data {internal_mark}"
+        )
+        return ("✅", "Insights gathered", friendly_detail)
+
+    if stage in _FRIENDLY_FLOW_STEPS:
+        icon, friendly_stage, friendly_detail = _FRIENDLY_FLOW_STEPS[stage]
+        return (icon, friendly_stage, friendly_detail)
+
+    # Unknown stage — keep the original text but add a neutral icon
+    return ("•", stage or "Step", detail)
+
+
 def run_smart_followup_with_progress(
     chatbot: Any,
     *,
     status_title: str = "Analyzing your query…",
-    status_caption: str = "Pipeline progress (updates while the engine runs):",
+    status_caption: str = "Live progress — updates as I work through your question:",
     **followup_kwargs: Any,
 ) -> tuple:
     """
@@ -315,7 +438,8 @@ def run_smart_followup_with_progress(
                 st.caption(status_caption)
 
                 def _live(stage: str, detail: str) -> None:
-                    st.markdown(f"**{stage}** — {detail}")
+                    icon, friendly_stage, friendly_detail = _humanize_flow_step(stage, detail)
+                    st.markdown(f"{icon} **{friendly_stage}** — {friendly_detail}")
 
                 try:
                     result_tuple = chatbot.smart_followup_query(
@@ -339,7 +463,13 @@ def run_smart_followup_with_progress(
 
 
 def render_flow_trace(metadata: Optional[dict]) -> None:
-    """Render concise architecture/thinking flow steps for a response."""
+    """Render investor-friendly "how I answered this" steps for a response.
+
+    The engine emits a technical ``flow_trace`` (Router → Hybrid Orchestrator
+    → Synthesis → Response Generation …). For an audience of financial
+    investors and analysts we translate each step into plain-English labels
+    via :func:`_humanize_flow_step` before rendering.
+    """
     if not metadata:
         return
 
@@ -347,17 +477,32 @@ def render_flow_trace(metadata: Optional[dict]) -> None:
     if not flow_steps:
         return
 
-    # One-line summary so the trace is visible without opening an expander
-    summary = " → ".join(str(s.get("stage", "?")) for s in flow_steps)
-    st.markdown(f"🧭 **Pipeline:** {summary}")
+    humanized = [
+        (
+            *_humanize_flow_step(step.get("stage", ""), step.get("detail", "")),
+            step.get("timestamp"),
+        )
+        for step in flow_steps
+    ]
 
-    with st.expander("🧭 Flow trace (detail)", expanded=True):
-        for idx, step in enumerate(flow_steps, 1):
-            stage = step.get("stage", "Stage")
-            detail = step.get("detail", "")
-            ts = step.get("timestamp")
-            prefix = f"`{ts}` " if ts else ""
-            st.markdown(f"{idx}. **{stage}** — {prefix}{detail}")
+    # One-line summary so the journey is visible at a glance
+    summary = "  →  ".join(f"{icon} {stage}" for icon, stage, _detail, _ts in humanized)
+    st.markdown(f"🧭 **How I answered this:** {summary}")
+
+    with st.expander("🪄 Behind the scenes — how this answer was built", expanded=False):
+        st.caption(
+            "A plain-English walk-through of the steps taken to research "
+            "and prepare your answer."
+        )
+        for idx, (icon, friendly_stage, friendly_detail, ts) in enumerate(humanized, 1):
+            ts_html = (
+                f'<span style="color:#888;font-size:0.78em;">  ·  {ts}</span>'
+                if ts else ""
+            )
+            st.markdown(
+                f"{idx}. {icon} **{friendly_stage}** — {friendly_detail}{ts_html}",
+                unsafe_allow_html=True,
+            )
 
 
 def display_styled_dataframe(df, height=400, key_suffix=""):
@@ -479,13 +624,12 @@ def render_chat_history_sidebar():
     else:
         for session in sessions:
             session_id = session['session_id']
-            # Use preview (first user message) as the display title, fallback to title
+            # Use one-line summary preview, fallback to title.
             preview = session.get('preview', '').strip()
             display_title = preview if preview else session.get('title', 'New Chat')
-            # Only show first 6 words for compactness
-            display_title = ' '.join(display_title.split()[:6])
-            if len(display_title) < len(preview):
-                display_title += '...'
+            # Keep a concise one-liner but preserve meaning.
+            if len(display_title) > 90:
+                display_title = display_title[:87].rstrip() + '...'
             is_current = st.session_state.get('current_session_id') == session_id
             # Compact row: title + rename + delete
             # Use two columns: title (wide) and icons (narrow, side-by-side)
@@ -948,75 +1092,32 @@ def render_chatbot_page():
     if 'last_signal_reason' not in st.session_state:
         st.session_state.last_signal_reason = "Default selection: entry, exit, target."
     
-    # --- SIDEBAR QUERY CONFIGURATION ---
-    st.sidebar.header("📊 Query Configuration")
-
-    # Web Search toggle
-    st.sidebar.subheader("🌐 Web Search")
-    web_search_enabled = st.sidebar.toggle(
-        "Enable Web Search (Tavily)",
-        value=st.session_state.get("web_search_enabled", True),
-        help=(
-            "When enabled, the chatbot can search the web for live market news, "
-            "earnings, and macro data. Requires TAVILY_API_KEY in your .env or secrets.toml."
-        ),
-    )
-    st.session_state["web_search_enabled"] = web_search_enabled
-    if web_search_enabled:
-        st.sidebar.caption("🟢 Web search active — news/macro queries will use Tavily.")
-    else:
-        st.sidebar.caption("🔴 Web search disabled — all queries use internal data only.")
-
-    # Propagate toggle to engine config at runtime
-    import chatbot.config as _cfg
-    _cfg.ENABLE_WEB_SEARCH = web_search_enabled
-
-    llm_router_enabled = st.sidebar.toggle(
-        "LLM router (web vs internal)",
-        value=st.session_state.get("llm_router_enabled", True),
-        help=(
-            "Uses gpt-4o-mini to decide if each question needs internal signal data, "
-            "web search (Tavily), both, or chat-only. Turn off to use keyword-based routing only."
-        ),
-    )
-    st.session_state["llm_router_enabled"] = llm_router_enabled
-    _cfg.LLM_ROUTER_ENABLED = llm_router_enabled
-
-    # Reset cached router so toggles take effect
-    chatbot._master_router = None
-
     # Auto-extraction is always enabled (no manual selection)
     use_auto_extract_tickers = True
     selected_tickers = None
-    
-    # Date range selection
-    st.sidebar.subheader("Select Date Range")
-    
-    col1, col2 = st.sidebar.columns(2)
-    
+
     # Set default dates (last 15 days)
     default_from_date = datetime.now() - timedelta(days=15)
     default_to_date = datetime.now()
-    
+
+    # Keep date inputs near top so Deep Dive controls can use them.
+    st.sidebar.subheader("Select Date Range")
+    col1, col2 = st.sidebar.columns(2)
     with col1:
         from_date = st.date_input(
             "From Date",
             value=default_from_date,
             help="Start date for signal data (default: 15 days ago)"
         )
-    
+
     with col2:
         to_date = st.date_input(
             "To Date",
             value=default_to_date,
             help="End date for signal data (default: today)"
         )
-    
-    # Render Chat History after Query Configuration
-    st.sidebar.markdown("---")
-    render_chat_history_sidebar()
-    
-    # Asset selection for Analyze feature
+
+    # Asset selection for Analyze feature (kept high in sidebar, just below page selector)
     st.sidebar.markdown("---")
     st.sidebar.subheader("🔍 Deep Dive Analysis")
     
@@ -1249,6 +1350,48 @@ Date Range: {from_date.strftime('%Y-%m-%d')} to {to_date.strftime('%Y-%m-%d')}""
         for key, (title, description) in SIGNAL_TYPE_DESCRIPTIONS.items():
             st.markdown(f"**{title}**")
             st.markdown(description)
+
+    # --- SIDEBAR QUERY CONFIGURATION ---
+    st.sidebar.markdown("---")
+    st.sidebar.header("📊 Query Configuration")
+
+    # Web Search toggle
+    st.sidebar.subheader("🌐 Web Search")
+    web_search_enabled = st.sidebar.toggle(
+        "Enable Web Search (Tavily)",
+        value=st.session_state.get("web_search_enabled", True),
+        help=(
+            "When enabled, the chatbot can search the web for live market news, "
+            "earnings, and macro data. Requires TAVILY_API_KEY in your .env or secrets.toml."
+        ),
+    )
+    st.session_state["web_search_enabled"] = web_search_enabled
+    if web_search_enabled:
+        st.sidebar.caption("🟢 Web search active — news/macro queries will use Tavily.")
+    else:
+        st.sidebar.caption("🔴 Web search disabled — all queries use internal data only.")
+
+    # Propagate toggle to engine config at runtime
+    import chatbot.config as _cfg
+    _cfg.ENABLE_WEB_SEARCH = web_search_enabled
+
+    llm_router_enabled = st.sidebar.toggle(
+        "LLM router (web vs internal)",
+        value=st.session_state.get("llm_router_enabled", True),
+        help=(
+            "Uses gpt-4o-mini to decide if each question needs internal signal data, "
+            "web search (Tavily), both, or chat-only. Turn off to use keyword-based routing only."
+        ),
+    )
+    st.session_state["llm_router_enabled"] = llm_router_enabled
+    _cfg.LLM_ROUTER_ENABLED = llm_router_enabled
+
+    # Reset cached router so toggles take effect
+    chatbot._master_router = None
+
+    # Render Chat History after Query Configuration
+    st.sidebar.markdown("---")
+    render_chat_history_sidebar()
     
     # Auto-extract functions is always enabled (no manual selection)
     use_auto_extract = True

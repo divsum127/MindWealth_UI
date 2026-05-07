@@ -4,6 +4,7 @@ History manager for maintaining conversation context.
 
 import json
 import logging
+import re
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import List, Dict, Optional
@@ -70,6 +71,13 @@ class HistoryManager:
         # Auto-generate title from first user message if title is still "New Chat"
         if role == "user" and self.metadata.get("title") == "New Chat":
             self.update_session_title_from_message(content)
+
+        # Create summary once after first user+assistant pair, then keep it stable.
+        if not self.metadata.get("summary"):
+            has_user = any(m.get("role") == "user" for m in self.conversation_history)
+            has_assistant = any(m.get("role") == "assistant" for m in self.conversation_history)
+            if has_user and has_assistant:
+                self.metadata["summary"] = self._generate_session_summary()
         
         # Trim history if it exceeds max length
         if len(self.conversation_history) > MAX_HISTORY_LENGTH * 2:  # *2 for user+assistant pairs
@@ -79,6 +87,97 @@ class HistoryManager:
         self.save_history()
         
         logger.info(f"Added {role} message to session {self.session_id}")
+
+    @staticmethod
+    def _extract_clean_prompt(message: Dict) -> str:
+        """Extract a user-friendly prompt from stored message content/metadata."""
+        message_metadata = message.get("metadata") or {}
+        preview_text = message_metadata.get("display_prompt") or message.get("content", "")
+
+        if "FOLLOW-UP QUESTION:" in preview_text:
+            preview_text = preview_text.split("FOLLOW-UP QUESTION:", 1)[1].strip()
+        elif "User Query:" in preview_text:
+            preview_text = preview_text.split("User Query:", 1)[1].strip()
+
+        if "CURRENT QUESTION:" in preview_text and "CONVERSATION CONTEXT (for reference):" in preview_text:
+            preview_text = preview_text.split("CURRENT QUESTION:", 1)[1].strip()
+
+        if "===" in preview_text:
+            preview_text = preview_text.split("===", 1)[0].strip()
+
+        preview_text = re.sub(r"\s+", " ", preview_text).strip()
+        return preview_text
+
+    @staticmethod
+    def _extract_assets_from_messages(messages: List[Dict]) -> List[str]:
+        """Extract likely ticker symbols from a list of user messages."""
+        tickers = []
+        seen = set()
+        pattern = re.compile(r"\b[A-Z]{2,5}\b")
+        ignore_tokens = {
+            "DATE", "DATES", "FROM", "TO", "JSON", "DATA", "NOTE", "USER",
+            "QUERY", "WITH", "AND", "FOR", "THE", "ALL", "LONG", "SHORT",
+            "OPEN", "CLOSE", "EXIT", "ENTRY", "SBI", "AI",
+        }
+
+        for message in messages:
+            text = HistoryManager._extract_clean_prompt(message)
+            for token in pattern.findall(text):
+                if token not in ignore_tokens and token not in seen:
+                    seen.add(token)
+                    tickers.append(token)
+                if len(tickers) >= 2:
+                    return tickers
+        return tickers
+
+    def _generate_session_summary(self, max_length: int = 90) -> str:
+        """Generate a concise one-line summary from the first exchange only."""
+        user_messages = [m for m in self.conversation_history if m.get("role") == "user"]
+        if not user_messages:
+            return "New chat"
+
+        first_prompt = self._extract_clean_prompt(user_messages[0])
+        first_assistant = next(
+            (m for m in self.conversation_history if m.get("role") == "assistant"),
+            None
+        )
+        first_meta = (first_assistant or {}).get("metadata") or {}
+
+        intent = str(first_meta.get("intent") or "").strip()
+        selected_signal_types = first_meta.get("selected_signal_types") or []
+        assets = self._extract_assets_from_messages([user_messages[0]])
+
+        # Pipeline: intent-aware label -> signal context -> assets -> query gist
+        intent_label_map = {
+            "SIGNAL_LOOKUP": "Signal lookup",
+            "MARKET_BREADTH": "Market breadth",
+            "PERFORMANCE_ANALYSIS": "Performance analysis",
+            "RISK_ANALYSIS": "Risk analysis",
+            "TRADE_REVIEW": "Trade review",
+            "GENERAL_QA": "General Q&A",
+        }
+        base = intent_label_map.get(intent, "Trading analysis")
+
+        if selected_signal_types:
+            signal_text = ", ".join(str(s).replace("_", " ") for s in selected_signal_types[:2])
+            base = f"{base} ({signal_text})"
+
+        if assets:
+            asset_text = ", ".join(assets)
+            summary = f"{base} for {asset_text}"
+        else:
+            summary = base
+
+        if first_prompt:
+            short_prompt = first_prompt[:50].strip()
+            if len(first_prompt) > 50:
+                short_prompt += "..."
+            summary = f"{summary}: {short_prompt}"
+
+        summary = re.sub(r"\s+", " ", summary).strip(" -:")
+        if len(summary) > max_length:
+            summary = summary[: max_length - 3].rstrip() + "..."
+        return summary or "Trading analysis"
     
     def get_messages_for_api(self, max_pairs: Optional[int] = None, strip_data: bool = True) -> List[Dict[str, str]]:
         """

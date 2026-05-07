@@ -4,7 +4,8 @@
     "title": "User Query: give me signals on bdgi.to \n\n===...",
     "created_at": "2026-04-30T20:41:49.813990",
     "last_updated": "2026-04-30T20:42:40.301668",
-    "message_count": 3
+    "message_count": 3,
+    "summary": "Signal lookup (entry, exit): give me signals on bdgi.to"
   },
   "conversation": [
     {

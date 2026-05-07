@@ -11,6 +11,7 @@ from typing import List, Dict, Optional, Tuple
 from uuid import uuid4
 
 from .config import HISTORY_DIR
+from .history_manager import HistoryManager
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -91,9 +92,22 @@ class SessionManager:
                         if msg.get("role") == "user":
                             first_user_msg = _extract_preview(msg)
                             break
-                    
+
                     if len(first_user_msg) > 240:
                         first_user_msg = first_user_msg[:237] + "..."
+
+                    summary = (metadata.get("summary") or "").strip()
+                    if not summary and conversation:
+                        # Backfill summary for older sessions that predate summary metadata.
+                        try:
+                            history = HistoryManager(session_id=metadata.get("session_id", session_file.stem))
+                            summary = history._generate_session_summary()
+                            history.metadata["summary"] = summary
+                            history.save_history()
+                        except Exception:
+                            summary = first_user_msg
+                    elif not summary:
+                        summary = first_user_msg or "New chat"
                     
                     # Count messages
                     user_messages = len([m for m in conversation if m.get("role") == "user"])
@@ -107,7 +121,7 @@ class SessionManager:
                         "message_count": len(conversation),
                         "user_messages": user_messages,
                         "assistant_messages": assistant_messages,
-                        "preview": first_user_msg
+                        "preview": summary
                     })
                     
                 except Exception as e:
