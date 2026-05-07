@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script to copy trade data files and push to GitHub
-# This script copies all CSV files from ../MindWealth/cache/US to trade_store/stock_data (full copy)
+# Copies from the MindWealth engine tree into this repo's trade_store/
 
 set -e  # Exit on any error
 
@@ -12,12 +12,12 @@ cd "$SCRIPT_DIR"
 echo "🔄 Starting trade data update process..."
 echo "📁 Working directory: $SCRIPT_DIR"
 
-# Define directories
-# Stock data: copy from cache/US (all CSVs - full copy, new and old)
-CACHE_US_DIR="../MindWealth/cache/US"
+# MindWealth data sources (absolute — uiv2/MindWealth_UI is not beside ../MindWealth)
+MINDWEALTH_ROOT="${MINDWEALTH_ROOT:-/home/ubuntu/MindWealth}"
+CACHE_US_DIR="$MINDWEALTH_ROOT/cache/US"
 TARGET_STOCK_DATA_DIR="trade_store/stock_data"
-SOURCE_TRADE_DIR="../MindWealth/trade_store/US"
-SOURCE_VIRTUAL_TRADING_DIR="../MindWealth/trade_store"
+SOURCE_TRADE_DIR="$MINDWEALTH_ROOT/trade_store/US"
+SOURCE_VIRTUAL_TRADING_DIR="$MINDWEALTH_ROOT/trade_store"
 TARGET_TRADE_DIR="trade_store/US"
 
 # Check if cache US directory exists (source for stock_data)
@@ -254,7 +254,14 @@ fi
 # Convert signals to data structure
 echo "🔄 Converting signals to chatbot data structure..."
 echo "🐍 Activating virtual environment..."
-source venv/bin/activate
+if [ -f "$SCRIPT_DIR/.venv/bin/activate" ]; then
+    source "$SCRIPT_DIR/.venv/bin/activate"
+elif [ -f "$SCRIPT_DIR/venv/bin/activate" ]; then
+    source "$SCRIPT_DIR/venv/bin/activate"
+else
+    echo "❌ Error: No .venv or venv found in $SCRIPT_DIR"
+    exit 1
+fi
 python3 chatbot/convert_signals_to_data_structure.py
 
 # Update monitored trades with latest prices and exit conditions
