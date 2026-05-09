@@ -20,6 +20,7 @@ from src.pages import (
 from src.pages.monitored_trades_page import create_monitored_trades_page
 from src.pages.horizontal_page import create_horizontal_page
 from src.utils import discover_csv_files, get_latest_csv_file
+from chatbot import SessionManager
 
 # Set page config
 st.set_page_config(
@@ -117,6 +118,67 @@ st.markdown("""
         height: auto !important;
         min-height: 30px;
     }
+    
+    /* Wider default sidebar width */
+    [data-testid="stSidebar"] {
+        min-width: 250px !important;
+        max-width: 400px !important;
+    }
+
+    /* Sidebar typography controls */
+    [data-testid="stSidebar"] .stMarkdown,
+    [data-testid="stSidebar"] label,
+    [data-testid="stSidebar"] .stSelectbox label,
+    [data-testid="stSidebar"] .stTextInput label,
+    [data-testid="stSidebar"] .stDateInput label,
+    [data-testid="stSidebar"] .stToggle label {
+        font-size: 0.90rem !important;
+    }
+
+    [data-testid="stSidebar"] h1,
+    [data-testid="stSidebar"] h2,
+    [data-testid="stSidebar"] h3 {
+        font-size: 1.00rem !important;
+    }
+
+    [data-testid="stSidebar"] .stButton button p {
+        font-size: 0.85rem !important;
+        line-height: 1.15 !important;
+    }
+
+    [data-testid="stSidebar"] [data-testid="stCaptionContainer"] {
+        font-size: 0.78rem !important;
+    }
+
+    /* Reduce vertical spacing between sidebar sections/widgets */
+    [data-testid="stSidebar"] hr {
+        margin-top: 0.35rem !important;
+        margin-bottom: 0.35rem !important;
+    }
+
+    [data-testid="stSidebar"] .stMarkdown {
+        margin-bottom: 0.15rem !important;
+    }
+
+    [data-testid="stSidebar"] h1,
+    [data-testid="stSidebar"] h2,
+    [data-testid="stSidebar"] h3 {
+        margin-top: 0.25rem !important;
+        margin-bottom: 0.25rem !important;
+    }
+
+    [data-testid="stSidebar"] .stButton,
+    [data-testid="stSidebar"] .stSelectbox,
+    [data-testid="stSidebar"] .stTextInput,
+    [data-testid="stSidebar"] .stDateInput,
+    [data-testid="stSidebar"] .stToggle,
+    [data-testid="stSidebar"] .stCaptionContainer,
+    [data-testid="stSidebar"] [data-testid="stVerticalBlock"] > div {
+        margin-top: 0.15rem !important;
+        margin-bottom: 0.15rem !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -164,6 +226,16 @@ def main():
             list(page_options.keys()),
             key="page_selector"
         )
+
+        # Keep New Chat action directly under page dropdown on chatbot page.
+        if current_page_key == "AI Chatbot":
+            if st.sidebar.button("➕ New Chat", use_container_width=True, type="primary"):
+                new_session_id = SessionManager.create_new_session()
+                st.session_state.current_session_id = new_session_id
+                st.session_state.chatbot_engine = None
+                st.session_state.chat_history = []
+                st.session_state.last_settings = None
+                st.rerun()
 
     except Exception as e:
         # Fallback if there's an issue

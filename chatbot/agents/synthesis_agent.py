@@ -45,8 +45,9 @@ class SynthesisAgent:
     ------------
     - Claude always knows which source each piece of information came from.
     - If a source failed or timed out, Claude is told not to speculate.
-    - If SOURCE B (web) contradicts SOURCE A (signals), Claude must surface
-      the conflict rather than silently override signal values.
+    - For current MTM / live spot, entry and direction come from SOURCE A and
+      the mark uses SOURCE B when available; stale internal MTM strings are not
+      treated as authoritative vs web quotes.
     - Prompt length is bounded so we don't blow the context window.
     """
 
@@ -102,7 +103,10 @@ class SynthesisAgent:
         status_summary = self._build_status_summary(
             signal_data, web_result, web_failed, internal_failed
         )
-        instructions = self._build_instructions()
+        include_hybrid = self._should_include_hybrid_mtm_rules(
+            signal_data, web_result, web_failed, internal_failed
+        )
+        instructions = self._build_instructions(include_hybrid_pointer=include_hybrid)
 
         parts = [
             f"User Query: {user_message}",
@@ -113,10 +117,16 @@ class SynthesisAgent:
             "",
             "=== SYNTHESIS INSTRUCTIONS ===",
             instructions,
-            "",
-            "=== SOURCE STATUS ===",
-            status_summary,
         ]
+        if include_hybrid:
+            parts.extend(
+                [
+                    "",
+                    "=== HYBRID CALCULATION RULES ===",
+                    self._build_hybrid_calculation_rules(),
+                ]
+            )
+        parts.extend(["", "=== SOURCE STATUS ===", status_summary])
         prompt = "\n".join(parts)
 
         logger.info(
@@ -163,6 +173,11 @@ class SynthesisAgent:
                 pass
 
         lines.append(f"Fetched at: {now_iso} | Total rows: {total_rows}")
+        lines.append(
+            "Note: If multiple rows list the same Symbol, each row is a separate signal instance "
+            "unless deduplicated; for latest-position questions use the row with the latest signal date "
+            "(parse from \"Symbol, Signal, Signal Date/Price[$]\" or equivalent)."
+        )
         lines.append("")
 
         for signal_type, df in signal_data.items():
@@ -240,13 +255,74 @@ class SynthesisAgent:
         return "\n".join(lines)
 
     @staticmethod
-    def _build_instructions() -> str:
+    def _should_include_hybrid_mtm_rules(
+        signal_data: Optional[Dict],
+        web_result: Optional[Any],
+        web_failed: bool,
+        internal_failed: bool,
+    ) -> bool:
+        """True when both internal rows and successful web context exist (full hybrid)."""
+        if internal_failed or web_failed:
+            return False
+        if not signal_data:
+            return False
+        try:
+            has_rows = any(len(df) > 0 for df in signal_data.values() if hasattr(df, "__len__"))
+        except Exception:
+            has_rows = False
+        if not has_rows:
+            return False
+        if web_result is None:
+            return False
+        return bool(getattr(web_result, "success", False))
+
+    @staticmethod
+    def _build_hybrid_calculation_rules() -> str:
         return (
-            "1. Answer the user's question using SOURCE A (MindWealth signal data) as the PRIMARY source.\n"
-            "2. Use SOURCE B (live web context) ONLY to enrich, contextualise, or add recency to SOURCE A findings.\n"
-            "3. If SOURCE B contradicts SOURCE A values (prices, dates, Sharpe ratios, function names), "
-            "surface the conflict explicitly — do NOT silently override SOURCE A values with web data.\n"
-            "4. If a source is marked FAILED or SKIPPED, do not speculate about its content — "
+            "These rules apply when answering **current mark-to-market (MTM)**, **current price**, or "
+            "**where is it trading** using both SOURCE A and SOURCE B.\n"
+            "- **Signal identity:** Use SOURCE A for Function, Symbol, signal type (Long/Short), "
+            "**entry / signal open price**, and signal date exactly as exported "
+            '(including "Signal Open Price" and "Symbol, Signal, Signal Date/Price[$]").\n'
+            "- **Current spot / latest quote:** When SOURCE B contains a usable numeric quote or "
+            "clearly stated current price, use it for **live** context; cite with [Source N].\n"
+            '- **Stale internal fields:** Columns like "Today Trading Date/Price...", '
+            '"Current Mark to Market and Holding Period", etc. may lag real-time quotes. '
+            "Do **not** describe disagreement between those strings and SOURCE B as unexplained "
+            '"sync lag" if roles are clear — internal snapshot vs live web.\n'
+            "- **Current MTM:** When SOURCE B provides a reliable current price, **recompute** MTM "
+            "from entry price and Long/Short direction in SOURCE A plus that web price; **prefer** "
+            "this recomputed MTM over quoted MTM percentages in SOURCE A when they conflict with "
+            "the web quote.\n"
+            "- **Multiple SOURCE A rows for the same ticker:** They are separate signal instances "
+            '(different dates, intervals, or functions), not an intraday timeline of one position. '
+            "For **latest / current** questions, select **one** row: the **latest signal date**. "
+            "Mention other rows only if the user asks for history, comparisons, or multiple strategies.\n"
+            "- **Short positions:** Invert MTM vs price move per standard Short logic when recomputing."
+        )
+
+    @staticmethod
+    def _build_instructions(include_hybrid_pointer: bool = False) -> str:
+        tail_3 = (
+            "   Do **not** treat a stale internal \"Today\" price or quoted MTM string as authoritative "
+            "over a live web quote when SOURCE B provides a current price.\n"
+        )
+        if include_hybrid_pointer:
+            tail_3 += (
+                "   When **=== HYBRID CALCULATION RULES ===** appears below, follow it for current MTM "
+                "and live spot (entry from SOURCE A, current quote from SOURCE B).\n"
+            )
+        return (
+            "1. Answer using SOURCE A (MindWealth signal data) as the PRIMARY source for "
+            "strategy-specific fields: function names, symbols, signal dates, entry/open prices, "
+            "signal type (Long/Short), confirmation status, targets/stops, and backtest columns "
+            "as exported.\n"
+            "2. Use SOURCE B (live web context) for **current** public-market facts when needed: "
+            "latest quotes, news, catalysts, and figures not in the CSV snapshot.\n"
+            "3. If SOURCE B contradicts SOURCE A on **semantic identity** (e.g. wrong function name, "
+            "wrong ticker, inconsistent strategy metadata), surface that conflict clearly.\n"
+            + tail_3
+            + "4. If a source is marked FAILED or SKIPPED, do not speculate about its content — "
             "clearly note that information was unavailable.\n"
             "5. Always cite web sources with [Source N] tags where applicable.\n"
             "6. Keep the response concise and proportional to the question — avoid padding."

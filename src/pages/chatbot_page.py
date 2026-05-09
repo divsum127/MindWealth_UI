@@ -2,7 +2,11 @@
 AI Chatbot Page for Trading Analysis
 """
 
+import base64
+import json
+import re
 import streamlit as st
+import streamlit.components.v1 as components
 import sys
 import logging
 from pathlib import Path
@@ -24,6 +28,9 @@ from chatbot.agents.intent_classifier import INTENT_LABELS
 logger = logging.getLogger(__name__)
 
 _EASTERN_TZ = ZoneInfo("America/New_York")
+
+# Max rows per signal table embedded in one-click copy (full tables remain in Download).
+COPY_TABLE_ROW_CAP = 500
 
 
 def utc_now_iso() -> str:
@@ -102,6 +109,66 @@ def extract_user_prompt(content: str, metadata: Optional[dict] = None) -> str:
     cleaned = cleaned.strip()
     
     return cleaned
+
+
+# Unicode asterisks often break Markdown **bold** parsing and confuse Streamlit's renderer.
+_ASSISTANT_ASTERISK_TRANSLATE = str.maketrans(
+    {
+        "\u2217": "*",  # ∗ ASTERISK OPERATOR (common in model/web snippets)
+        "\uff0a": "*",  # ＊ FULLWIDTH ASTERISK
+        "\u066d": "*",  # ٭ Arabic five-pointed star
+        "\ufe61": "*",  # ﹡ SMALL ASTERISK
+    }
+)
+
+
+def _collapse_vertical_single_char_lines(text: str) -> str:
+    """Join rare model outputs that put one character per line (vertical garbage text)."""
+    lines = text.split("\n")
+    out: list[str] = []
+    i = 0
+    n = len(lines)
+    while i < n:
+        stripped = lines[i].strip()
+        if len(stripped) == 1:
+            start = i
+            chunk: list[str] = [stripped]
+            i += 1
+            while i < n:
+                s = lines[i].strip()
+                if len(s) == 0:
+                    break
+                if len(s) == 1:
+                    chunk.append(s)
+                    i += 1
+                else:
+                    break
+            if len(chunk) >= 8:
+                out.append("".join(chunk))
+            else:
+                out.extend(lines[start:i])
+        else:
+            out.append(lines[i])
+            i += 1
+    return "\n".join(out)
+
+
+def sanitize_assistant_markdown_for_display(text: str) -> str:
+    """Normalize assistant markdown so Streamlit renders prose reliably."""
+    if not text:
+        return ""
+    t = text.translate(_ASSISTANT_ASTERISK_TRANSLATE)
+    # Missing space before web/source citations
+    t = re.sub(r"(\))(\[Source)", r"\1 \2", t, flags=re.IGNORECASE)
+    t = re.sub(r"([a-zA-Z0-9.%$])(\[Source)", r"\1 \2", t, flags=re.IGNORECASE)
+    t = _collapse_vertical_single_char_lines(t)
+    t = re.sub(r"\n{4,}", "\n\n\n", t)
+    return t.strip()
+
+
+def render_assistant_markdown(text: str) -> None:
+    """Render assistant reply with markdown normalization."""
+    st.markdown(sanitize_assistant_markdown_for_display(text))
 
 
 def apply_table_styling():
@@ -214,6 +281,13 @@ def apply_table_styling():
     .ag-cell-wrapper {
         height: auto !important;
         min-height: 30px;
+    }
+
+    /* Chat assistant markdown: keep normal word wrapping (avoid odd per-glyph breaks) */
+    [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] p,
+    [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] li {
+        word-break: normal !important;
+        overflow-wrap: break-word !important;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -585,21 +659,170 @@ def _coerce_to_dataframe(data: Any) -> Optional[pd.DataFrame]:
     return None
 
 
+def _markdown_escape_cell(val: Any) -> str:
+    """Single table cell for GFM: flatten whitespace and escape pipes."""
+    if val is None:
+        return ""
+    try:
+        if pd.isna(val):
+            return ""
+    except TypeError:
+        pass
+    s = str(val).replace("\r\n", " ").replace("\n", " ").replace("\r", " ")
+    return s.replace("|", "\\|").strip()
+
+
+def _dataframe_to_markdown(df: pd.DataFrame) -> str:
+    """GitHub-flavored markdown table without extra dependencies."""
+    if df.empty:
+        return "_(_empty_)_"
+
+    cols = list(df.columns)
+    header = "| " + " | ".join(_markdown_escape_cell(c) for c in cols) + " |"
+    sep = "| " + " | ".join("---" for _ in cols) + " |"
+    lines = [header, sep]
+    for _, row in df.iterrows():
+        lines.append("| " + " | ".join(_markdown_escape_cell(row[c]) for c in cols) + " |")
+    return "\n".join(lines)
+
+
+def _prepare_signal_df_for_copy(df: pd.DataFrame) -> pd.DataFrame:
+    """Match display_styled_dataframe column hygiene for exported copy."""
+    from ..utils.helpers import reorder_dataframe_columns
+
+    out = df.copy()
+    if not out.empty and "Signal Open Price" in out.columns:
+        out = out.drop(columns=["Signal Open Price"])
+    return reorder_dataframe_columns(out)
+
+
+def build_assistant_copy_document(
+    content: str,
+    metadata: Optional[dict],
+    table_row_cap: Optional[int] = None,
+) -> str:
+    """Single markdown document: narrative plus optional full_signal_tables appendix."""
+    blocks: list[str] = []
+    head = sanitize_assistant_markdown_for_display((content or "").strip())
+    if head:
+        blocks.append(head)
+
+    meta = metadata or {}
+    tables = meta.get("full_signal_tables") or {}
+    if not isinstance(tables, dict):
+        tables = {}
+
+    for signal_type, raw in tables.items():
+        df = _coerce_to_dataframe(raw)
+        if df is None or df.empty:
+            continue
+        df = _prepare_signal_df_for_copy(df)
+        if df.empty:
+            continue
+
+        total = len(df)
+        note = ""
+        if table_row_cap is not None and total > table_row_cap:
+            df = df.head(table_row_cap).copy()
+            note = (
+                f"\n\n_Showing first {table_row_cap} of {total} rows in this copy; "
+                "use Download for the full table._\n\n"
+            )
+
+        label = get_signal_type_label(signal_type, uppercase=True)
+        sec = (
+            f"## {label} Signals ({total} records)"
+            f"{note}\n\n{_dataframe_to_markdown(df)}"
+        )
+        blocks.append(sec.strip())
+
+    return "\n\n".join(blocks).strip()
+
+
+def render_assistant_copy_controls(
+    content: str,
+    metadata: Optional[dict],
+    key_suffix: str,
+) -> None:
+    """Download full markdown + one-click clipboard (tables capped for clipboard size)."""
+    full_doc = build_assistant_copy_document(content, metadata, table_row_cap=None)
+    copy_doc = build_assistant_copy_document(
+        content, metadata, table_row_cap=COPY_TABLE_ROW_CAP
+    )
+    if not full_doc:
+        return
+
+    dl_key = f"dl_copy_doc_{key_suffix}"
+
+    cdl, ccopy = st.columns([1, 1])
+    with cdl:
+        st.download_button(
+            label="Download response (.md)",
+            data=full_doc.encode("utf-8"),
+            file_name="assistant_response.md",
+            mime="text/markdown",
+            key=dl_key,
+            help="Full narrative and signal tables as a Markdown file.",
+        )
+    with ccopy:
+        b64 = base64.standard_b64encode(copy_doc.encode("utf-8")).decode("ascii")
+        safe_id = "".join(ch if ch.isalnum() else "_" for ch in key_suffix)[:80]
+        btn_id = f"copy_btn_{safe_id}"
+        html = f"""
+<div style="font-family: sans-serif;">
+  <button id="{btn_id}" type="button" style="
+    padding: 0.35rem 0.75rem;
+    border-radius: 0.25rem;
+    border: 1px solid rgba(49, 51, 63, 0.2);
+    background: rgb(255, 255, 255);
+    cursor: pointer;
+    font-size: 14px;
+    width: 100%;
+  ">Copy full response</button>
+  <span id="{btn_id}_status" style="margin-left:8px;font-size:13px;color:#666;"></span>
+</div>
+<script>
+(function() {{
+  const b64 = {json.dumps(b64)};
+  const btn = document.getElementById("{btn_id}");
+  const st = document.getElementById("{btn_id}_status");
+  function decodeUtf8FromB64(s) {{
+    const bin = atob(s);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return new TextDecoder("utf-8").decode(bytes);
+  }}
+  btn.addEventListener("click", function() {{
+    const text = decodeUtf8FromB64(b64);
+    navigator.clipboard.writeText(text).then(function() {{
+      st.textContent = "Copied";
+      setTimeout(function() {{ st.textContent = ""; }}, 2000);
+    }}).catch(function() {{
+      st.textContent = "Copy blocked — use Download";
+      setTimeout(function() {{ st.textContent = ""; }}, 4000);
+    }});
+  }});
+}})();
+</script>
+"""
+        components.html(html, height=52)
+
+
 def render_chat_history_sidebar():
     """Render the chat history sidebar for managing sessions."""
+    # Keep chat preview rows compact in the sidebar.
+    st.sidebar.markdown(
+        """
+        <style>
+        [data-testid="stSidebar"] .stButton > button[kind="secondary"] p {
+            font-size: 0.80rem !important;
+            line-height: 1.15 !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
     st.sidebar.title("💬 Chat History")
-    
-    # New Chat button at the top
-    if st.sidebar.button("➕ New Chat", use_container_width=True, type="primary"):
-        # Create new session
-        new_session_id = SessionManager.create_new_session()
-        st.session_state.current_session_id = new_session_id
-        st.session_state.chatbot_engine = None  # Will be recreated with new session
-        st.session_state.chat_history = []
-        st.session_state.last_settings = None
-        st.rerun()
-    
-    st.sidebar.markdown("---")
     
     # Search box
     search_query = st.sidebar.text_input("🔍 Search chats", placeholder="Type to search...")
@@ -631,37 +854,36 @@ def render_chat_history_sidebar():
             if len(display_title) > 90:
                 display_title = display_title[:87].rstrip() + '...'
             is_current = st.session_state.get('current_session_id') == session_id
-            # Compact row: title + rename + delete
-            # Use two columns: title (wide) and icons (narrow, side-by-side)
-            cols = st.sidebar.columns([8, 2], gap="small")
-            with cols[0]:
-                if st.button(f"{'🟢 ' if is_current else ''}{display_title}", key=f"load_{session_id}", use_container_width=True, disabled=is_current):
+            # Compact row: summary load button + direct rename/delete buttons.
+            row_cols = st.sidebar.columns([7, 1.5, 1.5], gap="small")
+            with row_cols[0]:
+                button_label = f"🟢 {display_title}" if is_current else display_title
+                if st.button(button_label, key=f"load_{session_id}", use_container_width=True, disabled=is_current):
                     st.session_state.current_session_id = session_id
                     st.session_state.chatbot_engine = None
                     st.session_state.chat_history = []
                     st.session_state.last_settings = None
                     st.rerun()
-            with cols[1]:
-                icon_cols = st.columns([1, 1], gap="small")
-                with icon_cols[0]:
-                    if st.button("✏️", key=f"rename_{session_id}", help="Rename"):
-                        st.session_state[f'renaming_{session_id}'] = True
+            with row_cols[1]:
+                if st.button("✏️", key=f"rename_{session_id}", help="Rename", use_container_width=True):
+                    st.session_state[f'renaming_{session_id}'] = True
+                    st.rerun()
+            with row_cols[2]:
+                if st.button("🗑️", key=f"delete_{session_id}", help="Delete", use_container_width=True):
+                    if not is_current or len(sessions) > 1:
+                        SessionManager.delete_session(session_id)
+                        if is_current:
+                            remaining = [s for s in sessions if s['session_id'] != session_id]
+                            if remaining:
+                                st.session_state.current_session_id = remaining[0]['session_id']
+                                st.session_state.chatbot_engine = None
+                                st.session_state.chat_history = []
+                                st.session_state.last_settings = None
                         st.rerun()
-                with icon_cols[1]:
-                    if st.button("🗑️", key=f"delete_{session_id}", help="Delete"):
-                        if not is_current or len(sessions) > 1:
-                            SessionManager.delete_session(session_id)
-                            if is_current:
-                                remaining = [s for s in sessions if s['session_id'] != session_id]
-                                if remaining:
-                                    st.session_state.current_session_id = remaining[0]['session_id']
-                                    st.session_state.chatbot_engine = None
-                                    st.session_state.chat_history = []
-                                    st.session_state.last_settings = None
-                            st.rerun()
             # Inline rename input (compact)
             if st.session_state.get(f'renaming_{session_id}', False):
-                new_title = st.text_input("Rename chat:", value=display_title, key=f"rename_input_{session_id}")
+                current_title = session.get('title', 'New Chat')
+                new_title = st.text_input("Rename chat:", value=current_title, key=f"rename_input_{session_id}")
                 col_save, col_cancel = st.columns([1,1], gap="small")
                 with col_save:
                     if st.button("✅", key=f"save_rename_{session_id}"):
@@ -837,7 +1059,8 @@ def render_chatbot_page():
                 if rts:
                     st.caption(rts)
                 # Display response
-                st.markdown(response)
+                render_assistant_markdown(response)
+                render_assistant_copy_controls(response, metadata, "pending_analysis")
                 show_input_limit_notice(metadata)
                 if metadata.get("intent"):
                     render_route_badge(metadata)
@@ -945,7 +1168,8 @@ def render_chatbot_page():
                 if rts:
                     st.caption(rts)
                 # Display response
-                st.markdown(response)
+                render_assistant_markdown(response)
+                render_assistant_copy_controls(response, metadata, "pending_insights")
                 show_input_limit_notice(metadata)
                 if metadata.get("intent"):
                     render_route_badge(metadata)
@@ -1050,7 +1274,8 @@ def render_chatbot_page():
                 if rts:
                     st.caption(rts)
                 # Display response
-                st.markdown(response)
+                render_assistant_markdown(response)
+                render_assistant_copy_controls(response, metadata, "pending_breadth")
                 show_input_limit_notice(metadata)
                 if metadata.get("intent"):
                     render_route_badge(metadata)
@@ -1451,7 +1676,12 @@ Date Range: {from_date.strftime('%Y-%m-%d')} to {to_date.strftime('%Y-%m-%d')}""
                     ts = format_message_time_est(message.get('timestamp'))
                     if ts:
                         st.caption(ts)
-                    st.markdown(message['content'])
+                    render_assistant_markdown(message["content"])
+                    render_assistant_copy_controls(
+                        message["content"],
+                        message.get("metadata"),
+                        key_suffix=f"hist_{idx}",
+                    )
                     show_input_limit_notice(message.get('metadata'))
 
                     # Show metadata
@@ -1690,7 +1920,8 @@ Date Range: {from_date.strftime('%Y-%m-%d')} to {to_date.strftime('%Y-%m-%d')}""
                     render_route_badge(metadata)
 
                 # Display response first; flow trace below so it is visible after long answers
-                st.markdown(response)
+                render_assistant_markdown(response)
+                render_assistant_copy_controls(response, metadata, "live_chat")
                 show_input_limit_notice(metadata)
                 render_flow_trace(metadata)
 

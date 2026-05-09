@@ -767,26 +767,19 @@ class ChatbotEngine:
                 
                 return no_signal_message, metadata
             
-            # Build complete user message
-            complete_message = user_message
-            
-            # Build message with data context and/or Claude report
+            # Build complete user message: **signals / table data first**, then Claude report text
+            complete_message = f"User Query: {user_message}"
+            if data_context:
+                complete_message += f"\n\n{data_context}"
             if claude_report_text:
-                # For Claude report queries, add the report text directly (no table data)
-                complete_message = f"""User Query: {user_message}
-
-=== CLAUDE COMPREHENSIVE ANALYSIS REPORT ===
-
-{claude_report_text}
-
-=== END REPORT ===
-
-Please answer the user's query based on the comprehensive analysis report above."""
-            elif data_context:
-                # For regular queries with table signals
-                complete_message = f"""User Query: {user_message}
-
-{data_context}"""
+                complete_message += (
+                    "\n\n=== CLAUDE COMPREHENSIVE ANALYSIS REPORT "
+                    "(supplementary context) ===\n\n"
+                    f"{claude_report_text}\n\n"
+                    "=== END REPORT ===\n\n"
+                    "Prioritize the signal/table data above for facts; use this report for "
+                    "synthesis, themes, and narrative clarity."
+                )
             
             if additional_context:
                 complete_message += f"\n\nAdditional Context:\n{additional_context}"
@@ -956,22 +949,32 @@ Please answer the user's query based on the comprehensive analysis report above.
                 if not signal_type_reasoning:
                     signal_type_reasoning = extraction_result.get("signal_types_reasoning", "")
             
-            # SPECIAL CASE: If claude_report is in signal types, route to old query() method
-            # Claude report doesn't need table data, functions, or column extraction
-            if 'claude_report' in selected_signal_types:
-                logger.info("CLAUDE_REPORT detected - routing to old query() method for text-based analysis")
+            # SPECIAL CASE: claude_report **alone** (no CSV-backed signal types) → legacy query()
+            # loads only the text file. If entry/exit/breadth/portfolio_target_achieved are also
+            # selected, stay on smart_query: fetch CSV signals first, then append the report below.
+            _table_types_if_any = [
+                st for st in (selected_signal_types or []) if st != "claude_report"
+            ]
+            if (
+                selected_signal_types
+                and "claude_report" in selected_signal_types
+                and not _table_types_if_any
+            ):
+                logger.info(
+                    "CLAUDE_REPORT-only — routing to query() for text-based analysis (no CSV types)"
+                )
                 return self.query(
                     user_message=user_message,
                     signal_types=selected_signal_types,
-                    tickers=None,  # Not needed for claude_report
+                    tickers=None,
                     from_date=from_date,
                     to_date=to_date,
-                    dedup_columns=None,  # Not needed for claude_report
-                    functions=None,  # Not needed for claude_report
+                    dedup_columns=None,
+                    functions=None,
                     additional_context=additional_context,
-                    auto_extract_tickers=False,  # Not needed for claude_report
-                    auto_extract_functions=False,  # Not needed for claude_report
-                    is_followup=False
+                    auto_extract_tickers=False,
+                    auto_extract_functions=False,
+                    is_followup=False,
                 )
             
             # Use extracted functions if not provided
@@ -1246,6 +1249,28 @@ Please answer the user's query based on the comprehensive analysis report above.
             
             complete_message += f"\n\n=== SIGNAL DATA CONTEXT ===\n{data_context}"
 
+            claude_report_loaded_sq = False
+            if has_claude_report:
+                claude_report_append = self.data_processor.load_claude_report()
+                if claude_report_append:
+                    complete_message += (
+                        "\n\n=== CLAUDE COMPREHENSIVE ANALYSIS REPORT "
+                        "(supplementary context) ===\n\n"
+                        f"{claude_report_append}\n\n"
+                        "=== END REPORT ===\n\n"
+                        "Prioritize signal rows in === SIGNAL DATA CONTEXT === above for factual "
+                        "details; use this report for synthesis, themes, and extra clarity."
+                    )
+                    claude_report_loaded_sq = True
+                    logger.info(
+                        "Appended Claude report after signal data "
+                        f"({len(claude_report_append)} chars)"
+                    )
+                else:
+                    logger.warning(
+                        "claude_report selected but chatbot/data/claude_report.txt missing or empty"
+                    )
+
             if additional_context:
                 complete_message += f"\n\n=== ADDITIONAL CONTEXT ===\n{additional_context}"
             
@@ -1263,6 +1288,7 @@ Please answer the user's query based on the comprehensive analysis report above.
                 "rows_fetched": total_rows,
                 "signal_types_with_data": list(fetched_data.keys()),
                 "signal_type_reasoning": signal_type_reasoning,
+                "claude_report_loaded": claude_report_loaded_sq if has_claude_report else False,
             }
             
             # Add user message to history (use display_prompt_override for UI so only current question is shown)
@@ -1395,8 +1421,9 @@ Please answer the user's query based on the comprehensive analysis report above.
 
         Behaviour matches ``smart_query`` stages 1–2 (column selection, ticker
         extraction, date-range expansion for top/best queries, explicit-date
-        no-expansion rule).  Does **not** call ``query()`` for ``claude_report``;
-        the HYBRID caller must fall back to ``smart_query`` when that type is selected.
+        no-expansion rule).  Does not load ``claude_report.txt`` (report text is
+        appended in ``smart_query`` after the CSV fetch when that type is selected
+        alongside table signal types).
 
         Parameters
         ----------
@@ -2127,7 +2154,7 @@ Please answer the user's query based on the comprehensive analysis report above.
                     add_flow_step("Web Search Fallback", f"Web unavailable; switching to internal path ({reason})")
 
             # ── HYBRID: parallel web search + internal fetch ──────────────────
-            # claude_report uses ``query()``, not table fetch — keep legacy smart_query path.
+            # claude_report text is merged inside sequential ``smart_query`` (not in _fetch_signal_data).
             hybrid_parallel_ok = (
                 PARALLEL_HYBRID_ENABLED
                 and not (selected_signal_types and "claude_report" in selected_signal_types)
@@ -2390,6 +2417,7 @@ NOTE: Use the conversation context above to understand what we've discussed, but
                 r"===\s*EXIT SIGNALS \(JSON\)[\s\S]*?(?====|$)",
                 r"===\s*PORTFOLIO_TARGET_ACHIEVED SIGNALS \(JSON\)[\s\S]*?(?====|$)",
                 r"===\s*BREADTH SIGNALS \(JSON\)[\s\S]*?(?====|$)",
+                r"===\s*CLAUDE COMPREHENSIVE ANALYSIS REPORT[\s\S]*?(?====|$)",
                 r"User Query:.*?\n\n",  # Remove "User Query:" prefix
                 r"FOLLOW-UP QUESTION:.*?\n\n",  # Remove "FOLLOW-UP QUESTION:" prefix
             ]

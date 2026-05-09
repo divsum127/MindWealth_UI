@@ -13,9 +13,26 @@ Features:
 import pandas as pd
 import re
 import os
+import threading
 from pathlib import Path
 from datetime import datetime, timedelta
 import sys
+from typing import Dict, List
+
+_ROOT = Path(__file__).resolve().parent.parent
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
+from src.utils.atomic_io import read_csv_optional_locked, write_dataframe_csv_atomic_guarded
+from src.utils.mtm_pricing import (
+    MTM_HOLDING_COLUMN,
+    TODAY_PRICE_COLUMN,
+    TRADING_DAYS_COLUMN,
+    batch_latest_prices,
+    enrich_row_current_prices,
+    normalize_symbol,
+    parse_symbol_signal_column,
+)
 
 # Import configuration
 from config import (
@@ -31,9 +48,9 @@ from config import (
 
 # Cache for stock data to avoid repeated file reads
 _stock_data_cache = {}
+_stock_data_cache_lock = threading.Lock()
 
-# Canonical/legacy names for "today price" column.
-TODAY_PRICE_COLUMN = "Today Trading Date/Price[$], Today Price vs Signal"
+# Canonical/legacy names for "today price" column (canonical string lives in mtm_pricing).
 TODAY_PRICE_COLUMN_LEGACY = "Today Trading Date/Price[$], Today price vs Signal"
 
 
@@ -58,56 +75,6 @@ def normalize_today_price_columns(df):
         df = df.rename(columns={TODAY_PRICE_COLUMN_LEGACY: TODAY_PRICE_COLUMN})
 
     return df
-
-
-def parse_symbol_signal_column(value):
-    """
-    Parse the "Symbol, Signal, Signal Date/Price[$]" column.
-    
-    Example: "ETH-USD, Long, 2025-10-10 (Price: 4369.1436)"
-    Returns: ("ETH-USD", "2025-10-10", "Long", 4369.1436)
-    """
-    try:
-        # Handle NaN, None, or empty values
-        if value is None or pd.isna(value):
-            return None, None, None, None
-        
-        # Convert to string to handle any numeric types
-        value_str = str(value).strip()
-        
-        if not value_str or value_str.lower() in ['nan', 'none', '']:
-            return None, None, None, None
-        
-        # Split by comma
-        parts = [p.strip() for p in value_str.split(',')]
-        
-        if len(parts) < 3:
-            return None, None, None, None
-        
-        symbol = parts[0]
-        signal_type = parts[1]
-        
-        # Extract date and price from third part
-        # Format: "2025-10-10 (Price: 4369.1436)"
-        date_price_part = parts[2]
-        
-        # Extract date using regex
-        date_match = re.search(r'(\d{4}-\d{2}-\d{2})', date_price_part)
-        date = date_match.group(1) if date_match else None
-        
-        # Extract price using regex (handle negative values and thousand separators)
-        price_match = re.search(r'Price:\s*([-]?\d+(?:\.\d+)?(?:,\d{3})*)', date_price_part)
-        if price_match:
-            price_str = price_match.group(1).replace(',', '')
-            price = float(price_str)
-        else:
-            price = None
-        
-        return symbol, date, signal_type, price
-        
-    except Exception as e:
-        print(f"Error parsing: {value} - {e}")
-        return None, None, None, None
 
 
 def parse_exit_signal_column(value):
@@ -227,21 +194,21 @@ def get_interval_based_open_price(symbol, signal_date, interval, stock_data_dir=
         # Parse signal date
         signal_dt = datetime.strptime(signal_date, '%Y-%m-%d')
         
-        # Load stock data (use cache)
-        if symbol not in _stock_data_cache:
-            stock_file = Path(stock_data_dir) / f"{symbol}.csv"
-            if not stock_file.exists():
-                return None
+        with _stock_data_cache_lock:
+            if symbol not in _stock_data_cache:
+                stock_file = Path(stock_data_dir) / f"{symbol}.csv"
+                if not stock_file.exists():
+                    return None
+                
+                stock_data = pd.read_csv(stock_file)
+                if stock_data.empty:
+                    return None
+                
+                stock_data['Date'] = pd.to_datetime(stock_data['Date'])
+                stock_data = stock_data.sort_values('Date')
+                _stock_data_cache[symbol] = stock_data
             
-            stock_data = pd.read_csv(stock_file)
-            if stock_data.empty:
-                return None
-            
-            stock_data['Date'] = pd.to_datetime(stock_data['Date'])
-            stock_data = stock_data.sort_values('Date')
-            _stock_data_cache[symbol] = stock_data
-        
-        stock_data = _stock_data_cache[symbol]
+            stock_data = _stock_data_cache[symbol]
         
         # Get open price based on interval
         if interval == 'Daily':
@@ -728,97 +695,6 @@ def convert_signal_file_to_data_structure(
     return processed, skipped, created_symbols
 
 
-def get_latest_price_from_stock_data(symbol, stock_data_dir=None):
-    """
-    Get the latest (most recent) price from stock_data CSV file.
-    
-    Args:
-        symbol: Stock symbol (e.g., "TSLA", "WMT", "^NDX")
-        stock_data_dir: Directory containing stock_data CSV files (uses config default if None)
-    
-    Returns:
-        Tuple of (latest_date, latest_price) or (None, None) if not found
-    """
-    if stock_data_dir is None:
-        stock_data_dir = str(STOCK_DATA_DIR)
-    """
-    Get the latest (most recent) price from stock_data CSV file.
-    
-    Args:
-        symbol: Stock symbol (e.g., "TSLA", "WMT", "^NDX")
-        stock_data_dir: Directory containing stock_data CSV files
-    
-    Returns:
-        Tuple of (latest_date, latest_price) or (None, None) if not found
-    """
-    try:
-        stock_data_path = Path(stock_data_dir) / f"{symbol}.csv"
-        
-        if not stock_data_path.exists():
-            return None, None
-        
-        # Read the stock data CSV
-        stock_df = pd.read_csv(stock_data_path)
-        
-        if stock_df.empty:
-            return None, None
-        
-        # Find date column (case-insensitive)
-        date_col = None
-        for col in stock_df.columns:
-            if col.lower() == 'date':
-                date_col = col
-                break
-        
-        if date_col is None:
-            return None, None
-        
-        # Find price column (try Close, then Price, then any numeric column)
-        price_col = None
-        for col_name in ['Close', 'close', 'Price', 'price', 'Adj Close', 'Adj Close']:
-            if col_name in stock_df.columns:
-                price_col = col_name
-                break
-        
-        if price_col is None:
-            # Try to find any numeric column that's not the date
-            for col in stock_df.columns:
-                if col != date_col and pd.api.types.is_numeric_dtype(stock_df[col]):
-                    price_col = col
-                    break
-        
-        if price_col is None:
-            return None, None
-        
-        # Convert date column to datetime and sort to ensure we get the most recent
-        try:
-            stock_df[date_col] = pd.to_datetime(stock_df[date_col], errors='coerce')
-            stock_df = stock_df.sort_values(date_col, ascending=True)
-        except:
-            # If date parsing fails, just use the last row
-            pass
-        
-        # Get the most recent row (last row after sorting)
-        latest_row = stock_df.iloc[-1]
-        latest_date = latest_row.get(date_col, None)
-        latest_price = latest_row.get(price_col, None)
-        
-        if pd.isna(latest_date) or pd.isna(latest_price):
-            return None, None
-        
-        # Convert date to string if it's a datetime object
-        if isinstance(latest_date, pd.Timestamp):
-            latest_date = latest_date.strftime('%Y-%m-%d')
-        else:
-            latest_date = str(latest_date)
-        
-        return latest_date, float(latest_price)
-        
-    except Exception as e:
-        print(f"  ⚠ Error reading stock data for {symbol}: {e}")
-        return None, None
-
-
 def parse_current_price_column(value):
     """
     Parse the "Today Trading Date/Price[$], Today Price vs Signal" column.
@@ -857,32 +733,6 @@ def parse_current_price_column(value):
     except Exception as e:
         print(f"  ⚠ Error parsing today price: {value} - {e}")
         return None, None, None
-
-
-def calculate_price_change_percentage(current_price, signal_price):
-    """
-    Calculate percentage change between today price and signal price.
-    
-    Args:
-        current_price: Current/live price
-        signal_price: Original signal price
-    
-    Returns:
-        Percentage change string (e.g., "5.2% above" or "3.1% below")
-    """
-    if current_price is None or signal_price is None or signal_price == 0:
-        return "0.0% below"
-    
-    try:
-        change_pct = ((current_price - signal_price) / signal_price) * 100
-        
-        if change_pct >= 0:
-            return f"{change_pct:.2f}% above"
-        else:
-            return f"{abs(change_pct):.2f}% below"
-            
-    except Exception as e:
-        return "0.0% below"
 
 
 def append_to_consolidated_csv(row, signal_type, data_base_dir=None):
@@ -972,9 +822,9 @@ def append_to_consolidated_csv(row, signal_type, data_base_dir=None):
         # Get dedup key for new row
         new_key = get_dedup_key(row, signal_type)
         
-        # Read existing CSV if it exists
+        # Read existing CSV if it exists (optional shared lock)
         if csv_path.exists():
-            existing_df = pd.read_csv(csv_path)
+            existing_df = read_csv_optional_locked(csv_path)
             existing_df = normalize_today_price_columns(existing_df)
             
             # Find if key already exists
@@ -1014,8 +864,8 @@ def append_to_consolidated_csv(row, signal_type, data_base_dir=None):
         # - portfolio_target_achieved: Function + Symbol + Signal Type + Interval + Signal Open Price
         # - breadth: Function + Date
         
-        # Write back to consolidated CSV
-        combined_df.to_csv(csv_path, index=False, encoding='utf-8')
+        # Write back to consolidated CSV (atomic replace + lock)
+        write_dataframe_csv_atomic_guarded(combined_df, csv_path)
         
     except Exception as e:
         import traceback
@@ -1080,7 +930,7 @@ def update_current_prices_in_data_files(data_base_dir=None, stock_data_dir=None)
         print(f"\n📂 Processing {description}...")
         
         try:
-            df = pd.read_csv(csv_path)
+            df = read_csv_optional_locked(csv_path)
             df = normalize_today_price_columns(df)
             
             if df.empty:
@@ -1094,52 +944,48 @@ def update_current_prices_in_data_files(data_base_dir=None, stock_data_dir=None)
             
             rows_updated_in_file = 0
             
-            # Process each row
+            symbol_col = "Symbol, Signal, Signal Date/Price[$]"
+            row_symbols: List[str] = []
+            sym_by_idx: Dict[int, str] = {}
             for idx, row in df.iterrows():
-                # Extract symbol from the row
-                symbol = None
-                
-                # Parse from compound column
-                if 'Symbol, Signal, Signal Date/Price[$]' in row.index:
-                    symbol_data = row['Symbol, Signal, Signal Date/Price[$]']
-                    if pd.notna(symbol_data):
-                        parsed_symbol, _, _, _ = parse_symbol_signal_column(symbol_data)
-                        if parsed_symbol:
-                            symbol = parsed_symbol
-                
-                if not symbol or pd.isna(symbol) or symbol == '':
+                if symbol_col not in row.index:
                     continue
-                
-                # Get latest price from stock_data
-                latest_date, latest_price = get_latest_price_from_stock_data(symbol, stock_data_dir)
-                
-                if latest_date is None or latest_price is None:
+                symbol_data = row[symbol_col]
+                if pd.notna(symbol_data):
+                    parsed_symbol, _, _, _ = parse_symbol_signal_column(symbol_data)
+                    if parsed_symbol:
+                        ns = normalize_symbol(parsed_symbol)
+                        sym_by_idx[idx] = ns
+                        row_symbols.append(ns)
+            
+            price_map = batch_latest_prices(row_symbols, Path(stock_data_dir) if stock_data_dir else None)
+            
+            for idx, row in df.iterrows():
+                sym = sym_by_idx.get(idx)
+                if not sym:
+                    continue
+                latest = price_map.get(sym)
+                if latest is None:
+                    price_not_found_count += 1
+                    continue
+                latest_price, latest_date = latest
+                if latest_price is None or latest_date is None:
                     price_not_found_count += 1
                     continue
                 
-                # Extract signal price to calculate percentage change
-                signal_price = None
-                if 'Symbol, Signal, Signal Date/Price[$]' in row.index:
-                    symbol_data = row['Symbol, Signal, Signal Date/Price[$]']
-                    if pd.notna(symbol_data):
-                        _, _, _, signal_price = parse_symbol_signal_column(symbol_data)
-                
-                # Calculate percentage change
-                if signal_price is not None and signal_price > 0:
-                    price_change_str = calculate_price_change_percentage(latest_price, signal_price)
-                else:
-                    price_change_str = "0.0% below"
-                
-                # Update today price column
-                new_current_price_value = f"{latest_date} (Price: {latest_price:.4f}), {price_change_str}"
-                df.at[idx, current_price_column] = new_current_price_value
+                today_cell, mtm_cell, td_cell = enrich_row_current_prices(row, latest_price, latest_date)
+                df.at[idx, current_price_column] = today_cell
+                if MTM_HOLDING_COLUMN in df.columns:
+                    df.at[idx, MTM_HOLDING_COLUMN] = mtm_cell
+                if TRADING_DAYS_COLUMN in df.columns:
+                    df.at[idx, TRADING_DAYS_COLUMN] = td_cell
                 rows_updated_in_file += 1
             
             # Save updated file if changes were made (ensure legacy column is never written)
             if rows_updated_in_file > 0:
                 if TODAY_PRICE_COLUMN_LEGACY in df.columns:
                     df = df.drop(columns=[TODAY_PRICE_COLUMN_LEGACY])
-                df.to_csv(csv_path, index=False)
+                write_dataframe_csv_atomic_guarded(df, csv_path)
                 updated_count += 1
                 total_rows_updated += rows_updated_in_file
                 print(f"  ✓ Updated {rows_updated_in_file} rows")

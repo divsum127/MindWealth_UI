@@ -178,6 +178,7 @@ Available Tickers/Assets:
    - If user asks about "targets", "portfolio positions" → include "portfolio_target_achieved"
    - If user asks about "market breadth", "sentiment" → include "breadth"
    - If user asks about "Claude report", "Claude analysis", "comprehensive report", "recommendations" → include "claude_report"
+   - "Latest signals", "recent signals", "newest entries", "show signals" → always include at least one **table** type ("entry", "exit", and/or others as appropriate); if the user also wants narrative synthesis, include "claude_report" **in addition** (never substitute claude_report for table types when they ask for concrete signal rows).
    - Default: ["entry", "exit", "portfolio_target_achieved"]
    - SPECIAL (claude_report): If **only** "claude_report" is selected (no entry/exit/breadth/portfolio_target_achieved), return null for functions, tickers, and columns. If "claude_report" appears **together with** other signal types, you MUST still extract functions, tickers, and column subsets for entry/exit/breadth/portfolio_target_achieved as usual — only skip column data for claude_report itself (omit a "claude_report" key under "columns" or leave it empty).
 

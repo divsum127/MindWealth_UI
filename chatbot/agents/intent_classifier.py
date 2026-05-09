@@ -12,6 +12,11 @@ import logging
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple
 
+from .llm_router import (
+    mtm_margin_calculation_needs_live_prices,
+    query_implies_portfolio_or_signals,
+)
+
 logger = logging.getLogger(__name__)
 
 # ── Intent constants ────────────────────────────────────────────────────────────
@@ -225,7 +230,10 @@ Rules:
 - If primary_intent is WEB_QUERY, populate web_search_queries with 1-3 targeted search strings
   including the current year (2026) where relevant
 - web_search_queries must be null for non-WEB_QUERY intents
-- confidence should reflect how certain you are (0.0 – 1.0)"""
+- confidence should reflect how certain you are (0.0 – 1.0)
+- Mark-to-market (MTM) margin or margin requirements based on **current** marks need live prices:
+  use WEB_QUERY alone if only external/public numbers apply; use HYBRID (SIGNAL_LOOKUP + WEB_QUERY)
+  if the user ties it to their signals, positions, or portfolio."""
 
     def __init__(self, api_key: Optional[str] = None, openai_model: str = "gpt-4o-mini"):
         self._api_key = api_key
@@ -251,6 +259,38 @@ Rules:
         Classify user intent. Rule-based first; LLM fallback for ambiguous queries.
         """
         query = (query or "").strip()
+
+        if mtm_margin_calculation_needs_live_prices(query):
+            hint = self._extract_scope_hint(query)
+            ticks = hint.tickers_mentioned
+            if ticks:
+                web_qs = [f"{t} stock price quote live today 2026" for t in ticks[:2]]
+            else:
+                web_qs = [query[:200]]
+            web_qs = web_qs[:3]
+            if query_implies_portfolio_or_signals(query):
+                return IntentResult(
+                    primary_intent=INTENT_SIGNAL_LOOKUP,
+                    confidence=0.92,
+                    is_hybrid=True,
+                    secondary_intent=INTENT_WEB_QUERY,
+                    reasoning=(
+                        "MTM/margin calculation requires live marks — hybrid web + signal data"
+                    ),
+                    data_scope_hint=hint,
+                    classified_by="rules",
+                    web_search_queries=web_qs,
+                )
+            return IntentResult(
+                primary_intent=INTENT_WEB_QUERY,
+                confidence=0.90,
+                is_hybrid=False,
+                secondary_intent=None,
+                reasoning="MTM/margin calculation requires live prices from web",
+                data_scope_hint=hint,
+                classified_by="rules",
+                web_search_queries=web_qs,
+            )
 
         rule_result = self._apply_rules(query)
         if rule_result is not None:
