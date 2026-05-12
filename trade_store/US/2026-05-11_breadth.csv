@@ -1,5 +1,5 @@
 Date,Function,Total New Long Signal,Last 6 Month Top 10 Percentile No of Long Signal,Today Long Signal Percentile From Top (Last 6 Month),Total New Short Signal,Last 6 Month Top 10 Percentile No of Short Signal,Today Short Signal Percentile From Top (Last 6 Month)
-2026-05-08,TRENDPULSE,8,13,24.31,0,1,100.0
-2026-05-08,DELTADRIFT,2,10,41.44,0,4,100.0
-2026-05-08,BAND MATRIX,0,2,100.0,0,0,100.0
-2026-05-08,Combined (TrendPulse + DeltaDrift + BandMatrix),12,29,38.67,0,4,100.0
+2026-05-11,TRENDPULSE,5,13,37.57,1,1,9.94
+2026-05-11,DELTADRIFT,3,10,33.15,1,4,32.6
+2026-05-11,BAND MATRIX,0,2,100.0,0,0,100.0
+2026-05-11,Combined (TrendPulse + DeltaDrift + BandMatrix),15,29,26.52,2,4,23.2
