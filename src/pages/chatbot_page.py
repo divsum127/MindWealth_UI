@@ -1373,6 +1373,7 @@ def render_chatbot_page():
         # Analyze button
         analyze_button = st.sidebar.button(
             "📊 Analyze Asset",
+            key="chatbot_analyze_asset_button",
             use_container_width=True,
             type="primary",
             disabled=not selected_asset,
@@ -1432,6 +1433,7 @@ Date Range: {from_date.strftime('%Y-%m-%d')} to {to_date.strftime('%Y-%m-%d')}""
     st.sidebar.markdown("---")
     signal_insights_button = st.sidebar.button(
         "💡 Signal Insights",
+        key="chatbot_signal_insights_button",
         use_container_width=True,
         type="secondary",
         help="Find high-quality entry signals across all assets (Sharpe >1.5, Win Rate >80%, Forward Testing >65%)"
@@ -1496,6 +1498,7 @@ Date Range: {from_date.strftime('%Y-%m-%d')} to {to_date.strftime('%Y-%m-%d')}""
     st.sidebar.markdown("---")
     breadth_analysis_button = st.sidebar.button(
         "📊 Breadth Analysis",
+        key="chatbot_breadth_analysis_button",
         use_container_width=True,
         type="secondary",
         help="Analyze breadth reports and identify top/bottom 10% days (days with breadth values in bottom 10 percentile)"
@@ -1654,7 +1657,7 @@ Date Range: {from_date.strftime('%Y-%m-%d')} to {to_date.strftime('%Y-%m-%d')}""
     
     # Clear everything button in sidebar
     st.sidebar.markdown("---")
-    if st.sidebar.button("🗑️ Clear Current Chat"):
+    if st.sidebar.button("🗑️ Clear Current Chat", key="chatbot_clear_current_chat_button"):
         chatbot.clear_history()
         # Update title to "New Chat"
         chatbot.history_manager.update_session_title("New Chat")
