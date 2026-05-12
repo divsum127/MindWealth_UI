@@ -22,9 +22,11 @@ prompt = synthesis.build_prompt(
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import logging
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
@@ -45,9 +47,8 @@ class SynthesisAgent:
     ------------
     - Claude always knows which source each piece of information came from.
     - If a source failed or timed out, Claude is told not to speculate.
-    - For current MTM / live spot, entry and direction come from SOURCE A and
-      the mark uses SOURCE B when available; stale internal MTM strings are not
-      treated as authoritative vs web quotes.
+    - Current marks default from SOURCE A (trade_store/stock_data OHLC); SOURCE B
+      is optional enrichment for MTM, not mandatory for routing.
     - Prompt length is bounded so we don't blow the context window.
     """
 
@@ -97,6 +98,21 @@ class SynthesisAgent:
         source_a_block = self._build_source_a(
             signal_data, signal_metadata, internal_failed, internal_error, now_iso
         )
+        calculator_block = ""
+        if not internal_failed and signal_data:
+            try:
+                # Load by path so ``import chatbot`` (Anthropic, etc.) is not required for this tool.
+                tc_path = Path(__file__).resolve().parent.parent / "tools" / "trading_calculator.py"
+                spec = importlib.util.spec_from_file_location(
+                    "_mindwealth_trading_calculator", tc_path
+                )
+                tc_mod = importlib.util.module_from_spec(spec)
+                assert spec.loader is not None
+                spec.loader.exec_module(tc_mod)
+                calculator_block = tc_mod.build_calculator_tool_block(signal_data)
+            except Exception as exc:
+                logger.warning("[SynthesisAgent] Calculator tool skipped: %s", exc)
+
         source_b_block = self._build_source_b(
             web_result, web_failed, web_error, now_iso
         )
@@ -112,12 +128,18 @@ class SynthesisAgent:
             f"User Query: {user_message}",
             "",
             source_a_block,
-            "",
-            source_b_block,
-            "",
-            "=== SYNTHESIS INSTRUCTIONS ===",
-            instructions,
         ]
+        if calculator_block:
+            parts.extend(["", calculator_block])
+        parts.extend(
+            [
+                "",
+                source_b_block,
+                "",
+                "=== SYNTHESIS INSTRUCTIONS ===",
+                instructions,
+            ]
+        )
         if include_hybrid:
             parts.extend(
                 [
@@ -173,6 +195,15 @@ class SynthesisAgent:
                 pass
 
         lines.append(f"Fetched at: {now_iso} | Total rows: {total_rows}")
+        lines.append(
+            "For **current MTM % and holding period**, treat the exported columns "
+            "**\"Current Mark to Market and Holding Period\"** and "
+            "**\"Trading Days between Signal and Today Date\"** (when present) as the **authoritative** "
+            "values — they match the Outstanding Signals / entry.csv report. "
+            "**\"Today Trading Date/Price[$], Today Price vs Signal\"** is the default **spot** for that row "
+            "(from **trade_store/stock_data** when the pipeline refreshes). "
+            "Use CALCULATOR TOOL OUTPUT when injected; it prefers those report columns over recomputed math."
+        )
         lines.append(
             "Note: If multiple rows list the same Symbol, each row is a separate signal instance "
             "unless deduplicated; for latest-position questions use the row with the latest signal date "
@@ -281,19 +312,20 @@ class SynthesisAgent:
         return (
             "These rules apply when answering **current mark-to-market (MTM)**, **current price**, or "
             "**where is it trading** using both SOURCE A and SOURCE B.\n"
+            "- **Default current price (same as trade_store):** Prefer the price embedded in SOURCE A "
+            '("Today Trading Date/Price..." or parsed close from the pipeline) for consistent MTM math. '
+            "SOURCE B is **optional enrichment** (news, alternate quotes), not required for basic MTM.\n"
             "- **Signal identity:** Use SOURCE A for Function, Symbol, signal type (Long/Short), "
             "**entry / signal open price**, and signal date exactly as exported "
             '(including "Signal Open Price" and "Symbol, Signal, Signal Date/Price[$]").\n'
-            "- **Current spot / latest quote:** When SOURCE B contains a usable numeric quote or "
-            "clearly stated current price, use it for **live** context; cite with [Source N].\n"
-            '- **Stale internal fields:** Columns like "Today Trading Date/Price...", '
-            '"Current Mark to Market and Holding Period", etc. may lag real-time quotes. '
-            "Do **not** describe disagreement between those strings and SOURCE B as unexplained "
-            '"sync lag" if roles are clear — internal snapshot vs live web.\n'
-            "- **Current MTM:** When SOURCE B provides a reliable current price, **recompute** MTM "
-            "from entry price and Long/Short direction in SOURCE A plus that web price; **prefer** "
-            "this recomputed MTM over quoted MTM percentages in SOURCE A when they conflict with "
-            "the web quote.\n"
+            "- **When SOURCE B has a quote:** You may cite it with [Source N]. If it differs from SOURCE A's "
+            "today price, prefer **one** consistent story: either use SOURCE A prices end-to-end for MTM, "
+            "or **recompute** MTM from entry + direction + chosen spot and say which source the spot came from.\n"
+            '- **Internal vs web:** "Today" / MTM columns follow **trade_store/stock_data** snapshots; '
+            "web may differ slightly by timing — do not dramatize small gaps as system errors.\n"
+            "- **Current MTM / holding days:** Prefer the **\"Current Mark to Market and Holding Period\"** "
+            "column from SOURCE A when present; only recompute from entry + Long/Short + spot when that "
+            "column is missing or empty.\n"
             "- **Multiple SOURCE A rows for the same ticker:** They are separate signal instances "
             '(different dates, intervals, or functions), not an intraday timeline of one position. '
             "For **latest / current** questions, select **one** row: the **latest signal date**. "
@@ -304,21 +336,23 @@ class SynthesisAgent:
     @staticmethod
     def _build_instructions(include_hybrid_pointer: bool = False) -> str:
         tail_3 = (
-            "   Do **not** treat a stale internal \"Today\" price or quoted MTM string as authoritative "
-            "over a live web quote when SOURCE B provides a current price.\n"
+            "   For MTM and holding period: prefer SOURCE A **\"Current Mark to Market and Holding Period\"** "
+            "(and Today price column) from the consolidated export; they align with the Outstanding Signals "
+            "report. If SOURCE B also has a quote, you may compare or reconcile; do not imply internal "
+            "prices are \"wrong\" solely because web differs.\n"
         )
         if include_hybrid_pointer:
             tail_3 += (
-                "   When **=== HYBRID CALCULATION RULES ===** appears below, follow it for current MTM "
-                "and live spot (entry from SOURCE A, current quote from SOURCE B).\n"
+                "   When **=== HYBRID CALCULATION RULES ===** appears below, use it for reconciling "
+                "SOURCE A (trade_store-based) prices with optional SOURCE B quotes.\n"
             )
         return (
             "1. Answer using SOURCE A (MindWealth signal data) as the PRIMARY source for "
             "strategy-specific fields: function names, symbols, signal dates, entry/open prices, "
             "signal type (Long/Short), confirmation status, targets/stops, and backtest columns "
             "as exported.\n"
-            "2. Use SOURCE B (live web context) for **current** public-market facts when needed: "
-            "latest quotes, news, catalysts, and figures not in the CSV snapshot.\n"
+            "2. Use SOURCE B only when helpful: **news, catalysts, macro**, or **optional** alternate quotes. "
+            "**Routine MTM** uses SOURCE A prices (from trade_store OHLC), not mandatory web search.\n"
             "3. If SOURCE B contradicts SOURCE A on **semantic identity** (e.g. wrong function name, "
             "wrong ticker, inconsistent strategy metadata), surface that conflict clearly.\n"
             + tail_3

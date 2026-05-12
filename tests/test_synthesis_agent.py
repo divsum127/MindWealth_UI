@@ -25,6 +25,8 @@ class TestSynthesisHybridRules(unittest.TestCase):
                     {
                         "Function": "TRENDPULSE",
                         "Symbol, Signal, Signal Date/Price[$]": "SOXX, Long, 2026-02-28 (Price: 352.29)",
+                        "Signal Open Price": "352.29",
+                        "Today Trading Date/Price[$], Today Price vs Signal": "2026-05-08 (Price: 400.0000), 13.5% above",
                     }
                 ]
             )
@@ -49,6 +51,8 @@ class TestSynthesisHybridRules(unittest.TestCase):
             "If multiple rows list the same Symbol",
             prompt,
         )
+        self.assertIn("trade_store/stock_data", prompt)
+        self.assertIn("CALCULATOR TOOL OUTPUT", prompt)
 
     def test_build_prompt_omits_hybrid_block_when_web_failed(self):
         agent = SynthesisAgent()

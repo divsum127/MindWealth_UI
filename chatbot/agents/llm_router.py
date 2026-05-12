@@ -9,7 +9,6 @@ This replaces brittle keyword routing for the web vs internal split.
 
 import json
 import logging
-import re
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
@@ -26,7 +25,7 @@ Rules:
 4. A query can set BOTH needs_web_search and needs_internal_signal_data (e.g. "Compare my TSM entry signal with today's news on TSM").
 5. If needs_web_search is true, provide search_queries: 1–3 short search strings optimized for a web search API (include ticker/year when relevant).
 6. If the question is ambiguous, prefer needs_internal_signal_data=true for trading/signal wording and needs_web_search=true for news/macro/live wording.
-7. MTM / mark-to-market margin: If the user asks to calculate, estimate, or state **mark-to-market (MTM)**, **MTM margin**, **margin requirement based on current marks**, or similar using **current/live** valuations, you MUST set needs_web_search=true — internal CSV columns may be stale; live spot or session prices come from the web. If they reference **their** positions, signals, or portfolio, set BOTH needs_internal_signal_data=true and needs_web_search=true (HYBRID). Pure definitional questions about what MTM means (no numbers requested) may omit web search.
+7. Mark-to-market (MTM) on **the user's signals, positions, or portfolio**: set needs_internal_signal_data=true. **Do not** set needs_web_search=true solely for a current price or MTM figure — signal CSVs embed prices refreshed from **trade_store/stock_data** (per-symbol OHLC files); columns such as \"Today Trading Date/Price\" and \"Current Mark to Market\" come from that pipeline. Set needs_web_search=true only if the user clearly wants **internet news**, an explicit **live/web quote comparison**, **macro**, **earnings**, or other facts not in the CSVs. Regulatory **margin requirement** questions that need broker rules may need web; routine position MTM does not.
 
 Respond with ONLY valid JSON matching the schema (no markdown fences)."""
 
@@ -44,42 +43,6 @@ JSON schema:
   "search_queries": string[] or null,
   "reasoning": string
 }}"""
-
-
-def mtm_margin_calculation_needs_live_prices(text: str) -> bool:
-    """
-    True when the query is asking for a numeric/current MTM or MTM-margin outcome
-    (needs live marks), not a purely definitional question.
-    """
-    low = (text or "").lower()
-    has_mtm = bool(
-        re.search(r"\bmark\s*-?\s*to\s*-?\s*market\b", low)
-        or re.search(r"\bm\.?\s*t\.?\s*m\.?\b", low)
-        or re.search(r"\bmtm\b", low)
-    )
-    if not has_mtm or not re.search(r"\bmargin\b", low):
-        return False
-    # Numeric / current / book context → needs live prices
-    return bool(
-        re.search(
-            r"\b(calculate|comput(e|ing)|calculation|figure\s+out|how\s+much|estimate|"
-            r"what(?:'s| is) my|current|live|now|today|updated|"
-            r"portfolio|position|holding|signal|entry|exit|pnl|p\s*&\s*l)\b",
-            low,
-        )
-    )
-
-
-def query_implies_portfolio_or_signals(text: str) -> bool:
-    """Prefer HYBRID when user ties MTM/margin to internal book data."""
-    low = (text or "").lower()
-    return bool(
-        re.search(
-            r"\b(my|our)\s+(position|portfolio|holding|trade|signals?|entries|exits)\b",
-            low,
-        )
-        or re.search(r"\b(signal|signals|entry|exit|portfolio|holding)\b", low)
-    )
 
 
 @dataclass
@@ -174,17 +137,6 @@ class LLMRouter:
             queries = None
 
         um = user_message.strip()
-        if mtm_margin_calculation_needs_live_prices(um):
-            conv = False
-            web = True
-            if query_implies_portfolio_or_signals(um):
-                internal = True
-            logger.info("[LLM_ROUTER] MTM/margin calculation → forcing web search")
-            extra_q = f"{um[:160]} live stock price quote today".strip()
-            pool = list(queries or [])
-            if extra_q and extra_q not in pool:
-                pool.append(extra_q)
-            queries = pool[:3]
 
         # Consistency fixes
         if conv:

@@ -46,6 +46,7 @@ from .data_processor import DataProcessor
 from .history_manager import HistoryManager
 from .unified_extractor import UnifiedExtractor
 from .smart_data_fetcher import (
+    CONSOLIDATED_MTM_REPORT_COLUMN_NAMES,
     SmartDataFetcher,
     infer_position_side_from_query,
     is_explicit_position_side_request,
@@ -1050,6 +1051,23 @@ class ChatbotEngine:
                     (reasoning_by_signal_type.get("breadth", "") + " ").strip()
                     + "Guardrail: mandatory breadth ratio columns included."
                 ).strip()
+
+            # Always include outstanding-signals MTM / Today / holding columns for consolidated types.
+            for _mtm_st in ("entry", "exit", "portfolio_target_achieved"):
+                if _mtm_st not in columns_by_signal_type:
+                    continue
+                cols = columns_by_signal_type[_mtm_st] or []
+                merged_mtm = []
+                seen_mtm = set()
+                for col in [*cols, *CONSOLIDATED_MTM_REPORT_COLUMN_NAMES]:
+                    if col and col not in seen_mtm:
+                        merged_mtm.append(col)
+                        seen_mtm.add(col)
+                columns_by_signal_type[_mtm_st] = merged_mtm
+                reasoning_by_signal_type[_mtm_st] = (
+                    (reasoning_by_signal_type.get(_mtm_st, "") + " ").strip()
+                    + "Guardrail: consolidated MTM / Today / holding-period columns included."
+                ).strip()
             
             # Only validate columns if we have non-claude_report signal types
             if not columns_by_signal_type and not has_claude_report:
@@ -1576,6 +1594,24 @@ class ChatbotEngine:
                     (reasoning_by_signal_type.get("breadth", "") + " ").strip()
                     + "Guardrail: mandatory breadth ratio columns included."
                 ).strip()
+
+        for _mtm_st in ("entry", "exit", "portfolio_target_achieved"):
+            if _mtm_st not in columns_by_signal_type:
+                continue
+            cols_m = columns_by_signal_type[_mtm_st]
+            if cols_m is None:
+                continue
+            merged_mtm_b = []
+            seen_b = set()
+            for col in [*cols_m, *CONSOLIDATED_MTM_REPORT_COLUMN_NAMES]:
+                if col and col not in seen_b:
+                    merged_mtm_b.append(col)
+                    seen_b.add(col)
+            columns_by_signal_type[_mtm_st] = merged_mtm_b
+            reasoning_by_signal_type[_mtm_st] = (
+                (reasoning_by_signal_type.get(_mtm_st, "") + " ").strip()
+                + "Guardrail: consolidated MTM / Today / holding-period columns included."
+            ).strip()
 
         if not table_signal_types:
             logger.warning("[_fetch_signal_data] No table signal types (e.g. claude_report-only); skipping CSV fetch.")

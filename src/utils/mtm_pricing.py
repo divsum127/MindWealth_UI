@@ -16,8 +16,32 @@ import pandas as pd
 
 # Consolidated CSV column names (single source of truth for refresh logic)
 TODAY_PRICE_COLUMN = "Today Trading Date/Price[$], Today Price vs Signal"
+# Raw outstanding-signal exports sometimes use this header (lowercase "price").
+TODAY_PRICE_COLUMN_LEGACY = "Today Trading Date/Price[$], Today price vs Signal"
 MTM_HOLDING_COLUMN = "Current Mark to Market and Holding Period"
 TRADING_DAYS_COLUMN = "Trading Days between Signal and Today Date"
+
+
+def normalize_today_price_column_names(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Rename legacy \"Today ... price vs Signal\" to the canonical column and merge duplicates.
+
+    Used when loading ``trade_store/US/*_outstanding_signal.csv`` directly.
+    """
+    if df is None or df.empty:
+        return df
+
+    if TODAY_PRICE_COLUMN in df.columns and TODAY_PRICE_COLUMN_LEGACY in df.columns:
+        canonical_series = df[TODAY_PRICE_COLUMN]
+        legacy_series = df[TODAY_PRICE_COLUMN_LEGACY]
+        empty_mask = canonical_series.isna() | (canonical_series.astype(str).str.strip() == "")
+        df = df.copy()
+        df.loc[empty_mask, TODAY_PRICE_COLUMN] = legacy_series.loc[empty_mask]
+        df = df.drop(columns=[TODAY_PRICE_COLUMN_LEGACY])
+    elif TODAY_PRICE_COLUMN_LEGACY in df.columns:
+        df = df.rename(columns={TODAY_PRICE_COLUMN_LEGACY: TODAY_PRICE_COLUMN})
+
+    return df
 
 
 def _project_root() -> Path:
@@ -72,6 +96,31 @@ def parse_symbol_signal_column(value) -> Tuple[Optional[str], Optional[str], Opt
 
     except Exception:
         return None, None, None, None
+
+
+def parse_today_trading_price(value) -> Tuple[Optional[str], Optional[float]]:
+    """
+    Parse the \"Today Trading Date/Price[$], Today Price vs Signal\" column.
+
+    Example: \"2026-05-08 (Price: 520.3000), 29.67% above\"
+    Returns: (yyyy-mm-dd date or None, price or None)
+    """
+    try:
+        if value is None or pd.isna(value):
+            return None, None
+        value_str = str(value).strip()
+        if not value_str:
+            return None, None
+        date_match = re.search(r"(\d{4}-\d{2}-\d{2})", value_str)
+        date_s = date_match.group(1) if date_match else None
+        price_match = re.search(r"Price:\s*([-]?\d+(?:\.\d+)?(?:,\d{3})*)", value_str)
+        if price_match:
+            price = float(price_match.group(1).replace(",", ""))
+        else:
+            price = None
+        return date_s, price
+    except Exception:
+        return None, None
 
 
 def resolve_signal_basis(
@@ -268,6 +317,32 @@ def format_today_trading_cell(latest_date: str, latest_price: float, signal_pric
 def format_mtm_holding_cell(mtm_pct_str: str, holding_days: int) -> str:
     """Full value for MTM_HOLDING_COLUMN."""
     return f"{mtm_pct_str}, {holding_days} days"
+
+
+def parse_mtm_holding_cell(value) -> Tuple[Optional[str], Optional[int]]:
+    """
+    Parse ``Current Mark to Market and Holding Period`` cells written by
+    ``format_mtm_holding_cell``, e.g. ``12.34%, 5 days`` or ``-3.00%, 10 days``.
+
+    Returns:
+        (mtm_pct_display_str including '%', calendar holding_days) or (None, None).
+    """
+    try:
+        if value is None or (isinstance(value, float) and pd.isna(value)):
+            return None, None
+        s = str(value).strip()
+        if not s or s.lower() in ("nan", "none"):
+            return None, None
+        m = re.search(r",\s*(\d+)\s*days\s*$", s, flags=re.IGNORECASE)
+        if not m:
+            return None, None
+        days = int(m.group(1))
+        mtm_part = s[: m.start()].strip().rstrip(",")
+        if not mtm_part:
+            return None, None
+        return mtm_part, days
+    except Exception:
+        return None, None
 
 
 def format_trading_days_cell(holding_days: int) -> str:

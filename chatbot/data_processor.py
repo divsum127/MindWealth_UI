@@ -23,8 +23,9 @@ from .config import (
     DEDUP_COLUMNS,
     BREADTH_DEDUP_COLUMNS,
     MAX_INPUT_TOKENS_PER_CALL,
-    ESTIMATED_CHARS_PER_TOKEN
+    ESTIMATED_CHARS_PER_TOKEN,
 )
+from .outstanding_paths import resolve_outstanding_signal_path
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -225,6 +226,20 @@ class DataProcessor:
                         compound_symbols = entry_df["Symbol, Signal, Signal Date/Price[$]"].dropna().apply(self._extract_symbol_from_compound_column)
                         valid_symbols = compound_symbols.dropna().unique()
                         tickers.update(valid_symbols)
+
+                # Outstanding-signal report (trade_store/US) — primary open-position source for the chatbot
+                out_path = resolve_outstanding_signal_path()
+                if out_path is not None and out_path.is_file():
+                    try:
+                        odf = pd.read_csv(out_path, encoding=CSV_ENCODING)
+                        col = "Symbol, Signal, Signal Date/Price[$]"
+                        if odf is not None and not odf.empty and col in odf.columns:
+                            compound_symbols = (
+                                odf[col].dropna().apply(self._extract_symbol_from_compound_column)
+                            )
+                            tickers.update(compound_symbols.dropna().unique())
+                    except Exception as exc:
+                        logger.warning("Could not load tickers from outstanding report %s: %s", out_path, exc)
 
                 # Load exit.csv and extract symbols
                 exit_df = self._load_csv_cached(self.exit_csv)

@@ -24,8 +24,18 @@ from config import (
     CHATBOT_TARGET_CSV,
     CHATBOT_BREADTH_CSV,
     CSV_ENCODING,
-    DATE_FORMAT
+    DATE_FORMAT,
 )
+
+try:
+    from .outstanding_paths import resolve_outstanding_signal_path
+except ImportError:  # pragma: no cover — script-style import when ``chatbot`` is not a package
+    from outstanding_paths import resolve_outstanding_signal_path
+
+_project_root = Path(__file__).resolve().parent.parent
+if str(_project_root) not in sys.path:
+    sys.path.insert(0, str(_project_root))
+from src.utils.mtm_pricing import normalize_today_price_column_names
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -38,6 +48,33 @@ BREADTH_REQUIRED_COLUMNS = [
     "Bullish Asset vs Total Asset (%)",
     "Bullish Signal vs Total Signal (%)",
 ]
+
+# Outstanding-signals → consolidated CSV columns (see ``src.utils.mtm_pricing``). Always merged into
+# entry / exit / portfolio_target fetches so MTM and holding period are never dropped when the LLM
+# picks a narrow column index list.
+CONSOLIDATED_MTM_REPORT_COLUMN_NAMES = (
+    "Symbol, Signal, Signal Date/Price[$]",
+    "Signal Open Price",
+    "Today Trading Date/Price[$], Today Price vs Signal",
+    "Current Mark to Market and Holding Period",
+    "Trading Days between Signal and Today Date",
+)
+
+
+def _merge_mtm_report_columns(
+    signal_type: str,
+    df: pd.DataFrame,
+    columns_to_keep: List[str],
+) -> List[str]:
+    if signal_type not in ("entry", "exit", "portfolio_target_achieved"):
+        return columns_to_keep
+    seen = set(columns_to_keep)
+    out = list(columns_to_keep)
+    for col in CONSOLIDATED_MTM_REPORT_COLUMN_NAMES:
+        if col in df.columns and col not in seen:
+            out.append(col)
+            seen.add(col)
+    return out
 
 
 def normalize_position_side(raw: Optional[str]) -> Optional[str]:
@@ -129,6 +166,35 @@ class SmartDataFetcher:
         self.exit_csv = Path(CHATBOT_EXIT_CSV)
         self.target_csv = Path(CHATBOT_TARGET_CSV)
         self.breadth_csv = Path(CHATBOT_BREADTH_CSV)
+
+    @staticmethod
+    def _filter_outstanding_open_rows(df: pd.DataFrame) -> pd.DataFrame:
+        """Keep only rows with no exit yet (outstanding report semantics)."""
+        col = "Exit Signal Date/Price[$]"
+        if col not in df.columns:
+            return df
+
+        def is_open(v) -> bool:
+            if v is None or (isinstance(v, float) and pd.isna(v)):
+                return True
+            s = str(v).strip().lower()
+            if not s or s == "nan":
+                return True
+            return "no exit" in s
+
+        return df[df[col].apply(is_open)].copy()
+
+    def _consolidated_source_ready(self, signal_type: str) -> bool:
+        """True if we can serve this signal type from the consolidated / report path."""
+        if signal_type == "entry":
+            op = resolve_outstanding_signal_path()
+            if op is not None and op.is_file():
+                return True
+            return self.entry_csv.is_file()
+        try:
+            return self._get_consolidated_csv_path(signal_type).is_file()
+        except ValueError:
+            return False
     
     def fetch_data(
         self,
@@ -168,10 +234,8 @@ class SmartDataFetcher:
         """
         # Use consolidated CSVs if enabled and available, otherwise fall back to folder-based
         if self.use_consolidated_csvs:
-            # Check if consolidated CSVs exist for requested signal types
             consolidated_available = all(
-                self._get_consolidated_csv_path(signal_type).exists()
-                for signal_type in signal_types
+                self._consolidated_source_ready(signal_type) for signal_type in signal_types
             )
 
             if consolidated_available:
@@ -424,16 +488,48 @@ class SmartDataFetcher:
         Returns:
             DataFrame with fetched data
         """
-        # Get the consolidated CSV path for this signal type
-        csv_path = self._get_consolidated_csv_path(signal_type)
-        if not csv_path.exists():
-            logger.warning(f"Consolidated CSV does not exist: {csv_path}")
-            return pd.DataFrame()
+        column_indices = list(column_indices) if column_indices else column_indices
+        df: Optional[pd.DataFrame] = None
+        outstanding_path: Optional[Path] = None
+
+        if signal_type == "entry":
+            outstanding_path = resolve_outstanding_signal_path()
+            if outstanding_path is not None and outstanding_path.is_file():
+                try:
+                    df = pd.read_csv(outstanding_path, encoding=CSV_ENCODING)
+                    df = normalize_today_price_column_names(df)
+                    df = self._filter_outstanding_open_rows(df)
+                    if "SignalType" not in df.columns:
+                        df = df.copy()
+                        df["SignalType"] = "entry"
+                    # Column indices refer to chatbot/data/entry.csv layout; outstanding export order differs.
+                    column_indices = None
+                    logger.info(
+                        "📄 Entry data from outstanding report: %s (%s rows)",
+                        outstanding_path,
+                        len(df),
+                    )
+                except Exception as exc:
+                    logger.error(
+                        "Failed to read outstanding signal report %s: %s — falling back to entry.csv",
+                        outstanding_path,
+                        exc,
+                    )
+                    df = None
+
+        if df is None:
+            csv_path = self._get_consolidated_csv_path(signal_type)
+            if not csv_path.exists():
+                logger.warning(f"Consolidated CSV does not exist: {csv_path}")
+                return pd.DataFrame()
+
+            try:
+                df = pd.read_csv(csv_path, encoding=CSV_ENCODING)
+            except Exception as exc:
+                logger.error("Error reading consolidated CSV %s: %s", csv_path, exc)
+                return pd.DataFrame()
 
         try:
-            # Read the consolidated CSV
-            df = pd.read_csv(csv_path, encoding=CSV_ENCODING)
-
             if df.empty:
                 return pd.DataFrame()
 
@@ -503,6 +599,9 @@ class SmartDataFetcher:
                 
                 if columns_to_keep:
                     logger.info(f"Keeping {len(columns_to_keep)} columns by index")
+                    columns_to_keep = _merge_mtm_report_columns(
+                        signal_type, df, columns_to_keep
+                    )
                     df = df[columns_to_keep]
                 else:
                     logger.warning(f"No valid column indices for {signal_type}")
@@ -518,6 +617,9 @@ class SmartDataFetcher:
                     logger.warning(f"Missing columns in {signal_type}: {missing_columns}")
                 if columns_to_keep:
                     logger.info(f"Keeping {len(columns_to_keep)} columns: {columns_to_keep}")
+                    columns_to_keep = _merge_mtm_report_columns(
+                        signal_type, df, columns_to_keep
+                    )
                     df = df[columns_to_keep]
                 else:
                     logger.warning(f"None of the required columns found in {signal_type} consolidated CSV")
@@ -533,7 +635,7 @@ class SmartDataFetcher:
             return df
 
         except Exception as e:
-            logger.error(f"Error reading consolidated CSV {csv_path}: {e}")
+            logger.error("Error processing consolidated data for %s: %s", signal_type, e)
             return pd.DataFrame()
 
     def _get_date_source_column(self, signal_type: str, columns: List[str]) -> Optional[str]:

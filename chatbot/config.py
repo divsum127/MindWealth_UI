@@ -68,6 +68,8 @@ def _resolve_flagged_pairs_dir() -> Path:
 CHATBOT_DATA_DIR = BASE_DIR / os.getenv("CHATBOT_DATA_DIR", "chatbot/data")  # Base data directory
 STOCK_DATA_DIR = BASE_DIR / os.getenv("STOCK_DATA_DIR", "trade_store/stock_data")  # Stock data directory
 TRADE_STORE_DIR = BASE_DIR / os.getenv("TRADE_STORE_DIR", "trade_store")  # Trade store directory
+# Region folder for raw broker-style exports (e.g. ``2026-05-08_outstanding_signal.csv``).
+TRADE_STORE_US_DIR = Path(TRADE_STORE_DIR) / os.getenv("TRADE_STORE_US_SUBPATH", "US")
 HISTORY_DIR = BASE_DIR / os.getenv("HISTORY_DIR", "chatbot/history")  # Chat history directory
 # Flagged Q/R JSON exports (see _resolve_flagged_pairs_dir)
 FLAGGED_PAIRS_DIR = _resolve_flagged_pairs_dir()
@@ -94,6 +96,13 @@ CHATBOT_BREADTH_CSV = CHATBOT_DATA_DIR / BREADTH_CSV_NAME  # Consolidated breadt
 # Create necessary directories if they don't exist
 HISTORY_DIR.mkdir(parents=True, exist_ok=True)
 FLAGGED_PAIRS_DIR.mkdir(parents=True, exist_ok=True)
+
+# Outstanding-signal CSV (see ``outstanding_paths``). Use absolute import because some modules
+# load this file as top-level ``config`` (``from config import …``), where relative imports fail.
+try:
+    from chatbot.outstanding_paths import resolve_outstanding_signal_path
+except ImportError:  # noqa: E402
+    from outstanding_paths import resolve_outstanding_signal_path  # type: ignore
 
 # Max lines of Python logging attached to response metadata per request (flagged JSON export)
 ENGINE_LOG_LINES_CAP = int(os.getenv("ENGINE_LOG_LINES_CAP", "1500"))
@@ -244,19 +253,17 @@ CRITICAL DATA ACCURACY REQUIREMENTS:
 
 **ALWAYS DO THIS (Accurate):**
 - Check SOURCE A / "=== SIGNAL DATA CONTEXT ===" (or JSON signal blocks): if present with usable rows, extract EXACT values from those records for MindWealth-specific fields
-- When SOURCE B / web results are present, use them for **current** market numbers required by calculations, per the section below
+- **Mark-to-market, holding period, and \"today\" prices on signals:** Use SOURCE A **exactly** as exported: **Current Mark to Market and Holding Period** (and **Trading Days between Signal and Today Date** when present) are the **authoritative** MTM and holding values — same as the Outstanding Signals report. **Today Trading Date/Price** reflects **trade_store/stock_data** OHLC when the pipeline refreshes. Web search is **not** required for routine MTM on exported signals.
+- **Open / entry signals:** When ``trade_store/US/*_outstanding_signal.csv`` or ``outstanding_signal.csv`` exists (or ``OUTSTANDING_SIGNAL_CSV`` is set), the assistant loads **open positions** from that report first so rows and MTM/holding columns match the file (e.g. ``2026-05-08_outstanding_signal.csv``).
+- When SOURCE B / web results are present, use them for **news, catalysts, macro**, or **optional** alternate quotes; cite URLs/snippets. Do not treat web as mandatory for basic MTM when SOURCE A already has today price and MTM fields.
 - If neither source supplies a figure you need, say so — do not guess
 
-**CURRENT STOCK DATA & CALCULATIONS (Web context — SOURCE B):**
-When the user message includes **"=== SOURCE B: LIVE WEB CONTEXT"**, **"=== WEB SEARCH RESULTS ==="**, or equivalent web-retrieval blocks, treat that content as the system’s live web fetch for **current** public-market facts.
-
-1. For any calculation, valuation, or comparison that needs **up-to-date** figures not fully covered by internal exports (e.g. latest spot or session price, recent quote, market-wide levels, fresh catalysts, earnings timing), **use numeric facts from SOURCE B** when they appear there — do not infer or fabricate current prices from memory.
-2. **SOURCE A** (MindWealth signal / CSV context) stays primary for strategy-specific fields: function names, signal dates, confirmation status, targets/stops as exported, backtest stats, and other columns delivered from internal data.
-3. When you combine sources: use SOURCE A for MindWealth signal semantics and SOURCE B for **current** market numbers cited in the web block; state which source each number came from when mixing both.
-4. If web context is **missing** or contains **no** usable figures for the calculation, say so clearly — do not invent spot prices, volumes, or percentages.
+**CURRENT STOCK DATA & CALCULATIONS:**
+1. **Primary for signal MTM and holding:** Prefer **\"Current Mark to Market and Holding Period\"** (and related columns) from SOURCE A. **Recompute** only when those report fields are missing; use **one** consistent current price from the Today column when you must derive MTM yourself.
+2. **SOURCE B (web):** When **"=== SOURCE B: LIVE WEB CONTEXT"** or **"=== WEB SEARCH RESULTS ==="** appears, use it for supplementary context — breaking news, alternate quotes, earnings timing — not as the only valid \"current\" price when SOURCE A already provides trade_store-derived marks.
 
 CRITICAL: Always format your response in clean, readable Markdown with proper spacing.
-Ground factual claims in the message: internal signal data from SOURCE A where applicable, and **current** market figures from SOURCE B when present for calculations that require them.
+Ground factual claims in the message: internal signal data from SOURCE A first; cite SOURCE B when used for news or supplemental quotes.
 """
 
 # Data processing settings

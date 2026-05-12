@@ -27,10 +27,12 @@ from src.utils.atomic_io import read_csv_optional_locked, write_dataframe_csv_at
 from src.utils.mtm_pricing import (
     MTM_HOLDING_COLUMN,
     TODAY_PRICE_COLUMN,
+    TODAY_PRICE_COLUMN_LEGACY,
     TRADING_DAYS_COLUMN,
     batch_latest_prices,
     enrich_row_current_prices,
     normalize_symbol,
+    normalize_today_price_column_names,
     parse_symbol_signal_column,
 )
 
@@ -50,31 +52,9 @@ from config import (
 _stock_data_cache = {}
 _stock_data_cache_lock = threading.Lock()
 
-# Canonical/legacy names for "today price" column (canonical string lives in mtm_pricing).
-TODAY_PRICE_COLUMN_LEGACY = "Today Trading Date/Price[$], Today price vs Signal"
-
-
 def normalize_today_price_columns(df):
-    """
-    Normalize today-price column naming and collapse legacy duplicate columns.
-
-    Returns:
-        DataFrame with canonical today-price column name only.
-    """
-    if df is None or df.empty:
-        return df
-
-    if TODAY_PRICE_COLUMN in df.columns and TODAY_PRICE_COLUMN_LEGACY in df.columns:
-        # Prefer canonical values; backfill from legacy when canonical is empty.
-        canonical_series = df[TODAY_PRICE_COLUMN]
-        legacy_series = df[TODAY_PRICE_COLUMN_LEGACY]
-        empty_mask = canonical_series.isna() | (canonical_series.astype(str).str.strip() == "")
-        df.loc[empty_mask, TODAY_PRICE_COLUMN] = legacy_series.loc[empty_mask]
-        df = df.drop(columns=[TODAY_PRICE_COLUMN_LEGACY])
-    elif TODAY_PRICE_COLUMN_LEGACY in df.columns:
-        df = df.rename(columns={TODAY_PRICE_COLUMN_LEGACY: TODAY_PRICE_COLUMN})
-
-    return df
+    """Backward-compatible name for :func:`normalize_today_price_column_names`."""
+    return normalize_today_price_column_names(df)
 
 
 def parse_exit_signal_column(value):

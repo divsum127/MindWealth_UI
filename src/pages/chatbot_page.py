@@ -769,20 +769,35 @@ def render_assistant_copy_controls(
         safe_id = "".join(ch if ch.isalnum() else "_" for ch in key_suffix)[:80]
         btn_id = f"copy_btn_{safe_id}"
         html = f"""
-<div style="font-family: sans-serif;">
+<div style="font-family: sans-serif; display:flex; justify-content:flex-end;">
   <button id="{btn_id}" type="button" style="
-    padding: 0.35rem 0.75rem;
-    border-radius: 0.25rem;
+    padding: 0.25rem 0.60rem;
+    border-radius: 999px;
     border: 1px solid rgba(49, 51, 63, 0.2);
     background: rgb(255, 255, 255);
     cursor: pointer;
-    font-size: 14px;
-    width: 100%;
-  ">Copy full response</button>
+    font-size: 12px;
+    width: auto;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    z-index: 99;
+  ">Copy response</button>
   <span id="{btn_id}_status" style="margin-left:8px;font-size:13px;color:#666;"></span>
 </div>
 <script>
 (function() {{
+  const frame = window.frameElement;
+  if (frame) {{
+    frame.style.border = "0";
+    frame.style.background = "transparent";
+    frame.style.display = "block";
+    frame.style.marginLeft = "auto";
+    frame.style.width = "160px";
+    // Sticky + negative bottom margin gives a true hover effect over response body.
+    frame.style.position = "sticky";
+    frame.style.top = "6px";
+    frame.style.marginBottom = "-30px";
+    frame.style.zIndex = "120";
+  }}
   const b64 = {json.dumps(b64)};
   const btn = document.getElementById("{btn_id}");
   const st = document.getElementById("{btn_id}_status");
@@ -805,7 +820,7 @@ def render_assistant_copy_controls(
 }})();
 </script>
 """
-        components.html(html, height=52)
+        components.html(html, height=32)
 
 
 def render_chat_history_sidebar():
@@ -1059,8 +1074,8 @@ def render_chatbot_page():
                 if rts:
                     st.caption(rts)
                 # Display response
-                render_assistant_markdown(response)
                 render_assistant_copy_controls(response, metadata, "pending_analysis")
+                render_assistant_markdown(response)
                 show_input_limit_notice(metadata)
                 if metadata.get("intent"):
                     render_route_badge(metadata)
@@ -1168,8 +1183,8 @@ def render_chatbot_page():
                 if rts:
                     st.caption(rts)
                 # Display response
-                render_assistant_markdown(response)
                 render_assistant_copy_controls(response, metadata, "pending_insights")
+                render_assistant_markdown(response)
                 show_input_limit_notice(metadata)
                 if metadata.get("intent"):
                     render_route_badge(metadata)
@@ -1274,8 +1289,8 @@ def render_chatbot_page():
                 if rts:
                     st.caption(rts)
                 # Display response
-                render_assistant_markdown(response)
                 render_assistant_copy_controls(response, metadata, "pending_breadth")
+                render_assistant_markdown(response)
                 show_input_limit_notice(metadata)
                 if metadata.get("intent"):
                     render_route_badge(metadata)
@@ -1383,6 +1398,8 @@ def render_chatbot_page():
             # Format the analysis prompt
             analysis_prompt = f"""Please run a deep dive on {selected_asset} covering all signals recorded over the past few weeks. Use the specified entry and / or exit-date range as the filter.
 
+For **open / outstanding entry signals**, use the latest **Outstanding Signal report** CSV under ``trade_store/US`` (e.g. dated ``*_outstanding_signal.csv``) as loaded by the app: cite **Current Mark to Market and Holding Period**, **Today Trading Date/Price**, and **Trading Days between Signal and Today Date** exactly as in that export — do not recompute MTM or holding when those columns are present.
+
 Retrieve and list all signals for this period, showing each function, timeframe, and direction (long/short).
 
 Identify contradictions, such as:
@@ -1397,7 +1414,7 @@ Determine stance — whether the current setup indicates a Buy, Hold, or Sell �
 
 Important:
 
-Do not fabricate or infer new signals. Use only signals verifiable from the existing Streamlit reports.
+Do not fabricate or infer new signals. Use only signals verifiable from the existing Streamlit reports and outstanding-signal export.
 
 Date Range: {from_date.strftime('%Y-%m-%d')} to {to_date.strftime('%Y-%m-%d')}"""
             
@@ -1676,12 +1693,12 @@ Date Range: {from_date.strftime('%Y-%m-%d')} to {to_date.strftime('%Y-%m-%d')}""
                     ts = format_message_time_est(message.get('timestamp'))
                     if ts:
                         st.caption(ts)
-                    render_assistant_markdown(message["content"])
                     render_assistant_copy_controls(
                         message["content"],
                         message.get("metadata"),
                         key_suffix=f"hist_{idx}",
                     )
+                    render_assistant_markdown(message["content"])
                     show_input_limit_notice(message.get('metadata'))
 
                     # Show metadata
@@ -1920,8 +1937,8 @@ Date Range: {from_date.strftime('%Y-%m-%d')} to {to_date.strftime('%Y-%m-%d')}""
                     render_route_badge(metadata)
 
                 # Display response first; flow trace below so it is visible after long answers
-                render_assistant_markdown(response)
                 render_assistant_copy_controls(response, metadata, "live_chat")
+                render_assistant_markdown(response)
                 show_input_limit_notice(metadata)
                 render_flow_trace(metadata)
 

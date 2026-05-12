@@ -10,6 +10,7 @@ from src.utils.mtm_pricing import (
     batch_latest_prices,
     calculate_mark_to_market,
     get_latest_price_from_stock_data,
+    parse_mtm_holding_cell,
     parse_symbol_signal_column,
     resolve_signal_basis,
 )
@@ -31,6 +32,22 @@ class TestLatestPriceFromCsv(unittest.TestCase):
             price, d = get_latest_price_from_stock_data("ZZZ", stock_dir)
             self.assertEqual(d, "2025-01-10")
             self.assertAlmostEqual(price, 99.0, places=5)
+
+
+class TestParseMtmHoldingCell(unittest.TestCase):
+    def test_positive_mtm_and_days(self):
+        m, d = parse_mtm_holding_cell("12.34%, 5 days")
+        self.assertEqual(m, "12.34%")
+        self.assertEqual(d, 5)
+
+    def test_negative_mtm(self):
+        m, d = parse_mtm_holding_cell("-3.00%, 10 days")
+        self.assertEqual(m, "-3.00%")
+        self.assertEqual(d, 10)
+
+    def test_invalid_returns_none(self):
+        self.assertEqual(parse_mtm_holding_cell(""), (None, None))
+        self.assertEqual(parse_mtm_holding_cell(None), (None, None))
 
 
 class TestShortMtm(unittest.TestCase):
