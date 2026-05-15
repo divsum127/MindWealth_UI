@@ -935,3 +935,7 @@ Date,Function,Bullish Asset vs Total Asset (%),Bullish Signal vs Total Signal (%
 2026-05-12,DELTADRIFT,,,3,10,1,4,33.15,32.6
 2026-05-12,BAND MATRIX,,,0,2,0,0,100.0,100.0
 2026-05-12,Combined (TrendPulse + DeltaDrift + BandMatrix),,,15,29,2,4,26.52,23.2
+2026-05-15,TRENDPULSE,,,3,13,0,1,51.93,100.0
+2026-05-15,DELTADRIFT,,,8,10,1,4,9.94,33.15
+2026-05-15,BAND MATRIX,,,0,2,0,0,100.0,100.0
+2026-05-15,Combined (TrendPulse + DeltaDrift + BandMatrix),,,16,29,1,4,24.31,39.23

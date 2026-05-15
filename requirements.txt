@@ -35,6 +35,7 @@ tornado==6.5.2
 typing_extensions==4.15.0
 tzdata==2025.2
 urllib3==2.5.0
+yfinance
 openai==2.3.0
 anthropic==0.43.0
 python-dotenv==1.0.0

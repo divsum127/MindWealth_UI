@@ -18,6 +18,9 @@ STOCK_DATA_DIR = BASE_DIR / os.getenv("STOCK_DATA_DIR", "trade_store/stock_data"
 TRADE_STORE_DIR = BASE_DIR / os.getenv("TRADE_STORE_DIR", "trade_store")
 TRADE_STORE_US_DIR = TRADE_STORE_DIR / "US"  # US specific trade store
 HISTORY_DIR = BASE_DIR / os.getenv("HISTORY_DIR", "chatbot/history")
+CONVICTION_STORE_DIR = BASE_DIR / os.getenv("CONVICTION_STORE_DIR", "conviction_store")
+CONVICTION_OUTPUT_DIR = CONVICTION_STORE_DIR / os.getenv("CONVICTION_OUTPUT_SUBDIR", "overlays")
+CONVICTION_UNIVERSE_FILE = BASE_DIR / os.getenv("CONVICTION_UNIVERSE_FILE", "conviction_universe.txt")
 
 # Additional data paths
 DATA_FETCH_DATETIME_JSON = TRADE_STORE_US_DIR / "data_fetch_datetime.json"
@@ -39,3 +42,5 @@ CHATBOT_BREADTH_CSV = CHATBOT_DATA_DIR / BREADTH_CSV_NAME
 # Create necessary directories if they don't exist
 HISTORY_DIR.mkdir(parents=True, exist_ok=True)
 CHATBOT_DATA_DIR.mkdir(parents=True, exist_ok=True)
+CONVICTION_STORE_DIR.mkdir(parents=True, exist_ok=True)
+CONVICTION_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
