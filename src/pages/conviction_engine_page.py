@@ -20,12 +20,16 @@ def _load_overlay(source_path: str) -> pd.DataFrame:
 
 
 def _metric_cards(summary: dict[str, int]) -> None:
-    col1, col2, col3, col4, col5 = st.columns(5)
+    col1, col2, col3, col4, col5, col6 = st.columns(6)
     col1.metric("Signals", summary["total_signals"])
     col2.metric("Applicable", summary["applicable"])
     col3.metric("Cancel Buy", summary["cancel_buy"])
-    col4.metric("Max Conviction", summary["max_conviction"])
-    col5.metric("Yield Traps", summary["yield_traps"])
+    col4.metric("Max (raw ≥8)", summary["max_conviction"], help="Equity BUY with conviction_raw ≥8 or verdict MAX CONVICTION. Uses raw score because FS caps often block the verdict.")
+    col5.metric("Tactical+ (≥5)", summary.get("tactical_plus", 0), help="Equity BUY with conviction_raw ≥5 (strong fundamental tier).")
+    col6.metric("Yield traps", summary["yield_traps"], help="yield_trap_warning true, or rationale mentions yield trap; includes rationale fallback for CSV-reloaded rows.")
+    st.caption(
+        "Max conviction counts **fundamental** tier (raw score). Verdict alone undercounts because apply_fs_cap can cap below +8 even when raw is high."
+    )
 
 
 def _conviction_chart(df: pd.DataFrame) -> None:

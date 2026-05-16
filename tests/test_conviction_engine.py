@@ -25,6 +25,78 @@ from src.conviction_engine.signals import normalize_signal_row, signal_timeframe
 from src.conviction_engine.store import load_record, save_record
 
 
+class TestBacktestParsing(unittest.TestCase):
+    def test_parse_vs_signal_pct(self):
+        from src.conviction_engine.backtest import parse_vs_signal_pct
+
+        self.assertAlmostEqual(parse_vs_signal_pct("2026-05-11 (Price: 100), 4.55% above"), 4.55)
+        self.assertAlmostEqual(parse_vs_signal_pct("2026-05-11 (Price: 100), 2.4% below"), -2.4)
+
+    def test_parse_mtm_first_pct(self):
+        from src.conviction_engine.backtest import parse_mtm_first_pct
+
+        self.assertAlmostEqual(parse_mtm_first_pct("4.55%, 15 days"), 4.55)
+        self.assertIsNone(parse_mtm_first_pct("No Exit Yet"))
+
+    def test_signal_key_stable(self):
+        from src.conviction_engine.backtest import build_signal_key
+        from src.conviction_engine.signals import COMPOUND_SIGNAL_COLUMN
+
+        row = pd.Series(
+            {
+                "Function": "TRENDPULSE",
+                COMPOUND_SIGNAL_COLUMN: "AAPL, Long, 2026-04-01 (Price: 200)",
+            }
+        )
+        k1 = build_signal_key(row)
+        row2 = pd.Series(
+            {
+                "Function": "TRENDPULSE",
+                COMPOUND_SIGNAL_COLUMN: "AAPL, Long, 2026-04-01 (Price: 200)",
+            }
+        )
+        self.assertEqual(k1, build_signal_key(row2))
+
+
+class TestSummarizeOverlay(unittest.TestCase):
+    def test_max_conviction_uses_conviction_raw_not_only_verdict(self):
+        from src.conviction_engine.formatting import summarize_overlay
+
+        df = pd.DataFrame(
+            {
+                "verdict": ["REDUCED BUY", "MAX CONVICTION", "NOT_APPLICABLE"],
+                "original_signal": ["BUY", "BUY", "BUY"],
+                "asset_type": ["EQUITY", "EQUITY", "ETF"],
+                "conviction_raw": [8.5, 3.0, 9.0],
+                "conviction_score": [2.0, 3.0, 1.0],
+                "yield_trap_warning": [False, False, False],
+                "rationale": ["", "", ""],
+            }
+        )
+        s = summarize_overlay(df)
+        # Row 0: raw>=8 BUY equity applicable -> max tier even though verdict is not MAX
+        # Row 1: verdict MAX CONVICTION
+        # Row 2: ETF not equity -> excluded from max tier mask
+        self.assertEqual(s["max_conviction"], 2)
+
+    def test_yield_trap_coerces_string_false(self):
+        from src.conviction_engine.formatting import summarize_overlay
+
+        df = pd.DataFrame(
+            {
+                "verdict": ["CANCEL BUY", "CANCEL BUY"],
+                "original_signal": ["BUY", "BUY"],
+                "asset_type": ["EQUITY", "EQUITY"],
+                "conviction_raw": [0.0, 0.0],
+                "conviction_score": [0.0, 0.0],
+                "yield_trap_warning": ["False", "True"],
+                "rationale": ["Yield trap hard gate fired", ""],
+            }
+        )
+        s = summarize_overlay(df)
+        self.assertEqual(s["yield_traps"], 2)
+
+
 class TestSignalParsing(unittest.TestCase):
     def test_parse_outstanding_signal_shape(self):
         row = pd.Series(
