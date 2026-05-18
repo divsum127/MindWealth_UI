@@ -145,7 +145,7 @@ def fetch_yfinance_enriched(ticker: str, max_attempts: int = 3) -> dict[str, Any
         result["errors"].append(f"fast_info: {exc}")
 
     try:
-        hist = yt.history(period="5y", auto_adjust=False)
+        hist = yt.history(period="max", auto_adjust=False)
         if not hist.empty and "Close" in hist.columns:
             close = hist["Close"].dropna()
             if close.index.tz is not None:
@@ -188,19 +188,53 @@ def _normalize_ratio(value: float | None) -> float | None:
     return v
 
 
-def compute_pe_history(price_series: pd.Series, quarterly_eps: pd.Series) -> list[float]:
-    """Build trailing P/E history using rolling 4-quarter EPS."""
+PE_HISTORY_TARGET_YEARS = 20
+PE_HISTORY_MAX_STORED_POINTS = 240  # ~20Y of month-end P/E samples for JSON + percentile
+
+
+def _empty_pe_history_bundle() -> dict[str, Any]:
+    return {
+        "values": [],
+        "meta": {
+            "years_available": 0.0,
+            "price_years_available": 0.0,
+            "eps_quarters": 0,
+            "eps_years_available": 0.0,
+            "start_date": None,
+            "end_date": None,
+            "point_count": 0,
+            "stored_point_count": 0,
+            "target_years": PE_HISTORY_TARGET_YEARS,
+            "insufficient_20y": True,
+        },
+    }
+
+
+def compute_pe_history(price_series: pd.Series, quarterly_eps: pd.Series) -> dict[str, Any]:
+    """Build trailing P/E history: each day's close / TTM EPS known as of that date.
+
+    Uses **historical** prices from ``history(period='max')`` (not today's spot for past dates).
+    Returns monthly-sampled values for storage plus metadata on calendar span vs 20Y target.
+    """
     if price_series is None or price_series.empty or quarterly_eps is None or quarterly_eps.empty:
-        return []
+        return _empty_pe_history_bundle()
 
     prices = price_series.dropna().sort_index()
     eps = quarterly_eps.dropna().sort_index()
     if eps.index.tz is not None:
         eps.index = eps.index.tz_localize(None)
     if len(eps) < 4:
-        return []
+        return _empty_pe_history_bundle()
+
+    price_years = 0.0
+    if len(prices) > 1:
+        price_years = (prices.index[-1] - prices.index[0]).days / 365.25
+    eps_years = 0.0
+    if len(eps) > 1:
+        eps_years = (eps.index[-1] - eps.index[0]).days / 365.25
 
     ttm_eps = eps.rolling(window=4, min_periods=4).sum()
+    pe_dates: list[pd.Timestamp] = []
     pe_values: list[float] = []
     for dt, price in prices.items():
         mask = ttm_eps.index <= dt
@@ -210,8 +244,37 @@ def compute_pe_history(price_series: pd.Series, quarterly_eps: pd.Series) -> lis
         if eps_val > 0:
             pe = float(price) / eps_val
             if 0 < pe < 500:
+                pe_dates.append(pd.Timestamp(dt))
                 pe_values.append(round(pe, 4))
-    return pe_values[-80:] if len(pe_values) > 80 else pe_values
+
+    if not pe_values:
+        bundle = _empty_pe_history_bundle()
+        bundle["meta"]["price_years_available"] = round(price_years, 2)
+        bundle["meta"]["eps_quarters"] = len(eps)
+        bundle["meta"]["eps_years_available"] = round(eps_years, 2)
+        return bundle
+
+    pe_series = pd.Series(pe_values, index=pd.DatetimeIndex(pe_dates)).sort_index()
+    monthly = pe_series.resample("ME").last().dropna()
+    stored = monthly.tail(PE_HISTORY_MAX_STORED_POINTS).round(4)
+
+    first_dt = pe_series.index[0]
+    last_dt = pe_series.index[-1]
+    years_available = (last_dt - first_dt).days / 365.25
+
+    meta = {
+        "years_available": round(years_available, 2),
+        "price_years_available": round(price_years, 2),
+        "eps_quarters": len(eps),
+        "eps_years_available": round(eps_years, 2),
+        "start_date": first_dt.strftime("%Y-%m-%d"),
+        "end_date": last_dt.strftime("%Y-%m-%d"),
+        "point_count": len(pe_values),
+        "stored_point_count": len(stored),
+        "target_years": PE_HISTORY_TARGET_YEARS,
+        "insufficient_20y": years_available < PE_HISTORY_TARGET_YEARS,
+    }
+    return {"values": stored.tolist(), "meta": meta}
 
 
 def compute_dividend_yield_stats(history: pd.DataFrame | None, dividends: pd.Series | None) -> dict[str, float]:
@@ -550,9 +613,10 @@ def build_fundamentals_from_raw(raw: dict[str, Any]) -> dict[str, Any]:
     if isinstance(price_hist, pd.Series) and q_inc is not None:
         for label in ("Diluted EPS", "Basic EPS"):
             if label in q_inc.index:
-                pe_hist = compute_pe_history(price_hist, q_inc.loc[label])
-                if pe_hist:
-                    fundamentals["pe_20y_array"] = pe_hist
+                pe_bundle = compute_pe_history(price_hist, q_inc.loc[label])
+                if pe_bundle.get("values"):
+                    fundamentals["pe_20y_array"] = pe_bundle["values"]
+                    fundamentals["pe_history_meta"] = pe_bundle["meta"]
                 break
 
     if fundamentals.get("revenue_growth_yoy") is not None:
@@ -599,4 +663,11 @@ def fetch_and_compute_fundamentals(ticker: str) -> dict[str, Any]:
     enriched = build_fundamentals_from_raw(raw)
     engine = map_to_engine_fundamentals(enriched)
     engine["fetch_errors"] = enriched.get("fetch_errors", [])
-    return {"info": raw.get("info", {}), "fundamentals": engine}
+    raw_summary = {
+        "info": raw.get("info", {}),
+        "errors": list(raw.get("errors") or []),
+        "quarterly_income": raw.get("quarterly_income"),
+        "quarterly_balance": raw.get("quarterly_balance"),
+        "quarterly_cashflow": raw.get("quarterly_cashflow"),
+    }
+    return {"info": raw.get("info", {}), "fundamentals": engine, "raw": raw_summary}

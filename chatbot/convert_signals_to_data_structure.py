@@ -17,7 +17,7 @@ import threading
 from pathlib import Path
 from datetime import datetime, timedelta
 import sys
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 _ROOT = Path(__file__).resolve().parent.parent
 if str(_ROOT) not in sys.path:
@@ -986,62 +986,68 @@ def update_current_prices_in_data_files(data_base_dir=None, stock_data_dir=None)
     print("="*80 + "\n")
 
 
+def _breadth_report_date_from_path(input_path) -> Optional[str]:
+    """Extract YYYY-MM-DD from ``YYYY-MM-DD_breadth.csv`` filename."""
+    match = re.search(r"(\d{4}-\d{2}-\d{2})_breadth\.csv$", Path(input_path).name)
+    return match.group(1) if match else None
+
+
 def convert_breadth_report(
     input_file,
     output_base_dir=None
 ):
     """
-    Convert breadth report to data folder structure.
-    Breadth is market-wide, so structure is: chatbot/data/breadth/YYYY-MM-DD.csv
-    
-    Args:
-        input_file: Path to breadth.csv file
-        output_base_dir: Base directory for output (uses config default if None)
+    Convert breadth report to consolidated chatbot/data/breadth.csv.
+
+    Date resolution (per row): existing Date column, else filename date, else today.
     """
     if output_base_dir is None:
         output_base_dir = str(CHATBOT_DATA_DIR)
+    input_path = Path(input_file)
     print("\n" + "="*80)
     print(f"CONVERTING BREADTH REPORT: {input_file}")
     print("="*80 + "\n")
-    
-    # Read the breadth CSV file
+
     try:
         df = pd.read_csv(input_file)
         print(f"✓ Loaded {len(df)} rows from {input_file}")
     except Exception as e:
         print(f"✗ Error reading file: {e}")
         return 0, 0
-    
-    # Use current date for Date column
-    current_date = datetime.now().strftime("%Y-%m-%d")
-    
-    # Add Date column to the dataframe
-    df['Date'] = current_date
-    
-    # ONLY append to consolidated breadth.csv (no individual files)
+
+    fallback_date = _breadth_report_date_from_path(input_path) or datetime.now().strftime("%Y-%m-%d")
+
+    if "Date" not in df.columns:
+        df["Date"] = fallback_date
+    else:
+        df["Date"] = df["Date"].astype(str).str.strip()
+        empty_mask = df["Date"].isna() | (df["Date"] == "") | (df["Date"] == "nan")
+        df.loc[empty_mask, "Date"] = fallback_date
+
     try:
         print(f"✓ Functions in report: {len(df)}")
         print(f"✓ Columns: {', '.join(df.columns.tolist())}")
-        
-        # Append each row to consolidated breadth.csv
+
+        dates_seen = set()
         for _, row in df.iterrows():
             append_to_consolidated_csv(row, "breadth", output_base_dir)
-        
+            dates_seen.add(str(row.get("Date", fallback_date)))
+
         processed = 1
         skipped = 0
     except Exception as e:
         print(f"✗ Error appending to consolidated breadth.csv: {e}")
         processed = 0
         skipped = 1
-    
+
     print("\n" + "-"*80)
     print("BREADTH CONVERSION SUMMARY")
     print("-"*80)
-    print(f"✓ Date: {current_date}")
-    print(f"✓ Total functions: {len(df)}")
+    print(f"✓ Dates ingested: {', '.join(sorted(dates_seen)) if dates_seen else fallback_date}")
+    print(f"✓ Total rows: {len(df)}")
     print(f"✓ Consolidated CSV: chatbot/data/breadth.csv (updated)")
     print("="*80 + "\n")
-    
+
     return processed, skipped
 
 
@@ -1133,28 +1139,27 @@ def main():
     print("Converting BREADTH data (breadth.csv)")
     print("-" * 80)
     
-    # Try to find the most recent breadth file
-    breadth_file = None
-    
-    # First try exact match
+    breadth_files = []
     breadth_file_exact = trade_store_us / "breadth.csv"
     if breadth_file_exact.exists():
-        breadth_file = breadth_file_exact
-    else:
-        # Try pattern matching for date_name.csv format (excluding breadth_us.csv)
-        breadth_pattern_files = [f for f in trade_store_us.glob("*_breadth.csv") 
-                                if "breadth_us" not in f.name]
-        if breadth_pattern_files:
-            # Sort by modification time and get the most recent
-            breadth_pattern_files.sort(key=lambda x: x.stat().st_mtime, reverse=True)
-            breadth_file = breadth_pattern_files[0]
-            print(f"ℹ Found dated file: {breadth_file.name}")
-    
-    if breadth_file and breadth_file.exists():
-        convert_breadth_report(
-            input_file=breadth_file,
-            output_base_dir=str(CHATBOT_DATA_DIR)
-        )
+        breadth_files.append(breadth_file_exact)
+
+    dated_breadth_files = sorted(
+        [
+            f for f in trade_store_us.glob("*_breadth.csv")
+            if "breadth_us" not in f.name
+        ],
+        key=lambda p: p.name,
+    )
+    breadth_files.extend(dated_breadth_files)
+
+    if breadth_files:
+        print(f"ℹ Ingesting {len(breadth_files)} breadth file(s)")
+        for breadth_file in breadth_files:
+            convert_breadth_report(
+                input_file=breadth_file,
+                output_base_dir=str(CHATBOT_DATA_DIR),
+            )
     else:
         print(f"⚠ File not found: breadth.csv (tried exact match and date_name.csv pattern)")
     

@@ -12,8 +12,10 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from src.conviction_engine.data_coverage import summarize_pe_history_distribution  # noqa: E402
 from src.conviction_engine.engine import apply_to_signal_file  # noqa: E402
 from src.conviction_engine.fundamentals import discover_universe, update_universe_fundamentals  # noqa: E402
+from src.conviction_engine.store import list_records  # noqa: E402
 from src.conviction_engine.signals import discover_signal_sources  # noqa: E402
 
 
@@ -50,6 +52,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--write-overlays",
         action="store_true",
         help="After updating fundamentals, write conviction overlay CSVs for latest supported signal files.",
+    )
+    parser.add_argument(
+        "--pe-history-report",
+        action="store_true",
+        help="After update, print P/E history years distribution across conviction_store (equities).",
     )
     return parser
 
@@ -97,6 +104,12 @@ def main(argv: list[str] | None = None) -> int:
         "results": results,
     }
     print(json.dumps(payload, indent=2, default=str))
+
+    if args.pe_history_report and not args.dry_run:
+        pe_summary = summarize_pe_history_distribution(list_records(args.store_dir))
+        print("\n--- P/E history years distribution ---")
+        print(json.dumps({k: v for k, v in pe_summary.items() if k != "tickers"}, indent=2, default=str))
+
     return 1 if errors else 0
 
 

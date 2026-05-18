@@ -158,6 +158,7 @@ def fetch_yfinance_fundamentals(ticker: str) -> FundamentalsPayload:
         "info": payload.get("info", {}),
         "fundamentals": fundamentals,
         "fetch_errors": fetch_errors,
+        "raw_fetch": payload.get("raw", {}),
     }
 
 
@@ -210,6 +211,7 @@ def update_ticker_fundamentals(
     symbol = sanitize_ticker(ticker)
     payload = fetcher(symbol)
     info = payload.get("info", {})
+    raw_fetch = payload.get("raw_fetch") or {}
     fundamentals = dict(payload.get("fundamentals", {}))
     fetch_errors = list(payload.get("fetch_errors") or fundamentals.pop("fetch_errors", None) or [])
     if fetch_errors:
@@ -235,6 +237,7 @@ def update_ticker_fundamentals(
             trigger="daily_fundamentals_script",
             fundamentals=fundamentals,
             info=info,
+            raw_fetch=raw_fetch,
             store_dir=store_dir,
         )
     elif selected_mode == "daily":
@@ -243,9 +246,11 @@ def update_ticker_fundamentals(
             trigger="daily_fundamentals_script",
             fundamentals=fundamentals,
             info=info,
+            raw_fetch=raw_fetch,
             store_dir=store_dir,
         )
-        record = daily_update(symbol, record=record, market_data=fundamentals, store_dir=store_dir, save=True)
+        market = {**fundamentals, "_raw_fetch": raw_fetch}
+        record = daily_update(symbol, record=record, market_data=market, info=info, store_dir=store_dir, save=True)
     else:
         raise ValueError("mode must be one of: auto, daily, full")
 

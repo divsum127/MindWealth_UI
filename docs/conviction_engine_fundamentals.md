@@ -25,6 +25,7 @@ This document describes how the **fundamental conviction** layer works today, wh
 | CLI  | `scripts/update_conviction_fundamentals.py`                |
 | Orchestration + fetch | `src/conviction_engine/fundamentals.py`             |
 | Enriched yfinance      | `src/conviction_engine/fundamentals_enriched.py`   |
+| Data coverage          | `src/conviction_engine/data_coverage.py`                 |
 | Engine API             | `src/conviction_engine/engine.py`                       |
 | Scoring / gates        | `src/conviction_engine/scoring.py`                       |
 | Tests                  | `tests/test_conviction_engine.py`                       |
@@ -73,7 +74,8 @@ This section ties **stored JSON fields** to **yfinance sources** and the **formu
 | **`distribution_coverage_ratio`** | `fcf_ttm / (dividendRate * shares)` | For **income** types, **margin_quality** from payout sustainability. |
 | **`annual_div_per_share_stored`** | `dividendRate` / trailing annual | **`dividend_yield_current`** = div / price; **yield trap** z-score vs 5Y history. |
 | **`dividend_yield_5y_mean`**, **`dividend_yield_5y_std`** | 5Y rolling sum of dividends / price | **Yield trap**: high current yield vs own history + exchange threshold. |
-| **`pe_20y_array`** | Daily price vs **rolling 4-quarter diluted/basic EPS** (recent window, not literal 20Y) | **Percentile** of today’s **P/E** within that series → valuation tax. |
+| **`pe_20y_array`** | **`history(period='max')`**: daily **P/E = that day’s close ÷ rolling 4Q EPS**; stored as **month-end** samples (up to ~240 points). | **Percentile** of today’s **`pe_ttm`** within that series → valuation tax. |
+| **`pe_history_meta`** | Calendar span of valid P/E points: `years_available`, `start_date`, `end_date`, `insufficient_20y` if &lt; **20** years | Flags + universe distribution; see below. |
 | **`insider_pct`** | `heldPercentInsiders` scaled to **0–100** if given as a fraction | **insider_ownership** BQ via thresholds (>15% good, &lt;1% bad). |
 
 ---
@@ -268,6 +270,7 @@ Use this as a repeatability checklist after a full `--mode full --write-overlays
 | EQUITY JSON records | Each has numeric `conviction_score` (non-equities use `null`) |
 | Identity | Stored `conviction_score` == `bq_raw` + `valuation_tax` (two decimals) |
 | `fetch_errors` on records | Empty or absent when yfinance responded normally |
+| `data_coverage` / `missing_fields` | Present after full recalc; `coverage_ratio` reflects `CRITICAL_FIELDS` in `data_coverage.py` |
 | Non-equities | `conviction_score` is `null` in JSON; overlays use `NOT_APPLICABLE` |
 | Overlay CSV `conviction_score` “NaN” rows | Should be **only** ETF / INDEX / CURRENCY / CRYPTO rows (pandas empty for `null`); equity rows should be numeric |
 | `conviction_score` vs overlay cap | Overlay column may be **FS-capped** vs store raw; see `conviction_raw` and rationale column |
@@ -313,6 +316,158 @@ Resolve historical path by date:
 (Forward file defaults to the **latest** dated `*_<report-base>` under `trade_store/US`.)
 
 Core logic: `src/conviction_engine/backtest.py`.
+
+## Data linkage, redundancy, and missing data
+
+This section documents how the engine behaves when yfinance data is partial or missing, how fields link together, and how to audit coverage on each JSON record.
+
+### Linkage graph (fetch → score)
+
+```mermaid
+flowchart TB
+  subgraph fetch [yfinance fetch]
+    YF[Ticker.info / fast_info]
+    HIST[history 5y]
+    DIV[dividends]
+    QIS[quarterly_income_stmt]
+    QBS[quarterly_balance_sheet]
+    QCF[quarterly_cashflow]
+  end
+  subgraph enrich [fundamentals_enriched]
+    BUILD[build_fundamentals_from_raw]
+    MAP[map_to_engine_fundamentals]
+    ERR[fetch_errors list]
+  end
+  subgraph engine [engine.py]
+    FULL[full_recalculation]
+    BQ[compute_bq_components_auto]
+    DAILY[daily_update]
+  end
+  subgraph score [scoring.py]
+    BQRAW[bq_raw sum]
+    VTAX[valuation_tax capped -5..0]
+    CONV[conviction_score = bq_raw + tax]
+    FS[fs_score / fs_class]
+  end
+  YF --> BUILD
+  HIST --> BUILD
+  DIV --> BUILD
+  QIS --> BUILD
+  QBS --> BUILD
+  QCF --> BUILD
+  BUILD --> MAP
+  BUILD --> ERR
+  MAP --> FULL
+  FULL --> BQ
+  BQ --> BQRAW
+  FULL --> DAILY
+  DAILY --> VTAX
+  BQRAW --> CONV
+  VTAX --> CONV
+  CONV --> FS
+```
+
+### Fallback chains (critical stored fields)
+
+| Field | Primary | Secondary | Tertiary | If all absent |
+| ----- | ------- | --------- | -------- | ------------- |
+| `price` | `fast_info.last_price` | `info.currentPrice` / `regularMarketPrice` | `previousClose` | Omitted; daily update may skip `pe_ttm` |
+| `market_cap` | `fast_info.market_cap` | `info.marketCap` | — | Omitted; EV / yield branches skipped |
+| `eps_ttm` | Quarterly net income TTM / shares | `info.trailingEps` | — | Omitted; no `pe_ttm` |
+| `fcf_ttm` | OCF TTM + capex TTM | `info.freeCashflow` | — | Omitted; FCF margin / owner earnings weak |
+| `fwd_revenue_stored` | 4Q revenue sum | `info.totalRevenue` (ADR sanity) | — | Omitted; no `ev_fwd_rev` tax branch |
+| `net_debt_stored` | Balance sheet debt − cash | — | — | Omitted; **defaults to 0** in `daily_update` EV |
+| `pe_20y_array` | `history(max)` price vs rolling 4Q EPS | — | — | Omitted; **no P/E percentile penalty** |
+| `dividend_yield_5y_mean/std` | 5Y div / price history | — | — | Omitted; yield-trap z-score skipped |
+| Subjective BQ (CEO, moat, …) | Manual overrides only | — | — | Score **0** (neutral) |
+
+Implementation: `_first_not_none` chains in `fundamentals_enriched.build_fundamentals_from_raw`; per-step `try/except` appends to `fetch_errors` without aborting the batch.
+
+### BQ dimension ↔ inputs (auto path)
+
+| BQ component | Fundamental inputs | Notes |
+| ------------ | -------------------- | ----- |
+| `revenue_quality` | `gross_margin`, `fcf_margin` | Neutral 0 if missing |
+| `growth_trajectory` | `revenue_growth`, optional `revenue_accelerating` | |
+| `margin_quality` | `revenue_growth`, `fcf_margin`, `distribution_coverage_ratio`, `gross_margin` | Type-aware in scorer |
+| `balance_sheet` | `net_debt_ebitda` | Bands by `business_type` |
+| `roic_wacc_spread` | `roic_proxy` or `roic` | vs type WACC |
+| `gross_margin_trend` | `gross_margin_trend` | |
+| `insider_ownership` | `insider_pct` | |
+| `ceo_quality`, `mgmt_capital_allocation`, `competitive_moat`, `macro_tailwind`, `debt_maturity_risk`, `divergence_signal`, `deal_delay_risk`, `reinvestment_runway` | Overrides only | **Always 0** without manual JSON overrides |
+| All auto zero | — | `full_recalculation` falls back to legacy `compute_bq_components` |
+
+**Neutral-zero policy:** Missing inputs add **0** to `bq_raw`; scores are **not** re-normalized by `%` of dimensions with data. Sparse names can look “average” when many dims are empty. This pass **reports** coverage only; it does not rescale `conviction_score`.
+
+### Valuation tax when inputs are missing
+
+`calculate_valuation_tax` skips branches when inputs are absent:
+
+- No `ev_fwd_rev` → no EV/revenue tier penalty (can be **less negative** than full data).
+- No `pe_percentile_20y` → no historical P/E percentile penalty.
+- No `owner_earnings_yield` → no earnings-yield branch.
+
+`net_debt_stored` null is treated as **0** when computing enterprise value, which can **understate** EV.
+
+### What is recorded on each JSON record
+
+| Field | Purpose |
+| ----- | ------- |
+| `fetch_errors` | Non-fatal yfinance step failures from last fetch |
+| `data_coverage` | Structured report: `coverage_ratio`, `low_data_confidence`, `statements`, `valuation_inputs`, `bq_auto_dimensions`, `fields_missing` |
+| `missing_fields` | Flat sorted list for UI/search (includes `valuation:*` and `fetch:*` prefixes) |
+| Null valuation fields | e.g. `pe_percentile_20y` null when `pe_20y_array` absent |
+
+`low_data_confidence` is true when: non-empty `fetch_errors`, empty/thin `info`, `coverage_ratio` &lt; **0.45**, or missing `ev_fwd_rev`. Logic lives in `src/conviction_engine/data_coverage.py`.
+
+### How to audit a ticker
+
+1. Open `conviction_store/{TICKER}.json`.
+2. Check `data_coverage.coverage_ratio` and `low_data_confidence`.
+3. Read `missing_fields` and `data_coverage.fetch_errors`.
+4. Inspect nulls on `pe_percentile_20y`, `dividend_yield_zscore`, `ev_fwd_rev`.
+5. Expand `data_coverage.bq_auto_dimensions` for per-dimension `inputs_missing`.
+
+Re-run full fundamentals to refresh coverage after code changes:
+
+```bash
+.venv/bin/python scripts/update_conviction_fundamentals.py --mode full
+```
+
+### Limitations
+
+- Not point-in-time historical fundamentals unless you snapshot JSON externally.
+- Wrong but non-null values are **not** detected as corrupt.
+- No automatic score rescaling by coverage in this release.
+
+### P/E history length flag (&lt; 20 years)
+
+The valuation tax’s **P/E percentile** branch compares today’s `pe_ttm` to a trailing P/E series built from yfinance **`max`** price history and quarterly EPS. Each equity record stores:
+
+| Field | Meaning |
+| ----- | ------- |
+| `pe_history_meta.years_available` | Calendar years from first to last valid daily P/E point |
+| `pe_history_meta.insufficient_20y` | `true` when `years_available` &lt; **20** (target for “full” historical percentile) |
+| `pe_history_meta.price_years_available` | Years of raw price data fetched |
+| `pe_history_meta.eps_quarters` / `eps_years_available` | Quarterly EPS depth (often the binding limit for IPOs) |
+| `data_coverage.pe_history` | Copy of the above on each coverage refresh |
+| `missing_fields` | Includes `pe_history:insufficient_20y (Xy)` when under 20 years |
+
+**Universe distribution** (how many names lack 20Y history, histogram by years):
+
+```bash
+.venv/bin/python scripts/report_pe_history_coverage.py
+# or after a full refresh:
+.venv/bin/python scripts/update_conviction_fundamentals.py --mode full --pe-history-report
+```
+
+JSON summary fields: `total_equity_records`, `insufficient_20y_count`, `insufficient_20y_pct`, `years_distribution` (buckets `0`, `0-2`, `2-5`, …, `20+`).
+
+**UI:** Conviction Engine → **Charts** tab → “P/E history coverage (universe)” bar chart and per-ticker table.
+
+**Interpretation:** Names with `insufficient_20y: true` still get a percentile vs **whatever history exists**; the flag means the comparison is **not** a full 20-year regime. Recent IPOs, thin EPS filings, or missing statements often land in `0-5` year buckets. Re-run **`--mode full`** after deploy so `pe_history_meta` is populated (legacy records with only `pe_20y_array` show `legacy_no_meta` until refreshed).
+
+---
 
 ## Gaps vs PDF (explicit)
 

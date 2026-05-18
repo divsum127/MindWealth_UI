@@ -58,7 +58,7 @@ def parse_breadth(df):
         function = row.get('Function', 'Unknown')
         
         # Extract bullish asset percentage
-        bullish_asset_str = str(row.get('Bullish Asset vs Total Asset (%).', '0%')).replace('%', '')
+        bullish_asset_str = str(row.get('Bullish Asset vs Total Asset (%)', '0%')).replace('%', '')
         try:
             bullish_asset_pct = float(bullish_asset_str)
         except:

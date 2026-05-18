@@ -1520,46 +1520,47 @@ Date Range: {from_date.strftime('%Y-%m-%d')} to {to_date.strftime('%Y-%m-%d')}""
         st.session_state.chat_history = []
         st.session_state.last_settings = None
         
-        # Format the breadth analysis prompt
-        breadth_analysis_prompt = f"""Please analyze breadth report signal data for the date range {from_date.strftime('%Y-%m-%d')} to {to_date.strftime('%Y-%m-%d')}.
+        # Format the breadth analysis prompt (trade-arrival SBI schema)
+        breadth_analysis_prompt = f"""Please analyze Signal Breadth Indicator (SBI) trade-arrival data for the date range {from_date.strftime('%Y-%m-%d')} to {to_date.strftime('%Y-%m-%d')}.
 
-Focus on the following analysis:
+Use the BREADTH SIGNALS JSON block. Primary metrics (S&P 500 universe):
+- Total New Long Signal / Total New Short Signal
+- Last 6 Month Top 10 Percentile No of Long/Short Signal (6-month busy-day thresholds)
+- Today Long Signal Percentile From Top (Last 6 Month)
+- Today Short Signal Percentile From Top (Last 6 Month)
 
-1. **Breadth Ratios Analysis**:
-   - Identify days when breadth values are in the **bottom 10 percentile** (bottom 10% days)
-   - Identify days when breadth values are in the **top 10 percentile** (top 10% days)
-   - Calculate and show the breadth ratios for these extreme days
+For market-wide analysis, prioritize Function = "Combined (TrendPulse + DeltaDrift + BandMatrix)"; also break down TRENDPULSE, DELTADRIFT, and BAND MATRIX.
 
-2. **Breadth Signal Type Analysis**:
-   - Analyze breadth signal types and their patterns
-   - Identify any SBI (Signal Breadth Indicator) type signals if present
-   - Show how breadth values correlate with market conditions
+Percentile semantics: "Today ... Percentile From Top" = how close today is to the busiest signal day in the last 6 months (10 ≈ top 10% activity; low values ≈ quiet days).
 
-3. **Percentile Analysis**:
-   - For each day in the date range, determine if the breadth value falls below the 10th percentile
-   - List all days where breadth value is under 10 percentile
-   - Provide context on what these low breadth days indicate (e.g., oversold conditions, potential reversal signals)
+Focus on:
+
+1. **Extreme SBI days (Combined row)**:
+   - Days in the **bottom 10%** of the date range by Today Long Signal Percentile From Top (quiet long-signal days)
+   - Days in the **top 10%** by that metric (busy long-signal days)
+   - Same for Today Short Signal Percentile From Top where relevant
+   - Show signal counts vs 6-month top-10% thresholds for those days
+
+2. **Per-function SBI patterns**:
+   - Compare TRENDPULSE, DELTADRIFT, BAND MATRIX, and Combined
+   - Note divergences (e.g. one strategy busy while Combined is quiet)
+
+3. **Low-activity / reversal context**:
+   - List days where long percentile is in the bottom decile of the selected range
+   - Explain what low long-signal percentile may indicate (reduced bullish participation; possible consolidation)
 
 4. **Summary**:
-   - Total number of days analyzed
-   - Number of days in bottom 10 percentile
-   - Number of days in top 10 percentile
-   - Average breadth value for the period
-   - Trends and patterns observed
+   - Total days with data in range
+   - Count of bottom/top decile days (long and short percentiles)
+   - Average Total New Long/Short Signal (Combined row) for the period
+   - Trends across the range
 
-For each identified day (especially bottom 10 percentile days), provide:
-- Date
-- Breadth value
-- Percentile rank
-- Function/indicator name
-- Any relevant signal type or SBI information
-- Context about what this breadth level means
+For each highlighted day provide: Date, Function, Total New Long/Short Signal, both percentile columns, 6-month thresholds, and brief interpretation.
 
 Important:
-- Use only breadth signal data verifiable from the existing Streamlit reports
-- Focus on breadth signal type and SBI type if available
-- Calculate percentiles based on historical breadth signal data
-- Do not fabricate or infer signal data
+- Use only data from the provided BREADTH SIGNALS JSON (and sbi_schema_note if present)
+- Do not fabricate values; if a column is missing for a date, say so
+- Do not use legacy Bullish Asset/Signal % columns unless populated
 
 Date Range: {from_date.strftime('%Y-%m-%d')} to {to_date.strftime('%Y-%m-%d')}"""
         

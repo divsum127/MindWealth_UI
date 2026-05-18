@@ -13,6 +13,7 @@ _ROOT = Path(__file__).resolve().parent.parent
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
+from src.conviction_engine.data_coverage import CRITICAL_FIELDS, assess_data_coverage, missing_fields_list
 from src.conviction_engine.engine import apply_to_signal_file, full_recalculation, modify_signal
 from src.conviction_engine.fundamentals import (
     discover_universe,
@@ -365,6 +366,8 @@ class TestFundamentalsUpdate(unittest.TestCase):
             assert record is not None
             self.assertEqual(record["asset_type"], "EQUITY")
             self.assertIsNotNone(record["conviction_score"])
+            self.assertIn("data_coverage", record)
+            self.assertIn("missing_fields", record)
 
     def test_discover_universe_from_signal_csv(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -383,6 +386,170 @@ class TestFundamentalsUpdate(unittest.TestCase):
                 discover_universe(trade_store_dir=Path(tmp), extra_tickers=["AAPL"], include_signal_sources=False),
                 ["AAPL"],
             )
+
+
+class TestDataCoverage(unittest.TestCase):
+  FULL_FUNDAMENTALS = {
+      "price": 100.0,
+      "market_cap": 1_000_000.0,
+      "eps_ttm": 5.0,
+      "eps_fwd": 6.0,
+      "fcf_ttm": 80_000.0,
+      "net_debt_stored": 10_000.0,
+      "fwd_revenue_stored": 500_000.0,
+      "annual_div_per_share_stored": 2.0,
+      "revenue_growth": 0.12,
+      "fcf_margin": 0.16,
+      "gross_margin": 0.7,
+      "net_debt_ebitda": 0.5,
+      "distribution_coverage_ratio": 2.0,
+      "gross_margin_trend": 0.01,
+      "roic_proxy": 0.15,
+      "pe_20y_array": [15.0, 18.0, 20.0, 22.0],
+      "dividend_yield_5y_mean": 0.02,
+      "dividend_yield_5y_std": 0.003,
+      "revenue_accelerating": True,
+      "insider_pct": 12.0,
+  }
+
+  def test_sparse_fundamentals_reports_missing_and_low_confidence(self):
+      fundamentals = {"price": 50.0, "eps_ttm": 2.0, "market_cap": 1000.0}
+      record = {
+          "pe_ttm": 25.0,
+          "ev_fwd_rev": 3.0,
+          "owner_earnings_yield": 0.05,
+          "bq_components": {"revenue_quality": 0.0, "growth_trajectory": 0.0},
+      }
+      coverage = assess_data_coverage(fundamentals, {"info": {}}, record, record["bq_components"])
+      self.assertLess(coverage["coverage_ratio"], 1.0)
+      self.assertIn("fcf_ttm", coverage["fields_missing"])
+      self.assertTrue(coverage["low_data_confidence"])
+
+  def test_full_fundamentals_high_coverage(self):
+      fundamentals = dict(self.FULL_FUNDAMENTALS)
+      record = {
+          "pe_ttm": 20.0,
+          "pe_percentile_20y": 0.4,
+          "ev_fwd_rev": 2.5,
+          "owner_earnings_yield": 0.08,
+          "bq_components": {"revenue_quality": 2.0, "balance_sheet": 1.0},
+      }
+      raw = {
+          "info": {"quoteType": "EQUITY", "sector": "Technology"},
+          "quarterly_income": pd.DataFrame({"Total Revenue": [1, 2, 3, 4]}),
+          "quarterly_balance": pd.DataFrame({"Total Debt": [1]}),
+          "quarterly_cashflow": pd.DataFrame({"Operating Cash Flow": [1]}),
+      }
+      coverage = assess_data_coverage(fundamentals, raw, record, record["bq_components"], info=raw["info"])
+      self.assertGreaterEqual(coverage["coverage_ratio"], 0.9)
+      self.assertFalse(coverage["low_data_confidence"])
+      self.assertTrue(coverage["statements"]["income"])
+
+  def test_valuation_inputs_flag_missing_pe_percentile(self):
+      fundamentals = {"price": 100.0, "eps_ttm": 5.0, "market_cap": 1_000_000.0, "fwd_revenue_stored": 400_000.0}
+      record = {
+          "pe_ttm": 20.0,
+          "pe_percentile_20y": None,
+          "ev_fwd_rev": 2.5,
+          "owner_earnings_yield": 0.08,
+          "bq_components": {},
+      }
+      coverage = assess_data_coverage(fundamentals, {"info": {"quoteType": "EQUITY"}}, record)
+      self.assertFalse(coverage["valuation_inputs"]["pe_percentile_20y"])
+      self.assertIn("valuation:pe_percentile_20y", missing_fields_list(coverage))
+
+  def test_full_recalculation_persists_data_coverage(self):
+      with tempfile.TemporaryDirectory() as tmp:
+          fundamentals = {
+              "price": 100.0,
+              "market_cap": 1_000_000.0,
+              "eps_ttm": 5.0,
+              "fcf_ttm": 80_000.0,
+              "fwd_revenue_stored": 500_000.0,
+              "revenue_growth": 0.2,
+              "fcf_margin": 0.16,
+              "gross_margin": 0.7,
+              "net_debt_stored": 0.0,
+          }
+          raw_fetch = {
+              "info": {"quoteType": "EQUITY", "sector": "Technology"},
+              "quarterly_income": pd.DataFrame({"Total Revenue": [1, 2, 3, 4]}),
+          }
+          record = full_recalculation(
+              "COVTEST",
+              fundamentals=fundamentals,
+              info=raw_fetch["info"],
+              raw_fetch=raw_fetch,
+              store_dir=Path(tmp),
+          )
+          self.assertIn("data_coverage", record)
+          self.assertIn("missing_fields", record)
+          self.assertIsInstance(record["data_coverage"]["coverage_ratio"], float)
+          self.assertLessEqual(len(record["missing_fields"]), len(CRITICAL_FIELDS) + 10)
+
+
+class TestPeHistory(unittest.TestCase):
+    def test_uses_historical_price_and_point_in_time_eps(self):
+        from src.conviction_engine.fundamentals_enriched import compute_pe_history
+
+        quarter_ends = pd.to_datetime(
+            ["2019-03-31", "2019-06-30", "2019-09-30", "2019-12-31", "2020-03-31", "2020-06-30"]
+        )
+        quarterly_eps = pd.Series([1.0, 1.0, 1.0, 1.0, 2.0, 2.0], index=quarter_ends)
+        price_dates = pd.to_datetime(["2020-01-15", "2020-04-15", "2020-07-15", "2020-10-15"])
+        prices = pd.Series([10.0, 20.0, 30.0, 40.0], index=price_dates)
+        pe_bundle = compute_pe_history(prices, quarterly_eps)
+        pe_hist = pe_bundle["values"]
+        self.assertTrue(pe_hist)
+        # Jan 2020: last report 2019-12-31, TTM EPS = 4.0 → PE = 10/4 = 2.5
+        self.assertAlmostEqual(pe_hist[0], 2.5, places=3)
+        # Oct 2020: last report 2020-06-30, TTM EPS = 1+1+2+2 = 6 → PE = 40/6
+        self.assertAlmostEqual(pe_hist[-1], 40.0 / 6.0, places=3)
+        self.assertTrue(pe_bundle["meta"]["insufficient_20y"])
+
+    def test_not_flat_when_only_today_price_would_be_used(self):
+        from src.conviction_engine.fundamentals_enriched import compute_pe_history
+
+        quarter_ends = pd.to_datetime(
+            ["2020-03-31", "2020-06-30", "2020-09-30", "2020-12-31", "2021-03-31", "2021-06-30"]
+        )
+        quarterly_eps = pd.Series([2.0, 2.0, 2.0, 2.0, 2.0, 2.0], index=quarter_ends)
+        prices = pd.Series(
+            [20.0, 40.0],
+            index=pd.to_datetime(["2021-01-15", "2021-08-15"]),
+        )
+        pe_bundle = compute_pe_history(prices, quarterly_eps)
+        pe_hist = pe_bundle["values"]
+        self.assertEqual(len(pe_hist), 2)
+        self.assertNotAlmostEqual(pe_hist[0], pe_hist[1], places=3)
+
+
+class TestPeHistoryDistribution(unittest.TestCase):
+    def test_summarize_pe_history_distribution_buckets(self):
+        from src.conviction_engine.data_coverage import summarize_pe_history_distribution
+
+        records = [
+            {
+                "ticker": "OLD",
+                "asset_type": "EQUITY",
+                "conviction_score": 3.0,
+                "pe_history_meta": {"years_available": 22.0, "insufficient_20y": False},
+                "pe_20y_array": [1.0, 2.0],
+            },
+            {
+                "ticker": "IPO",
+                "asset_type": "EQUITY",
+                "conviction_score": 1.0,
+                "pe_history_meta": {"years_available": 3.5, "insufficient_20y": True},
+                "pe_20y_array": [1.0],
+            },
+        ]
+        summary = summarize_pe_history_distribution(records)
+        self.assertEqual(summary["total_equity_records"], 2)
+        self.assertEqual(summary["insufficient_20y_count"], 1)
+        buckets = {row["bucket"]: row["count"] for row in summary["years_distribution"]}
+        self.assertEqual(buckets.get("20+"), 1)
+        self.assertEqual(buckets.get("2-5"), 1)
 
 
 if __name__ == "__main__":

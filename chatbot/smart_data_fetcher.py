@@ -29,8 +29,10 @@ from config import (
 
 try:
     from .outstanding_paths import resolve_outstanding_signal_path
+    from .breadth_context import BREADTH_SBI_COLUMNS, BREADTH_NUMERIC_COLUMNS
 except ImportError:  # pragma: no cover — script-style import when ``chatbot`` is not a package
     from outstanding_paths import resolve_outstanding_signal_path
+    from breadth_context import BREADTH_SBI_COLUMNS, BREADTH_NUMERIC_COLUMNS
 
 _project_root = Path(__file__).resolve().parent.parent
 if str(_project_root) not in sys.path:
@@ -42,12 +44,7 @@ logger = logging.getLogger(__name__)
 
 # Compound column in consolidated CSVs: "SYMBOL, Long|Short, YYYY-MM-DD (Price: ...)"
 SYMBOL_SIGNAL_COMPOUND_COL = "Symbol, Signal, Signal Date/Price[$]"
-BREADTH_REQUIRED_COLUMNS = [
-    "Date",
-    "Function",
-    "Bullish Asset vs Total Asset (%)",
-    "Bullish Signal vs Total Signal (%)",
-]
+BREADTH_REQUIRED_COLUMNS = BREADTH_SBI_COLUMNS
 
 # Outstanding-signals → consolidated CSV columns (see ``src.utils.mtm_pricing``). Always merged into
 # entry / exit / portfolio_target fetches so MTM and holding period are never dropped when the LLM
@@ -139,6 +136,35 @@ def is_explicit_position_side_request(text: str, side: Optional[str] = None) -> 
     return False
 
 
+EXIT_DATE_COL = "Exit Signal Date/Price[$]"
+
+
+def infer_date_filter_mode(user_message: Optional[str]) -> str:
+    """
+    Return ``entry_or_exit`` for deep-dive / OR-style range queries, else ``primary``.
+
+    Deep dives ask for signals whose entry **or** exit falls in the window, and open
+    positions that were still active during the window (even if entered earlier).
+    """
+    if not user_message or not str(user_message).strip():
+        return "primary"
+    low = str(user_message).lower()
+    if re.search(r"\bdeep[- ]?dive\b", low):
+        return "entry_or_exit"
+    if re.search(r"entry\s+and\s*/?\s*or\s+exit[- ]?date", low):
+        return "entry_or_exit"
+    return "primary"
+
+
+def _is_open_exit_value(value) -> bool:
+    if value is None or (isinstance(value, float) and pd.isna(value)):
+        return True
+    s = str(value).strip().lower()
+    if not s or s == "nan":
+        return True
+    return "no exit" in s
+
+
 class SmartDataFetcher:
     """
     Fetches only the required columns from data files based on:
@@ -170,19 +196,86 @@ class SmartDataFetcher:
     @staticmethod
     def _filter_outstanding_open_rows(df: pd.DataFrame) -> pd.DataFrame:
         """Keep only rows with no exit yet (outstanding report semantics)."""
-        col = "Exit Signal Date/Price[$]"
-        if col not in df.columns:
+        if EXIT_DATE_COL not in df.columns:
             return df
+        return df[df[EXIT_DATE_COL].apply(_is_open_exit_value)].copy()
 
-        def is_open(v) -> bool:
-            if v is None or (isinstance(v, float) and pd.isna(v)):
-                return True
-            s = str(v).strip().lower()
-            if not s or s == "nan":
-                return True
-            return "no exit" in s
+    @staticmethod
+    def _filter_df_by_assets(df: pd.DataFrame, assets: Optional[List[str]]) -> pd.DataFrame:
+        if not assets or SYMBOL_SIGNAL_COMPOUND_COL not in df.columns:
+            return df
+        out = df.copy()
+        out["_extracted_symbol"] = (
+            out[SYMBOL_SIGNAL_COMPOUND_COL].astype(str).str.split(",").str[0].str.strip()
+        )
+        out = out[out["_extracted_symbol"].isin(assets)]
+        return out.drop(columns=["_extracted_symbol"])
 
-        return df[df[col].apply(is_open)].copy()
+    def _read_consolidated_signal_csv(self, signal_type: str) -> pd.DataFrame:
+        csv_path = self._get_consolidated_csv_path(signal_type)
+        if not csv_path.exists():
+            logger.warning(f"Consolidated CSV does not exist: {csv_path}")
+            return pd.DataFrame()
+        try:
+            return pd.read_csv(csv_path, encoding=CSV_ENCODING)
+        except Exception as exc:
+            logger.error("Error reading consolidated CSV %s: %s", csv_path, exc)
+            return pd.DataFrame()
+
+    def _load_entry_source_dataframe(
+        self,
+        assets: Optional[List[str]] = None,
+        prefer_open_only: bool = True,
+    ) -> pd.DataFrame:
+        """
+        Load entry rows from the outstanding report when possible; fall back to entry.csv
+        when the report is missing or has no rows for the requested asset(s).
+        """
+        outstanding_path = resolve_outstanding_signal_path()
+        df: Optional[pd.DataFrame] = None
+
+        if outstanding_path is not None and outstanding_path.is_file():
+            try:
+                odf = pd.read_csv(outstanding_path, encoding=CSV_ENCODING)
+                odf = normalize_today_price_column_names(odf)
+                if prefer_open_only:
+                    odf = self._filter_outstanding_open_rows(odf)
+                odf = self._filter_df_by_assets(odf, assets)
+                if not odf.empty:
+                    if "SignalType" not in odf.columns:
+                        odf = odf.copy()
+                        odf["SignalType"] = "entry"
+                    logger.info(
+                        "Entry data from outstanding report: %s (%s rows)",
+                        outstanding_path,
+                        len(odf),
+                    )
+                    return odf
+                if assets:
+                    logger.info(
+                        "Outstanding report %s has no rows for assets %s; falling back to entry.csv",
+                        outstanding_path,
+                        assets,
+                    )
+            except Exception as exc:
+                logger.error(
+                    "Failed to read outstanding signal report %s: %s — falling back to entry.csv",
+                    outstanding_path,
+                    exc,
+                )
+
+        edf = self._read_consolidated_signal_csv("entry")
+        if edf.empty:
+            return edf
+        if prefer_open_only:
+            edf = self._filter_outstanding_open_rows(edf)
+        edf = self._filter_df_by_assets(edf, assets)
+        if not edf.empty and "SignalType" not in edf.columns:
+            edf = edf.copy()
+            edf["SignalType"] = "entry"
+        if not edf.empty:
+            logger.info("Entry data from consolidated entry.csv (%s rows)", len(edf))
+        return edf
 
     def _consolidated_source_ready(self, signal_type: str) -> bool:
         """True if we can serve this signal type from the consolidated / report path."""
@@ -207,6 +300,7 @@ class SmartDataFetcher:
         limit_rows: Optional[int] = None,
         column_indices: Optional[Dict[str, List[int]]] = None,
         position_side: Optional[str] = None,
+        date_filter_mode: Optional[str] = None,
     ) -> Dict[str, pd.DataFrame]:
         """
         Fetch data from specified signal types with the required columns or ALL columns.
@@ -223,6 +317,7 @@ class SmartDataFetcher:
             limit_rows: Optional limit on number of rows per signal type
             column_indices: Optional dict mapping signal_type to list of column indices for precise selection
             position_side: Optional 'short' or 'long' — filter rows by position in the compound symbol column
+            date_filter_mode: ``primary`` (single date column) or ``entry_or_exit`` (OR + active overlap)
 
         Returns:
             Dictionary mapping signal_type to DataFrame with fetched data
@@ -250,6 +345,7 @@ class SmartDataFetcher:
                     limit_rows=limit_rows,
                     column_indices=column_indices,
                     position_side=position_side,
+                    date_filter_mode=date_filter_mode,
                 )
 
         # Fall back to folder-based approach
@@ -409,6 +505,7 @@ class SmartDataFetcher:
         limit_rows: Optional[int] = None,
         column_indices: Optional[Dict[str, List[int]]] = None,
         position_side: Optional[str] = None,
+        date_filter_mode: Optional[str] = None,
     ) -> Dict[str, pd.DataFrame]:
         """
         Fetch data from consolidated CSV files.
@@ -421,10 +518,12 @@ class SmartDataFetcher:
             from_date: Optional start date (YYYY-MM-DD)
             to_date: Optional end date (YYYY-MM-DD)
             limit_rows: Optional limit on number of rows per signal type
+            date_filter_mode: ``primary`` or ``entry_or_exit``
 
         Returns:
             Dictionary mapping signal_type to DataFrame with fetched data
         """
+        mode = date_filter_mode or "primary"
         result = {}
 
         for signal_type in signal_types:
@@ -450,6 +549,7 @@ class SmartDataFetcher:
                         limit_rows=limit_rows,
                         column_indices=signal_col_indices,
                         position_side=position_side,
+                        date_filter_mode=mode,
                     )
 
                 if not df.empty:
@@ -472,6 +572,7 @@ class SmartDataFetcher:
         limit_rows: Optional[int] = None,
         column_indices: Optional[List[int]] = None,
         position_side: Optional[str] = None,
+        date_filter_mode: str = "primary",
     ) -> pd.DataFrame:
         """
         Fetch data from consolidated CSV for a signal type (entry/exit/target).
@@ -484,94 +585,51 @@ class SmartDataFetcher:
             from_date: Optional start date
             to_date: Optional end date
             limit_rows: Optional row limit
+            date_filter_mode: ``primary`` or ``entry_or_exit``
 
         Returns:
             DataFrame with fetched data
         """
         column_indices = list(column_indices) if column_indices else column_indices
         df: Optional[pd.DataFrame] = None
-        outstanding_path: Optional[Path] = None
 
         if signal_type == "entry":
-            outstanding_path = resolve_outstanding_signal_path()
-            if outstanding_path is not None and outstanding_path.is_file():
-                try:
-                    df = pd.read_csv(outstanding_path, encoding=CSV_ENCODING)
-                    df = normalize_today_price_column_names(df)
-                    df = self._filter_outstanding_open_rows(df)
-                    if "SignalType" not in df.columns:
-                        df = df.copy()
-                        df["SignalType"] = "entry"
-                    # Column indices refer to chatbot/data/entry.csv layout; outstanding export order differs.
-                    column_indices = None
-                    logger.info(
-                        "📄 Entry data from outstanding report: %s (%s rows)",
-                        outstanding_path,
-                        len(df),
-                    )
-                except Exception as exc:
-                    logger.error(
-                        "Failed to read outstanding signal report %s: %s — falling back to entry.csv",
-                        outstanding_path,
-                        exc,
-                    )
-                    df = None
+            df = self._load_entry_source_dataframe(assets=assets, prefer_open_only=True)
+            # Column indices refer to chatbot/data/entry.csv layout; outstanding export order differs.
+            column_indices = None
 
         if df is None:
-            csv_path = self._get_consolidated_csv_path(signal_type)
-            if not csv_path.exists():
-                logger.warning(f"Consolidated CSV does not exist: {csv_path}")
-                return pd.DataFrame()
-
-            try:
-                df = pd.read_csv(csv_path, encoding=CSV_ENCODING)
-            except Exception as exc:
-                logger.error("Error reading consolidated CSV %s: %s", csv_path, exc)
-                return pd.DataFrame()
+            df = self._read_consolidated_signal_csv(signal_type)
 
         try:
             if df.empty:
                 return pd.DataFrame()
 
             symbol_col = SYMBOL_SIGNAL_COMPOUND_COL
-            if symbol_col in df.columns and assets:
-                # Extract symbol (first part before comma)
-                df['_extracted_symbol'] = df[symbol_col].str.split(',').str[0].str.strip()
-                df = df[df['_extracted_symbol'].isin(assets)]
-                df = df.drop(columns=['_extracted_symbol'])
+            if signal_type != "entry":
+                df = self._filter_df_by_assets(df, assets)
 
             # Filter by Function column
             if 'Function' in df.columns and functions:
                 df = df[df['Function'].isin(functions)]
 
-            # Extract and filter by the most relevant date column for this signal type
             if from_date or to_date:
-                logger.info(f"Filtering {signal_type} by date range: {from_date} to {to_date}")
-                logger.info(f"DataFrame shape before date filtering: {df.shape}")
-                date_source = self._get_date_source_column(signal_type, df.columns.tolist())
-                if date_source:
-                    logger.info(f"Using date source column for {signal_type}: {date_source}")
-                    df['_extracted_date'] = self._extract_date_series(df[date_source], date_source)
-                    logger.info(f"Sample extracted dates: {df['_extracted_date'].head(5).tolist()}")
-                    df['_extracted_date'] = pd.to_datetime(df['_extracted_date'], errors='coerce')
-
-                    if from_date:
-                        from_date_obj = pd.to_datetime(from_date)
-                        logger.info(f"Filtering for dates >= {from_date_obj}")
-                        df = df[df['_extracted_date'] >= from_date_obj]
-                        logger.info(f"Rows after from_date filter: {len(df)}")
-
-                    if to_date:
-                        to_date_obj = pd.to_datetime(to_date)
-                        logger.info(f"Filtering for dates <= {to_date_obj}")
-                        df = df[df['_extracted_date'] <= to_date_obj]
-                        logger.info(f"Rows after to_date filter: {len(df)}")
-                    # Keep _extracted_date for sort + fair row cap (do not drop yet)
-                else:
-                    logger.warning(
-                        f"No suitable date source column found for {signal_type}; skipping date filter"
-                    )
-                logger.info(f"DataFrame shape after date filtering: {df.shape}")
+                logger.info(
+                    "Filtering %s by date range: %s to %s (mode=%s)",
+                    signal_type,
+                    from_date,
+                    to_date,
+                    date_filter_mode,
+                )
+                logger.info("DataFrame shape before date filtering: %s", df.shape)
+                df = self._filter_dataframe_by_date_range(
+                    df,
+                    signal_type,
+                    from_date,
+                    to_date,
+                    date_filter_mode,
+                )
+                logger.info("DataFrame shape after date filtering: %s", df.shape)
 
             ps = normalize_position_side(position_side)
             if ps and symbol_col in df.columns:
@@ -682,6 +740,141 @@ class SmartDataFetcher:
 
         return series.astype(str).str.extract(r'(\d{4}-\d{2}-\d{2})', expand=False)
 
+    def _entry_and_exit_dates_for_row(
+        self,
+        row: pd.Series,
+        signal_type: str,
+        columns: List[str],
+    ) -> tuple:
+        """Return (entry_date, exit_date) as Timestamps or NaT for one row."""
+        symbol_col = SYMBOL_SIGNAL_COMPOUND_COL
+        entry_dt = exit_dt = pd.NaT
+
+        if symbol_col in columns:
+            entry_parsed = self._extract_date_series(
+                pd.Series([row[symbol_col]]), symbol_col
+            ).iloc[0]
+            if entry_parsed is not None and str(entry_parsed).strip():
+                entry_dt = pd.to_datetime(entry_parsed, errors="coerce")
+
+        exit_col = EXIT_DATE_COL
+        if exit_col in columns:
+            exit_raw = row[exit_col]
+            if not _is_open_exit_value(exit_raw):
+                parsed = self._extract_date_series(pd.Series([exit_raw]), exit_col).iloc[0]
+                if parsed is not None and str(parsed).strip():
+                    exit_dt = pd.to_datetime(parsed, errors="coerce")
+
+        if signal_type == "portfolio_target_achieved" and pd.isna(exit_dt):
+            target_col = "Backtested Target Exit Date"
+            if target_col in columns:
+                parsed = self._extract_date_series(
+                    pd.Series([row[target_col]]), target_col
+                ).iloc[0]
+                if parsed is not None and str(parsed).strip():
+                    exit_dt = pd.to_datetime(parsed, errors="coerce")
+
+        return entry_dt, exit_dt
+
+    @staticmethod
+    def _row_in_entry_or_exit_window(
+        entry_dt,
+        exit_dt,
+        from_dt,
+        to_dt,
+        signal_type: str,
+    ) -> bool:
+        """
+        Match deep-dive semantics: entry OR exit in range, or still open and overlapping window.
+        """
+
+        def _in_closed_range(dt) -> bool:
+            if pd.isna(dt):
+                return False
+            if from_dt is not None and pd.notna(from_dt) and dt < from_dt:
+                return False
+            if to_dt is not None and pd.notna(to_dt) and dt > to_dt:
+                return False
+            return True
+
+        if _in_closed_range(entry_dt) or _in_closed_range(exit_dt):
+            return True
+
+        if pd.isna(entry_dt):
+            return False
+
+        if to_dt is not None and pd.notna(to_dt) and entry_dt > to_dt:
+            return False
+
+        is_open = pd.isna(exit_dt)
+        if not is_open and from_dt is not None and pd.notna(from_dt) and exit_dt < from_dt:
+            return False
+
+        # Still open, or closed on/after window start while entered before window end
+        return is_open or (
+            from_dt is None
+            or pd.isna(from_dt)
+            or (pd.notna(exit_dt) and exit_dt >= from_dt)
+        )
+
+    def _filter_dataframe_by_date_range(
+        self,
+        df: pd.DataFrame,
+        signal_type: str,
+        from_date: Optional[str],
+        to_date: Optional[str],
+        date_filter_mode: str,
+    ) -> pd.DataFrame:
+        if df.empty:
+            return df
+
+        from_dt = pd.to_datetime(from_date, errors="coerce") if from_date else None
+        to_dt = pd.to_datetime(to_date, errors="coerce") if to_date else None
+        if from_dt is None and to_dt is None:
+            return df
+
+        columns = df.columns.tolist()
+        mode = (date_filter_mode or "primary").lower()
+
+        if mode == "entry_or_exit":
+            keep = []
+            sort_dates = []
+            for idx, row in df.iterrows():
+                entry_dt, exit_dt = self._entry_and_exit_dates_for_row(
+                    row, signal_type, columns
+                )
+                if self._row_in_entry_or_exit_window(
+                    entry_dt, exit_dt, from_dt, to_dt, signal_type
+                ):
+                    keep.append(idx)
+                    sort_dates.append(
+                        exit_dt if pd.notna(exit_dt) else entry_dt
+                    )
+            if not keep:
+                return df.iloc[0:0].copy()
+            out = df.loc[keep].copy()
+            out["_extracted_date"] = pd.to_datetime(sort_dates, errors="coerce")
+            return out
+
+        date_source = self._get_date_source_column(signal_type, columns)
+        if not date_source:
+            logger.warning(
+                "No suitable date source column found for %s; skipping date filter",
+                signal_type,
+            )
+            return df
+
+        logger.info("Using date source column for %s: %s", signal_type, date_source)
+        out = df.copy()
+        out["_extracted_date"] = pd.to_datetime(
+            self._extract_date_series(out[date_source], date_source), errors="coerce"
+        )
+        if from_dt is not None and pd.notna(from_dt):
+            out = out[out["_extracted_date"] >= from_dt]
+        if to_dt is not None and pd.notna(to_dt):
+            out = out[out["_extracted_date"] <= to_dt]
+        return out
+
     def _fetch_breadth_data_consolidated(
         self,
         required_columns: Optional[List[str]],
@@ -744,16 +937,12 @@ class SmartDataFetcher:
                     return pd.DataFrame()
             # If required_columns is None, keep all columns
 
-            # Normalize key breadth ratio columns to numeric for robust percentile analysis.
-            for pct_col in [
-                "Bullish Asset vs Total Asset (%)",
-                "Bullish Signal vs Total Signal (%)",
-            ]:
-                if pct_col in df.columns:
-                    df[f"{pct_col} [numeric]"] = pd.to_numeric(
-                        df[pct_col].astype(str).str.replace("%", "", regex=False).str.strip(),
-                        errors="coerce",
-                    )
+            # Normalize SBI trade-arrival columns to numeric for percentile analysis.
+            for num_col in BREADTH_NUMERIC_COLUMNS:
+                if num_col in df.columns:
+                    series = df[num_col].astype(str).str.replace("%", "", regex=False).str.strip()
+                    series = series.replace({"N/A": "", "Not Applicable": "", "nan": ""})
+                    df[f"{num_col} [numeric]"] = pd.to_numeric(series, errors="coerce")
 
             # Apply row limit
             if limit_rows and len(df) > limit_rows:

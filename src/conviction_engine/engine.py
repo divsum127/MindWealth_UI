@@ -24,6 +24,7 @@ from .scoring import (
     verdict_for_sell,
 )
 from .signals import load_signal_file, normalize_signal_dataframe, normalize_signal_row
+from .data_coverage import apply_coverage_to_record
 from .store import load_or_create_record, load_record, overlay_path, save_record, sanitize_ticker
 
 
@@ -74,6 +75,7 @@ def full_recalculation(
     trigger: str = "manual",
     fundamentals: dict[str, Any] | None = None,
     info: dict[str, Any] | None = None,
+    raw_fetch: dict[str, Any] | None = None,
     store_dir: Path | None = None,
 ) -> dict[str, Any]:
     """Create or refresh the static fundamentals record for a ticker."""
@@ -123,6 +125,7 @@ def full_recalculation(
             "industry": info.get("industry"),
             "roic_5y_avg": _first_not_none(fundamentals.get("roic_proxy"), fundamentals.get("roic_5y_avg"), overrides.get("roic_5y_avg")),
             "pe_20y_array": _first_not_none(fundamentals.get("pe_20y_array"), overrides.get("pe_20y_array")),
+            "pe_history_meta": _first_not_none(fundamentals.get("pe_history_meta"), overrides.get("pe_history_meta")),
             "eps_ttm": _first_not_none(fundamentals.get("eps_ttm"), info.get("trailingEps"), overrides.get("eps_ttm")),
             "eps_fwd": _first_not_none(fundamentals.get("eps_fwd"), info.get("forwardEps"), overrides.get("eps_fwd")),
             "fcf_ttm": _first_not_none(fundamentals.get("fcf_ttm"), overrides.get("fcf_ttm")),
@@ -146,7 +149,15 @@ def full_recalculation(
         record["fetch_errors"] = fundamentals.get("fetch_errors")
     record["last_full_calc"] = utc_now_iso()
     record["full_recalc_trigger"] = trigger
-    record = daily_update(symbol, record=record, market_data={**info, **fundamentals, **overrides}, store_dir=store_dir, save=False)
+    record = daily_update(
+        symbol,
+        record=record,
+        market_data={**info, **fundamentals, **overrides},
+        info=info,
+        raw_fetch=raw_fetch,
+        store_dir=store_dir,
+        save=False,
+    )
     save_record(record, store_dir)
     return record
 
@@ -156,13 +167,18 @@ def daily_update(
     record: dict[str, Any] | None = None,
     force: bool = False,
     market_data: dict[str, Any] | None = None,
+    info: dict[str, Any] | None = None,
+    raw_fetch: dict[str, Any] | None = None,
     store_dir: Path | None = None,
     save: bool = True,
 ) -> dict[str, Any]:
     """Refresh price-sensitive valuation and FS fields."""
     symbol = sanitize_ticker(ticker)
     record = record or load_or_create_record(symbol, store_dir)
-    market_data = market_data or {}
+    market_data = dict(market_data or {})
+    if raw_fetch is None:
+        raw_fetch = market_data.pop("_raw_fetch", None)
+    coverage_info = info
 
     if not market_data and force:
         yf_ticker = _try_yfinance_ticker(ticker)
@@ -195,6 +211,7 @@ def daily_update(
         record["yield_trap_warning"] = False
         record["not_applicable_reason"] = reason or "Conviction Engine applies only to individual equities"
         record["last_daily_update"] = utc_now_iso()
+        apply_coverage_to_record(record, market_data, raw_fetch=raw_fetch, info=coverage_info)
         if save:
             save_record(record, store_dir)
         return record
@@ -233,6 +250,7 @@ def daily_update(
     record["fs_class"] = classify_fs(record["fs_score"])
     record["yield_trap_warning"] = is_yield_trap(record, symbol)
     record["last_daily_update"] = utc_now_iso()
+    apply_coverage_to_record(record, market_data, raw_fetch=raw_fetch, info=coverage_info)
 
     if save:
         save_record(record, store_dir)

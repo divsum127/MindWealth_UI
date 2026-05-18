@@ -48,6 +48,7 @@ from .unified_extractor import UnifiedExtractor
 from .smart_data_fetcher import (
     CONSOLIDATED_MTM_REPORT_COLUMN_NAMES,
     SmartDataFetcher,
+    infer_date_filter_mode,
     infer_position_side_from_query,
     is_explicit_position_side_request,
     normalize_position_side,
@@ -56,16 +57,10 @@ from .signal_extractor import SignalExtractor
 from .signal_type_selector import SignalTypeSelector
 from .memory_manager import RollingMemoryLog, extract_memory_from_conversation
 from .prompt_changelog import PromptChangelog
+from .breadth_context import BREADTH_MANDATORY_COLUMNS, build_breadth_schema_note
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-BREADTH_MANDATORY_COLUMNS = [
-    "Date",
-    "Function",
-    "Bullish Asset vs Total Asset (%)",
-    "Bullish Signal vs Total Signal (%)",
-]
 
 
 def _query_implies_full_list_ignore_ui_dates(user_message: str) -> bool:
@@ -1049,7 +1044,7 @@ class ChatbotEngine:
                 columns_by_signal_type["breadth"] = merged_cols
                 reasoning_by_signal_type["breadth"] = (
                     (reasoning_by_signal_type.get("breadth", "") + " ").strip()
-                    + "Guardrail: mandatory breadth ratio columns included."
+                    + "Guardrail: mandatory SBI trade-arrival columns included."
                 ).strip()
 
             # Always include outstanding-signals MTM / Today / holding columns for consolidated types.
@@ -1077,6 +1072,9 @@ class ChatbotEngine:
             # STAGE 2: Data Fetching (per signal type with its specific columns)
             # Skip data fetching for claude_report signal type
             logger.info("STAGE 2: Fetching data with selected columns for each signal type...")
+            date_filter_mode = infer_date_filter_mode(user_message)
+            if date_filter_mode != "primary":
+                logger.info("Using date_filter_mode=%s for this query", date_filter_mode)
             
             fetched_data = {}
             total_rows = 0
@@ -1106,6 +1104,7 @@ class ChatbotEngine:
                     limit_rows=MAX_ROWS_TO_INCLUDE,
                     column_indices=indices_dict,
                     position_side=position_side,
+                    date_filter_mode=date_filter_mode,
                 )
                 
                 if signal_data and signal_type in signal_data:
@@ -1247,6 +1246,8 @@ class ChatbotEngine:
                     "reasoning": reasoning_by_signal_type.get(signal_type, ''),
                     "data": records
                 }
+                if signal_type == "breadth":
+                    payload["sbi_schema_note"] = build_breadth_schema_note()
                 data_context_parts.append(f"\n=== {signal_type.upper()} SIGNALS (JSON) ===")
                 data_context_parts.append(_json_main.dumps(payload, indent=2, default=str))
             
@@ -1580,7 +1581,7 @@ class ChatbotEngine:
                 # Keep None -> fetch all columns path.
                 reasoning_by_signal_type["breadth"] = (
                     (reasoning_by_signal_type.get("breadth", "") + " ").strip()
-                    + "Guardrail: breadth uses full column set including mandatory ratio fields."
+                    + "Guardrail: breadth uses full column set including mandatory SBI fields."
                 ).strip()
             else:
                 merged_cols = []
@@ -1592,7 +1593,7 @@ class ChatbotEngine:
                 columns_by_signal_type["breadth"] = merged_cols
                 reasoning_by_signal_type["breadth"] = (
                     (reasoning_by_signal_type.get("breadth", "") + " ").strip()
-                    + "Guardrail: mandatory breadth ratio columns included."
+                    + "Guardrail: mandatory SBI trade-arrival columns included."
                 ).strip()
 
         for _mtm_st in ("entry", "exit", "portfolio_target_achieved"):
@@ -1626,6 +1627,9 @@ class ChatbotEngine:
             f"signal_types={table_signal_types}  "
             f"assets={assets}  from={from_date}  to={to_date}"
         )
+        date_filter_mode = infer_date_filter_mode(user_message)
+        if date_filter_mode != "primary":
+            logger.info("[_fetch_signal_data] date_filter_mode=%s", date_filter_mode)
         fetched_data: Dict = {}
         total_rows = 0
 
@@ -1649,6 +1653,7 @@ class ChatbotEngine:
                 limit_rows=MAX_ROWS_TO_INCLUDE,
                 column_indices=indices_dict,
                 position_side=position_side,
+                date_filter_mode=date_filter_mode,
             )
             if signal_result and signal_type in signal_result:
                 fetched_data[signal_type] = signal_result[signal_type]

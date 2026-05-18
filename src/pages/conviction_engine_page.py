@@ -8,8 +8,10 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
+from ..conviction_engine.data_coverage import summarize_pe_history_distribution
 from ..conviction_engine.engine import apply_to_signal_file, generate_daily_report, update_overrides
 from ..conviction_engine.formatting import display_columns, summarize_overlay
+from ..conviction_engine.fundamentals_enriched import PE_HISTORY_TARGET_YEARS
 from ..conviction_engine.signals import discover_signal_sources
 from ..conviction_engine.store import list_records, load_record, overlay_path
 
@@ -60,6 +62,34 @@ def _conviction_chart(df: pd.DataFrame) -> None:
     st.plotly_chart(fig, use_container_width=True)
 
 
+def _pe_history_years_chart() -> None:
+    summary = summarize_pe_history_distribution(list_records())
+    dist = summary.get("years_distribution") or []
+    if not dist or not summary.get("total_equity_records"):
+        st.info("No equity conviction records with P/E history metadata yet. Run a full fundamentals refresh.")
+        return
+
+    labels = [str(row["bucket"]) for row in dist]
+    counts = [int(row["count"]) for row in dist]
+    fig = go.Figure(data=[go.Bar(x=labels, y=counts, name="Tickers")])
+    fig.update_layout(
+        title=f"P/E history span (years) — target {PE_HISTORY_TARGET_YEARS}Y",
+        xaxis_title="Years of valid trailing P/E series",
+        yaxis_title="Equity tickers",
+        height=420,
+    )
+    st.plotly_chart(fig, use_container_width=True)
+    st.caption(
+        f"{summary.get('insufficient_20y_count', 0)} of {summary.get('total_equity_records', 0)} equities "
+        f"({summary.get('insufficient_20y_pct', 0)}%) have < {PE_HISTORY_TARGET_YEARS} years. "
+        f"{summary.get('without_pe_series', 0)} have no P/E series."
+    )
+    with st.expander("Per-ticker P/E history years", expanded=False):
+        rows = summary.get("tickers") or []
+        if rows:
+            st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+
+
 def _verdict_chart(df: pd.DataFrame) -> None:
     if df.empty or "verdict" not in df.columns:
         return
@@ -85,19 +115,73 @@ def _ticker_detail(df: pd.DataFrame) -> None:
     record = load_record(ticker)
 
     if record:
-        cols = st.columns(6)
+        coverage = record.get("data_coverage") or {}
+        low_conf = bool(coverage.get("low_data_confidence"))
+        if low_conf:
+            st.warning(
+                "Low data confidence: sparse fundamentals, fetch issues, or missing valuation inputs. "
+                "Scores may rely on neutral-zero BQ dimensions; see Missing fields below."
+            )
+        cols = st.columns(8)
         cols[0].metric("BQ Raw", record.get("bq_raw", "N/A"))
         cols[1].metric("Valuation Tax", record.get("valuation_tax", "N/A"))
         cols[2].metric("Conviction", record.get("conviction_score", "N/A"))
         cols[3].metric("FS Class", record.get("fs_class", "N/A"))
         cols[4].metric("Yield Trap", str(record.get("yield_trap_warning", False)))
         cols[5].metric("Business Type", record.get("business_type", "N/A"))
+        ratio = coverage.get("coverage_ratio")
+        cols[6].metric(
+            "Data coverage",
+            f"{ratio:.0%}" if isinstance(ratio, (int, float)) else "N/A",
+            help="Share of critical fundamental fields present on the record.",
+        )
+        cols[7].metric("Low confidence", "Yes" if low_conf else "No")
+        pe_hist = record.get("pe_history_meta") or coverage.get("pe_history") or {}
+        years = pe_hist.get("years_available")
+        if years is not None:
+            insufficient = pe_hist.get("insufficient_20y", True)
+            st.caption(
+                f"P/E history: **{years}** years "
+                f"({'<' if insufficient else '≥'} {PE_HISTORY_TARGET_YEARS}Y target)"
+                + (" — percentile uses shorter history" if insufficient else "")
+            )
     else:
         st.warning("No stored conviction record exists for this ticker yet.")
 
     if not signal_rows.empty:
         st.markdown("#### Overlaid Signals")
         st.dataframe(signal_rows[display_columns(signal_rows)], use_container_width=True, hide_index=True)
+
+    if record:
+        coverage = record.get("data_coverage") or {}
+        missing = record.get("missing_fields") or coverage.get("fields_missing") or []
+        fetch_errors = coverage.get("fetch_errors") or record.get("fetch_errors") or []
+        with st.expander("Missing fields / fetch errors", expanded=bool(coverage.get("low_data_confidence"))):
+            if fetch_errors:
+                st.markdown("**Fetch errors**")
+                for err in fetch_errors:
+                    st.write(f"- {err}")
+            if missing:
+                st.markdown("**Missing fields**")
+                st.code(", ".join(str(m) for m in missing))
+            else:
+                st.caption("No missing critical fields reported.")
+            statements = coverage.get("statements") or {}
+            if statements:
+                st.markdown("**Quarterly statements (non-empty at last full fetch)**")
+                st.write(
+                    f"Income: {statements.get('income', False)} | "
+                    f"Balance: {statements.get('balance', False)} | "
+                    f"Cashflow: {statements.get('cashflow', False)}"
+                )
+            valuation = coverage.get("valuation_inputs") or {}
+            if valuation:
+                st.markdown("**Valuation tax inputs**")
+                st.json(valuation)
+            bq_dims = coverage.get("bq_auto_dimensions") or {}
+            if bq_dims:
+                with st.expander("BQ dimension inputs", expanded=False):
+                    st.json(bq_dims)
 
     with st.expander("Stored JSON Record", expanded=False):
         if record:
@@ -176,6 +260,8 @@ def create_conviction_engine_page() -> None:
             _conviction_chart(overlay_df)
         with col2:
             _verdict_chart(overlay_df)
+        st.markdown("#### P/E history coverage (universe)")
+        _pe_history_years_chart()
 
     with tab_detail:
         _ticker_detail(overlay_df)
