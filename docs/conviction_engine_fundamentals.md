@@ -18,6 +18,27 @@ This document describes how the **fundamental conviction** layer works today, wh
 3. **Full:** refresh static BQ, copy fundamentals into record, run `daily_update` for valuation fields. **Daily:** refresh price-sensitive fields from latest fetch.
 4. If `--write-overlays`, run `apply_to_signal_file` on latest signal sources.
 
+### Daily automation (after signal reports)
+
+**Script:** `scripts/run_conviction_engine_daily.py` (also invoked from `update_trade_data.sh` after trade_store sync).
+
+Each run:
+
+1. Resolves report date from `YYYY-MM-DD_all_signal.csv` (or `--report-date`).
+2. Refreshes `conviction_store/{TICKER}.json` (default `--fundamentals-mode daily`).
+3. Overlays conviction columns onto daily signal CSVs (`all_signal`, `new_signal`, `outstanding_signal`, `claude_signals_report`, `target_signal`, virtual trading).
+4. Archives under **`conviction_store/daily/YYYY-MM-DD/`**:
+   - `{report}_conviction.csv` — full report + conviction columns
+   - `{report}_conviction_scores.csv` — compact score sheet (`conviction_score`, `verdict`, `fs_class`, …)
+   - `manifest.json` — per-report summaries and paths
+   - `daily_report.txt` — universe alert summary
+5. Updates **`conviction_store/overlays/`** latest files for the Streamlit Conviction Engine page.
+
+```bash
+.venv/bin/python scripts/run_conviction_engine_daily.py --fundamentals-mode daily
+.venv/bin/python scripts/run_conviction_engine_daily.py --report-date 2026-05-15 --skip-fundamentals
+```
+
 ## Key modules
 
 | Role | File                                                         |

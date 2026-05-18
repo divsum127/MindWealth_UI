@@ -80,9 +80,15 @@ The system **primarily uses consolidated CSV files** for all data operations, pr
 - **Target Achievement Date:** Date when target was achieved (extracted from compound column, used for date range filtering)
 
 #### **Market Breadth (`breadth.csv`)**
+
+**Schema (current):** Signal Breadth Indicator (SBI) **trade-arrival** metrics on the S&P 500 universe — see [`docs/breadth_analysis_button_fix.md`](../docs/breadth_analysis_button_fix.md) for the full issue/resolution write-up (legacy Bullish % vs new columns, NaN fix, ingestion).
+
 **Deduplication Key:** `Function + Date`
-- **Function:** Trading strategy or indicator (e.g., "OSCILLATOR DELTA", "TRENDPULSE")
+
+- **Function:** `TRENDPULSE`, `DELTADRIFT`, `BAND MATRIX`, or `Combined (TrendPulse + DeltaDrift + BandMatrix)`
 - **Date:** Date of breadth calculation (YYYY-MM-DD format, used for both deduplication and filtering)
+- **Core columns:** `Total New Long/Short Signal`, 6-month top-10% thresholds, `Today Long/Short Signal Percentile From Top (Last 6 Month)`
+- **Chatbot helper:** [`chatbot/breadth_context.py`](breadth_context.py) — mandatory columns and LLM schema notes for the **Breadth Analysis** sidebar button
 
 ### Data Fetching Process
 

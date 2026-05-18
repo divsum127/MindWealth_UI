@@ -76,3 +76,16 @@ def overlay_path(source_file: Path | str) -> Path:
     source_path = Path(source_file)
     CONVICTION_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     return CONVICTION_OUTPUT_DIR / f"{source_path.stem}_conviction.csv"
+
+
+def daily_snapshot_dir(report_date: str, store_dir: Path | None = None) -> Path:
+    """Dated folder for archived conviction overlays (YYYY-MM-DD)."""
+    base = Path(store_dir) if store_dir else CONVICTION_STORE_DIR
+    path = base / "daily" / str(report_date).strip()
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def daily_overlay_path(source_file: Path | str, report_date: str, store_dir: Path | None = None) -> Path:
+    source_path = Path(source_file)
+    return daily_snapshot_dir(report_date, store_dir) / f"{source_path.stem}_conviction.csv"

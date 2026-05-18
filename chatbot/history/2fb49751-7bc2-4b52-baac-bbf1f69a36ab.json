@@ -1,0 +1,347 @@
+{
+  "metadata": {
+    "session_id": "2fb49751-7bc2-4b52-baac-bbf1f69a36ab",
+    "title": "User Query: Please run a deep dive on BYDDY...",
+    "created_at": "2026-05-18T19:03:40.945247",
+    "last_updated": "2026-05-18T19:05:03.436858",
+    "message_count": 3,
+    "summary": "Trading analysis (entry, exit) for BYDDY, CSV: Please run a deep dive on BYDDY covering..."
+  },
+  "conversation": [
+    {
+      "role": "system",
+      "content": "You are an expert financial trading analyst assistant for MindWealth. \nYou help users analyze stock market signal data, trading signal data, and provide insights based on historical signal data.\n\nYour capabilities include:\n- Analyzing stock price movements and trends\n- Interpreting trading signals and technical indicators\n- Providing insights on market performance\n- Comparing multiple tickers\n- Identifying patterns and opportunities\n\nIMPORTANT OUTPUT FORMATTING REQUIREMENTS:\n1. ALWAYS use proper Markdown formatting\n2. ALWAYS include spaces between words and punctuation\n3. Use bullet points (- or •) for lists\n4. Use **bold** for emphasis\n5. Use headers (##, ###) to organize sections\n6. Use line breaks between paragraphs\n7. Format numbers with proper spacing: \"245.27 is significantly above the track level (169.28)\"\n8. NEVER concatenate words without spaces\n\nWhen analyzing signal data:\n1. Be precise and signal-data-driven in your analysis\n2. Highlight key trends and patterns\n3. Provide actionable insights when possible\n4. Use technical analysis terminology appropriately\n5. Consider the time period and context of the signal data\n6. Structure your response with clear sections and proper spacing\n\nCRITICAL DATA ACCURACY REQUIREMENTS:\n🚨 FINANCIAL DATA INTEGRITY IS CRITICAL 🚨\n\n**When Signal Data IS Provided:**\n1. The user query will include sections like \"=== SIGNAL DATA CONTEXT ===\" or \"=== ENTRY SIGNALS (JSON) ===\" with actual signal data\n2. If you see JSON with fields like \"signal_type\", \"record_count\", \"data\", etc., then SIGNAL DATA HAS BEEN PROVIDED\n3. Extract and analyze information EXACTLY as it appears in the provided JSON\n4. Use the exact function names, symbols, dates, and prices from the records\n5. Provide thorough analysis based on the signal data provided\n\n**When Signal Data IS NOT Provided:**\n1. Internal MindWealth signal data is absent when there is no substantive signal payload (e.g. missing or empty \"=== SOURCE A: MINDWEALTH SIGNAL DATA\", \"STATUS: NO DATA RETURNED\", or no \"=== SIGNAL DATA CONTEXT ===\" / JSON signal blocks with usable rows).\n2. If internal signal data is absent **but** live web context is present (\"=== SOURCE B: LIVE WEB CONTEXT\", \"=== WEB SEARCH RESULTS ===\"), use that web material for **current** stock figures and calculations — cite URLs/snippets; do not invent prices or metrics missing from the provided context.\n3. If **both** internal signal data and web context are absent for numbers you need, say so clearly and avoid fabricating function names, symbols, dates, prices, or performance metrics.\n\n**NEVER DO THIS (Hallucination):**\n- Make up function names like \"HIGH VOLTAGE\", \"RADAR SWEEP\" that don't exist in the provided signal data\n- Invent signal dates or prices not in the signal data\n- Create fake symbols or tickers\n- Fabricate performance metrics or CAGR values\n\n**ALWAYS DO THIS (Accurate):**\n- Check SOURCE A / \"=== SIGNAL DATA CONTEXT ===\" (or JSON signal blocks): if present with usable rows, extract EXACT values from those records for MindWealth-specific fields\n- **Mark-to-market, holding period, and \"today\" prices on signals:** Use SOURCE A **exactly** as exported: **Current Mark to Market and Holding Period** (and **Trading Days between Signal and Today Date** when present) are the **authoritative** MTM and holding values — same as the Outstanding Signals report. **Today Trading Date/Price** reflects **trade_store/stock_data** OHLC when the pipeline refreshes. Web search is **not** required for routine MTM on exported signals.\n- **Open / entry signals:** When ``trade_store/US/*_outstanding_signal.csv`` or ``outstanding_signal.csv`` exists (or ``OUTSTANDING_SIGNAL_CSV`` is set), the assistant loads **open positions** from that report first so rows and MTM/holding columns match the file (e.g. ``2026-05-08_outstanding_signal.csv``).\n- When SOURCE B / web results are present, use them for **news, catalysts, macro**, or **optional** alternate quotes; cite URLs/snippets. Do not treat web as mandatory for basic MTM when SOURCE A already has today price and MTM fields.\n- If neither source supplies a figure you need, say so — do not guess\n\n**CURRENT STOCK DATA & CALCULATIONS:**\n1. **Primary for signal MTM and holding:** Prefer **\"Current Mark to Market and Holding Period\"** (and related columns) from SOURCE A. **Recompute** only when those report fields are missing; use **one** consistent current price from the Today column when you must derive MTM yourself.\n2. **SOURCE B (web):** When **\"=== SOURCE B: LIVE WEB CONTEXT\"** or **\"=== WEB SEARCH RESULTS ===\"** appears, use it for supplementary context — breaking news, alternate quotes, earnings timing — not as the only valid \"current\" price when SOURCE A already provides trade_store-derived marks.\n\nCRITICAL: Always format your response in clean, readable Markdown with proper spacing.\nGround factual claims in the message: internal signal data from SOURCE A first; cite SOURCE B when used for news or supplemental quotes.\n",
+      "timestamp": "2026-05-18T19:03:41.345244+00:00"
+    },
+    {
+      "role": "user",
+      "content": "User Query: Please run a deep dive on BYDDY covering all signals recorded over the past few weeks. Use the specified entry and / or exit-date range as the filter.\n\nFor **open / outstanding entry signals**, use the latest **Outstanding Signal report** CSV under ``trade_store/US`` (e.g. dated ``*_outstanding_signal.csv``) as loaded by the app: cite **Current Mark to Market and Holding Period**, **Today Trading Date/Price**, and **Trading Days between Signal and Today Date** exactly as in that export — do not recompute MTM or holding when those columns are present.\n\nRetrieve and list all signals for this period, showing each function, timeframe, and direction (long/short).\n\nIdentify contradictions, such as:\n\nShort signals that have already hit targets or registered exits while higher-interval (e.g., monthly-candle) functions are still showing active longs.\n\nOverlaps between exit dates on short-term signals and open longer-term entries.\n\nAssess alignment between short-term and medium-term outlooks based strictly on the verified signals in the Streamlit reports.\n\nDetermine stance — whether the current setup indicates a Buy, Hold, or Sell — using only the pre-computed signal data and the historically observed holding periods for each function.\n\nImportant:\n\nDo not fabricate or infer new signals. Use only signals verifiable from the existing Streamlit reports and outstanding-signal export.\n\nDate Range: 2026-04-01 to 2026-05-18\n\n=== COLUMN SELECTION BY SIGNAL TYPE ===\n\nENTRY:\n  Columns: Function, Symbol, Signal, Signal Date/Price[$], Current Mark to Market and Holding Period, Interval, Confirmation Status, Today Trading Date/Price[$], Today Price vs Signal, Trading Days between Signal and Today Date, Exit Signal Date/Price[$], Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$], Backtested Holding Period(Win Trades) (days) (Max/Min/Avg), Signal Open Price\n  Reasoning: Needed to list all open/outstanding entry signals for BYDDY in the specified period with function, timeframe (interval), and direction (from the combined Symbol/Signal field). The user explicitly requires using the pre-computed export fields for performance/holding: Current Mark to Market and Holding Period, Today Trading Date/Price[$], Today Price vs Signal, and Trading Days between Signal and Today Date. Targets are required to detect contradictions like shorts that already hit targets. Backtested Holding Period(Win Trades) supports the requested stance determination using historically observed holding periods. Exit Signal Date/Price[$] is included to detect overlaps/contradictions where an entry row may reference an exit date in the reports.Guardrail: consolidated MTM / Today / holding-period columns included.\n\nEXIT:\n  Columns: Function, Symbol, Signal, Signal Date/Price[$], Exit Signal Date/Price[$], Interval, Confirmation Status, Current Mark to Market and Holding Period, Trading Days between Signal and Today Date, Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$], Backtested Holding Period(Win Trades) (days) (Max/Min/Avg), Signal Open Price, Today Trading Date/Price[$], Today Price vs Signal\n  Reasoning: Needed to retrieve and list all exited signals in the date range for BYDDY, including function, timeframe, and direction, and to compare exit dates against open longer-term entries to find overlaps/contradictions. Exit Signal Date/Price[$] is essential for the requested exit-date filtering and overlap checks. Interval, Confirmation Status provides timeframe. Backtested Holding Period(Win Trades) supports stance determination based on historically observed holding periods. Targets help identify cases where exits/targets conflict with other active signals.Guardrail: consolidated MTM / Today / holding-period columns included.\n\n=== SIGNAL DATA CONTEXT ===\n\n=== ENTRY SIGNALS (JSON) ===\n{\n  \"signal_type\": \"entry\",\n  \"record_count\": 5,\n  \"columns_selected\": [\n    \"Function\",\n    \"Symbol, Signal, Signal Date/Price[$]\",\n    \"Current Mark to Market and Holding Period\",\n    \"Interval, Confirmation Status\",\n    \"Today Trading Date/Price[$], Today Price vs Signal\",\n    \"Trading Days between Signal and Today Date\",\n    \"Exit Signal Date/Price[$]\",\n    \"Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]\",\n    \"Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)\",\n    \"Signal Open Price\"\n  ],\n  \"reasoning\": \"Needed to list all open/outstanding entry signals for BYDDY in the specified period with function, timeframe (interval), and direction (from the combined Symbol/Signal field). The user explicitly requires using the pre-computed export fields for performance/holding: Current Mark to Market and Holding Period, Today Trading Date/Price[$], Today Price vs Signal, and Trading Days between Signal and Today Date. Targets are required to detect contradictions like shorts that already hit targets. Backtested Holding Period(Win Trades) supports the requested stance determination using historically observed holding periods. Exit Signal Date/Price[$] is included to detect overlaps/contradictions where an entry row may reference an exit date in the reports.Guardrail: consolidated MTM / Today / holding-period columns included.\",\n  \"data\": [\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"BYDDY, Long, 2026-04-14 (Price: 14.1)\",\n      \"Current Mark to Market and Holding Period\": \"-12.52%, 31 days\",\n      \"Interval, Confirmation Status\": \"Daily, is CONFIRMED on 2026-04-14\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-05-15 (Price: 12.1600), 12.52% below\",\n      \"Trading Days between Signal and Today Date\": \"31 days\",\n      \"Exit Signal Date/Price[$]\": \"No Exit Yet\",\n      \"Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]\": \"16.136/15.5142/21.33/No Horizontal Resistance/17.1567/18.5536/No EMA 200 Target\",\n      \"Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)\": \"2.7 months/6 days/1.1 month\",\n      \"Signal Open Price\": 13.9\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"BYDDY, Long, 2026-04-14 (Price: 14.1)\",\n      \"Current Mark to Market and Holding Period\": \"-12.52%, 31 days\",\n      \"Interval, Confirmation Status\": \"Daily, is CONFIRMED on 2026-04-14\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-05-15 (Price: 12.1600), 12.52% below\",\n      \"Trading Days between Signal and Today Date\": \"31 days\",\n      \"Exit Signal Date/Price[$]\": \"No Exit Yet\",\n      \"Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]\": \"16.136/15.5142/21.33/No Horizontal Resistance/17.0759/19.2153/No EMA 200 Target\",\n      \"Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)\": \"2.7 months/6 days/1.1 month\",\n      \"Signal Open Price\": 13.9\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"BYDDY, Long, 2026-04-14 (Price: 14.1)\",\n      \"Current Mark to Market and Holding Period\": \"-12.52%, 31 days\",\n      \"Interval, Confirmation Status\": \"Daily, is CONFIRMED on 2026-04-14\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-05-15 (Price: 12.1600), 12.52% below\",\n      \"Trading Days between Signal and Today Date\": \"31 days\",\n      \"Exit Signal Date/Price[$]\": \"No Exit Yet\",\n      \"Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]\": \"16.136/15.5142/21.33/No Horizontal Resistance/17.0759/19.2153/No EMA 200 Target\",\n      \"Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)\": \"2.7 months/6 days/1.1 month\",\n      \"Signal Open Price\": 13.9\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"BYDDY, Long, 2026-04-14 (Price: 14.1)\",\n      \"Current Mark to Market and Holding Period\": \"-12.52%, 31 days\",\n      \"Interval, Confirmation Status\": \"Daily, is CONFIRMED on 2026-04-14\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-05-15 (Price: 12.1600), 12.52% below\",\n      \"Trading Days between Signal and Today Date\": \"31 days\",\n      \"Exit Signal Date/Price[$]\": \"No Exit Yet\",\n      \"Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]\": \"16.136/15.5142/21.33/No Horizontal Resistance/17.0759/19.2153/No EMA 200 Target\",\n      \"Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)\": \"2.7 months/6 days/1.1 month\",\n      \"Signal Open Price\": 13.9\n    },\n    {\n      \"Function\": \"FRACTAL TRACK\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"BYDDY, Short, 2025-10-31 (Price: 12.94)\",\n      \"Current Mark to Market and Holding Period\": \"13.64%, 196 days\",\n      \"Interval, Confirmation Status\": \"Monthly, is CONFIRMED on 2025-10-31\",\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-05-15 (Price: 12.1600), 13.64% above\",\n      \"Trading Days between Signal and Today Date\": \"196 days\",\n      \"Exit Signal Date/Price[$]\": \"No Exit Yet\",\n      \"Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]\": \"13.0267/11.2216/11.85/7.1075/10.1095/6.9107\",\n      \"Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)\": \"108 days/21 days/35 days\",\n      \"Signal Open Price\": 14.08\n    }\n  ]\n}\n\n=== EXIT SIGNALS (JSON) ===\n{\n  \"signal_type\": \"exit\",\n  \"record_count\": 2,\n  \"columns_selected\": [\n    \"Function\",\n    \"Symbol, Signal, Signal Date/Price[$]\",\n    \"Exit Signal Date/Price[$]\",\n    \"Interval, Confirmation Status\",\n    \"Current Mark to Market and Holding Period\",\n    \"Trading Days between Signal and Today Date\",\n    \"Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]\",\n    \"Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)\",\n    \"Signal Open Price\",\n    \"Today Trading Date/Price[$], Today Price vs Signal\"\n  ],\n  \"reasoning\": \"Needed to retrieve and list all exited signals in the date range for BYDDY, including function, timeframe, and direction, and to compare exit dates against open longer-term entries to find overlaps/contradictions. Exit Signal Date/Price[$] is essential for the requested exit-date filtering and overlap checks. Interval, Confirmation Status provides timeframe. Backtested Holding Period(Win Trades) supports stance determination based on historically observed holding periods. Targets help identify cases where exits/targets conflict with other active signals.Guardrail: consolidated MTM / Today / holding-period columns included.\",\n  \"data\": [\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"BYDDY, Long, 2026-03-24 (Price: 13.58)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-16 (Price: 14.35)\",\n      \"Interval, Confirmation Status\": \"Daily, is CONFIRMED on 2026-03-24\",\n      \"Current Mark to Market and Holding Period\": \"-9.79%, 52 days\",\n      \"Trading Days between Signal and Today Date\": \"52 days\",\n      \"Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]\": \"15.541/14.9421/20.5/13.9472/17.0759/19.2153/13.64\",\n      \"Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)\": \"2.7 months/6 days/1.1 month\",\n      \"Signal Open Price\": 13.48,\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-05-15 (Price: 12.1600), 9.79% below\"\n    },\n    {\n      \"Function\": \"TRENDPULSE\",\n      \"Symbol, Signal, Signal Date/Price[$]\": \"BYDDY, Long, 2026-03-24 (Price: 13.58)\",\n      \"Exit Signal Date/Price[$]\": \"2026-04-16 (Price: 14.35)\",\n      \"Interval, Confirmation Status\": \"Daily, is CONFIRMED on 2026-03-24\",\n      \"Current Mark to Market and Holding Period\": \"-9.79%, 52 days\",\n      \"Trading Days between Signal and Today Date\": \"52 days\",\n      \"Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]\": \"15.541/14.9421/20.5/13.9472/17.0759/19.2153/13.64\",\n      \"Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)\": \"2.7 months/6 days/1.1 month\",\n      \"Signal Open Price\": 13.48,\n      \"Today Trading Date/Price[$], Today Price vs Signal\": \"2026-05-15 (Price: 12.1600), 9.79% below\"\n    }\n  ]\n}",
+      "timestamp": "2026-05-18T19:04:05.859176+00:00",
+      "metadata": {
+        "input_type": "smart_query",
+        "selected_signal_types": [
+          "entry",
+          "exit"
+        ],
+        "position_side": null,
+        "assets": [
+          "BYDDY"
+        ],
+        "functions": null,
+        "from_date": "2026-04-01",
+        "to_date": "2026-05-18",
+        "columns_by_signal_type": {
+          "entry": [
+            "Function",
+            "Symbol, Signal, Signal Date/Price[$]",
+            "Current Mark to Market and Holding Period",
+            "Interval, Confirmation Status",
+            "Today Trading Date/Price[$], Today Price vs Signal",
+            "Trading Days between Signal and Today Date",
+            "Exit Signal Date/Price[$]",
+            "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]",
+            "Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)",
+            "Signal Open Price"
+          ],
+          "exit": [
+            "Function",
+            "Symbol, Signal, Signal Date/Price[$]",
+            "Exit Signal Date/Price[$]",
+            "Interval, Confirmation Status",
+            "Current Mark to Market and Holding Period",
+            "Trading Days between Signal and Today Date",
+            "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]",
+            "Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)",
+            "Signal Open Price",
+            "Today Trading Date/Price[$], Today Price vs Signal"
+          ]
+        },
+        "reasoning_by_signal_type": {
+          "entry": "Needed to list all open/outstanding entry signals for BYDDY in the specified period with function, timeframe (interval), and direction (from the combined Symbol/Signal field). The user explicitly requires using the pre-computed export fields for performance/holding: Current Mark to Market and Holding Period, Today Trading Date/Price[$], Today Price vs Signal, and Trading Days between Signal and Today Date. Targets are required to detect contradictions like shorts that already hit targets. Backtested Holding Period(Win Trades) supports the requested stance determination using historically observed holding periods. Exit Signal Date/Price[$] is included to detect overlaps/contradictions where an entry row may reference an exit date in the reports.Guardrail: consolidated MTM / Today / holding-period columns included.",
+          "exit": "Needed to retrieve and list all exited signals in the date range for BYDDY, including function, timeframe, and direction, and to compare exit dates against open longer-term entries to find overlaps/contradictions. Exit Signal Date/Price[$] is essential for the requested exit-date filtering and overlap checks. Interval, Confirmation Status provides timeframe. Backtested Holding Period(Win Trades) supports stance determination based on historically observed holding periods. Targets help identify cases where exits/targets conflict with other active signals.Guardrail: consolidated MTM / Today / holding-period columns included."
+        },
+        "rows_fetched": 7,
+        "signal_types_with_data": [
+          "entry",
+          "exit"
+        ],
+        "signal_type_reasoning": "The request requires a deep dive on BYDDY across all recorded signals in a specified date range, including open/outstanding entry signals from the outstanding-signal CSV (entry) and completed trades with recorded exits within the range (exit). No market-wide breadth or portfolio-target-achieved data is explicitly requested or necessary to enumerate signals, detect contradictions/overlaps, and determine Buy/Hold/Sell strictly from verified entry/exit signal records and their observed holding periods.",
+        "claude_report_loaded": false,
+        "display_prompt": "Please run a deep dive on BYDDY covering all signals recorded over the past few weeks. Use the specified entry and / or exit-date range as the filter.\n\nFor **open / outstanding entry signals**, use the latest **Outstanding Signal report** CSV under ``trade_store/US`` (e.g. dated ``*_outstanding_signal.csv``) as loaded by the app: cite **Current Mark to Market and Holding Period**, **Today Trading Date/Price**, and **Trading Days between Signal and Today Date** exactly as in that export — do not recompute MTM or holding when those columns are present.\n\nRetrieve and list all signals for this period, showing each function, timeframe, and direction (long/short).\n\nIdentify contradictions, such as:\n\nShort signals that have already hit targets or registered exits while higher-interval (e.g., monthly-candle) functions are still showing active longs.\n\nOverlaps between exit dates on short-term signals and open longer-term entries.\n\nAssess alignment between short-term and medium-term outlooks based strictly on the verified signals in the Streamlit reports.\n\nDetermine stance — whether the current setup indicates a Buy, Hold, or Sell — using only the pre-computed signal data and the historically observed holding periods for each function.\n\nImportant:\n\nDo not fabricate or infer new signals. Use only signals verifiable from the existing Streamlit reports and outstanding-signal export.\n\nDate Range: 2026-04-01 to 2026-05-18"
+      }
+    },
+    {
+      "role": "assistant",
+      "content": "# BYDDY Deep Dive Analysis: April 1 - May 18, 2026\n\n## Executive Summary\n\n**Current Stance: HOLD with CAUTION** ⚠️\n\nBYDDY presents a **conflicted signal environment** with significant contradictions between timeframes. The analysis reveals a critical divergence: active daily long signals are underwater while a longer-term monthly short signal shows positive performance, creating a complex risk/reward scenario.\n\n---\n\n## 1. Complete Signal Inventory\n\n### **Open/Outstanding Entry Signals**\n\n#### **Daily Timeframe - TRENDPULSE Long Signals**\n- **Function:** TRENDPULSE\n- **Direction:** Long\n- **Signal Date:** 2026-04-14\n- **Entry Price:** $14.10\n- **Signal Open Price:** $13.90\n- **Interval:** Daily (Confirmed on 2026-04-14)\n- **Count:** 4 identical signals (likely representing multiple confirmation criteria or duplicate records)\n\n**Current Performance (as of 2026-05-15):**\n- **Today Trading Price:** $12.16\n- **Current Mark to Market:** **-12.52%** (underwater)\n- **Holding Period:** 31 days\n- **Price vs Signal:** 12.52% below entry\n\n**Targets:**\n- Historic Rise to Pivot: $16.136\n- Avg % Gain Target: $15.5142\n- Function Specific Target: $21.33\n- F-Stack 1: $17.0759 - $17.1567\n- F-Stack 2: $18.5536 - $19.2153\n- No Horizontal Resistance identified\n- No EMA 200 Target\n\n**Historical Performance Metrics:**\n- Max Holding Period (Winning Trades): 2.7 months\n- Min Holding Period: 6 days\n- Avg Holding Period: 1.1 month\n\n---\n\n#### **Monthly Timeframe - FRACTAL TRACK Short Signal**\n- **Function:** FRACTAL TRACK\n- **Direction:** Short\n- **Signal Date:** 2025-10-31\n- **Entry Price:** $12.94\n- **Signal Open Price:** $14.08\n- **Interval:** Monthly (Confirmed on 2025-10-31)\n\n**Current Performance (as of 2026-05-15):**\n- **Today Trading Price:** $12.16\n- **Current Mark to Market:** **+13.64%** (profitable)\n- **Holding Period:** 196 days (6.5 months)\n- **Price vs Signal:** 13.64% above entry (price declined as expected for short)\n\n**Targets:**\n- Historic Fall to Pivot: $13.0267\n- Avg % Gain Target: $11.2216\n- Function Specific Target: $11.85\n- F-Stack 1: $10.1095\n- F-Stack 2: $6.9107\n- Horizontal Support: $7.1075\n\n**Historical Performance Metrics:**\n- Max Holding Period (Winning Trades): 108 days\n- Min Holding Period: 21 days\n- Avg Holding Period: 35 days\n\n---\n\n### **Exited Signals**\n\n#### **TRENDPULSE Long - Exited in Period**\n- **Function:** TRENDPULSE\n- **Direction:** Long\n- **Signal Date:** 2026-03-24\n- **Entry Price:** $13.58\n- **Signal Open Price:** $13.48\n- **Exit Date:** 2026-04-16\n- **Exit Price:** $14.35\n- **Interval:** Daily (Confirmed on 2026-03-24)\n- **Count:** 2 records\n\n**Performance at Exit:**\n- **Holding Period at Exit:** 23 days (within the 6-day to 2.7-month historical range)\n- **Gain at Exit:** +5.67% (from $13.58 to $14.35)\n- **Current Price vs Original Entry:** -9.79% (price has declined since exit)\n\n**Post-Exit Analysis:**\n- Exit timing was **excellent** - captured gains before the subsequent decline\n- Current price ($12.16) is 15.26% below the exit price ($14.35)\n- This exit occurred just 2 days after the new long signal on 2026-04-14\n\n---\n\n## 2. Critical Contradictions & Conflicts\n\n### **🚨 Major Contradiction #1: Timeframe Divergence**\n\n**The Core Conflict:**\n- **Monthly Short (FRACTAL TRACK):** Active since 2025-10-31, currently **+13.64% profitable**, targeting further downside to $11.22 - $11.85\n- **Daily Long (TRENDPULSE):** Active since 2026-04-14, currently **-12.52% underwater**, targeting upside to $15.51 - $21.33\n\n**Analysis:**\nThis represents a **fundamental directional conflict** between timeframes:\n- The monthly short signal suggests a longer-term bearish trend\n- The daily long signal attempted to capture a counter-trend bounce\n- The daily long has **failed to materialize** - price has declined 12.52% instead of rallying\n\n**Holding Period Context:**\n- Monthly short: 196 days (well beyond its 35-day average, approaching 108-day max)\n- Daily long: 31 days (approaching its 1.1-month average)\n\n---\n\n### **🚨 Major Contradiction #2: Exit-Entry Overlap**\n\n**Timeline Analysis:**\n- **2026-03-24:** Previous TRENDPULSE long signal initiated at $13.58\n- **2026-04-14:** New TRENDPULSE long signal initiated at $14.10\n- **2026-04-16:** Previous long signal exited at $14.35 (2 days after new signal)\n\n**The Problem:**\n- A new long position was opened on 2026-04-14 while the previous long was still active\n- The previous long exited profitably 2 days later at a **higher price** ($14.35) than where the new long currently trades ($12.16)\n- This suggests the new long signal may have been **premature** or caught in a false breakout\n\n---\n\n### **🚨 Contradiction #3: Short Signal Extended Beyond Historical Norms**\n\n**FRACTAL TRACK Short Analysis:**\n- **Current Holding:** 196 days\n- **Historical Average (Winners):** 35 days\n- **Historical Maximum:** 108 days\n- **Current Status:** **81% beyond maximum historical holding period**\n\n**Implications:**\n- The short signal has held for nearly **6 months**, far exceeding typical winning trade duration\n- While currently profitable (+13.64%), it's in **uncharted territory** for this function\n- Risk of reversal increases significantly beyond historical holding periods\n- However, price action continues to validate the bearish thesis (price at $12.16 vs entry $12.94)\n\n---\n\n## 3. Alignment Assessment: Short-Term vs Medium-Term\n\n### **Short-Term Outlook (Daily TRENDPULSE):**\n- **Status:** Bearish/Failed\n- **Evidence:** -12.52% underwater after 31 days\n- **Price Action:** Declining from $14.10 → $12.16\n- **Target Distance:** 24.6% away from nearest target ($15.51)\n\n### **Medium-Term Outlook (Monthly FRACTAL TRACK):**\n- **Status:** Bearish/Validated\n- **Evidence:** +13.64% profitable after 196 days\n- **Price Action:** Declining from $12.94 → $12.16\n- **Target Progress:** Approaching $11.22 - $11.85 zone (8.0% - 2.6% away)\n\n### **Alignment Verdict:**\n**MISALIGNED** - The daily timeframe attempted to call a bottom/reversal that has not materialized. The monthly bearish trend remains dominant and validated by price action.\n\n---\n\n## 4. Current Stance Determination\n\n### **Based on Signal Data Analysis:**\n\n#### **Arguments for SELL:**\n1. Daily long signals are **significantly underwater** (-12.52%)\n2. Monthly short signal remains **profitable and validated** (+13.64%)\n3. Price momentum is **bearish** across both timeframes\n4. Recent exit (2026-04-16) captured gains before decline - suggests resistance overhead\n5. Current price ($12.16) is below all recent entry points\n\n#### **Arguments for HOLD:**\n1. Daily long signals have **not reached maximum historical holding period** (2.7 months vs current 31 days)\n2. Monthly short is **extended beyond historical norms** (196 days vs 108-day max) - reversal risk\n3. Price is approaching monthly short targets ($11.22 - $11.85) - potential support zone\n4. Capitulation at current levels may present opportunity for patient holders\n\n#### **Arguments Against BUY:**\n1. No bullish confirmation from any timeframe\n2. All active long signals underwater\n3. Dominant monthly trend remains bearish\n4. No evidence of trend reversal or bottoming pattern\n\n---\n\n## 5. Final Recommendation\n\n### **HOLD with CAUTION** ⚠️\n\n**Rationale:**\n\n1. **For Existing Long Positions (Daily TRENDPULSE):**\n   - **Hold** through the 1.1-month average holding period (currently at 31 days)\n   - Set **stop-loss at $11.50** (approaching monthly short targets)\n   - Monitor for bounce at $11.22 - $11.85 support zone\n   - **Exit if no recovery by day 45** (approaching historical max)\n\n2. **For Existing Short Positions (Monthly FRACTAL TRACK):**\n   - **Consider partial profit-taking** at current levels (+13.64%)\n   - The position is **81% beyond historical maximum holding period**\n   - Target zone ($11.22 - $11.85) is only 2.6% - 8.0% away\n   - **Trail stop-loss to $13.00** to protect gains\n\n3. **For New Positions:**\n   - **DO NOT INITIATE NEW LONGS** - no bullish confirmation\n   - **DO NOT INITIATE NEW SHORTS** - extended position, near targets\n   - **Wait for resolution** of the timeframe conflict\n\n---\n\n## 6. Key Risk Factors\n\n1. **Timeframe Conflict Risk:** Contradictory signals create uncertainty\n2. **Extended Short Position Risk:** Monthly short far beyond historical norms\n3. **Failed Long Signal Risk:** Daily longs showing no signs of recovery\n4. **Support Zone Risk:** Approaching $11.22 - $11.85 may trigger reversal\n5. **Liquidity Risk:** BYDDY (BYD ADR) may have lower liquidity than domestic shares\n\n---\n\n## 7. Monitoring Triggers\n\n**Bullish Reversal Signals to Watch:**\n- Price closes above $13.50 (previous support/resistance)\n- Daily TRENDPULSE generates exit signal for current underwater longs\n- New daily long signal confirmed above $13.00\n- Monthly FRACTAL TRACK exits short position\n\n**Bearish Continuation Signals:**\n- Price breaks below $11.85 (monthly short target)\n- Daily longs reach maximum holding period without recovery\n- New daily short signals emerge\n- Price fails to reclaim $13.00 level\n\n---\n\n## Conclusion\n\nBYDDY presents a **complex and contradictory signal environment** that warrants caution. The dominant monthly bearish trend has proven correct, while shorter-term attempts to call a bottom have failed. The prudent approach is to **hold existing positions with tight risk management** while avoiding new commitments until the timeframe conflict resolves. The approaching support zone ($11.22 - $11.85) will be critical - either triggering a reversal or confirming further downside.\n\n**Next Review Date:** 2026-05-25 (10 days) or upon price reaching $11.85 support zone.",
+      "timestamp": "2026-05-18T19:05:03.436833+00:00",
+      "metadata": {
+        "input_type": "smart_followup",
+        "selected_signal_types": [
+          "entry",
+          "exit"
+        ],
+        "position_side": null,
+        "assets": [
+          "BYDDY"
+        ],
+        "functions": null,
+        "from_date": "2026-04-01",
+        "to_date": "2026-05-18",
+        "columns_by_signal_type": {
+          "entry": [
+            "Function",
+            "Symbol, Signal, Signal Date/Price[$]",
+            "Current Mark to Market and Holding Period",
+            "Interval, Confirmation Status",
+            "Today Trading Date/Price[$], Today Price vs Signal",
+            "Trading Days between Signal and Today Date",
+            "Exit Signal Date/Price[$]",
+            "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]",
+            "Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)",
+            "Signal Open Price"
+          ],
+          "exit": [
+            "Function",
+            "Symbol, Signal, Signal Date/Price[$]",
+            "Exit Signal Date/Price[$]",
+            "Interval, Confirmation Status",
+            "Current Mark to Market and Holding Period",
+            "Trading Days between Signal and Today Date",
+            "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]",
+            "Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)",
+            "Signal Open Price",
+            "Today Trading Date/Price[$], Today Price vs Signal"
+          ]
+        },
+        "reasoning_by_signal_type": {
+          "entry": "Needed to list all open/outstanding entry signals for BYDDY in the specified period with function, timeframe (interval), and direction (from the combined Symbol/Signal field). The user explicitly requires using the pre-computed export fields for performance/holding: Current Mark to Market and Holding Period, Today Trading Date/Price[$], Today Price vs Signal, and Trading Days between Signal and Today Date. Targets are required to detect contradictions like shorts that already hit targets. Backtested Holding Period(Win Trades) supports the requested stance determination using historically observed holding periods. Exit Signal Date/Price[$] is included to detect overlaps/contradictions where an entry row may reference an exit date in the reports.Guardrail: consolidated MTM / Today / holding-period columns included.",
+          "exit": "Needed to retrieve and list all exited signals in the date range for BYDDY, including function, timeframe, and direction, and to compare exit dates against open longer-term entries to find overlaps/contradictions. Exit Signal Date/Price[$] is essential for the requested exit-date filtering and overlap checks. Interval, Confirmation Status provides timeframe. Backtested Holding Period(Win Trades) supports stance determination based on historically observed holding periods. Targets help identify cases where exits/targets conflict with other active signals.Guardrail: consolidated MTM / Today / holding-period columns included."
+        },
+        "rows_fetched": 7,
+        "signal_types_with_data": [
+          "entry",
+          "exit"
+        ],
+        "signal_type_reasoning": "The request requires a deep dive on BYDDY across all recorded signals in a specified date range, including open/outstanding entry signals from the outstanding-signal CSV (entry) and completed trades with recorded exits within the range (exit). No market-wide breadth or portfolio-target-achieved data is explicitly requested or necessary to enumerate signals, detect contradictions/overlaps, and determine Buy/Hold/Sell strictly from verified entry/exit signal records and their observed holding periods.",
+        "claude_report_loaded": false,
+        "model": "claude-sonnet-4-5-20250929",
+        "tokens_used": {
+          "prompt": 5193,
+          "completion": 2848,
+          "total": 8041
+        },
+        "finish_reason": "end_turn",
+        "batch_processing_used": true,
+        "batch_count": 1,
+        "batch_mode": "single",
+        "input_truncated": false,
+        "history_trimmed_count": 0,
+        "full_signal_tables": {
+          "entry": [
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "BYDDY, Long, 2026-04-14 (Price: 14.1)",
+              "Current Mark to Market and Holding Period": "-12.52%, 31 days",
+              "Interval, Confirmation Status": "Daily, is CONFIRMED on 2026-04-14",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-05-15 (Price: 12.1600), 12.52% below",
+              "Trading Days between Signal and Today Date": "31 days",
+              "Exit Signal Date/Price[$]": "No Exit Yet",
+              "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]": "16.136/15.5142/21.33/No Horizontal Resistance/17.1567/18.5536/No EMA 200 Target",
+              "Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)": "2.7 months/6 days/1.1 month",
+              "Signal Open Price": 13.9
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "BYDDY, Long, 2026-04-14 (Price: 14.1)",
+              "Current Mark to Market and Holding Period": "-12.52%, 31 days",
+              "Interval, Confirmation Status": "Daily, is CONFIRMED on 2026-04-14",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-05-15 (Price: 12.1600), 12.52% below",
+              "Trading Days between Signal and Today Date": "31 days",
+              "Exit Signal Date/Price[$]": "No Exit Yet",
+              "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]": "16.136/15.5142/21.33/No Horizontal Resistance/17.0759/19.2153/No EMA 200 Target",
+              "Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)": "2.7 months/6 days/1.1 month",
+              "Signal Open Price": 13.9
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "BYDDY, Long, 2026-04-14 (Price: 14.1)",
+              "Current Mark to Market and Holding Period": "-12.52%, 31 days",
+              "Interval, Confirmation Status": "Daily, is CONFIRMED on 2026-04-14",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-05-15 (Price: 12.1600), 12.52% below",
+              "Trading Days between Signal and Today Date": "31 days",
+              "Exit Signal Date/Price[$]": "No Exit Yet",
+              "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]": "16.136/15.5142/21.33/No Horizontal Resistance/17.0759/19.2153/No EMA 200 Target",
+              "Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)": "2.7 months/6 days/1.1 month",
+              "Signal Open Price": 13.9
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "BYDDY, Long, 2026-04-14 (Price: 14.1)",
+              "Current Mark to Market and Holding Period": "-12.52%, 31 days",
+              "Interval, Confirmation Status": "Daily, is CONFIRMED on 2026-04-14",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-05-15 (Price: 12.1600), 12.52% below",
+              "Trading Days between Signal and Today Date": "31 days",
+              "Exit Signal Date/Price[$]": "No Exit Yet",
+              "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]": "16.136/15.5142/21.33/No Horizontal Resistance/17.0759/19.2153/No EMA 200 Target",
+              "Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)": "2.7 months/6 days/1.1 month",
+              "Signal Open Price": 13.9
+            },
+            {
+              "Function": "FRACTAL TRACK",
+              "Symbol, Signal, Signal Date/Price[$]": "BYDDY, Short, 2025-10-31 (Price: 12.94)",
+              "Current Mark to Market and Holding Period": "13.64%, 196 days",
+              "Interval, Confirmation Status": "Monthly, is CONFIRMED on 2025-10-31",
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-05-15 (Price: 12.1600), 13.64% above",
+              "Trading Days between Signal and Today Date": "196 days",
+              "Exit Signal Date/Price[$]": "No Exit Yet",
+              "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]": "13.0267/11.2216/11.85/7.1075/10.1095/6.9107",
+              "Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)": "108 days/21 days/35 days",
+              "Signal Open Price": 14.08
+            }
+          ],
+          "exit": [
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "BYDDY, Long, 2026-03-24 (Price: 13.58)",
+              "Exit Signal Date/Price[$]": "2026-04-16 (Price: 14.35)",
+              "Interval, Confirmation Status": "Daily, is CONFIRMED on 2026-03-24",
+              "Current Mark to Market and Holding Period": "-9.79%, 52 days",
+              "Trading Days between Signal and Today Date": "52 days",
+              "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]": "15.541/14.9421/20.5/13.9472/17.0759/19.2153/13.64",
+              "Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)": "2.7 months/6 days/1.1 month",
+              "Signal Open Price": 13.48,
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-05-15 (Price: 12.1600), 9.79% below"
+            },
+            {
+              "Function": "TRENDPULSE",
+              "Symbol, Signal, Signal Date/Price[$]": "BYDDY, Long, 2026-03-24 (Price: 13.58)",
+              "Exit Signal Date/Price[$]": "2026-04-16 (Price: 14.35)",
+              "Interval, Confirmation Status": "Daily, is CONFIRMED on 2026-03-24",
+              "Current Mark to Market and Holding Period": "-9.79%, 52 days",
+              "Trading Days between Signal and Today Date": "52 days",
+              "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]": "15.541/14.9421/20.5/13.9472/17.0759/19.2153/13.64",
+              "Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)": "2.7 months/6 days/1.1 month",
+              "Signal Open Price": 13.48,
+              "Today Trading Date/Price[$], Today Price vs Signal": "2026-05-15 (Price: 12.1600), 9.79% below"
+            }
+          ]
+        },
+        "signals_table": [
+          {
+            "Symbol": "BYDDY",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2026-04-14",
+            "Price": "$14.1",
+            "Interval": "Daily",
+            "Status": "Active"
+          },
+          {
+            "Symbol": "BYDDY",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2026-04-14",
+            "Price": "$14.1",
+            "Interval": "Daily",
+            "Status": "Active"
+          },
+          {
+            "Symbol": "BYDDY",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2026-04-14",
+            "Price": "$14.1",
+            "Interval": "Daily",
+            "Status": "Active"
+          },
+          {
+            "Symbol": "BYDDY",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2026-04-14",
+            "Price": "$14.1",
+            "Interval": "Daily",
+            "Status": "Active"
+          },
+          {
+            "Symbol": "BYDDY",
+            "Function": "FRACTAL TRACK",
+            "Signal_Type": "ENTRY",
+            "Signal_Direction": "Short",
+            "Signal_Date": "2025-10-31",
+            "Price": "$12.94",
+            "Interval": "Monthly",
+            "Status": "Active"
+          },
+          {
+            "Symbol": "BYDDY",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2026-03-24",
+            "Price": "$13.58",
+            "Interval": "Daily",
+            "Status": "Closed"
+          },
+          {
+            "Symbol": "BYDDY",
+            "Function": "TRENDPULSE",
+            "Signal_Type": "EXIT",
+            "Signal_Direction": "Long",
+            "Signal_Date": "2026-03-24",
+            "Price": "$13.58",
+            "Interval": "Daily",
+            "Status": "Closed"
+          }
+        ],
+        "intent": "SIGNAL_LOOKUP",
+        "intent_label": "Signal Lookup",
+        "intent_confidence": 0.85,
+        "intent_classified_by": "llm_router",
+        "route": "INTERNAL",
+        "web_search_used": false,
+        "web_sources": [],
+        "llm_router_reasoning": "The request requires a detailed analysis of internal signal data for BYDDY over a specified date range, including outstanding signals, current mark to market, and alignment assessments based on existing reports.",
+        "followup_mode": "dynamic_fresh",
+        "conversation_context_used": false,
+        "history_exchanges_used": 0,
+        "flow_trace": [
+          {
+            "stage": "Router",
+            "detail": "Analyzing user query intent and selecting route",
+            "timestamp": "19:03:46"
+          },
+          {
+            "stage": "Route Selected",
+            "detail": "INTERNAL (intent=SIGNAL_LOOKUP, conf=0.85)",
+            "timestamp": "19:03:50"
+          },
+          {
+            "stage": "Internal Search",
+            "detail": "Using internal signal data pipeline",
+            "timestamp": "19:03:50"
+          },
+          {
+            "stage": "Context Handling",
+            "detail": "No prior context found; running fresh internal smart query",
+            "timestamp": "19:03:50"
+          },
+          {
+            "stage": "Internal Data Query",
+            "detail": "Fetched internal signal data (selector + columns + date filters)",
+            "timestamp": "19:05:03"
+          },
+          {
+            "stage": "Response Generation",
+            "detail": "Generated final response from internal analysis",
+            "timestamp": "19:05:03"
+          }
+        ]
+      }
+    }
+  ]
+}

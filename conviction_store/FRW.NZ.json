@@ -23,12 +23,172 @@
   "business_type_source": "auto",
   "conviction_score": 5.5,
   "created_at": "2026-05-12T20:18:13+00:00",
-  "dividend_yield_current": 0.031818,
+  "data_coverage": {
+    "bq_auto_dimensions": {
+      "balance_sheet": {
+        "inputs_available": [],
+        "inputs_missing": [
+          "net_debt_ebitda"
+        ],
+        "score": 0.0,
+        "source": "neutral_missing_inputs"
+      },
+      "ceo_quality": {
+        "inputs_available": [],
+        "inputs_missing": [],
+        "score": 0.0,
+        "source": "manual_or_default"
+      },
+      "competitive_moat": {
+        "inputs_available": [],
+        "inputs_missing": [],
+        "score": 0.0,
+        "source": "manual_or_default"
+      },
+      "deal_delay_risk": {
+        "inputs_available": [],
+        "inputs_missing": [],
+        "score": 0.0,
+        "source": "manual_or_default"
+      },
+      "debt_maturity_risk": {
+        "inputs_available": [],
+        "inputs_missing": [],
+        "score": 0.0,
+        "source": "manual_or_default"
+      },
+      "divergence_signal": {
+        "inputs_available": [],
+        "inputs_missing": [],
+        "score": 0.0,
+        "source": "manual_or_default"
+      },
+      "gross_margin_trend": {
+        "inputs_available": [],
+        "inputs_missing": [
+          "gross_margin_trend"
+        ],
+        "score": 0.0,
+        "source": "neutral_missing_inputs"
+      },
+      "growth_trajectory": {
+        "inputs_available": [],
+        "inputs_missing": [
+          "revenue_growth"
+        ],
+        "score": 1.0,
+        "source": "neutral_missing_inputs"
+      },
+      "insider_ownership": {
+        "inputs_available": [],
+        "inputs_missing": [
+          "insider_pct"
+        ],
+        "score": 0.0,
+        "source": "neutral_missing_inputs"
+      },
+      "macro_tailwind": {
+        "inputs_available": [],
+        "inputs_missing": [],
+        "score": 0.0,
+        "source": "manual_or_default"
+      },
+      "margin_quality": {
+        "inputs_available": [],
+        "inputs_missing": [
+          "revenue_growth",
+          "fcf_margin",
+          "distribution_coverage_ratio",
+          "gross_margin"
+        ],
+        "score": 2.0,
+        "source": "neutral_missing_inputs"
+      },
+      "mgmt_capital_allocation": {
+        "inputs_available": [],
+        "inputs_missing": [],
+        "score": 0.0,
+        "source": "manual_or_default"
+      },
+      "reinvestment_runway": {
+        "inputs_available": [],
+        "inputs_missing": [],
+        "score": 0.0,
+        "source": "manual_or_default"
+      },
+      "revenue_quality": {
+        "inputs_available": [],
+        "inputs_missing": [
+          "gross_margin",
+          "fcf_margin"
+        ],
+        "score": 0.5,
+        "source": "neutral_missing_inputs"
+      },
+      "roic_wacc_spread": {
+        "inputs_available": [],
+        "inputs_missing": [
+          "roic_proxy",
+          "roic"
+        ],
+        "score": 2.0,
+        "source": "neutral_missing_inputs"
+      }
+    },
+    "coverage_ratio": 0.4,
+    "fetch_errors": [],
+    "fields_missing": [
+      "revenue_growth",
+      "fcf_margin",
+      "gross_margin",
+      "net_debt_ebitda",
+      "distribution_coverage_ratio",
+      "gross_margin_trend",
+      "roic_proxy",
+      "pe_20y_array",
+      "dividend_yield_5y_mean",
+      "dividend_yield_5y_std",
+      "revenue_accelerating",
+      "insider_pct"
+    ],
+    "fields_present": [
+      "price",
+      "market_cap",
+      "eps_ttm",
+      "eps_fwd",
+      "fcf_ttm",
+      "net_debt_stored",
+      "fwd_revenue_stored",
+      "annual_div_per_share_stored"
+    ],
+    "info_available": false,
+    "low_coverage_threshold": 0.45,
+    "low_data_confidence": true,
+    "neutral_zero_policy": "Missing BQ inputs contribute 0 to bq_raw; conviction_score is not re-scaled by coverage.",
+    "pe_history": {
+      "has_pe_series": false,
+      "insufficient_20y": true,
+      "target_years": 20,
+      "years_available": 0.0
+    },
+    "statements": {
+      "balance": true,
+      "cashflow": true,
+      "income": true
+    },
+    "valuation_inputs": {
+      "ev_fwd_rev": true,
+      "owner_earnings_yield": true,
+      "pe_percentile_20y": false,
+      "pe_ttm": true
+    }
+  },
+  "dividend_yield_current": 0.032812,
   "dividend_yield_zscore": null,
-  "enterprise_value": 2949627825.470729,
+  "enterprise_value": 2878053624.529271,
   "eps_fwd": 0.69983,
   "eps_ttm": 0.45,
-  "ev_fwd_rev": 2.192,
+  "ev_fwd_rev": 2.1388,
   "fcf_ttm": 153527376.0,
   "fd_direction": "positive",
   "fd_votes": {},
@@ -39,14 +199,31 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 1345608960.0,
   "industry": "Integrated Freight & Logistics",
-  "last_daily_update": "2026-05-15T16:30:12+00:00",
+  "last_daily_update": "2026-05-18T19:38:36+00:00",
   "last_full_calc": "2026-05-15T16:30:12+00:00",
   "manual_overrides": {},
-  "market_cap": 2361950849.470729,
+  "market_cap": 2290376648.529271,
+  "missing_fields": [
+    "distribution_coverage_ratio",
+    "dividend_yield_5y_mean",
+    "dividend_yield_5y_std",
+    "fcf_margin",
+    "gross_margin",
+    "gross_margin_trend",
+    "info:empty",
+    "insider_pct",
+    "net_debt_ebitda",
+    "pe_20y_array",
+    "pe_history:insufficient_20y (0.0y)",
+    "revenue_accelerating",
+    "revenue_growth",
+    "roic_proxy",
+    "valuation:pe_percentile_20y"
+  ],
   "net_debt_stored": 587676976.0,
-  "owner_earnings_yield": 0.065,
+  "owner_earnings_yield": 0.067031,
   "pe_percentile_20y": null,
-  "pe_ttm": 29.3333,
+  "pe_ttm": 28.4444,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -55,12 +232,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 13.199999809265137,
+  "price": 12.800000190734863,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.16885,
   "sector": "Industrials",
   "ticker": "FRW.NZ",
-  "updated_at": "2026-05-15T16:30:12+00:00",
+  "updated_at": "2026-05-18T19:38:36+00:00",
   "valuation_tax": 0.0,
   "yield_trap_warning": false
 }

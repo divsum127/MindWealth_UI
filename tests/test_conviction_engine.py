@@ -488,6 +488,45 @@ class TestDataCoverage(unittest.TestCase):
           self.assertLessEqual(len(record["missing_fields"]), len(CRITICAL_FIELDS) + 10)
 
 
+class TestDailyConvictionPipeline(unittest.TestCase):
+    def test_resolve_report_date_from_dated_filename(self):
+        from src.conviction_engine.signals import resolve_report_date
+
+        with tempfile.TemporaryDirectory() as tmp:
+            trade_dir = Path(tmp)
+            (trade_dir / "2026-05-15_all_signal.csv").write_text("Function\n", encoding="utf-8")
+            self.assertEqual(resolve_report_date(trade_dir), "2026-05-15")
+
+    def test_discover_daily_signal_files(self):
+        from src.conviction_engine.signals import discover_daily_signal_files
+
+        with tempfile.TemporaryDirectory() as tmp:
+            trade_dir = Path(tmp)
+            (trade_dir / "2026-05-15_all_signal.csv").write_text("Function\n", encoding="utf-8")
+            (trade_dir / "2026-05-15_outstanding_signal.csv").write_text("Function\n", encoding="utf-8")
+            found = discover_daily_signal_files("2026-05-15", trade_dir)
+            self.assertIn("All Signal Report", found)
+            self.assertIn("Outstanding Signals", found)
+
+    def test_conviction_score_sheet_columns(self):
+        from src.conviction_engine.daily_run import conviction_score_sheet
+
+        df = pd.DataFrame(
+            {
+                "Function": ["TRENDPULSE"],
+                "Symbol, Signal, Signal Date/Price[$]": ["AAPL, Long, 2026-05-01 (Price: 100)"],
+                "ticker": ["AAPL"],
+                "conviction_score": [5.5],
+                "verdict": ["BUY"],
+                "rationale": ["ok"],
+                "extra_col": [1],
+            }
+        )
+        sheet = conviction_score_sheet(df)
+        self.assertIn("conviction_score", sheet.columns)
+        self.assertNotIn("extra_col", sheet.columns)
+
+
 class TestPeHistory(unittest.TestCase):
     def test_uses_historical_price_and_point_in_time_eps(self):
         from src.conviction_engine.fundamentals_enriched import compute_pe_history

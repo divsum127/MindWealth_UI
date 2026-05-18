@@ -20,6 +20,7 @@ TRADE_STORE_US_DIR = TRADE_STORE_DIR / "US"  # US specific trade store
 HISTORY_DIR = BASE_DIR / os.getenv("HISTORY_DIR", "chatbot/history")
 CONVICTION_STORE_DIR = BASE_DIR / os.getenv("CONVICTION_STORE_DIR", "conviction_store")
 CONVICTION_OUTPUT_DIR = CONVICTION_STORE_DIR / os.getenv("CONVICTION_OUTPUT_SUBDIR", "overlays")
+CONVICTION_DAILY_DIR = CONVICTION_STORE_DIR / os.getenv("CONVICTION_DAILY_SUBDIR", "daily")
 CONVICTION_UNIVERSE_FILE = BASE_DIR / os.getenv("CONVICTION_UNIVERSE_FILE", "conviction_universe.txt")
 
 # Additional data paths
@@ -44,3 +45,4 @@ HISTORY_DIR.mkdir(parents=True, exist_ok=True)
 CHATBOT_DATA_DIR.mkdir(parents=True, exist_ok=True)
 CONVICTION_STORE_DIR.mkdir(parents=True, exist_ok=True)
 CONVICTION_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+CONVICTION_DAILY_DIR.mkdir(parents=True, exist_ok=True)

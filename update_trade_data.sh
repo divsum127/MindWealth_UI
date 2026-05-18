@@ -295,6 +295,11 @@ else:
     print('  ⚠️  Outstanding signals file not found')
 "
 
+# Conviction Engine: fundamentals + conviction on daily signal reports + dated archive
+echo "📈 Running Conviction Engine daily pipeline..."
+python3 scripts/run_conviction_engine_daily.py --fundamentals-mode daily
+echo "✅ Conviction Engine daily pipeline completed (see conviction_store/daily/)"
+
 # Git operations
 echo "🔄 Adding files to git..."
 git add .

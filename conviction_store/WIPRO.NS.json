@@ -23,12 +23,174 @@
   "business_type_source": "auto",
   "conviction_score": 5.0,
   "created_at": "2026-05-12T20:20:11+00:00",
-  "dividend_yield_current": 0.089474,
+  "data_coverage": {
+    "bq_auto_dimensions": {
+      "balance_sheet": {
+        "inputs_available": [],
+        "inputs_missing": [
+          "net_debt_ebitda"
+        ],
+        "score": 1.0,
+        "source": "neutral_missing_inputs"
+      },
+      "ceo_quality": {
+        "inputs_available": [],
+        "inputs_missing": [],
+        "score": 0.0,
+        "source": "manual_or_default"
+      },
+      "competitive_moat": {
+        "inputs_available": [],
+        "inputs_missing": [],
+        "score": 0.0,
+        "source": "manual_or_default"
+      },
+      "deal_delay_risk": {
+        "inputs_available": [],
+        "inputs_missing": [],
+        "score": 0.0,
+        "source": "manual_or_default"
+      },
+      "debt_maturity_risk": {
+        "inputs_available": [],
+        "inputs_missing": [],
+        "score": 0.0,
+        "source": "manual_or_default"
+      },
+      "divergence_signal": {
+        "inputs_available": [],
+        "inputs_missing": [],
+        "score": 0.0,
+        "source": "manual_or_default"
+      },
+      "gross_margin_trend": {
+        "inputs_available": [],
+        "inputs_missing": [
+          "gross_margin_trend"
+        ],
+        "score": 1.0,
+        "source": "neutral_missing_inputs"
+      },
+      "growth_trajectory": {
+        "inputs_available": [],
+        "inputs_missing": [
+          "revenue_growth"
+        ],
+        "score": -1.0,
+        "source": "neutral_missing_inputs"
+      },
+      "insider_ownership": {
+        "inputs_available": [],
+        "inputs_missing": [
+          "insider_pct"
+        ],
+        "score": 2.0,
+        "source": "neutral_missing_inputs"
+      },
+      "macro_tailwind": {
+        "inputs_available": [],
+        "inputs_missing": [],
+        "score": 0.0,
+        "source": "manual_or_default"
+      },
+      "margin_quality": {
+        "inputs_available": [],
+        "inputs_missing": [
+          "revenue_growth",
+          "fcf_margin",
+          "distribution_coverage_ratio",
+          "gross_margin"
+        ],
+        "score": -1.0,
+        "source": "neutral_missing_inputs"
+      },
+      "mgmt_capital_allocation": {
+        "inputs_available": [],
+        "inputs_missing": [],
+        "score": 0.0,
+        "source": "manual_or_default"
+      },
+      "reinvestment_runway": {
+        "inputs_available": [],
+        "inputs_missing": [],
+        "score": 0.0,
+        "source": "manual_or_default"
+      },
+      "revenue_quality": {
+        "inputs_available": [],
+        "inputs_missing": [
+          "gross_margin",
+          "fcf_margin"
+        ],
+        "score": 1.0,
+        "source": "neutral_missing_inputs"
+      },
+      "roic_wacc_spread": {
+        "inputs_available": [],
+        "inputs_missing": [
+          "roic_proxy",
+          "roic"
+        ],
+        "score": 2.0,
+        "source": "neutral_missing_inputs"
+      }
+    },
+    "coverage_ratio": 0.45,
+    "fetch_errors": [],
+    "fields_missing": [
+      "revenue_growth",
+      "fcf_margin",
+      "gross_margin",
+      "net_debt_ebitda",
+      "distribution_coverage_ratio",
+      "gross_margin_trend",
+      "roic_proxy",
+      "dividend_yield_5y_mean",
+      "dividend_yield_5y_std",
+      "revenue_accelerating",
+      "insider_pct"
+    ],
+    "fields_present": [
+      "price",
+      "market_cap",
+      "eps_ttm",
+      "eps_fwd",
+      "fcf_ttm",
+      "net_debt_stored",
+      "fwd_revenue_stored",
+      "annual_div_per_share_stored",
+      "pe_20y_array"
+    ],
+    "info_available": false,
+    "low_coverage_threshold": 0.45,
+    "low_data_confidence": true,
+    "neutral_zero_policy": "Missing BQ inputs contribute 0 to bq_raw; conviction_score is not re-scaled by coverage.",
+    "pe_history": {
+      "has_pe_series": true,
+      "insufficient_20y": true,
+      "legacy_no_meta": true,
+      "stored_point_count": 80,
+      "target_years": 20,
+      "years_available": 0.0
+    },
+    "statements": {
+      "balance": true,
+      "cashflow": true,
+      "income": true
+    },
+    "valuation_inputs": {
+      "ev_fwd_rev": true,
+      "owner_earnings_yield": true,
+      "pe_percentile_20y": true,
+      "pe_ttm": true
+    }
+  },
+  "dividend_yield_current": 0.088463,
   "dividend_yield_zscore": null,
-  "enterprise_value": 2059985594670.0,
+  "enterprise_value": 2082738279882.8098,
   "eps_fwd": 14.37205,
   "eps_ttm": 12.56,
-  "ev_fwd_rev": 2.224,
+  "ev_fwd_rev": 2.2486,
   "fcf_ttm": 145935000000.0,
   "fd_direction": "stable",
   "fd_votes": {},
@@ -39,12 +201,27 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 926240014336.0,
   "industry": "Information Technology Services",
-  "last_daily_update": "2026-05-15T16:33:44+00:00",
+  "last_daily_update": "2026-05-18T19:38:36+00:00",
   "last_full_calc": "2026-05-15T16:33:44+00:00",
   "manual_overrides": {},
-  "market_cap": 1992170594670.0,
+  "market_cap": 2014923279882.8098,
+  "missing_fields": [
+    "distribution_coverage_ratio",
+    "dividend_yield_5y_mean",
+    "dividend_yield_5y_std",
+    "fcf_margin",
+    "gross_margin",
+    "gross_margin_trend",
+    "info:empty",
+    "insider_pct",
+    "net_debt_ebitda",
+    "pe_history:insufficient_20y (0.0y)",
+    "revenue_accelerating",
+    "revenue_growth",
+    "roic_proxy"
+  ],
   "net_debt_stored": 67815000000.0,
-  "owner_earnings_yield": 0.073254,
+  "owner_earnings_yield": 0.072427,
   "pe_20y_array": [
     21.0094,
     19.3205,
@@ -127,8 +304,8 @@
     14.6423,
     14.7745
   ],
-  "pe_percentile_20y": 16.25,
-  "pe_ttm": 15.1274,
+  "pe_percentile_20y": 20.0,
+  "pe_ttm": 15.3002,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -137,12 +314,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 190.0,
+  "price": 192.17,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.15487,
   "sector": "Technology",
   "ticker": "WIPRO.NS",
-  "updated_at": "2026-05-15T16:33:44+00:00",
+  "updated_at": "2026-05-18T19:38:36+00:00",
   "valuation_tax": 0.0,
   "yield_trap_warning": false
 }

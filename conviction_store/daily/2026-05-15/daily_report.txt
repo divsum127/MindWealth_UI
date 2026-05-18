@@ -1,0 +1,153 @@
+Conviction Engine Daily Report
+
+Universe size: 168
+Scored equities: 113
+Strong conviction names: 8
+Weak / cancel-buy names: 90
+
+Alerts:
+- 000660.KS: low_conviction
+- 005930.KS: low_conviction
+- 2807.HK: low_conviction
+- 3033.HK: low_conviction
+- AAPL: low_conviction
+- ABNB: low_conviction
+- AEM.TO: low_conviction
+- AIA.NZ: fs_moderate_low, low_conviction
+- AMD: fs_moderate_low, low_conviction
+- AMZN: low_conviction
+- ARM: fs_moderate_low, low_conviction
+- ASHR: low_conviction
+- ASML: low_conviction
+- ATZ.TO: low_conviction
+- AVGO: low_conviction
+- BABA: fs_moderate_low, low_conviction
+- BAC: low_conviction
+- BBD-B.TO: low_conviction
+- BDGI.TO: low_conviction
+- BEL.NS: low_conviction
+- BIPC.TO: low_conviction
+- BN.TO: fs_moderate_low, low_conviction
+- BNS.TO: low_conviction
+- BRK-B: low_conviction
+- BTC-USD: low_conviction
+- BTI: low_conviction
+- BYD.TO: low_conviction
+- C6L.SI: low_conviction
+- CAD=X: low_conviction
+- CEN.NZ: low_conviction
+- CNQ.TO: low_conviction
+- CNR.TO: low_conviction
+- CNU.NZ: low_conviction
+- CRM: low_conviction
+- CSCO: low_conviction
+- CVS: low_conviction
+- DBC: low_conviction
+- DIA: low_conviction
+- DIS: low_conviction
+- DOL.TO: low_conviction
+- EBO.NZ: low_conviction
+- EEM: low_conviction
+- EFA: low_conviction
+- EFN.TO: fs_moderate_low, low_conviction
+- ENZL: low_conviction
+- ETH-USD: low_conviction
+- EURUSD=X: low_conviction
+- EWJ: low_conviction
+- FBU.NZ: fs_moderate_low, low_conviction
+- FXI: low_conviction
+- GBPSGD=X: low_conviction
+- GBPUSD=X: low_conviction
+- GDX: low_conviction
+- GLD: low_conviction
+- GNE.NZ: low_conviction
+- GOOG: low_conviction
+- GRANULES.NS: low_conviction
+- GS: low_conviction
+- HDB: low_conviction
+- HDFCBANK.NS: low_conviction
+- HOOD: low_conviction
+- IBIT: low_conviction
+- IEI: low_conviction
+- IHI: low_conviction
+- IMO.TO: low_conviction
+- INDA: low_conviction
+- INDY: low_conviction
+- INFY: low_conviction
+- IWM: low_conviction
+- JD: low_conviction
+- JETS: low_conviction
+- JPM: low_conviction
+- JPY=X: low_conviction
+- KWEB: low_conviction
+- KXS.TO: low_conviction
+- LYFT: low_conviction
+- MA: low_conviction
+- MAR: low_conviction
+- MAZDOCK.NS: low_conviction
+- MCD: low_conviction
+- MCY.NZ: low_conviction
+- MEL.NZ: low_conviction
+- META: low_conviction
+- MSFT: low_conviction
+- MU: low_conviction
+- MX.TO: low_conviction
+- NA.TO: low_conviction
+- NAUKRI.NS: low_conviction
+- NFLX: low_conviction
+- NIFTY_MIDCAP_100.NS: low_conviction
+- NIO: fs_moderate_low, low_conviction
+- NOVA.F: low_conviction
+- NU: low_conviction
+- NVDA: low_conviction
+- NVO: low_conviction
+- NZDCAD=X: low_conviction
+- NZDUSD=X: low_conviction
+- ORCL: low_conviction
+- PERSISTENT.NS: low_conviction
+- PFE: low_conviction
+- PLTR: low_conviction
+- PPH: low_conviction
+- PPL.TO: low_conviction
+- QQQ: low_conviction
+- RELIANCE.NS: low_conviction
+- RINF: low_conviction
+- RY.TO: low_conviction
+- SFTBY: low_conviction
+- SLV: low_conviction
+- SONY: low_conviction
+- SOXX: low_conviction
+- SPY: low_conviction
+- SUM.NZ: fs_moderate_low, low_conviction
+- SUNPHARMA.NS: low_conviction
+- T.TO: low_conviction
+- TD: fs_moderate_low, low_conviction
+- TD.TO: fs_moderate_low, low_conviction
+- TSLA: fs_moderate_low, low_conviction
+- TSM: low_conviction
+- UBER: low_conviction
+- UPS: low_conviction
+- USCI: low_conviction
+- USDCHF=X: low_conviction
+- USO: low_conviction
+- VGT: low_conviction
+- WCN.TO: low_conviction
+- WFG.TO: low_conviction
+- WMT: low_conviction
+- WPM: low_conviction
+- WPM.TO: low_conviction
+- XIU.TO: low_conviction
+- XLE: low_conviction
+- XLF: low_conviction
+- XLU: low_conviction
+- XLV: low_conviction
+- XLY: low_conviction
+- ^BVSP: low_conviction
+- ^DJI: low_conviction
+- ^GSPC: low_conviction
+- ^NDX: low_conviction
+- ^NSEI: low_conviction
+- ^NZ50: low_conviction
+- ^STI: low_conviction
+- ^TNX: low_conviction
+- ^VIX: low_conviction

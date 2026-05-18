@@ -30,7 +30,76 @@ SIGNAL_SOURCES = {
     "Virtual Trading Short": "virtual_trading_short.csv",
 }
 
+# Daily batch overlays: base CSV name -> human label (must include compound signal column).
+DAILY_SIGNAL_REPORTS: dict[str, str] = {
+    "all_signal.csv": "All Signal Report",
+    "new_signal.csv": "New Signals",
+    "outstanding_signal.csv": "Outstanding Signals",
+    "claude_signals_report.csv": "Claude Signals Report",
+    "target_signal.csv": "Target Signals",
+    "virtual_trading_long.csv": "Virtual Trading Long",
+    "virtual_trading_short.csv": "Virtual Trading Short",
+}
+
+_DATE_PREFIX_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})_(.+)$")
+
 LONG_INTERVAL_TOKENS = {"monthly", "quarterly", "yearly", "1mo", "3mo", "1q", "1y", "month", "quarter", "year"}
+
+
+def resolve_report_date(trade_store_dir: Path | None = None, explicit: str | None = None) -> str | None:
+    """Report date from CLI, latest dated all_signal file, or data_fetch_datetime.json."""
+    if explicit:
+        return explicit.strip()[:10]
+
+    base_dir = Path(trade_store_dir) if trade_store_dir else TRADE_STORE_US_DIR
+    latest = get_latest_csv_file("all_signal.csv", str(base_dir))
+    if latest:
+        name = Path(latest).name
+        match = _DATE_PREFIX_RE.match(name)
+        if match:
+            return match.group(1)
+
+    fetch_meta = base_dir / "data_fetch_datetime.json"
+    if fetch_meta.exists():
+        try:
+            import json
+
+            payload = json.loads(fetch_meta.read_text(encoding="utf-8"))
+            if payload.get("date"):
+                return str(payload["date"])[:10]
+        except (OSError, json.JSONDecodeError, TypeError):
+            pass
+    return None
+
+
+def signal_file_for_report_date(
+    base_filename: str,
+    report_date: str,
+    trade_store_dir: Path | None = None,
+) -> Path | None:
+    """Prefer dated file YYYY-MM-DD_{base}; fall back to undated base in trade_store."""
+    base_dir = Path(trade_store_dir) if trade_store_dir else TRADE_STORE_US_DIR
+    dated = base_dir / f"{report_date}_{base_filename}"
+    if dated.exists():
+        return dated
+    plain = base_dir / base_filename
+    if plain.exists():
+        return plain
+    latest = get_latest_csv_file(base_filename, str(base_dir))
+    return Path(latest) if latest else None
+
+
+def discover_daily_signal_files(
+    report_date: str,
+    trade_store_dir: Path | None = None,
+) -> dict[str, Path]:
+    """Map report label -> source CSV path for a given trade-store report date."""
+    sources: dict[str, Path] = {}
+    for base_name, label in DAILY_SIGNAL_REPORTS.items():
+        path = signal_file_for_report_date(base_name, report_date, trade_store_dir)
+        if path and path.exists():
+            sources[label] = path
+    return sources
 
 
 def discover_signal_sources(trade_store_dir: Path | None = None) -> dict[str, Path]:
