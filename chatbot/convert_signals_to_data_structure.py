@@ -1101,20 +1101,18 @@ def main():
     else:
         print(f"⚠ File not found: outstanding_signal.csv (tried exact match and date_name.csv pattern)")
 
-    # All Signal report — superset of open positions (e.g. PULSEGAUGE rows missing from outstanding)
+    # All Signal report — superset of open positions (same resolution as runtime fetcher)
     print("\n" + "-" * 80)
     print("Converting SIGNAL data (all_signal.csv — supplements entry.csv)")
     print("-" * 80)
-    all_signal_file = None
-    all_signal_exact = trade_store_us / "all_signal.csv"
-    if all_signal_exact.exists():
-        all_signal_file = all_signal_exact
-    else:
-        all_signal_pattern_files = list(trade_store_us.glob("*_all_signal.csv"))
-        if all_signal_pattern_files:
-            all_signal_pattern_files.sort(key=lambda x: x.stat().st_mtime, reverse=True)
-            all_signal_file = all_signal_pattern_files[0]
-            print(f"ℹ Found dated file: {all_signal_file.name}")
+    try:
+        from .outstanding_paths import resolve_all_signal_path
+    except ImportError:
+        from outstanding_paths import resolve_all_signal_path  # type: ignore
+
+    all_signal_file = resolve_all_signal_path()
+    if all_signal_file:
+        print(f"ℹ Using all_signal file: {all_signal_file.name}")
     if all_signal_file and all_signal_file.exists():
         convert_signal_file_to_data_structure(
             input_file=all_signal_file,

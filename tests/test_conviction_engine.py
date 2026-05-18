@@ -21,7 +21,12 @@ from src.conviction_engine.fundamentals import (
     update_ticker_fundamentals,
 )
 from src.conviction_engine.models import default_record
-from src.conviction_engine.scoring import calculate_valuation_tax, detect_business_type
+from src.conviction_engine.dividend_yield import compute_dividend_yield_stats
+from src.conviction_engine.scoring import (
+    calculate_valuation_tax,
+    detect_business_type,
+    is_yield_trap,
+)
 from src.conviction_engine.signals import normalize_signal_row, signal_timeframe_from_interval
 from src.conviction_engine.store import load_record, save_record
 
@@ -208,6 +213,68 @@ class TestScoringAndVerdicts(unittest.TestCase):
             self.assertTrue(record["yield_trap_warning"])
             mod = modify_signal("T.TO", "BUY", "long", record=record, store_dir=Path(tmp), persist=False)
             self.assertEqual(mod.verdict, "CANCEL BUY")
+
+    def test_sell_yield_trap_hard_exit(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            record = full_recalculation(
+                "T.TO",
+                info={"quoteType": "EQUITY", "sector": "Communication Services", "industry": "Telecom Services"},
+                fundamentals={
+                    "price": 22.05,
+                    "market_cap": 25_000_000_000,
+                    "annual_div_per_share_stored": 1.61,
+                    "dividend_yield_5y_mean": 0.05,
+                    "dividend_yield_5y_std": 0.0115,
+                    "eps_ttm": 0.65,
+                    "pe_20y_array": [12, 14, 18, 22, 25, 30, 35],
+                },
+                overrides={"bq_raw": 9},
+                store_dir=Path(tmp),
+            )
+            self.assertTrue(record["yield_trap_warning"])
+            layers_before = record.get("position_layers") or {}
+            if not layers_before.get("core_fraction"):
+                record["position_layers"] = {
+                    "core_fraction": 0.8,
+                    "tactical_fraction": 0.2,
+                    "core_model": None,
+                    "tactical_model": None,
+                    "core_signal_date": None,
+                    "tactical_signal_date": None,
+                }
+                save_record(record, Path(tmp))
+            mod = modify_signal("T.TO", "SELL", "long", record=record, store_dir=Path(tmp), persist=False)
+            self.assertEqual(mod.verdict, "HARD EXIT")
+            self.assertEqual(mod.sizing_pct, 0.0)
+            self.assertTrue(mod.yield_trap_warning)
+            self.assertEqual(mod.position_layers.core_fraction, 0.0)
+            self.assertEqual(mod.position_layers.tactical_fraction, 0.0)
+            self.assertTrue(any("yield trap" in r.lower() for r in mod.rationale))
+
+    def test_yield_trap_missing_zscore_false(self):
+        record = default_record("T.TO")
+        record.update(
+            {
+                "dividend_yield_current": 0.099,
+                "dividend_yield_zscore": None,
+                "dividend_yield_5y_mean": None,
+                "dividend_yield_5y_std": None,
+                "yield_trap_warning": True,
+            }
+        )
+        self.assertFalse(is_yield_trap(record, "T.TO"))
+
+    def test_compute_dividend_yield_stats_aligns_dividend_dates(self):
+        import pandas as pd
+
+        idx = pd.date_range("2020-01-01", periods=400, freq="D")
+        close = pd.Series(20.0, index=idx)
+        div_idx = pd.to_datetime(["2020-06-15 09:30:00", "2020-12-15 09:30:00", "2021-06-15 09:30:00"])
+        divs = pd.Series([0.5, 0.5, 0.5], index=div_idx)
+        stats = compute_dividend_yield_stats(pd.DataFrame({"Close": close}), divs)
+        self.assertIn("dividend_yield_5y_mean", stats)
+        self.assertIn("dividend_yield_5y_std", stats)
+        self.assertGreater(stats["dividend_yield_5y_std"], 0)
 
     def test_buy_verdict_and_position_layer(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -494,7 +561,7 @@ class TestDailyConvictionPipeline(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmp:
             trade_dir = Path(tmp)
-            (trade_dir / "2026-05-15_all_signal.csv").write_text("Function\n", encoding="utf-8")
+            (trade_dir / "2026-05-15_new_signal.csv").write_text("Function\n", encoding="utf-8")
             self.assertEqual(resolve_report_date(trade_dir), "2026-05-15")
 
     def test_discover_daily_signal_files_default_new_signal_only(self):

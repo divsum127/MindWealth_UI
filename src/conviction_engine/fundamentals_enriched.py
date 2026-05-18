@@ -8,6 +8,7 @@ from typing import Any
 
 import pandas as pd
 
+from .dividend_yield import compute_dividend_yield_stats
 from .scoring import (
     BusinessType,
     _float_or_none,
@@ -275,31 +276,6 @@ def compute_pe_history(price_series: pd.Series, quarterly_eps: pd.Series) -> dic
         "insufficient_20y": years_available < PE_HISTORY_TARGET_YEARS,
     }
     return {"values": stored.tolist(), "meta": meta}
-
-
-def compute_dividend_yield_stats(history: pd.DataFrame | None, dividends: pd.Series | None) -> dict[str, float]:
-    if history is None or dividends is None or history.empty or dividends.empty or "Close" not in history.columns:
-        return {}
-    close = history["Close"].dropna()
-    if close.empty:
-        return {}
-    dividends = dividends.dropna()
-    if dividends.empty:
-        return {}
-    if close.index.tz is not None:
-        close.index = close.index.tz_localize(None)
-    if dividends.index.tz is not None:
-        dividends.index = dividends.index.tz_localize(None)
-    daily_div = dividends.reindex(close.index, fill_value=0.0)
-    annual_div = daily_div.rolling(window=365, min_periods=60).sum()
-    div_yield = (annual_div / close).replace([float("inf"), float("-inf")], pd.NA).dropna()
-    div_yield = div_yield[div_yield > 0]
-    if len(div_yield) < 20:
-        return {}
-    return {
-        "dividend_yield_5y_mean": round(float(div_yield.mean()), 6),
-        "dividend_yield_5y_std": round(float(div_yield.std(ddof=0)), 6),
-    }
 
 
 def compute_fd_direction(

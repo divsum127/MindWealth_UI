@@ -231,7 +231,17 @@ Thresholds (from `verdict_for_buy`, yield-trap excluded):
 | **≥ 2** | REDUCED BUY | 25–50% (depends on `fd_direction`) |
 | **&lt; 2** | CANCEL BUY | 0% |
 
-**Yield-trap** (`yield_trap_warning`): hard **CANCEL BUY** / zero sizing regardless of score.
+**Yield-trap** (`yield_trap_warning`) — hard gate per Conviction Engine v5 PDF (§3, §8.1–8.2):
+
+| Condition | Rule |
+| --------- | ---- |
+| **Trigger** | **Both** required: (1) `dividend_yield_zscore` **> 1.5** (current yield vs own 5Y mean/std), **and** (2) `dividend_yield_current` above **market-absolute** threshold |
+| **Thresholds** | NZ **12%**, AU **10%**, CA **7%**, UK **9%**, US/India/default **6%** (suffix on ticker, e.g. `.TO` → 7%) |
+| **BUY** | **CANCEL BUY**, 0% sizing — no conviction score override |
+| **SELL** | **HARD EXIT**, 0% sizing — **core and tactical** layers zeroed |
+| **Missing data** | If 5Y mean/std or z-score cannot be computed, trap is **False** (both conditions required; no absolute-yield-only fallback) |
+
+`dividend_yield_current` = `annual_div_per_share_stored / price`. Z-score uses rolling 365-day dividend sums vs daily close (calendar-date aligned).
 
 **`fd_direction`** (`positive` / `negative` / `stable`): nudges sizing **within** the REDUCED / TACTICAL bands; it does **not** change the tier boundaries.
 
@@ -242,6 +252,8 @@ Thresholds (from `verdict_for_buy`, yield-trap excluded):
 ### SELL side (short signal)
 
 For **SELL** signals, the same underlying score drives **pause vs exit** logic (`verdict_for_sell`): higher conviction supports **pausing** or **trading around** a short exit; lower conviction favors **full / hard** exit. Interpretation is symmetric to risk tolerance: “how much does fundamental quality argue for keeping vs exiting the position?”
+
+**Yield-trap on SELL** overrides score tiers: verdict is always **HARD EXIT** with 0% retain and both position layers closed (see yield-trap table above).
 
 ### Non-equities
 

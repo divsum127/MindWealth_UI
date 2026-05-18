@@ -50,12 +50,12 @@ LONG_INTERVAL_TOKENS = {"monthly", "quarterly", "yearly", "1mo", "3mo", "1q", "1
 
 
 def resolve_report_date(trade_store_dir: Path | None = None, explicit: str | None = None) -> str | None:
-    """Report date from CLI, latest dated all_signal file, or data_fetch_datetime.json."""
+    """Report date from CLI, latest dated new_signal file, or data_fetch_datetime.json."""
     if explicit:
         return explicit.strip()[:10]
 
     base_dir = Path(trade_store_dir) if trade_store_dir else TRADE_STORE_US_DIR
-    for base_name in (PRIMARY_DAILY_REPORT, "all_signal.csv"):
+    for base_name in (PRIMARY_DAILY_REPORT,):
         latest = get_latest_csv_file(base_name, str(base_dir))
         if latest:
             name = Path(latest).name

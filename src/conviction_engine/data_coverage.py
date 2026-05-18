@@ -286,6 +286,9 @@ def assess_data_coverage(
         "pe_percentile_20y": _is_present(record.get("pe_percentile_20y")),
         "ev_fwd_rev": _is_present(record.get("ev_fwd_rev")),
         "owner_earnings_yield": _is_present(record.get("owner_earnings_yield")),
+        "dividend_yield_zscore": _is_present(record.get("dividend_yield_zscore")),
+        "dividend_yield_5y_stats": _is_present(record.get("dividend_yield_5y_mean"))
+        and _is_present(record.get("dividend_yield_5y_std")),
     }
 
     bq_auto: dict[str, Any] = {}

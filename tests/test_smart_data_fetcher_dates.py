@@ -14,6 +14,8 @@ from chatbot.smart_data_fetcher import (
     _is_open_exit_value,
     SYMBOL_SIGNAL_COMPOUND_COL,
     EXIT_DATE_COL,
+    SOURCE_COL,
+    compute_missing_open_entry_keys,
 )
 
 
@@ -143,6 +145,136 @@ class TestAllSignalSupplement(unittest.TestCase):
             any("2026-04-28" in c for c in compounds),
             msg=f"Expected FRACTAL 2026-04-28 from virtual_trading; got keys: {compounds}",
         )
+
+
+class TestSupplementWhenOutstandingNonempty(unittest.TestCase):
+    def test_supplements_run_when_outstanding_has_rows(self):
+        with TemporaryDirectory() as td:
+            us = Path(td) / "US"
+            us.mkdir(parents=True)
+            outstanding = us / "2026-05-15_outstanding_signal.csv"
+            all_signal = us / "2026-05-15_all_signal.csv"
+            header = (
+                f'Function,"{SYMBOL_SIGNAL_COMPOUND_COL}",{EXIT_DATE_COL},'
+                '"Interval, Confirmation Status"\n'
+            )
+            outstanding.write_text(
+                header
+                + 'TRENDPULSE,"AAPL, Long, 2026-05-15 (Price: 100.0)",No Exit Yet,"Daily, is CONFIRMED on 2026-05-15"\n',
+                encoding="utf-8",
+            )
+            all_signal.write_text(
+                header
+                + 'TRENDPULSE,"AAPL, Long, 2026-05-15 (Price: 100.0)",No Exit Yet,"Daily, is CONFIRMED on 2026-05-15"\n'
+                + 'PULSEGAUGE,"AAPL, Long, 2026-04-20 (Price: 99.0)",No Exit Yet,"Daily, is CONFIRMED on 2026-04-20"\n',
+                encoding="utf-8",
+            )
+            entry_csv = Path(td) / "entry.csv"
+            entry_csv.write_text(header, encoding="utf-8")
+
+            fetcher = SmartDataFetcher(use_consolidated_csvs=True)
+            with patch(
+                "chatbot.smart_data_fetcher.resolve_outstanding_signal_path",
+                return_value=outstanding,
+            ), patch(
+                "chatbot.smart_data_fetcher.resolve_all_signal_path",
+                return_value=all_signal,
+            ), patch(
+                "chatbot.smart_data_fetcher.trade_store_us_dir",
+                return_value=us,
+            ), patch.object(fetcher, "entry_csv", entry_csv), patch.object(
+                fetcher, "_get_consolidated_csv_path", lambda st: entry_csv if st == "entry" else Path()
+            ):
+                df = fetcher._load_entry_source_dataframe(assets=["AAPL"])
+
+            self.assertEqual(len(df), 2)
+            compounds = df[SYMBOL_SIGNAL_COMPOUND_COL].astype(str).tolist()
+            self.assertTrue(any("2026-04-20" in c for c in compounds))
+            self.assertIn(
+                "PULSEGAUGE",
+                df["Function"].astype(str).tolist(),
+            )
+
+
+class TestExitAllSignalSupplement(unittest.TestCase):
+    def test_exit_supplement_from_all_signal(self):
+        with TemporaryDirectory() as td:
+            us = Path(td) / "US"
+            us.mkdir(parents=True)
+            all_signal = us / "2026-05-15_all_signal.csv"
+            exit_csv = Path(td) / "exit.csv"
+            header = (
+                f'Function,"{SYMBOL_SIGNAL_COMPOUND_COL}",{EXIT_DATE_COL},'
+                '"Interval, Confirmation Status"\n'
+            )
+            exit_csv.write_text(header, encoding="utf-8")
+            all_signal.write_text(
+                header
+                + 'FRACTAL TRACK,"MSFT, Short, 2026-03-01 (Price: 400.0)",'
+                '2026-04-01 (Price: 390.0),"Daily, was CONFIRMED on 2026-03-01"\n',
+                encoding="utf-8",
+            )
+
+            fetcher = SmartDataFetcher(use_consolidated_csvs=True)
+            with patch(
+                "chatbot.smart_data_fetcher.resolve_all_signal_path",
+                return_value=all_signal,
+            ), patch.object(fetcher, "exit_csv", exit_csv), patch.object(
+                fetcher, "_get_consolidated_csv_path", lambda st: exit_csv if st == "exit" else Path()
+            ):
+                df = fetcher._load_exit_source_dataframe(assets=["MSFT"])
+
+            self.assertEqual(len(df), 1)
+            self.assertIn("MSFT", df[SYMBOL_SIGNAL_COMPOUND_COL].iloc[0])
+
+
+class TestIdentityKey(unittest.TestCase):
+    def test_identity_key_includes_symbol(self):
+        row_a = pd.Series(
+            {
+                "Function": "TRENDPULSE",
+                SYMBOL_SIGNAL_COMPOUND_COL: "AAPL, Long, 2026-04-01 (Price: 1.0)",
+                "Interval, Confirmation Status": "Daily, is CONFIRMED",
+            }
+        )
+        row_b = pd.Series(
+            {
+                "Function": "TRENDPULSE",
+                SYMBOL_SIGNAL_COMPOUND_COL: "MSFT, Long, 2026-04-01 (Price: 1.0)",
+                "Interval, Confirmation Status": "Daily, is CONFIRMED",
+            }
+        )
+        self.assertNotEqual(
+            SmartDataFetcher._entry_signal_identity_key(row_a),
+            SmartDataFetcher._entry_signal_identity_key(row_b),
+        )
+
+
+class TestSingleAssetDedup(unittest.TestCase):
+    def test_deep_dive_dedup_single_asset(self):
+        header = (
+            f'Function,"{SYMBOL_SIGNAL_COMPOUND_COL}",{EXIT_DATE_COL},'
+            f'{SOURCE_COL}\n'
+        )
+        df = pd.DataFrame(
+            [
+                {
+                    "Function": "TRENDPULSE",
+                    SYMBOL_SIGNAL_COMPOUND_COL: "BYDDY, Long, 2026-04-14 (Price: 1.0)",
+                    EXIT_DATE_COL: "No Exit Yet",
+                    SOURCE_COL: "outstanding",
+                },
+                {
+                    "Function": "TRENDPULSE",
+                    SYMBOL_SIGNAL_COMPOUND_COL: "BYDDY, Long, 2026-04-14 (Price: 1.0)",
+                    EXIT_DATE_COL: "No Exit Yet",
+                    SOURCE_COL: "all_signal",
+                },
+            ]
+        )
+        deduped = SmartDataFetcher.dedupe_single_asset_signals(df)
+        self.assertEqual(len(deduped), 1)
+        self.assertNotIn(SOURCE_COL, deduped.columns)
 
 
 class TestIsOpenExitValue(unittest.TestCase):

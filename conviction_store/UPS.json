@@ -8,30 +8,30 @@
     "deal_delay_risk": 0.0,
     "debt_maturity_risk": 0.0,
     "divergence_signal": 0.0,
-    "gross_margin_trend": 0.0,
+    "gross_margin_trend": 1.0,
     "growth_trajectory": 0.0,
     "insider_ownership": -1.0,
     "macro_tailwind": 0.0,
     "margin_quality": -1.0,
     "mgmt_capital_allocation": 0.0,
     "reinvestment_runway": 0.0,
-    "revenue_quality": 0.0,
+    "revenue_quality": 0.5,
     "roic_wacc_spread": 2.0
   },
-  "bq_raw": 1.0,
+  "bq_raw": 2.5,
   "business_type": "income",
   "business_type_source": "auto",
-  "conviction_score": 1.0,
+  "conviction_score": 2.5,
   "created_at": "2026-05-12T20:20:02+00:00",
   "data_coverage": {
     "bq_auto_dimensions": {
       "balance_sheet": {
-        "inputs_available": [],
-        "inputs_missing": [
+        "inputs_available": [
           "net_debt_ebitda"
         ],
+        "inputs_missing": [],
         "score": 1.0,
-        "source": "neutral_missing_inputs"
+        "source": "auto"
       },
       "ceo_quality": {
         "inputs_available": [],
@@ -64,28 +64,28 @@
         "source": "manual_or_default"
       },
       "gross_margin_trend": {
-        "inputs_available": [],
-        "inputs_missing": [
+        "inputs_available": [
           "gross_margin_trend"
         ],
-        "score": 0.0,
-        "source": "neutral_missing_inputs"
+        "inputs_missing": [],
+        "score": 1.0,
+        "source": "auto"
       },
       "growth_trajectory": {
-        "inputs_available": [],
-        "inputs_missing": [
+        "inputs_available": [
           "revenue_growth"
         ],
+        "inputs_missing": [],
         "score": 0.0,
-        "source": "neutral_missing_inputs"
+        "source": "auto"
       },
       "insider_ownership": {
-        "inputs_available": [],
-        "inputs_missing": [
+        "inputs_available": [
           "insider_pct"
         ],
+        "inputs_missing": [],
         "score": -1.0,
-        "source": "neutral_missing_inputs"
+        "source": "auto"
       },
       "macro_tailwind": {
         "inputs_available": [],
@@ -94,15 +94,15 @@
         "source": "manual_or_default"
       },
       "margin_quality": {
-        "inputs_available": [],
-        "inputs_missing": [
+        "inputs_available": [
           "revenue_growth",
           "fcf_margin",
           "distribution_coverage_ratio",
           "gross_margin"
         ],
+        "inputs_missing": [],
         "score": -1.0,
-        "source": "neutral_missing_inputs"
+        "source": "auto"
       },
       "mgmt_capital_allocation": {
         "inputs_available": [],
@@ -117,39 +117,28 @@
         "source": "manual_or_default"
       },
       "revenue_quality": {
-        "inputs_available": [],
-        "inputs_missing": [
+        "inputs_available": [
           "gross_margin",
           "fcf_margin"
         ],
-        "score": 0.0,
-        "source": "neutral_missing_inputs"
+        "inputs_missing": [],
+        "score": 0.5,
+        "source": "auto"
       },
       "roic_wacc_spread": {
-        "inputs_available": [],
+        "inputs_available": [
+          "roic_proxy"
+        ],
         "inputs_missing": [
-          "roic_proxy",
           "roic"
         ],
         "score": 2.0,
-        "source": "neutral_missing_inputs"
+        "source": "partial_inputs"
       }
     },
-    "coverage_ratio": 0.45,
+    "coverage_ratio": 1.0,
     "fetch_errors": [],
-    "fields_missing": [
-      "revenue_growth",
-      "fcf_margin",
-      "gross_margin",
-      "net_debt_ebitda",
-      "distribution_coverage_ratio",
-      "gross_margin_trend",
-      "roic_proxy",
-      "dividend_yield_5y_mean",
-      "dividend_yield_5y_std",
-      "revenue_accelerating",
-      "insider_pct"
-    ],
+    "fields_missing": [],
     "fields_present": [
       "price",
       "market_cap",
@@ -159,11 +148,22 @@
       "net_debt_stored",
       "fwd_revenue_stored",
       "annual_div_per_share_stored",
-      "pe_20y_array"
+      "revenue_growth",
+      "fcf_margin",
+      "gross_margin",
+      "net_debt_ebitda",
+      "distribution_coverage_ratio",
+      "gross_margin_trend",
+      "roic_proxy",
+      "pe_20y_array",
+      "dividend_yield_5y_mean",
+      "dividend_yield_5y_std",
+      "revenue_accelerating",
+      "insider_pct"
     ],
-    "info_available": false,
+    "info_available": true,
     "low_coverage_threshold": 0.45,
-    "low_data_confidence": true,
+    "low_data_confidence": false,
     "neutral_zero_policy": "Missing BQ inputs contribute 0 to bq_raw; conviction_score is not re-scaled by coverage.",
     "pe_history": {
       "has_pe_series": true,
@@ -179,132 +179,50 @@
       "income": true
     },
     "valuation_inputs": {
+      "dividend_yield_5y_stats": true,
+      "dividend_yield_zscore": true,
       "ev_fwd_rev": true,
       "owner_earnings_yield": true,
       "pe_percentile_20y": true,
       "pe_ttm": true
     }
   },
+  "dividend_yield_5y_mean": 0.039185,
+  "dividend_yield_5y_std": 0.018642,
   "dividend_yield_current": 0.06867,
-  "dividend_yield_zscore": null,
-  "enterprise_value": 100741098795.26468,
-  "eps_fwd": 8.00043,
+  "dividend_yield_zscore": 1.5816,
+  "enterprise_value": 101993098795.26468,
+  "eps_fwd": 8.00236,
   "eps_ttm": 6.18,
-  "ev_fwd_rev": 1.1258,
-  "fcf_ttm": 4396000000.0,
+  "ev_fwd_rev": 1.1504,
+  "fcf_ttm": 4765000000.0,
   "fd_direction": "positive",
   "fd_votes": {},
   "flags": [],
   "fs_class": "moderate_high",
-  "fs_quality_base": 52.5,
-  "fs_score": 65.5,
+  "fs_quality_base": 56.25,
+  "fs_score": 64.25,
   "full_recalc_trigger": "daily_fundamentals_script",
-  "fwd_revenue_stored": 89483000000.0,
+  "fwd_revenue_stored": 88661000000.0,
   "industry": "Integrated Freight & Logistics",
-  "last_daily_update": "2026-05-18T20:28:34+00:00",
-  "last_full_calc": "2026-05-15T16:33:28+00:00",
+  "last_daily_update": "2026-05-18T20:50:57+00:00",
+  "last_full_calc": "2026-05-18T20:50:57+00:00",
   "manual_overrides": {},
   "market_cap": 81201098795.26468,
   "missing_fields": [
-    "distribution_coverage_ratio",
-    "dividend_yield_5y_mean",
-    "dividend_yield_5y_std",
-    "fcf_margin",
-    "gross_margin",
-    "gross_margin_trend",
-    "info:empty",
-    "insider_pct",
-    "net_debt_ebitda",
-    "pe_history:insufficient_20y (0.0y)",
-    "revenue_accelerating",
-    "revenue_growth",
-    "roic_proxy"
+    "pe_history:insufficient_20y (0.0y)"
   ],
-  "net_debt_stored": 19540000000.0,
-  "owner_earnings_yield": 0.054137,
+  "net_debt_stored": 20792000000.0,
+  "owner_earnings_yield": 0.058681,
   "pe_20y_array": [
-    16.6616,
-    16.4604,
-    16.3064,
-    16.3415,
-    15.8079,
-    16.157,
+    15.1204,
     16.1921,
-    16.8095,
-    17.0503,
-    17.7957,
-    17.7668,
-    17.8872,
-    17.9756,
-    18.0945,
-    18.2927,
-    17.9985,
-    18.1768,
-    17.6082,
-    17.7012,
-    17.6128,
-    17.7942,
-    17.5335,
-    17.5869,
-    17.3552,
-    17.779,
     17.6768,
-    17.4421,
-    17.2607,
-    16.8445,
-    15.8643,
-    15.6037,
-    15.2348,
-    15.3841,
-    15.3659,
-    14.9223,
-    14.8186,
-    14.8476,
-    14.904,
-    14.7622,
-    14.7195,
-    14.6128,
-    14.8887,
-    15.0061,
-    14.9954,
-    14.8628,
-    14.4512,
-    14.4741,
     15.9191,
-    15.843,
-    15.8867,
-    15.7217,
-    15.788,
-    16.254,
-    16.4466,
-    16.4563,
-    16.5081,
-    16.7023,
-    16.7589,
-    17.0,
-    17.2233,
-    17.3317,
-    17.2023,
-    17.0388,
-    17.4304,
-    17.3172,
-    17.5146,
-    16.8188,
-    17.2508,
     17.6052,
-    17.4061,
-    15.5841,
-    15.8689,
-    16.1634,
-    16.1974,
-    16.3074,
-    16.1812,
-    15.9288,
-    15.9304,
-    15.9256,
-    15.9321
+    15.4579
   ],
-  "pe_percentile_20y": 20.0,
+  "pe_percentile_20y": 33.33,
   "pe_ttm": 15.4579,
   "position_layers": {
     "core_fraction": 0.0,
@@ -319,7 +237,7 @@
   "roic_5y_avg": 0.33353,
   "sector": "Industrials",
   "ticker": "UPS",
-  "updated_at": "2026-05-18T20:28:34+00:00",
+  "updated_at": "2026-05-18T20:50:57+00:00",
   "valuation_tax": 0.0,
-  "yield_trap_warning": false
+  "yield_trap_warning": true
 }

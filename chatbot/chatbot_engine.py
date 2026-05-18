@@ -24,6 +24,7 @@ from .config import (
     ESTIMATED_CHARS_PER_TOKEN,
     MIN_HISTORY_MESSAGES,
     MAX_ROWS_TO_INCLUDE,
+    MAX_ROWS_DEEP_DIVE,
     MAX_TOKENS,  # Deprecated, for backward compatibility
     TEMPERATURE,  # Deprecated, for backward compatibility
     TAVILY_API_KEY,
@@ -123,6 +124,18 @@ def _user_explicitly_mentions_date_window(user_message: str) -> bool:
     if re.search(r"\d{4}-\d{2}-\d{2}\s*[-–to]+\s*\d{4}-\d{2}-\d{2}", text):
         return True
     return False
+
+
+def _row_limit_for_query(
+    query_kind: Optional[str],
+    assets: Optional[List[str]],
+) -> Optional[int]:
+    """Row cap per signal type; deep dive on a single asset uses MAX_ROWS_DEEP_DIVE."""
+    if query_kind == "deep_dive" and assets and len(assets) == 1:
+        if MAX_ROWS_DEEP_DIVE <= 0:
+            return None
+        return MAX_ROWS_DEEP_DIVE
+    return MAX_ROWS_TO_INCLUDE
 
 
 class ChatbotEngine:
@@ -891,6 +904,7 @@ class ChatbotEngine:
         auto_extract_tickers: bool = False,
         signal_type_reasoning: Optional[str] = None,
         display_prompt_override: Optional[str] = None,
+        query_kind: Optional[str] = None,
     ) -> Tuple[str, Dict]:
         """
         Process a query using the two-stage smart column selection system.
@@ -1078,6 +1092,8 @@ class ChatbotEngine:
             
             fetched_data = {}
             total_rows = 0
+            row_limit = _row_limit_for_query(query_kind, assets)
+            deep_dive_date_fallback_used = False
             
             # Only fetch table data for non-claude_report signal types
             for signal_type in table_signal_types:
@@ -1101,7 +1117,7 @@ class ChatbotEngine:
                     functions=functions,
                     from_date=from_date,
                     to_date=to_date,
-                    limit_rows=MAX_ROWS_TO_INCLUDE,
+                    limit_rows=row_limit,
                     column_indices=indices_dict,
                     position_side=position_side,
                     date_filter_mode=date_filter_mode,
@@ -1110,6 +1126,44 @@ class ChatbotEngine:
                 if signal_data and signal_type in signal_data:
                     fetched_data[signal_type] = signal_data[signal_type]
                     total_rows += len(signal_data[signal_type])
+
+            if (
+                query_kind == "deep_dive"
+                and assets
+                and len(assets) == 1
+                and not fetched_data
+                and (from_date or to_date)
+            ):
+                logger.info(
+                    "deep_dive: zero rows in date window for %s; retrying without date filter",
+                    assets[0],
+                )
+                deep_dive_date_fallback_used = True
+                fetched_data = {}
+                total_rows = 0
+                for signal_type in table_signal_types:
+                    if signal_type not in columns_by_signal_type:
+                        continue
+                    required_cols = columns_by_signal_type[signal_type]
+                    if not required_cols:
+                        continue
+                    col_indices = indices_by_signal_type.get(signal_type)
+                    indices_dict = {signal_type: col_indices} if col_indices else None
+                    signal_data = self.smart_data_fetcher.fetch_data(
+                        signal_types=[signal_type],
+                        required_columns=required_cols,
+                        assets=assets,
+                        functions=functions,
+                        from_date=None,
+                        to_date=None,
+                        limit_rows=row_limit,
+                        column_indices=indices_dict,
+                        position_side=position_side,
+                        date_filter_mode=date_filter_mode,
+                    )
+                    if signal_data and signal_type in signal_data:
+                        fetched_data[signal_type] = signal_data[signal_type]
+                        total_rows += len(signal_data[signal_type])
             
             if not fetched_data and (from_date or to_date) and _query_implies_full_list_ignore_ui_dates(
                 user_message
@@ -1136,7 +1190,7 @@ class ChatbotEngine:
                         functions=functions,
                         from_date=None,
                         to_date=None,
-                        limit_rows=MAX_ROWS_TO_INCLUDE,
+                        limit_rows=row_limit,
                         column_indices=indices_dict,
                         position_side=position_side,
                     )
@@ -1146,7 +1200,13 @@ class ChatbotEngine:
 
             if not fetched_data:
                 if from_date or to_date:
-                    if _user_explicitly_mentions_date_window(user_message):
+                    if (
+                        query_kind == "deep_dive"
+                        and assets
+                        and len(assets) == 1
+                    ):
+                        pass
+                    elif _user_explicitly_mentions_date_window(user_message):
                         logger.warning("No data fetched for explicit date range; skipping automatic expansion.")
                         human_from = from_date or "start"
                         human_to = to_date or "end"
@@ -1176,7 +1236,7 @@ class ChatbotEngine:
                             functions=functions,
                             from_date=None,
                             to_date=None,
-                            limit_rows=MAX_ROWS_TO_INCLUDE,
+                            limit_rows=row_limit,
                             column_indices=indices_dict,
                             position_side=position_side,
                         )
@@ -1217,7 +1277,7 @@ class ChatbotEngine:
                             functions=functions,
                             from_date=expanded_from_date,
                             to_date=expanded_to_date,
-                            limit_rows=MAX_ROWS_TO_INCLUDE,
+                            limit_rows=row_limit,
                             column_indices=indices_dict,
                             position_side=position_side,
                         )
@@ -1229,6 +1289,21 @@ class ChatbotEngine:
                 if not fetched_data:
                     logger.warning("No data fetched even with expanded date range")
                     return NO_DATA_MESSAGE, {"warning": "no_data"}
+
+            missing_signal_keys: List[str] = []
+            if query_kind == "deep_dive" and assets and len(assets) == 1:
+                from .smart_data_fetcher import compute_missing_open_entry_keys
+
+                missing_signal_keys = compute_missing_open_entry_keys(
+                    assets[0],
+                    fetched_data.get("entry"),
+                )
+                if missing_signal_keys:
+                    logger.error(
+                        "deep_dive: %s open all_signal row(s) missing from entry fetch for %s",
+                        len(missing_signal_keys),
+                        assets[0],
+                    )
             
             # Format the fetched data for the LLM
             data_context_parts = []
@@ -1308,6 +1383,9 @@ class ChatbotEngine:
                 "signal_types_with_data": list(fetched_data.keys()),
                 "signal_type_reasoning": signal_type_reasoning,
                 "claude_report_loaded": claude_report_loaded_sq if has_claude_report else False,
+                "query_kind": query_kind,
+                "deep_dive_date_fallback_used": deep_dive_date_fallback_used,
+                "missing_signal_keys": missing_signal_keys,
             }
             
             # Add user message to history (use display_prompt_override for UI so only current question is shown)
@@ -2065,6 +2143,7 @@ class ChatbotEngine:
         auto_extract_tickers: bool = False,
         signal_type_reasoning: Optional[str] = None,
         on_flow_step: Optional[Callable[[str, str], None]] = None,
+        query_kind: Optional[str] = None,
     ) -> Tuple[str, Dict]:
         """
         Process a follow-up query with dynamic, fresh analysis for each query.
@@ -2346,7 +2425,8 @@ class ChatbotEngine:
                     functions=functions,
                     additional_context=additional_context,
                     auto_extract_tickers=auto_extract_tickers,
-                    signal_type_reasoning=signal_type_reasoning
+                    signal_type_reasoning=signal_type_reasoning,
+                    query_kind=query_kind,
                 )
                 metadata.update(route_meta_base)
                 metadata["input_type"] = "smart_followup"
@@ -2399,6 +2479,7 @@ NOTE: Use the conversation context above to understand what we've discussed, but
                 auto_extract_tickers=auto_extract_tickers,
                 signal_type_reasoning=signal_type_reasoning,
                 display_prompt_override=user_message,
+                query_kind=query_kind,
             )
 
             # Mark this as a followup query in metadata

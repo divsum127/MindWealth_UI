@@ -21,17 +21,17 @@
   "bq_raw": 5.0,
   "business_type": "cyclical",
   "business_type_source": "auto",
-  "conviction_score": 1.0,
+  "conviction_score": 2.0,
   "created_at": "2026-05-12T20:17:44+00:00",
   "data_coverage": {
     "bq_auto_dimensions": {
       "balance_sheet": {
-        "inputs_available": [],
-        "inputs_missing": [
+        "inputs_available": [
           "net_debt_ebitda"
         ],
+        "inputs_missing": [],
         "score": 0.0,
-        "source": "neutral_missing_inputs"
+        "source": "auto"
       },
       "ceo_quality": {
         "inputs_available": [],
@@ -64,28 +64,28 @@
         "source": "manual_or_default"
       },
       "gross_margin_trend": {
-        "inputs_available": [],
-        "inputs_missing": [
+        "inputs_available": [
           "gross_margin_trend"
         ],
+        "inputs_missing": [],
         "score": 1.0,
-        "source": "neutral_missing_inputs"
+        "source": "auto"
       },
       "growth_trajectory": {
-        "inputs_available": [],
-        "inputs_missing": [
+        "inputs_available": [
           "revenue_growth"
         ],
+        "inputs_missing": [],
         "score": 0.0,
-        "source": "neutral_missing_inputs"
+        "source": "auto"
       },
       "insider_ownership": {
-        "inputs_available": [],
-        "inputs_missing": [
+        "inputs_available": [
           "insider_pct"
         ],
+        "inputs_missing": [],
         "score": 0.0,
-        "source": "neutral_missing_inputs"
+        "source": "auto"
       },
       "macro_tailwind": {
         "inputs_available": [],
@@ -94,15 +94,15 @@
         "source": "manual_or_default"
       },
       "margin_quality": {
-        "inputs_available": [],
-        "inputs_missing": [
+        "inputs_available": [
           "revenue_growth",
           "fcf_margin",
           "distribution_coverage_ratio",
           "gross_margin"
         ],
+        "inputs_missing": [],
         "score": 0.0,
-        "source": "neutral_missing_inputs"
+        "source": "auto"
       },
       "mgmt_capital_allocation": {
         "inputs_available": [],
@@ -117,39 +117,28 @@
         "source": "manual_or_default"
       },
       "revenue_quality": {
-        "inputs_available": [],
-        "inputs_missing": [
+        "inputs_available": [
           "gross_margin",
           "fcf_margin"
         ],
+        "inputs_missing": [],
         "score": 2.0,
-        "source": "neutral_missing_inputs"
+        "source": "auto"
       },
       "roic_wacc_spread": {
-        "inputs_available": [],
+        "inputs_available": [
+          "roic_proxy"
+        ],
         "inputs_missing": [
-          "roic_proxy",
           "roic"
         ],
         "score": 2.0,
-        "source": "neutral_missing_inputs"
+        "source": "partial_inputs"
       }
     },
-    "coverage_ratio": 0.45,
+    "coverage_ratio": 1.0,
     "fetch_errors": [],
-    "fields_missing": [
-      "revenue_growth",
-      "fcf_margin",
-      "gross_margin",
-      "net_debt_ebitda",
-      "distribution_coverage_ratio",
-      "gross_margin_trend",
-      "roic_proxy",
-      "dividend_yield_5y_mean",
-      "dividend_yield_5y_std",
-      "revenue_accelerating",
-      "insider_pct"
-    ],
+    "fields_missing": [],
     "fields_present": [
       "price",
       "market_cap",
@@ -159,11 +148,22 @@
       "net_debt_stored",
       "fwd_revenue_stored",
       "annual_div_per_share_stored",
-      "pe_20y_array"
+      "revenue_growth",
+      "fcf_margin",
+      "gross_margin",
+      "net_debt_ebitda",
+      "distribution_coverage_ratio",
+      "gross_margin_trend",
+      "roic_proxy",
+      "pe_20y_array",
+      "dividend_yield_5y_mean",
+      "dividend_yield_5y_std",
+      "revenue_accelerating",
+      "insider_pct"
     ],
-    "info_available": false,
+    "info_available": true,
     "low_coverage_threshold": 0.45,
-    "low_data_confidence": true,
+    "low_data_confidence": false,
     "neutral_zero_policy": "Missing BQ inputs contribute 0 to bq_raw; conviction_score is not re-scaled by coverage.",
     "pe_history": {
       "has_pe_series": true,
@@ -179,19 +179,23 @@
       "income": true
     },
     "valuation_inputs": {
+      "dividend_yield_5y_stats": true,
+      "dividend_yield_zscore": true,
       "ev_fwd_rev": true,
       "owner_earnings_yield": true,
       "pe_percentile_20y": true,
       "pe_ttm": true
     }
   },
+  "dividend_yield_5y_mean": 0.031777,
+  "dividend_yield_5y_std": 0.026318,
   "dividend_yield_current": 0.037833,
-  "dividend_yield_zscore": null,
+  "dividend_yield_zscore": 0.2301,
   "enterprise_value": 156511720619.04907,
-  "eps_fwd": 4.93465,
-  "eps_ttm": 5.52,
+  "eps_fwd": 5.07987,
+  "eps_ttm": 5.59,
   "ev_fwd_rev": 3.5155,
-  "fcf_ttm": 8197000000.0,
+  "fcf_ttm": 8379000000.0,
   "fd_direction": "positive",
   "fd_votes": {},
   "flags": [],
@@ -201,111 +205,31 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 44521000000.0,
   "industry": "Oil & Gas E&P",
-  "last_daily_update": "2026-05-18T20:28:34+00:00",
-  "last_full_calc": "2026-05-15T16:29:20+00:00",
+  "last_daily_update": "2026-05-18T20:48:08+00:00",
+  "last_full_calc": "2026-05-18T20:48:08+00:00",
   "manual_overrides": {},
   "market_cap": 137823720619.04907,
   "missing_fields": [
-    "distribution_coverage_ratio",
-    "dividend_yield_5y_mean",
-    "dividend_yield_5y_std",
-    "fcf_margin",
-    "gross_margin",
-    "gross_margin_trend",
-    "info:empty",
-    "insider_pct",
-    "net_debt_ebitda",
-    "pe_history:insufficient_20y (0.0y)",
-    "revenue_accelerating",
-    "revenue_growth",
-    "roic_proxy"
+    "pe_history:insufficient_20y (0.0y)"
   ],
   "net_debt_stored": 18688000000.0,
-  "owner_earnings_yield": 0.059475,
+  "owner_earnings_yield": 0.060795,
   "pe_20y_array": [
-    9.0203,
-    9.1273,
-    9.1199,
-    9.19,
-    9.2675,
-    9.4133,
+    10.8629,
+    11.132,
+    11.0381,
+    11.2944,
+    11.3883,
+    12.0025,
+    8.5775,
     9.3413,
-    9.2085,
-    9.4299,
-    9.714,
-    9.5756,
-    9.8524,
-    9.8007,
-    9.7841,
-    10.179,
-    10.0424,
-    10.2196,
-    10.2177,
-    10.5332,
-    10.7435,
-    10.7011,
-    10.7048,
-    10.7657,
-    10.7435,
-    10.8764,
     11.0092,
-    11.1771,
-    11.1365,
-    11.1144,
-    11.4317,
-    11.6162,
-    11.5812,
-    11.4594,
-    11.8413,
-    12.2085,
-    12.2712,
-    12.3137,
-    12.3893,
-    12.452,
-    12.8229,
-    12.4336,
-    12.2675,
-    12.4502,
-    12.5461,
-    12.4576,
-    12.8155,
-    12.6993,
     12.5203,
-    11.9262,
-    12.2048,
-    12.4041,
-    12.5886,
-    11.8303,
-    11.6494,
-    11.8376,
-    11.9336,
-    11.5867,
-    11.607,
-    11.7103,
-    10.8506,
-    10.8911,
-    11.1716,
-    11.2749,
-    11.4779,
-    11.1974,
-    11.3339,
-    11.7048,
-    11.9244,
     11.9631,
-    11.786,
-    11.9465,
-    12.0406,
-    11.4871,
-    11.2472,
-    11.2343,
-    11.3948,
-    11.8579,
-    11.9354,
-    12.048,
-    12.1015
+    12.1919
   ],
-  "pe_percentile_20y": 75.0,
-  "pe_ttm": 11.971,
+  "pe_percentile_20y": 66.67,
+  "pe_ttm": 11.8211,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -319,7 +243,7 @@
   "roic_5y_avg": 0.22825001,
   "sector": "Energy",
   "ticker": "CNQ.TO",
-  "updated_at": "2026-05-18T20:28:34+00:00",
-  "valuation_tax": -4.0,
+  "updated_at": "2026-05-18T20:48:08+00:00",
+  "valuation_tax": -3.0,
   "yield_trap_warning": false
 }

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import json
+# import json  # Manual Overrides tab (disabled)
 from pathlib import Path
 
 import pandas as pd
@@ -10,10 +10,12 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from ..conviction_engine.data_coverage import summarize_pe_history_distribution
-from ..conviction_engine.engine import apply_to_signal_file, generate_daily_report, update_overrides
+from ..conviction_engine.daily_run import run_daily_conviction_pipeline
+# from ..conviction_engine.engine import generate_daily_report, update_overrides  # Daily Report / Manual Overrides tabs (disabled)
+from ..conviction_engine.scoring import market_yield_threshold
 from ..conviction_engine.formatting import display_columns, summarize_overlay
 from ..conviction_engine.fundamentals_enriched import PE_HISTORY_TARGET_YEARS
-from ..conviction_engine.signals import PRIMARY_DAILY_REPORT_LABEL, discover_signal_sources
+from ..conviction_engine.signals import PRIMARY_DAILY_REPORT
 from ..conviction_engine.store import (
     daily_new_signal_overlay_path,
     list_daily_snapshot_dates,
@@ -26,15 +28,6 @@ from ..conviction_engine.store import (
 @st.cache_data(show_spinner=False)
 def _load_archived_overlay(report_date: str) -> pd.DataFrame:
     return load_daily_new_signal_overlay(report_date)
-
-
-@st.cache_data(show_spinner=False)
-def _load_live_new_signal_overlay() -> pd.DataFrame:
-    sources = discover_signal_sources()
-    path = sources.get(PRIMARY_DAILY_REPORT_LABEL)
-    if not path:
-        return pd.DataFrame()
-    return apply_to_signal_file(path, save_output=False)
 
 
 def _metric_cards(summary: dict[str, int]) -> None:
@@ -118,9 +111,7 @@ def _verdict_chart(df: pd.DataFrame) -> None:
 def _ticker_detail(df: pd.DataFrame, archive_date: str | None = None) -> None:
     ticker_values: list[str] = []
     if "ticker" in df.columns:
-        ticker_values.extend(df["ticker"].dropna().astype(str).unique().tolist())
-    ticker_values.extend([str(record.get("ticker")) for record in list_records() if record.get("ticker")])
-    ticker_values = sorted(set(ticker_values))
+        ticker_values = sorted(df["ticker"].dropna().astype(str).unique().tolist())
 
     if not ticker_values:
         st.info("No ticker records or overlaid signals available yet.")
@@ -157,6 +148,24 @@ def _ticker_detail(df: pd.DataFrame, archive_date: str | None = None) -> None:
             help="Share of critical fundamental fields present on the record.",
         )
         cols[7].metric("Low confidence", "Yes" if low_conf else "No")
+        with st.expander("Yield trap diagnostics", expanded=False):
+            cy = record.get("dividend_yield_current")
+            z = record.get("dividend_yield_zscore")
+            mean = record.get("dividend_yield_5y_mean")
+            std = record.get("dividend_yield_5y_std")
+            thresh = market_yield_threshold(ticker)
+            st.write(
+                {
+                    "dividend_yield_current": cy,
+                    "dividend_yield_zscore": z,
+                    "dividend_yield_5y_mean": mean,
+                    "dividend_yield_5y_std": std,
+                    "market_threshold": thresh,
+                    "z_above_1_5": (z is not None and float(z) > 1.5),
+                    "yield_above_market": (cy is not None and float(cy) > thresh),
+                    "yield_trap_warning": record.get("yield_trap_warning"),
+                }
+            )
         pe_hist = record.get("pe_history_meta") or coverage.get("pe_history") or {}
         years = pe_hist.get("years_available")
         if years is not None:
@@ -211,91 +220,76 @@ def _ticker_detail(df: pd.DataFrame, archive_date: str | None = None) -> None:
             st.write("No record found.")
 
 
-def _manual_overrides() -> None:
-    st.caption("Use JSON overrides for fields such as bq_raw, business_type, fd_direction, or bq_components.")
-    ticker = st.text_input("Ticker", key="conviction_override_ticker").strip().upper()
-    raw_updates = st.text_area(
-        "Override JSON",
-        value='{"fd_direction": "stable"}',
-        height=140,
-        key="conviction_override_json",
-    )
-    if st.button("Apply Overrides", key="conviction_apply_overrides"):
-        if not ticker:
-            st.error("Enter a ticker first.")
-            return
-        try:
-            updates = json.loads(raw_updates)
-            if not isinstance(updates, dict):
-                raise ValueError("Override JSON must be an object")
-            record = update_overrides(ticker, updates)
-            st.success(f"Updated overrides for {record.get('ticker')}.")
-            st.cache_data.clear()
-        except Exception as exc:
-            st.error(f"Could not apply overrides: {exc}")
+# def _manual_overrides() -> None:
+#     st.caption("Use JSON overrides for fields such as bq_raw, business_type, fd_direction, or bq_components.")
+#     ticker = st.text_input("Ticker", key="conviction_override_ticker").strip().upper()
+#     raw_updates = st.text_area(
+#         "Override JSON",
+#         value='{"fd_direction": "stable"}',
+#         height=140,
+#         key="conviction_override_json",
+#     )
+#     if st.button("Apply Overrides", key="conviction_apply_overrides"):
+#         if not ticker:
+#             st.error("Enter a ticker first.")
+#             return
+#         try:
+#             updates = json.loads(raw_updates)
+#             if not isinstance(updates, dict):
+#                 raise ValueError("Override JSON must be an object")
+#             record = update_overrides(ticker, updates)
+#             st.success(f"Updated overrides for {record.get('ticker')}.")
+#             st.cache_data.clear()
+#         except Exception as exc:
+#             st.error(f"Could not apply overrides: {exc}")
 
 
 def create_conviction_engine_page() -> None:
     st.title("Conviction Engine")
-    st.caption("Fundamental conviction overlay for the **New Signals** report (archived by report date).")
 
     snapshot_dates = list_daily_snapshot_dates()
-    recompute_live = st.checkbox(
-        "Recompute from latest trade_store (debug)",
-        value=False,
-        help="Uses current conviction_store scores on today's New Signals CSV instead of the archived daily snapshot.",
-    )
+    if not snapshot_dates:
+        st.warning("No conviction data for New Signals yet. Run the daily trade update first.")
+        return
 
-    selected_date: str | None = None
-    overlay_df = pd.DataFrame()
-    archive_path: Path | None = None
-
-    if recompute_live:
-        sources = discover_signal_sources()
-        if PRIMARY_DAILY_REPORT_LABEL not in sources:
-            st.warning("No New Signals CSV found in trade_store.")
-            return
-        source_path = sources[PRIMARY_DAILY_REPORT_LABEL]
-        st.caption(f"Live source: {source_path}")
-        with st.spinner("Applying conviction overlay from latest trade_store..."):
-            overlay_df = _load_live_new_signal_overlay()
-    else:
-        if not snapshot_dates:
-            st.warning(
-                "No daily conviction archives found. Run "
-                "`python scripts/run_conviction_engine_daily.py` after New Signals reports are synced."
-            )
-            return
+    col_date, col_rebuild = st.columns([4, 1])
+    with col_date:
         selected_date = st.selectbox(
             "Report date",
             list(reversed(snapshot_dates)),
             key="conviction_report_date",
         )
-        st.caption(f"Report: **{PRIMARY_DAILY_REPORT_LABEL}**")
-        archive_path = daily_new_signal_overlay_path(selected_date)
-        if archive_path:
-            st.caption(f"Archive: {archive_path}")
-        overlay_df = _load_archived_overlay(selected_date)
-        if overlay_df.empty:
-            st.info(
-                f"No archived overlay for {selected_date}. Run "
-                "`python scripts/run_conviction_engine_daily.py --report-date "
-                f"{selected_date}` after that day's New Signals report is available."
-            )
-            return
+    with col_rebuild:
+        st.write("")
+        st.write("")
+        if st.button("Rebuild", key="conviction_rebuild_date", help="Refresh conviction for this date's New Signals."):
+            with st.spinner(f"Rebuilding {selected_date}..."):
+                result = run_daily_conviction_pipeline(
+                    report_date=selected_date,
+                    overlay_reports=[PRIMARY_DAILY_REPORT],
+                    fundamentals_mode="daily",
+                )
+            st.cache_data.clear()
+            if result.get("status") == "error":
+                st.error(result.get("error", "Rebuild failed"))
+            else:
+                st.success("Done")
+                st.rerun()
+
+    archive_path = daily_new_signal_overlay_path(selected_date)
+    overlay_df = _load_archived_overlay(selected_date)
+
+    if overlay_df.empty:
+        st.info(f"No conviction overlay for {selected_date}. Use Rebuild after New Signals are available.")
+        return
 
     summary = summarize_overlay(overlay_df)
     _metric_cards(summary)
 
-    tab_overlay, tab_charts, tab_detail, tab_report, tab_overrides = st.tabs(
-        ["Signal Overlay", "Charts", "Ticker Detail", "Daily Report", "Manual Overrides"]
-    )
+    tab_overlay, tab_charts, tab_detail = st.tabs(["Signal Overlay", "Charts", "Ticker Detail"])
+    # tab_report, tab_overrides = Daily Report, Manual Overrides (disabled — see commented blocks below)
 
-    download_name = (
-        archive_path.name
-        if archive_path
-        else f"new_signal_conviction_live.csv"
-    )
+    download_name = archive_path.name if archive_path else f"{selected_date}_new_signal_conviction.csv"
 
     with tab_overlay:
         if overlay_df.empty:
@@ -324,22 +318,22 @@ def create_conviction_engine_page() -> None:
         _pe_history_years_chart()
 
     with tab_detail:
-        _ticker_detail(overlay_df, archive_date=None if recompute_live else selected_date)
+        _ticker_detail(overlay_df, archive_date=selected_date)
 
-    with tab_report:
-        records = list_records()
-        alert_map = {}
-        for record in records:
-            flags = []
-            if record.get("yield_trap_warning"):
-                flags.append("yield_trap")
-            if record.get("fs_class") in {"weak", "moderate_low"}:
-                flags.append(f"fs_{record.get('fs_class')}")
-            if (record.get("conviction_score") or 0) < 2:
-                flags.append("low_conviction")
-            if flags and record.get("ticker"):
-                alert_map[str(record["ticker"])] = flags
-        st.text(generate_daily_report(alert_map, records))
+    # with tab_report:
+    #     records = list_records()
+    #     alert_map = {}
+    #     for record in records:
+    #         flags = []
+    #         if record.get("yield_trap_warning"):
+    #             flags.append("yield_trap")
+    #         if record.get("fs_class") in {"weak", "moderate_low"}:
+    #             flags.append(f"fs_{record.get('fs_class')}")
+    #         if (record.get("conviction_score") or 0) < 2:
+    #             flags.append("low_conviction")
+    #         if flags and record.get("ticker"):
+    #             alert_map[str(record["ticker"])] = flags
+    #     st.text(generate_daily_report(alert_map, records))
 
-    with tab_overrides:
-        _manual_overrides()
+    # with tab_overrides:
+    #     _manual_overrides()

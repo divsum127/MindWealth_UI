@@ -111,19 +111,22 @@ def list_daily_snapshot_dates(store_dir: Path | None = None) -> list[str]:
     return sorted(dates)
 
 
+def _is_new_signal_overlay_path(path: Path, snapshot: Path) -> bool:
+    name = path.name.lower()
+    if "new_signal" not in name or not name.endswith("_conviction.csv"):
+        return False
+    if "_scores" in name:
+        return False
+    try:
+        path.resolve().relative_to(snapshot.resolve())
+        return True
+    except ValueError:
+        return False
+
+
 def daily_new_signal_overlay_path(report_date: str, store_dir: Path | None = None) -> Path | None:
-    """Path to archived New Signals full overlay CSV for a report date."""
+    """Path to archived New Signals full overlay CSV for a report date (daily snapshot only)."""
     snapshot = daily_snapshot_dir(report_date, store_dir)
-    manifest_path = snapshot / "manifest.json"
-    if manifest_path.exists():
-        try:
-            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-            for entry in manifest.get("signal_reports") or []:
-                overlay_file = entry.get("overlay_file")
-                if overlay_file and Path(overlay_file).exists():
-                    return Path(overlay_file)
-        except (OSError, json.JSONDecodeError, TypeError):
-            pass
 
     candidates = [
         snapshot / f"{report_date}_new_signal_conviction.csv",
@@ -132,8 +135,27 @@ def daily_new_signal_overlay_path(report_date: str, store_dir: Path | None = Non
     for path in candidates:
         if path.exists():
             return path
+
+    manifest_path = snapshot / "manifest.json"
+    if manifest_path.exists():
+        try:
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            for entry in manifest.get("signal_reports") or []:
+                if entry.get("label") != "New Signals":
+                    continue
+                overlay_file = entry.get("overlay_file")
+                if overlay_file:
+                    path = Path(overlay_file)
+                    if path.exists() and _is_new_signal_overlay_path(path, snapshot):
+                        return path
+        except (OSError, json.JSONDecodeError, TypeError):
+            pass
+
     matches = sorted(snapshot.glob("*new_signal*_conviction.csv"))
-    return matches[0] if matches else None
+    for path in matches:
+        if "_scores" not in path.name:
+            return path
+    return None
 
 
 def load_daily_new_signal_overlay(report_date: str, store_dir: Path | None = None) -> pd.DataFrame:

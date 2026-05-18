@@ -72,20 +72,20 @@
         "source": "neutral_missing_inputs"
       },
       "growth_trajectory": {
-        "inputs_available": [],
-        "inputs_missing": [
+        "inputs_available": [
           "revenue_growth"
         ],
+        "inputs_missing": [],
         "score": -1.0,
-        "source": "neutral_missing_inputs"
+        "source": "auto"
       },
       "insider_ownership": {
-        "inputs_available": [],
-        "inputs_missing": [
+        "inputs_available": [
           "insider_pct"
         ],
+        "inputs_missing": [],
         "score": 0.0,
-        "source": "neutral_missing_inputs"
+        "source": "auto"
       },
       "macro_tailwind": {
         "inputs_available": [],
@@ -94,15 +94,16 @@
         "source": "manual_or_default"
       },
       "margin_quality": {
-        "inputs_available": [],
-        "inputs_missing": [
+        "inputs_available": [
           "revenue_growth",
-          "fcf_margin",
-          "distribution_coverage_ratio",
           "gross_margin"
         ],
+        "inputs_missing": [
+          "fcf_margin",
+          "distribution_coverage_ratio"
+        ],
         "score": 0.0,
-        "source": "neutral_missing_inputs"
+        "source": "partial_inputs"
       },
       "mgmt_capital_allocation": {
         "inputs_available": [],
@@ -117,39 +118,34 @@
         "source": "manual_or_default"
       },
       "revenue_quality": {
-        "inputs_available": [],
+        "inputs_available": [
+          "gross_margin"
+        ],
         "inputs_missing": [
-          "gross_margin",
           "fcf_margin"
         ],
         "score": 0.0,
-        "source": "neutral_missing_inputs"
+        "source": "partial_inputs"
       },
       "roic_wacc_spread": {
-        "inputs_available": [],
+        "inputs_available": [
+          "roic_proxy"
+        ],
         "inputs_missing": [
-          "roic_proxy",
           "roic"
         ],
         "score": 1.0,
-        "source": "neutral_missing_inputs"
+        "source": "partial_inputs"
       }
     },
-    "coverage_ratio": 0.4,
+    "coverage_ratio": 0.75,
     "fetch_errors": [],
     "fields_missing": [
       "fcf_ttm",
-      "revenue_growth",
       "fcf_margin",
-      "gross_margin",
       "net_debt_ebitda",
       "distribution_coverage_ratio",
-      "gross_margin_trend",
-      "roic_proxy",
-      "dividend_yield_5y_mean",
-      "dividend_yield_5y_std",
-      "revenue_accelerating",
-      "insider_pct"
+      "gross_margin_trend"
     ],
     "fields_present": [
       "price",
@@ -159,11 +155,18 @@
       "net_debt_stored",
       "fwd_revenue_stored",
       "annual_div_per_share_stored",
-      "pe_20y_array"
+      "revenue_growth",
+      "gross_margin",
+      "roic_proxy",
+      "pe_20y_array",
+      "dividend_yield_5y_mean",
+      "dividend_yield_5y_std",
+      "revenue_accelerating",
+      "insider_pct"
     ],
-    "info_available": false,
+    "info_available": true,
     "low_coverage_threshold": 0.45,
-    "low_data_confidence": true,
+    "low_data_confidence": false,
     "neutral_zero_policy": "Missing BQ inputs contribute 0 to bq_raw; conviction_score is not re-scaled by coverage.",
     "pe_history": {
       "has_pe_series": true,
@@ -179,14 +182,18 @@
       "income": true
     },
     "valuation_inputs": {
+      "dividend_yield_5y_stats": true,
+      "dividend_yield_zscore": true,
       "ev_fwd_rev": true,
       "owner_earnings_yield": false,
       "pe_percentile_20y": true,
       "pe_ttm": true
     }
   },
+  "dividend_yield_5y_mean": 0.043634,
+  "dividend_yield_5y_std": 0.051342,
   "dividend_yield_current": 0.022095,
-  "dividend_yield_zscore": null,
+  "dividend_yield_zscore": -0.4195,
   "enterprise_value": 424481170353.5058,
   "eps_fwd": 5.04212,
   "eps_ttm": 4.03,
@@ -194,118 +201,36 @@
   "fd_direction": "negative",
   "fd_votes": {},
   "flags": [],
-  "fs_class": "moderate_high",
+  "fs_class": "moderate",
   "fs_quality_base": 50.0,
-  "fs_score": 55.0,
+  "fs_score": 50.0,
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 113978000000.0,
   "industry": "Banks - Diversified",
-  "last_daily_update": "2026-05-18T20:28:34+00:00",
-  "last_full_calc": "2026-05-15T16:28:38+00:00",
+  "last_daily_update": "2026-05-18T20:47:35+00:00",
+  "last_full_calc": "2026-05-18T20:47:35+00:00",
   "manual_overrides": {},
   "market_cap": 359726170353.5058,
   "missing_fields": [
     "distribution_coverage_ratio",
-    "dividend_yield_5y_mean",
-    "dividend_yield_5y_std",
     "fcf_margin",
     "fcf_ttm",
-    "gross_margin",
     "gross_margin_trend",
-    "info:empty",
-    "insider_pct",
     "net_debt_ebitda",
     "pe_history:insufficient_20y (0.0y)",
-    "revenue_accelerating",
-    "revenue_growth",
-    "roic_proxy",
     "valuation:owner_earnings_yield"
   ],
   "net_debt_stored": 64755000000.0,
   "owner_earnings_yield": null,
   "pe_20y_array": [
-    13.7304,
-    13.5393,
-    13.6178,
-    13.6571,
-    13.5628,
-    13.8953,
+    14.3979,
     13.9267,
-    14.144,
-    14.2539,
-    14.4974,
-    14.3822,
-    14.7984,
-    14.767,
-    14.5,
-    14.0969,
-    13.7487,
-    13.7565,
-    13.8063,
-    13.9686,
-    13.8141,
-    13.8901,
-    13.3691,
-    13.1963,
-    13.5314,
-    13.6911,
     13.0445,
-    13.0393,
-    13.0812,
-    13.1675,
-    13.0393,
-    12.733,
-    12.5393,
-    12.712,
-    12.7016,
-    12.3377,
-    12.2304,
-    12.3194,
-    12.377,
-    12.2592,
-    12.3063,
-    12.3455,
-    12.4398,
-    12.6021,
-    12.7618,
-    12.6283,
-    12.2958,
-    12.3639,
     12.0668,
-    12.1955,
-    12.2228,
-    12.3911,
-    12.4455,
-    12.8416,
-    13.047,
-    13.005,
-    13.2054,
-    13.2054,
-    13.4455,
-    13.245,
-    13.3441,
-    13.354,
-    13.2376,
-    13.1485,
-    12.9876,
-    12.8837,
-    13.0272,
-    13.0347,
-    13.0891,
     13.2327,
-    13.1782,
-    12.9183,
-    13.1485,
-    13.2673,
-    13.0569,
-    12.7005,
-    12.5124,
-    12.5693,
-    12.3366,
-    12.3391,
-    12.2512
+    12.547
   ],
-  "pe_percentile_20y": 26.25,
+  "pe_percentile_20y": 33.33,
   "pe_ttm": 12.5782,
   "position_layers": {
     "core_fraction": 0.0,
@@ -320,7 +245,7 @@
   "roic_5y_avg": 0.10644,
   "sector": "Financial Services",
   "ticker": "BAC",
-  "updated_at": "2026-05-18T20:28:34+00:00",
+  "updated_at": "2026-05-18T20:47:35+00:00",
   "valuation_tax": -2.0,
   "yield_trap_warning": false
 }

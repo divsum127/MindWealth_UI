@@ -8,30 +8,30 @@
     "deal_delay_risk": 0.0,
     "debt_maturity_risk": 0.0,
     "divergence_signal": 0.0,
-    "gross_margin_trend": 1.0,
-    "growth_trajectory": 2.0,
+    "gross_margin_trend": -1.0,
+    "growth_trajectory": -1.0,
     "insider_ownership": -1.0,
     "macro_tailwind": 0.0,
-    "margin_quality": 1.0,
+    "margin_quality": 0.0,
     "mgmt_capital_allocation": 0.0,
     "reinvestment_runway": 0.0,
     "revenue_quality": 0.5,
     "roic_wacc_spread": 2.0
   },
-  "bq_raw": 5.5,
+  "bq_raw": -0.5,
   "business_type": "cyclical",
   "business_type_source": "auto",
-  "conviction_score": 4.5,
+  "conviction_score": -1.5,
   "created_at": "2026-05-12T20:19:40+00:00",
   "data_coverage": {
     "bq_auto_dimensions": {
       "balance_sheet": {
-        "inputs_available": [],
-        "inputs_missing": [
+        "inputs_available": [
           "net_debt_ebitda"
         ],
+        "inputs_missing": [],
         "score": 0.0,
-        "source": "neutral_missing_inputs"
+        "source": "auto"
       },
       "ceo_quality": {
         "inputs_available": [],
@@ -64,28 +64,28 @@
         "source": "manual_or_default"
       },
       "gross_margin_trend": {
-        "inputs_available": [],
-        "inputs_missing": [
+        "inputs_available": [
           "gross_margin_trend"
         ],
-        "score": 1.0,
-        "source": "neutral_missing_inputs"
+        "inputs_missing": [],
+        "score": -1.0,
+        "source": "auto"
       },
       "growth_trajectory": {
-        "inputs_available": [],
-        "inputs_missing": [
+        "inputs_available": [
           "revenue_growth"
         ],
-        "score": 2.0,
-        "source": "neutral_missing_inputs"
+        "inputs_missing": [],
+        "score": -1.0,
+        "source": "auto"
       },
       "insider_ownership": {
-        "inputs_available": [],
-        "inputs_missing": [
+        "inputs_available": [
           "insider_pct"
         ],
+        "inputs_missing": [],
         "score": -1.0,
-        "source": "neutral_missing_inputs"
+        "source": "auto"
       },
       "macro_tailwind": {
         "inputs_available": [],
@@ -94,15 +94,15 @@
         "source": "manual_or_default"
       },
       "margin_quality": {
-        "inputs_available": [],
-        "inputs_missing": [
+        "inputs_available": [
           "revenue_growth",
           "fcf_margin",
           "distribution_coverage_ratio",
           "gross_margin"
         ],
-        "score": 1.0,
-        "source": "neutral_missing_inputs"
+        "inputs_missing": [],
+        "score": 0.0,
+        "source": "auto"
       },
       "mgmt_capital_allocation": {
         "inputs_available": [],
@@ -117,39 +117,28 @@
         "source": "manual_or_default"
       },
       "revenue_quality": {
-        "inputs_available": [],
-        "inputs_missing": [
+        "inputs_available": [
           "gross_margin",
           "fcf_margin"
         ],
+        "inputs_missing": [],
         "score": 0.5,
-        "source": "neutral_missing_inputs"
+        "source": "auto"
       },
       "roic_wacc_spread": {
-        "inputs_available": [],
+        "inputs_available": [
+          "roic_proxy"
+        ],
         "inputs_missing": [
-          "roic_proxy",
           "roic"
         ],
         "score": 2.0,
-        "source": "neutral_missing_inputs"
+        "source": "partial_inputs"
       }
     },
-    "coverage_ratio": 0.45,
+    "coverage_ratio": 1.0,
     "fetch_errors": [],
-    "fields_missing": [
-      "revenue_growth",
-      "fcf_margin",
-      "gross_margin",
-      "net_debt_ebitda",
-      "distribution_coverage_ratio",
-      "gross_margin_trend",
-      "roic_proxy",
-      "dividend_yield_5y_mean",
-      "dividend_yield_5y_std",
-      "revenue_accelerating",
-      "insider_pct"
-    ],
+    "fields_missing": [],
     "fields_present": [
       "price",
       "market_cap",
@@ -159,11 +148,22 @@
       "net_debt_stored",
       "fwd_revenue_stored",
       "annual_div_per_share_stored",
-      "pe_20y_array"
+      "revenue_growth",
+      "fcf_margin",
+      "gross_margin",
+      "net_debt_ebitda",
+      "distribution_coverage_ratio",
+      "gross_margin_trend",
+      "roic_proxy",
+      "pe_20y_array",
+      "dividend_yield_5y_mean",
+      "dividend_yield_5y_std",
+      "revenue_accelerating",
+      "insider_pct"
     ],
-    "info_available": false,
+    "info_available": true,
     "low_coverage_threshold": 0.45,
-    "low_data_confidence": true,
+    "low_data_confidence": false,
     "neutral_zero_policy": "Missing BQ inputs contribute 0 to bq_raw; conviction_score is not re-scaled by coverage.",
     "pe_history": {
       "has_pe_series": true,
@@ -179,132 +179,50 @@
       "income": true
     },
     "valuation_inputs": {
+      "dividend_yield_5y_stats": true,
+      "dividend_yield_zscore": true,
       "ev_fwd_rev": true,
       "owner_earnings_yield": true,
       "pe_percentile_20y": true,
       "pe_ttm": true
     }
   },
+  "dividend_yield_5y_mean": 0.0177,
+  "dividend_yield_5y_std": 0.009711,
   "dividend_yield_current": 0.018645,
-  "dividend_yield_zscore": null,
-  "enterprise_value": 5530342563.33429,
+  "dividend_yield_zscore": 0.0973,
+  "enterprise_value": 5632342563.33429,
   "eps_fwd": 6.37744,
   "eps_ttm": 5.52,
-  "ev_fwd_rev": 1.5756,
-  "fcf_ttm": 360000000.0,
-  "fd_direction": "positive",
+  "ev_fwd_rev": 1.6047,
+  "fcf_ttm": 330000000.0,
+  "fd_direction": "negative",
   "fd_votes": {},
   "flags": [],
   "fs_class": "moderate_high",
-  "fs_quality_base": 63.75,
-  "fs_score": 73.75,
+  "fs_quality_base": 48.75,
+  "fs_score": 58.75,
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 3510000128.0,
   "industry": "Lumber & Wood Production",
-  "last_daily_update": "2026-05-18T20:28:34+00:00",
-  "last_full_calc": "2026-05-15T16:32:49+00:00",
+  "last_daily_update": "2026-05-18T20:50:26+00:00",
+  "last_full_calc": "2026-05-18T20:50:26+00:00",
   "manual_overrides": {},
   "market_cap": 3979342563.3342896,
   "missing_fields": [
-    "distribution_coverage_ratio",
-    "dividend_yield_5y_mean",
-    "dividend_yield_5y_std",
-    "fcf_margin",
-    "gross_margin",
-    "gross_margin_trend",
-    "info:empty",
-    "insider_pct",
-    "net_debt_ebitda",
-    "pe_history:insufficient_20y (0.0y)",
-    "revenue_accelerating",
-    "revenue_growth",
-    "roic_proxy"
+    "pe_history:insufficient_20y (0.0y)"
   ],
-  "net_debt_stored": 1551000000.0,
-  "owner_earnings_yield": 0.090467,
+  "net_debt_stored": 1653000000.0,
+  "owner_earnings_yield": 0.082928,
   "pe_20y_array": [
-    16.5812,
-    16.3524,
-    16.5424,
-    16.3561,
-    16.2546,
+    15.7066,
     16.845,
-    16.845,
-    17.6421,
-    17.4834,
-    18.3137,
-    17.9908,
-    18.048,
-    18.1587,
-    18.4852,
-    18.428,
-    18.1458,
-    18.2251,
-    18.0369,
-    18.0037,
-    17.8229,
-    18.0074,
-    17.4539,
-    17.6052,
-    17.6384,
-    17.107,
     17.2712,
-    17.5978,
-    17.5812,
-    17.5646,
-    17.7989,
-    17.7675,
-    17.7804,
-    17.8967,
-    17.9317,
-    17.7122,
-    17.8948,
-    17.81,
-    17.5406,
-    17.3727,
-    16.6255,
-    16.3524,
-    17.0535,
-    17.2343,
-    17.3155,
-    17.2823,
-    17.3672,
-    17.2509,
-    17.2214,
-    17.4354,
-    17.1956,
-    16.7343,
-    16.2491,
-    15.8469,
-    16.0775,
-    15.8469,
-    15.8339,
-    15.7731,
-    15.5055,
-    15.2878,
-    15.4446,
-    15.3708,
-    15.2952,
-    15.2952,
-    15.3819,
-    15.5756,
-    15.7638,
-    15.5424,
-    15.2435,
-    15.5092,
-    15.1273,
-    15.0277,
-    15.4059,
-    14.2085,
-    13.7306,
-    13.1513,
-    13.297,
-    13.6974,
-    13.6679,
-    13.572,
-    13.5148
+    16.6977,
+    15.0376,
+    13.0483
   ],
-  "pe_percentile_20y": 1.25,
+  "pe_percentile_20y": 16.67,
   "pe_ttm": 13.2138,
   "position_layers": {
     "core_fraction": 0.0,
@@ -319,7 +237,7 @@
   "roic_5y_avg": 0.14840001,
   "sector": "Basic Materials",
   "ticker": "SJ.TO",
-  "updated_at": "2026-05-18T20:28:34+00:00",
+  "updated_at": "2026-05-18T20:50:26+00:00",
   "valuation_tax": -1.0,
   "yield_trap_warning": false
 }

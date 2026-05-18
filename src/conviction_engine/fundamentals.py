@@ -8,6 +8,7 @@ from typing import Any, Callable
 import pandas as pd
 
 from ..config_paths import CONVICTION_UNIVERSE_FILE, TRADE_STORE_US_DIR
+from .dividend_yield import compute_dividend_yield_stats
 from .engine import daily_update, full_recalculation
 from .signals import discover_signal_sources, load_signal_file, normalize_signal_dataframe
 from .store import list_records, load_record, sanitize_ticker
@@ -48,37 +49,6 @@ def _series_value(series: pd.Series, key: str) -> Any:
     if pd.isna(value):
         return None
     return value
-
-
-def compute_dividend_yield_stats(history: pd.DataFrame | None, dividends: pd.Series | None) -> dict[str, float]:
-    """Compute 5Y dividend-yield mean/std from daily close and dividend series."""
-    if history is None or dividends is None or history.empty or dividends.empty or "Close" not in history.columns:
-        return {}
-
-    close = history["Close"].dropna()
-    if close.empty:
-        return {}
-
-    dividends = dividends.dropna()
-    if dividends.empty:
-        return {}
-
-    if close.index.tz is not None:
-        close.index = close.index.tz_localize(None)
-    if dividends.index.tz is not None:
-        dividends.index = dividends.index.tz_localize(None)
-
-    daily_dividends = dividends.reindex(close.index, fill_value=0.0)
-    annual_dividends = daily_dividends.rolling(window=365, min_periods=1).sum()
-    dividend_yield = (annual_dividends / close).replace([float("inf"), float("-inf")], pd.NA).dropna()
-    dividend_yield = dividend_yield[dividend_yield > 0]
-    if len(dividend_yield) < 20:
-        return {}
-
-    return {
-        "dividend_yield_5y_mean": round(float(dividend_yield.mean()), 6),
-        "dividend_yield_5y_std": round(float(dividend_yield.std(ddof=0)), 6),
-    }
 
 
 def map_yfinance_fundamentals(

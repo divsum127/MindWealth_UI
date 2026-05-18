@@ -33,7 +33,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run daily Conviction Engine: fundamentals + signal overlays + archive.")
     parser.add_argument(
         "--report-date",
-        help="Trade report date YYYY-MM-DD (default: from latest dated all_signal.csv or data_fetch_datetime.json).",
+        help="Trade report date YYYY-MM-DD (default: from latest dated new_signal.csv or data_fetch_datetime.json).",
     )
     parser.add_argument("--trade-store-dir", type=Path, help="trade_store/US directory override")
     parser.add_argument("--store-dir", type=Path, help="conviction_store directory override")

@@ -318,10 +318,11 @@ def market_yield_threshold(ticker: str) -> float:
 
 
 def is_yield_trap(record: dict[str, Any], ticker: str) -> bool:
+    """PDF v5: trap only when z-score > 1.5 AND yield above market threshold; both required."""
     zscore = _float_or_none(record.get("dividend_yield_zscore"))
     current_yield = _float_or_none(record.get("dividend_yield_current"))
     if zscore is None or current_yield is None:
-        return bool(record.get("yield_trap_warning", False))
+        return False
     return zscore > 1.5 and current_yield > market_yield_threshold(ticker)
 
 

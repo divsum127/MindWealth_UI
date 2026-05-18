@@ -26,12 +26,12 @@
   "data_coverage": {
     "bq_auto_dimensions": {
       "balance_sheet": {
-        "inputs_available": [],
-        "inputs_missing": [
+        "inputs_available": [
           "net_debt_ebitda"
         ],
+        "inputs_missing": [],
         "score": 0.0,
-        "source": "neutral_missing_inputs"
+        "source": "auto"
       },
       "ceo_quality": {
         "inputs_available": [],
@@ -72,20 +72,20 @@
         "source": "neutral_missing_inputs"
       },
       "growth_trajectory": {
-        "inputs_available": [],
-        "inputs_missing": [
+        "inputs_available": [
           "revenue_growth"
         ],
+        "inputs_missing": [],
         "score": 1.0,
-        "source": "neutral_missing_inputs"
+        "source": "auto"
       },
       "insider_ownership": {
-        "inputs_available": [],
-        "inputs_missing": [
+        "inputs_available": [
           "insider_pct"
         ],
+        "inputs_missing": [],
         "score": 0.0,
-        "source": "neutral_missing_inputs"
+        "source": "auto"
       },
       "macro_tailwind": {
         "inputs_available": [],
@@ -94,15 +94,15 @@
         "source": "manual_or_default"
       },
       "margin_quality": {
-        "inputs_available": [],
-        "inputs_missing": [
+        "inputs_available": [
           "revenue_growth",
           "fcf_margin",
           "distribution_coverage_ratio",
           "gross_margin"
         ],
+        "inputs_missing": [],
         "score": -1.0,
-        "source": "neutral_missing_inputs"
+        "source": "auto"
       },
       "mgmt_capital_allocation": {
         "inputs_available": [],
@@ -117,39 +117,31 @@
         "source": "manual_or_default"
       },
       "revenue_quality": {
-        "inputs_available": [],
-        "inputs_missing": [
+        "inputs_available": [
           "gross_margin",
           "fcf_margin"
         ],
+        "inputs_missing": [],
         "score": 2.0,
-        "source": "neutral_missing_inputs"
+        "source": "auto"
       },
       "roic_wacc_spread": {
-        "inputs_available": [],
+        "inputs_available": [
+          "roic_proxy"
+        ],
         "inputs_missing": [
-          "roic_proxy",
           "roic"
         ],
         "score": -2.0,
-        "source": "neutral_missing_inputs"
+        "source": "partial_inputs"
       }
     },
-    "coverage_ratio": 0.4,
+    "coverage_ratio": 0.85,
     "fetch_errors": [],
     "fields_missing": [
-      "revenue_growth",
-      "fcf_margin",
-      "gross_margin",
-      "net_debt_ebitda",
-      "distribution_coverage_ratio",
       "gross_margin_trend",
-      "roic_proxy",
       "pe_20y_array",
-      "dividend_yield_5y_mean",
-      "dividend_yield_5y_std",
-      "revenue_accelerating",
-      "insider_pct"
+      "revenue_accelerating"
     ],
     "fields_present": [
       "price",
@@ -159,11 +151,20 @@
       "fcf_ttm",
       "net_debt_stored",
       "fwd_revenue_stored",
-      "annual_div_per_share_stored"
+      "annual_div_per_share_stored",
+      "revenue_growth",
+      "fcf_margin",
+      "gross_margin",
+      "net_debt_ebitda",
+      "distribution_coverage_ratio",
+      "roic_proxy",
+      "dividend_yield_5y_mean",
+      "dividend_yield_5y_std",
+      "insider_pct"
     ],
-    "info_available": false,
+    "info_available": true,
     "low_coverage_threshold": 0.45,
-    "low_data_confidence": true,
+    "low_data_confidence": false,
     "neutral_zero_policy": "Missing BQ inputs contribute 0 to bq_raw; conviction_score is not re-scaled by coverage.",
     "pe_history": {
       "has_pe_series": false,
@@ -173,18 +174,22 @@
     },
     "statements": {
       "balance": true,
-      "cashflow": true,
-      "income": true
+      "cashflow": false,
+      "income": false
     },
     "valuation_inputs": {
+      "dividend_yield_5y_stats": true,
+      "dividend_yield_zscore": true,
       "ev_fwd_rev": true,
       "owner_earnings_yield": true,
       "pe_percentile_20y": false,
       "pe_ttm": true
     }
   },
+  "dividend_yield_5y_mean": 0.04668,
+  "dividend_yield_5y_std": 0.024793,
   "dividend_yield_current": 0.01697,
-  "dividend_yield_zscore": null,
+  "dividend_yield_zscore": -1.1983,
   "enterprise_value": 15904319200.0,
   "eps_fwd": 0.18762,
   "eps_ttm": 0.24,
@@ -199,25 +204,15 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 982200000.0,
   "industry": "Airports & Air Services",
-  "last_daily_update": "2026-05-18T20:28:34+00:00",
-  "last_full_calc": "2026-05-15T16:28:13+00:00",
+  "last_daily_update": "2026-05-18T20:47:19+00:00",
+  "last_full_calc": "2026-05-18T20:47:19+00:00",
   "manual_overrides": {},
   "market_cap": 13984819200.0,
   "missing_fields": [
-    "distribution_coverage_ratio",
-    "dividend_yield_5y_mean",
-    "dividend_yield_5y_std",
-    "fcf_margin",
-    "gross_margin",
     "gross_margin_trend",
-    "info:empty",
-    "insider_pct",
-    "net_debt_ebitda",
     "pe_20y_array",
     "pe_history:insufficient_20y (0.0y)",
     "revenue_accelerating",
-    "revenue_growth",
-    "roic_proxy",
     "valuation:pe_percentile_20y"
   ],
   "net_debt_stored": 1919500000.0,
@@ -237,7 +232,7 @@
   "roic_5y_avg": 0.03979,
   "sector": "Industrials",
   "ticker": "AIA.NZ",
-  "updated_at": "2026-05-18T20:28:34+00:00",
+  "updated_at": "2026-05-18T20:47:19+00:00",
   "valuation_tax": -5.0,
   "yield_trap_warning": false
 }

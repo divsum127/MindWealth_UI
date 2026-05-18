@@ -214,6 +214,85 @@ Used by: **outstanding_signal**, **new_signal**, **claude_signals_report.csv**, 
 
 **What signals it contains:** Every confirmed/unconfirmed strategy signal still tracked by the system—**Long and Short** across **Daily / Weekly / Monthly / Quarterly** intervals—not filtered to a single function.
 
+#### Time window: what gets included (not a single “last N days”)
+
+MindWealth_UI **does not** apply its own date filter when loading the Outstanding Signals page or the latest `*_outstanding_signal.csv`. The file is a **daily snapshot** produced by the **MindWealth backend** (`MindWealth/send_email.py` → `get_all_outstanding_signal()`). Inclusion rules are below.
+
+There is **no one global N** for all rows. Retention depends on **interval**, **open vs recently exited**, and **quality gates**.
+
+##### Backend inclusion rules (`get_all_outstanding_signal`)
+
+A candidate signal must pass **all** of:
+
+| Gate | Rule |
+|------|------|
+| Win rate | Historic win rate ≥ **70%** |
+| Sample size | ≥ **4** backtested trades |
+| Interval retention | See table below (calendar days from **signal date** to report **today**) |
+| **OR** recent exit | **Exit date** within **3 calendar days** of report date (can include old signals that just closed) |
+
+**Interval retention** (`MindWealth/constant.py` → `RETENSION_OUTSTANDING`, applied in `send_email.py`):
+
+| Interval | Base retention (days) | After `× 1.4` if base > 7 | Used in code |
+|----------|------------------------|---------------------------|--------------|
+| Daily | **5** | 5 (no multiplier) | `adjusted_retension = 5` |
+| Weekly | **7** | 7 (no multiplier) | `7` |
+| Monthly | **15** | **21** | `15 × 1.4` |
+| Quarterly | **30** | **42** | `30 × 1.4` |
+| Yearly | **50** | **70** | `50 × 1.4` |
+
+Logic (open / entry outstanding, `exit=0`):
+
+```text
+include IF age(signal_date → today) ≤ adjusted_retension
+    OR (has exit date AND age(exit_date → today) ≤ 3 days)
+```
+
+Logic (exit-focused export `*_outstanding_exit_signal.csv`, `exit=1`): rows with an exit where `age(exit_date → today) ≤ adjusted_retension` (same win-rate gates). That export is optional; the main outstanding file uses `exit=0`.
+
+**Duration unit:** `get_duration()` returns **calendar days** (`MindWealth/util.py`).
+
+##### Two cohorts in one file
+
+| Cohort | Typical `Exit Signal Date/Price[$]` | Signal-date window | Why it appears |
+|--------|-------------------------------------|--------------------|----------------|
+| **Open outstanding** | `No Exit Yet` | **≤ 5–70 days** after signal (by interval) | Still active; must be within interval retention |
+| **Recently closed** | Dated exit (e.g. `2026-05-13 (Price: …)`) | **No upper bound** on signal age | Exit within **last 3 days** keeps the row on the report |
+
+So an old **monthly** long from 2024 can appear if it **exited yesterday**, even though its holding period was years. Open rows in the same file are much “younger.”
+
+##### Empirical check (sample: `2026-05-15_outstanding_signal.csv`, 111 rows)
+
+| Cohort | Count | Signal age (days from signal date → 2026-05-15) |
+|--------|-------|--------------------------------------------------|
+| Open (`No Exit Yet`) | 52 | **0 – 15** (median ~2) |
+| Closed (exit within 3 days) | 59 | **4 – 806** (old signals with fresh exits) |
+| Closed (exit older than 3 days) | 0 | — |
+
+Report **filename date** (`YYYY-MM-DD_`) is the **export/run date**, not a filter on signal dates inside the file.
+
+##### What MindWealth_UI does with this snapshot
+
+| Consumer | Behavior |
+|----------|----------|
+| **Outstanding Signals page** | Loads latest dated CSV; shows **all rows** in the file (no extra retention filter). |
+| **Chatbot / Analyze Asset** | Uses same file for MTM; may filter by **user-selected date range** on **signal date** or **exit date** in queries—not by backend retention. |
+| **`entry.csv` / `exit.csv`** | Built from each day’s outstanding file via `convert_signals_to_data_structure.py`: open → append **entry**, closed → append **exit**. Consolidated files **accumulate history** and are **not** limited to the same 5–70-day window. |
+
+##### Related reports (different time scope)
+
+| Report | Time scope |
+|--------|------------|
+| **`all_signal.csv`** | **No** outstanding retention filter—near-full signal dump for the run (`get_all_signal` passes all candidates through). |
+| **`new_signal.csv`** | **Unconfirmed** signals only (confirmation status not `is`/`was CONFIRMED`)—different rule, not “last N days.” |
+| **`entry.csv` (chatbot)** | Historical stack of open positions across many syncs; deduped by Function + Symbol + Interval + Signal Open Price. |
+
+##### Operational notes
+
+- Re-sync from MindWealth (`update_trade_data.sh`) replaces `trade_store/US/YYYY-MM-DD_outstanding_signal.csv` with that day’s snapshot; UI picks **latest date** via `get_latest_csv_file()`.
+- For “how long have we tracked this ticker?” use **entry.csv** or chatbot history; for “what is live on today’s book?” use **latest outstanding_signal** only.
+- Backend source references: `MindWealth/send_email.py` (`get_all_outstanding_signal`, ~lines 544–585), `MindWealth/constant.py` (`RETENSION_OUTSTANDING`).
+
 ---
 
 ### 5.2 New Signals (`*_new_signal.csv`)

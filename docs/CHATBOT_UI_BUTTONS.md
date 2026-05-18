@@ -1,6 +1,6 @@
 # AI Chatbot — Sidebar Action Buttons
 
-Reference for the three one-click analysis buttons on the **AI Chatbot** page (`src/pages/chatbot_page.py`). They live under **Deep Dive Analysis** and related sidebar sections, use the shared **date range** pickers (default: last 15 days), and run through `ChatbotEngine.smart_followup_query()` via `run_smart_followup_with_progress()`.
+Reference for the three one-click analysis buttons on the **AI Chatbot** page (`src/pages/chatbot_page.py`). They live under **Deep Dive Analysis** and related sidebar sections, use the shared **date range** pickers (default: last 90 days for Analyze Asset; 15 days for other flows unless changed), and run through `ChatbotEngine.smart_followup_query()` via `run_smart_followup_with_progress()`.
 
 **Location in app:** Sidebar → **AI Chatbot** → buttons below **Select Date Range**.
 
@@ -13,7 +13,7 @@ Reference for the three one-click analysis buttons on the **AI Chatbot** page (`
 | Behavior | Detail |
 |----------|--------|
 | **New chat session** | Each click saves the current session, creates a new `SessionManager` session, and clears in-memory chat history so the analysis starts fresh. |
-| **Date range** | Uses sidebar **From Date** / **To Date** (default: today minus 15 days → today). |
+| **Date range** | Uses sidebar **From Date** / **To Date** (Analyze Asset default: today minus 90 days → today). |
 | **Execution** | On rerun, a *pending* prompt in `st.session_state` triggers `run_smart_followup_with_progress()` → `chatbot.smart_followup_query()`. |
 | **AI pipeline** | Column selection (GPT) → `SmartDataFetcher` loads only needed CSV columns → LLM synthesizes an answer. |
 | **Transparency** | Response includes **Smart Query Details** expander with signal tables used; **Complete Signal Data** (or breadth data) when available. |
@@ -41,7 +41,7 @@ Runs a **single-ticker deep dive**: lists all signals for the chosen symbol in t
 | **breadth** | Only if AI signal-type selector includes it (unusual for this prompt) | [SBI breadth](REPORTS.md#55-signal-breadth-indicator--sbi-_breadthcsv) |
 | **claude_report** | Only if selector includes it | [Claude report](REPORTS.md#56-claude-shortlisted-signal) |
 
-**Signal type selection:** **AI-driven** via `chatbot.signal_type_selector.select_signal_types(analysis_prompt)`—typically `entry`, `exit`, and `portfolio_target_achieved` for a deep dive (not fixed).
+**Signal type selection:** **Fixed** `entry` + `exit` only (`query_kind=deep_dive`). Merge order for open rows: outstanding → entry.csv → all_signal → virtual_trading (single-asset). Smart Query Details shows a warning if `missing_signal_keys` (open rows in latest all_signal not loaded) or an info note when the date-window retry ran without dates.
 
 **Ticker filter:** `assets=[selected_asset]` — only the chosen symbol.
 

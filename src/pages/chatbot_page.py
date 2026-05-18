@@ -1022,12 +1022,9 @@ def render_chatbot_page():
         del st.session_state.pending_analysis_from_date
         del st.session_state.pending_analysis_to_date
         
-        # Get AI signal type selection for the analysis
-        selected_signal_types, ai_reason = chatbot.signal_type_selector.select_signal_types(
-            user_query=analysis_prompt
-        )
-        
-        # Update session state
+        # Deep dive always uses entry + exit (no AI signal-type drift)
+        selected_signal_types = ["entry", "exit"]
+        ai_reason = "Deep dive: fixed entry and exit signal types for complete open/closed coverage."
         st.session_state.last_signal_types = selected_signal_types
         st.session_state.last_signal_reason = ai_reason
         
@@ -1052,7 +1049,7 @@ def render_chatbot_page():
         # Get AI response
         with st.chat_message("assistant"):
             selection_text = ", ".join(get_signal_type_label(sig) for sig in selected_signal_types)
-            st.markdown(f"**AI Signal Type Selection:** {selection_text}")
+            st.markdown(f"**Signal types:** {selection_text}")
             if ai_reason:
                 st.caption(f"💡 {ai_reason}")
             try:
@@ -1067,6 +1064,7 @@ def render_chatbot_page():
                     functions=None,  # Auto-extract functions
                     auto_extract_tickers=False,  # We're providing the asset
                     signal_type_reasoning=ai_reason,
+                    query_kind="deep_dive",
                 )
 
                 resp_ts = utc_now_iso()
@@ -1087,9 +1085,25 @@ def render_chatbot_page():
                         # Show signal types and reasoning
                         signal_types_meta = metadata.get('selected_signal_types', selected_signal_types)
                         if signal_types_meta:
-                            st.markdown(f"**AI Signal Types:** {', '.join(get_signal_type_label(sig) for sig in signal_types_meta)}")
+                            st.markdown(f"**Signal types:** {', '.join(get_signal_type_label(sig) for sig in signal_types_meta)}")
                             if ai_reason:
                                 st.caption(f"💡 {ai_reason}")
+
+                        missing_keys = metadata.get("missing_signal_keys") or []
+                        if missing_keys:
+                            st.warning(
+                                "Some open signals from the latest All Signal report were not loaded:"
+                            )
+                            for key in missing_keys[:20]:
+                                st.markdown(f"- `{key}`")
+                            if len(missing_keys) > 20:
+                                st.caption(f"…and {len(missing_keys) - 20} more.")
+
+                        if metadata.get("deep_dive_date_fallback_used"):
+                            st.info(
+                                "No rows matched the selected date window; analysis used the full "
+                                "available signal history for this asset."
+                            )
 
                         # Display full signal tables if available
                         full_signal_tables = metadata.get('full_signal_tables', {})
@@ -1337,7 +1351,7 @@ def render_chatbot_page():
     selected_tickers = None
 
     # Set default dates (last 15 days)
-    default_from_date = datetime.now() - timedelta(days=15)
+    default_from_date = datetime.now() - timedelta(days=90)
     default_to_date = datetime.now()
 
     # Keep date inputs near top so Deep Dive controls can use them.

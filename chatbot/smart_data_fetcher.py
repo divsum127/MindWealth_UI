@@ -284,9 +284,9 @@ class SmartDataFetcher:
         if incoming.empty:
             return base
         if base.empty:
-            return incoming.copy()
-
-        combined = pd.concat([base, incoming], ignore_index=True)
+            combined = incoming.copy()
+        else:
+            combined = pd.concat([base, incoming], ignore_index=True)
         if SOURCE_COL not in combined.columns:
             return combined.drop_duplicates(
                 subset=[c for c in [SYMBOL_SIGNAL_COMPOUND_COL, "Function"] if c in combined.columns],
@@ -395,10 +395,11 @@ class SmartDataFetcher:
         self,
         df: pd.DataFrame,
         assets: Optional[List[str]],
+        prefer_confirmed_only: bool = True,
     ) -> pd.DataFrame:
         """
         Merge open rows from the latest All Signal report that are missing from
-        ``entry.csv`` / outstanding (e.g. PULSEGAUGE entries not in outstanding export).
+        outstanding / entry.csv (e.g. PULSEGAUGE entries not in outstanding export).
         """
         path = resolve_all_signal_path()
         if path is None or not path.is_file():
@@ -409,6 +410,8 @@ class SmartDataFetcher:
             adf = normalize_today_price_column_names(adf)
             adf = self._filter_outstanding_open_rows(adf)
             adf = self._filter_df_by_assets(adf, assets)
+            if prefer_confirmed_only:
+                adf = self._filter_confirmed_rows(adf)
         except Exception as exc:
             logger.warning("Could not supplement entry from all_signal %s: %s", path, exc)
             return df
@@ -416,7 +419,11 @@ class SmartDataFetcher:
         if adf.empty:
             return df
 
-        keys = {self._entry_signal_identity_key(row) for _, row in df.iterrows()} if not df.empty else set()
+        keys = (
+            {self._entry_signal_identity_key(row) for _, row in df.iterrows()}
+            if not df.empty
+            else set()
+        )
         extra_rows = []
         for _, row in adf.iterrows():
             key = self._entry_signal_identity_key(row)
@@ -436,9 +443,9 @@ class SmartDataFetcher:
             len(extra_df),
             path.name,
         )
-        if df.empty:
-            return extra_df
-        return pd.concat([df, extra_df], ignore_index=True)
+        return self._merge_entry_frames_by_identity(
+            df, self._tag_signal_source(extra_df, "all_signal")
+        )
 
     def _supplement_entry_from_virtual_trading(
         self,
@@ -533,9 +540,85 @@ class SmartDataFetcher:
             len(extra_df),
             assets,
         )
-        if df.empty:
-            return extra_df
-        return pd.concat([df, extra_df], ignore_index=True)
+        return self._merge_entry_frames_by_identity(
+            df, self._tag_signal_source(extra_df, "virtual_trading")
+        )
+
+    @staticmethod
+    def _filter_closed_rows(df: pd.DataFrame) -> pd.DataFrame:
+        """Keep only rows with a recorded exit (not open)."""
+        if df.empty or EXIT_DATE_COL not in df.columns:
+            return df
+        return df[~df[EXIT_DATE_COL].apply(_is_open_exit_value)].copy()
+
+    def _supplement_exit_from_all_signal(
+        self,
+        df: pd.DataFrame,
+        assets: Optional[List[str]],
+        prefer_confirmed_only: bool = True,
+    ) -> pd.DataFrame:
+        """Merge closed rows from latest all_signal missing from exit.csv."""
+        path = resolve_all_signal_path()
+        if path is None or not path.is_file():
+            return df
+
+        try:
+            adf = pd.read_csv(path, encoding=CSV_ENCODING)
+            adf = normalize_today_price_column_names(adf)
+            adf = self._filter_closed_rows(adf)
+            adf = self._filter_df_by_assets(adf, assets)
+            if prefer_confirmed_only:
+                adf = self._filter_confirmed_rows(adf)
+        except Exception as exc:
+            logger.warning("Could not supplement exit from all_signal %s: %s", path, exc)
+            return df
+
+        if adf.empty:
+            return df
+
+        keys = (
+            {self._entry_signal_identity_key(row) for _, row in df.iterrows()}
+            if not df.empty
+            else set()
+        )
+        extra_rows = []
+        for _, row in adf.iterrows():
+            key = self._entry_signal_identity_key(row)
+            if key not in keys:
+                extra_rows.append(row)
+                keys.add(key)
+
+        if not extra_rows:
+            return df
+
+        extra_df = pd.DataFrame(extra_rows)
+        if "SignalType" not in extra_df.columns:
+            extra_df = extra_df.copy()
+            extra_df["SignalType"] = "exit"
+        logger.info(
+            "Supplemented %s closed exit row(s) from all_signal: %s",
+            len(extra_df),
+            path.name,
+        )
+        return self._merge_entry_frames_by_identity(
+            df, self._tag_signal_source(extra_df, "all_signal")
+        )
+
+    def _load_exit_source_dataframe(
+        self,
+        assets: Optional[List[str]] = None,
+        prefer_confirmed_only: bool = True,
+    ) -> pd.DataFrame:
+        """Load exit rows from exit.csv, then supplement closed rows from all_signal."""
+        df = self._read_consolidated_signal_csv("exit")
+        df = self._filter_closed_rows(df)
+        df = self._filter_df_by_assets(df, assets)
+        if prefer_confirmed_only:
+            df = self._filter_confirmed_rows(df)
+        if not df.empty:
+            df = self._tag_signal_source(df, "exit_csv")
+        df = self._supplement_exit_from_all_signal(df, assets, prefer_confirmed_only)
+        return df
 
     def _consolidated_source_ready(self, signal_type: str) -> bool:
         """True if we can serve this signal type from the consolidated / report path."""
@@ -857,6 +940,9 @@ class SmartDataFetcher:
             df = self._load_entry_source_dataframe(assets=assets, prefer_open_only=True)
             # Column indices refer to chatbot/data/entry.csv layout; outstanding export order differs.
             column_indices = None
+        elif signal_type == "exit":
+            df = self._load_exit_source_dataframe(assets=assets)
+            column_indices = None
 
         if df is None:
             df = self._read_consolidated_signal_csv(signal_type)
@@ -901,6 +987,9 @@ class SmartDataFetcher:
             if "_extracted_date" in df.columns:
                 df = df.sort_values("_extracted_date", ascending=False, na_position="last")
                 df = df.drop(columns=["_extracted_date"])
+
+            if assets and len(assets) == 1 and signal_type in ("entry", "exit"):
+                df = self.dedupe_single_asset_signals(df)
 
             # Apply column selection - use indices if provided for 100% accuracy
             if column_indices and len(column_indices) > 0:
@@ -949,6 +1038,9 @@ class SmartDataFetcher:
             # Apply row limit
             if limit_rows and len(df) > limit_rows:
                 df = df.head(limit_rows)
+
+            if SOURCE_COL in df.columns:
+                df = df.drop(columns=[SOURCE_COL], errors="ignore")
 
             return df
 
@@ -1733,6 +1825,44 @@ class SmartDataFetcher:
             logger.info(f"🗑️ Removed {removed_count} duplicate rows from {signal_type} data")
 
         return data
+
+
+def compute_missing_open_entry_keys(
+    asset: str,
+    entry_df: Optional[pd.DataFrame],
+) -> List[str]:
+    """
+    Compare open confirmed rows in the latest all_signal report vs fetched entry data.
+    Returns human-readable identity strings for rows missing from the fetch result.
+    """
+    path = resolve_all_signal_path()
+    if path is None or not path.is_file():
+        return []
+
+    try:
+        adf = pd.read_csv(path, encoding=CSV_ENCODING)
+        adf = normalize_today_price_column_names(adf)
+        adf = SmartDataFetcher._filter_outstanding_open_rows(adf)
+        adf = SmartDataFetcher._filter_df_by_assets(adf, [asset])
+        adf = SmartDataFetcher._filter_confirmed_rows(adf)
+    except Exception as exc:
+        logger.warning("compute_missing_open_entry_keys: %s", exc)
+        return []
+
+    loaded: set = set()
+    if entry_df is not None and not entry_df.empty:
+        loaded = {
+            SmartDataFetcher._entry_signal_identity_key(row)
+            for _, row in entry_df.iterrows()
+        }
+
+    missing: List[str] = []
+    for _, row in adf.iterrows():
+        key = SmartDataFetcher._entry_signal_identity_key(row)
+        if key not in loaded:
+            sym, func, entry_date, side, interval = key
+            missing.append(f"{sym} | {func} | {entry_date} | {side} | {interval}")
+    return missing
 
 
 if __name__ == "__main__":

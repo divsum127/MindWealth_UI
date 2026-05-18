@@ -26,12 +26,12 @@
   "data_coverage": {
     "bq_auto_dimensions": {
       "balance_sheet": {
-        "inputs_available": [],
-        "inputs_missing": [
+        "inputs_available": [
           "net_debt_ebitda"
         ],
+        "inputs_missing": [],
         "score": 1.0,
-        "source": "neutral_missing_inputs"
+        "source": "auto"
       },
       "ceo_quality": {
         "inputs_available": [],
@@ -64,28 +64,28 @@
         "source": "manual_or_default"
       },
       "gross_margin_trend": {
-        "inputs_available": [],
-        "inputs_missing": [
+        "inputs_available": [
           "gross_margin_trend"
         ],
+        "inputs_missing": [],
         "score": 1.0,
-        "source": "neutral_missing_inputs"
+        "source": "auto"
       },
       "growth_trajectory": {
-        "inputs_available": [],
-        "inputs_missing": [
+        "inputs_available": [
           "revenue_growth"
         ],
+        "inputs_missing": [],
         "score": -1.0,
-        "source": "neutral_missing_inputs"
+        "source": "auto"
       },
       "insider_ownership": {
-        "inputs_available": [],
-        "inputs_missing": [
+        "inputs_available": [
           "insider_pct"
         ],
+        "inputs_missing": [],
         "score": 2.0,
-        "source": "neutral_missing_inputs"
+        "source": "auto"
       },
       "macro_tailwind": {
         "inputs_available": [],
@@ -94,15 +94,16 @@
         "source": "manual_or_default"
       },
       "margin_quality": {
-        "inputs_available": [],
-        "inputs_missing": [
+        "inputs_available": [
           "revenue_growth",
-          "fcf_margin",
-          "distribution_coverage_ratio",
           "gross_margin"
         ],
+        "inputs_missing": [
+          "fcf_margin",
+          "distribution_coverage_ratio"
+        ],
         "score": 0.5,
-        "source": "neutral_missing_inputs"
+        "source": "partial_inputs"
       },
       "mgmt_capital_allocation": {
         "inputs_available": [],
@@ -117,39 +118,32 @@
         "source": "manual_or_default"
       },
       "revenue_quality": {
-        "inputs_available": [],
+        "inputs_available": [
+          "gross_margin"
+        ],
         "inputs_missing": [
-          "gross_margin",
           "fcf_margin"
         ],
         "score": 1.0,
-        "source": "neutral_missing_inputs"
+        "source": "partial_inputs"
       },
       "roic_wacc_spread": {
-        "inputs_available": [],
+        "inputs_available": [
+          "roic_proxy"
+        ],
         "inputs_missing": [
-          "roic_proxy",
           "roic"
         ],
         "score": 2.0,
-        "source": "neutral_missing_inputs"
+        "source": "partial_inputs"
       }
     },
-    "coverage_ratio": 0.4,
+    "coverage_ratio": 0.85,
     "fetch_errors": [],
     "fields_missing": [
       "fcf_ttm",
-      "revenue_growth",
       "fcf_margin",
-      "gross_margin",
-      "net_debt_ebitda",
-      "distribution_coverage_ratio",
-      "gross_margin_trend",
-      "roic_proxy",
-      "dividend_yield_5y_mean",
-      "dividend_yield_5y_std",
-      "revenue_accelerating",
-      "insider_pct"
+      "distribution_coverage_ratio"
     ],
     "fields_present": [
       "price",
@@ -159,11 +153,20 @@
       "net_debt_stored",
       "fwd_revenue_stored",
       "annual_div_per_share_stored",
-      "pe_20y_array"
+      "revenue_growth",
+      "gross_margin",
+      "net_debt_ebitda",
+      "gross_margin_trend",
+      "roic_proxy",
+      "pe_20y_array",
+      "dividend_yield_5y_mean",
+      "dividend_yield_5y_std",
+      "revenue_accelerating",
+      "insider_pct"
     ],
-    "info_available": false,
+    "info_available": true,
     "low_coverage_threshold": 0.45,
-    "low_data_confidence": true,
+    "low_data_confidence": false,
     "neutral_zero_policy": "Missing BQ inputs contribute 0 to bq_raw; conviction_score is not re-scaled by coverage.",
     "pe_history": {
       "has_pe_series": true,
@@ -175,21 +178,25 @@
     },
     "statements": {
       "balance": true,
-      "cashflow": true,
+      "cashflow": false,
       "income": true
     },
     "valuation_inputs": {
+      "dividend_yield_5y_stats": true,
+      "dividend_yield_zscore": true,
       "ev_fwd_rev": true,
       "owner_earnings_yield": false,
       "pe_percentile_20y": true,
       "pe_ttm": true
     }
   },
+  "dividend_yield_5y_mean": 0.021583,
+  "dividend_yield_5y_std": 0.010401,
   "dividend_yield_current": 0.010197,
-  "dividend_yield_zscore": null,
+  "dividend_yield_zscore": -1.0947,
   "enterprise_value": 3098936548451.4004,
   "eps_fwd": 9.82615,
-  "eps_ttm": 8.15,
+  "eps_ttm": 8.18,
   "ev_fwd_rev": 11.6786,
   "fd_direction": "stable",
   "fd_votes": {},
@@ -200,113 +207,29 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 265352708096.0,
   "industry": "Aerospace & Defense",
-  "last_daily_update": "2026-05-18T20:28:34+00:00",
-  "last_full_calc": "2026-05-15T16:28:51+00:00",
+  "last_daily_update": "2026-05-18T20:47:45+00:00",
+  "last_full_calc": "2026-05-18T20:47:45+00:00",
   "manual_overrides": {},
   "market_cap": 3118351648451.4004,
   "missing_fields": [
     "distribution_coverage_ratio",
-    "dividend_yield_5y_mean",
-    "dividend_yield_5y_std",
     "fcf_margin",
     "fcf_ttm",
-    "gross_margin",
-    "gross_margin_trend",
-    "info:empty",
-    "insider_pct",
-    "net_debt_ebitda",
     "pe_history:insufficient_20y (0.0y)",
-    "revenue_accelerating",
-    "revenue_growth",
-    "roic_proxy",
     "valuation:owner_earnings_yield"
   ],
   "net_debt_stored": -19415100000.0,
   "owner_earnings_yield": null,
   "pe_20y_array": [
-    60.5088,
-    60.885,
-    60.3761,
-    59.3879,
-    61.5487,
-    60.5752,
-    61.3496,
-    66.8142,
-    65.5605,
+    58.9381,
     66.2242,
-    64.764,
-    64.7419,
-    64.7788,
-    63.8496,
-    63.3702,
-    64.4985,
-    64.4985,
-    64.5354,
-    65.472,
-    64.2404,
-    64.6018,
-    65.9071,
-    66.0325,
-    64.2109,
-    65.0664,
-    64.8599,
-    64.1667,
-    64.7935,
-    66.2316,
     65.59,
-    66.9543,
-    65.9071,
-    67.8466,
-    69.0929,
-    67.4558,
-    68.3407,
-    66.9764,
-    66.8953,
-    64.8083,
-    63.3481,
-    64.8009,
-    65.2802,
-    63.5398,
-    62.8466,
-    59.8083,
-    61.1283,
-    60.9808,
-    59.6976,
     59.0929,
-    61.7552,
-    62.1829,
-    63.0015,
-    63.0973,
-    63.8791,
-    64.8599,
-    65.2581,
-    65.1254,
-    66.0251,
-    67.205,
-    68.2522,
-    67.4852,
-    66.5929,
-    66.1799,
-    66.3643,
-    65.5531,
-    64.2478,
-    64.2699,
-    64.5354,
     63.6136,
-    63.6136,
-    63.9454,
-    63.9159,
-    64.6313,
-    64.8156,
-    64.8525,
-    63.7094,
-    61.4307,
-    63.1637,
-    63.2522,
     62.4852
   ],
   "pe_percentile_20y": 0.0,
-  "pe_ttm": 52.3436,
+  "pe_ttm": 52.1516,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -320,7 +243,7 @@
   "roic_5y_avg": 0.31145174843547924,
   "sector": "Industrials",
   "ticker": "BEL.NS",
-  "updated_at": "2026-05-18T20:28:34+00:00",
+  "updated_at": "2026-05-18T20:47:45+00:00",
   "valuation_tax": -5.0,
   "yield_trap_warning": false
 }
