@@ -201,7 +201,7 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 46889992192.0,
   "industry": "Entertainment",
-  "last_daily_update": "2026-05-18T20:08:18+00:00",
+  "last_daily_update": "2026-05-18T20:28:34+00:00",
   "last_full_calc": "2026-05-15T16:31:52+00:00",
   "manual_overrides": {},
   "market_cap": 377498094460.36865,
@@ -319,7 +319,7 @@
   "roic_5y_avg": 0.48494998,
   "sector": "Communication Services",
   "ticker": "NFLX",
-  "updated_at": "2026-05-18T20:08:18+00:00",
+  "updated_at": "2026-05-18T20:28:34+00:00",
   "valuation_tax": -5.0,
   "yield_trap_warning": false
 }

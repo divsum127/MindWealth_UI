@@ -202,7 +202,7 @@
   "full_recalc_trigger": "verify",
   "fwd_revenue_stored": 451442016256.0,
   "industry": "Consumer Electronics",
-  "last_daily_update": "2026-05-18T20:08:18+00:00",
+  "last_daily_update": "2026-05-18T20:28:34+00:00",
   "last_full_calc": "2026-05-15T17:01:33+00:00",
   "manual_overrides": {},
   "market_cap": 4374482057253.296,
@@ -320,7 +320,7 @@
   "roic_5y_avg": 1.4147099,
   "sector": "Technology",
   "ticker": "AAPL",
-  "updated_at": "2026-05-18T20:08:18+00:00",
+  "updated_at": "2026-05-18T20:28:34+00:00",
   "valuation_tax": -5.0,
   "yield_trap_warning": false
 }

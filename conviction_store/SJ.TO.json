@@ -201,7 +201,7 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 3510000128.0,
   "industry": "Lumber & Wood Production",
-  "last_daily_update": "2026-05-18T20:08:18+00:00",
+  "last_daily_update": "2026-05-18T20:28:34+00:00",
   "last_full_calc": "2026-05-15T16:32:49+00:00",
   "manual_overrides": {},
   "market_cap": 3979342563.3342896,
@@ -319,7 +319,7 @@
   "roic_5y_avg": 0.14840001,
   "sector": "Basic Materials",
   "ticker": "SJ.TO",
-  "updated_at": "2026-05-18T20:08:18+00:00",
+  "updated_at": "2026-05-18T20:28:34+00:00",
   "valuation_tax": -1.0,
   "yield_trap_warning": false
 }

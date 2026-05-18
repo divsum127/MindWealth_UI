@@ -34,6 +34,7 @@ try:
         trade_store_us_dir,
     )
     from .breadth_context import BREADTH_SBI_COLUMNS, BREADTH_NUMERIC_COLUMNS
+    from .signal_confirm import INTERVAL_CONFIRMATION_COL, is_confirmed_signal
 except ImportError:  # pragma: no cover — script-style import when ``chatbot`` is not a package
     from outstanding_paths import (  # type: ignore
         resolve_all_signal_path,
@@ -41,6 +42,7 @@ except ImportError:  # pragma: no cover — script-style import when ``chatbot``
         trade_store_us_dir,
     )
     from breadth_context import BREADTH_SBI_COLUMNS, BREADTH_NUMERIC_COLUMNS
+    from signal_confirm import INTERVAL_CONFIRMATION_COL, is_confirmed_signal  # type: ignore
 
 _project_root = Path(__file__).resolve().parent.parent
 if str(_project_root) not in sys.path:
@@ -145,6 +147,14 @@ def is_explicit_position_side_request(text: str, side: Optional[str] = None) -> 
 
 
 EXIT_DATE_COL = "Exit Signal Date/Price[$]"
+SOURCE_COL = "_mw_signal_source"
+# Lower number = higher priority when deduplicating the same signal identity.
+ENTRY_SOURCE_PRIORITY = {
+    "outstanding": 0,
+    "all_signal": 1,
+    "entry_csv": 2,
+    "virtual_trading": 3,
+}
 
 
 def infer_date_filter_mode(user_message: Optional[str]) -> str:
@@ -230,70 +240,27 @@ class SmartDataFetcher:
             logger.error("Error reading consolidated CSV %s: %s", csv_path, exc)
             return pd.DataFrame()
 
-    def _load_entry_source_dataframe(
-        self,
-        assets: Optional[List[str]] = None,
-        prefer_open_only: bool = True,
-    ) -> pd.DataFrame:
-        """
-        Load entry rows from the outstanding report when possible; fall back to entry.csv
-        when the report is missing or has no rows for the requested asset(s).
-        """
-        outstanding_path = resolve_outstanding_signal_path()
-        df: Optional[pd.DataFrame] = None
+    @staticmethod
+    def _tag_signal_source(df: pd.DataFrame, source: str) -> pd.DataFrame:
+        if df.empty:
+            return df
+        out = df.copy()
+        out[SOURCE_COL] = source
+        return out
 
-        if outstanding_path is not None and outstanding_path.is_file():
-            try:
-                odf = pd.read_csv(outstanding_path, encoding=CSV_ENCODING)
-                odf = normalize_today_price_column_names(odf)
-                if prefer_open_only:
-                    odf = self._filter_outstanding_open_rows(odf)
-                odf = self._filter_df_by_assets(odf, assets)
-                if not odf.empty:
-                    if "SignalType" not in odf.columns:
-                        odf = odf.copy()
-                        odf["SignalType"] = "entry"
-                    logger.info(
-                        "Entry data from outstanding report: %s (%s rows)",
-                        outstanding_path,
-                        len(odf),
-                    )
-                    return odf
-                if assets:
-                    logger.info(
-                        "Outstanding report %s has no rows for assets %s; falling back to entry.csv",
-                        outstanding_path,
-                        assets,
-                    )
-            except Exception as exc:
-                logger.error(
-                    "Failed to read outstanding signal report %s: %s — falling back to entry.csv",
-                    outstanding_path,
-                    exc,
-                )
-
-        edf = self._read_consolidated_signal_csv("entry")
-        if edf.empty:
-            return edf
-        if prefer_open_only:
-            edf = self._filter_outstanding_open_rows(edf)
-        edf = self._filter_df_by_assets(edf, assets)
-        if not edf.empty and "SignalType" not in edf.columns:
-            edf = edf.copy()
-            edf["SignalType"] = "entry"
-        if not edf.empty:
-            logger.info("Entry data from consolidated entry.csv (%s rows)", len(edf))
-
-        edf = self._supplement_entry_from_all_signal(edf, assets)
-        if assets:
-            edf = self._supplement_entry_from_virtual_trading(edf, assets)
-        return edf
+    @staticmethod
+    def _filter_confirmed_rows(df: pd.DataFrame) -> pd.DataFrame:
+        if df.empty or INTERVAL_CONFIRMATION_COL not in df.columns:
+            return df
+        mask = df[INTERVAL_CONFIRMATION_COL].apply(is_confirmed_signal)
+        return df[mask].copy()
 
     @staticmethod
     def _entry_signal_identity_key(row: pd.Series) -> tuple:
-        """Stable key for one open trade (function × entry date × direction × interval)."""
-        func = str(row.get("Function", "")).strip()
+        """Stable key: symbol × function × entry date × direction × interval."""
         sym_col = str(row.get(SYMBOL_SIGNAL_COMPOUND_COL, "")).strip()
+        symbol = sym_col.split(",")[0].strip() if sym_col else ""
+        func = str(row.get("Function", "")).strip()
         m = re.search(r"(\d{4}-\d{2}-\d{2})", sym_col)
         entry_date = m.group(1) if m else ""
         if ", Long," in sym_col:
@@ -303,10 +270,126 @@ class SmartDataFetcher:
         else:
             side = ""
         interval = ""
-        interval_col = "Interval, Confirmation Status"
-        if interval_col in row.index and pd.notna(row.get(interval_col)):
-            interval = str(row[interval_col]).split(",")[0].strip()
-        return (func, entry_date, side, interval)
+        if INTERVAL_CONFIRMATION_COL in row.index and pd.notna(row.get(INTERVAL_CONFIRMATION_COL)):
+            interval = str(row[INTERVAL_CONFIRMATION_COL]).split(",")[0].strip()
+        return (symbol, func, entry_date, side, interval)
+
+    @classmethod
+    def _merge_entry_frames_by_identity(
+        cls,
+        base: pd.DataFrame,
+        incoming: pd.DataFrame,
+    ) -> pd.DataFrame:
+        """Union rows; on duplicate identity keep the row with better source priority."""
+        if incoming.empty:
+            return base
+        if base.empty:
+            return incoming.copy()
+
+        combined = pd.concat([base, incoming], ignore_index=True)
+        if SOURCE_COL not in combined.columns:
+            return combined.drop_duplicates(
+                subset=[c for c in [SYMBOL_SIGNAL_COMPOUND_COL, "Function"] if c in combined.columns],
+                keep="first",
+            )
+
+        combined["_prio"] = combined[SOURCE_COL].map(
+            lambda s: ENTRY_SOURCE_PRIORITY.get(str(s), 99)
+        )
+        combined["_idkey"] = combined.apply(cls._entry_signal_identity_key, axis=1)
+        combined = combined.sort_values("_prio", ascending=True)
+        combined = combined.drop_duplicates(subset=["_idkey"], keep="first")
+        return combined.drop(columns=["_prio", "_idkey"], errors="ignore")
+
+    @classmethod
+    def dedupe_single_asset_signals(cls, df: pd.DataFrame) -> pd.DataFrame:
+        """Collapse duplicate identities for single-ticker fetches (keeps best MTM source)."""
+        if df.empty:
+            return df
+        out = cls._merge_entry_frames_by_identity(pd.DataFrame(), df)
+        if SOURCE_COL in out.columns:
+            out = out.drop(columns=[SOURCE_COL], errors="ignore")
+        return out
+
+    def _prepare_open_entry_frame(
+        self,
+        df: pd.DataFrame,
+        assets: Optional[List[str]],
+        prefer_open_only: bool,
+        prefer_confirmed_only: bool,
+    ) -> pd.DataFrame:
+        if df.empty:
+            return df
+        df = normalize_today_price_column_names(df)
+        if prefer_open_only:
+            df = self._filter_outstanding_open_rows(df)
+        df = self._filter_df_by_assets(df, assets)
+        if prefer_confirmed_only:
+            df = self._filter_confirmed_rows(df)
+        if not df.empty and "SignalType" not in df.columns:
+            df = df.copy()
+            df["SignalType"] = "entry"
+        return df
+
+    def _load_entry_source_dataframe(
+        self,
+        assets: Optional[List[str]] = None,
+        prefer_open_only: bool = True,
+        prefer_confirmed_only: bool = True,
+    ) -> pd.DataFrame:
+        """
+        Load open entry rows from outstanding + entry.csv, then always supplement from
+        all_signal and (when assets are set) virtual_trading. Never returns before supplements.
+        """
+        df = pd.DataFrame()
+        outstanding_path = resolve_outstanding_signal_path()
+
+        if outstanding_path is not None and outstanding_path.is_file():
+            try:
+                odf = pd.read_csv(outstanding_path, encoding=CSV_ENCODING)
+                odf = self._prepare_open_entry_frame(
+                    odf, assets, prefer_open_only, prefer_confirmed_only
+                )
+                if not odf.empty:
+                    df = self._merge_entry_frames_by_identity(
+                        df, self._tag_signal_source(odf, "outstanding")
+                    )
+                    logger.info(
+                        "Entry from outstanding report %s (%s rows for filter)",
+                        outstanding_path.name,
+                        len(odf),
+                    )
+            except Exception as exc:
+                logger.error(
+                    "Failed to read outstanding signal report %s: %s",
+                    outstanding_path,
+                    exc,
+                )
+
+        edf = self._read_consolidated_signal_csv("entry")
+        edf = self._prepare_open_entry_frame(
+            edf, assets, prefer_open_only, prefer_confirmed_only
+        )
+        if not edf.empty:
+            df = self._merge_entry_frames_by_identity(
+                df, self._tag_signal_source(edf, "entry_csv")
+            )
+            logger.info("Merged entry.csv (%s rows for filter)", len(edf))
+
+        df = self._supplement_entry_from_all_signal(df, assets, prefer_confirmed_only)
+        if assets:
+            df = self._supplement_entry_from_virtual_trading(df, assets)
+
+        if SOURCE_COL in df.columns:
+            n_out = int((df[SOURCE_COL] == "outstanding").sum()) if not df.empty else 0
+            n_all = int((df[SOURCE_COL] == "all_signal").sum()) if not df.empty else 0
+            logger.info(
+                "Unified entry load: %s total rows (outstanding=%s, all_signal supplement=%s)",
+                len(df),
+                n_out,
+                n_all,
+            )
+        return df
 
     def _supplement_entry_from_all_signal(
         self,

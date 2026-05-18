@@ -202,7 +202,7 @@
   "full_recalc_trigger": "test",
   "fwd_revenue_stored": 20447000000.0,
   "industry": "Telecom Services",
-  "last_daily_update": "2026-05-18T20:08:18+00:00",
+  "last_daily_update": "2026-05-18T20:28:34+00:00",
   "last_full_calc": "2026-05-15T07:50:08+00:00",
   "manual_overrides": {},
   "market_cap": 26215049191.817596,
@@ -320,7 +320,7 @@
   "roic_5y_avg": 0.0374,
   "sector": "Communication Services",
   "ticker": "T.TO",
-  "updated_at": "2026-05-18T20:08:18+00:00",
+  "updated_at": "2026-05-18T20:28:34+00:00",
   "valuation_tax": -2.0,
   "yield_trap_warning": false
 }

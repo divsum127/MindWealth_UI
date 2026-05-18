@@ -201,7 +201,7 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 1323697045504.0,
   "industry": "Internet Retail",
-  "last_daily_update": "2026-05-18T20:08:18+00:00",
+  "last_daily_update": "2026-05-18T20:28:34+00:00",
   "last_full_calc": "2026-05-15T16:31:01+00:00",
   "manual_overrides": {},
   "market_cap": 42675800515.174866,
@@ -319,7 +319,7 @@
   "roic_5y_avg": 0.06004,
   "sector": "Consumer Cyclical",
   "ticker": "JD",
-  "updated_at": "2026-05-18T20:08:18+00:00",
+  "updated_at": "2026-05-18T20:28:34+00:00",
   "valuation_tax": -2.0,
   "yield_trap_warning": false
 }

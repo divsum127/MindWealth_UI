@@ -270,6 +270,8 @@ Ground factual claims in the message: internal signal data from SOURCE A first; 
 DATE_FORMAT = "%Y-%m-%d"
 CSV_ENCODING = "utf-8"
 MAX_ROWS_TO_INCLUDE = int(os.getenv("MAX_ROWS_TO_INCLUDE", "100"))  # Max rows per ticker (balanced for speed)
+# Single-asset deep dive: higher cap (0 = unlimited after date filter + dedupe)
+MAX_ROWS_DEEP_DIVE = int(os.getenv("MAX_ROWS_DEEP_DIVE", "500"))
 
 # Conversation settings
 MAX_HISTORY_LENGTH = int(os.getenv("MAX_HISTORY_LENGTH", "15"))  # Max conversation turns to keep

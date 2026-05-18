@@ -202,7 +202,7 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 33734000640.0,
   "industry": "Credit Services",
-  "last_daily_update": "2026-05-18T20:08:18+00:00",
+  "last_daily_update": "2026-05-18T20:28:34+00:00",
   "last_full_calc": "2026-05-15T16:32:33+00:00",
   "manual_overrides": {},
   "market_cap": 39152250826.220215,
@@ -320,7 +320,7 @@
   "roic_5y_avg": 0.25120002,
   "sector": "Financial Services",
   "ticker": "PYPL",
-  "updated_at": "2026-05-18T20:08:18+00:00",
+  "updated_at": "2026-05-18T20:28:34+00:00",
   "valuation_tax": 0.0,
   "yield_trap_warning": false
 }

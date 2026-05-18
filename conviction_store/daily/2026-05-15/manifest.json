@@ -1,6 +1,6 @@
 {
   "report_date": "2026-05-15",
-  "generated_at": "2026-05-18T20:08:18+00:00",
+  "generated_at": "2026-05-18T20:28:34+00:00",
   "fundamentals_mode": "daily",
   "skip_fundamentals": false,
   "dry_run": false,
@@ -8,23 +8,6 @@
   "fundamentals_updated": 168,
   "fundamentals_errors": 0,
   "signal_reports": [
-    {
-      "label": "All Signal Report",
-      "source_file": "/home/ubuntu/uiv2/git/MindWealth_UI/trade_store/US/2026-05-15_all_signal.csv",
-      "overlay_file": "/home/ubuntu/uiv2/git/MindWealth_UI/conviction_store/daily/2026-05-15/2026-05-15_all_signal_conviction.csv",
-      "conviction_scores_file": "/home/ubuntu/uiv2/git/MindWealth_UI/conviction_store/daily/2026-05-15/2026-05-15_all_signal_conviction_scores.csv",
-      "latest_overlay_file": "/home/ubuntu/uiv2/git/MindWealth_UI/conviction_store/overlays/2026-05-15_all_signal_conviction.csv",
-      "rows": 402,
-      "summary": {
-        "total_signals": 402,
-        "applicable": 327,
-        "cancel_buy": 238,
-        "max_conviction": 0,
-        "yield_traps": 0,
-        "tactical_plus": 54
-      },
-      "status": "ok"
-    },
     {
       "label": "New Signals",
       "source_file": "/home/ubuntu/uiv2/git/MindWealth_UI/trade_store/US/2026-05-15_new_signal.csv",
@@ -41,94 +24,12 @@
         "tactical_plus": 0
       },
       "status": "ok"
-    },
-    {
-      "label": "Outstanding Signals",
-      "source_file": "/home/ubuntu/uiv2/git/MindWealth_UI/trade_store/US/2026-05-15_outstanding_signal.csv",
-      "overlay_file": "/home/ubuntu/uiv2/git/MindWealth_UI/conviction_store/daily/2026-05-15/2026-05-15_outstanding_signal_conviction.csv",
-      "conviction_scores_file": "/home/ubuntu/uiv2/git/MindWealth_UI/conviction_store/daily/2026-05-15/2026-05-15_outstanding_signal_conviction_scores.csv",
-      "latest_overlay_file": "/home/ubuntu/uiv2/git/MindWealth_UI/conviction_store/overlays/2026-05-15_outstanding_signal_conviction.csv",
-      "rows": 111,
-      "summary": {
-        "total_signals": 111,
-        "applicable": 81,
-        "cancel_buy": 65,
-        "max_conviction": 0,
-        "yield_traps": 0,
-        "tactical_plus": 6
-      },
-      "status": "ok"
-    },
-    {
-      "label": "Claude Signals Report",
-      "source_file": "/home/ubuntu/uiv2/git/MindWealth_UI/trade_store/US/2026-05-15_claude_signals_report.csv",
-      "overlay_file": "/home/ubuntu/uiv2/git/MindWealth_UI/conviction_store/daily/2026-05-15/2026-05-15_claude_signals_report_conviction.csv",
-      "conviction_scores_file": "/home/ubuntu/uiv2/git/MindWealth_UI/conviction_store/daily/2026-05-15/2026-05-15_claude_signals_report_conviction_scores.csv",
-      "latest_overlay_file": "/home/ubuntu/uiv2/git/MindWealth_UI/conviction_store/overlays/2026-05-15_claude_signals_report_conviction.csv",
-      "rows": 44,
-      "summary": {
-        "total_signals": 44,
-        "applicable": 30,
-        "cancel_buy": 25,
-        "max_conviction": 0,
-        "yield_traps": 0,
-        "tactical_plus": 1
-      },
-      "status": "ok"
-    },
-    {
-      "label": "Target Signals",
-      "source_file": "/home/ubuntu/uiv2/git/MindWealth_UI/trade_store/US/2026-05-15_target_signal.csv",
-      "overlay_file": "/home/ubuntu/uiv2/git/MindWealth_UI/conviction_store/daily/2026-05-15/2026-05-15_target_signal_conviction.csv",
-      "conviction_scores_file": "/home/ubuntu/uiv2/git/MindWealth_UI/conviction_store/daily/2026-05-15/2026-05-15_target_signal_conviction_scores.csv",
-      "latest_overlay_file": "/home/ubuntu/uiv2/git/MindWealth_UI/conviction_store/overlays/2026-05-15_target_signal_conviction.csv",
-      "rows": 51,
-      "summary": {
-        "total_signals": 51,
-        "applicable": 42,
-        "cancel_buy": 36,
-        "max_conviction": 0,
-        "yield_traps": 0,
-        "tactical_plus": 4
-      },
-      "status": "ok"
-    },
-    {
-      "label": "Virtual Trading Long",
-      "source_file": "/home/ubuntu/uiv2/git/MindWealth_UI/trade_store/US/virtual_trading_long.csv",
-      "overlay_file": "/home/ubuntu/uiv2/git/MindWealth_UI/conviction_store/daily/2026-05-15/virtual_trading_long_conviction.csv",
-      "conviction_scores_file": "/home/ubuntu/uiv2/git/MindWealth_UI/conviction_store/daily/2026-05-15/virtual_trading_long_conviction_scores.csv",
-      "latest_overlay_file": "/home/ubuntu/uiv2/git/MindWealth_UI/conviction_store/overlays/virtual_trading_long_conviction.csv",
-      "rows": 435,
-      "summary": {
-        "total_signals": 435,
-        "applicable": 293,
-        "cancel_buy": 228,
-        "max_conviction": 0,
-        "yield_traps": 0,
-        "tactical_plus": 26
-      },
-      "status": "ok"
-    },
-    {
-      "label": "Virtual Trading Short",
-      "source_file": "/home/ubuntu/uiv2/git/MindWealth_UI/trade_store/US/virtual_trading_short.csv",
-      "overlay_file": "/home/ubuntu/uiv2/git/MindWealth_UI/conviction_store/daily/2026-05-15/virtual_trading_short_conviction.csv",
-      "conviction_scores_file": "/home/ubuntu/uiv2/git/MindWealth_UI/conviction_store/daily/2026-05-15/virtual_trading_short_conviction_scores.csv",
-      "latest_overlay_file": "/home/ubuntu/uiv2/git/MindWealth_UI/conviction_store/overlays/virtual_trading_short_conviction.csv",
-      "rows": 285,
-      "summary": {
-        "total_signals": 285,
-        "applicable": 215,
-        "cancel_buy": 0,
-        "max_conviction": 0,
-        "yield_traps": 0,
-        "tactical_plus": 0
-      },
-      "status": "ok"
     }
   ],
   "overlay_errors": [],
+  "overlay_reports": [
+    "new_signal.csv"
+  ],
   "snapshot_dir": "/home/ubuntu/uiv2/git/MindWealth_UI/conviction_store/daily/2026-05-15",
   "daily_report": "Conviction Engine Daily Report\n\nUniverse size: 168\nScored equities: 113\nStrong conviction names: 8\nWeak / cancel-buy names: 90\n\nAlerts:\n- 000660.KS: low_conviction\n- 005930.KS: low_conviction\n- 2807.HK: low_conviction\n- 3033.HK: low_conviction\n- AAPL: low_conviction\n- ABNB: low_conviction\n- AEM.TO: low_conviction\n- AIA.NZ: fs_moderate_low, low_conviction\n- AMD: fs_moderate_low, low_conviction\n- AMZN: low_conviction\n- ARM: fs_moderate_low, low_conviction\n- ASHR: low_conviction\n- ASML: low_conviction\n- ATZ.TO: low_conviction\n- AVGO: low_conviction\n- BABA: fs_moderate_low, low_conviction\n- BAC: low_conviction\n- BBD-B.TO: low_conviction\n- BDGI.TO: low_conviction\n- BEL.NS: low_conviction\n- BIPC.TO: low_conviction\n- BN.TO: fs_moderate_low, low_conviction\n- BNS.TO: low_conviction\n- BRK-B: low_conviction\n- BTC-USD: low_conviction\n- BTI: low_conviction\n- BYD.TO: low_conviction\n- C6L.SI: low_conviction\n- CAD=X: low_conviction\n- CEN.NZ: low_conviction\n- CNQ.TO: low_conviction\n- CNR.TO: low_conviction\n- CNU.NZ: low_conviction\n- CRM: low_conviction\n- CSCO: low_conviction\n- CVS: low_conviction\n- DBC: low_conviction\n- DIA: low_conviction\n- DIS: low_conviction\n- DOL.TO: low_conviction\n- EBO.NZ: low_conviction\n- EEM: low_conviction\n- EFA: low_conviction\n- EFN.TO: fs_moderate_low, low_conviction\n- ENZL: low_conviction\n- ETH-USD: low_conviction\n- EURUSD=X: low_conviction\n- EWJ: low_conviction\n- FBU.NZ: fs_moderate_low, low_conviction\n- FXI: low_conviction\n- GBPSGD=X: low_conviction\n- GBPUSD=X: low_conviction\n- GDX: low_conviction\n- GLD: low_conviction\n- GNE.NZ: low_conviction\n- GOOG: low_conviction\n- GRANULES.NS: low_conviction\n- GS: low_conviction\n- HDB: low_conviction\n- HDFCBANK.NS: low_conviction\n- HOOD: low_conviction\n- IBIT: low_conviction\n- IEI: low_conviction\n- IHI: low_conviction\n- IMO.TO: low_conviction\n- INDA: low_conviction\n- INDY: low_conviction\n- INFY: low_conviction\n- IWM: low_conviction\n- JD: low_conviction\n- JETS: low_conviction\n- JPM: low_conviction\n- JPY=X: low_conviction\n- KWEB: low_conviction\n- KXS.TO: low_conviction\n- LYFT: low_conviction\n- MA: low_conviction\n- MAR: low_conviction\n- MAZDOCK.NS: low_conviction\n- MCD: low_conviction\n- MCY.NZ: low_conviction\n- MEL.NZ: low_conviction\n- META: low_conviction\n- MSFT: low_conviction\n- MU: low_conviction\n- MX.TO: low_conviction\n- NA.TO: low_conviction\n- NAUKRI.NS: low_conviction\n- NFLX: low_conviction\n- NIFTY_MIDCAP_100.NS: low_conviction\n- NIO: fs_moderate_low, low_conviction\n- NOVA.F: low_conviction\n- NU: low_conviction\n- NVDA: low_conviction\n- NVO: low_conviction\n- NZDCAD=X: low_conviction\n- NZDUSD=X: low_conviction\n- ORCL: low_conviction\n- PERSISTENT.NS: low_conviction\n- PFE: low_conviction\n- PLTR: low_conviction\n- PPH: low_conviction\n- PPL.TO: low_conviction\n- QQQ: low_conviction\n- RELIANCE.NS: low_conviction\n- RINF: low_conviction\n- RY.TO: low_conviction\n- SFTBY: low_conviction\n- SLV: low_conviction\n- SONY: low_conviction\n- SOXX: low_conviction\n- SPY: low_conviction\n- SUM.NZ: fs_moderate_low, low_conviction\n- SUNPHARMA.NS: low_conviction\n- T.TO: low_conviction\n- TD: fs_moderate_low, low_conviction\n- TD.TO: fs_moderate_low, low_conviction\n- TSLA: fs_moderate_low, low_conviction\n- TSM: low_conviction\n- UBER: low_conviction\n- UPS: low_conviction\n- USCI: low_conviction\n- USDCHF=X: low_conviction\n- USO: low_conviction\n- VGT: low_conviction\n- WCN.TO: low_conviction\n- WFG.TO: low_conviction\n- WMT: low_conviction\n- WPM: low_conviction\n- WPM.TO: low_conviction\n- XIU.TO: low_conviction\n- XLE: low_conviction\n- XLF: low_conviction\n- XLU: low_conviction\n- XLV: low_conviction\n- XLY: low_conviction\n- ^BVSP: low_conviction\n- ^DJI: low_conviction\n- ^GSPC: low_conviction\n- ^NDX: low_conviction\n- ^NSEI: low_conviction\n- ^NZ50: low_conviction\n- ^STI: low_conviction\n- ^TNX: low_conviction\n- ^VIX: low_conviction"
 }

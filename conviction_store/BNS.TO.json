@@ -66,7 +66,7 @@
   "fs_class": "moderate",
   "fs_quality_base": 50.0,
   "fs_score": 50.0,
-  "last_daily_update": "2026-05-18T20:08:18+00:00",
+  "last_daily_update": "2026-05-18T20:28:34+00:00",
   "last_full_calc": null,
   "manual_overrides": {},
   "market_cap": 130729001855.24475,
@@ -109,7 +109,7 @@
   },
   "price": 106.16000366210938,
   "ticker": "BNS.TO",
-  "updated_at": "2026-05-18T20:08:18+00:00",
+  "updated_at": "2026-05-18T20:28:34+00:00",
   "valuation_tax": 0.0,
   "yield_trap_warning": false
 }
