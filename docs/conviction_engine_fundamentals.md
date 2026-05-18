@@ -24,19 +24,23 @@ This document describes how the **fundamental conviction** layer works today, wh
 
 Each run:
 
-1. Resolves report date from `YYYY-MM-DD_all_signal.csv` (or `--report-date`).
-2. Refreshes `conviction_store/{TICKER}.json` (default `--fundamentals-mode daily`).
-3. Overlays conviction columns onto daily signal CSVs (`all_signal`, `new_signal`, `outstanding_signal`, `claude_signals_report`, `target_signal`, virtual trading).
+1. Resolves report date from latest dated `new_signal.csv` or `all_signal.csv` (or `--report-date`).
+2. Refreshes `conviction_store/{TICKER}.json` for the full signal universe (default `--fundamentals-mode daily`).
+3. Overlays conviction columns onto the **New Signals** report only (`new_signal.csv` by default).
 4. Archives under **`conviction_store/daily/YYYY-MM-DD/`**:
-   - `{report}_conviction.csv` — full report + conviction columns
-   - `{report}_conviction_scores.csv` — compact score sheet (`conviction_score`, `verdict`, `fs_class`, …)
-   - `manifest.json` — per-report summaries and paths
+   - `{date}_new_signal_conviction.csv` — full report + conviction columns
+   - `{date}_new_signal_conviction_scores.csv` — compact score sheet
+   - `manifest.json` — summary and paths
    - `daily_report.txt` — universe alert summary
-5. Updates **`conviction_store/overlays/`** latest files for the Streamlit Conviction Engine page.
+5. Updates **`conviction_store/overlays/{date}_new_signal_conviction.csv`** (latest pointer).
+
+**Streamlit UI:** Conviction Engine tab → choose **Report date** → loads the archived New Signals overlay for that day (optional “Recompute from latest trade_store” for debug).
 
 ```bash
 .venv/bin/python scripts/run_conviction_engine_daily.py --fundamentals-mode daily
 .venv/bin/python scripts/run_conviction_engine_daily.py --report-date 2026-05-15 --skip-fundamentals
+# Optional: overlay additional reports
+.venv/bin/python scripts/run_conviction_engine_daily.py --overlay-reports all_signal.csv,new_signal.csv
 ```
 
 ## Key modules

@@ -16,7 +16,7 @@ OSCILLATOR DELTA,"CSU.TO, Long, 2026-05-14 (Price: 2533.1499)",CSU.TO,EQUITY,saa
 TRENDPULSE,"NVDA, Long, 2026-05-14 (Price: 235.74)",NVDA,EQUITY,compounder,short,3.5,-5.0,-1.5,-1.5,44.75,moderate,False,CANCEL BUY,0.0,BQ 3.5 + valuation tax -5.0 = -1.5 | FS class moderate
 TRENDPULSE,"PPL.TO, Long, 2026-05-14 (Price: 66.72)",PPL.TO,EQUITY,cyclical,short,5.0,-5.0,0.0,0.0,53.5,moderate,False,CANCEL BUY,0.0,BQ 5.0 + valuation tax -5.0 = 0.0 | FS class moderate
 TRENDPULSE,"BBTC.NS, Long, 2026-05-14 (Price: 1537.9)",BBTC.NS,EQUITY,compounder,short,5.0,0.0,5.0,5.0,75.5,strong,False,TACTICAL BUY,60.0,BQ 5.0 + valuation tax 0.0 = 5.0 | FS class strong
-TRENDPULSE,"GOOG, Long, 2026-05-14 (Price: 397.17)",GOOG,EQUITY,compounder,short,3.5,-5.0,-1.5,-1.5,44.75,moderate,False,CANCEL BUY,0.0,BQ 3.5 + valuation tax -5.0 = -1.5 | FS class moderate
+TRENDPULSE,"GOOG, Long, 2026-05-14 (Price: 397.17)",GOOG,EQUITY,compounder,short,3.5,-5.0,-1.5,-1.5,50.75,moderate,False,CANCEL BUY,0.0,BQ 3.5 + valuation tax -5.0 = -1.5 | FS class moderate
 TRENDPULSE,"XLV, Long, 2026-05-13 (Price: 146.71)",XLV,ETF,,short,,,,,,,False,NOT_APPLICABLE,0.0,quoteType=ETF
 OSCILLATOR DELTA,"XLV, Long, 2026-05-13 (Price: 146.71)",XLV,ETF,,short,,,,,,,False,NOT_APPLICABLE,0.0,quoteType=ETF
 TRENDPULSE,"MCY.NZ, Long, 2026-05-13 (Price: 7.1)",MCY.NZ,EQUITY,income,short,-1.5,0.0,-1.5,-1.5,49.25,moderate,False,CANCEL BUY,0.0,BQ -1.5 + valuation tax 0.0 = -1.5 | FS class moderate

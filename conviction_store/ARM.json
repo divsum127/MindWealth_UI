@@ -187,10 +187,10 @@
   },
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 221504455822.48087,
+  "enterprise_value": 227122366967.9745,
   "eps_fwd": 3.05319,
   "eps_ttm": 0.85,
-  "ev_fwd_rev": 47.4212,
+  "ev_fwd_rev": 48.6239,
   "fcf_ttm": 1138000000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -201,10 +201,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 4671000064.0,
   "industry": "Semiconductors",
-  "last_daily_update": "2026-05-18T19:38:36+00:00",
+  "last_daily_update": "2026-05-18T20:08:18+00:00",
   "last_full_calc": "2026-05-15T16:28:20+00:00",
   "manual_overrides": {},
-  "market_cap": 223269455822.48087,
+  "market_cap": 228887366967.9745,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -221,7 +221,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": -1765000000.0,
-  "owner_earnings_yield": 0.005097,
+  "owner_earnings_yield": 0.004972,
   "pe_20y_array": [
     158.9333,
     154.76,
@@ -304,8 +304,8 @@
     272.0238,
     251.5893
   ],
-  "pe_percentile_20y": 83.75,
-  "pe_ttm": 246.8706,
+  "pe_percentile_20y": 90.0,
+  "pe_ttm": 253.0823,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -314,12 +314,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 209.83999633789062,
+  "price": 215.1199951171875,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.112679996,
   "sector": "Technology",
   "ticker": "ARM",
-  "updated_at": "2026-05-18T19:38:36+00:00",
+  "updated_at": "2026-05-18T20:08:18+00:00",
   "valuation_tax": -5.0,
   "yield_trap_warning": false
 }

@@ -30,6 +30,9 @@ SIGNAL_SOURCES = {
     "Virtual Trading Short": "virtual_trading_short.csv",
 }
 
+PRIMARY_DAILY_REPORT = "new_signal.csv"
+PRIMARY_DAILY_REPORT_LABEL = "New Signals"
+
 # Daily batch overlays: base CSV name -> human label (must include compound signal column).
 DAILY_SIGNAL_REPORTS: dict[str, str] = {
     "all_signal.csv": "All Signal Report",
@@ -52,12 +55,13 @@ def resolve_report_date(trade_store_dir: Path | None = None, explicit: str | Non
         return explicit.strip()[:10]
 
     base_dir = Path(trade_store_dir) if trade_store_dir else TRADE_STORE_US_DIR
-    latest = get_latest_csv_file("all_signal.csv", str(base_dir))
-    if latest:
-        name = Path(latest).name
-        match = _DATE_PREFIX_RE.match(name)
-        if match:
-            return match.group(1)
+    for base_name in (PRIMARY_DAILY_REPORT, "all_signal.csv"):
+        latest = get_latest_csv_file(base_name, str(base_dir))
+        if latest:
+            name = Path(latest).name
+            match = _DATE_PREFIX_RE.match(name)
+            if match:
+                return match.group(1)
 
     fetch_meta = base_dir / "data_fetch_datetime.json"
     if fetch_meta.exists():
@@ -92,10 +96,14 @@ def signal_file_for_report_date(
 def discover_daily_signal_files(
     report_date: str,
     trade_store_dir: Path | None = None,
+    overlay_reports: list[str] | None = None,
 ) -> dict[str, Path]:
     """Map report label -> source CSV path for a given trade-store report date."""
+    if overlay_reports is None:
+        overlay_reports = [PRIMARY_DAILY_REPORT]
     sources: dict[str, Path] = {}
-    for base_name, label in DAILY_SIGNAL_REPORTS.items():
+    for base_name in overlay_reports:
+        label = DAILY_SIGNAL_REPORTS.get(base_name, base_name)
         path = signal_file_for_report_date(base_name, report_date, trade_store_dir)
         if path and path.exists():
             sources[label] = path

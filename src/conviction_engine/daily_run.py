@@ -13,7 +13,12 @@ from .engine import apply_to_signal_file, generate_daily_report, run_daily_unive
 from .formatting import CONVICTION_COLUMNS, summarize_overlay
 from .fundamentals import discover_universe, update_universe_fundamentals
 from .models import utc_now_iso
-from .signals import COMPOUND_SIGNAL_COLUMN, discover_daily_signal_files, resolve_report_date
+from .signals import (
+    COMPOUND_SIGNAL_COLUMN,
+    PRIMARY_DAILY_REPORT,
+    discover_daily_signal_files,
+    resolve_report_date,
+)
 from .store import (
     daily_overlay_path,
     daily_snapshot_dir,
@@ -44,18 +49,22 @@ def run_daily_conviction_pipeline(
     dry_run: bool = False,
     fail_fast: bool = False,
     limit: int | None = None,
+    overlay_reports: list[str] | None = None,
 ) -> dict[str, Any]:
     """
     1. Refresh conviction_store fundamentals (default: daily price-sensitive).
-    2. Overlay conviction scores onto each daily signal report CSV.
+    2. Overlay conviction scores onto daily New Signals report (default) and archive.
     3. Archive full overlays + compact score sheets under conviction_store/daily/YYYY-MM-DD/.
     4. Refresh conviction_store/overlays/* for latest UI consumption.
     """
+    if overlay_reports is None:
+        overlay_reports = [PRIMARY_DAILY_REPORT]
+
     resolved_date = resolve_report_date(trade_store_dir, report_date)
     if not resolved_date:
         return {"status": "error", "error": "Could not resolve report date from trade_store"}
 
-    signal_files = discover_daily_signal_files(resolved_date, trade_store_dir)
+    signal_files = discover_daily_signal_files(resolved_date, trade_store_dir, overlay_reports)
     if not signal_files:
         return {
             "status": "error",
@@ -172,6 +181,7 @@ def run_daily_conviction_pipeline(
         "fundamentals_errors": sum(1 for r in fundamentals_result if r.get("status") == "error"),
         "signal_reports": report_entries,
         "overlay_errors": overlay_errors,
+        "overlay_reports": overlay_reports,
         "snapshot_dir": str(snapshot_dir),
         "daily_report": daily_report_text,
     }

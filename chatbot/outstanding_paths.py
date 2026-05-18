@@ -53,3 +53,32 @@ def resolve_outstanding_signal_path() -> Optional[Path]:
 
     dated.sort(key=lambda x: x.stat().st_mtime, reverse=True)
     return dated[0]
+
+
+def resolve_all_signal_path() -> Optional[Path]:
+    """
+    Path to the latest All Signal report CSV (full open + closed history).
+
+    1. ``ALL_SIGNAL_CSV`` env — absolute or relative to project root, if set and exists.
+    2. Newest ``*_all_signal.csv`` in ``trade_store/US`` by mtime.
+    3. Undated ``all_signal.csv`` in that directory.
+    """
+    raw = os.getenv("ALL_SIGNAL_CSV", "").strip()
+    base = _project_root()
+    if raw:
+        p = Path(raw).expanduser()
+        if not p.is_absolute():
+            p = base / p
+        return p if p.is_file() else None
+
+    us = trade_store_us_dir()
+    if not us.is_dir():
+        return None
+
+    dated = [f for f in us.glob("*_all_signal.csv") if f.is_file()]
+    if dated:
+        dated.sort(key=lambda x: x.stat().st_mtime, reverse=True)
+        return dated[0]
+
+    exact = us / "all_signal.csv"
+    return exact if exact.is_file() else None

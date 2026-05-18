@@ -183,12 +183,12 @@
       "pe_ttm": true
     }
   },
-  "dividend_yield_current": 0.050293,
+  "dividend_yield_current": 0.050347,
   "dividend_yield_zscore": null,
-  "enterprise_value": 177714455147.24512,
+  "enterprise_value": 177562594758.39133,
   "eps_fwd": 5.3206,
   "eps_ttm": 4.72,
-  "ev_fwd_rev": 6.9393,
+  "ev_fwd_rev": 6.9333,
   "fcf_ttm": 2993750016.0,
   "fd_direction": "stable",
   "fd_votes": {},
@@ -199,10 +199,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 25610000384.0,
   "industry": "Tobacco",
-  "last_daily_update": "2026-05-18T19:38:36+00:00",
+  "last_daily_update": "2026-05-18T20:08:18+00:00",
   "last_full_calc": "2026-05-15T16:29:06+00:00",
   "manual_overrides": {},
-  "market_cap": 143650455147.24512,
+  "market_cap": 143498594758.39133,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -221,9 +221,9 @@
     "valuation:pe_percentile_20y"
   ],
   "net_debt_stored": 34064000000.0,
-  "owner_earnings_yield": 0.020841,
+  "owner_earnings_yield": 0.020863,
   "pe_percentile_20y": null,
-  "pe_ttm": 14.07,
+  "pe_ttm": 14.0551,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -232,12 +232,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 66.41020202636719,
+  "price": 66.33999633789062,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.15824,
   "sector": "Consumer Defensive",
   "ticker": "BTI",
-  "updated_at": "2026-05-18T19:38:36+00:00",
+  "updated_at": "2026-05-18T20:08:18+00:00",
   "valuation_tax": -2.0,
   "yield_trap_warning": false
 }

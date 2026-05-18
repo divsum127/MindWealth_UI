@@ -185,12 +185,12 @@
       "pe_ttm": true
     }
   },
-  "dividend_yield_current": 0.022084,
+  "dividend_yield_current": 0.022082,
   "dividend_yield_zscore": null,
-  "enterprise_value": 424658595948.3188,
+  "enterprise_value": 424694086481.5504,
   "eps_fwd": 5.04212,
   "eps_ttm": 4.03,
-  "ev_fwd_rev": 3.7258,
+  "ev_fwd_rev": 3.7261,
   "fd_direction": "negative",
   "fd_votes": {},
   "flags": [],
@@ -200,10 +200,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 113978000000.0,
   "industry": "Banks - Diversified",
-  "last_daily_update": "2026-05-18T19:38:36+00:00",
+  "last_daily_update": "2026-05-18T20:08:18+00:00",
   "last_full_calc": "2026-05-15T16:28:38+00:00",
   "manual_overrides": {},
-  "market_cap": 359903595948.3188,
+  "market_cap": 359939086481.5504,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -306,7 +306,7 @@
     12.2512
   ],
   "pe_percentile_20y": 26.25,
-  "pe_ttm": 12.5844,
+  "pe_ttm": 12.5856,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -315,12 +315,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 50.71500015258789,
+  "price": 50.720001220703125,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.10644,
   "sector": "Financial Services",
   "ticker": "BAC",
-  "updated_at": "2026-05-18T19:38:36+00:00",
+  "updated_at": "2026-05-18T20:08:18+00:00",
   "valuation_tax": -2.0,
   "yield_trap_warning": false
 }

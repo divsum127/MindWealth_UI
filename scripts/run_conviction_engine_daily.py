@@ -4,14 +4,14 @@ Daily Conviction Engine entry point.
 
 Run after trade_store daily signal reports are synced (e.g. from update_trade_data.sh):
   1. Refresh conviction_store fundamentals (daily mode by default)
-  2. Attach conviction scores to each signal report CSV
+  2. Attach conviction scores to the New Signals report (default)
   3. Archive overlays under conviction_store/daily/YYYY-MM-DD/
 
-Outputs per report date:
+Outputs per report date (default: new_signal only):
   conviction_store/daily/{date}/manifest.json
-  conviction_store/daily/{date}/{report}_conviction.csv          (full signal + conviction columns)
-  conviction_store/daily/{date}/{report}_conviction_scores.csv   (compact score sheet)
-  conviction_store/overlays/{report}_conviction.csv              (latest, for UI)
+  conviction_store/daily/{date}/{date}_new_signal_conviction.csv
+  conviction_store/daily/{date}/{date}_new_signal_conviction_scores.csv
+  conviction_store/overlays/{date}_new_signal_conviction.csv
 """
 
 from __future__ import annotations
@@ -26,6 +26,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from src.conviction_engine.daily_run import run_daily_conviction_pipeline  # noqa: E402
+from src.conviction_engine.signals import PRIMARY_DAILY_REPORT  # noqa: E402
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -47,7 +48,17 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--dry-run", action="store_true", help="Resolve paths and tickers without writing files.")
     parser.add_argument("--fail-fast", action="store_true", help="Stop on first ticker or overlay failure.")
     parser.add_argument("--limit", type=int, help="Limit tickers processed (smoke test).")
+    parser.add_argument(
+        "--overlay-reports",
+        default=PRIMARY_DAILY_REPORT,
+        help=f"Comma-separated trade_store base CSV names to overlay (default: {PRIMARY_DAILY_REPORT}).",
+    )
     return parser
+
+
+def _parse_overlay_reports(value: str) -> list[str]:
+    names = [part.strip() for part in value.split(",") if part.strip()]
+    return [name if name.endswith(".csv") else f"{name}.csv" for name in names]
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -62,6 +73,7 @@ def main(argv: list[str] | None = None) -> int:
         dry_run=args.dry_run,
         fail_fast=args.fail_fast,
         limit=args.limit,
+        overlay_reports=_parse_overlay_reports(args.overlay_reports),
     )
 
     payload = {k: v for k, v in result.items() if k != "fundamentals_results"}

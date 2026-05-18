@@ -194,7 +194,7 @@
   "fs_quality_base": 50.0,
   "fs_score": null,
   "full_recalc_trigger": "daily_fundamentals_script",
-  "last_daily_update": "2026-05-18T19:38:36+00:00",
+  "last_daily_update": "2026-05-18T20:08:18+00:00",
   "last_full_calc": "2026-05-15T16:30:20+00:00",
   "manual_overrides": {},
   "market_cap": null,
@@ -236,10 +236,10 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 86.95999908447266,
+  "price": 87.16000366210938,
   "quote_type": "ETF",
   "ticker": "GDX",
-  "updated_at": "2026-05-18T19:38:36+00:00",
+  "updated_at": "2026-05-18T20:08:18+00:00",
   "valuation_tax": null,
   "yield_trap_warning": false
 }

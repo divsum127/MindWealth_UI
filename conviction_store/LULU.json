@@ -187,10 +187,10 @@
   },
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 13653539036.864609,
+  "enterprise_value": 13699290301.283585,
   "eps_fwd": 13.23814,
   "eps_ttm": 13.26,
-  "ev_fwd_rev": 1.2298,
+  "ev_fwd_rev": 1.2339,
   "fcf_ttm": 1128412000.0,
   "fd_direction": "positive",
   "fd_votes": {},
@@ -201,10 +201,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 11102600192.0,
   "industry": "Apparel Retail",
-  "last_daily_update": "2026-05-18T19:38:36+00:00",
+  "last_daily_update": "2026-05-18T20:08:18+00:00",
   "last_full_calc": "2026-05-15T16:31:15+00:00",
   "manual_overrides": {},
-  "market_cap": 14062084036.864609,
+  "market_cap": 14107835301.283585,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -221,7 +221,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": -408545000.0,
-  "owner_earnings_yield": 0.080245,
+  "owner_earnings_yield": 0.079985,
   "pe_20y_array": [
     13.49,
     13.2412,
@@ -305,7 +305,7 @@
     9.0143
   ],
   "pe_percentile_20y": 1.25,
-  "pe_ttm": 9.04,
+  "pe_ttm": 9.0694,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -314,12 +314,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 119.87000274658203,
+  "price": 120.26000213623047,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.34013,
   "sector": "Consumer Cyclical",
   "ticker": "LULU",
-  "updated_at": "2026-05-18T19:38:36+00:00",
+  "updated_at": "2026-05-18T20:08:18+00:00",
   "valuation_tax": 0.0,
   "yield_trap_warning": false
 }

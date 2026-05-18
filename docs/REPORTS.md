@@ -228,6 +228,8 @@ Used by: **outstanding_signal**, **new_signal**, **claude_signals_report.csv**, 
 
 Supports **Add to Monitored** workflow on the New Signals page.
 
+**Conviction Engine:** After each trade_store sync, `scripts/run_conviction_engine_daily.py` archives overlays at `conviction_store/daily/YYYY-MM-DD/{date}_new_signal_conviction.csv`. The **Conviction Engine** app tab lets you pick a **report date** and view that day’s overlay table.
+
 ---
 
 ### 5.3 All Signal Report (`*_all_signal.csv`)

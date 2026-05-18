@@ -185,12 +185,12 @@
       "pe_ttm": true
     }
   },
-  "dividend_yield_current": 0.00622,
+  "dividend_yield_current": 0.00618,
   "dividend_yield_zscore": null,
-  "enterprise_value": 2036363300912.0,
+  "enterprise_value": 2049194211233.2703,
   "eps_fwd": 18.28975,
   "eps_ttm": 5.15,
-  "ev_fwd_rev": 29.8228,
+  "ev_fwd_rev": 30.0108,
   "fcf_ttm": 26914000000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -201,10 +201,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 68281999360.0,
   "industry": "Semiconductors",
-  "last_daily_update": "2026-05-18T19:38:36+00:00",
+  "last_daily_update": "2026-05-18T20:08:18+00:00",
   "last_full_calc": "2026-05-15T16:28:34+00:00",
   "manual_overrides": {},
-  "market_cap": 1979091300912.0,
+  "market_cap": 1991922211233.2703,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -221,7 +221,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 57272000000.0,
-  "owner_earnings_yield": 0.013599,
+  "owner_earnings_yield": 0.013512,
   "pe_20y_array": [
     68.3803,
     67.2374,
@@ -304,8 +304,8 @@
     85.8965,
     83.7881
   ],
-  "pe_percentile_20y": 81.25,
-  "pe_ttm": 81.165,
+  "pe_percentile_20y": 86.25,
+  "pe_ttm": 81.6913,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -314,12 +314,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 418.0,
+  "price": 420.7099914550781,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.33370999,
   "sector": "Technology",
   "ticker": "AVGO",
-  "updated_at": "2026-05-18T19:38:36+00:00",
+  "updated_at": "2026-05-18T20:08:18+00:00",
   "valuation_tax": -5.0,
   "yield_trap_warning": false
 }

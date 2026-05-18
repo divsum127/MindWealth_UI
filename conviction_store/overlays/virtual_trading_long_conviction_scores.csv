@@ -11,7 +11,7 @@ TRENDPULSE,CNQ.TO,EQUITY,cyclical,short,5.0,-4.0,1.0,1.0,67.5,moderate_high,Fals
 TRENDPULSE,SUNPHARMA.NS,EQUITY,compounder,short,6.5,-5.0,1.5,1.5,60.25,moderate_high,False,CANCEL BUY,0.0,BQ 6.5 + valuation tax -5.0 = 1.5 | FS class moderate_high
 FRACTAL TRACK,PPH,ETF,,short,,,,,,,False,NOT_APPLICABLE,0.0,quoteType=ETF
 OSCILLATOR DELTA,CSU.TO,EQUITY,saas,short,3.0,-1.0,2.0,2.0,62.5,moderate_high,False,REDUCED BUY,25.0,BQ 3.0 + valuation tax -1.0 = 2.0 | FS class moderate_high
-TRENDPULSE,GOOG,EQUITY,compounder,short,3.5,-5.0,-1.5,-1.5,44.75,moderate,False,CANCEL BUY,0.0,BQ 3.5 + valuation tax -5.0 = -1.5 | FS class moderate
+TRENDPULSE,GOOG,EQUITY,compounder,short,3.5,-5.0,-1.5,-1.5,50.75,moderate,False,CANCEL BUY,0.0,BQ 3.5 + valuation tax -5.0 = -1.5 | FS class moderate
 TRENDPULSE,NVDA,EQUITY,compounder,short,3.5,-5.0,-1.5,-1.5,44.75,moderate,False,CANCEL BUY,0.0,BQ 3.5 + valuation tax -5.0 = -1.5 | FS class moderate
 DELTADRIFT,BAC,EQUITY,compounder,short,0.0,-2.0,-2.0,-2.0,55.0,moderate_high,False,CANCEL BUY,0.0,BQ 0.0 + valuation tax -2.0 = -2.0 | FS class moderate_high
 TRENDPULSE,BBTC.NS,EQUITY,compounder,short,5.0,0.0,5.0,5.0,75.5,strong,False,TACTICAL BUY,60.0,BQ 5.0 + valuation tax 0.0 = 5.0 | FS class strong
@@ -77,7 +77,7 @@ TRENDPULSE,005930.KS,EQUITY,compounder,short,3.0,-5.0,-2.0,-2.0,51.5,moderate,Fa
 TRENDPULSE,GRANULES.NS,EQUITY,compounder,short,5.5,-5.0,0.5,0.5,55.75,moderate_high,False,CANCEL BUY,0.0,BQ 5.5 + valuation tax -5.0 = 0.5 | FS class moderate_high
 TRENDPULSE,QQQ,ETF,,short,,,,,,,False,NOT_APPLICABLE,0.0,quoteType=ETF
 OSCILLATOR DELTA,GLD,ETF,,short,,,,,,,False,NOT_APPLICABLE,0.0,quoteType=ETF
-TRENDPULSE,GOOG,EQUITY,compounder,short,3.5,-5.0,-1.5,-1.5,44.75,moderate,False,CANCEL BUY,0.0,BQ 3.5 + valuation tax -5.0 = -1.5 | FS class moderate
+TRENDPULSE,GOOG,EQUITY,compounder,short,3.5,-5.0,-1.5,-1.5,50.75,moderate,False,CANCEL BUY,0.0,BQ 3.5 + valuation tax -5.0 = -1.5 | FS class moderate
 TRENDPULSE,DBC,ETF,,short,,,,,,,False,NOT_APPLICABLE,0.0,quoteType=ETF
 TRENDPULSE,CNU.NZ,EQUITY,income,short,0.0,-4.0,-4.0,-4.0,42.0,moderate,False,CANCEL BUY,0.0,BQ 0.0 + valuation tax -4.0 = -4.0 | FS class moderate
 TRENDPULSE,USCI,ETF,,short,,,,,,,False,NOT_APPLICABLE,0.0,quoteType=ETF
@@ -104,7 +104,7 @@ TRENDPULSE,AIA.NZ,EQUITY,compounder,short,0.0,-5.0,-5.0,-5.0,34.0,moderate_low,F
 FRACTAL TRACK,MAR,EQUITY,compounder,short,4.5,-5.0,-0.5,-0.5,47.25,moderate,False,CANCEL BUY,0.0,BQ 4.5 + valuation tax -5.0 = -0.5 | FS class moderate
 FRACTAL TRACK,GDX,ETF,,short,,,,,,,False,NOT_APPLICABLE,0.0,quoteType=ETF
 TRENDPULSE,DOL.TO,EQUITY,compounder,short,4.0,-3.0,1.0,1.0,65.0,moderate_high,False,CANCEL BUY,0.0,BQ 4.0 + valuation tax -3.0 = 1.0 | FS class moderate_high
-TRENDPULSE,GOOG,EQUITY,compounder,short,3.5,-5.0,-1.5,-1.5,44.75,moderate,False,CANCEL BUY,0.0,BQ 3.5 + valuation tax -5.0 = -1.5 | FS class moderate
+TRENDPULSE,GOOG,EQUITY,compounder,short,3.5,-5.0,-1.5,-1.5,50.75,moderate,False,CANCEL BUY,0.0,BQ 3.5 + valuation tax -5.0 = -1.5 | FS class moderate
 TRENDPULSE,BDGI.TO,EQUITY,compounder,short,2.5,-2.0,0.5,0.5,61.25,moderate_high,False,CANCEL BUY,0.0,BQ 2.5 + valuation tax -2.0 = 0.5 | FS class moderate_high
 SIGMASHELL,SONY,EQUITY,compounder,short,-0.5,-3.0,-3.5,-3.5,50.75,moderate,False,CANCEL BUY,0.0,BQ -0.5 + valuation tax -3.0 = -3.5 | FS class moderate
 PULSEGAUGE,NIO,EQUITY,compounder,short,-6.0,-2.0,-8.0,-8.0,30.0,moderate_low,False,CANCEL BUY,0.0,BQ -6.0 + valuation tax -2.0 = -8.0 | FS class moderate_low
@@ -281,7 +281,7 @@ FRACTAL TRACK,^NSEI,INDEX,,short,,,,,,,False,NOT_APPLICABLE,0.0,quoteType=INDEX
 DELTADRIFT,BYD.TO,EQUITY,compounder,short,-3.0,-1.0,-4.0,-4.0,52.5,moderate,False,CANCEL BUY,0.0,BQ -3.0 + valuation tax -1.0 = -4.0 | FS class moderate
 FRACTAL TRACK,XLY,ETF,,short,,,,,,,False,NOT_APPLICABLE,0.0,quoteType=ETF
 FRACTAL TRACK,GBPUSD=X,CURRENCY,,short,,,,,,,False,NOT_APPLICABLE,0.0,quoteType=CURRENCY
-FRACTAL TRACK,GOOG,EQUITY,compounder,short,3.5,-5.0,-1.5,-1.5,44.75,moderate,False,CANCEL BUY,0.0,BQ 3.5 + valuation tax -5.0 = -1.5 | FS class moderate
+FRACTAL TRACK,GOOG,EQUITY,compounder,short,3.5,-5.0,-1.5,-1.5,50.75,moderate,False,CANCEL BUY,0.0,BQ 3.5 + valuation tax -5.0 = -1.5 | FS class moderate
 DELTADRIFT,NKE,EQUITY,income,short,4.5,0.0,4.5,4.5,74.25,moderate_high,False,REDUCED BUY,50.0,BQ 4.5 + valuation tax 0.0 = 4.5 | FS class moderate_high
 FRACTAL TRACK,NVDA,EQUITY,compounder,short,3.5,-5.0,-1.5,-1.5,44.75,moderate,False,CANCEL BUY,0.0,BQ 3.5 + valuation tax -5.0 = -1.5 | FS class moderate
 BASELINEDIVERGENCE,^GSPC,INDEX,,short,,,,,,,False,NOT_APPLICABLE,0.0,quoteType=INDEX
@@ -303,7 +303,7 @@ FRACTAL TRACK,^NSEI,INDEX,,short,,,,,,,False,NOT_APPLICABLE,0.0,quoteType=INDEX
 TRENDPULSE,VGT,ETF,,short,,,,,,,False,NOT_APPLICABLE,0.0,quoteType=ETF
 FRACTAL TRACK,AIA.NZ,EQUITY,compounder,short,0.0,-5.0,-5.0,-5.0,34.0,moderate_low,False,CANCEL BUY,0.0,BQ 0.0 + valuation tax -5.0 = -5.0 | FS class moderate_low
 TRENDPULSE,AMZN,EQUITY,compounder,short,3.5,-5.0,-1.5,-1.5,50.75,moderate,False,CANCEL BUY,0.0,BQ 3.5 + valuation tax -5.0 = -1.5 | FS class moderate
-FRACTAL TRACK,GOOG,EQUITY,compounder,short,3.5,-5.0,-1.5,-1.5,44.75,moderate,False,CANCEL BUY,0.0,BQ 3.5 + valuation tax -5.0 = -1.5 | FS class moderate
+FRACTAL TRACK,GOOG,EQUITY,compounder,short,3.5,-5.0,-1.5,-1.5,50.75,moderate,False,CANCEL BUY,0.0,BQ 3.5 + valuation tax -5.0 = -1.5 | FS class moderate
 BASELINEDIVERGENCE,^GSPC,INDEX,,short,,,,,,,False,NOT_APPLICABLE,0.0,quoteType=INDEX
 FRACTAL TRACK,GBPUSD=X,CURRENCY,,short,,,,,,,False,NOT_APPLICABLE,0.0,quoteType=CURRENCY
 FRACTAL TRACK,GILD,EQUITY,compounder,short,4.0,-2.0,2.0,2.0,70.0,moderate_high,False,REDUCED BUY,25.0,BQ 4.0 + valuation tax -2.0 = 2.0 | FS class moderate_high

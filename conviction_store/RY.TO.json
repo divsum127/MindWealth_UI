@@ -201,7 +201,7 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 66532000000.0,
   "industry": "Banks - Diversified",
-  "last_daily_update": "2026-05-18T19:38:36+00:00",
+  "last_daily_update": "2026-05-18T20:08:18+00:00",
   "last_full_calc": "2026-05-15T16:32:44+00:00",
   "manual_overrides": {},
   "market_cap": 351328484597.5,
@@ -312,7 +312,7 @@
   "roic_5y_avg": 0.15395,
   "sector": "Financial Services",
   "ticker": "RY.TO",
-  "updated_at": "2026-05-18T19:38:36+00:00",
+  "updated_at": "2026-05-18T20:08:18+00:00",
   "valuation_tax": -5.0,
   "yield_trap_warning": false
 }

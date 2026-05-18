@@ -200,7 +200,7 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 4477573660672.0,
   "industry": "Oil & Gas Refining & Marketing",
-  "last_daily_update": "2026-05-18T19:38:36+00:00",
+  "last_daily_update": "2026-05-18T20:08:18+00:00",
   "last_full_calc": "2026-05-15T16:28:59+00:00",
   "manual_overrides": {},
   "market_cap": 1199741832619.2,
@@ -320,7 +320,7 @@
   "roic_5y_avg": 0.2248017780770405,
   "sector": "Energy",
   "ticker": "BPCL.NS",
-  "updated_at": "2026-05-18T19:38:36+00:00",
+  "updated_at": "2026-05-18T20:08:18+00:00",
   "valuation_tax": 0.0,
   "yield_trap_warning": false
 }

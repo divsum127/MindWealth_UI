@@ -187,10 +187,10 @@
   },
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 5256578666.481304,
+  "enterprise_value": 5273664409.3887825,
   "eps_fwd": 2.03026,
   "eps_ttm": 6.84,
-  "ev_fwd_rev": 0.8066,
+  "ev_fwd_rev": 0.8093,
   "fcf_ttm": 1115616000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -201,10 +201,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 6516577792.0,
   "industry": "Software - Application",
-  "last_daily_update": "2026-05-18T19:38:36+00:00",
+  "last_daily_update": "2026-05-18T20:08:18+00:00",
   "last_full_calc": "2026-05-15T16:31:17+00:00",
   "manual_overrides": {},
-  "market_cap": 5059269666.481304,
+  "market_cap": 5076355409.3887825,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -221,7 +221,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 197309000.0,
-  "owner_earnings_yield": 0.220509,
+  "owner_earnings_yield": 0.219767,
   "pe_20y_array": [
     95.7895,
     94.2105,
@@ -305,7 +305,7 @@
     49.8269
   ],
   "pe_percentile_20y": 0.0,
-  "pe_ttm": 1.9481,
+  "pe_ttm": 1.9547,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -314,12 +314,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 13.324999809265137,
+  "price": 13.369999885559082,
   "quote_type": "EQUITY",
   "roic_5y_avg": 1.47808,
   "sector": "Technology",
   "ticker": "LYFT",
-  "updated_at": "2026-05-18T19:38:36+00:00",
+  "updated_at": "2026-05-18T20:08:18+00:00",
   "valuation_tax": 0.0,
   "yield_trap_warning": false
 }

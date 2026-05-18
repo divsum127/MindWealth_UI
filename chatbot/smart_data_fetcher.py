@@ -28,10 +28,18 @@ from config import (
 )
 
 try:
-    from .outstanding_paths import resolve_outstanding_signal_path
+    from .outstanding_paths import (
+        resolve_all_signal_path,
+        resolve_outstanding_signal_path,
+        trade_store_us_dir,
+    )
     from .breadth_context import BREADTH_SBI_COLUMNS, BREADTH_NUMERIC_COLUMNS
 except ImportError:  # pragma: no cover — script-style import when ``chatbot`` is not a package
-    from outstanding_paths import resolve_outstanding_signal_path
+    from outstanding_paths import (  # type: ignore
+        resolve_all_signal_path,
+        resolve_outstanding_signal_path,
+        trade_store_us_dir,
+    )
     from breadth_context import BREADTH_SBI_COLUMNS, BREADTH_NUMERIC_COLUMNS
 
 _project_root = Path(__file__).resolve().parent.parent
@@ -275,7 +283,176 @@ class SmartDataFetcher:
             edf["SignalType"] = "entry"
         if not edf.empty:
             logger.info("Entry data from consolidated entry.csv (%s rows)", len(edf))
+
+        edf = self._supplement_entry_from_all_signal(edf, assets)
+        if assets:
+            edf = self._supplement_entry_from_virtual_trading(edf, assets)
         return edf
+
+    @staticmethod
+    def _entry_signal_identity_key(row: pd.Series) -> tuple:
+        """Stable key for one open trade (function × entry date × direction × interval)."""
+        func = str(row.get("Function", "")).strip()
+        sym_col = str(row.get(SYMBOL_SIGNAL_COMPOUND_COL, "")).strip()
+        m = re.search(r"(\d{4}-\d{2}-\d{2})", sym_col)
+        entry_date = m.group(1) if m else ""
+        if ", Long," in sym_col:
+            side = "Long"
+        elif ", Short," in sym_col:
+            side = "Short"
+        else:
+            side = ""
+        interval = ""
+        interval_col = "Interval, Confirmation Status"
+        if interval_col in row.index and pd.notna(row.get(interval_col)):
+            interval = str(row[interval_col]).split(",")[0].strip()
+        return (func, entry_date, side, interval)
+
+    def _supplement_entry_from_all_signal(
+        self,
+        df: pd.DataFrame,
+        assets: Optional[List[str]],
+    ) -> pd.DataFrame:
+        """
+        Merge open rows from the latest All Signal report that are missing from
+        ``entry.csv`` / outstanding (e.g. PULSEGAUGE entries not in outstanding export).
+        """
+        path = resolve_all_signal_path()
+        if path is None or not path.is_file():
+            return df
+
+        try:
+            adf = pd.read_csv(path, encoding=CSV_ENCODING)
+            adf = normalize_today_price_column_names(adf)
+            adf = self._filter_outstanding_open_rows(adf)
+            adf = self._filter_df_by_assets(adf, assets)
+        except Exception as exc:
+            logger.warning("Could not supplement entry from all_signal %s: %s", path, exc)
+            return df
+
+        if adf.empty:
+            return df
+
+        keys = {self._entry_signal_identity_key(row) for _, row in df.iterrows()} if not df.empty else set()
+        extra_rows = []
+        for _, row in adf.iterrows():
+            key = self._entry_signal_identity_key(row)
+            if key not in keys:
+                extra_rows.append(row)
+                keys.add(key)
+
+        if not extra_rows:
+            return df
+
+        extra_df = pd.DataFrame(extra_rows)
+        if "SignalType" not in extra_df.columns:
+            extra_df = extra_df.copy()
+            extra_df["SignalType"] = "entry"
+        logger.info(
+            "Supplemented %s open entry row(s) from all_signal report: %s",
+            len(extra_df),
+            path.name,
+        )
+        if df.empty:
+            return extra_df
+        return pd.concat([df, extra_df], ignore_index=True)
+
+    def _supplement_entry_from_virtual_trading(
+        self,
+        df: pd.DataFrame,
+        assets: List[str],
+    ) -> pd.DataFrame:
+        """
+        For single-asset queries, add open Virtual Trading rows not present in consolidated
+        entry data (e.g. FRACTAL TRACK daily long confirmed on 2026-04-28).
+        """
+        us = trade_store_us_dir()
+        if not us.is_dir():
+            return df
+
+        keys = {self._entry_signal_identity_key(row) for _, row in df.iterrows()} if not df.empty else set()
+        extra_rows = []
+
+        for vt_name, default_side in (
+            ("virtual_trading_long.csv", "Long"),
+            ("virtual_trading_short.csv", "Short"),
+        ):
+            vt_path = us / vt_name
+            if not vt_path.is_file():
+                continue
+            try:
+                vdf = pd.read_csv(vt_path, encoding=CSV_ENCODING)
+            except Exception as exc:
+                logger.warning("Could not read %s: %s", vt_path, exc)
+                continue
+
+            if vdf.empty:
+                continue
+
+            sym_col = "Symbol"
+            if sym_col not in vdf.columns:
+                continue
+            vdf = vdf[vdf[sym_col].astype(str).str.strip().isin(assets)]
+            if "Status" in vdf.columns:
+                vdf = vdf[vdf["Status"].astype(str).str.strip().str.lower() == "open"]
+            if vdf.empty:
+                continue
+
+            for _, row in vdf.iterrows():
+                symbol = str(row.get("Symbol", "")).strip()
+                side = str(row.get("Signal", default_side)).strip() or default_side
+                entry_date = str(row.get("Entry Date", "")).strip()
+                if not symbol or not entry_date or entry_date.lower() == "nan":
+                    continue
+                try:
+                    entry_price = float(row.get("Entry Price"))
+                    price_str = f"{entry_price:g}"
+                except (TypeError, ValueError):
+                    price_str = str(row.get("Entry Price", "")).strip()
+
+                interval = str(row.get("Interval", "Daily")).strip() or "Daily"
+                compound = f"{symbol}, {side}, {entry_date} (Price: {price_str})"
+                mtm = str(row.get("Realised/Unrealised Profit", "") or "").strip()
+                today_px = row.get("Today price", "")
+                try:
+                    today_str = f"{float(today_px):g}"
+                except (TypeError, ValueError):
+                    today_str = str(today_px).strip()
+
+                synthetic = {
+                    "Function": row.get("Function", ""),
+                    SYMBOL_SIGNAL_COMPOUND_COL: compound,
+                    EXIT_DATE_COL: "No Exit Yet",
+                    "Current Mark to Market and Holding Period": mtm or "No Information",
+                    "Interval, Confirmation Status": (
+                        f"{interval}, is CONFIRMED on {entry_date}"
+                    ),
+                    "Today Trading Date/Price[$], Today Price vs Signal": (
+                        f"(Price: {today_str}), Virtual Trading export"
+                        if today_str
+                        else "No Information"
+                    ),
+                    "SignalType": "entry",
+                    "Signal Open Price": price_str,
+                }
+                key = self._entry_signal_identity_key(pd.Series(synthetic))
+                if key in keys:
+                    continue
+                extra_rows.append(synthetic)
+                keys.add(key)
+
+        if not extra_rows:
+            return df
+
+        extra_df = pd.DataFrame(extra_rows)
+        logger.info(
+            "Supplemented %s open entry row(s) from virtual_trading for assets %s",
+            len(extra_df),
+            assets,
+        )
+        if df.empty:
+            return extra_df
+        return pd.concat([df, extra_df], ignore_index=True)
 
     def _consolidated_source_ready(self, signal_type: str) -> bool:
         """True if we can serve this signal type from the consolidated / report path."""

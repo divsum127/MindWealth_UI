@@ -199,7 +199,7 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 3434500096.0,
   "industry": "Utilities - Independent Power Producers",
-  "last_daily_update": "2026-05-18T19:38:36+00:00",
+  "last_daily_update": "2026-05-18T20:08:18+00:00",
   "last_full_calc": "2026-05-15T16:30:27+00:00",
   "manual_overrides": {},
   "market_cap": 2759124224.65012,
@@ -237,7 +237,7 @@
   "roic_5y_avg": 0.06421,
   "sector": "Utilities",
   "ticker": "GNE.NZ",
-  "updated_at": "2026-05-18T19:38:36+00:00",
+  "updated_at": "2026-05-18T20:08:18+00:00",
   "valuation_tax": 0.0,
   "yield_trap_warning": false
 }

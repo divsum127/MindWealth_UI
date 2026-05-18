@@ -64,7 +64,7 @@ TRENDPULSE,"TD, Long, 2026-05-15 (Price: 107.64)",TD,EQUITY,compounder,short,-1.
 TRENDPULSE,"CNQ.TO, Long, 2026-05-15 (Price: 66.08)",CNQ.TO,EQUITY,cyclical,short,5.0,-4.0,1.0,1.0,67.5,moderate_high,False,CANCEL BUY,0.0,BQ 5.0 + valuation tax -4.0 = 1.0 | FS class moderate_high
 TRENDPULSE,"SUNPHARMA.NS, Long, 2026-05-15 (Price: 1878.2)",SUNPHARMA.NS,EQUITY,compounder,short,6.5,-5.0,1.5,1.5,60.25,moderate_high,False,CANCEL BUY,0.0,BQ 6.5 + valuation tax -5.0 = 1.5 | FS class moderate_high
 TRENDPULSE,"IMO.TO, Long, 2026-05-15 (Price: 185.26)",IMO.TO,EQUITY,cyclical,short,4.5,-4.0,0.5,0.5,60.25,moderate_high,False,CANCEL BUY,0.0,BQ 4.5 + valuation tax -4.0 = 0.5 | FS class moderate_high
-TRENDPULSE,"GOOG, Long, 2026-05-14 (Price: 397.17)",GOOG,EQUITY,compounder,short,3.5,-5.0,-1.5,-1.5,44.75,moderate,False,CANCEL BUY,0.0,BQ 3.5 + valuation tax -5.0 = -1.5 | FS class moderate
+TRENDPULSE,"GOOG, Long, 2026-05-14 (Price: 397.17)",GOOG,EQUITY,compounder,short,3.5,-5.0,-1.5,-1.5,50.75,moderate,False,CANCEL BUY,0.0,BQ 3.5 + valuation tax -5.0 = -1.5 | FS class moderate
 TRENDPULSE,"NVDA, Long, 2026-05-14 (Price: 235.74)",NVDA,EQUITY,compounder,short,3.5,-5.0,-1.5,-1.5,44.75,moderate,False,CANCEL BUY,0.0,BQ 3.5 + valuation tax -5.0 = -1.5 | FS class moderate
 TRENDPULSE,"BABA, Long, 2026-05-14 (Price: 141.12)",BABA,EQUITY,compounder,short,0.0,-5.0,-5.0,-5.0,39.0,moderate_low,False,CANCEL BUY,0.0,BQ 0.0 + valuation tax -5.0 = -5.0 | FS class moderate_low
 TRENDPULSE,"CEN.NZ, Long, 2026-05-14 (Price: 9.9)",CEN.NZ,EQUITY,income,short,1.5,0.0,1.5,1.5,61.75,moderate_high,False,CANCEL BUY,0.0,BQ 1.5 + valuation tax 0.0 = 1.5 | FS class moderate_high
@@ -98,7 +98,7 @@ TRENDPULSE,"HDFCBANK.NS, Long, 2026-05-07 (Price: 796.05)",HDFCBANK.NS,EQUITY,co
 TRENDPULSE,"CVS, Long, 2026-05-07 (Price: 87.36)",CVS,EQUITY,income,short,-4.0,0.0,-4.0,-4.0,48.0,moderate,False,CANCEL BUY,0.0,BQ -4.0 + valuation tax 0.0 = -4.0 | FS class moderate
 TRENDPULSE,"CEN.NZ, Long, 2026-05-07 (Price: 9.9)",CEN.NZ,EQUITY,income,short,1.5,0.0,1.5,1.5,61.75,moderate_high,False,CANCEL BUY,0.0,BQ 1.5 + valuation tax 0.0 = 1.5 | FS class moderate_high
 TRENDPULSE,"AAPL, Long, 2026-05-06 (Price: 287.51)",AAPL,EQUITY,compounder,short,3.0,-5.0,-2.0,-2.0,43.5,moderate,False,CANCEL BUY,0.0,BQ 3.0 + valuation tax -5.0 = -2.0 | FS class moderate
-TRENDPULSE,"GOOG, Long, 2026-05-06 (Price: 395.14)",GOOG,EQUITY,compounder,short,3.5,-5.0,-1.5,-1.5,44.75,moderate,False,CANCEL BUY,0.0,BQ 3.5 + valuation tax -5.0 = -1.5 | FS class moderate
+TRENDPULSE,"GOOG, Long, 2026-05-06 (Price: 395.14)",GOOG,EQUITY,compounder,short,3.5,-5.0,-1.5,-1.5,50.75,moderate,False,CANCEL BUY,0.0,BQ 3.5 + valuation tax -5.0 = -1.5 | FS class moderate
 TRENDPULSE,"QQQ, Long, 2026-05-06 (Price: 695.77)",QQQ,ETF,,short,,,,,,,False,NOT_APPLICABLE,0.0,quoteType=ETF
 TRENDPULSE,"^NDX, Long, 2026-05-06 (Price: 28599.1719)",^NDX,INDEX,,short,,,,,,,False,NOT_APPLICABLE,0.0,quoteType=INDEX
 TRENDPULSE,"SPY, Long, 2026-05-06 (Price: 733.83)",SPY,ETF,,short,,,,,,,False,NOT_APPLICABLE,0.0,quoteType=ETF
@@ -111,7 +111,7 @@ TRENDPULSE,"RINF, Long, 2026-05-03 (Price: 32.56)",RINF,ETF,,short,,,,,,,False,N
 TRENDPULSE,"MEL.NZ, Long, 2026-05-03 (Price: 5.72)",MEL.NZ,EQUITY,income,short,-1.5,0.0,-1.5,-1.5,49.25,moderate,False,CANCEL BUY,0.0,BQ -1.5 + valuation tax 0.0 = -1.5 | FS class moderate
 TRENDPULSE,"GRANULES.NS, Long, 2026-05-03 (Price: 701.0)",GRANULES.NS,EQUITY,compounder,short,5.5,-5.0,0.5,0.5,55.75,moderate_high,False,CANCEL BUY,0.0,BQ 5.5 + valuation tax -5.0 = 0.5 | FS class moderate_high
 TRENDPULSE,"PPL.TO, Long, 2026-05-03 (Price: 63.2)",PPL.TO,EQUITY,cyclical,short,5.0,-5.0,0.0,0.0,53.5,moderate,False,CANCEL BUY,0.0,BQ 5.0 + valuation tax -5.0 = 0.0 | FS class moderate
-TRENDPULSE,"GOOG, Long, 2026-05-01 (Price: 383.22)",GOOG,EQUITY,compounder,short,3.5,-5.0,-1.5,-1.5,44.75,moderate,False,CANCEL BUY,0.0,BQ 3.5 + valuation tax -5.0 = -1.5 | FS class moderate
+TRENDPULSE,"GOOG, Long, 2026-05-01 (Price: 383.22)",GOOG,EQUITY,compounder,short,3.5,-5.0,-1.5,-1.5,50.75,moderate,False,CANCEL BUY,0.0,BQ 3.5 + valuation tax -5.0 = -1.5 | FS class moderate
 TRENDPULSE,"AIA.NZ, Long, 2026-05-01 (Price: 8.37)",AIA.NZ,EQUITY,compounder,short,0.0,-5.0,-5.0,-5.0,34.0,moderate_low,False,CANCEL BUY,0.0,BQ 0.0 + valuation tax -5.0 = -5.0 | FS class moderate_low
 TRENDPULSE,"MEL.NZ, Long, 2026-05-01 (Price: 5.72)",MEL.NZ,EQUITY,income,short,-1.5,0.0,-1.5,-1.5,49.25,moderate,False,CANCEL BUY,0.0,BQ -1.5 + valuation tax 0.0 = -1.5 | FS class moderate
 TRENDPULSE,"^TNX, Long, 2026-04-30 (Price: 4.39)",^TNX,INDEX,,long,,,,,,,False,NOT_APPLICABLE,0.0,quoteType=INDEX
@@ -174,7 +174,7 @@ TRENDPULSE,"CRM, Long, 2025-12-07 (Price: 260.57)",CRM,EQUITY,saas,short,2.0,-1.
 TRENDPULSE,"PERSISTENT.NS, Long, 2025-12-05 (Price: 6520.5)",PERSISTENT.NS,EQUITY,compounder,short,3.5,-2.0,1.5,1.5,63.75,moderate_high,False,CANCEL BUY,0.0,BQ 3.5 + valuation tax -2.0 = 1.5 | FS class moderate_high
 TRENDPULSE,"AAPL, Long, 2025-12-02 (Price: 286.19)",AAPL,EQUITY,compounder,short,3.0,-5.0,-2.0,-2.0,43.5,moderate,False,CANCEL BUY,0.0,BQ 3.0 + valuation tax -5.0 = -2.0 | FS class moderate
 TRENDPULSE,"NAUKRI.NS, Long, 2025-12-02 (Price: 1386.6)",NAUKRI.NS,EQUITY,compounder,short,2.5,-5.0,-2.5,-2.5,53.25,moderate,False,CANCEL BUY,0.0,BQ 2.5 + valuation tax -5.0 = -2.5 | FS class moderate
-TRENDPULSE,"GOOG, Long, 2025-11-30 (Price: 320.12)",GOOG,EQUITY,compounder,short,3.5,-5.0,-1.5,-1.5,44.75,moderate,False,CANCEL BUY,0.0,BQ 3.5 + valuation tax -5.0 = -1.5 | FS class moderate
+TRENDPULSE,"GOOG, Long, 2025-11-30 (Price: 320.12)",GOOG,EQUITY,compounder,short,3.5,-5.0,-1.5,-1.5,50.75,moderate,False,CANCEL BUY,0.0,BQ 3.5 + valuation tax -5.0 = -1.5 | FS class moderate
 TRENDPULSE,"HDFCBANK.NS, Long, 2025-11-30 (Price: 1007.6)",HDFCBANK.NS,EQUITY,compounder,long,0.0,-3.0,-3.0,-3.0,50.0,moderate,False,CANCEL BUY,0.0,BQ 0.0 + valuation tax -3.0 = -3.0 | FS class moderate
 TRENDPULSE,"XIU.TO, Long, 2025-11-30 (Price: 46.43)",XIU.TO,ETF,,long,,,,,,,False,NOT_APPLICABLE,0.0,quoteType=ETF
 TRENDPULSE,"EFN.TO, Long, 2025-11-30 (Price: 37.23)",EFN.TO,EQUITY,compounder,short,-3.0,-5.0,-8.0,-8.0,31.5,moderate_low,False,CANCEL BUY,0.0,BQ -3.0 + valuation tax -5.0 = -8.0 | FS class moderate_low

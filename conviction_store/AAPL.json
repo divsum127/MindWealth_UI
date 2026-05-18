@@ -185,12 +185,12 @@
       "pe_ttm": true
     }
   },
-  "dividend_yield_current": 0.003636,
+  "dividend_yield_current": 0.003626,
   "dividend_yield_zscore": null,
-  "enterprise_value": 4432754558852.173,
+  "enterprise_value": 4444506057253.296,
   "eps_fwd": 9.5861,
   "eps_ttm": 8.26,
-  "ev_fwd_rev": 9.8191,
+  "ev_fwd_rev": 9.8451,
   "fcf_ttm": 123324000000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -202,10 +202,10 @@
   "full_recalc_trigger": "verify",
   "fwd_revenue_stored": 451442016256.0,
   "industry": "Consumer Electronics",
-  "last_daily_update": "2026-05-18T19:38:36+00:00",
+  "last_daily_update": "2026-05-18T20:08:18+00:00",
   "last_full_calc": "2026-05-15T17:01:33+00:00",
   "manual_overrides": {},
-  "market_cap": 4362730558852.173,
+  "market_cap": 4374482057253.296,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -222,7 +222,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 70024000000.0,
-  "owner_earnings_yield": 0.028268,
+  "owner_earnings_yield": 0.028192,
   "pe_20y_array": [
     31.397,
     31.3578,
@@ -306,7 +306,7 @@
     36.4982
   ],
   "pe_percentile_20y": 96.25,
-  "pe_ttm": 35.9612,
+  "pe_ttm": 36.0581,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -315,12 +315,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 297.0398864746094,
+  "price": 297.8399963378906,
   "quote_type": "EQUITY",
   "roic_5y_avg": 1.4147099,
   "sector": "Technology",
   "ticker": "AAPL",
-  "updated_at": "2026-05-18T19:38:36+00:00",
+  "updated_at": "2026-05-18T20:08:18+00:00",
   "valuation_tax": -5.0,
   "yield_trap_warning": false
 }

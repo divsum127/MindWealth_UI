@@ -185,12 +185,12 @@
       "pe_ttm": true
     }
   },
-  "dividend_yield_current": 0.00603,
+  "dividend_yield_current": 0.006027,
   "dividend_yield_zscore": null,
-  "enterprise_value": 57931039957.85846,
+  "enterprise_value": 57962506358.44972,
   "eps_fwd": 5.88803,
   "eps_ttm": 3.95,
-  "ev_fwd_rev": 21.0991,
+  "ev_fwd_rev": 21.1106,
   "fcf_ttm": 664890000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -201,10 +201,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 2745658112.0,
   "industry": "Gold",
-  "last_daily_update": "2026-05-18T19:38:36+00:00",
+  "last_daily_update": "2026-05-18T20:08:18+00:00",
   "last_full_calc": "2026-05-15T16:33:49+00:00",
   "manual_overrides": {},
-  "market_cap": 58744034957.85846,
+  "market_cap": 58775501358.44972,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -221,7 +221,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": -812995000.0,
-  "owner_earnings_yield": 0.011318,
+  "owner_earnings_yield": 0.011312,
   "pe_20y_array": [
     61.175,
     62.2222,
@@ -305,7 +305,7 @@
     54.8148
   ],
   "pe_percentile_20y": 0.0,
-  "pe_ttm": 32.7485,
+  "pe_ttm": 32.766,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -314,12 +314,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 129.35650634765625,
+  "price": 129.42579650878906,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.21542,
   "sector": "Basic Materials",
   "ticker": "WPM",
-  "updated_at": "2026-05-18T19:38:36+00:00",
+  "updated_at": "2026-05-18T20:08:18+00:00",
   "valuation_tax": -5.0,
   "yield_trap_warning": false
 }

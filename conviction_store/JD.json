@@ -185,9 +185,9 @@
       "pe_ttm": true
     }
   },
-  "dividend_yield_current": 0.031606,
+  "dividend_yield_current": 0.031646,
   "dividend_yield_zscore": null,
-  "enterprise_value": 24147819175.720215,
+  "enterprise_value": 24093800515.174866,
   "eps_fwd": 4.322138,
   "eps_ttm": 1.36,
   "ev_fwd_rev": 0.0182,
@@ -201,10 +201,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 1323697045504.0,
   "industry": "Internet Retail",
-  "last_daily_update": "2026-05-18T19:38:36+00:00",
+  "last_daily_update": "2026-05-18T20:08:18+00:00",
   "last_full_calc": "2026-05-15T16:31:01+00:00",
   "manual_overrides": {},
-  "market_cap": 42729819175.720215,
+  "market_cap": 42675800515.174866,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -221,7 +221,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": -18582000000.0,
-  "owner_earnings_yield": 0.483971,
+  "owner_earnings_yield": 0.484584,
   "pe_20y_array": [
     2.3772,
     2.3645,
@@ -305,7 +305,7 @@
     2.5265
   ],
   "pe_percentile_20y": 100.0,
-  "pe_ttm": 23.2647,
+  "pe_ttm": 23.2353,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -314,12 +314,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 31.639999389648438,
+  "price": 31.600000381469727,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.06004,
   "sector": "Consumer Cyclical",
   "ticker": "JD",
-  "updated_at": "2026-05-18T19:38:36+00:00",
+  "updated_at": "2026-05-18T20:08:18+00:00",
   "valuation_tax": -2.0,
   "yield_trap_warning": false
 }

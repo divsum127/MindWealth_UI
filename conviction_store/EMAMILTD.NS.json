@@ -200,7 +200,7 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 38174584832.0,
   "industry": "Household & Personal Products",
-  "last_daily_update": "2026-05-18T19:38:36+00:00",
+  "last_daily_update": "2026-05-18T20:08:18+00:00",
   "last_full_calc": "2026-05-15T16:29:58+00:00",
   "manual_overrides": {},
   "market_cap": 184333950000.0,
@@ -320,7 +320,7 @@
   "roic_5y_avg": 0.2867493818237151,
   "sector": "Consumer Defensive",
   "ticker": "EMAMILTD.NS",
-  "updated_at": "2026-05-18T19:38:36+00:00",
+  "updated_at": "2026-05-18T20:08:18+00:00",
   "valuation_tax": -3.0,
   "yield_trap_warning": false
 }

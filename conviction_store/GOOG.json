@@ -185,26 +185,26 @@
       "pe_ttm": true
     }
   },
-  "dividend_yield_current": 0.002234,
+  "dividend_yield_current": 0.002239,
   "dividend_yield_zscore": null,
-  "enterprise_value": 4770735208486.8545,
+  "enterprise_value": 4762012073906.613,
   "eps_fwd": 14.46459,
   "eps_ttm": 13.11,
-  "ev_fwd_rev": 11.2917,
+  "ev_fwd_rev": 11.2711,
   "fcf_ttm": 73266000000.0,
   "fd_direction": "negative",
   "fd_votes": {},
   "flags": [],
   "fs_class": "moderate",
   "fs_quality_base": 58.75,
-  "fs_score": 44.75,
+  "fs_score": 50.75,
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 422498009088.0,
   "industry": "Internet Content & Information",
-  "last_daily_update": "2026-05-18T19:38:36+00:00",
+  "last_daily_update": "2026-05-18T20:08:18+00:00",
   "last_full_calc": "2026-05-15T16:30:29+00:00",
   "manual_overrides": {},
-  "market_cap": 4771425208486.8545,
+  "market_cap": 4762702073906.613,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -221,7 +221,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": -690000000.0,
-  "owner_earnings_yield": 0.015355,
+  "owner_earnings_yield": 0.015383,
   "pe_20y_array": [
     30.605,
     30.3821,
@@ -304,8 +304,8 @@
     30.2952,
     30.0057
   ],
-  "pe_percentile_20y": 80.0,
-  "pe_ttm": 30.0404,
+  "pe_percentile_20y": 77.5,
+  "pe_ttm": 29.9855,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -314,12 +314,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 393.8299865722656,
+  "price": 393.1099853515625,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.38884997,
   "sector": "Communication Services",
   "ticker": "GOOG",
-  "updated_at": "2026-05-18T19:38:36+00:00",
+  "updated_at": "2026-05-18T20:08:18+00:00",
   "valuation_tax": -5.0,
   "yield_trap_warning": false
 }

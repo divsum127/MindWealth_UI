@@ -201,7 +201,7 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 14016000000.0,
   "industry": "Banks - Diversified",
-  "last_daily_update": "2026-05-18T19:38:36+00:00",
+  "last_daily_update": "2026-05-18T20:08:18+00:00",
   "last_full_calc": "2026-05-15T16:31:47+00:00",
   "manual_overrides": {},
   "market_cap": 79864066824.89722,
@@ -312,7 +312,7 @@
   "roic_5y_avg": 0.14339,
   "sector": "Financial Services",
   "ticker": "NA.TO",
-  "updated_at": "2026-05-18T19:38:36+00:00",
+  "updated_at": "2026-05-18T20:08:18+00:00",
   "valuation_tax": -5.0,
   "yield_trap_warning": false
 }

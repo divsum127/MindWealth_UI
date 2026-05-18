@@ -497,16 +497,53 @@ class TestDailyConvictionPipeline(unittest.TestCase):
             (trade_dir / "2026-05-15_all_signal.csv").write_text("Function\n", encoding="utf-8")
             self.assertEqual(resolve_report_date(trade_dir), "2026-05-15")
 
-    def test_discover_daily_signal_files(self):
+    def test_discover_daily_signal_files_default_new_signal_only(self):
+        from src.conviction_engine.signals import PRIMARY_DAILY_REPORT_LABEL, discover_daily_signal_files
+
+        with tempfile.TemporaryDirectory() as tmp:
+            trade_dir = Path(tmp)
+            (trade_dir / "2026-05-15_all_signal.csv").write_text("Function\n", encoding="utf-8")
+            (trade_dir / "2026-05-15_new_signal.csv").write_text("Function\n", encoding="utf-8")
+            (trade_dir / "2026-05-15_outstanding_signal.csv").write_text("Function\n", encoding="utf-8")
+            found = discover_daily_signal_files("2026-05-15", trade_dir)
+            self.assertEqual(list(found.keys()), [PRIMARY_DAILY_REPORT_LABEL])
+
+    def test_discover_daily_signal_files_multi_when_requested(self):
         from src.conviction_engine.signals import discover_daily_signal_files
 
         with tempfile.TemporaryDirectory() as tmp:
             trade_dir = Path(tmp)
             (trade_dir / "2026-05-15_all_signal.csv").write_text("Function\n", encoding="utf-8")
-            (trade_dir / "2026-05-15_outstanding_signal.csv").write_text("Function\n", encoding="utf-8")
-            found = discover_daily_signal_files("2026-05-15", trade_dir)
+            (trade_dir / "2026-05-15_new_signal.csv").write_text("Function\n", encoding="utf-8")
+            found = discover_daily_signal_files(
+                "2026-05-15",
+                trade_dir,
+                overlay_reports=["all_signal.csv", "new_signal.csv"],
+            )
             self.assertIn("All Signal Report", found)
-            self.assertIn("Outstanding Signals", found)
+            self.assertIn("New Signals", found)
+
+    def test_daily_snapshot_store_helpers(self):
+        from src.conviction_engine.store import (
+            daily_new_signal_overlay_path,
+            list_daily_snapshot_dates,
+            load_daily_new_signal_overlay,
+        )
+
+        with tempfile.TemporaryDirectory() as tmp:
+            store = Path(tmp)
+            day_dir = store / "daily" / "2026-05-15"
+            day_dir.mkdir(parents=True)
+            overlay = day_dir / "2026-05-15_new_signal_conviction.csv"
+            overlay.write_text(
+                "Function,ticker,conviction_score\nTRENDPULSE,AAPL,5.0\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(list_daily_snapshot_dates(store), ["2026-05-15"])
+            self.assertEqual(daily_new_signal_overlay_path("2026-05-15", store), overlay)
+            df = load_daily_new_signal_overlay("2026-05-15", store)
+            self.assertEqual(len(df), 1)
+            self.assertAlmostEqual(float(df.iloc[0]["conviction_score"]), 5.0)
 
     def test_conviction_score_sheet_columns(self):
         from src.conviction_engine.daily_run import conviction_score_sheet

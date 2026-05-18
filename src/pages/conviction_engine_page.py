@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import pandas as pd
 import plotly.graph_objects as go
@@ -12,13 +13,28 @@ from ..conviction_engine.data_coverage import summarize_pe_history_distribution
 from ..conviction_engine.engine import apply_to_signal_file, generate_daily_report, update_overrides
 from ..conviction_engine.formatting import display_columns, summarize_overlay
 from ..conviction_engine.fundamentals_enriched import PE_HISTORY_TARGET_YEARS
-from ..conviction_engine.signals import discover_signal_sources
-from ..conviction_engine.store import list_records, load_record, overlay_path
+from ..conviction_engine.signals import PRIMARY_DAILY_REPORT_LABEL, discover_signal_sources
+from ..conviction_engine.store import (
+    daily_new_signal_overlay_path,
+    list_daily_snapshot_dates,
+    list_records,
+    load_daily_new_signal_overlay,
+    load_record,
+)
 
 
 @st.cache_data(show_spinner=False)
-def _load_overlay(source_path: str) -> pd.DataFrame:
-    return apply_to_signal_file(source_path, save_output=False)
+def _load_archived_overlay(report_date: str) -> pd.DataFrame:
+    return load_daily_new_signal_overlay(report_date)
+
+
+@st.cache_data(show_spinner=False)
+def _load_live_new_signal_overlay() -> pd.DataFrame:
+    sources = discover_signal_sources()
+    path = sources.get(PRIMARY_DAILY_REPORT_LABEL)
+    if not path:
+        return pd.DataFrame()
+    return apply_to_signal_file(path, save_output=False)
 
 
 def _metric_cards(summary: dict[str, int]) -> None:
@@ -99,7 +115,7 @@ def _verdict_chart(df: pd.DataFrame) -> None:
     st.plotly_chart(fig, use_container_width=True)
 
 
-def _ticker_detail(df: pd.DataFrame) -> None:
+def _ticker_detail(df: pd.DataFrame, archive_date: str | None = None) -> None:
     ticker_values: list[str] = []
     if "ticker" in df.columns:
         ticker_values.extend(df["ticker"].dropna().astype(str).unique().tolist())
@@ -113,6 +129,11 @@ def _ticker_detail(df: pd.DataFrame) -> None:
     ticker = st.selectbox("Select ticker", ticker_values, key="conviction_ticker_select")
     signal_rows = df[df.get("ticker", pd.Series(dtype=str)).astype(str) == ticker] if "ticker" in df.columns else pd.DataFrame()
     record = load_record(ticker)
+    if archive_date:
+        st.caption(
+            f"Overlay snapshot: **{archive_date}** (New Signals). "
+            "Ticker JSON below is the latest conviction_store record and may differ from that day."
+        )
 
     if record:
         coverage = record.get("data_coverage") or {}
@@ -216,25 +237,64 @@ def _manual_overrides() -> None:
 
 def create_conviction_engine_page() -> None:
     st.title("Conviction Engine")
-    st.caption("Fundamental conviction overlay for existing quant signals in trade_store.")
+    st.caption("Fundamental conviction overlay for the **New Signals** report (archived by report date).")
 
-    sources = discover_signal_sources()
-    if not sources:
-        st.warning("No supported signal CSVs were found in trade_store.")
-        return
+    snapshot_dates = list_daily_snapshot_dates()
+    recompute_live = st.checkbox(
+        "Recompute from latest trade_store (debug)",
+        value=False,
+        help="Uses current conviction_store scores on today's New Signals CSV instead of the archived daily snapshot.",
+    )
 
-    source_label = st.selectbox("Signal source", list(sources.keys()), key="conviction_source")
-    source_path = sources[source_label]
-    st.caption(f"Source: {source_path}")
+    selected_date: str | None = None
+    overlay_df = pd.DataFrame()
+    archive_path: Path | None = None
 
-    with st.spinner("Applying conviction overlay..."):
-        overlay_df = _load_overlay(str(source_path))
+    if recompute_live:
+        sources = discover_signal_sources()
+        if PRIMARY_DAILY_REPORT_LABEL not in sources:
+            st.warning("No New Signals CSV found in trade_store.")
+            return
+        source_path = sources[PRIMARY_DAILY_REPORT_LABEL]
+        st.caption(f"Live source: {source_path}")
+        with st.spinner("Applying conviction overlay from latest trade_store..."):
+            overlay_df = _load_live_new_signal_overlay()
+    else:
+        if not snapshot_dates:
+            st.warning(
+                "No daily conviction archives found. Run "
+                "`python scripts/run_conviction_engine_daily.py` after New Signals reports are synced."
+            )
+            return
+        selected_date = st.selectbox(
+            "Report date",
+            list(reversed(snapshot_dates)),
+            key="conviction_report_date",
+        )
+        st.caption(f"Report: **{PRIMARY_DAILY_REPORT_LABEL}**")
+        archive_path = daily_new_signal_overlay_path(selected_date)
+        if archive_path:
+            st.caption(f"Archive: {archive_path}")
+        overlay_df = _load_archived_overlay(selected_date)
+        if overlay_df.empty:
+            st.info(
+                f"No archived overlay for {selected_date}. Run "
+                "`python scripts/run_conviction_engine_daily.py --report-date "
+                f"{selected_date}` after that day's New Signals report is available."
+            )
+            return
 
     summary = summarize_overlay(overlay_df)
     _metric_cards(summary)
 
     tab_overlay, tab_charts, tab_detail, tab_report, tab_overrides = st.tabs(
         ["Signal Overlay", "Charts", "Ticker Detail", "Daily Report", "Manual Overrides"]
+    )
+
+    download_name = (
+        archive_path.name
+        if archive_path
+        else f"new_signal_conviction_live.csv"
     )
 
     with tab_overlay:
@@ -250,7 +310,7 @@ def create_conviction_engine_page() -> None:
             st.download_button(
                 "Download overlaid CSV",
                 data=csv,
-                file_name=overlay_path(source_path).name,
+                file_name=download_name,
                 mime="text/csv",
             )
 
@@ -264,7 +324,7 @@ def create_conviction_engine_page() -> None:
         _pe_history_years_chart()
 
     with tab_detail:
-        _ticker_detail(overlay_df)
+        _ticker_detail(overlay_df, archive_date=None if recompute_live else selected_date)
 
     with tab_report:
         records = list_records()

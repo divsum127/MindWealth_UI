@@ -20,8 +20,8 @@ TRENDPULSE,"SUNPHARMA.NS, Long, 2025-11-23 (Price: 1779.7)",SUNPHARMA.NS,EQUITY,
 TRENDPULSE,"BDL.NS, Long, 2026-01-06 (Price: 1542.5)",BDL.NS,EQUITY,compounder,short,11.0,-5.0,6.0,6.0,74.5,moderate_high,False,TACTICAL BUY,85.0,BQ 11.0 + valuation tax -5.0 = 6.0 | FS class moderate_high
 TRENDPULSE,"BDL.NS, Long, 2025-11-03 (Price: 1536.6)",BDL.NS,EQUITY,compounder,short,11.0,-5.0,6.0,6.0,74.5,moderate_high,False,TACTICAL BUY,85.0,BQ 11.0 + valuation tax -5.0 = 6.0 | FS class moderate_high
 SIGMASHELL,"BDL.NS, Long, 2025-09-01 (Price: 1458.7)",BDL.NS,EQUITY,compounder,short,11.0,-5.0,6.0,6.0,74.5,moderate_high,False,TACTICAL BUY,85.0,BQ 11.0 + valuation tax -5.0 = 6.0 | FS class moderate_high
-TRENDPULSE,"GOOG, Long, 2026-05-06 (Price: 395.14)",GOOG,EQUITY,compounder,short,3.5,-5.0,-1.5,-1.5,44.75,moderate,False,CANCEL BUY,0.0,BQ 3.5 + valuation tax -5.0 = -1.5 | FS class moderate
-TRENDPULSE,"GOOG, Long, 2025-11-30 (Price: 320.12)",GOOG,EQUITY,compounder,short,3.5,-5.0,-1.5,-1.5,44.75,moderate,False,CANCEL BUY,0.0,BQ 3.5 + valuation tax -5.0 = -1.5 | FS class moderate
+TRENDPULSE,"GOOG, Long, 2026-05-06 (Price: 395.14)",GOOG,EQUITY,compounder,short,3.5,-5.0,-1.5,-1.5,50.75,moderate,False,CANCEL BUY,0.0,BQ 3.5 + valuation tax -5.0 = -1.5 | FS class moderate
+TRENDPULSE,"GOOG, Long, 2025-11-30 (Price: 320.12)",GOOG,EQUITY,compounder,short,3.5,-5.0,-1.5,-1.5,50.75,moderate,False,CANCEL BUY,0.0,BQ 3.5 + valuation tax -5.0 = -1.5 | FS class moderate
 TRENDPULSE,"TSLA, Long, 2026-05-08 (Price: 428.35)",TSLA,EQUITY,compounder,short,-2.5,-5.0,-7.5,-7.5,27.75,moderate_low,False,CANCEL BUY,0.0,BQ -2.5 + valuation tax -5.0 = -7.5 | FS class moderate_low
 TRENDPULSE,"TSLA, Long, 2026-05-07 (Price: 411.79)",TSLA,EQUITY,compounder,short,-2.5,-5.0,-7.5,-7.5,27.75,moderate_low,False,CANCEL BUY,0.0,BQ -2.5 + valuation tax -5.0 = -7.5 | FS class moderate_low
 FRACTAL TRACK,"BRK-B, Long, 2026-04-12 (Price: 479.9)",BRK-B,EQUITY,compounder,short,2.0,-1.0,1.0,1.0,60.0,moderate_high,False,CANCEL BUY,0.0,BQ 2.0 + valuation tax -1.0 = 1.0 | FS class moderate_high
