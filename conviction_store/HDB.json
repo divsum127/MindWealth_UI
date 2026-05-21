@@ -72,20 +72,20 @@
         "source": "neutral_missing_inputs"
       },
       "growth_trajectory": {
-        "inputs_available": [
+        "inputs_available": [],
+        "inputs_missing": [
           "revenue_growth"
         ],
-        "inputs_missing": [],
         "score": -1.0,
-        "source": "auto"
+        "source": "neutral_missing_inputs"
       },
       "insider_ownership": {
-        "inputs_available": [
+        "inputs_available": [],
+        "inputs_missing": [
           "insider_pct"
         ],
-        "inputs_missing": [],
         "score": -1.0,
-        "source": "auto"
+        "source": "neutral_missing_inputs"
       },
       "macro_tailwind": {
         "inputs_available": [],
@@ -94,16 +94,15 @@
         "source": "manual_or_default"
       },
       "margin_quality": {
-        "inputs_available": [
+        "inputs_available": [],
+        "inputs_missing": [
           "revenue_growth",
+          "fcf_margin",
+          "distribution_coverage_ratio",
           "gross_margin"
         ],
-        "inputs_missing": [
-          "fcf_margin",
-          "distribution_coverage_ratio"
-        ],
         "score": 0.0,
-        "source": "partial_inputs"
+        "source": "neutral_missing_inputs"
       },
       "mgmt_capital_allocation": {
         "inputs_available": [],
@@ -118,35 +117,38 @@
         "source": "manual_or_default"
       },
       "revenue_quality": {
-        "inputs_available": [
-          "gross_margin"
-        ],
+        "inputs_available": [],
         "inputs_missing": [
+          "gross_margin",
           "fcf_margin"
         ],
         "score": 0.0,
-        "source": "partial_inputs"
+        "source": "neutral_missing_inputs"
       },
       "roic_wacc_spread": {
-        "inputs_available": [
-          "roic_proxy"
-        ],
+        "inputs_available": [],
         "inputs_missing": [
+          "roic_proxy",
           "roic"
         ],
         "score": 2.0,
-        "source": "partial_inputs"
+        "source": "neutral_missing_inputs"
       }
     },
-    "coverage_ratio": 0.7,
+    "coverage_ratio": 0.45,
     "fetch_errors": [],
     "fields_missing": [
       "fcf_ttm",
+      "revenue_growth",
       "fcf_margin",
+      "gross_margin",
       "net_debt_ebitda",
       "distribution_coverage_ratio",
       "gross_margin_trend",
-      "pe_20y_array"
+      "roic_proxy",
+      "pe_20y_array",
+      "revenue_accelerating",
+      "insider_pct"
     ],
     "fields_present": [
       "price",
@@ -156,17 +158,12 @@
       "net_debt_stored",
       "fwd_revenue_stored",
       "annual_div_per_share_stored",
-      "revenue_growth",
-      "gross_margin",
-      "roic_proxy",
       "dividend_yield_5y_mean",
-      "dividend_yield_5y_std",
-      "revenue_accelerating",
-      "insider_pct"
+      "dividend_yield_5y_std"
     ],
-    "info_available": true,
+    "info_available": false,
     "low_coverage_threshold": 0.45,
-    "low_data_confidence": false,
+    "low_data_confidence": true,
     "neutral_zero_policy": "Missing BQ inputs contribute 0 to bq_raw; conviction_score is not re-scaled by coverage.",
     "pe_history": {
       "has_pe_series": false,
@@ -176,7 +173,7 @@
     },
     "statements": {
       "balance": true,
-      "cashflow": false,
+      "cashflow": true,
       "income": true
     },
     "valuation_inputs": {
@@ -190,9 +187,9 @@
   },
   "dividend_yield_5y_mean": 0.011281,
   "dividend_yield_5y_std": 0.006952,
-  "dividend_yield_current": 0.017052,
-  "dividend_yield_zscore": 0.8301,
-  "enterprise_value": 5569518162372.824,
+  "dividend_yield_current": 0.017059,
+  "dividend_yield_zscore": 0.8311,
+  "enterprise_value": 5569473387778.749,
   "eps_fwd": 1.47308,
   "eps_ttm": 1.41,
   "ev_fwd_rev": 1.9658,
@@ -205,25 +202,31 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 2833153523712.0,
   "industry": "Banks - Regional",
-  "last_daily_update": "2026-05-18T20:48:56+00:00",
+  "last_daily_update": "2026-05-21T21:11:19+00:00",
   "last_full_calc": "2026-05-18T20:48:56+00:00",
   "manual_overrides": {},
-  "market_cap": 126396462372.82411,
+  "market_cap": 126351687778.74864,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
     "fcf_ttm",
+    "gross_margin",
     "gross_margin_trend",
+    "info:empty",
+    "insider_pct",
     "net_debt_ebitda",
     "pe_20y_array",
     "pe_history:insufficient_20y (0.0y)",
+    "revenue_accelerating",
+    "revenue_growth",
+    "roic_proxy",
     "valuation:owner_earnings_yield",
     "valuation:pe_percentile_20y"
   ],
   "net_debt_stored": 5443121700000.0,
   "owner_earnings_yield": null,
   "pe_percentile_20y": null,
-  "pe_ttm": 17.4681,
+  "pe_ttm": 17.461,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -232,12 +235,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 24.6299991607666,
+  "price": 24.6200008392334,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.13818,
   "sector": "Financial Services",
   "ticker": "HDB",
-  "updated_at": "2026-05-18T20:48:56+00:00",
+  "updated_at": "2026-05-21T21:11:19+00:00",
   "valuation_tax": -1.0,
   "yield_trap_warning": false
 }

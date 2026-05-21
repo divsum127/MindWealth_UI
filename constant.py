@@ -1,8 +1,10 @@
 OUTSTANDING_SIGNAL_CSV_PATH_US = "./trade_store/US/outstanding_signal.csv"
 
 BREADTH_CSV_PATH_US = "./trade_store/US/breadth.csv"
-# Breadth SBI consolidated CSV (for single SBI graph)
-BREADTH_SIGNAL_STORE_CSV_PATH_US = "./trade_store/US/breadth_us.csv"
+# Breadth SBI consolidated CSV (trade-arrival history for chart)
+BREADTH_SIGNAL_STORE_CSV_PATH_US = "./chatbot/data/breadth.csv"
+# Deprecated legacy breadth store (Bullish % only)
+BREADTH_LEGACY_STORE_CSV_PATH_US = "./trade_store/US/breadth_us.csv"
 
 TARGET_SIGNAL_CSV_PATH_US = "./trade_store/US/target_signal.csv"
 

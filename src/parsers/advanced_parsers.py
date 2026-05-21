@@ -49,35 +49,81 @@ def parse_new_signal(df):
     return parse_detailed_signal_csv(df)
 
 
+def _breadth_parse_number(value, default=0.0):
+    """Parse numeric breadth values (counts, percentiles, legacy %)."""
+    if value is None or (isinstance(value, float) and pd.isna(value)):
+        return default
+    s = str(value).strip()
+    if s == '' or s.lower() in ('nan', 'none', 'n/a'):
+        return default
+    s = s.replace('%', '').replace(',', '')
+    try:
+        return float(s)
+    except (ValueError, TypeError):
+        return default
+
+
+def _breadth_is_sbi_schema(df):
+    """Detect trade-arrival SBI schema from raw CSV columns."""
+    cols = set(df.columns)
+    return (
+        'Today Long Signal Percentile From Top (Last 6 Month)' in cols
+        or 'Total New Long Signal' in cols
+    )
+
+
 def parse_breadth(df):
-    """Parse breadth.csv"""
+    """Parse breadth.csv (trade-arrival SBI or legacy Bullish %)."""
+    use_sbi = _breadth_is_sbi_schema(df)
     processed_data = []
-    
+
     for _, row in df.iterrows():
-        # Extract function name
         function = row.get('Function', 'Unknown')
-        
-        # Extract bullish asset percentage
-        bullish_asset_str = str(row.get('Bullish Asset vs Total Asset (%)', '0%')).replace('%', '')
-        try:
-            bullish_asset_pct = float(bullish_asset_str)
-        except:
-            bullish_asset_pct = 0
-        
-        # Extract bullish signal percentage
-        bullish_signal_str = str(row.get('Bullish Signal vs Total Signal (%)', '0%')).replace('%', '')
-        try:
-            bullish_signal_pct = float(bullish_signal_str)
-        except:
-            bullish_signal_pct = 0
-        
-        processed_data.append({
+        entry = {
             'Function': function,
-            'Bullish_Asset_Percentage': bullish_asset_pct,
-            'Bullish_Signal_Percentage': bullish_signal_pct,
-            'Raw_Data': row.to_dict()
-        })
-    
+            'Raw_Data': row.to_dict(),
+        }
+
+        if use_sbi:
+            entry.update({
+                'Schema': 'sbi',
+                'Total_New_Long': _breadth_parse_number(row.get('Total New Long Signal')),
+                'Total_New_Short': _breadth_parse_number(row.get('Total New Short Signal')),
+                'Top10_Long_Threshold': _breadth_parse_number(
+                    row.get('Last 6 Month Top 10 Percentile No of Long Signal')
+                ),
+                'Top10_Short_Threshold': _breadth_parse_number(
+                    row.get('Last 6 Month Top 10 Percentile No of Short Signal')
+                ),
+                'Today_Long_Percentile': _breadth_parse_number(
+                    row.get('Today Long Signal Percentile From Top (Last 6 Month)')
+                ),
+                'Today_Short_Percentile': _breadth_parse_number(
+                    row.get('Today Short Signal Percentile From Top (Last 6 Month)')
+                ),
+                'Bullish_Asset_Percentage': 0.0,
+                'Bullish_Signal_Percentage': 0.0,
+            })
+        else:
+            bullish_asset = row.get('Bullish Asset vs Total Asset (%)')
+            if bullish_asset is None or str(bullish_asset).strip() in ('', 'nan'):
+                bullish_asset = row.get('Bullish Asset vs Total Asset (%).', '0%')
+            entry.update({
+                'Schema': 'legacy',
+                'Bullish_Asset_Percentage': _breadth_parse_number(bullish_asset),
+                'Bullish_Signal_Percentage': _breadth_parse_number(
+                    row.get('Bullish Signal vs Total Signal (%)')
+                ),
+                'Total_New_Long': 0,
+                'Total_New_Short': 0,
+                'Top10_Long_Threshold': 0,
+                'Top10_Short_Threshold': 0,
+                'Today_Long_Percentile': 0.0,
+                'Today_Short_Percentile': 0.0,
+            })
+
+        processed_data.append(entry)
+
     return pd.DataFrame(processed_data)
 
 

@@ -179,6 +179,8 @@
       "income": true
     },
     "valuation_inputs": {
+      "dividend_yield_5y_stats": false,
+      "dividend_yield_zscore": false,
       "ev_fwd_rev": true,
       "owner_earnings_yield": true,
       "pe_percentile_20y": true,
@@ -187,10 +189,10 @@
   },
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 5273664409.3887825,
+  "enterprise_value": 5315429357.55513,
   "eps_fwd": 2.03026,
   "eps_ttm": 6.84,
-  "ev_fwd_rev": 0.8093,
+  "ev_fwd_rev": 0.8157,
   "fcf_ttm": 1115616000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -201,10 +203,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 6516577792.0,
   "industry": "Software - Application",
-  "last_daily_update": "2026-05-18T20:28:34+00:00",
+  "last_daily_update": "2026-05-21T21:11:19+00:00",
   "last_full_calc": "2026-05-15T16:31:17+00:00",
   "manual_overrides": {},
-  "market_cap": 5076355409.3887825,
+  "market_cap": 5118120357.55513,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -218,10 +220,12 @@
     "pe_history:insufficient_20y (0.0y)",
     "revenue_accelerating",
     "revenue_growth",
-    "roic_proxy"
+    "roic_proxy",
+    "valuation:dividend_yield_5y_stats",
+    "valuation:dividend_yield_zscore"
   ],
   "net_debt_stored": 197309000.0,
-  "owner_earnings_yield": 0.219767,
+  "owner_earnings_yield": 0.217974,
   "pe_20y_array": [
     95.7895,
     94.2105,
@@ -305,7 +309,7 @@
     49.8269
   ],
   "pe_percentile_20y": 0.0,
-  "pe_ttm": 1.9547,
+  "pe_ttm": 1.9708,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -314,12 +318,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 13.369999885559082,
+  "price": 13.479999542236328,
   "quote_type": "EQUITY",
   "roic_5y_avg": 1.47808,
   "sector": "Technology",
   "ticker": "LYFT",
-  "updated_at": "2026-05-18T20:28:34+00:00",
+  "updated_at": "2026-05-21T21:11:19+00:00",
   "valuation_tax": 0.0,
   "yield_trap_warning": false
 }

@@ -59,7 +59,7 @@ The system has data organized in the following signal types:
 - Identify market regime changes
 - Gauge market breadth and participation
 
-**Key Metrics:** Bullish asset percentage, bullish signal percentage, market-wide statistics, date-based trends
+**Key Metrics:** Total new long/short signals, today long/short percentile from top (last 6 months), 6-month top-10% thresholds, Combined row, date-based trends
 
 ---
 
@@ -244,10 +244,14 @@ You will be provided with the available columns for each selected signal type in
     "required_columns": [
       "Date",
       "Function",
-      "Bullish Asset vs Total Asset (%)",
-      "Bullish Signal vs Total Signal (%)"
+      "Total New Long Signal",
+      "Total New Short Signal",
+      "Last 6 Month Top 10 Percentile No of Long Signal",
+      "Last 6 Month Top 10 Percentile No of Short Signal",
+      "Today Long Signal Percentile From Top (Last 6 Month)",
+      "Today Short Signal Percentile From Top (Last 6 Month)"
     ],
-    "reasoning": "For breadth signals, we need market-wide statistics showing the percentage of bullish assets and signals across all functions to assess overall market health."
+    "reasoning": "For trade-arrival SBI breadth, use new signal counts and today long/short percentiles vs the last 6 months. Prioritize Function = 'Combined (TrendPulse + DeltaDrift + BandMatrix)' for market-wide view."
   }
 }
 ```
@@ -296,10 +300,12 @@ You will be provided with the available columns for each selected signal type in
     "required_columns": [
       "Date",
       "Function",
-      "Bullish Asset vs Total Asset (%)",
-      "Bullish Signal vs Total Signal (%)"
+      "Total New Long Signal",
+      "Total New Short Signal",
+      "Today Long Signal Percentile From Top (Last 6 Month)",
+      "Today Short Signal Percentile From Top (Last 6 Month)"
     ],
-    "reasoning": "For breadth signals, show overall market conditions."
+    "reasoning": "For trade-arrival SBI breadth, show new signal activity and 6-month top-percentile ranks; use Combined row for market-wide conditions."
   }
 }
 ```
@@ -357,13 +363,15 @@ You will be provided with the available columns for each selected signal type in
   - Example: `"0.0%, 0 days"`
   - Extracts to: Gain=0.0%, Period=0 days
 
-### 3. Breadth Signal Type
+### 3. Breadth Signal Type (trade-arrival SBI)
 
-**Simpler Structure:** Breadth signals have simpler, non-combined columns:
+**Simpler Structure:** Breadth signals use trade-arrival SBI columns (S&P 500 universe):
 - Date (single value)
-- Function (single value)
-- Bullish Asset vs Total Asset (%) (single value)
-- Bullish Signal vs Total Signal (%) (single value)
+- Function (strategy name or `Combined (TrendPulse + DeltaDrift + BandMatrix)`)
+- Total New Long Signal / Total New Short Signal (counts today)
+- Last 6 Month Top 10 Percentile No of Long/Short Signal (historical extreme-day thresholds)
+- Today Long/Short Signal Percentile From Top (Last 6 Month) (top-percentile vs last 6 months; lower = quieter day)
+- Legacy rows may still include Bullish Asset/Signal % when present in older data
 
 ---
 

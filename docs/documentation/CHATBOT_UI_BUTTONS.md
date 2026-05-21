@@ -52,6 +52,8 @@ Runs a **single-ticker deep dive**: lists all signals for the chosen symbol in t
 ### Significance
 
 - **Portfolio decision support** for one name: reconciles conflicting signals across functions (FRACTAL TRACK, TRENDPULSE, etc.) and intervals (Daily vs Weekly vs Monthly).
+
+**Incident reference:** MSFT deep dives returned “No Signal” when absent from outstanding; BYDDY deep dives omitted signals (e.g. PULSEGAUGE 2026-04-23) when outstanding was non-empty but supplements never ran. See [byddy_deep_dive_missing_signals_fix.md](byddy_deep_dive_missing_signals_fix.md).
 - **Operational truth** for open trades: ties chatbot answers to the same MTM columns shown on the **Outstanding Signals** Streamlit page.
 - **Risk of contradictions** is explicit in the prompt (short target hit vs monthly long still open)—suited before sizing or hedging a position.
 

@@ -23,7 +23,18 @@ def create_analysis_page(data_file, page_title, show_page_header=True):
         return
     
     # Check if this is a breadth data page (after processing) - handle separately
-    if 'Function' in df.columns and 'Bullish_Asset_Percentage' in df.columns and 'Bullish_Signal_Percentage' in df.columns:
+    is_breadth_page = (
+        'Function' in df.columns
+        and (
+            'Schema' in df.columns
+            or 'Today_Long_Percentile' in df.columns
+            or (
+                'Bullish_Asset_Percentage' in df.columns
+                and 'Bullish_Signal_Percentage' in df.columns
+            )
+        )
+    )
+    if is_breadth_page:
         create_breadth_page(data_file, page_title)
         return
     

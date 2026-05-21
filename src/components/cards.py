@@ -734,10 +734,82 @@ def display_performance_cards_page(df):
                     st.write(f"**Avg Backtested Holding:** {format_days(f'{row['Avg_Backtested_Holding_Days']:.0f}')}")
 
 
+_COMBINED_FUNCTION_NAMES = (
+    'Combined (TrendPulse + DeltaDrift + BandMatrix)',
+    'All Function Combined',
+)
+
+
+def _breadth_uses_sbi_ui(df):
+    """True when parsed df has trade-arrival SBI metrics to display."""
+    if 'Schema' in df.columns and (df['Schema'] == 'sbi').any():
+        return True
+    if 'Today_Long_Percentile' not in df.columns:
+        return False
+    long_pct = df['Today_Long_Percentile'].fillna(0)
+    short_pct = df.get('Today_Short_Percentile', pd.Series(0, index=df.index)).fillna(0)
+    long_cnt = df.get('Total_New_Long', pd.Series(0, index=df.index)).fillna(0)
+    short_cnt = df.get('Total_New_Short', pd.Series(0, index=df.index)).fillna(0)
+    return bool(
+        (long_pct > 0).any()
+        or (short_pct > 0).any()
+        or (long_cnt > 0).any()
+        or (short_cnt > 0).any()
+    )
+
+
+def _breadth_combined_row(df):
+    """Market-wide combined row for summary cards."""
+    for name in _COMBINED_FUNCTION_NAMES:
+        matches = df[df['Function'] == name]
+        if not matches.empty:
+            return matches.iloc[-1]
+    return df.iloc[-1] if not df.empty else None
+
+
 def create_breadth_summary_cards(df):
-    """Create summary metric cards for breadth data"""
+    """Create summary metric cards for breadth data (SBI or legacy)."""
+    if _breadth_uses_sbi_ui(df):
+        combined = _breadth_combined_row(df)
+        if combined is None:
+            st.info("No breadth data available for summary.")
+            return
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.markdown(f"""
+            <div class="metric-card">
+                <h3>Total New Long</h3>
+                <h2>{combined.get('Total_New_Long', 0):.0f}</h2>
+                <p>{combined['Function']}</p>
+            </div>
+            """, unsafe_allow_html=True)
+        with col2:
+            st.markdown(f"""
+            <div class="metric-card">
+                <h3>Total New Short</h3>
+                <h2>{combined.get('Total_New_Short', 0):.0f}</h2>
+                <p>{combined['Function']}</p>
+            </div>
+            """, unsafe_allow_html=True)
+        with col3:
+            st.markdown(f"""
+            <div class="metric-card">
+                <h3>Long Percentile (Top)</h3>
+                <h2>{combined.get('Today_Long_Percentile', 0):.1f}%</h2>
+                <p>vs last 6 months</p>
+            </div>
+            """, unsafe_allow_html=True)
+        with col4:
+            st.markdown(f"""
+            <div class="metric-card">
+                <h3>Short Percentile (Top)</h3>
+                <h2>{combined.get('Today_Short_Percentile', 0):.1f}%</h2>
+                <p>vs last 6 months</p>
+            </div>
+            """, unsafe_allow_html=True)
+        return
+
     col1, col2, col3, col4 = st.columns(4)
-    
     with col1:
         avg_bullish_assets = df['Bullish_Asset_Percentage'].mean()
         st.markdown(f"""
@@ -746,7 +818,6 @@ def create_breadth_summary_cards(df):
             <h2>{avg_bullish_assets:.1f}%</h2>
         </div>
         """, unsafe_allow_html=True)
-    
     with col2:
         avg_bullish_signals = df['Bullish_Signal_Percentage'].mean()
         st.markdown(f"""
@@ -755,18 +826,14 @@ def create_breadth_summary_cards(df):
             <h2>{avg_bullish_signals:.1f}%</h2>
         </div>
         """, unsafe_allow_html=True)
-    
     with col3:
-        total_strategies = len(df)
         st.markdown(f"""
         <div class="metric-card">
             <h3>Total Strategies</h3>
-            <h2>{total_strategies}</h2>
+            <h2>{len(df)}</h2>
         </div>
         """, unsafe_allow_html=True)
-    
     with col4:
-        # Find the strategy with highest bullish assets
         best_asset_strategy = df.loc[df['Bullish_Asset_Percentage'].idxmax(), 'Function']
         best_asset_pct = df['Bullish_Asset_Percentage'].max()
         st.markdown(f"""
@@ -779,47 +846,84 @@ def create_breadth_summary_cards(df):
 
 
 def create_breadth_cards(df):
-    """Create individual breadth analysis cards"""
-    # Create cards in a 2-column layout
+    """Create individual breadth analysis cards (SBI trade-arrival or legacy)."""
     cols = st.columns(2)
-    
+    use_sbi = _breadth_uses_sbi_ui(df)
+
     for idx, (_, row) in enumerate(df.iterrows()):
         with cols[idx % 2]:
             with st.expander(f"📊 {row['Function']}", expanded=False):
-                col1, col2 = st.columns(2)
-                
-                with col1:
-                    st.metric(
-                        "Bullish Assets",
-                        f"{row['Bullish_Asset_Percentage']:.1f}%",
-                        help="Percentage of bullish assets vs total assets"
+                if use_sbi:
+                    c1, c2 = st.columns(2)
+                    with c1:
+                        st.metric(
+                            "Total New Long",
+                            f"{row.get('Total_New_Long', 0):.0f}",
+                            help="New long signals today (S&P 500 universe)",
+                        )
+                        st.metric(
+                            "Long Percentile (Top)",
+                            f"{row.get('Today_Long_Percentile', 0):.1f}%",
+                            help="Today's long count vs last 6 months (top-percentile; lower = quieter day)",
+                        )
+                    with c2:
+                        st.metric(
+                            "Total New Short",
+                            f"{row.get('Total_New_Short', 0):.0f}",
+                            help="New short signals today (S&P 500 universe)",
+                        )
+                        st.metric(
+                            "Short Percentile (Top)",
+                            f"{row.get('Today_Short_Percentile', 0):.1f}%",
+                            help="Today's short count vs last 6 months (top-percentile)",
+                        )
+                    st.caption(
+                        f"6-month top-10% thresholds — Long: {row.get('Top10_Long_Threshold', 0):.0f}, "
+                        f"Short: {row.get('Top10_Short_Threshold', 0):.0f}"
                     )
-                
-                with col2:
-                    st.metric(
-                        "Bullish Signals",
-                        f"{row['Bullish_Signal_Percentage']:.1f}%",
-                        help="Percentage of bullish signals vs total signals"
-                    )
-                
-                # Breadth strength indicator
-                avg_breadth = (row['Bullish_Asset_Percentage'] + row['Bullish_Signal_Percentage']) / 2
-                
-                if avg_breadth >= 70:
-                    breadth_status = "🟢 Strong"
-                    breadth_color = "green"
-                elif avg_breadth >= 40:
-                    breadth_status = "🟡 Moderate"
-                    breadth_color = "orange"
+                    long_p = row.get('Today_Long_Percentile', 0) or 0
+                    short_p = row.get('Today_Short_Percentile', 0) or 0
+                    avg_p = (long_p + short_p) / 2
+                    if avg_p >= 70:
+                        status, color = "🟢 High activity", "green"
+                    elif avg_p >= 40:
+                        status, color = "🟡 Moderate", "orange"
+                    else:
+                        status, color = "🔵 Quiet day", "steelblue"
+                    st.markdown(f"""
+                    <div style="text-align: center; margin-top: 10px;">
+                        <h4 style="color: {color};">{status}</h4>
+                        <p>Avg top-percentile: {avg_p:.1f}%</p>
+                    </div>
+                    """, unsafe_allow_html=True)
                 else:
-                    breadth_status = "🔴 Weak"
-                    breadth_color = "red"
-                
-                st.markdown(f"""
-                <div style="text-align: center; margin-top: 10px;">
-                    <h4 style="color: {breadth_color};">{breadth_status}</h4>
-                    <p>Average Breadth: {avg_breadth:.1f}%</p>
-                </div>
-                """, unsafe_allow_html=True)
+                    c1, c2 = st.columns(2)
+                    with c1:
+                        st.metric(
+                            "Bullish Assets",
+                            f"{row['Bullish_Asset_Percentage']:.1f}%",
+                            help="Percentage of bullish assets vs total assets",
+                        )
+                    with c2:
+                        st.metric(
+                            "Bullish Signals",
+                            f"{row['Bullish_Signal_Percentage']:.1f}%",
+                            help="Percentage of bullish signals vs total signals",
+                        )
+                    avg_breadth = (
+                        row['Bullish_Asset_Percentage'] + row['Bullish_Signal_Percentage']
+                    ) / 2
+                    if avg_breadth >= 70:
+                        breadth_status, breadth_color = "🟢 Strong", "green"
+                    elif avg_breadth >= 40:
+                        breadth_status, breadth_color = "🟡 Moderate", "orange"
+                    else:
+                        breadth_status, breadth_color = "🔴 Weak", "red"
+                    st.markdown(f"""
+                    <div style="text-align: center; margin-top: 10px;">
+                        <h4 style="color: {breadth_color};">{breadth_status}</h4>
+                        <p>Average Breadth: {avg_breadth:.1f}%</p>
+                    </div>
+                    """, unsafe_allow_html=True)
 
 

@@ -179,6 +179,8 @@
       "income": true
     },
     "valuation_inputs": {
+      "dividend_yield_5y_stats": false,
+      "dividend_yield_zscore": false,
       "ev_fwd_rev": true,
       "owner_earnings_yield": true,
       "pe_percentile_20y": true,
@@ -187,10 +189,10 @@
   },
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 3671224033.375168,
+  "enterprise_value": 3866835655.624161,
   "eps_fwd": 7.1175027,
   "eps_ttm": 4.02,
-  "ev_fwd_rev": 6.3209,
+  "ev_fwd_rev": 6.6577,
   "fcf_ttm": 101062000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -201,10 +203,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 580809984.0,
   "industry": "Software - Application",
-  "last_daily_update": "2026-05-18T20:28:34+00:00",
+  "last_daily_update": "2026-05-21T21:11:19+00:00",
   "last_full_calc": "2026-05-15T16:31:13+00:00",
   "manual_overrides": {},
-  "market_cap": 3794481033.375168,
+  "market_cap": 3990092655.624161,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -218,10 +220,12 @@
     "pe_history:insufficient_20y (0.0y)",
     "revenue_accelerating",
     "revenue_growth",
-    "roic_proxy"
+    "roic_proxy",
+    "valuation:dividend_yield_5y_stats",
+    "valuation:dividend_yield_zscore"
   ],
   "net_debt_stored": -123257000.0,
-  "owner_earnings_yield": 0.026634,
+  "owner_earnings_yield": 0.025328,
   "pe_20y_array": [
     70.8048,
     70.9952,
@@ -305,7 +309,7 @@
     47.677
   ],
   "pe_percentile_20y": 0.0,
-  "pe_ttm": 34.5498,
+  "pe_ttm": 36.3308,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -314,12 +318,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 138.88999938964844,
+  "price": 146.0500030517578,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.20973,
   "sector": "Technology",
   "ticker": "KXS.TO",
-  "updated_at": "2026-05-18T20:28:34+00:00",
+  "updated_at": "2026-05-21T21:11:19+00:00",
   "valuation_tax": -2.0,
   "yield_trap_warning": false
 }

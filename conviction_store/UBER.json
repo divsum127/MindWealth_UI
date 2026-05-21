@@ -179,6 +179,8 @@
       "income": true
     },
     "valuation_inputs": {
+      "dividend_yield_5y_stats": false,
+      "dividend_yield_zscore": false,
       "ev_fwd_rev": true,
       "owner_earnings_yield": true,
       "pe_percentile_20y": true,
@@ -187,24 +189,24 @@
   },
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 158824777623.33313,
+  "enterprise_value": 155832444589.36102,
   "eps_fwd": 4.33405,
   "eps_ttm": 4.03,
-  "ev_fwd_rev": 2.9583,
+  "ev_fwd_rev": 2.9026,
   "fcf_ttm": 9763000000.0,
   "fd_direction": "negative",
   "fd_votes": {},
   "flags": [],
-  "fs_class": "moderate",
+  "fs_class": "moderate_high",
   "fs_quality_base": 52.5,
-  "fs_score": 54.5,
+  "fs_score": 60.5,
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 53687001088.0,
   "industry": "Software - Application",
-  "last_daily_update": "2026-05-18T20:28:34+00:00",
+  "last_daily_update": "2026-05-21T21:11:20+00:00",
   "last_full_calc": "2026-05-15T16:33:25+00:00",
   "manual_overrides": {},
-  "market_cap": 152832777623.33313,
+  "market_cap": 149840444589.36102,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -218,10 +220,12 @@
     "pe_history:insufficient_20y (0.0y)",
     "revenue_accelerating",
     "revenue_growth",
-    "roic_proxy"
+    "roic_proxy",
+    "valuation:dividend_yield_5y_stats",
+    "valuation:dividend_yield_zscore"
   ],
   "net_debt_stored": 5992000000.0,
-  "owner_earnings_yield": 0.06388,
+  "owner_earnings_yield": 0.065156,
   "pe_20y_array": [
     17.5287,
     17.4756,
@@ -304,8 +308,8 @@
     18.6259,
     18.7805
   ],
-  "pe_percentile_20y": 82.5,
-  "pe_ttm": 18.6303,
+  "pe_percentile_20y": 72.5,
+  "pe_ttm": 18.2655,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -314,12 +318,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 75.08000183105469,
+  "price": 73.61000061035156,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.3531,
   "sector": "Technology",
   "ticker": "UBER",
-  "updated_at": "2026-05-18T20:28:34+00:00",
+  "updated_at": "2026-05-21T21:11:20+00:00",
   "valuation_tax": -2.0,
   "yield_trap_warning": false
 }

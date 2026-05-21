@@ -1411,27 +1411,62 @@ def render_chatbot_page():
             st.session_state.last_settings = None
             
             # Format the analysis prompt
-            analysis_prompt = f"""Please run a deep dive on {selected_asset} covering all signals recorded over the past few weeks. Use the specified entry and / or exit-date range as the filter.
+            analysis_prompt = f"""Run a deep dive on {selected_asset} for the date range {from_date.strftime('%Y-%m-%d')} to {to_date.strftime('%Y-%m-%d')}.
 
-For **open / outstanding entry signals**, use the latest **Outstanding Signal report** CSV under ``trade_store/US`` (e.g. dated ``*_outstanding_signal.csv``) as loaded by the app: cite **Current Mark to Market and Holding Period**, **Today Trading Date/Price**, and **Trading Days between Signal and Today Date** exactly as in that export — do not recompute MTM or holding when those columns are present.
+────────────────────────────────────────
+DATA SOURCES (mandatory, in order)
+────────────────────────────────────────
+1. Outstanding Signal report: latest *_outstanding_signal.csv under trade_store/US
+   – Use pre-computed columns as-is: Current MTM, Holding Period, Today Trading
+     Date/Price, Trading Days. Do NOT recompute.
+2. New Signals / Entry reports: use for Targets and Stop Loss columns.
+   – Targets: Historic Rise/Fall to Pivot | Avg % Gain | Function Specific |
+     Horizontal | F-Stack 1 | F-Stack 2 | EMA 200
+   – Stop Loss: Recent Extrema | Horizontal | F-Stack 1 | F-Stack 2 |
+     F-Track 1 | F-Track 2 | EMA 200
+3. Streamlit Exit Signal reports: for exited positions only.
 
-Retrieve and list all signals for this period, showing each function, timeframe, and direction (long/short).
+────────────────────────────────────────
+OUTPUT FORMAT — OPEN SIGNALS
+────────────────────────────────────────
+For EACH distinct open signal (collapse duplicate records into one entry;
+note "confirmed by N criteria" if duplicates exist):
 
-Identify contradictions, such as:
+  [FUNCTION] — [Interval] [Direction]
+  • Entry:      [Date] @ $[Price]
+  • Take Profit: Pivot $X | Avg $X | Func $X | Horizontal $X |
+                 F-Stack 1 $X | F-Stack 2 $X | EMA200 $X
+  • Stop Loss:   Extrema $X | Horizontal $X | F-Stack 1 $X |
+                 F-Stack 2 $X | F-Track 1 $X | F-Track 2 $X | EMA200 $X
+  • MTM:         [%] | [N] days held (Avg: X | Max: X)
+  • Status:      [Early / Approaching avg / ⚠️ Late — [N]% beyond avg hold, max horizon [entry date + max days] / 🚨 Beyond max — exit zone]
 
-Short signals that have already hit targets or registered exits while higher-interval (e.g., monthly-candle) functions are still showing active longs.
+────────────────────────────────────────
+OUTPUT FORMAT — EXITED SIGNALS
+────────────────────────────────────────
+One-line per exit:
+  [FUNCTION] [Interval] [Direction] | Entry [Date] $X → Exit [Date] $X |
+  Result: [%] | Held: [N] days
 
-Overlaps between exit dates on short-term signals and open longer-term entries.
+────────────────────────────────────────
+ANALYSIS (concise — written ONCE, not per signal)
+────────────────────────────────────────
+1. Contradictions  — list only genuine conflicts (e.g. monthly short vs
+   daily longs, exit-reentry overlaps). One sentence each.
+2. Timeframe alignment — one paragraph: are daily / weekly / monthly
+   signals pointing the same direction?
+3. Stance — BUY / HOLD / SELL with 3-bullet rationale max.
+4. Key risks & triggers — bullet list, max 5 items.
+   Include: signals approaching or beyond max holding period,
+   stop-loss levels to watch, and price levels that would change the stance.
 
-Assess alignment between short-term and medium-term outlooks based strictly on the verified signals in the Streamlit reports.
-
-Determine stance — whether the current setup indicates a Buy, Hold, or Sell — using only the pre-computed signal data and the historically observed holding periods for each function.
-
-Important:
-
-Do not fabricate or infer new signals. Use only signals verifiable from the existing Streamlit reports and outstanding-signal export.
-
-Date Range: {from_date.strftime('%Y-%m-%d')} to {to_date.strftime('%Y-%m-%d')}"""
+────────────────────────────────────────
+RULES
+────────────────────────────────────────
+• Do not fabricate or infer signals not present in the source files.
+• Do not repeat signal data in the analysis section — reference by name only.
+• Omit any section where data is unavailable rather than filling with N/A prose.
+• Targets / Stop Loss: list dollar values only; skip levels marked "No target"."""
             
             # Store the prompt to send after rerun
             st.session_state.pending_analysis_prompt = analysis_prompt
