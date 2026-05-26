@@ -22,10 +22,14 @@ from src.conviction_engine.fundamentals import (
 )
 from src.conviction_engine.models import default_record
 from src.conviction_engine.dividend_yield import compute_dividend_yield_stats
+from src.conviction_engine.bq_scoring import classify_debt_purpose, score_balance_sheet_v6
+from src.conviction_engine.fd_votes import compute_fd_votes
+from src.conviction_engine.fundamentals_enriched import compute_bq_components_auto
 from src.conviction_engine.scoring import (
     calculate_valuation_tax,
     detect_business_type,
     is_yield_trap,
+    score_manual,
 )
 from src.conviction_engine.signals import normalize_signal_row, signal_timeframe_from_interval
 from src.conviction_engine.store import load_record, save_record
@@ -693,6 +697,56 @@ class TestPeHistoryDistribution(unittest.TestCase):
         buckets = {row["bucket"]: row["count"] for row in summary["years_distribution"]}
         self.assertEqual(buckets.get("20+"), 1)
         self.assertEqual(buckets.get("2-5"), 1)
+
+
+class TestV6Scoring(unittest.TestCase):
+    def test_score_manual_ceo_quality_four(self):
+        self.assertEqual(score_manual("ceo_quality_score", {"ceo_quality_score": 4}), 0.0)
+        self.assertEqual(score_manual("ceo_quality_score", {"ceo_quality_score": 2}), -1.0)
+        self.assertEqual(score_manual("ceo_quality_score", {"ceo_quality_score": 8}), 2.0)
+
+    def test_debt_purpose_financial_engineering(self):
+        purpose = classify_debt_purpose(
+            {"net_debt_stored": -50_000_000_000, "cash_and_equivalents": 100e9, "total_debt": 50e9}
+        )
+        self.assertEqual(purpose, "financial_engineering")
+        score, p = score_balance_sheet_v6(
+            {"net_debt_stored": -50e9, "cash_and_equivalents": 100e9, "total_debt": 50e9},
+            "compounder",
+            {},
+        )
+        self.assertEqual(p, "financial_engineering")
+        self.assertEqual(score, 2.0)
+
+    def test_fd_votes_no_majority_stable(self):
+        bundle = compute_fd_votes(
+            {
+                "revenue_accelerating": True,
+                "gross_margin_trend": 0.02,
+                "fcf_growth_yoy": -0.1,
+                "shares_outstanding_change_pct": 0.02,
+            }
+        )
+        self.assertEqual(bundle["fd_direction"], "stable")
+        self.assertEqual(bundle["positive_count"], 2)
+        self.assertEqual(bundle["negative_count"], 2)
+
+    def test_yield_trap_at_threshold(self):
+        record = {
+            "dividend_yield_zscore": 2.0,
+            "dividend_yield_current": 0.07,
+        }
+        self.assertTrue(is_yield_trap(record, "T.TO"))
+
+    def test_bq_auto_uses_manual_mapping(self):
+        comps = compute_bq_components_auto(
+            {},
+            "compounder",
+            {"ceo_quality_score": 2, "mgmt_alloc_score": 6, "competitive_moat_score": 9},
+        )
+        self.assertEqual(comps["ceo_quality"], -1.0)
+        self.assertEqual(comps["mgmt_capital_allocation"], 1.0)
+        self.assertEqual(comps["competitive_moat"], 2.0)
 
 
 if __name__ == "__main__":

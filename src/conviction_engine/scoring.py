@@ -1,4 +1,4 @@
-"""Scoring and verdict rules for Conviction Engine v5."""
+"""Scoring and verdict rules for Conviction Engine v6."""
 
 from __future__ import annotations
 
@@ -146,16 +146,6 @@ def compute_bq_components(inputs: dict[str, Any] | None = None, overrides: dict[
         overrides.get("distribution_coverage_ratio")
     )
 
-    def score_manual(name: str, low: float = 4, high: float = 7) -> float:
-        value = _float_or_none(overrides.get(name))
-        if value is None:
-            return 0.0
-        if value >= high:
-            return 2.0
-        if value >= low:
-            return 0.0
-        return -1.0
-
     components = {
         "revenue_quality": 1.0 if (gross_margin or 0) >= 0.35 else 0.0,
         "growth_trajectory": 2.0 if (revenue_growth or 0) >= 0.15 else (1.0 if (revenue_growth or 0) >= 0.05 else 0.0),
@@ -164,9 +154,9 @@ def compute_bq_components(inputs: dict[str, Any] | None = None, overrides: dict[
         "roic_wacc_spread": 2.0 if (roic_wacc_spread or 0) >= 0.03 else (1.0 if (roic_wacc_spread or 0) > 0 else 0.0),
         "gross_margin_trend": float(overrides.get("gross_margin_trend", 0.0) or 0.0),
         "debt_maturity_risk": float(overrides.get("debt_maturity_risk", 0.0) or 0.0),
-        "ceo_quality": score_manual("ceo_quality_score"),
-        "mgmt_capital_allocation": score_manual("mgmt_alloc_score"),
-        "competitive_moat": score_manual("competitive_moat_score"),
+        "ceo_quality": score_manual("ceo_quality_score", overrides),
+        "mgmt_capital_allocation": score_manual("mgmt_alloc_score", overrides),
+        "competitive_moat": score_manual("competitive_moat_score", overrides),
         "macro_tailwind": float(overrides.get("macro_tailwind", 0.0) or 0.0),
         "divergence_signal": 2.0 if overrides.get("divergence_signal") else 0.0,
         "deal_delay_risk": -1.0 if overrides.get("deal_delay_risk") else 0.0,
@@ -213,38 +203,88 @@ def calculate_bq_raw(components: dict[str, float]) -> float:
     return round(sum(float(value) for value in components.values()), 2)
 
 
-def calculate_valuation_tax(record: dict[str, Any]) -> float:
+def score_manual(name: str, overrides: dict[str, Any], *, low: float = 3.0, mid: float = 5.0, high: float = 8.0) -> float:
+    """Map analyst 0–10 override to BQ points: 8-10→+2, 5-7→+1, 3-4→0, 0-2→-1."""
+    value = _float_or_none(overrides.get(name))
+    if value is None:
+        return 0.0
+    if value >= high:
+        return 2.0
+    if value >= mid:
+        return 1.0
+    if value >= low:
+        return 0.0
+    return -1.0
+
+
+def calculate_valuation_tax_components(record: dict[str, Any]) -> dict[str, float]:
+    """Per-component valuation tax (v6). Sum is capped to [-10, 0] with type-specific min penalty triggers."""
     business_type = str(record.get("business_type") or BusinessType.UNKNOWN.value)
     ev_rev = _float_or_none(record.get("ev_fwd_rev"))
     pe_pct = _float_or_none(record.get("pe_percentile_20y"))
     oey = _float_or_none(record.get("owner_earnings_yield"))
+    revenue_growth = _float_or_none(record.get("revenue_growth"))
+    pe_insufficient = bool(record.get("pe_history_insufficient"))
 
-    tax = 0.0
-    tiers, floor_trigger = EV_REV_TIERS.get(business_type, EV_REV_TIERS[BusinessType.UNKNOWN.value])
+    components: dict[str, float] = {
+        "entry_multiple": 0.0,
+        "pe_hist_percentile": 0.0,
+        "growth_multiple_fragility": 0.0,
+        "business_type_relief": 0.0,
+        "deal_delay_signal": 0.0,
+        "market_regime_beta": 0.0,
+        "oey_penalty": 0.0,
+    }
+
+    tiers, min_penalty_trigger = EV_REV_TIERS.get(business_type, EV_REV_TIERS[BusinessType.UNKNOWN.value])
     if ev_rev is not None:
         tier_tax = 0.0
         for idx, threshold in enumerate(tiers, start=1):
             if ev_rev >= threshold:
                 tier_tax = -float(idx)
-        tax += tier_tax
-        # Apply extreme valuation floor only at the top EV/rev tier (not mid-tier names).
-        if ev_rev >= tiers[-1]:
-            tax = min(tax, -5.0)
+        components["entry_multiple"] = tier_tax
+        if min_penalty_trigger is not None and ev_rev >= min_penalty_trigger:
+            components["entry_multiple"] = min(components["entry_multiple"], -5.0)
         if business_type == BusinessType.INCOME.value and ev_rev < tiers[0]:
-            tax += 1.0
+            components["business_type_relief"] = 1.0
 
-    if pe_pct is not None:
+    if pe_pct is not None and not pe_insufficient:
         if pe_pct >= 85:
-            tax -= 3.0
+            components["pe_hist_percentile"] = -3.0
         elif pe_pct >= 70:
-            tax -= 2.0
+            components["pe_hist_percentile"] = -2.0
         elif pe_pct >= 55:
-            tax -= 1.0
+            components["pe_hist_percentile"] = -1.0
+
+    if ev_rev is not None and tiers and ev_rev >= tiers[-1]:
+        if revenue_growth is not None and revenue_growth < 0.05:
+            components["growth_multiple_fragility"] = -1.0
 
     if oey is not None and oey < 0.01:
-        tax -= 2.0
+        components["oey_penalty"] = -2.0
 
-    return round(max(-5.0, min(0.0, tax)), 2)
+    overrides = record.get("manual_overrides") or {}
+    if overrides.get("deal_delay_flag") or overrides.get("deal_delay_risk"):
+        components["deal_delay_signal"] = -1.0
+    regime = _float_or_none(overrides.get("market_regime_beta"))
+    if regime is not None and regime > 1.2:
+        components["market_regime_beta"] = -1.0
+
+    return components
+
+
+def calculate_valuation_tax(record: dict[str, Any]) -> float:
+    components = calculate_valuation_tax_components(record)
+    total = sum(components.values())
+    return round(max(-10.0, min(0.0, total)), 2)
+
+
+def valuation_tax_breakdown(record: dict[str, Any]) -> dict[str, Any]:
+    components = calculate_valuation_tax_components(record)
+    return {
+        "components": {k: round(v, 2) for k, v in components.items()},
+        "total": calculate_valuation_tax(record),
+    }
 
 
 def calculate_fs_score(record: dict[str, Any]) -> float:
@@ -318,12 +358,14 @@ def market_yield_threshold(ticker: str) -> float:
 
 
 def is_yield_trap(record: dict[str, Any], ticker: str) -> bool:
-    """PDF v5: trap only when z-score > 1.5 AND yield above market threshold; both required."""
+    """Trap when z-score > 1.5 AND yield at or above market threshold; both required."""
     zscore = _float_or_none(record.get("dividend_yield_zscore"))
     current_yield = _float_or_none(record.get("dividend_yield_current"))
     if zscore is None or current_yield is None:
         return False
-    return zscore > 1.5 and current_yield > market_yield_threshold(ticker)
+    threshold = market_yield_threshold(ticker)
+    record["yield_trap_mkt_threshold"] = threshold
+    return zscore > 1.5 and current_yield >= threshold
 
 
 def verdict_for_buy(score: float, fd_direction: str | None = None, yield_trap: bool = False) -> tuple[str, float]:

@@ -183,10 +183,16 @@ def create_breadth_page(data_file, page_title):
 
     st.markdown("---")
 
-    # Optional companion: breadth entry rows (e.g. BreadthIndicator) — above the main breadth CSV table
+    # Active BreadthIndicator stance (YYYY-MM-DD_breadth_entry.csv, written by SBI email job)
     entry_path = _breadth_entry_csv_path(data_file)
     if entry_path and os.path.isfile(entry_path):
-        st.markdown("### 📌 Breadth Entry (Indicator)")
+        entry_date_hint = extract_date_from_filename(os.path.basename(entry_path)) or ""
+        st.markdown("### 📌 Active BreadthIndicator Stance")
+        if entry_date_hint:
+            st.caption(
+                f"From `{os.path.basename(entry_path)}` (Combined SBI percentile rule). "
+                f"Entry file date: {entry_date_hint}."
+            )
         try:
             entry_df = pd.read_csv(entry_path, index_col=False)
             if not entry_df.empty:

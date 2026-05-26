@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any
 
@@ -9,17 +10,21 @@ import pandas as pd
 
 from ..utils.atomic_io import write_dataframe_csv_atomic_guarded
 from .models import PositionLayers, QuantSignal, SignalModification, default_record, utc_now_iso
-from .fundamentals_enriched import compute_bq_components_auto, compute_fd_direction
+from .agent_dims import run_agent_dimensions
+from .fundamentals_enriched import compute_bq_components_auto
+from .fd_votes import compute_fd_votes
 from .scoring import (
     apply_fs_cap,
     calculate_bq_raw,
     calculate_fs_score,
-    calculate_valuation_tax,
     classify_fs,
+    clamp,
     compute_bq_components,
     detect_business_type,
     is_equity_asset,
     is_yield_trap,
+    market_yield_threshold,
+    valuation_tax_breakdown,
     verdict_for_buy,
     verdict_for_sell,
 )
@@ -103,20 +108,32 @@ def full_recalculation(
     record["business_type"] = business_type
     record["business_type_source"] = source
 
+    manual = dict(record.get("manual_overrides") or {})
+    skip_agents = overrides.get("skip_agent_dims", True)
+    if os.environ.get("CONVICTION_RUN_AGENT_DIMS") == "1":
+        skip_agents = False
+    if not skip_agents:
+        company = str(info.get("longName") or info.get("shortName") or symbol)
+        agent_out = run_agent_dimensions(symbol, company, business_type)
+        for key, val in agent_out.items():
+            if val:
+                manual[key] = val
+        record["manual_overrides"] = manual
+
     bq_inputs = {**fundamentals, "roic": fundamentals.get("roic_proxy")}
-    bq_components = compute_bq_components_auto(bq_inputs, business_type, record.get("manual_overrides"))
+    bq_components = compute_bq_components_auto(bq_inputs, business_type, manual)
     if not any(bq_components.values()):
-        bq_components = compute_bq_components(fundamentals, record.get("manual_overrides"))
+        bq_components = compute_bq_components(fundamentals, manual)
     record["bq_components"] = bq_components
     record["bq_raw"] = float(overrides.get("bq_raw", calculate_bq_raw(bq_components)))
     record["fs_quality_base"] = round(50 + (record["bq_raw"] * 2.5), 2)
+    record["debt_purpose"] = fundamentals.get("debt_purpose")
+    record["revenue_accelerating"] = fundamentals.get("revenue_accelerating")
 
-    fd_direction = compute_fd_direction(
-        _safe_float(fundamentals.get("revenue_growth")),
-        None,
-        _safe_float(fundamentals.get("gross_margin_trend")),
-    )
-    record["fd_direction"] = overrides.get("fd_direction", fd_direction)
+    fd_bundle = compute_fd_votes(fundamentals, record)
+    record["fd_votes"] = fd_bundle.get("votes", {})
+    record["fd_sizing_adj"] = fd_bundle.get("fd_sizing_adj", 0.0)
+    record["fd_direction"] = overrides.get("fd_direction", fd_bundle.get("fd_direction", "stable"))
 
     _copy_known_fields(
         record,
@@ -244,8 +261,15 @@ def daily_update(
         if mean is not None and std and std > 0:
             record["dividend_yield_zscore"] = round((record["dividend_yield_current"] - mean) / std, 4)
 
-    record["valuation_tax"] = calculate_valuation_tax(record)
+    pe_meta = record.get("pe_history_meta") or {}
+    if isinstance(pe_meta, dict) and pe_meta.get("insufficient_20y"):
+        record["pe_history_insufficient"] = True
+        record["pe_percentile_20y"] = None
+
+    record["valuation_tax_breakdown"] = valuation_tax_breakdown(record)
+    record["valuation_tax"] = record["valuation_tax_breakdown"]["total"]
     record["conviction_score"] = round((_safe_float(record.get("bq_raw")) or 0.0) + record["valuation_tax"], 2)
+    record["yield_trap_mkt_threshold"] = market_yield_threshold(symbol)
     record["fs_score"] = calculate_fs_score(record)
     record["fs_class"] = classify_fs(record["fs_score"])
     record["yield_trap_warning"] = is_yield_trap(record, symbol)
@@ -349,6 +373,18 @@ def modify_signal(
         rationale.append("TRAILING_STOP_WARNING: long position near stop")
     elif technical_signal == "BUY":
         verdict, sizing = verdict_for_buy(final_score, record.get("fd_direction"), yield_trap)
+        fd_adj = _safe_float(record.get("fd_sizing_adj")) or 0.0
+        if fd_adj and verdict not in ("CANCEL BUY", "NOT_APPLICABLE"):
+            sizing = round(clamp(sizing * (1.0 + fd_adj), 0.0, 100.0), 2)
+        if (
+            signal_timeframe == "short"
+            and technical_signal == "BUY"
+            and layers.core_fraction
+            and final_score < 2
+            and not long_position_near_stop
+        ):
+            verdict, sizing = "CANCEL BUY", 0.0
+            rationale.append("TACTICAL_ADD_WARNING: conviction deteriorated since core opened")
     elif technical_signal == "SELL":
         verdict, sizing = verdict_for_sell(final_score, signal_timeframe, yield_trap)
     else:
@@ -479,6 +515,8 @@ def run_daily_universe(tickers: list[str], store_dir: Path | None = None) -> dic
             flags.append(f"fs_{record.get('fs_class')}")
         if (record.get("conviction_score") or 0) < 2:
             flags.append("low_conviction")
+        if record.get("pe_history_insufficient"):
+            flags.append("pe_history_insufficient")
         if flags:
             alert_map[sanitize_ticker(ticker)] = flags
     return alert_map

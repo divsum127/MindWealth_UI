@@ -8,13 +8,22 @@ from typing import Any
 
 import pandas as pd
 
+from .bq_scoring import (
+    detect_divergence_signal,
+    score_balance_sheet_v6,
+    score_debt_maturity_risk,
+    score_macro_tailwind,
+    score_margin_quality_cyclical,
+)
 from .dividend_yield import compute_dividend_yield_stats
+from .fd_votes import compute_fd_votes
 from .scoring import (
     BusinessType,
     _float_or_none,
     _normalise_dividend_yield,
     _score_insider,
     _score_reinvestment,
+    score_manual,
 )
 
 logger = logging.getLogger(__name__)
@@ -283,6 +292,7 @@ def compute_fd_direction(
     eps_growth: float | None,
     margin_trend: float | None,
 ) -> str:
+    """Legacy 3-signal FD; prefer compute_fd_votes for v6."""
     positive = 0
     negative = 0
     if revenue_growth is not None:
@@ -335,6 +345,8 @@ def score_margin_quality(
         if distribution_coverage >= 1.2:
             return 0.0
         return -1.0
+    if business_type == BusinessType.CYCLICAL.value:
+        return score_margin_quality_cyclical(fcf_margin, revenue_growth)
     rule_of_40 = ((revenue_growth or 0) + (fcf_margin or 0)) * 100
     if rule_of_40 >= 40:
         return 2.0
@@ -433,20 +445,46 @@ def compute_bq_components_auto(
     insider_val = overrides.get("insider_ownership", fundamentals.get("insider_pct"))
     reinvest_val = overrides.get("reinvestment_runway", fundamentals.get("reinvestment_runway"))
 
+    bs_score, debt_purpose = score_balance_sheet_v6(fundamentals, business_type, overrides)
+    fundamentals["debt_purpose"] = debt_purpose
+
+    ceo_score = score_manual("ceo_quality_score", overrides)
+    if overrides.get("ceo_quality_score") is None and isinstance(overrides.get("ceo_quality_detail"), dict):
+        from .agent_dims import analyst_score_to_bq
+
+        ceo_score = analyst_score_to_bq(_float_or_none(overrides["ceo_quality_detail"].get("score_0_10")))
+    if overrides.get("new_ceo_transition"):
+        ceo_score -= 1.0
+
+    moat_score = score_manual("competitive_moat_score", overrides)
+    if overrides.get("competitive_moat_score") is None and isinstance(overrides.get("competitive_moat_detail"), dict):
+        from .agent_dims import analyst_score_to_bq
+
+        moat_score = analyst_score_to_bq(_float_or_none(overrides["competitive_moat_detail"].get("score_0_10")))
+
+    div_flag = overrides.get("divergence_signal")
+    if div_flag is None:
+        div_flag = detect_divergence_signal(
+            current_price=_float_or_none(fundamentals.get("price")),
+            fifty_two_week_high=_float_or_none(fundamentals.get("fifty_two_week_high")),
+            price_history=fundamentals.get("price_history_series"),
+            fd_direction=str(overrides.get("fd_direction") or fundamentals.get("fd_direction") or "stable"),
+        )
+
     return {
         "revenue_quality": score_revenue_quality(gross_m, fcf_m),
         "growth_trajectory": score_growth_trajectory(rev_g, rev_accel if isinstance(rev_accel, bool) else None),
         "margin_quality": score_margin_quality(business_type, rev_g, fcf_m, dist_cov, gross_m),
-        "balance_sheet": score_balance_sheet(nd_ebitda, business_type),
+        "balance_sheet": bs_score,
         "roic_wacc_spread": score_roic_spread(roic, business_type),
         "gross_margin_trend": score_gross_margin_trend(margin_trend),
-        "debt_maturity_risk": float(overrides.get("debt_maturity_risk", 0.0) or 0.0),
-        "ceo_quality": float(overrides.get("ceo_quality_score", 0.0) or 0.0),
-        "mgmt_capital_allocation": float(overrides.get("mgmt_alloc_score", 0.0) or 0.0),
-        "competitive_moat": float(overrides.get("competitive_moat_score", 0.0) or 0.0),
-        "macro_tailwind": float(overrides.get("macro_tailwind", 0.0) or 0.0),
-        "divergence_signal": 2.0 if overrides.get("divergence_signal") else 0.0,
-        "deal_delay_risk": -1.0 if overrides.get("deal_delay_risk") else 0.0,
+        "debt_maturity_risk": score_debt_maturity_risk(fundamentals, business_type, overrides),
+        "ceo_quality": ceo_score,
+        "mgmt_capital_allocation": score_manual("mgmt_alloc_score", overrides),
+        "competitive_moat": moat_score,
+        "macro_tailwind": score_macro_tailwind(overrides),
+        "divergence_signal": 2.0 if div_flag else 0.0,
+        "deal_delay_risk": -1.0 if overrides.get("deal_delay_risk") or overrides.get("deal_delay_flag") else 0.0,
         "insider_ownership": _score_insider(insider_val),
         "reinvestment_runway": _score_reinvestment(reinvest_val),
     }
@@ -509,12 +547,28 @@ def build_fundamentals_from_raw(raw: dict[str, Any]) -> dict[str, Any]:
             fundamentals["gross_margin_computed"] = round(gross_profit_ttm / revenue_ttm, 6)
 
     if total_debt is not None or total_cash is not None:
+        fundamentals["total_debt"] = total_debt
+        fundamentals["cash_and_equivalents"] = total_cash
         fundamentals["net_debt_stored"] = (total_debt or 0.0) - (total_cash or 0.0)
+
+    st_debt = _df_row(
+        q_bal,
+        "Current Debt",
+        "Short Long Term Debt",
+        "Current Portion of Long Term Debt",
+    )
+    if st_debt is not None and total_debt and total_debt > 0:
+        fundamentals["short_term_debt_pct"] = round(st_debt / total_debt, 4)
 
     if operating_cf_ttm is not None and capex_ttm is not None:
         fundamentals["fcf_ttm"] = operating_cf_ttm + capex_ttm
+        fundamentals["capex_ttm"] = capex_ttm
     else:
         fundamentals["fcf_ttm"] = _float_or_none(_first_not_none(info.get("freeCashflow"), info.get("freeCashFlow")))
+
+    fundamentals["revenue_ttm"] = revenue_ttm
+    if revenue_ttm and revenue_ttm > 0:
+        fundamentals["capex_ttm"] = fundamentals.get("capex_ttm") or capex_ttm
 
     fcf = fundamentals.get("fcf_ttm")
     rev_base = revenue_ttm or _float_or_none(info.get("totalRevenue"))
@@ -532,6 +586,17 @@ def build_fundamentals_from_raw(raw: dict[str, Any]) -> dict[str, Any]:
         _first_not_none(info.get("trailingEps"), (net_income_ttm / shares if net_income_ttm and shares else None))
     )
     fundamentals["eps_fwd"] = _float_or_none(info.get("forwardEps"))
+    fundamentals["eps_estimate_current"] = fundamentals["eps_fwd"]
+
+    shares_now = shares
+    shares_prior = _float_or_none(info.get("sharesOutstanding"))  # placeholder; refined below
+    if q_bal is not None and "Ordinary Shares Number" in getattr(q_bal, "index", []):
+        sh_series = q_bal.loc["Ordinary Shares Number"].dropna()
+        if len(sh_series) >= 5:
+            shares_now = float(sh_series.iloc[-1])
+            shares_prior = float(sh_series.iloc[-5])
+    if shares_now and shares_prior and shares_prior > 0:
+        fundamentals["shares_outstanding_change_pct"] = round((shares_now - shares_prior) / shares_prior, 4)
 
     roe = _normalize_ratio(_float_or_none(info.get("returnOnEquity")))
     roa = _normalize_ratio(_float_or_none(info.get("returnOnAssets")))
@@ -583,7 +648,13 @@ def build_fundamentals_from_raw(raw: dict[str, Any]) -> dict[str, Any]:
 
     price_hist = raw.get("price_history")
     divs = raw.get("dividends")
+    fundamentals["fifty_two_week_high"] = _float_or_none(
+        _first_not_none(fast.get("year_high"), fast.get("fiftyDayHigh"), info.get("fiftyTwoWeekHigh"))
+    )
     if isinstance(price_hist, pd.Series) and not price_hist.empty:
+        fundamentals["price_history_series"] = price_hist
+        if fundamentals.get("fifty_two_week_high") is None:
+            fundamentals["fifty_two_week_high"] = float(price_hist.max())
         fundamentals.update(compute_dividend_yield_stats(pd.DataFrame({"Close": price_hist}), divs))
 
     if isinstance(price_hist, pd.Series) and q_inc is not None:

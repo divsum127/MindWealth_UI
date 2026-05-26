@@ -1,4 +1,4 @@
-"""Conviction Engine v5 overlay package."""
+"""Conviction Engine v6 overlay package."""
 
 from .engine import (
     apply_to_signal,

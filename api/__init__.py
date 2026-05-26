@@ -1,0 +1,1 @@
+"""MindWealth REST API package."""
