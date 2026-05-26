@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.021583,
   "dividend_yield_5y_std": 0.010401,
-  "dividend_yield_current": 0.010347,
-  "dividend_yield_zscore": -1.0803,
-  "enterprise_value": 3053615919711.5996,
+  "dividend_yield_current": 0.010355,
+  "dividend_yield_zscore": -1.0795,
+  "enterprise_value": 3051423030678.2495,
   "eps_fwd": 9.82615,
   "eps_ttm": 8.18,
-  "ev_fwd_rev": 11.5078,
+  "ev_fwd_rev": 11.4995,
   "fd_direction": "stable",
   "fd_votes": {},
   "flags": [],
@@ -204,10 +204,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 265352708096.0,
   "industry": "Aerospace & Defense",
-  "last_daily_update": "2026-05-21T21:11:19+00:00",
+  "last_daily_update": "2026-05-26T14:34:16+00:00",
   "last_full_calc": "2026-05-18T20:47:45+00:00",
   "manual_overrides": {},
-  "market_cap": 3073031019711.5996,
+  "market_cap": 3070838130678.2495,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -234,7 +234,7 @@
     62.4852
   ],
   "pe_percentile_20y": 0.0,
-  "pe_ttm": 51.3936,
+  "pe_ttm": 51.357,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -243,12 +243,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 420.4,
+  "price": 420.1000061035156,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.31145174843547924,
   "sector": "Industrials",
   "ticker": "BEL.NS",
-  "updated_at": "2026-05-21T21:11:19+00:00",
+  "updated_at": "2026-05-26T14:34:16+00:00",
   "valuation_tax": -5.0,
   "yield_trap_warning": false
 }

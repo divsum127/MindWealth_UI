@@ -21,6 +21,11 @@ sys.path.insert(0, str(project_root))
 
 from chatbot import ChatbotEngine, SessionManager
 from chatbot.signal_type_selector import SIGNAL_TYPE_DESCRIPTIONS, DEFAULT_SIGNAL_TYPES
+from prompts.ui_buttons import (
+    format_analyze_asset_prompt,
+    format_breadth_analysis_prompt,
+    format_signal_insights_prompt,
+)
 from chatbot.config import MAX_CHATS_DISPLAY, ENGINE_LOG_LINES_CAP, FLAGGED_PAIRS_DIR
 from chatbot.flagged_export import save_flagged_pair
 from chatbot.agents.intent_classifier import INTENT_LABELS
@@ -311,6 +316,7 @@ def render_route_badge(metadata: dict):
         "WEB_RAG":        "#d62728",
         "HYBRID":         "#9467bd",
         "CONVERSATIONAL": "#7f7f7f",
+        "DEEP_RESEARCH":  "#e37717",
     }
     colour = route_colours.get(route, "#1f77b4")
     route_label = {
@@ -318,6 +324,7 @@ def render_route_badge(metadata: dict):
         "WEB_RAG":        "🌍 Web RAG",
         "HYBRID":         "🔗 Hybrid",
         "CONVERSATIONAL": "💬 History",
+        "DEEP_RESEARCH":  "🔬 Deep Research",
     }.get(route, route or "")
 
     badge_html = (
@@ -337,6 +344,21 @@ def render_route_badge(metadata: dict):
     if reasoning:
         with st.expander("Why this route? (LLM router)", expanded=False):
             st.markdown(reasoning)
+
+    if metadata.get("deep_research_subtasks") or metadata.get("deep_research_log_path"):
+        with st.expander("🔬 Deep Research details", expanded=False):
+            st.markdown(
+                f"Subtasks executed: **{metadata.get('deep_research_subtasks', 0)}**  |  "
+                f"Refinement rounds: **{metadata.get('deep_research_rounds', 0)}**"
+            )
+            if metadata.get("deep_research_plan_summary"):
+                st.caption(metadata["deep_research_plan_summary"])
+            if metadata.get("deep_research_gaps"):
+                st.markdown(f"**Gaps:** {metadata['deep_research_gaps']}")
+            if metadata.get("deep_research_log_path"):
+                st.caption(f"Structured log: `{metadata['deep_research_log_path']}`")
+            if metadata.get("deep_research_log_id"):
+                st.caption(f"Log ID: `{metadata['deep_research_log_id']}`")
 
     if web_sources:
         with st.expander(f"🌐 Web Sources ({len(web_sources)})", expanded=False):
@@ -421,6 +443,31 @@ _FRIENDLY_FLOW_STEPS: dict = {
         "Preparing your insights",
         "Drafting your final analysis-ready response",
     ),
+    "Deep Research": (
+        "🔬",
+        "Deep research mode",
+        "Breaking your question into focused research steps",
+    ),
+    "Research Plan": (
+        "📋",
+        "Planning research",
+        "Dividing your question into targeted sub-queries",
+    ),
+    "Subtask": (
+        "🔎",
+        "Running research step",
+        "Gathering evidence for one part of your question",
+    ),
+    "Gap Analysis": (
+        "🧪",
+        "Checking coverage",
+        "Identifying missing facts and scheduling follow-up searches",
+    ),
+    "Refinement": (
+        "🔄",
+        "Follow-up research",
+        "Searching for evidence that was still missing",
+    ),
 }
 
 # Internal route codes → investor-facing strategy descriptions
@@ -429,6 +476,7 @@ _FRIENDLY_ROUTE_DESCRIPTIONS: dict = {
     "WEB_RAG":        "Looking up live market information online",
     "INTERNAL":       "Using your internal trading signal data",
     "CONVERSATIONAL": "Continuing our conversation",
+    "DEEP_RESEARCH":  "Multi-step deep research across web and signal data",
 }
 
 
@@ -533,6 +581,13 @@ def run_smart_followup_with_progress(
     response, metadata = result_tuple
     if isinstance(metadata, dict):
         metadata["engine_log_lines"] = log_lines[-ENGINE_LOG_LINES_CAP:]
+        log_path = metadata.get("deep_research_log_path")
+        if log_path:
+            try:
+                from chatbot.deep_research_log import append_engine_log_lines
+                append_engine_log_lines(log_path, metadata["engine_log_lines"])
+            except Exception:
+                pass
     return response, metadata
 
 
@@ -1411,62 +1466,11 @@ def render_chatbot_page():
             st.session_state.last_settings = None
             
             # Format the analysis prompt
-            analysis_prompt = f"""Run a deep dive on {selected_asset} for the date range {from_date.strftime('%Y-%m-%d')} to {to_date.strftime('%Y-%m-%d')}.
-
-────────────────────────────────────────
-DATA SOURCES (mandatory, in order)
-────────────────────────────────────────
-1. Outstanding Signal report: latest *_outstanding_signal.csv under trade_store/US
-   – Use pre-computed columns as-is: Current MTM, Holding Period, Today Trading
-     Date/Price, Trading Days. Do NOT recompute.
-2. New Signals / Entry reports: use for Targets and Stop Loss columns.
-   – Targets: Historic Rise/Fall to Pivot | Avg % Gain | Function Specific |
-     Horizontal | F-Stack 1 | F-Stack 2 | EMA 200
-   – Stop Loss: Recent Extrema | Horizontal | F-Stack 1 | F-Stack 2 |
-     F-Track 1 | F-Track 2 | EMA 200
-3. Streamlit Exit Signal reports: for exited positions only.
-
-────────────────────────────────────────
-OUTPUT FORMAT — OPEN SIGNALS
-────────────────────────────────────────
-For EACH distinct open signal (collapse duplicate records into one entry;
-note "confirmed by N criteria" if duplicates exist):
-
-  [FUNCTION] — [Interval] [Direction]
-  • Entry:      [Date] @ $[Price]
-  • Take Profit: Pivot $X | Avg $X | Func $X | Horizontal $X |
-                 F-Stack 1 $X | F-Stack 2 $X | EMA200 $X
-  • Stop Loss:   Extrema $X | Horizontal $X | F-Stack 1 $X |
-                 F-Stack 2 $X | F-Track 1 $X | F-Track 2 $X | EMA200 $X
-  • MTM:         [%] | [N] days held (Avg: X | Max: X)
-  • Status:      [Early / Approaching avg / ⚠️ Late — [N]% beyond avg hold, max horizon [entry date + max days] / 🚨 Beyond max — exit zone]
-
-────────────────────────────────────────
-OUTPUT FORMAT — EXITED SIGNALS
-────────────────────────────────────────
-One-line per exit:
-  [FUNCTION] [Interval] [Direction] | Entry [Date] $X → Exit [Date] $X |
-  Result: [%] | Held: [N] days
-
-────────────────────────────────────────
-ANALYSIS (concise — written ONCE, not per signal)
-────────────────────────────────────────
-1. Contradictions  — list only genuine conflicts (e.g. monthly short vs
-   daily longs, exit-reentry overlaps). One sentence each.
-2. Timeframe alignment — one paragraph: are daily / weekly / monthly
-   signals pointing the same direction?
-3. Stance — BUY / HOLD / SELL with 3-bullet rationale max.
-4. Key risks & triggers — bullet list, max 5 items.
-   Include: signals approaching or beyond max holding period,
-   stop-loss levels to watch, and price levels that would change the stance.
-
-────────────────────────────────────────
-RULES
-────────────────────────────────────────
-• Do not fabricate or infer signals not present in the source files.
-• Do not repeat signal data in the analysis section — reference by name only.
-• Omit any section where data is unavailable rather than filling with N/A prose.
-• Targets / Stop Loss: list dollar values only; skip levels marked "No target"."""
+            analysis_prompt = format_analyze_asset_prompt(
+                selected_asset,
+                from_date.strftime("%Y-%m-%d"),
+                to_date.strftime("%Y-%m-%d"),
+            )
             
             # Store the prompt to send after rerun
             st.session_state.pending_analysis_prompt = analysis_prompt
@@ -1505,37 +1509,10 @@ RULES
         st.session_state.last_settings = None
         
         # Format the signal insights prompt
-        signal_insights_prompt = f"""Please analyze all ENTRY signals across all assets and functions for the date range {from_date.strftime('%Y-%m-%d')} to {to_date.strftime('%Y-%m-%d')}.
-
-Focus on identifying high-quality signals that meet the following criteria:
-
-1. **High Sharpe Ratio**: Strategy Sharpe Ratio > 1.5
-2. **High Win Rate (Full History)**: Win Rate > 80% based on full historical testing
-3. **Latest Performance Win Rate**: Win Rate > 85% for past 4 years
-4. **Forward Testing Win Rate**: Win Rate > 65% from forward testing signal data
-
-For each qualifying signal, provide:
-- Asset symbol
-- Function name
-- Timeframe/Interval
-- Signal direction (Long/Short)
-- Signal date
-- Strategy Sharpe Ratio
-- Win Rate (full history, latest performance, and forward testing if available)
-- Any other relevant performance metrics
-
-Organize the results by:
-1. Highest Sharpe Ratio signals first
-2. Then by highest Win Rate
-3. Highlight any signals with high Forward Testing Win Rate (>65%)
-
-Important:
-- Only analyze ENTRY signals (signals that are still open, no exit yet)
-- Use only signals verifiable from the existing Streamlit reports
-- Do not fabricate or infer new signals
-- Focus on signals that meet ALL or MOST of the quality criteria above
-
-Date Range: {from_date.strftime('%Y-%m-%d')} to {to_date.strftime('%Y-%m-%d')}"""
+        signal_insights_prompt = format_signal_insights_prompt(
+            from_date.strftime("%Y-%m-%d"),
+            to_date.strftime("%Y-%m-%d"),
+        )
         
         # Store the prompt to send after rerun
         st.session_state.pending_insights_prompt = signal_insights_prompt
@@ -1570,48 +1547,10 @@ Date Range: {from_date.strftime('%Y-%m-%d')} to {to_date.strftime('%Y-%m-%d')}""
         st.session_state.last_settings = None
         
         # Format the breadth analysis prompt (trade-arrival SBI schema)
-        breadth_analysis_prompt = f"""Please analyze Signal Breadth Indicator (SBI) trade-arrival data for the date range {from_date.strftime('%Y-%m-%d')} to {to_date.strftime('%Y-%m-%d')}.
-
-Use the BREADTH SIGNALS JSON block. Primary metrics (S&P 500 universe):
-- Total New Long Signal / Total New Short Signal
-- Last 6 Month Top 10 Percentile No of Long/Short Signal (6-month busy-day thresholds)
-- Today Long Signal Percentile From Top (Last 6 Month)
-- Today Short Signal Percentile From Top (Last 6 Month)
-
-For market-wide analysis, prioritize Function = "Combined (TrendPulse + DeltaDrift + BandMatrix)"; also break down TRENDPULSE, DELTADRIFT, and BAND MATRIX.
-
-Percentile semantics: "Today ... Percentile From Top" = how close today is to the busiest signal day in the last 6 months (10 ≈ top 10% activity; low values ≈ quiet days).
-
-Focus on:
-
-1. **Extreme SBI days (Combined row)**:
-   - Days in the **bottom 10%** of the date range by Today Long Signal Percentile From Top (quiet long-signal days)
-   - Days in the **top 10%** by that metric (busy long-signal days)
-   - Same for Today Short Signal Percentile From Top where relevant
-   - Show signal counts vs 6-month top-10% thresholds for those days
-
-2. **Per-function SBI patterns**:
-   - Compare TRENDPULSE, DELTADRIFT, BAND MATRIX, and Combined
-   - Note divergences (e.g. one strategy busy while Combined is quiet)
-
-3. **Low-activity / reversal context**:
-   - List days where long percentile is in the bottom decile of the selected range
-   - Explain what low long-signal percentile may indicate (reduced bullish participation; possible consolidation)
-
-4. **Summary**:
-   - Total days with data in range
-   - Count of bottom/top decile days (long and short percentiles)
-   - Average Total New Long/Short Signal (Combined row) for the period
-   - Trends across the range
-
-For each highlighted day provide: Date, Function, Total New Long/Short Signal, both percentile columns, 6-month thresholds, and brief interpretation.
-
-Important:
-- Use only data from the provided BREADTH SIGNALS JSON (and sbi_schema_note if present)
-- Do not fabricate values; if a column is missing for a date, say so
-- Do not use legacy Bullish Asset/Signal % columns unless populated
-
-Date Range: {from_date.strftime('%Y-%m-%d')} to {to_date.strftime('%Y-%m-%d')}"""
+        breadth_analysis_prompt = format_breadth_analysis_prompt(
+            from_date.strftime("%Y-%m-%d"),
+            to_date.strftime("%Y-%m-%d"),
+        )
         
         # Store the prompt to send after rerun
         st.session_state.pending_breadth_prompt = breadth_analysis_prompt
@@ -1680,6 +1619,20 @@ Date Range: {from_date.strftime('%Y-%m-%d')} to {to_date.strftime('%Y-%m-%d')}""
     )
     st.session_state["llm_router_enabled"] = llm_router_enabled
     _cfg.LLM_ROUTER_ENABLED = llm_router_enabled
+
+    deep_research_enabled = st.sidebar.toggle(
+        "Deep Research mode",
+        value=st.session_state.get("deep_research_enabled", False),
+        help=(
+            "Multi-step research: decomposes complex questions into sub-queries, "
+            "runs web/internal/hybrid retrieval per subtask, refines when evidence is thin, "
+            "then synthesizes an evidence-bound answer. Also auto-triggers on complex historical questions."
+        ),
+    )
+    st.session_state["deep_research_enabled"] = deep_research_enabled
+    if deep_research_enabled:
+        st.sidebar.caption("🔬 Deep research active for this session.")
+    _cfg.ENABLE_DEEP_RESEARCH = True
 
     # Reset cached router so toggles take effect
     chatbot._master_router = None
@@ -1962,6 +1915,7 @@ Date Range: {from_date.strftime('%Y-%m-%d')} to {to_date.strftime('%Y-%m-%d')}""
                     functions=selected_functions if not use_auto_extract else None,
                     auto_extract_tickers=use_auto_extract_tickers,
                     signal_type_reasoning=None,  # Will be determined by AI
+                    deep_research_enabled=st.session_state.get("deep_research_enabled", False),
                 )
 
                 # Get AI-determined signal types from metadata

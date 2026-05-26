@@ -2,7 +2,7 @@
 
 This document describes the **Analyze Asset** chatbot button prompt change in **MindWealth_UI**: what was replaced, what stayed the same in the pipeline, and what difference users should expect in AI output.
 
-**Code location:** [`src/pages/chatbot_page.py`](../../src/pages/chatbot_page.py) — `analysis_prompt` f-string inside `if analyze_button and selected_asset:` (Deep Dive Analysis sidebar).
+**Code location:** [`prompts/ui_buttons.py`](../../prompts/ui_buttons.py) — `ANALYZE_ASSET_PROMPT_TEMPLATE` and `format_analyze_asset_prompt()`; wired from [`src/pages/chatbot_page.py`](../../src/pages/chatbot_page.py) (Deep Dive Analysis sidebar).
 
 **Related docs:** [CHATBOT_UI_BUTTONS.md — Analyze Asset](../documentation/CHATBOT_UI_BUTTONS.md#1-analyze-asset), [byddy_deep_dive_missing_signals_fix.md](byddy_deep_dive_missing_signals_fix.md) (data-loading fixes; unchanged by this prompt update).
 
@@ -193,6 +193,7 @@ python -m py_compile src/pages/chatbot_page.py
 
 | File | Change |
 |------|--------|
-| [`src/pages/chatbot_page.py`](../../src/pages/chatbot_page.py) | Replaced `analysis_prompt` f-string only |
+| [`prompts/ui_buttons.py`](../../prompts/ui_buttons.py) | `ANALYZE_ASSET_PROMPT_TEMPLATE`, legacy template, formatters |
+| [`src/pages/chatbot_page.py`](../../src/pages/chatbot_page.py) | Imports `format_analyze_asset_prompt()` |
 
 Optional follow-up (not done in this change): update [CHATBOT_UI_BUTTONS.md](../documentation/CHATBOT_UI_BUTTONS.md) “Example prompt themes” to match the new OUTPUT FORMAT sections.

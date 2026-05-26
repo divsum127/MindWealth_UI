@@ -23,6 +23,8 @@ prompt = synthesis.build_prompt(
 from __future__ import annotations
 
 import importlib.util
+
+from prompts.engine import HYBRID_CALCULATION_RULES, build_synthesis_instructions
 import json
 import logging
 from datetime import datetime, timezone
@@ -122,7 +124,7 @@ class SynthesisAgent:
         include_hybrid = self._should_include_hybrid_mtm_rules(
             signal_data, web_result, web_failed, internal_failed
         )
-        instructions = self._build_instructions(include_hybrid_pointer=include_hybrid)
+        instructions = build_synthesis_instructions(include_hybrid_pointer=include_hybrid)
 
         parts = [
             f"User Query: {user_message}",
@@ -209,6 +211,22 @@ class SynthesisAgent:
             "unless deduplicated; for latest-position questions use the row with the latest signal date "
             "(parse from \"Symbol, Signal, Signal Date/Price[$]\" or equivalent)."
         )
+        lines.append(
+            "Row binding: Entry, Take Profit (Targets column), and Stop Loss for one position must "
+            "come from the same row (same signal date and Signal Open Price). Do not mix ladders "
+            "across open signals. EMA 200 in Targets is not an EMA stop unless Stop Loss has a "
+            "numeric EMA 200 level."
+        )
+        try:
+            from ..signal_level_validator import build_entry_validation_section
+
+            entry_df = signal_data.get("entry")
+            validation_block = build_entry_validation_section(entry_df)
+            if validation_block:
+                lines.append("")
+                lines.append(validation_block.rstrip())
+        except Exception:
+            pass
         lines.append("")
 
         for signal_type, df in signal_data.items():
@@ -309,58 +327,7 @@ class SynthesisAgent:
 
     @staticmethod
     def _build_hybrid_calculation_rules() -> str:
-        return (
-            "These rules apply when answering **current mark-to-market (MTM)**, **current price**, or "
-            "**where is it trading** using both SOURCE A and SOURCE B.\n"
-            "- **Default current price (same as trade_store):** Prefer the price embedded in SOURCE A "
-            '("Today Trading Date/Price..." or parsed close from the pipeline) for consistent MTM math. '
-            "SOURCE B is **optional enrichment** (news, alternate quotes), not required for basic MTM.\n"
-            "- **Signal identity:** Use SOURCE A for Function, Symbol, signal type (Long/Short), "
-            "**entry / signal open price**, and signal date exactly as exported "
-            '(including "Signal Open Price" and "Symbol, Signal, Signal Date/Price[$]").\n'
-            "- **When SOURCE B has a quote:** You may cite it with [Source N]. If it differs from SOURCE A's "
-            "today price, prefer **one** consistent story: either use SOURCE A prices end-to-end for MTM, "
-            "or **recompute** MTM from entry + direction + chosen spot and say which source the spot came from.\n"
-            '- **Internal vs web:** "Today" / MTM columns follow **trade_store/stock_data** snapshots; '
-            "web may differ slightly by timing — do not dramatize small gaps as system errors.\n"
-            "- **Current MTM / holding days:** Prefer the **\"Current Mark to Market and Holding Period\"** "
-            "column from SOURCE A when present; only recompute from entry + Long/Short + spot when that "
-            "column is missing or empty.\n"
-            "- **Multiple SOURCE A rows for the same ticker:** They are separate signal instances "
-            '(different dates, intervals, or functions), not an intraday timeline of one position. '
-            "For **latest / current** questions, select **one** row: the **latest signal date**. "
-            "Mention other rows only if the user asks for history, comparisons, or multiple strategies.\n"
-            "- **Short positions:** Invert MTM vs price move per standard Short logic when recomputing."
-        )
-
-    @staticmethod
-    def _build_instructions(include_hybrid_pointer: bool = False) -> str:
-        tail_3 = (
-            "   For MTM and holding period: prefer SOURCE A **\"Current Mark to Market and Holding Period\"** "
-            "(and Today price column) from the consolidated export; they align with the Outstanding Signals "
-            "report. If SOURCE B also has a quote, you may compare or reconcile; do not imply internal "
-            "prices are \"wrong\" solely because web differs.\n"
-        )
-        if include_hybrid_pointer:
-            tail_3 += (
-                "   When **=== HYBRID CALCULATION RULES ===** appears below, use it for reconciling "
-                "SOURCE A (trade_store-based) prices with optional SOURCE B quotes.\n"
-            )
-        return (
-            "1. Answer using SOURCE A (MindWealth signal data) as the PRIMARY source for "
-            "strategy-specific fields: function names, symbols, signal dates, entry/open prices, "
-            "signal type (Long/Short), confirmation status, targets/stops, and backtest columns "
-            "as exported.\n"
-            "2. Use SOURCE B only when helpful: **news, catalysts, macro**, or **optional** alternate quotes. "
-            "**Routine MTM** uses SOURCE A prices (from trade_store OHLC), not mandatory web search.\n"
-            "3. If SOURCE B contradicts SOURCE A on **semantic identity** (e.g. wrong function name, "
-            "wrong ticker, inconsistent strategy metadata), surface that conflict clearly.\n"
-            + tail_3
-            + "4. If a source is marked FAILED or SKIPPED, do not speculate about its content — "
-            "clearly note that information was unavailable.\n"
-            "5. Always cite web sources with [Source N] tags where applicable.\n"
-            "6. Keep the response concise and proportional to the question — avoid padding."
-        )
+        return HYBRID_CALCULATION_RULES
 
     @staticmethod
     def _build_status_summary(

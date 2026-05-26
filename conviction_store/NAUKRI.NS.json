@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.003787,
   "dividend_yield_5y_std": 0.002308,
-  "dividend_yield_current": 0.009069,
-  "dividend_yield_zscore": 2.2886,
-  "enterprise_value": 600824701947.5,
+  "dividend_yield_current": 0.008565,
+  "dividend_yield_zscore": 2.0702,
+  "enterprise_value": 636094013353.5511,
   "eps_fwd": 19.71771,
   "eps_ttm": 20.79,
-  "ev_fwd_rev": 18.9813,
+  "ev_fwd_rev": 20.0955,
   "fd_direction": "negative",
   "fd_votes": {},
   "flags": [],
@@ -204,10 +204,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 31653519360.0,
   "industry": "Internet Content & Information",
-  "last_daily_update": "2026-05-21T21:11:20+00:00",
+  "last_daily_update": "2026-05-26T14:34:16+00:00",
   "last_full_calc": "2026-05-18T20:49:44+00:00",
   "manual_overrides": {},
-  "market_cap": 599966801947.5,
+  "market_cap": 635236113353.5511,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -237,7 +237,7 @@
     53.462
   ],
   "pe_percentile_20y": 0.0,
-  "pe_ttm": 44.5527,
+  "pe_ttm": 47.1717,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -246,12 +246,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 926.25,
+  "price": 980.7000122070312,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.03154658581675154,
   "sector": "Communication Services",
   "ticker": "NAUKRI.NS",
-  "updated_at": "2026-05-21T21:11:20+00:00",
+  "updated_at": "2026-05-26T14:34:16+00:00",
   "valuation_tax": -5.0,
   "yield_trap_warning": false
 }

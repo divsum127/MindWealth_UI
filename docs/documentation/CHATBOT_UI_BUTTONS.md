@@ -218,12 +218,14 @@ flowchart LR
 | **Select Date Range** | Shared by all three buttons and manual chat input. |
 | **Available Signal Types** (expander) | Describes `entry`, `exit`, `portfolio_target_achieved`, `breadth`, `claude_report` for free-form questions. |
 | **Manual chat input** | User types a question; signal types chosen by AI (`SignalTypeSelector`), same data layer as buttons. |
+| **Deep Research mode** (toggle) | Multi-step research for complex / historical / web-heavy questions — not a one-click button. See [DEEP_RESEARCH_AGENT_MODE.md](DEEP_RESEARCH_AGENT_MODE.md). |
 
 ---
 
 ## See also
 
 - [REPORTS.md](REPORTS.md) — Report types, columns, and data flow
+- [DEEP_RESEARCH_AGENT_MODE.md](DEEP_RESEARCH_AGENT_MODE.md) — Multi-step web/internal research pipeline (sidebar toggle + auto-detect)
 - [chatbot/README.md](../chatbot/README.md) — Smart fetch, dedup, column selection
 - [breadth_analysis_button_fix.md](breadth_analysis_button_fix.md) — SBI schema fix for Breadth Analysis
 - [src/pages/chatbot_page.py](../src/pages/chatbot_page.py) — Button handlers and prompts

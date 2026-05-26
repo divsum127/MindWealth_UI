@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.022085,
   "dividend_yield_5y_std": 0.00548,
-  "dividend_yield_current": 0.023248,
-  "dividend_yield_zscore": 0.2122,
-  "enterprise_value": 116398033557.1289,
+  "dividend_yield_current": 0.022932,
+  "dividend_yield_zscore": 0.1546,
+  "enterprise_value": 117714363702.39258,
   "eps_fwd": 8.73422,
   "eps_ttm": 7.59,
-  "ev_fwd_rev": 6.7267,
+  "ev_fwd_rev": 6.8027,
   "fcf_ttm": 3391000000.0,
   "fd_direction": "stable",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 17304000000.0,
   "industry": "Railroads",
-  "last_daily_update": "2026-05-21T21:11:19+00:00",
+  "last_daily_update": "2026-05-26T14:34:16+00:00",
   "last_full_calc": "2026-05-18T20:48:12+00:00",
   "manual_overrides": {},
-  "market_cap": 95497033557.1289,
+  "market_cap": 96813363702.39258,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 20901000000.0,
-  "owner_earnings_yield": 0.035509,
+  "owner_earnings_yield": 0.035026,
   "pe_20y_array": [
     17.9326,
     17.3038,
@@ -233,7 +233,7 @@
     20.1982
   ],
   "pe_percentile_20y": 100.0,
-  "pe_ttm": 20.7418,
+  "pe_ttm": 21.0277,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -242,12 +242,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 157.42999267578125,
+  "price": 159.60000610351562,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.21846001,
   "sector": "Industrials",
   "ticker": "CNR.TO",
-  "updated_at": "2026-05-21T21:11:19+00:00",
+  "updated_at": "2026-05-26T14:34:16+00:00",
   "valuation_tax": -5.0,
   "yield_trap_warning": false
 }

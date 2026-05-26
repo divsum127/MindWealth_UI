@@ -2,9 +2,8 @@
 
 This document describes how the **fundamental conviction** layer works today, what we **assume**, and how to **run and verify** it. It aligns with the implementation plan at `.cursor/plans/conviction_engine_79da0f8e.plan.md` and the v5 PDF conceptually (batch overlay + JSON store); the PDF is not modified in-repo.
 
-## Current status (verified in this workspace)
+## Current status (verified in this workspace)yi**Entry point:** `scripts/update_conviction_fundamentals.py` — scheduled job to pull **yfinance** data, update `conviction_store/{TICKER}.json`, optionally refresh overlay CSVs under `conviction_store/overlays/`.
 
-- **Entry point:** `scripts/update_conviction_fundamentals.py` — scheduled job to pull **yfinance** data, update `conviction_store/{TICKER}.json`, optionally refresh overlay CSVs under `conviction_store/overlays/`.
 - **Data path:** `fetch_yfinance_fundamentals` → `fundamentals_enriched.fetch_and_compute_fundamentals` (quarterly statements, TTM sums, trailing P/E series, dividend stats, retries on thin `info`).
 - **Scoring:** `full_recalculation` / `daily_update` in `src/conviction_engine/engine.py`; rules in `src/conviction_engine/scoring.py`.
 - **Last full run:** `--mode full --write-overlays` for **166** tickers — batch **status completed, 0 thrown errors**; **no `fetch_errors`** returned on ticker results.
@@ -27,12 +26,12 @@ Each run:
 1. Resolves report date from latest dated `new_signal.csv` or `all_signal.csv` (or `--report-date`).
 2. Refreshes `conviction_store/{TICKER}.json` for the full signal universe (default `--fundamentals-mode daily`).
 3. Overlays conviction columns onto the **New Signals** report only (`new_signal.csv` by default).
-4. Archives under **`conviction_store/daily/YYYY-MM-DD/`**:
-   - `{date}_new_signal_conviction.csv` — full report + conviction columns
-   - `{date}_new_signal_conviction_scores.csv` — compact score sheet
-   - `manifest.json` — summary and paths
-   - `daily_report.txt` — universe alert summary
-5. Updates **`conviction_store/overlays/{date}_new_signal_conviction.csv`** (latest pointer).
+4. Archives under `**conviction_store/daily/YYYY-MM-DD/`**:
+  - `{date}_new_signal_conviction.csv` — full report + conviction columns
+  - `{date}_new_signal_conviction_scores.csv` — compact score sheet
+  - `manifest.json` — summary and paths
+  - `daily_report.txt` — universe alert summary
+5. Updates `**conviction_store/overlays/{date}_new_signal_conviction.csv**` (latest pointer).
 
 **Streamlit UI:** Conviction Engine tab → choose **Report date** → loads the archived New Signals overlay for that day (optional “Recompute from latest trade_store” for debug).
 
@@ -45,15 +44,19 @@ Each run:
 
 ## Key modules
 
-| Role | File                                                         |
-| ---- | ------------------------------------------------------------ |
-| CLI  | `scripts/update_conviction_fundamentals.py`                |
-| Orchestration + fetch | `src/conviction_engine/fundamentals.py`             |
-| Enriched yfinance      | `src/conviction_engine/fundamentals_enriched.py`   |
-| Data coverage          | `src/conviction_engine/data_coverage.py`                 |
-| Engine API             | `src/conviction_engine/engine.py`                       |
-| Scoring / gates        | `src/conviction_engine/scoring.py`                       |
-| Tests                  | `tests/test_conviction_engine.py`                       |
+
+| Role                  | File                                             |
+| --------------------- | ------------------------------------------------ |
+| CLI                   | `scripts/update_conviction_fundamentals.py`      |
+| Orchestration + fetch | `src/conviction_engine/fundamentals.py`          |
+| Enriched yfinance     | `src/conviction_engine/fundamentals_enriched.py` |
+| Data coverage         | `src/conviction_engine/data_coverage.py`         |
+| Engine API            | `src/conviction_engine/engine.py`                |
+| Scoring / gates       | `src/conviction_engine/scoring.py`               |
+| Dividend yield stats  | `src/conviction_engine/dividend_yield.py`        |
+| Yield trap check CLI  | `scripts/verify_yield_trap.py`                   |
+| Tests                 | `tests/test_conviction_engine.py`                |
+
 
 ## Fundamental inputs: what is used, why it matters, how it is fetched
 
@@ -61,20 +64,16 @@ This section ties **stored JSON fields** to **yfinance sources** and the **formu
 
 ### How data is fetched (pipeline)
 
-1. **`fetch_yfinance_enriched`** (`fundamentals_enriched.py`): builds a `yfinance.Ticker(symbol)`, with retries if `info` is empty. Pulls:
-   - **`info`** — consolidated metadata (sector, margins, EPS, cashflow hints, `quoteType`, etc.).
-   - **`fast_info`** — spot **`last_price`** / **`market_cap`** when available.
-   - **`history(period="5y")`** — daily **Close** for dividend-yield statistics and trailing P/E history.
-   - **`dividends`** — cash dividends aligned to price history.
-   - **Quarterly statements**: **`quarterly_income_stmt`**, **`quarterly_balance_sheet`**, **`quarterly_cashflow`** — used for TTM sums and trends.
-
-2. **`build_fundamentals_from_raw`**: maps the above into a flat **`fundamentals`** dict passed into the engine (see table below).
-
-3. **`map_to_engine_fundamentals`**: drops nulls; may substitute **`gross_margin_computed`** when yfinance `grossMargins` is missing.
-
-4. **`full_recalculation`**: merges `info` + `fundamentals`, sets **`business_type`**, computes **`bq_components`** / **`bq_raw`**, copies fields into the JSON record, then calls **`daily_update`**.
-
-5. **`daily_update`** (and every overlay via **`modify_signal`**): refreshes **price-sensitive** ratios (**`pe_ttm`**, **`ev_fwd_rev`**, **`owner_earnings_yield`**, **`dividend_yield_current`**), recomputes **`valuation_tax`**, **`conviction_score`**, **`fs_score`**, **`fs_class`**, **`yield_trap_warning`**.
+1. `**fetch_yfinance_enriched`** (`fundamentals_enriched.py`): builds a `yfinance.Ticker(symbol)`, with retries if `info` is empty. Pulls:
+  - `**info**` — consolidated metadata (sector, margins, EPS, cashflow hints, `quoteType`, etc.).
+  - `**fast_info**` — spot `**last_price**` / `**market_cap**` when available.
+  - `**history(period="max")**` — daily **Close** for dividend-yield statistics (5Y rolling yield mean/std); P/E history uses the same price series.
+  - `**dividends`** — cash dividends aligned to price history.
+  - **Quarterly statements**: `**quarterly_income_stmt`**, `**quarterly_balance_sheet**`, `**quarterly_cashflow**` — used for TTM sums and trends.
+2. `**build_fundamentals_from_raw**`: maps the above into a flat `**fundamentals**` dict passed into the engine (see table below).
+3. `**map_to_engine_fundamentals**`: drops nulls; may substitute `**gross_margin_computed**` when yfinance `grossMargins` is missing.
+4. `**full_recalculation**`: merges `info` + `fundamentals`, sets `**business_type**`, computes `**bq_components**` / `**bq_raw**`, copies fields into the JSON record, then calls `**daily_update**`.
+5. `**daily_update**` (and every overlay via `**modify_signal**`): refreshes **price-sensitive** ratios (`**pe_ttm`**, `**ev_fwd_rev**`, `**owner_earnings_yield**`, `**dividend_yield_current**`), recomputes `**valuation_tax**`, `**conviction_score**`, `**fs_score**`, `**fs_class**`, `**yield_trap_warning**`.
 
 **Significance:** fundamentals answer “quality and valuation of the business **right now** (per yfinance)” so conviction can **overlay** quant signals. This is **not** a point-in-time archive unless you snapshot JSON historically.
 
@@ -82,26 +81,28 @@ This section ties **stored JSON fields** to **yfinance sources** and the **formu
 
 ### Primary inputs after fetch (engine `fundamentals` / record fields)
 
-| Field(s) | Typical source(s) | Role / significance |
-| -------- | ----------------- | ------------------- |
-| **`quote_type`**, **`sector`**, **`industry`** | `info` | **Asset gate** (`EQUITY` vs ETF/index/crypto). **Business type** heuristics (saas / income / cyclical / compounder) for sector-appropriate valuation tiers and WACC used in ROIC spread. |
-| **`price`**, **`market_cap`** | `fast_info` / `info` | **Market cap** drives **`enterprise_value`**, **`owner_earnings_yield`**, **`ev_fwd_rev`**, **`pe_ttm`**, live **dividend yield**. |
-| **`eps_ttm`**, **`eps_fwd`** | `info.trailingEps`, quarterly net income / shares | **`pe_ttm`** = price / EPS; feeds **P/E percentile** vs built-up history. |
-| **`fwd_revenue_stored`** | Sum of last **4 quarters** revenue (preferred), reconciled with `info.totalRevenue` if TTM looks wrong | **EV/revenue** = enterprise value / revenue — core **valuation tax** lens by business type. |
-| **`fcf_ttm`** | Operating cash flow TTM + capex TTM (capex usually negative in yfinance, so **OCF + capex**), else `info.freeCashflow` | **FCF margin**, **distribution coverage**, **`owner_earnings_yield`** = FCF / market cap. |
-| **`fcf_margin`** | `fcf_ttm / revenue_base` | **Rule of 40** style **margin_quality** for non-income types. |
-| **`gross_margin`** | `info.grossMargins` or gross profit TTM / revenue TTM | **Revenue quality** and margin quality tie-ins. |
-| **`net_debt_stored`** | Balance sheet debt minus cash (latest quarter row) | With **`market_cap`**: **EV** = market cap + net debt (net debt defaults 0 if null). |
-| **`net_debt_ebitda`** | `net_debt / EBITDA` (TTM or `info.ebitda`) | **Balance sheet** score uses type-specific leverage bands. |
-| **`roic_proxy`** | `returnOnEquity` or `returnOnAssets` (normalized % vs decimal), else NI/equity from statements | Compared to **type WACC** → **roic_wacc_spread** BQ points. |
-| **`revenue_growth`**, **`revenue_accelerating`** | YoY change latest quarter vs 5 quarters back; last 3Q monotonicity | **Growth trajectory** BQ dimension. |
-| **`gross_margin_trend`** | Change in gross margin % over ~5 quarters | **gross_margin_trend** BQ points. |
-| **`distribution_coverage_ratio`** | `fcf_ttm / (dividendRate * shares)` | For **income** types, **margin_quality** from payout sustainability. |
-| **`annual_div_per_share_stored`** | `dividendRate` / trailing annual | **`dividend_yield_current`** = div / price; **yield trap** z-score vs 5Y history. |
-| **`dividend_yield_5y_mean`**, **`dividend_yield_5y_std`** | 5Y rolling sum of dividends / price | **Yield trap**: high current yield vs own history + exchange threshold. |
-| **`pe_20y_array`** | **`history(period='max')`**: daily **P/E = that day’s close ÷ rolling 4Q EPS**; stored as **month-end** samples (up to ~240 points). | **Percentile** of today’s **`pe_ttm`** within that series → valuation tax. |
-| **`pe_history_meta`** | Calendar span of valid P/E points: `years_available`, `start_date`, `end_date`, `insufficient_20y` if &lt; **20** years | Flags + universe distribution; see below. |
-| **`insider_pct`** | `heldPercentInsiders` scaled to **0–100** if given as a fraction | **insider_ownership** BQ via thresholds (>15% good, &lt;1% bad). |
+
+| Field(s)                                                  | Typical source(s)                                                                                                                    | Role / significance                                                                                                                                                                      |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `**quote_type`**, `**sector**`, `**industry**`            | `info`                                                                                                                               | **Asset gate** (`EQUITY` vs ETF/index/crypto). **Business type** heuristics (saas / income / cyclical / compounder) for sector-appropriate valuation tiers and WACC used in ROIC spread. |
+| `**price`**, `**market_cap**`                             | `fast_info` / `info`                                                                                                                 | **Market cap** drives `**enterprise_value`**, `**owner_earnings_yield**`, `**ev_fwd_rev**`, `**pe_ttm**`, live **dividend yield**.                                                       |
+| `**eps_ttm`**, `**eps_fwd**`                              | `info.trailingEps`, quarterly net income / shares                                                                                    | `**pe_ttm**` = price / EPS; feeds **P/E percentile** vs built-up history.                                                                                                                |
+| `**fwd_revenue_stored`**                                  | Sum of last **4 quarters** revenue (preferred), reconciled with `info.totalRevenue` if TTM looks wrong                               | **EV/revenue** = enterprise value / revenue — core **valuation tax** lens by business type.                                                                                              |
+| `**fcf_ttm`**                                             | Operating cash flow TTM + capex TTM (capex usually negative in yfinance, so **OCF + capex**), else `info.freeCashflow`               | **FCF margin**, **distribution coverage**, `**owner_earnings_yield`** = FCF / market cap.                                                                                                |
+| `**fcf_margin**`                                          | `fcf_ttm / revenue_base`                                                                                                             | **Rule of 40** style **margin_quality** for non-income types.                                                                                                                            |
+| `**gross_margin`**                                        | `info.grossMargins` or gross profit TTM / revenue TTM                                                                                | **Revenue quality** and margin quality tie-ins.                                                                                                                                          |
+| `**net_debt_stored`**                                     | Balance sheet debt minus cash (latest quarter row)                                                                                   | With `**market_cap**`: **EV** = market cap + net debt (net debt defaults 0 if null).                                                                                                     |
+| `**net_debt_ebitda`**                                     | `net_debt / EBITDA` (TTM or `info.ebitda`)                                                                                           | **Balance sheet** score uses type-specific leverage bands.                                                                                                                               |
+| `**roic_proxy`**                                          | `returnOnEquity` or `returnOnAssets` (normalized % vs decimal), else NI/equity from statements                                       | Compared to **type WACC** → **roic_wacc_spread** BQ points.                                                                                                                              |
+| `**revenue_growth`**, `**revenue_accelerating**`          | YoY change latest quarter vs 5 quarters back; last 3Q monotonicity                                                                   | **Growth trajectory** BQ dimension.                                                                                                                                                      |
+| `**gross_margin_trend`**                                  | Change in gross margin % over ~5 quarters                                                                                            | **gross_margin_trend** BQ points.                                                                                                                                                        |
+| `**distribution_coverage_ratio`**                         | `fcf_ttm / (dividendRate * shares)`                                                                                                  | For **income** types, **margin_quality** from payout sustainability.                                                                                                                     |
+| `**annual_div_per_share_stored`**                         | `dividendRate` / trailing annual                                                                                                     | `**dividend_yield_current**` = div / price; **yield trap** z-score vs 5Y history.                                                                                                        |
+| `**dividend_yield_5y_mean`**, `**dividend_yield_5y_std**` | 5Y rolling sum of dividends / price                                                                                                  | **Yield trap**: high current yield vs own history + exchange threshold.                                                                                                                  |
+| `**pe_20y_array`**                                        | `**history(period='max')**`: daily **P/E = that day’s close ÷ rolling 4Q EPS**; stored as **month-end** samples (up to ~240 points). | **Percentile** of today’s `**pe_ttm`** within that series → valuation tax.                                                                                                               |
+| `**pe_history_meta**`                                     | Calendar span of valid P/E points: `years_available`, `start_date`, `end_date`, `insufficient_20y` if < **20** years                 | Flags + universe distribution; see below.                                                                                                                                                |
+| `**insider_pct`**                                         | `heldPercentInsiders` scaled to **0–100** if given as a fraction                                                                     | **insider_ownership** BQ via thresholds (>15% good, <1% bad).                                                                                                                            |
+
 
 ---
 
@@ -109,29 +110,33 @@ This section ties **stored JSON fields** to **yfinance sources** and the **formu
 
 Let **P** = price, **M** = market cap, **D** = net debt (stored or 0), **R** = `fwd_revenue_stored`, **FCF** = `fcf_ttm`, **EPS** = `eps_ttm`.
 
-| Quantity | Formula / rule | Use |
-| -------- | -------------- | --- |
-| **`enterprise_value`** | `enterprise_value = market_cap + net_debt` (net debt defaults to 0 if missing) | Less noisy “firm value” than equity-only cap. |
-| **`pe_ttm`** | `pe_ttm = price / eps_ttm` when EPS > 0 | Current trailing P/E. |
-| **`pe_percentile_20y`** | Fraction of `pe_20y_array` values ≤ current `pe_ttm`, times 100 | “How expensive vs recent own history” (field name is legacy). |
-| **`ev_fwd_rev`** | `(market_cap + net_debt) / fwd_revenue_stored` when revenue > 0 | Richness vs sales; valuation tax tiers depend on `business_type`. |
-| **`owner_earnings_yield`** | `fcf_ttm / market_cap` when both known and cap > 0 | Cash return on equity value; very low yield adds valuation tax. |
-| **`dividend_yield_current`** | `annual_div_per_share_stored / price` | Current yield vs 5Y stats → z-score for yield trap gate. |
-| **`conviction_score`** | `bq_raw + valuation_tax` (rounded) | Stored headline score before FS overlay cap in `modify_signal`. |
+
+| Quantity                     | Formula / rule                                                                 | Use                                                               |
+| ---------------------------- | ------------------------------------------------------------------------------ | ----------------------------------------------------------------- |
+| `**enterprise_value`**       | `enterprise_value = market_cap + net_debt` (net debt defaults to 0 if missing) | Less noisy “firm value” than equity-only cap.                     |
+| `**pe_ttm**`                 | `pe_ttm = price / eps_ttm` when EPS > 0                                        | Current trailing P/E.                                             |
+| `**pe_percentile_20y**`      | Fraction of `pe_20y_array` values ≤ current `pe_ttm`, times 100                | “How expensive vs recent own history” (field name is legacy).     |
+| `**ev_fwd_rev**`             | `(market_cap + net_debt) / fwd_revenue_stored` when revenue > 0                | Richness vs sales; valuation tax tiers depend on `business_type`. |
+| `**owner_earnings_yield**`   | `fcf_ttm / market_cap` when both known and cap > 0                             | Cash return on equity value; very low yield adds valuation tax.   |
+| `**dividend_yield_current**` | `annual_div_per_share_stored / price`                                          | Current yield vs 5Y stats → z-score for yield trap gate.          |
+| `**conviction_score**`       | `bq_raw + valuation_tax` (rounded)                                             | Stored headline score before FS overlay cap in `modify_signal`.   |
+
 
 ---
 
 ### Business type → valuation tier sets (`EV_REV_TIERS` in `scoring.py`)
 
-**`business_type`** selects threshold list **`[t1,t2,t3,t4]`** (EV/revenue) and optional **`floor_trigger`**:
+`**business_type**` selects threshold list `**[t1,t2,t3,t4]**` (EV/revenue) and optional `**floor_trigger**`:
 
-| Type | EV/rev thresholds (must cross in order) | `floor_trigger` (note) |
-| ---- | ---------------------------------------- | ---------------------- |
-| **saas** | 3, 5, 8, 12 | 4 |
-| **compounder** | 1.5, 3, 6, 8 | 3 |
-| **income** | 4, 6, 8, 10 | 6 |
-| **cyclical** | 1, 2.5, 4, 5 | None |
-| **unknown** | 2, 4, 6, 8 | None |
+
+| Type           | EV/rev thresholds (must cross in order) | `floor_trigger` (note) |
+| -------------- | --------------------------------------- | ---------------------- |
+| **saas**       | 3, 5, 8, 12                             | 4                      |
+| **compounder** | 1.5, 3, 6, 8                            | 3                      |
+| **income**     | 4, 6, 8, 10                             | 6                      |
+| **cyclical**   | 1, 2.5, 4, 5                            | None                   |
+| **unknown**    | 2, 4, 6, 8                              | None                   |
+
 
 **EV/revenue tier tax:** let the tier list be `[t1, t2, t3, t4]`. Initialize `tier_tax = 0`. For each index **i** from 1 to 4, if `ev_fwd_rev >= t_i`, set `tier_tax = -i` (so the deepest breached threshold wins). Add `tier_tax` to total tax. If `ev_fwd_rev` is at or above the **last** threshold, set `tax = min(tax, -5)` (extra pinch at the top). **Income** only: if `ev_fwd_rev` is **below** the **first** threshold, add **+1** to tax.
 
@@ -147,45 +152,47 @@ Let **P** = price, **M** = market cap, **D** = net debt (stored or 0), **R** = `
 
 ### Auto BQ (`compute_bq_components_auto` + `bq_raw`)
 
-**`bq_raw` = sum of 15 components** (each is a small integer-like score, then rounded).
+`**bq_raw` = sum of 15 components** (each is a small integer-like score, then rounded).
 
-| Component | Main inputs | Scoring idea (abbrev.) |
-| --------- | ----------- | ------------------------ |
-| **revenue_quality** | gross_margin, fcf_margin | Higher gross / FCF margin → up to +2 each branch, cap +2. |
-| **growth_trajectory** | revenue_growth, revenue_accelerating | YoY and accel flags → −1 … +2. |
-| **margin_quality** | business_type, dist_cov OR rule_of_40, fcf_margin, gross_margin | Income: coverage &gt;2 → +2, etc.; else Rule of 40 (%): ≥40 → +2, ≥25 → +1, etc. |
-| **balance_sheet** | net_debt_ebitda vs **type bands** (`NET_DEBT_SAFE` / `CONCERN` / `DANGER`) | Safe → +1, stretched → 0 / −1 / −2. |
-| **roic_wacc_spread** | roic_proxy minus **WACC** (saas 10%, compounder 7.5%, income 5.5%, cyclical 9%, unknown 8%) | Spread ≥5% → +2, ≥2% → +1, &gt;0 → 0, etc. |
-| **gross_margin_trend** | gross_margin_trend | ≥+2% rel. → +1, ≤−2% → −1. |
-| **debt_maturity_risk** | override | default 0. |
-| **ceo_quality**, **mgmt_capital_allocation**, **competitive_moat**, **macro_tailwind** | overrides / scores | default **0** unless manual JSON. |
-| **divergence_signal**, **deal_delay_risk** | override flags | 0 or ±2 / −1. |
-| **insider_ownership** | insider % (0–100) | &gt;15% → +2, &lt;1% → −1. |
-| **reinvestment_runway** | override multiple | ≥5 → +1, &lt;3 → −1. |
 
-If **every** auto component is **0**, **`full_recalculation`** falls back to legacy **`compute_bq_components`** (simpler thresholds on the same fundamentals).
+| Component                                                                              | Main inputs                                                                                 | Scoring idea (abbrev.)                                                        |
+| -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| **revenue_quality**                                                                    | gross_margin, fcf_margin                                                                    | Higher gross / FCF margin → up to +2 each branch, cap +2.                     |
+| **growth_trajectory**                                                                  | revenue_growth, revenue_accelerating                                                        | YoY and accel flags → −1 … +2.                                                |
+| **margin_quality**                                                                     | business_type, dist_cov OR rule_of_40, fcf_margin, gross_margin                             | Income: coverage >2 → +2, etc.; else Rule of 40 (%): ≥40 → +2, ≥25 → +1, etc. |
+| **balance_sheet**                                                                      | net_debt_ebitda vs **type bands** (`NET_DEBT_SAFE` / `CONCERN` / `DANGER`)                  | Safe → +1, stretched → 0 / −1 / −2.                                           |
+| **roic_wacc_spread**                                                                   | roic_proxy minus **WACC** (saas 10%, compounder 7.5%, income 5.5%, cyclical 9%, unknown 8%) | Spread ≥5% → +2, ≥2% → +1, >0 → 0, etc.                                       |
+| **gross_margin_trend**                                                                 | gross_margin_trend                                                                          | ≥+2% rel. → +1, ≤−2% → −1.                                                    |
+| **debt_maturity_risk**                                                                 | override                                                                                    | default 0.                                                                    |
+| **ceo_quality**, **mgmt_capital_allocation**, **competitive_moat**, **macro_tailwind** | overrides / scores                                                                          | default **0** unless manual JSON.                                             |
+| **divergence_signal**, **deal_delay_risk**                                             | override flags                                                                              | 0 or ±2 / −1.                                                                 |
+| **insider_ownership**                                                                  | insider % (0–100)                                                                           | >15% → +2, <1% → −1.                                                          |
+| **reinvestment_runway**                                                                | override multiple                                                                           | ≥5 → +1, <3 → −1.                                                             |
 
-**`fs_quality_base`** = **`50 + bq_raw × 2.5`** (starting point for financial strength score).
+
+If **every** auto component is **0**, `**full_recalculation`** falls back to legacy `**compute_bq_components**` (simpler thresholds on the same fundamentals).
+
+`**fs_quality_base**` = `**50 + bq_raw × 2.5**` (starting point for financial strength score).
 
 ---
 
 ### Financial strength score (`calculate_fs_score`) → `fs_class`
 
-Starting score = **`fs_quality_base`** (or override). Then adjustments (examples):
+Starting score = `**fs_quality_base**` (or override). Then adjustments (examples):
 
-- **Owner earnings yield** vs **OEY_STRONG** by type (e.g. compounder 4%): strong → **+5**; very weak (&lt;1%) → **−8**.
+- **Owner earnings yield** vs **OEY_STRONG** by type (e.g. compounder 4%): strong → **+5**; very weak (<1%) → **−8**.
 - **P/E percentile**: ≤30 → **+5**; ≥80 → **−6**.
-- **EV/revenue**: ≥ top tier → **−8**; &lt; first tier → **+3**.
+- **EV/revenue**: ≥ top tier → **−8**; < first tier → **+3**.
 
 Clamp to **[0, 100]**, then **classify**: ≥75 strong, ≥55 moderate_high, ≥40 moderate, ≥25 moderate_low, else weak.
 
-**`apply_fs_cap`** then may **lower** the conviction used for verdicts if **fs_class** is weak/moderate_low (long vs short caps differ).
+`**apply_fs_cap`** then may **lower** the conviction used for verdicts if **fs_class** is weak/moderate_low (long vs short caps differ).
 
 ---
 
 ### `fd_direction` (sizing nudge, not BQ)
 
-From **`compute_fd_direction`**: votes from **revenue_growth** (&gt;2% / &lt;−2%), optional EPS growth (not populated from fetch by default), **gross_margin_trend** (&gt;1% / &lt;−1%) → **positive** / **negative** / **stable**. Used only inside **TACTICAL / REDUCED BUY** sizing bands.
+From `**compute_fd_direction`**: votes from **revenue_growth** (>2% / <−2%), optional EPS growth (not populated from fetch by default), **gross_margin_trend** (>1% / <−1%) → **positive** / **negative** / **stable**. Used only inside **TACTICAL / REDUCED BUY** sizing bands.
 
 ---
 
@@ -193,11 +200,13 @@ From **`compute_fd_direction`**: votes from **revenue_growth** (&gt;2% / &lt;−
 
 ### What the numbers are
 
-| Field | Meaning |
-| ----- | ------- |
-| **`bq_raw`** | Sum of **15 Business Quality (BQ)** dimension scores (roughly -15 … +30 in principle; typical auto-calibrated band is narrower). Higher = better franchise / balance sheet / growth / returns **before** adjusting for how expensive the stock is. Many dimensions default to **0** until you add **manual overrides** (CEO, moat, etc.). |
-| **`valuation_tax`** | Non-positive adjustment for **rich** valuation vs business type (EV/revenue tiers, trailing P/E percentile, very low owner-earnings yield). Ranges from **0** down to a **floor of -5** (total tax is capped there so one expensive lens does not dominate). |
-| **`conviction_score`** (in JSON store) | **`bq_raw` + `valuation_tax`** (rounded). This is the **uncapped** headline fundamental score used as input to the next steps. |
+
+| Field                                  | Meaning                                                                                                                                                                                                                                                                                                                                   |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `**bq_raw`**                           | Sum of **15 Business Quality (BQ)** dimension scores (roughly -15 … +30 in principle; typical auto-calibrated band is narrower). Higher = better franchise / balance sheet / growth / returns **before** adjusting for how expensive the stock is. Many dimensions default to **0** until you add **manual overrides** (CEO, moat, etc.). |
+| `**valuation_tax`**                    | Non-positive adjustment for **rich** valuation vs business type (EV/revenue tiers, trailing P/E percentile, very low owner-earnings yield). Ranges from **0** down to a **floor of -5** (total tax is capped there so one expensive lens does not dominate).                                                                              |
+| `**conviction_score`** (in JSON store) | `**bq_raw` + `valuation_tax**` (rounded). This is the **uncapped** headline fundamental score used as input to the next steps.                                                                                                                                                                                                            |
+
 
 So a **high positive** score means: strong or decent BQ **and** valuation not punishing too hard. A **deep negative** score usually means weak BQ and/or heavy valuation tax (expensive vs fundamentals).
 
@@ -205,76 +214,191 @@ So a **high positive** score means: strong or decent BQ **and** valuation not pu
 
 These bands describe **economic significance** in this implementation, not a guarantee of future performance:
 
-| Approx. `conviction_score` | Interpretation |
-| -------------------------: | -------------- |
-| **&lt; 0** | Fundamentals **do not support** sizing into a typical long on fundamental grounds alone: weak BQ and/or punitive valuation tax. Often pairs with **CANCEL BUY** on new longs after FS and other gates. |
-| **0 … 1.99** | **Marginal**: some BQ may be fine, but valuation drag and/or weak FS path keeps you **below** the first “actionable” BUY tier in the verdict map (needs **≥ 2** after any FS cap). |
-| **2 … 4.99** | **Moderate alignment**: crosses the **REDUCED BUY** threshold **if** the score fed into `modify_signal` is **≥ 2** after **FS caps** (see below). Good businesses can sit here when still somewhat expensive. |
-| **5 … 7.99** | **Strong alignment**: crosses **TACTICAL BUY** if the **post-cap** score **≥ 5**. Usually needs solid BQ and a valuation tax that is not maxed out (or strong overrides). |
-| **≥ 8** | **Maximum fundamental tier** (**MAX CONVICTION** for buys). In practice, reaching **8+** with **only** automated yfinance inputs is **uncommon** because subjective BQ scores and extreme “cheapness” are often required; **manual BQ** and/or very favorable valuation help. |
+
+| Approx. `conviction_score` | Interpretation                                                                                                                                                                                                                                                                |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **< 0**                    | Fundamentals **do not support** sizing into a typical long on fundamental grounds alone: weak BQ and/or punitive valuation tax. Often pairs with **CANCEL BUY** on new longs after FS and other gates.                                                                        |
+| **0 … 1.99**               | **Marginal**: some BQ may be fine, but valuation drag and/or weak FS path keeps you **below** the first “actionable” BUY tier in the verdict map (needs **≥ 2** after any FS cap).                                                                                            |
+| **2 … 4.99**               | **Moderate alignment**: crosses the **REDUCED BUY** threshold **if** the score fed into `modify_signal` is **≥ 2** after **FS caps** (see below). Good businesses can sit here when still somewhat expensive.                                                                 |
+| **5 … 7.99**               | **Strong alignment**: crosses **TACTICAL BUY** if the **post-cap** score **≥ 5**. Usually needs solid BQ and a valuation tax that is not maxed out (or strong overrides).                                                                                                     |
+| **≥ 8**                    | **Maximum fundamental tier** (**MAX CONVICTION** for buys). In practice, reaching **8+** with **only** automated yfinance inputs is **uncommon** because subjective BQ scores and extreme “cheapness” are often required; **manual BQ** and/or very favorable valuation help. |
+
 
 **Negative scores** are **meaningful**, not errors: they say “fundamentals argue against paying up,” which is by design when tax and BQ both lean negative.
 
 ### Verdict mapping (after FS cap): BUY side
 
-The engine applies **`apply_fs_cap`** so **weak** or **moderate-low** financial strength can **lower** the score before sizing. Overlay columns:
+The engine applies `**apply_fs_cap`** so **weak** or **moderate-low** financial strength can **lower** the score before sizing. Overlay columns:
 
-- **`conviction_raw`** ≈ pre-cap score from the record  
-- **`conviction_score`** = **post-FS-cap** score used for **`verdict`** and **`sizing_pct`**
+- `**conviction_raw`** ≈ pre-cap score from the record  
+- `**conviction_score**` = **post-FS-cap** score used for `**verdict`** and `**sizing_pct**`
 
 Thresholds (from `verdict_for_buy`, yield-trap excluded):
 
-| Post-cap score | BUY verdict | Suggested sizing (conceptual) |
-| -------------: | ----------- | ----------------------------- |
-| **≥ 8** | MAX CONVICTION | 100% of framework bucket |
-| **≥ 5** | TACTICAL BUY | 60–85% (depends on `fd_direction`) |
-| **≥ 2** | REDUCED BUY | 25–50% (depends on `fd_direction`) |
-| **&lt; 2** | CANCEL BUY | 0% |
 
-**Yield-trap** (`yield_trap_warning`) — hard gate per Conviction Engine v5 PDF (§3, §8.1–8.2):
+| Post-cap score | BUY verdict    | Suggested sizing (conceptual)      |
+| -------------- | -------------- | ---------------------------------- |
+| **≥ 8**        | MAX CONVICTION | 100% of framework bucket           |
+| **≥ 5**        | TACTICAL BUY   | 60–85% (depends on `fd_direction`) |
+| **≥ 2**        | REDUCED BUY    | 25–50% (depends on `fd_direction`) |
+| **< 2**        | CANCEL BUY     | 0%                                 |
 
-| Condition | Rule |
-| --------- | ---- |
-| **Trigger** | **Both** required: (1) `dividend_yield_zscore` **> 1.5** (current yield vs own 5Y mean/std), **and** (2) `dividend_yield_current` above **market-absolute** threshold |
-| **Thresholds** | NZ **12%**, AU **10%**, CA **7%**, UK **9%**, US/India/default **6%** (suffix on ticker, e.g. `.TO` → 7%) |
-| **BUY** | **CANCEL BUY**, 0% sizing — no conviction score override |
-| **SELL** | **HARD EXIT**, 0% sizing — **core and tactical** layers zeroed |
-| **Missing data** | If 5Y mean/std or z-score cannot be computed, trap is **False** (both conditions required; no absolute-yield-only fallback) |
 
-`dividend_yield_current` = `annual_div_per_share_stored / price`. Z-score uses rolling 365-day dividend sums vs daily close (calendar-date aligned).
+**Yield-trap** (`yield_trap_warning`) is a **hard gate** checked on every `daily_update` and signal overlay. It can force **CANCEL BUY** or **HARD EXIT** regardless of conviction score. Full logic is documented in **[Yield trap — implementation](#yield-trap--implementation)** below.
 
-**`fd_direction`** (`positive` / `negative` / `stable`): nudges sizing **within** the REDUCED / TACTICAL bands; it does **not** change the tier boundaries.
+`**fd_direction`** (`positive` / `negative` / `stable`): nudges sizing **within** the REDUCED / TACTICAL bands; it does **not** change the tier boundaries.
 
 ### Financial strength (`fs_class`) — why scores get “stuck” in overlays
 
-`fs_score` / `fs_class` come from a **separate** 0–100 scale (`calculate_fs_score` / `classify_fs`). If FS is **weak** or **moderate_low**, **`apply_fs_cap`** can cap the long/short **conviction_score** used for verdicts (e.g. weak + long-term signal capped at **+1**). That can make overlays look “all 0 or 1” even when **`conviction_raw`** is higher — always compare **`conviction_raw`**, **`bq_raw`**, **`valuation_tax`**, and the **rationale** column.
+`fs_score` / `fs_class` come from a **separate** 0–100 scale (`calculate_fs_score` / `classify_fs`). If FS is **weak** or **moderate_low**, `**apply_fs_cap`** can cap the long/short **conviction_score** used for verdicts (e.g. weak + long-term signal capped at **+1**). That can make overlays look “all 0 or 1” even when `**conviction_raw`** is higher — always compare `**conviction_raw**`, `**bq_raw**`, `**valuation_tax**`, and the **rationale** column.
 
 ### SELL side (short signal)
 
 For **SELL** signals, the same underlying score drives **pause vs exit** logic (`verdict_for_sell`): higher conviction supports **pausing** or **trading around** a short exit; lower conviction favors **full / hard** exit. Interpretation is symmetric to risk tolerance: “how much does fundamental quality argue for keeping vs exiting the position?”
 
-**Yield-trap on SELL** overrides score tiers: verdict is always **HARD EXIT** with 0% retain and both position layers closed (see yield-trap table above).
+### Yield trap — implementation
+
+Aligned with **Conviction Engine v5 PDF** (§3 Key Terminology, §8.1 BUY table, §8.2 SELL hard-gate row). The PDF requires **two conditions** so high-yield markets (e.g. NZX) do not false-positive on yield alone.
+
+#### Purpose
+
+A very high **current dividend yield** can mean distress (price fell, dividend not yet cut) rather than a safe income opportunity. The gate flags names where yield is **unusually high vs the stock’s own history** **and** above a **market-absolute** floor for that listing’s exchange.
+
+#### Trap condition (both required)
+
+Stored on each equity record as `yield_trap_warning` (boolean), set in `daily_update` via `is_yield_trap()` in `src/conviction_engine/scoring.py`:
+
+```
+yield_trap_warning = (
+    dividend_yield_zscore > 1.5
+    AND dividend_yield_current > market_yield_threshold(ticker)
+)
+```
+
+If `dividend_yield_zscore` **or** `dividend_yield_current` is missing → **`yield_trap_warning = False`**. There is **no** fallback that uses absolute yield only when z-score is unavailable (per PDF: both legs required).
+
+#### Market-absolute yield thresholds
+
+`market_yield_threshold(ticker)` uses the **ticker suffix** (not business type):
+
+| Suffix / default | Threshold |
+| ---------------- | --------- |
+| `.NZ` | 12% (0.12) |
+| `.AX` | 10% (0.10) |
+| `.TO` | 7% (0.07) |
+| `.L` | 9% (0.09) |
+| US, `.NS`, and all others | 6% (0.06) |
+
+#### Input fields and formulas
+
+| Field | When set | Formula / source |
+| ----- | -------- | ---------------- |
+| `annual_div_per_share_stored` | `full_recalculation` | `dividendRate` / trailing annual from yfinance `info`, or fundamentals payload |
+| `dividend_yield_5y_mean`, `dividend_yield_5y_std` | `full_recalculation` (enriched fetch) | `compute_dividend_yield_stats()` in `src/conviction_engine/dividend_yield.py` |
+| `dividend_yield_current` | Every `daily_update` | `annual_div_per_share_stored / price` (live price from fast_info / record) |
+| `dividend_yield_zscore` | Every `daily_update` | `(dividend_yield_current - dividend_yield_5y_mean) / dividend_yield_5y_std` when mean and std exist and **std > 0** |
+| `yield_trap_warning` | Every `daily_update` | `is_yield_trap(record, ticker)` |
+
+**5Y dividend-yield history** (`compute_dividend_yield_stats`):
+
+1. Load daily **Close** (`history(period="max")`) and **dividends** series from yfinance.
+2. **Normalize timestamps to calendar dates** (dividend rows are often `09:30`, closes at midnight — without this step, yields can be all zero).
+3. Sum dividends per day; rolling **365-day** sum of dividends per day → trailing annual dividend cash.
+4. `dividend_yield_t = annual_div_roll_t / close_t`; keep points where yield **> 0**.
+5. Require **≥ 20** positive yield observations; else return `{}` (no mean/std).
+6. `dividend_yield_5y_mean` = mean of series; `dividend_yield_5y_std` = population std (ddof=0).
+
+Mean/std are **persisted on the JSON record** at full recalc; daily runs only refresh price, current yield, z-score, and the trap flag.
+
+#### Order in the signal pipeline
+
+When `modify_signal()` runs for an overlay row:
+
+1. `daily_update(ticker)` — refreshes price-linked fields and recomputes `yield_trap_warning`.
+2. `apply_fs_cap` — FS cap on conviction score (trap does **not** change the score; it overrides the **verdict**).
+3. `verdict_for_buy` / `verdict_for_sell` — if `yield_trap_warning` is true, verdict is forced **before** score tiers apply.
+
+```mermaid
+flowchart TD
+    dailyUpdate[daily_update] --> cy[dividend_yield_current]
+    dailyUpdate --> z[dividend_yield_zscore]
+    dailyUpdate --> flag[yield_trap_warning]
+    cy --> gate[is_yield_trap]
+    z --> gate
+    gate --> flag
+    modifySignal[modify_signal] --> flag
+    flag -->|True + BUY| cancel[CANCEL BUY 0%]
+    flag -->|True + SELL| hard[HARD EXIT 0%]
+    flag -->|False| tiers[normal verdict tiers]
+```
+
+#### Verdict and sizing impact
+
+| Technical signal | `yield_trap_warning` | Verdict | Sizing | Position layers |
+| ---------------- | -------------------- | ------- | ------ | ----------------- |
+| **BUY** | True | **CANCEL BUY** | 0% | No new exposure (BUY path skipped when verdict is CANCEL BUY) |
+| **SELL** (any timeframe) | True | **HARD EXIT** | 0% | `core_fraction` and `tactical_fraction` set to **0** |
+
+Implementation: `verdict_for_buy(..., yield_trap=True)` and `verdict_for_sell(..., yield_trap=True)` in `scoring.py`. Rationale on overlays includes **`Yield trap hard gate fired`** when the flag is true.
+
+Yield trap is evaluated **after** FS cap is computed for messaging, but the trap **overrides** the tier verdict — a score of +9 cannot produce MAX CONVICTION if the trap is on.
+
+#### Overlay and UI columns
+
+- **`yield_trap_warning`** — boolean on each overlaid signal row (`SignalModification` / CSV).
+- **`rationale`** — may contain `Yield trap hard gate fired`.
+- **Conviction Engine page** — metric **Yield traps** counts rows where the column is true **or** rationale mentions yield trap (equity rows only); ticker detail has a **Yield trap diagnostics** expander (`dividend_yield_current`, z-score, 5Y mean/std, market threshold, rule flags).
+
+Archived daily New Signals overlays: `conviction_store/daily/YYYY-MM-DD/*_new_signal_conviction.csv` only include traps for tickers **in that day’s New Signals file** — a trap name absent from the report will not appear in that CSV.
+
+#### Worked examples (stored records)
+
+| Ticker | Current yield | Z-score | Market floor | Trap? | Why |
+| ------ | ------------- | ------- | ------------ | ----- | --- |
+| **T.TO** | ~9.9% | ~1.67 | 7% | **Yes** | Both legs pass (Telus-style PDF example) |
+| **UPS** | ~6.9% | ~1.58 | 6% | **Yes** | Both legs pass |
+| **WIPRO.NS** | ~8.8% | ~6.06 | 6% | **Yes** | Both legs pass |
+| **PFE** | ~6.8% | ~1.09 | 6% | **No** | Yield above floor but z-score **≤ 1.5** |
+| **TCS.NS** | ~5.4% | ~2.18 | 6% | **No** | Z-score high but yield **below** 6% floor |
+
+#### Verification
+
+```bash
+# Inspect trap inputs for one or more tickers (optional --refresh for full yfinance recalc)
+.venv/bin/python scripts/verify_yield_trap.py T.TO PFE UPS
+.venv/bin/python scripts/verify_yield_trap.py --refresh T.TO
+```
+
+Unit tests: `test_telus_style_yield_trap`, `test_sell_yield_trap_hard_exit`, `test_yield_trap_missing_zscore_false`, `test_compute_dividend_yield_stats_aligns_dividend_dates` in `tests/test_conviction_engine.py`.
+
+#### Common “why is trap always False?” causes
+
+1. **`dividend_yield_5y_mean` / `dividend_yield_5y_std` missing** — run `update_ticker_fundamentals(..., mode="full")` or daily pipeline after enriched fetch; daily-only updates do not rebuild 5Y stats if never populated.
+2. **Ticker not in the New Signals overlay** — trap may be true in `conviction_store/TICKER.json` but the symbol is not in that report date’s CSV.
+3. **Only one leg passes** — high yield but normal vs history (e.g. PFE), or high z-score but yield under market floor (e.g. TCS.NS).
+4. **Non-equity** — ETFs/indices/FX: `NOT_APPLICABLE`; trap column stays false.
 
 ### Non-equities
 
-ETF / index / FX / crypto: **`conviction_score`** is **`null`** in JSON; overlays use **NOT_APPLICABLE**. There is **no** fundamental equity score to interpret.
+ETF / index / FX / crypto: `**conviction_score`** is `**null**` in JSON; overlays use **NOT_APPLICABLE**. There is **no** fundamental equity score to interpret.
 
 ## Assumptions
 
 1. **Primary source** for automated fundamentals is **yfinance**; the JSON / overlay **shape** is stable so other providers can supply the same fields later.
 2. **Non-equities** (ETF, index, FX, crypto) get **no** numeric equity conviction score in the same sense; gating uses asset type + `NOT_APPLICABLE` where appropriate.
-3. **`pe_20y_array`** is a **legacy name**: the implementation builds a **recent trailing P/E history** from rolling four-quarter EPS vs spot prices, not a full multi-decade Macrotrends series.
+3. `**pe_20y_array`** is a **legacy name**: the implementation builds a **recent trailing P/E history** from rolling four-quarter EPS vs spot prices, not a full multi-decade Macrotrends series.
 4. **Subjective BQ items** (CEO, moat, etc.) score **0** unless **manual overrides** are set — consistent with an analyst workflow in the PDF.
 5. **Valuation tax** is non-positive, **capped at -5** total; extreme EV/revenue floor applies at the **top EV/rev tier** only.
-6. **`heldPercentInsiders` / `insider_pct`** is normalized to a **0–100 percent** scale for auto-BQ (e.g. `0.065` → `6.5`) so insider scoring matches `_score_insider`.
+6. `**heldPercentInsiders` / `insider_pct`** is normalized to a **0–100 percent** scale for auto-BQ (e.g. `0.065` → `6.5`) so insider scoring matches `_score_insider`.
 
 ## Implementation notes (recent)
 
 - **Auto BQ** (`compute_bq_components_auto`) with **fallback** to legacy `compute_bq_components` when every auto component is zero (sparse data).
 - **Retries** when `Ticker.info` is empty or flaky.
 - **Business type:** e.g. “Software – Infrastructure” not misclassified as income purely on the word “infrastructure”; dividend yield normalization for yfinance percent vs decimal.
-- **`fd_direction`:** inferred from revenue growth and gross margin trend when not overridden; `_copy_known_fields` no longer resets it to a stale default.
-- **`insider_pct`:** stored on **0–100** scale after fetch for consistent `_score_insider` thresholds.
+- **Yield trap:** calendar-date alignment for dividend vs price history (`dividend_yield.py`); trap requires z-score **> 1.5** and market threshold; missing 5Y stats → not a trap; SELL → **HARD EXIT** with both layers zeroed.
+- `**fd_direction`:** inferred from revenue growth and gross margin trend when not overridden; `_copy_known_fields` no longer resets it to a stale default.
+- `**insider_pct`:** stored on **0–100** scale after fetch for consistent `_score_insider` thresholds.
 
 ## How to run
 
@@ -295,33 +419,35 @@ python3 -m venv .venv
 .venv/bin/python -m unittest tests.test_conviction_engine -v
 ```
 
-Inspect JSON under `conviction_store/` for `conviction_score`, `bq_raw`, `valuation_tax`, `fetch_errors`. Successful runs should show **`fetch_errors`: []** or absent; batch JSON should report **`errors`: 0`.
+Inspect JSON under `conviction_store/` for `conviction_score`, `bq_raw`, `valuation_tax`, `fetch_errors`. Successful runs should show `**fetch_errors`: []** or absent; batch JSON should report `**errors`: 0`.
 
 ### Verification checklist (last automated pass)
 
 Use this as a repeatability checklist after a full `--mode full --write-overlays` run:
 
-| Check | Expected |
-| ----- | -------- |
-| Unit tests `tests.test_conviction_engine` | All pass |
-| EQUITY JSON records | Each has numeric `conviction_score` (non-equities use `null`) |
-| Identity | Stored `conviction_score` == `bq_raw` + `valuation_tax` (two decimals) |
-| `fetch_errors` on records | Empty or absent when yfinance responded normally |
-| `data_coverage` / `missing_fields` | Present after full recalc; `coverage_ratio` reflects `CRITICAL_FIELDS` in `data_coverage.py` |
-| Non-equities | `conviction_score` is `null` in JSON; overlays use `NOT_APPLICABLE` |
+
+| Check                                     | Expected                                                                                                         |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Unit tests `tests.test_conviction_engine` | All pass                                                                                                         |
+| EQUITY JSON records                       | Each has numeric `conviction_score` (non-equities use `null`)                                                    |
+| Identity                                  | Stored `conviction_score` == `bq_raw` + `valuation_tax` (two decimals)                                           |
+| `fetch_errors` on records                 | Empty or absent when yfinance responded normally                                                                 |
+| `data_coverage` / `missing_fields`        | Present after full recalc; `coverage_ratio` reflects `CRITICAL_FIELDS` in `data_coverage.py`                     |
+| Non-equities                              | `conviction_score` is `null` in JSON; overlays use `NOT_APPLICABLE`                                              |
 | Overlay CSV `conviction_score` “NaN” rows | Should be **only** ETF / INDEX / CURRENCY / CRYPTO rows (pandas empty for `null`); equity rows should be numeric |
-| `conviction_score` vs overlay cap | Overlay column may be **FS-capped** vs store raw; see `conviction_raw` and rationale column |
+| `conviction_score` vs overlay cap         | Overlay column may be **FS-capped** vs store raw; see `conviction_raw` and rationale column                      |
+
 
 Example spot-check: live `fetch_yfinance_fundamentals("AAPL")` should return **0** `fetch_errors` and populated keys such as `eps_ttm`, `fcf_ttm`, `fwd_revenue_stored`, `gross_margin`, `market_cap`.
 
 ## Backtesting conviction vs signal MTM
 
-Use **`scripts/backtest_conviction_signals.py`** to compare two **dated exports** of the **same report type** (for example `*_outstanding_signal.csv`):
+Use `**scripts/backtest_conviction_signals.py`** to compare two **dated exports** of the **same report type** (for example `*_outstanding_signal.csv`):
 
-1. **Historical** file: signals and MTM as of report date T1.  
+1. **Historical** file: signals and MTM as of report date T1.
 2. **Forward** file: same logical rows matched on `Function` + compound symbol line; outcome is the **forward** file’s **“Today … % vs Signal”** column (MTM vs original signal price as of T2).
 
-The script attaches **`conviction_raw`** from the **current** `conviction_store` (today’s fundamentals), then reports:
+The script attaches `**conviction_raw`** from the **current** `conviction_store` (today’s fundamentals), then reports:
 
 - **Correlation** (Pearson and rank-based Spearman) between `conviction_raw` and forward % vs signal for **EQUITY / BUY** rows that matched T1→T2.  
 - **Bucket summary**: mean / median / win-rate (`% vs signal` > 0) by conviction band (`<0`, `[0,2)`, `[2,5)`, `>=5`).
@@ -404,35 +530,41 @@ flowchart TB
   CONV --> FS
 ```
 
+
+
 ### Fallback chains (critical stored fields)
 
-| Field | Primary | Secondary | Tertiary | If all absent |
-| ----- | ------- | --------- | -------- | ------------- |
-| `price` | `fast_info.last_price` | `info.currentPrice` / `regularMarketPrice` | `previousClose` | Omitted; daily update may skip `pe_ttm` |
-| `market_cap` | `fast_info.market_cap` | `info.marketCap` | — | Omitted; EV / yield branches skipped |
-| `eps_ttm` | Quarterly net income TTM / shares | `info.trailingEps` | — | Omitted; no `pe_ttm` |
-| `fcf_ttm` | OCF TTM + capex TTM | `info.freeCashflow` | — | Omitted; FCF margin / owner earnings weak |
-| `fwd_revenue_stored` | 4Q revenue sum | `info.totalRevenue` (ADR sanity) | — | Omitted; no `ev_fwd_rev` tax branch |
-| `net_debt_stored` | Balance sheet debt − cash | — | — | Omitted; **defaults to 0** in `daily_update` EV |
-| `pe_20y_array` | `history(max)` price vs rolling 4Q EPS | — | — | Omitted; **no P/E percentile penalty** |
-| `dividend_yield_5y_mean/std` | 5Y div / price history | — | — | Omitted; yield-trap z-score skipped |
-| Subjective BQ (CEO, moat, …) | Manual overrides only | — | — | Score **0** (neutral) |
+
+| Field                        | Primary                                | Secondary                                  | Tertiary        | If all absent                                   |
+| ---------------------------- | -------------------------------------- | ------------------------------------------ | --------------- | ----------------------------------------------- |
+| `price`                      | `fast_info.last_price`                 | `info.currentPrice` / `regularMarketPrice` | `previousClose` | Omitted; daily update may skip `pe_ttm`         |
+| `market_cap`                 | `fast_info.market_cap`                 | `info.marketCap`                           | —               | Omitted; EV / yield branches skipped            |
+| `eps_ttm`                    | Quarterly net income TTM / shares      | `info.trailingEps`                         | —               | Omitted; no `pe_ttm`                            |
+| `fcf_ttm`                    | OCF TTM + capex TTM                    | `info.freeCashflow`                        | —               | Omitted; FCF margin / owner earnings weak       |
+| `fwd_revenue_stored`         | 4Q revenue sum                         | `info.totalRevenue` (ADR sanity)           | —               | Omitted; no `ev_fwd_rev` tax branch             |
+| `net_debt_stored`            | Balance sheet debt − cash              | —                                          | —               | Omitted; **defaults to 0** in `daily_update` EV |
+| `pe_20y_array`               | `history(max)` price vs rolling 4Q EPS | —                                          | —               | Omitted; **no P/E percentile penalty**          |
+| `dividend_yield_5y_mean/std` | 5Y div / price history                 | —                                          | —               | Omitted; yield-trap z-score skipped             |
+| Subjective BQ (CEO, moat, …) | Manual overrides only                  | —                                          | —               | Score **0** (neutral)                           |
+
 
 Implementation: `_first_not_none` chains in `fundamentals_enriched.build_fundamentals_from_raw`; per-step `try/except` appends to `fetch_errors` without aborting the batch.
 
 ### BQ dimension ↔ inputs (auto path)
 
-| BQ component | Fundamental inputs | Notes |
-| ------------ | -------------------- | ----- |
-| `revenue_quality` | `gross_margin`, `fcf_margin` | Neutral 0 if missing |
-| `growth_trajectory` | `revenue_growth`, optional `revenue_accelerating` | |
-| `margin_quality` | `revenue_growth`, `fcf_margin`, `distribution_coverage_ratio`, `gross_margin` | Type-aware in scorer |
-| `balance_sheet` | `net_debt_ebitda` | Bands by `business_type` |
-| `roic_wacc_spread` | `roic_proxy` or `roic` | vs type WACC |
-| `gross_margin_trend` | `gross_margin_trend` | |
-| `insider_ownership` | `insider_pct` | |
-| `ceo_quality`, `mgmt_capital_allocation`, `competitive_moat`, `macro_tailwind`, `debt_maturity_risk`, `divergence_signal`, `deal_delay_risk`, `reinvestment_runway` | Overrides only | **Always 0** without manual JSON overrides |
-| All auto zero | — | `full_recalculation` falls back to legacy `compute_bq_components` |
+
+| BQ component                                                                                                                                                        | Fundamental inputs                                                            | Notes                                                             |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `revenue_quality`                                                                                                                                                   | `gross_margin`, `fcf_margin`                                                  | Neutral 0 if missing                                              |
+| `growth_trajectory`                                                                                                                                                 | `revenue_growth`, optional `revenue_accelerating`                             |                                                                   |
+| `margin_quality`                                                                                                                                                    | `revenue_growth`, `fcf_margin`, `distribution_coverage_ratio`, `gross_margin` | Type-aware in scorer                                              |
+| `balance_sheet`                                                                                                                                                     | `net_debt_ebitda`                                                             | Bands by `business_type`                                          |
+| `roic_wacc_spread`                                                                                                                                                  | `roic_proxy` or `roic`                                                        | vs type WACC                                                      |
+| `gross_margin_trend`                                                                                                                                                | `gross_margin_trend`                                                          |                                                                   |
+| `insider_ownership`                                                                                                                                                 | `insider_pct`                                                                 |                                                                   |
+| `ceo_quality`, `mgmt_capital_allocation`, `competitive_moat`, `macro_tailwind`, `debt_maturity_risk`, `divergence_signal`, `deal_delay_risk`, `reinvestment_runway` | Overrides only                                                                | **Always 0** without manual JSON overrides                        |
+| All auto zero                                                                                                                                                       | —                                                                             | `full_recalculation` falls back to legacy `compute_bq_components` |
+
 
 **Neutral-zero policy:** Missing inputs add **0** to `bq_raw`; scores are **not** re-normalized by `%` of dimensions with data. Sparse names can look “average” when many dims are empty. This pass **reports** coverage only; it does not rescale `conviction_score`.
 
@@ -448,14 +580,16 @@ Implementation: `_first_not_none` chains in `fundamentals_enriched.build_fundame
 
 ### What is recorded on each JSON record
 
-| Field | Purpose |
-| ----- | ------- |
-| `fetch_errors` | Non-fatal yfinance step failures from last fetch |
-| `data_coverage` | Structured report: `coverage_ratio`, `low_data_confidence`, `statements`, `valuation_inputs`, `bq_auto_dimensions`, `fields_missing` |
-| `missing_fields` | Flat sorted list for UI/search (includes `valuation:*` and `fetch:*` prefixes) |
-| Null valuation fields | e.g. `pe_percentile_20y` null when `pe_20y_array` absent |
 
-`low_data_confidence` is true when: non-empty `fetch_errors`, empty/thin `info`, `coverage_ratio` &lt; **0.45**, or missing `ev_fwd_rev`. Logic lives in `src/conviction_engine/data_coverage.py`.
+| Field                 | Purpose                                                                                                                              |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `fetch_errors`        | Non-fatal yfinance step failures from last fetch                                                                                     |
+| `data_coverage`       | Structured report: `coverage_ratio`, `low_data_confidence`, `statements`, `valuation_inputs`, `bq_auto_dimensions`, `fields_missing` |
+| `missing_fields`      | Flat sorted list for UI/search (includes `valuation:`* and `fetch:*` prefixes)                                                       |
+| Null valuation fields | e.g. `pe_percentile_20y` null when `pe_20y_array` absent                                                                             |
+
+
+`low_data_confidence` is true when: non-empty `fetch_errors`, empty/thin `info`, `coverage_ratio` < **0.45**, or missing `ev_fwd_rev`. Logic lives in `src/conviction_engine/data_coverage.py`.
 
 ### How to audit a ticker
 
@@ -477,18 +611,20 @@ Re-run full fundamentals to refresh coverage after code changes:
 - Wrong but non-null values are **not** detected as corrupt.
 - No automatic score rescaling by coverage in this release.
 
-### P/E history length flag (&lt; 20 years)
+### P/E history length flag (< 20 years)
 
-The valuation tax’s **P/E percentile** branch compares today’s `pe_ttm` to a trailing P/E series built from yfinance **`max`** price history and quarterly EPS. Each equity record stores:
+The valuation tax’s **P/E percentile** branch compares today’s `pe_ttm` to a trailing P/E series built from yfinance `**max`** price history and quarterly EPS. Each equity record stores:
 
-| Field | Meaning |
-| ----- | ------- |
-| `pe_history_meta.years_available` | Calendar years from first to last valid daily P/E point |
-| `pe_history_meta.insufficient_20y` | `true` when `years_available` &lt; **20** (target for “full” historical percentile) |
-| `pe_history_meta.price_years_available` | Years of raw price data fetched |
-| `pe_history_meta.eps_quarters` / `eps_years_available` | Quarterly EPS depth (often the binding limit for IPOs) |
-| `data_coverage.pe_history` | Copy of the above on each coverage refresh |
-| `missing_fields` | Includes `pe_history:insufficient_20y (Xy)` when under 20 years |
+
+| Field                                                  | Meaning                                                                          |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| `pe_history_meta.years_available`                      | Calendar years from first to last valid daily P/E point                          |
+| `pe_history_meta.insufficient_20y`                     | `true` when `years_available` < **20** (target for “full” historical percentile) |
+| `pe_history_meta.price_years_available`                | Years of raw price data fetched                                                  |
+| `pe_history_meta.eps_quarters` / `eps_years_available` | Quarterly EPS depth (often the binding limit for IPOs)                           |
+| `data_coverage.pe_history`                             | Copy of the above on each coverage refresh                                       |
+| `missing_fields`                                       | Includes `pe_history:insufficient_20y (Xy)` when under 20 years                  |
+
 
 **Universe distribution** (how many names lack 20Y history, histogram by years):
 
@@ -502,7 +638,7 @@ JSON summary fields: `total_equity_records`, `insufficient_20y_count`, `insuffic
 
 **UI:** Conviction Engine → **Charts** tab → “P/E history coverage (universe)” bar chart and per-ticker table.
 
-**Interpretation:** Names with `insufficient_20y: true` still get a percentile vs **whatever history exists**; the flag means the comparison is **not** a full 20-year regime. Recent IPOs, thin EPS filings, or missing statements often land in `0-5` year buckets. Re-run **`--mode full`** after deploy so `pe_history_meta` is populated (legacy records with only `pe_20y_array` show `legacy_no_meta` until refreshed).
+**Interpretation:** Names with `insufficient_20y: true` still get a percentile vs **whatever history exists**; the flag means the comparison is **not** a full 20-year regime. Recent IPOs, thin EPS filings, or missing statements often land in `0-5` year buckets. Re-run `**--mode full`** after deploy so `pe_history_meta` is populated (legacy records with only `pe_20y_array` show `legacy_no_meta` until refreshed).
 
 ---
 

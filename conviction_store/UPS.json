@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.039185,
   "dividend_yield_5y_std": 0.018642,
-  "dividend_yield_current": 0.066768,
-  "dividend_yield_zscore": 1.4796,
-  "enterprise_value": 104305116911.75,
+  "dividend_yield_current": 0.064094,
+  "dividend_yield_zscore": 1.3362,
+  "enterprise_value": 107790141358.64334,
   "eps_fwd": 8.00236,
   "eps_ttm": 6.18,
-  "ev_fwd_rev": 1.1764,
+  "ev_fwd_rev": 1.2158,
   "fcf_ttm": 4765000000.0,
   "fd_direction": "positive",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 88661000000.0,
   "industry": "Integrated Freight & Logistics",
-  "last_daily_update": "2026-05-21T21:11:20+00:00",
+  "last_daily_update": "2026-05-26T14:34:16+00:00",
   "last_full_calc": "2026-05-18T20:50:57+00:00",
   "manual_overrides": {},
-  "market_cap": 83513116911.75,
+  "market_cap": 86998141358.64334,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 20792000000.0,
-  "owner_earnings_yield": 0.057057,
+  "owner_earnings_yield": 0.054771,
   "pe_20y_array": [
     15.1204,
     16.1921,
@@ -232,8 +232,8 @@
     17.6052,
     15.4579
   ],
-  "pe_percentile_20y": 33.33,
-  "pe_ttm": 15.8981,
+  "pe_percentile_20y": 66.67,
+  "pe_ttm": 16.5615,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -242,12 +242,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 98.25,
+  "price": 102.3499984741211,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.33353,
   "sector": "Industrials",
   "ticker": "UPS",
-  "updated_at": "2026-05-21T21:11:20+00:00",
+  "updated_at": "2026-05-26T14:34:16+00:00",
   "valuation_tax": 0.0,
   "yield_trap_warning": false
 }

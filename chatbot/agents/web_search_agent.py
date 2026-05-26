@@ -17,6 +17,8 @@ import re
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
+from prompts.engine import WEB_SEARCH_QUERY_GEN_PROMPT
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -49,6 +51,8 @@ class WebSearchResult:
     sources: List[str] = field(default_factory=list)
     success: bool = True
     error: Optional[str] = None
+    # Per-query Tavily breakdown (deep research logs)
+    per_query: List[Dict[str, Any]] = field(default_factory=list)
 
 
 # ── Agent ───────────────────────────────────────────────────────────────────────
@@ -63,20 +67,8 @@ class WebSearchAgent:
         # inject result.formatted_context into Claude prompt
     """
 
-    _QUERY_GEN_PROMPT = """You are generating focused web search queries for a financial trading assistant.
-
-User question: {user_query}
-Conversation context: {context}
-
-Generate 1-3 specific search strings to find relevant financial news or market data.
-Guidelines:
-- Include company name / ticker if mentioned (e.g. "Apple AAPL")
-- Add the current year (2026) for time-sensitive queries
-- Prefer queries that target news sites, earnings reports, or official announcements
-- Do not generate more than 3 queries
-
-Return ONLY a JSON array of strings — no other text:
-["query 1", "query 2"]"""
+    _QUERY_GEN_PROMPT = WEB_SEARCH_QUERY_GEN_PROMPT
+    QUERY_GEN_PROMPT = WEB_SEARCH_QUERY_GEN_PROMPT
 
     def __init__(
         self,
@@ -198,6 +190,102 @@ Return ONLY a JSON array of strings — no other text:
             success=True,
         )
 
+    def run_research(
+        self,
+        subtask_question: str,
+        search_queries: List[str],
+        *,
+        temporal_scope: str = "any",
+        max_results_per_query: int = 8,
+        max_queries: int = 4,
+        global_max_results: int = 25,
+        search_depth: str = "advanced",
+    ) -> WebSearchResult:
+        """
+        Deep-research profile: more queries, advanced Tavily depth, higher result cap.
+        Skips recency ``days=`` filter when temporal_scope is historical.
+        """
+        if not self.is_available:
+            return WebSearchResult(
+                query=subtask_question,
+                success=False,
+                error="Tavily not available for deep research.",
+            )
+
+        queries = [q.strip() for q in search_queries if q.strip()][:max_queries]
+        if not queries:
+            queries = [subtask_question[:200]]
+
+        historical = temporal_scope == "historical"
+        logger.info(
+            f"WebSearchAgent.run_research: {len(queries)} queries, "
+            f"depth={search_depth}, historical={historical}"
+        )
+
+        from chatbot.config import DEEP_RESEARCH_LOG_MAX_CONTENT_CHARS
+
+        all_results: List[SearchResult] = []
+        per_query_log: List[Dict[str, Any]] = []
+        for q in queries:
+            batch = self._search(
+                q,
+                max_results=max_results_per_query,
+                search_depth=search_depth,
+                apply_recency=not historical,
+            )
+            all_results.extend(batch)
+            per_query_log.append({
+                "query": q,
+                "search_depth": search_depth,
+                "temporal_scope": temporal_scope,
+                "apply_recency_days_filter": not historical,
+                "result_count": len(batch),
+                "results": [
+                    {
+                        "title": r.title,
+                        "url": r.url,
+                        "score": r.score,
+                        "content": (
+                            r.content[:DEEP_RESEARCH_LOG_MAX_CONTENT_CHARS]
+                            + ("...(truncated)" if len(r.content) > DEEP_RESEARCH_LOG_MAX_CONTENT_CHARS else "")
+                        ),
+                    }
+                    for r in batch
+                ],
+            })
+
+        seen: Dict[str, SearchResult] = {}
+        for r in all_results:
+            if r.url not in seen or r.score > seen[r.url].score:
+                seen[r.url] = r
+
+        all_sorted = sorted(seen.values(), key=lambda x: x.score, reverse=True)
+        filtered = [
+            r for r in all_sorted if r.score >= self.min_relevance_score
+        ][:global_max_results]
+        if not filtered and all_sorted:
+            filtered = all_sorted[:global_max_results]
+
+        if not filtered:
+            return WebSearchResult(
+                query=subtask_question,
+                search_queries_used=queries,
+                success=False,
+                error="No usable research results from Tavily.",
+                per_query=per_query_log,
+            )
+
+        formatted = self._format_for_claude(subtask_question, filtered)
+        return WebSearchResult(
+            query=subtask_question,
+            search_queries_used=queries,
+            results=filtered,
+            formatted_context=formatted,
+            sources=[r.url for r in filtered],
+            success=True,
+            per_query=per_query_log,
+        )
+
     # ── Private helpers ─────────────────────────────────────────────────────────
 
     def _generate_queries(self, user_query: str, context: str) -> List[str]:
@@ -251,14 +339,21 @@ Return ONLY a JSON array of strings — no other text:
             return 90
         return None
 
-    def _search(self, query: str) -> List[SearchResult]:
+    def _search(
+        self,
+        query: str,
+        *,
+        max_results: Optional[int] = None,
+        search_depth: str = "basic",
+        apply_recency: bool = True,
+    ) -> List[SearchResult]:
         """Run a single Tavily search and return parsed SearchResult list."""
         try:
-            days = self._detect_recency_window(query)
+            days = self._detect_recency_window(query) if apply_recency else None
             kwargs: Dict[str, Any] = dict(
                 query=query,
-                search_depth="basic",
-                max_results=self.max_results,
+                search_depth=search_depth,
+                max_results=max_results if max_results is not None else self.max_results,
                 include_answer=False,
             )
             if days is not None:

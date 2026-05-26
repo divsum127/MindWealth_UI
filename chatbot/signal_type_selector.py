@@ -9,6 +9,10 @@ from typing import List, Optional, Tuple
 from openai import OpenAI
 
 from .config import OPENAI_API_KEY, OPENAI_MODEL, MAX_TOKENS, TEMPERATURE
+from prompts.engine import (
+    SIGNAL_TYPE_SELECTOR_SYSTEM,
+    format_signal_type_selector_prompt,
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -77,26 +81,7 @@ class SignalTypeSelector:
             ]
         )
 
-        prompt = f"""You are an AI assistant that selects which trading signal categories are needed to answer a question.
-
-            Available signal categories:
-            {options_text}
-
-            Selection rules:
-            1. Always choose at least one category from the list.
-            2. Choose only the categories that are genuinely required for the user's request.
-            3. If the request is broad or unclear, default to ["entry", "exit", "portfolio_target_achieved"].
-            4. Select "breadth" ONLY if the user asks about overall market health, sentiment, or breadth indicators.
-            5. Preserve the order: entry → exit → target → breadth.
-
-            User query: \"\"\"{user_query}\"\"\"
-
-            Respond strictly as a JSON object with this schema:
-            {{
-            "signal_types": ["entry", "exit"],
-            "reasoning": "Short explanation of why these categories are needed."
-            }}
-        """
+        prompt = format_signal_type_selector_prompt(options_text, user_query)
 
         try:
             response = self.client.chat.completions.create(
@@ -104,7 +89,7 @@ class SignalTypeSelector:
                 messages=[
                     {
                         "role": "system",
-                        "content": "You analyze trading questions and decide which signal data types are needed."
+                        "content": SIGNAL_TYPE_SELECTOR_SYSTEM,
                     },
                     {"role": "user", "content": prompt},
                 ],

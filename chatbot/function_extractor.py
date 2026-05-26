@@ -8,55 +8,10 @@ from typing import List, Optional
 from openai import OpenAI
 
 from .config import OPENAI_API_KEY, OPENAI_MODEL, MAX_TOKENS, TEMPERATURE
+from prompts.engine import FUNCTION_EXTRACTION_PROMPT
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
-# Prompt for extracting function names from user query
-FUNCTION_EXTRACTION_PROMPT = """You are a function name extractor for a trading analysis system.
-
-Your task: Analyze the user's query and identify which trading analysis FUNCTIONS they are asking about.
-
-Available Functions (EXACT names):
-1. ALTITUDE ALPHA
-2. BAND MATRIX
-3. BASELINEDIVERGENCE
-4. FRACTAL TRACK
-5. OSCILLATOR DELTA
-6. PULSEGAUGE
-7. SIGMASHELL
-8. TRENDPULSE
-
-Instructions:
-- Extract ONLY the function names mentioned in the user's query
-- Return EXACT function names as they appear in the list above
-- If user mentions variations (e.g., "trendpulse", "Fractal Track"), match to the exact name
-- If NO specific functions are mentioned, return an empty list []
-- Return response as valid JSON array: ["FUNCTION1", "FUNCTION2", ...]
-
-Examples:
-
-User: "What TRENDPULSE signals exist for AAPL?"
-Response: ["TRENDPULSE"]
-
-User: "Compare TRENDPULSE and FRACTAL TRACK signals"
-Response: ["TRENDPULSE", "FRACTAL TRACK"]
-
-User: "Show me all signals for AAPL"
-Response: []
-
-User: "What are the baseline divergence signals?"
-Response: ["BASELINEDIVERGENCE"]
-
-User: "Analyze AAPL stock performance"
-Response: []
-
-User: "Show TRENDPULSE, BAND MATRIX and SIGMASHELL signals"
-Response: ["TRENDPULSE", "BAND MATRIX", "SIGMASHELL"]
-
-Now extract from the user's query below. Respond ONLY with a JSON array, nothing else.
-"""
 
 
 class FunctionExtractor:

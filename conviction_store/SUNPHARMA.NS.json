@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.01042,
   "dividend_yield_5y_std": 0.005276,
-  "dividend_yield_current": 0.008724,
-  "dividend_yield_zscore": -0.3215,
-  "enterprise_value": 4483456328761.0,
+  "dividend_yield_current": 0.008963,
+  "dividend_yield_zscore": -0.2762,
+  "enterprise_value": 4362290029931.0273,
   "eps_fwd": 56.58245,
   "eps_ttm": 45.45,
-  "ev_fwd_rev": 7.8921,
+  "ev_fwd_rev": 7.6789,
   "fd_direction": "negative",
   "fd_votes": {},
   "flags": [],
@@ -204,10 +204,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 568090886144.0,
   "industry": "Drug Manufacturers - Specialty & Generic",
-  "last_daily_update": "2026-05-21T21:11:20+00:00",
+  "last_daily_update": "2026-05-26T14:34:16+00:00",
   "last_full_calc": "2026-05-18T20:50:34+00:00",
   "manual_overrides": {},
-  "market_cap": 4537862228761.0,
+  "market_cap": 4416695929931.027,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -234,7 +234,7 @@
     38.8861
   ],
   "pe_percentile_20y": 100.0,
-  "pe_ttm": 41.6128,
+  "pe_ttm": 40.5017,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -243,12 +243,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 1891.3,
+  "price": 1840.800048828125,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.15006966659866397,
   "sector": "Healthcare",
   "ticker": "SUNPHARMA.NS",
-  "updated_at": "2026-05-21T21:11:20+00:00",
+  "updated_at": "2026-05-26T14:34:16+00:00",
   "valuation_tax": -5.0,
   "yield_trap_warning": false
 }

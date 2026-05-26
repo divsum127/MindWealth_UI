@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.018393,
   "dividend_yield_5y_std": 0.009563,
-  "dividend_yield_current": 0.02887,
-  "dividend_yield_zscore": 1.0956,
-  "enterprise_value": 181484325000.0,
+  "dividend_yield_current": 0.02971,
+  "dividend_yield_zscore": 1.1834,
+  "enterprise_value": 176355447335.81543,
   "eps_fwd": 20.4822,
   "eps_ttm": 18.19,
-  "ev_fwd_rev": 4.7541,
+  "ev_fwd_rev": 4.6197,
   "fd_direction": "negative",
   "fd_votes": {},
   "flags": [],
@@ -204,10 +204,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 38174584832.0,
   "industry": "Household & Personal Products",
-  "last_daily_update": "2026-05-21T21:11:19+00:00",
+  "last_daily_update": "2026-05-26T14:34:16+00:00",
   "last_full_calc": "2026-05-18T20:48:39+00:00",
   "manual_overrides": {},
-  "market_cap": 181431225000.0,
+  "market_cap": 176302347335.81543,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -237,7 +237,7 @@
     20.5103
   ],
   "pe_percentile_20y": 44.44,
-  "pe_ttm": 22.8505,
+  "pe_ttm": 22.2045,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -246,12 +246,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 415.65,
+  "price": 403.8999938964844,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.2867493818237151,
   "sector": "Consumer Defensive",
   "ticker": "EMAMILTD.NS",
-  "updated_at": "2026-05-21T21:11:19+00:00",
+  "updated_at": "2026-05-26T14:34:16+00:00",
   "valuation_tax": -1.0,
   "yield_trap_warning": false
 }

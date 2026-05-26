@@ -12,37 +12,15 @@ import logging
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
+from prompts.engine import ROUTER_SYSTEM, ROUTER_USER_TEMPLATE
+
 logger = logging.getLogger(__name__)
 
-_ROUTER_SYSTEM = """You are the routing brain for MindWealth, a trading assistant backed by:
-• INTERNAL data: user-specific trading signals stored in CSVs (entry, exit, portfolio targets achieved, market breadth, Claude report text). This answers questions about signals, tickers, strategies (TRENDPULSE, FRACTAL TRACK, etc.), win rates from loaded data, performance, dates, and portfolio state.
-• WEB search: real-time or external information NOT in those files — e.g. breaking news, earnings announcements, Fed/macro, live stock prices, "what happened today", company press releases, analyst actions, general market news.
+_ROUTER_SYSTEM = ROUTER_SYSTEM
+_ROUTER_USER_TEMPLATE = ROUTER_USER_TEMPLATE
 
-Rules:
-1. Set conversational_only=true ONLY when the user needs NO new data — e.g. "what does X mean", "explain that again", "summarize our chat", pure definitions, or follow-ups that only reference prior assistant text without asking for signals or web facts.
-2. Set needs_web_search=true when the answer requires current events, news, live prices, or facts from the public internet that internal CSVs cannot provide.
-3. Set needs_internal_signal_data=true when the answer requires MindWealth signal tables, metrics from the user's data, or analysis of their positions/strategies.
-4. A query can set BOTH needs_web_search and needs_internal_signal_data (e.g. "Compare my TSM entry signal with today's news on TSM").
-5. If needs_web_search is true, provide search_queries: 1–3 short search strings optimized for a web search API (include ticker/year when relevant).
-6. If the question is ambiguous, prefer needs_internal_signal_data=true for trading/signal wording and needs_web_search=true for news/macro/live wording.
-7. Mark-to-market (MTM) on **the user's signals, positions, or portfolio**: set needs_internal_signal_data=true. **Do not** set needs_web_search=true solely for a current price or MTM figure — signal CSVs embed prices refreshed from **trade_store/stock_data** (per-symbol OHLC files); columns such as \"Today Trading Date/Price\" and \"Current Mark to Market\" come from that pipeline. Set needs_web_search=true only if the user clearly wants **internet news**, an explicit **live/web quote comparison**, **macro**, **earnings**, or other facts not in the CSVs. Regulatory **margin requirement** questions that need broker rules may need web; routine position MTM does not.
-
-Respond with ONLY valid JSON matching the schema (no markdown fences)."""
-
-_ROUTER_USER_TEMPLATE = """Recent conversation (may be empty):
-{history}
-
-Current user message:
-{query}
-
-JSON schema:
-{{
-  "conversational_only": boolean,
-  "needs_internal_signal_data": boolean,
-  "needs_web_search": boolean,
-  "search_queries": string[] or null,
-  "reasoning": string
-}}"""
+# Aliases for prompt changelog registration
+LLM_ROUTER_SYSTEM = ROUTER_SYSTEM
 
 
 @dataclass

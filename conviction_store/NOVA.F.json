@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.026651,
   "dividend_yield_5y_std": 0.011602,
-  "dividend_yield_current": 0.040548,
-  "dividend_yield_zscore": 1.1978,
-  "enterprise_value": 248105357155.85577,
+  "dividend_yield_current": 0.040314,
+  "dividend_yield_zscore": 1.1776,
+  "enterprise_value": 249080362013.407,
   "eps_fwd": 3.43,
   "eps_ttm": 3.67,
-  "ev_fwd_rev": 0.7569,
+  "ev_fwd_rev": 0.7599,
   "fcf_ttm": 28989000000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 327799996416.0,
   "industry": "Drug Manufacturers - General",
-  "last_daily_update": "2026-05-21T21:11:20+00:00",
+  "last_daily_update": "2026-05-26T14:34:16+00:00",
   "last_full_calc": "2026-05-18T20:49:49+00:00",
   "manual_overrides": {},
-  "market_cap": 168320357155.85577,
+  "market_cap": 169295362013.407,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 79785000000.0,
-  "owner_earnings_yield": 0.172225,
+  "owner_earnings_yield": 0.171233,
   "pe_20y_array": [
     2.0044,
     1.2666,
@@ -232,7 +232,7 @@
     1.284
   ],
   "pe_percentile_20y": 100.0,
-  "pe_ttm": 10.3488,
+  "pe_ttm": 10.4087,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -241,12 +241,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 37.97999954223633,
+  "price": 38.20000076293945,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.71402,
   "sector": "Healthcare",
   "ticker": "NOVA.F",
-  "updated_at": "2026-05-21T21:11:20+00:00",
+  "updated_at": "2026-05-26T14:34:16+00:00",
   "valuation_tax": -3.0,
   "yield_trap_warning": false
 }

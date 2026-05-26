@@ -11,6 +11,7 @@ from pathlib import Path
 
 from .column_metadata_extractor import ColumnMetadataExtractor
 from .config import OPENAI_API_KEY, OPENAI_MODEL, MAX_TOKENS, TEMPERATURE
+from prompts.engine import format_unified_extractor_prompt, load_chatbot_system_prompt
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -58,19 +59,8 @@ class UnifiedExtractor:
             raise ValueError(f"Failed to initialize OpenAI client: {e}")
         
         self.metadata_extractor = ColumnMetadataExtractor()
-        self.system_prompt = self._load_system_prompt()
+        self.system_prompt = load_chatbot_system_prompt()
         self.available_tickers = []
-    
-    def _load_system_prompt(self) -> str:
-        """Load the system prompt from chatbot.txt."""
-        prompt_path = Path(__file__).parent / "chatbot.txt"
-        
-        try:
-            with open(prompt_path, 'r') as f:
-                return f.read()
-        except Exception as e:
-            logger.error(f"Error loading chatbot.txt: {e}")
-            return "You are a helpful assistant for analyzing trading queries."
     
     def set_available_tickers(self, tickers: List[str]):
         """Set the list of available tickers for extraction."""
@@ -143,109 +133,12 @@ class UnifiedExtractor:
             default_signals = DEFAULT_SIGNAL_TYPES.copy()
             column_context = self._build_column_context(default_signals)
             
-            unified_prompt = f"""You are analyzing a trading query to extract 4 types of information in ONE response:
-
-1. SIGNAL TYPES - Which data categories are needed
-2. FUNCTIONS - Which trading strategies are mentioned
-3. TICKERS - Which assets/stocks are mentioned
-4. COLUMNS - Which data columns are needed for each signal type
-
-=== USER QUERY ===
-{user_query}
-
-=== AVAILABLE DATA ===
-
-Available Signal Types:
-- entry: Fresh trading ideas (open signals, no exit yet)
-- exit: Completed trades with recorded exits
-- portfolio_target_achieved: Portfolio positions where targets were hit
-- breadth: Market-wide sentiment metrics
-- claude_report: Claude's comprehensive analysis report with signal synthesis and recommendations (NO table data, NO functions/tickers/columns extraction needed)
-
-Available Functions (trading strategies):
-{', '.join(AVAILABLE_FUNCTIONS)}
-
-Available Tickers/Assets:
-{ticker_list}
-
-{column_context}
-
-=== EXTRACTION RULES ===
-
-1. SIGNAL TYPES:
-   - If user asks about "entry", "new signals", "current trades" → include "entry"
-   - If user asks about "exits", "closed trades", "performance" → include "exit"
-   - If user asks about "targets", "portfolio positions" → include "portfolio_target_achieved"
-   - If user asks about "market breadth", "sentiment" → include "breadth"
-   - If user asks about "Claude report", "Claude analysis", "comprehensive report", "recommendations" → include "claude_report"
-   - "Latest signals", "recent signals", "newest entries", "show signals" → always include at least one **table** type ("entry", "exit", and/or others as appropriate); if the user also wants narrative synthesis, include "claude_report" **in addition** (never substitute claude_report for table types when they ask for concrete signal rows).
-   - Default: ["entry", "exit", "portfolio_target_achieved"]
-   - SPECIAL (claude_report): If **only** "claude_report" is selected (no entry/exit/breadth/portfolio_target_achieved), return null for functions, tickers, and columns. If "claude_report" appears **together with** other signal types, you MUST still extract functions, tickers, and column subsets for entry/exit/breadth/portfolio_target_achieved as usual — only skip column data for claude_report itself (omit a "claude_report" key under "columns" or leave it empty).
-
-2. FUNCTIONS:
-   - Extract ONLY function names mentioned in the query
-   - Use EXACT names from available functions list
-   - If NO specific functions mentioned → return null (means ALL functions)
-   - If **only** claude_report was selected → return null. Otherwise ignore claude_report for this field and extract normally for the table-backed signal types.
-
-3. POSITION SIDE (Short selling vs long):
-   - If the user asks for "short signals", "short positions", "short side" → "position_side": "short"
-   - If the user asks for "long signals", "long positions", "long side" → "position_side": "long"
-   - Otherwise → "position_side": null
-
-3b. TICKERS:
-   - If SPECIFIC tickers mentioned (e.g., "AAPL", "MSFT") → return those tickers
-   - If the query references previous context (e.g., "those", "the same", "for it") → check conversation history and extract tickers from there
-   - If NO specific tickers mentioned AND no contextual reference → return null (means ALL tickers)
-   - If region mentioned:
-     * "New Zealand" or "NZ" → tickers ending with ".NZ"
-     * "Toronto" or "Canadian" → tickers ending with ".TO"
-     * "US" or "American" → tickers without country suffixes
-   - IMPORTANT: When conversation history is provided, use it to resolve ambiguous references like "those", "them", "it", "the same"
-   - If **only** claude_report was selected → return null. Otherwise return tickers for any asset named in the query (e.g. AAPL → ["AAPL"]) even when claude_report is also selected.
-
-4. COLUMNS:
-   - For EACH signal type, select relevant columns
-   - ALWAYS include mandatory columns:
-     * [0] Function (for entry/exit/portfolio_target_achieved)
-     * [1] Symbol, Signal, Signal Date/Price[$]
-   - Include columns needed to answer the query
-   - Use BOTH index number AND column name for accuracy
-   - Do not add a "claude_report" entry under "columns" (report is text, not CSV columns). For every other selected table signal type (entry, exit, breadth, portfolio_target_achieved), you MUST include a columns object with at least the mandatory columns.
-
-=== RESPONSE FORMAT ===
-
-Return ONLY valid JSON with this EXACT structure:
-
-{{
-  "signal_types": ["entry", "exit"],
-  "signal_types_reasoning": "Brief explanation of why these signal types",
-  "functions": ["TRENDPULSE"] OR null,
-  "tickers": ["AAPL", "MSFT"] OR null OR [".NZ"],
-  "position_side": "short" OR "long" OR null,
-  "columns": {{
-    "entry": {{
-      "required_columns": [
-        {{"index": 0, "name": "Function"}},
-        {{"index": 1, "name": "Symbol, Signal, Signal Date/Price[$]"}},
-        {{"index": 5, "name": "Sharpe Ratio"}}
-      ],
-      "reasoning": "Brief explanation"
-    }},
-    "exit": {{
-      "required_columns": [...],
-      "reasoning": "..."
-    }}
-  }}
-}}
-
-IMPORTANT:
-- Return ONLY JSON, no other text
-- Use null (not empty array) when no specific functions/tickers mentioned
-- Include a "columns" entry for each selected **table** signal type (entry, exit, breadth, portfolio_target_achieved), never omit them when those types appear in signal_types
-- Always include mandatory columns (Function and Symbol, Signal, Signal Date/Price[$]) for each table signal type you include under "columns"
-
-Respond now:"""
+            unified_prompt = format_unified_extractor_prompt(
+                user_query=user_query,
+                available_functions=", ".join(AVAILABLE_FUNCTIONS),
+                ticker_list=ticker_list,
+                column_context=column_context,
+            )
 
             logger.info(f"Calling unified extractor (GPT-5.2) for query: {user_query[:100]}...")
             

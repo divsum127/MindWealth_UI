@@ -19,6 +19,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
+from prompts.engine import format_memory_extraction_prompt
+
 logger = logging.getLogger(__name__)
 
 _CHATBOT_DIR = Path(__file__).resolve().parent
@@ -220,26 +222,7 @@ def extract_memory_from_conversation(
 
     transcript = "\n".join(transcript_parts[:30])  # cap at 30 messages
 
-    extraction_prompt = f"""You are a memory extractor for a financial trading assistant.
-Given this conversation transcript, return a compact memory entry as JSON.
-
-TRANSCRIPT:
-{transcript}
-
-Return ONLY valid JSON — no markdown fences, no extra keys:
-{{
-  "summary": "1-2 sentence summary of what was analysed and what the user wanted",
-  "key_facts": ["user preference or recurring pattern", "another fact"],
-  "tickers": ["AAPL", "MSFT"],
-  "topics": ["entry signals", "performance"]
-}}
-
-Rules:
-- summary: ≤ 120 characters
-- key_facts: ≤ 4 items, each ≤ 80 characters; focus on USER preferences and recurring patterns
-- tickers: only real stock tickers actually mentioned
-- topics: 1–4 tags from [entry signals, exit signals, breadth, performance, portfolio, comparison, web search, general]
-- Prefer empty lists over guessing"""
+    extraction_prompt = format_memory_extraction_prompt(transcript)
 
     try:
         response = claude_client.messages.create(

@@ -21,7 +21,7 @@
   "bq_raw": 1.0,
   "business_type": "saas",
   "business_type_source": "auto",
-  "conviction_score": -1.0,
+  "conviction_score": 0.0,
   "created_at": "2026-05-12T20:20:00+00:00",
   "data_coverage": {
     "bq_auto_dimensions": {
@@ -189,10 +189,10 @@
   },
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 155832444589.36102,
+  "enterprise_value": 149379599445.44415,
   "eps_fwd": 4.33405,
   "eps_ttm": 4.03,
-  "ev_fwd_rev": 2.9026,
+  "ev_fwd_rev": 2.7824,
   "fcf_ttm": 9763000000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -203,10 +203,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 53687001088.0,
   "industry": "Software - Application",
-  "last_daily_update": "2026-05-21T21:11:20+00:00",
+  "last_daily_update": "2026-05-26T14:34:16+00:00",
   "last_full_calc": "2026-05-15T16:33:25+00:00",
   "manual_overrides": {},
-  "market_cap": 149840444589.36102,
+  "market_cap": 143387599445.44415,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -225,7 +225,7 @@
     "valuation:dividend_yield_zscore"
   ],
   "net_debt_stored": 5992000000.0,
-  "owner_earnings_yield": 0.065156,
+  "owner_earnings_yield": 0.068088,
   "pe_20y_array": [
     17.5287,
     17.4756,
@@ -308,8 +308,8 @@
     18.6259,
     18.7805
   ],
-  "pe_percentile_20y": 72.5,
-  "pe_ttm": 18.2655,
+  "pe_percentile_20y": 57.5,
+  "pe_ttm": 17.4789,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -318,12 +318,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 73.61000061035156,
+  "price": 70.44000244140625,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.3531,
   "sector": "Technology",
   "ticker": "UBER",
-  "updated_at": "2026-05-21T21:11:20+00:00",
-  "valuation_tax": -2.0,
+  "updated_at": "2026-05-26T14:34:16+00:00",
+  "valuation_tax": -1.0,
   "yield_trap_warning": false
 }

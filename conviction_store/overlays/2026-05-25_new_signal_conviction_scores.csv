@@ -1,0 +1,3 @@
+Function,"Symbol, Signal, Signal Date/Price[$]",ticker,asset_type,business_type,signal_timeframe,bq_raw,valuation_tax,conviction_raw,conviction_score,fs_score,fs_class,yield_trap_warning,verdict,sizing_pct,rationale
+TRENDPULSE,"TD.TO, Long, 2026-05-25 (Price: 156.56)",TD.TO,EQUITY,compounder,short,-1.0,-5.0,-6.0,-6.0,25.5,moderate_low,False,CANCEL BUY,0.0,BQ -1.0 + valuation tax -5.0 = -6.0 | FS class moderate_low
+OSCILLATOR DELTA,"HDFCBANK.NS, Long, 2026-05-25 (Price: 786.85)",HDFCBANK.NS,EQUITY,compounder,short,0.0,-3.0,-3.0,-3.0,50.0,moderate,False,CANCEL BUY,0.0,BQ 0.0 + valuation tax -3.0 = -3.0 | FS class moderate

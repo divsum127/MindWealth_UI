@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.053698,
   "dividend_yield_5y_std": 0.040862,
-  "dividend_yield_current": 0.019802,
-  "dividend_yield_zscore": -0.8295,
-  "enterprise_value": 858192959654.0,
+  "dividend_yield_current": 0.019472,
+  "dividend_yield_zscore": -0.8376,
+  "enterprise_value": 871965687593.1755,
   "eps_fwd": 23.53498,
   "eps_ttm": 20.88,
-  "ev_fwd_rev": 4.7041,
+  "ev_fwd_rev": 4.7796,
   "fd_direction": "negative",
   "fd_votes": {},
   "flags": [],
@@ -204,10 +204,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 182435000000.0,
   "industry": "Banks - Diversified",
-  "last_daily_update": "2026-05-21T21:11:19+00:00",
+  "last_daily_update": "2026-05-26T14:34:16+00:00",
   "last_full_calc": "2026-05-18T20:49:10+00:00",
   "manual_overrides": {},
-  "market_cap": 811891959654.0,
+  "market_cap": 825664687593.1755,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -234,7 +234,7 @@
     14.4028
   ],
   "pe_percentile_20y": 33.33,
-  "pe_ttm": 14.5115,
+  "pe_ttm": 14.7577,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -243,12 +243,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 303.0,
+  "price": 308.1400146484375,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.16465001,
   "sector": "Financial Services",
   "ticker": "JPM",
-  "updated_at": "2026-05-21T21:11:19+00:00",
+  "updated_at": "2026-05-26T14:34:16+00:00",
   "valuation_tax": -2.0,
   "yield_trap_warning": false
 }

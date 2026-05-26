@@ -48,20 +48,67 @@ from .history_manager import HistoryManager
 from .unified_extractor import UnifiedExtractor
 from .smart_data_fetcher import (
     CONSOLIDATED_MTM_REPORT_COLUMN_NAMES,
+    ENTRY_TARGETS_STOP_COLUMN_NAMES,
     SmartDataFetcher,
     infer_date_filter_mode,
     infer_position_side_from_query,
     is_explicit_position_side_request,
     normalize_position_side,
 )
+from .signal_level_validator import build_entry_validation_section
 from .signal_extractor import SignalExtractor
 from .signal_type_selector import SignalTypeSelector
 from .memory_manager import RollingMemoryLog, extract_memory_from_conversation
 from .prompt_changelog import PromptChangelog
 from .breadth_context import BREADTH_MANDATORY_COLUMNS, build_breadth_schema_note
+from prompts.engine import (
+    CLASSIFICATION_PROMPT,
+    LLM_ROUTER_SYSTEM,
+    QUERY_GEN_PROMPT,
+    format_batch_aggregation_prompt,
+    format_batch_synthesis_prompt,
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+_TARGETS_STOP_QUERY_RE = re.compile(
+    r"\b(stop\s*loss|stop\s*level|stops?|take\s*profit|targets?|tp\b|sl\b|"
+    r"open\s+position|deep[- ]?dive|levels?\s+vs)\b",
+    re.I,
+)
+
+
+def _apply_entry_target_stop_guardrails(
+    columns_by_signal_type: Dict[str, Any],
+    reasoning_by_signal_type: Dict[str, str],
+    user_message: str,
+) -> None:
+    """Ensure entry fetches include paired Targets + Stop Loss when levels matter."""
+    if "entry" not in columns_by_signal_type:
+        return
+    cols = columns_by_signal_type.get("entry")
+    if cols is None:
+        return
+    needs = bool(_TARGETS_STOP_QUERY_RE.search(user_message or ""))
+    if not needs and isinstance(cols, list):
+        needs = any(
+            "stop loss" in str(c).lower() or "targets (" in str(c).lower()
+            for c in cols
+        )
+    if not needs:
+        return
+    merged: List[str] = []
+    seen: set = set()
+    for col in [*cols, *ENTRY_TARGETS_STOP_COLUMN_NAMES]:
+        if col and col not in seen:
+            merged.append(col)
+            seen.add(col)
+    columns_by_signal_type["entry"] = merged
+    reasoning_by_signal_type["entry"] = (
+        (reasoning_by_signal_type.get("entry", "") + " ").strip()
+        + "Guardrail: paired Targets + Stop Loss columns (7-slot ladders) included."
+    ).strip()
 
 
 def _query_implies_full_list_ignore_ui_dates(user_message: str) -> bool:
@@ -1077,6 +1124,10 @@ class ChatbotEngine:
                     (reasoning_by_signal_type.get(_mtm_st, "") + " ").strip()
                     + "Guardrail: consolidated MTM / Today / holding-period columns included."
                 ).strip()
+
+            _apply_entry_target_stop_guardrails(
+                columns_by_signal_type, reasoning_by_signal_type, user_message
+            )
             
             # Only validate columns if we have non-claude_report signal types
             if not columns_by_signal_type and not has_claude_report:
@@ -1121,6 +1172,7 @@ class ChatbotEngine:
                     column_indices=indices_dict,
                     position_side=position_side,
                     date_filter_mode=date_filter_mode,
+                    user_message=user_message,
                 )
                 
                 if signal_data and signal_type in signal_data:
@@ -1160,11 +1212,12 @@ class ChatbotEngine:
                         column_indices=indices_dict,
                         position_side=position_side,
                         date_filter_mode=date_filter_mode,
+                        user_message=user_message,
                     )
                     if signal_data and signal_type in signal_data:
                         fetched_data[signal_type] = signal_data[signal_type]
                         total_rows += len(signal_data[signal_type])
-            
+
             if not fetched_data and (from_date or to_date) and _query_implies_full_list_ignore_ui_dates(
                 user_message
             ):
@@ -1193,6 +1246,7 @@ class ChatbotEngine:
                         limit_rows=row_limit,
                         column_indices=indices_dict,
                         position_side=position_side,
+                        user_message=user_message,
                     )
                     if signal_data and signal_type in signal_data:
                         fetched_data[signal_type] = signal_data[signal_type]
@@ -1239,6 +1293,7 @@ class ChatbotEngine:
                             limit_rows=row_limit,
                             column_indices=indices_dict,
                             position_side=position_side,
+                            user_message=user_message,
                         )
                         if signal_data and signal_type in signal_data:
                             fetched_data[signal_type] = signal_data[signal_type]
@@ -1280,6 +1335,7 @@ class ChatbotEngine:
                             limit_rows=row_limit,
                             column_indices=indices_dict,
                             position_side=position_side,
+                            user_message=user_message,
                         )
                         
                         if signal_data and signal_type in signal_data:
@@ -1342,6 +1398,9 @@ class ChatbotEngine:
                     complete_message += f"\n  Reasoning: {reasoning_by_signal_type.get(signal_type, '')}"
             
             complete_message += f"\n\n=== SIGNAL DATA CONTEXT ===\n{data_context}"
+            entry_validation = build_entry_validation_section(fetched_data.get("entry"))
+            if entry_validation:
+                complete_message += f"\n\n{entry_validation}"
 
             claude_report_loaded_sq = False
             if has_claude_report:
@@ -1692,6 +1751,10 @@ class ChatbotEngine:
                 + "Guardrail: consolidated MTM / Today / holding-period columns included."
             ).strip()
 
+        _apply_entry_target_stop_guardrails(
+            columns_by_signal_type, reasoning_by_signal_type, user_message
+        )
+
         if not table_signal_types:
             logger.warning("[_fetch_signal_data] No table signal types (e.g. claude_report-only); skipping CSV fetch.")
             return {}, {
@@ -1732,6 +1795,7 @@ class ChatbotEngine:
                 column_indices=indices_dict,
                 position_side=position_side,
                 date_filter_mode=date_filter_mode,
+                user_message=user_message,
             )
             if signal_result and signal_type in signal_result:
                 fetched_data[signal_type] = signal_result[signal_type]
@@ -1765,6 +1829,7 @@ class ChatbotEngine:
                     limit_rows=MAX_ROWS_TO_INCLUDE,
                     column_indices=indices_dict,
                     position_side=position_side,
+                    user_message=user_message,
                 )
                 if signal_result and signal_type in signal_result:
                     fetched_data[signal_type] = signal_result[signal_type]
@@ -1813,6 +1878,7 @@ class ChatbotEngine:
                         limit_rows=MAX_ROWS_TO_INCLUDE,
                         column_indices=indices_dict,
                         position_side=position_side,
+                        user_message=user_message,
                     )
                     if signal_result and signal_type in signal_result:
                         fetched_data[signal_type] = signal_result[signal_type]
@@ -1863,6 +1929,7 @@ class ChatbotEngine:
                         limit_rows=MAX_ROWS_TO_INCLUDE,
                         column_indices=indices_dict,
                         position_side=position_side,
+                        user_message=user_message,
                     )
                     if signal_result and signal_type in signal_result:
                         fetched_data[signal_type] = signal_result[signal_type]
@@ -1907,25 +1974,21 @@ class ChatbotEngine:
         its content has actually changed since the last recorded version, so
         this is safe to call on every restart.
         """
-        from .agents import llm_router as _llm_router_mod
-        from .agents import web_search_agent as _web_search_mod
-        from .agents import intent_classifier as _intent_mod
+        from prompts.engine import (
+            RESEARCH_GAP_ANALYSIS_PROMPT,
+            RESEARCH_PLANNER_SYSTEM,
+            RESEARCH_SYNTHESIS_SYSTEM,
+        )
 
         prompts_to_track = {
             "SYSTEM_PROMPT": (SYSTEM_PROMPT, "auto-detected on engine start-up"),
+            "LLM_ROUTER_SYSTEM": (LLM_ROUTER_SYSTEM, "llm_router system prompt"),
+            "QUERY_GEN_PROMPT": (QUERY_GEN_PROMPT, "web search query-gen prompt"),
+            "CLASSIFICATION_PROMPT": (CLASSIFICATION_PROMPT, "intent classification prompt"),
+            "RESEARCH_PLANNER_SYSTEM": (RESEARCH_PLANNER_SYSTEM, "deep research planner"),
+            "RESEARCH_GAP_ANALYSIS_PROMPT": (RESEARCH_GAP_ANALYSIS_PROMPT, "deep research gap analysis"),
+            "RESEARCH_SYNTHESIS_SYSTEM": (RESEARCH_SYNTHESIS_SYSTEM, "deep research synthesis"),
         }
-        # Opportunistically track agent prompts if accessible as module constants
-        for attr, (mod, display) in {
-            "LLM_ROUTER_SYSTEM": (_llm_router_mod, "llm_router system prompt"),
-            "QUERY_GEN_PROMPT": (_web_search_mod, "web search query-gen prompt"),
-            "CLASSIFICATION_PROMPT": (_intent_mod, "intent classification prompt"),
-        }.items():
-            # Each agent module may use different internal attribute names
-            for candidate in (attr, f"_{attr}", attr.replace("PROMPT", "PROMPT").lower()):
-                val = getattr(mod, candidate, None) or getattr(mod, f"_{candidate}", None)
-                if val and isinstance(val, str):
-                    prompts_to_track[attr] = (val, display)
-                    break
 
         for name, (content, reason) in prompts_to_track.items():
             try:
@@ -2115,6 +2178,222 @@ class ChatbotEngine:
         self.history_manager.add_message("assistant", assistant_message, metadata)
         return assistant_message, metadata
 
+    def _get_web_agent(self):
+        """Lazily build WebSearchAgent (shared by router and deep research)."""
+        from .config import (
+            ENABLE_WEB_SEARCH,
+            TAVILY_API_KEY,
+            WEB_SEARCH_MAX_CHARS_PER_RESULT,
+            WEB_SEARCH_MAX_RESULTS,
+            WEB_SEARCH_MIN_RELEVANCE_SCORE,
+        )
+        from .agents.web_search_agent import WebSearchAgent
+
+        if not ENABLE_WEB_SEARCH or not TAVILY_API_KEY:
+            return None
+        return WebSearchAgent(
+            tavily_api_key=TAVILY_API_KEY,
+            openai_api_key=OPENAI_API_KEY,
+            max_results=WEB_SEARCH_MAX_RESULTS,
+            max_chars_per_result=WEB_SEARCH_MAX_CHARS_PER_RESULT,
+            min_relevance_score=WEB_SEARCH_MIN_RELEVANCE_SCORE,
+        )
+
+    def _answer_deep_research(
+        self,
+        user_message: str,
+        metadata: Dict,
+        *,
+        assets: Optional[List[str]] = None,
+        from_date: Optional[str] = None,
+        to_date: Optional[str] = None,
+        functions: Optional[List[str]] = None,
+        on_flow_step: Optional[Callable[[str, str], None]] = None,
+        flow_trace: Optional[List[Dict[str, str]]] = None,
+        gate_info: Optional[Dict] = None,
+        query_kind: Optional[str] = None,
+        deep_research_enabled: bool = False,
+    ) -> tuple:
+        """
+        Deep Research pipeline: plan → subtasks → gap refinement → synthesis.
+        """
+        from .config import (
+            DEEP_RESEARCH_MAX_WEB_CHARS,
+            DEEP_RESEARCH_PLANNER_MODEL,
+            DEEP_RESEARCH_MAX_SUBTASKS,
+            DEEP_RESEARCH_MAX_ROUNDS,
+            DEEP_RESEARCH_TOTAL_TIMEOUT_SECONDS,
+            ENABLE_DEEP_RESEARCH,
+            ENABLE_DEEP_RESEARCH_LOGGING,
+        )
+        from .deep_research_log import DeepResearchLogRecorder
+        from .agents.research_planner import ResearchPlanner
+        from .agents.research_gap_analyzer import ResearchGapAnalyzer
+        from .agents.research_orchestrator import ResearchOrchestrator
+        from .agents.research_query_analyzer import ResearchQueryAnalyzer
+        from .agents.research_synthesizer import ResearchSynthesizer
+        from .agents.intent_classifier import INTENT_DEEP_RESEARCH
+
+        flow_trace = flow_trace if flow_trace is not None else []
+        log_rec: Optional[DeepResearchLogRecorder] = None
+        if ENABLE_DEEP_RESEARCH_LOGGING:
+            log_rec = DeepResearchLogRecorder(
+                session_id=self.history_manager.session_id,
+                user_message=user_message,
+            )
+            log_rec.set_gate(gate_info or {})
+            log_rec.set_input_context(
+                assets=assets,
+                from_date=from_date,
+                to_date=to_date,
+                functions=functions,
+                query_kind=query_kind,
+                deep_research_enabled=deep_research_enabled,
+            )
+        if not ENABLE_DEEP_RESEARCH:
+            metadata["deep_research_fallback"] = "disabled"
+            return self._answer_web_rag(
+                user_message,
+                "Deep research is disabled. Please enable ENABLE_DEEP_RESEARCH.",
+                metadata,
+            )
+
+        research_result = None
+        try:
+            web_agent = self._get_web_agent()
+            planner = ResearchPlanner(
+                OPENAI_API_KEY,
+                model=DEEP_RESEARCH_PLANNER_MODEL,
+                max_subtasks=DEEP_RESEARCH_MAX_SUBTASKS,
+            )
+            gap_analyzer = ResearchGapAnalyzer(
+                OPENAI_API_KEY,
+                model=DEEP_RESEARCH_PLANNER_MODEL,
+                max_refinement=4,
+            )
+
+            history = self.history_manager.get_messages_for_api(max_pairs=3, strip_data=True)
+
+            query_analyzer = ResearchQueryAnalyzer(
+                OPENAI_API_KEY,
+                model=DEEP_RESEARCH_PLANNER_MODEL,
+            )
+            orchestrator = ResearchOrchestrator(
+                planner=planner,
+                gap_analyzer=gap_analyzer,
+                web_agent=web_agent,
+                internal_fn=self._fetch_signal_data,
+                query_analyzer=query_analyzer,
+                max_rounds=DEEP_RESEARCH_MAX_ROUNDS,
+                total_timeout=float(DEEP_RESEARCH_TOTAL_TIMEOUT_SECONDS),
+                on_step=on_flow_step,
+                log_recorder=log_rec,
+            )
+
+            research_result = orchestrator.run(
+                user_message,
+                history,
+                assets=assets,
+                from_date=from_date,
+                to_date=to_date,
+                functions=functions,
+            )
+            result = research_result
+
+            synthesizer = ResearchSynthesizer()
+            prompt = synthesizer.build_prompt(
+                result.store,
+                gaps_summary=result.gaps_summary,
+                max_web_chars=DEEP_RESEARCH_MAX_WEB_CHARS,
+            )
+            evidence_chars = len(result.store.format_for_synthesis(max_web_chars=DEEP_RESEARCH_MAX_WEB_CHARS))
+
+            if log_rec:
+                log_rec.record_synthesis(
+                    gaps_summary=result.gaps_summary,
+                    evidence_pack_chars=evidence_chars,
+                    prompt_chars=len(prompt),
+                )
+
+            metadata.update({
+                "intent": INTENT_DEEP_RESEARCH,
+                "intent_label": "Deep Research",
+                "route": "DEEP_RESEARCH",
+                "input_type": "deep_research",
+                "web_search_used": bool(result.store.all_sources()),
+                "web_sources": result.store.all_sources()[:30],
+                "deep_research_subtasks": result.subtasks_executed,
+                "deep_research_rounds": result.refinement_rounds,
+                "deep_research_plan_summary": result.store.plan.summary,
+                "deep_research_gaps": result.gaps_summary,
+            })
+
+            if on_flow_step:
+                on_flow_step("Synthesis", "Composing evidence-bound final report")
+            flow_trace.append({
+                "stage": "Synthesis",
+                "detail": f"Composed from {result.subtasks_executed} subtasks",
+                "timestamp": datetime.now().strftime("%H:%M:%S"),
+            })
+
+            response, metadata = self._answer_synthesized(user_message, prompt, metadata)
+
+            if log_rec:
+                log_rec.record_outcome(
+                    subtasks_executed=result.subtasks_executed,
+                    refinement_rounds=result.refinement_rounds,
+                    total_elapsed_ms=result.elapsed_ms,
+                    web_sources=result.store.all_sources(),
+                    metadata=metadata,
+                )
+                log_path = log_rec.save()
+                metadata["deep_research_log_id"] = log_rec.log_id
+                metadata["deep_research_log_path"] = str(log_path)
+
+            return response, metadata
+
+        except Exception as exc:
+            logger.error("Deep research pipeline failed: %s", exc, exc_info=True)
+            # If orchestrator partially completed, still try synthesis with collected evidence
+            partial_store = research_result
+            if partial_store is not None and getattr(partial_store, "store", None):
+                try:
+                    synthesizer = ResearchSynthesizer()
+                    prompt = synthesizer.build_prompt(
+                        partial_store.store,
+                        gaps_summary=getattr(partial_store, "gaps_summary", "") or str(exc),
+                    )
+                    metadata["deep_research_partial_after_error"] = True
+                    response, metadata = self._answer_synthesized(user_message, prompt, metadata)
+                    if log_rec:
+                        log_rec.record_outcome(
+                            subtasks_executed=getattr(partial_store, "subtasks_executed", 0),
+                            refinement_rounds=getattr(partial_store, "refinement_rounds", 0),
+                            total_elapsed_ms=getattr(partial_store, "elapsed_ms", 0),
+                            web_sources=partial_store.store.all_sources(),
+                            metadata=metadata,
+                            error=str(exc),
+                        )
+                        log_path = log_rec.save()
+                        metadata["deep_research_log_id"] = log_rec.log_id
+                        metadata["deep_research_log_path"] = str(log_path)
+                    return response, metadata
+                except Exception as synth_exc:
+                    logger.error("Partial deep research synthesis failed: %s", synth_exc)
+            if log_rec:
+                log_rec.record_outcome(
+                    subtasks_executed=0,
+                    refinement_rounds=0,
+                    total_elapsed_ms=0,
+                    web_sources=[],
+                    metadata=metadata,
+                    error=str(exc),
+                )
+                log_path = log_rec.save()
+                metadata["deep_research_log_id"] = log_rec.log_id
+                metadata["deep_research_log_path"] = str(log_path)
+            raise
+
     def _persist_flow_trace(self, metadata: Optional[Dict[str, Any]], flow_trace: List[Dict[str, str]]) -> None:
         """
         Attach flow_trace to the latest response metadata and flush session JSON.
@@ -2144,6 +2423,7 @@ class ChatbotEngine:
         signal_type_reasoning: Optional[str] = None,
         on_flow_step: Optional[Callable[[str, str], None]] = None,
         query_kind: Optional[str] = None,
+        deep_research_enabled: bool = False,
     ) -> Tuple[str, Dict]:
         """
         Process a follow-up query with dynamic, fresh analysis for each query.
@@ -2171,10 +2451,12 @@ class ChatbotEngine:
             Tuple of (response_text, metadata_dict)
         """
         try:
-            from chatbot.config import MAX_HISTORY_LENGTH
+            from chatbot.config import MAX_HISTORY_LENGTH, ENABLE_DEEP_RESEARCH
             from .agents.master_router import (
                 ROUTE_CONVERSATIONAL, ROUTE_WEB_RAG, ROUTE_HYBRID, ROUTE_INTERNAL,
+                ROUTE_DEEP_RESEARCH,
             )
+            from .agents.deep_research_gate import evaluate_deep_research_gate
 
             flow_trace: List[Dict[str, str]] = []
 
@@ -2195,6 +2477,46 @@ class ChatbotEngine:
             logger.info("SMART FOLLOW-UP QUERY - Dynamic fresh analysis per query")
             logger.info("="*60)
 
+            history_for_routing = self.history_manager.get_messages_for_api(
+                max_pairs=3, strip_data=True
+            )
+
+            # ── Deep Research (bypasses standard router when gated) ───────────
+            use_deep_research, gate_info = evaluate_deep_research_gate(
+                user_message,
+                history_for_routing,
+                query_kind=query_kind,
+                deep_research_enabled=deep_research_enabled,
+                enable_deep_research_config=ENABLE_DEEP_RESEARCH,
+            )
+            if use_deep_research:
+                logger.info("[ENGINE] DEEP_RESEARCH route — multi-step research pipeline")
+                add_flow_step("Deep Research", "Planning and executing multi-step research")
+                meta = {
+                    "route": ROUTE_DEEP_RESEARCH,
+                    "intent": "DEEP_RESEARCH",
+                    "intent_label": "Deep Research",
+                    "intent_confidence": 0.95,
+                    "intent_classified_by": "deep_research_gate",
+                    "web_search_used": True,
+                }
+                response, meta = self._answer_deep_research(
+                    user_message,
+                    meta,
+                    assets=assets,
+                    from_date=from_date,
+                    to_date=to_date,
+                    functions=functions,
+                    on_flow_step=on_flow_step,
+                    flow_trace=flow_trace,
+                    gate_info=gate_info,
+                    query_kind=query_kind,
+                    deep_research_enabled=deep_research_enabled,
+                )
+                add_flow_step("Response Generation", "Deep research report complete")
+                self._persist_flow_trace(meta, flow_trace)
+                return response, meta
+
             # ── RouterV1: classify intent and decide pipeline ─────────────────
             logger.info(
                 f"[FLOW 1/7] UserQuery → Router  |  "
@@ -2202,9 +2524,6 @@ class ChatbotEngine:
             )
             add_flow_step("Router", "Analyzing user query intent and selecting route")
             router = self._get_router()
-            history_for_routing = self.history_manager.get_messages_for_api(
-                max_pairs=3, strip_data=True
-            )
             decision = router.route(user_message, history=history_for_routing)
 
             route_meta_base = {
@@ -2928,25 +3247,12 @@ Note: This is batch {group_idx + 1} of {len(ticker_groups)} analyzing assets: {'
         logger.info("Making final aggregation API call to synthesize multi-batch results...")
         
         try:
-            aggregation_prompt = f"""You are analyzing data from {len(ticker_list)} assets that were processed in {len(results)} batches. 
-
-**Original User Query:** {user_query}
-
-**Batch Results:**
-{batch_responses_text}
-
-**Your Task:**
-Synthesize the above batch results into a single, coherent, comprehensive answer to the user's original query. 
-
-Requirements:
-1. Combine all information into a unified response (don't mention batches)
-2. Remove duplicate information
-3. Organize the data logically (by asset, function, date, or relevance)
-4. Use proper Markdown formatting with clear sections
-5. Provide summary statistics if relevant
-6. Answer the user's original question directly and completely
-
-Create a professional, well-structured response that reads as one cohesive analysis."""
+            aggregation_prompt = format_batch_aggregation_prompt(
+                n_assets=len(ticker_list),
+                n_batches=len(results),
+                user_query=user_query,
+                batch_text=batch_responses_text,
+            )
 
             synthesis_messages = [
                 {"role": "system", "content": SYSTEM_PROMPT},
@@ -3260,19 +3566,11 @@ Please analyze this batch. Your response will be combined with other batches lat
                 # Synthesize all batch responses
                 logger.info("Synthesizing all batch responses into final answer")
                 
-                synthesis_prompt = f"""Original Query: {user_query}
-
-I've analyzed the data in {num_batches} batches. Here are the individual batch analyses:
-
-{chr(10).join(batch_responses)}
-
-Please synthesize these batch analyses into a single, coherent response that:
-1. Combines insights from all batches
-2. Provides a unified answer to the original query
-3. Maintains consistency across all data
-4. Presents results in a clear, organized format
-
-Final synthesized response:"""
+                synthesis_prompt = format_batch_synthesis_prompt(
+                    user_query=user_query,
+                    num_batches=num_batches,
+                    batch_responses="\n".join(batch_responses),
+                )
                 
                 synthesis_messages = base_messages + [{"role": "user", "content": synthesis_prompt}]
                 

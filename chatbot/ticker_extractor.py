@@ -9,6 +9,7 @@ import logging
 from typing import List, Optional
 from openai import OpenAI
 from .config import OPENAI_API_KEY, TEMPERATURE, OPENAI_MODEL, MAX_TOKENS
+from prompts.engine import TICKER_EXTRACTOR_SYSTEM, format_ticker_extraction_prompt
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -58,54 +59,13 @@ class TickerExtractor:
             return []
         
         ticker_list = ', '.join(self.available_tickers)
-        
-        prompt = f"""You are an AI assistant designed to extract stock ticker symbols from user queries.
+        prompt = format_ticker_extraction_prompt(ticker_list, user_query)
 
-The available ticker symbols in our system are: {ticker_list}
-
-Analyze the following user query and identify which ticker symbols to include:
-
-EXTRACTION RULES:
-1. If SPECIFIC tickers are mentioned (e.g., "AAPL", "MSFT", "AMD"), return ONLY those tickers
-2. If NO specific tickers mentioned (e.g., "What signals exist?"), return "ALL"
-3. If REGION/COUNTRY mentioned (e.g., "New Zealand stocks", "US stocks"), return matching tickers:
-   - "New Zealand" or "NZ" → All tickers ending with ".NZ"
-   - "Toronto" or "Canadian" or "Canada" → All tickers ending with ".TO"
-   - "US stocks" or "American stocks" → All tickers WITHOUT country suffixes
-4. If "all stocks" or "all assets" mentioned, return "ALL"
-
-Return as JSON object:
-- {{"tickers": ["AAPL", "MSFT"]}} for specific tickers
-- {{"tickers": "ALL"}} if no specific tickers or "all" is mentioned
-- {{"tickers": [".NZ"]}} for New Zealand stocks (system will filter)
-- {{"tickers": [".TO"]}} for Canadian stocks (system will filter)
-
-Examples:
-
-Query: "What signals for AAPL and MSFT?"
-Response: {{"tickers": ["AAPL", "MSFT"]}}
-
-Query: "Show me all trading signals"
-Response: {{"tickers": "ALL"}}
-
-Query: "What are the New Zealand stock signals?"
-Response: {{"tickers": [".NZ"]}}
-
-Query: "Analyze Canadian stocks"
-Response: {{"tickers": [".TO"]}}
-
-Query: "Overall market analysis"
-Response: {{"tickers": "ALL"}}
-
-User Query: "{user_query}"
-
-JSON Response:"""
-        
         try:
             response = self.client.chat.completions.create(
                 model=OPENAI_MODEL,  # Use GPT-5.2 for intelligent extraction
                 messages=[
-                    {"role": "system", "content": "You are a helpful assistant that extracts ticker symbols from text."},
+                    {"role": "system", "content": TICKER_EXTRACTOR_SYSTEM},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=TEMPERATURE,  # Use configured temperature

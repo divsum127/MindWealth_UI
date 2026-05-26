@@ -11,6 +11,7 @@ from openai import OpenAI
 
 from .column_metadata_extractor import ColumnMetadataExtractor
 from .config import OPENAI_API_KEY, OPENAI_MODEL, TEMPERATURE, MAX_TOKENS
+from prompts.engine import load_chatbot_system_prompt
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -40,23 +41,7 @@ class ColumnSelector:
             raise ValueError(f"Failed to initialize OpenAI client: {e}")
         
         self.metadata_extractor = ColumnMetadataExtractor()
-        self.system_prompt = self._load_system_prompt()
-    
-    def _load_system_prompt(self) -> str:
-        """
-        Load the system prompt from chatbot.txt.
-        
-        Returns:
-            System prompt string
-        """
-        prompt_path = Path(__file__).parent / "chatbot.txt"
-        
-        try:
-            with open(prompt_path, 'r') as f:
-                return f.read()
-        except Exception as e:
-            logger.error(f"Error loading chatbot.txt: {e}")
-            return "You are a helpful assistant for selecting data columns."
+        self.system_prompt = load_chatbot_system_prompt()
     
     def _build_column_context(self, selected_signal_types: Optional[List[str]] = None) -> str:
         """

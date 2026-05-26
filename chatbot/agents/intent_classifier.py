@@ -12,6 +12,7 @@ import logging
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple
 
+from prompts.engine import CLASSIFICATION_PROMPT
 
 logger = logging.getLogger(__name__)
 
@@ -25,12 +26,13 @@ INTENT_MARKET_OVERVIEW    = "MARKET_OVERVIEW"
 INTENT_TARGET_TRACKING    = "TARGET_TRACKING"
 INTENT_CONVERSATIONAL     = "CONVERSATIONAL"
 INTENT_RESEARCH           = "RESEARCH"
+INTENT_DEEP_RESEARCH      = "DEEP_RESEARCH"
 INTENT_WEB_QUERY          = "WEB_QUERY"
 
 ALL_INTENTS = [
     INTENT_SNAPSHOT, INTENT_PERFORMANCE_REVIEW, INTENT_SIGNAL_LOOKUP,
     INTENT_COMPARISON, INTENT_DIAGNOSTICS, INTENT_MARKET_OVERVIEW,
-    INTENT_TARGET_TRACKING, INTENT_CONVERSATIONAL, INTENT_RESEARCH,
+    INTENT_TARGET_TRACKING,     INTENT_CONVERSATIONAL, INTENT_RESEARCH, INTENT_DEEP_RESEARCH,
     INTENT_WEB_QUERY,
 ]
 
@@ -45,6 +47,7 @@ INTENT_LABELS: Dict[str, str] = {
     INTENT_TARGET_TRACKING:    "Target Tracking",
     INTENT_CONVERSATIONAL:     "Conversational",
     INTENT_RESEARCH:           "Research",
+    INTENT_DEEP_RESEARCH:      "Deep Research",
     INTENT_WEB_QUERY:          "Web Search",
 }
 
@@ -184,50 +187,7 @@ class IntentClassifier:
              or produce no match.
     """
 
-    _CLASSIFICATION_PROMPT = """You are classifying a trading chatbot query for MindWealth.
-The chatbot works with internal trading signal data (entry/exit signals, portfolio targets, market breadth)
-and can also search the web for live financial information.
-
-AVAILABLE INTENTS:
-- SNAPSHOT           : Current state / today's data / open positions right now
-- PERFORMANCE_REVIEW : Historical stats, win rates, CAGR, Sharpe, backtests
-- SIGNAL_LOOKUP      : Find specific signals for a ticker, function, or date range
-- COMPARISON         : Compare 2+ entities — strategies, tickers, time periods
-- DIAGNOSTICS        : Why/how questions, root cause, explain anomalies
-- MARKET_OVERVIEW    : Market breadth, overall market health, bullish/bearish ratios
-- TARGET_TRACKING    : Portfolio targets, F-Stack levels, achieved/remaining targets
-- CONVERSATIONAL     : Educational, definitional questions — NO data needed
-- RESEARCH           : Multi-step comprehensive analysis, deep dives
-- WEB_QUERY          : News, live prices, earnings, external financial data
-
-CONVERSATION CONTEXT (last 2 turns, may be empty):
-{context}
-
-CURRENT USER QUERY:
-{query}
-
-Return ONLY a valid JSON object — no extra text, no markdown fences:
-{{
-  "primary_intent": "INTENT_NAME",
-  "confidence": 0.85,
-  "is_hybrid": false,
-  "secondary_intent": null,
-  "reasoning": "one concise sentence",
-  "web_search_queries": null,
-  "data_scope_hint": {{
-    "tickers_mentioned": [],
-    "functions_mentioned": [],
-    "signal_types_mentioned": []
-  }}
-}}
-
-Rules:
-- If is_hybrid is true, set secondary_intent (e.g. primary=SIGNAL_LOOKUP + secondary=WEB_QUERY)
-- If primary_intent is WEB_QUERY, populate web_search_queries with 1-3 targeted search strings
-  including the current year (2026) where relevant
-- web_search_queries must be null for non-WEB_QUERY intents
-- confidence should reflect how certain you are (0.0 – 1.0)
-- Signal MTM / position marks use internal signal data (prices come from trade_store OHLC snapshots); use HYBRID only when the user also wants web news or external facts."""
+    _CLASSIFICATION_PROMPT = CLASSIFICATION_PROMPT
 
     def __init__(self, api_key: Optional[str] = None, openai_model: str = "gpt-4o-mini"):
         self._api_key = api_key

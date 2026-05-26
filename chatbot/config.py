@@ -8,6 +8,10 @@ from typing import Optional
 
 from dotenv import load_dotenv
 
+from prompts.engine import SYSTEM_PROMPT as _SYSTEM_PROMPT_BASE, TARGET_STOP_ROW_BINDING_RULES
+
+SYSTEM_PROMPT = _SYSTEM_PROMPT_BASE + "\n\n" + TARGET_STOP_ROW_BINDING_RULES
+
 # Try loading from Streamlit secrets first (for deployed apps)
 try:
     import streamlit as st
@@ -64,6 +68,27 @@ def _resolve_flagged_pairs_dir() -> Path:
     return BASE_DIR / p
 
 
+def _resolve_deep_research_logs_dir() -> Path:
+    """Per-query Deep Research audit logs: ``dprsh_<uuid>.json``."""
+    raw: Optional[str] = None
+    if USING_STREAMLIT_SECRETS:
+        try:
+            import streamlit as st
+
+            if "paths" in st.secrets and "DEEP_RESEARCH_LOGS_DIR" in st.secrets["paths"]:
+                raw = str(st.secrets["paths"]["DEEP_RESEARCH_LOGS_DIR"]).strip()
+            elif "DEEP_RESEARCH_LOGS_DIR" in st.secrets:
+                raw = str(st.secrets["DEEP_RESEARCH_LOGS_DIR"]).strip()
+        except Exception:
+            pass
+    if not raw:
+        raw = os.getenv("DEEP_RESEARCH_LOGS_DIR", "chatbot/deep_research_logs")
+    p = Path(raw).expanduser()
+    if p.is_absolute():
+        return p
+    return BASE_DIR / p
+
+
 # Directory configuration from environment
 CHATBOT_DATA_DIR = BASE_DIR / os.getenv("CHATBOT_DATA_DIR", "chatbot/data")  # Base data directory
 STOCK_DATA_DIR = BASE_DIR / os.getenv("STOCK_DATA_DIR", "trade_store/stock_data")  # Stock data directory
@@ -73,6 +98,7 @@ TRADE_STORE_US_DIR = Path(TRADE_STORE_DIR) / os.getenv("TRADE_STORE_US_SUBPATH",
 HISTORY_DIR = BASE_DIR / os.getenv("HISTORY_DIR", "chatbot/history")  # Chat history directory
 # Flagged Q/R JSON exports (see _resolve_flagged_pairs_dir)
 FLAGGED_PAIRS_DIR = _resolve_flagged_pairs_dir()
+DEEP_RESEARCH_LOGS_DIR = _resolve_deep_research_logs_dir()
 
 # Data file names from environment
 ENTRY_CSV_NAME = os.getenv("ENTRY_CSV_NAME", "entry.csv")
@@ -96,6 +122,7 @@ CHATBOT_BREADTH_CSV = CHATBOT_DATA_DIR / BREADTH_CSV_NAME  # Consolidated breadt
 # Create necessary directories if they don't exist
 HISTORY_DIR.mkdir(parents=True, exist_ok=True)
 FLAGGED_PAIRS_DIR.mkdir(parents=True, exist_ok=True)
+DEEP_RESEARCH_LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
 # Outstanding-signal CSV (see ``outstanding_paths``). Use absolute import because some modules
 # load this file as top-level ``config`` (``from config import …``), where relative imports fail.
@@ -174,6 +201,36 @@ WEB_SEARCH_HYBRID_TIMEOUT_SECONDS = int(os.getenv("WEB_SEARCH_HYBRID_TIMEOUT_SEC
 # How long to wait for the internal data fetch branch before giving up (seconds).
 INTERNAL_FETCH_TIMEOUT_SECONDS = int(os.getenv("INTERNAL_FETCH_TIMEOUT_SECONDS", "45"))
 
+# Deep Research — multi-step plan → subtask execution → gap refinement → synthesis
+ENABLE_DEEP_RESEARCH = os.getenv("ENABLE_DEEP_RESEARCH", "true").lower() == "true"
+DEEP_RESEARCH_MAX_SUBTASKS = int(os.getenv("DEEP_RESEARCH_MAX_SUBTASKS", "8"))
+DEEP_RESEARCH_MAX_ROUNDS = int(os.getenv("DEEP_RESEARCH_MAX_ROUNDS", "2"))
+DEEP_RESEARCH_WEB_TIMEOUT_SECONDS = int(os.getenv("DEEP_RESEARCH_WEB_TIMEOUT_SECONDS", "45"))
+DEEP_RESEARCH_INTERNAL_TIMEOUT_SECONDS = int(os.getenv("DEEP_RESEARCH_INTERNAL_TIMEOUT_SECONDS", "60"))
+DEEP_RESEARCH_WEB_MAX_RESULTS = int(os.getenv("DEEP_RESEARCH_WEB_MAX_RESULTS", "8"))
+DEEP_RESEARCH_WEB_MAX_QUERIES_PER_SUBTASK = int(os.getenv("DEEP_RESEARCH_WEB_MAX_QUERIES_PER_SUBTASK", "4"))
+DEEP_RESEARCH_MAX_WEB_CHARS = int(os.getenv("DEEP_RESEARCH_MAX_WEB_CHARS", "12000"))
+DEEP_RESEARCH_TOTAL_TIMEOUT_SECONDS = int(os.getenv("DEEP_RESEARCH_TOTAL_TIMEOUT_SECONDS", "120"))
+DEEP_RESEARCH_PLANNER_MODEL = os.getenv("DEEP_RESEARCH_PLANNER_MODEL", "gpt-4o-mini")
+ENABLE_DEEP_RESEARCH_LOGGING = os.getenv("ENABLE_DEEP_RESEARCH_LOGGING", "true").lower() == "true"
+DEEP_RESEARCH_LOG_MAX_CONTENT_CHARS = int(os.getenv("DEEP_RESEARCH_LOG_MAX_CONTENT_CHARS", "2000"))
+ENABLE_DEEP_RESEARCH_PRICE_DATA = os.getenv("ENABLE_DEEP_RESEARCH_PRICE_DATA", "true").lower() == "true"
+DEEP_RESEARCH_PRICE_DATA_SOURCE = os.getenv("DEEP_RESEARCH_PRICE_DATA_SOURCE", "yfinance")
+DEEP_RESEARCH_MIN_PRECEDENTS = int(os.getenv("DEEP_RESEARCH_MIN_PRECEDENTS", "3"))
+ENABLE_LLM_EVENT_DATE_EXTRACTION = (
+    os.getenv("ENABLE_LLM_EVENT_DATE_EXTRACTION", "true").lower() == "true"
+)
+
+# NZ OHLC fallbacks when yfinance has no delisted NZ history (Stooq / NZXplorer / NZX API)
+ENABLE_STOOQ_OHLC_FALLBACK = os.getenv("ENABLE_STOOQ_OHLC_FALLBACK", "true").lower() == "true"
+ENABLE_NZX_OHLC_FALLBACK = os.getenv("ENABLE_NZX_OHLC_FALLBACK", "true").lower() == "true"
+STOOQ_API_KEY = os.getenv("STOOQ_API_KEY", "").strip() or None
+NZXPLORER_API_KEY = os.getenv("NZXPLORER_API_KEY", "").strip() or None
+NZX_API_KEY = os.getenv("NZX_API_KEY", "").strip() or None
+STOOQ_REQUEST_TIMEOUT_SECONDS = float(os.getenv("STOOQ_REQUEST_TIMEOUT_SECONDS", "12"))
+NZX_PRICE_REQUEST_TIMEOUT_SECONDS = float(os.getenv("NZX_PRICE_REQUEST_TIMEOUT_SECONDS", "15"))
+CACHE_NZ_OHLC_TO_TRADE_STORE = os.getenv("CACHE_NZ_OHLC_TO_TRADE_STORE", "true").lower() == "true"
+
 # LLM Router — decides web vs internal vs conversational (gpt-4o-mini JSON)
 LLM_ROUTER_ENABLED = os.getenv("LLM_ROUTER_ENABLED", "true").lower() == "true"
 LLM_ROUTER_MODEL = os.getenv("LLM_ROUTER_MODEL", "gpt-4o-mini")
@@ -200,71 +257,6 @@ ENABLE_BATCH_PROCESSING = True  # Smart batch processing always enabled for opti
 # - If ticker(s) specified: Only those tickers
 # - If both specified: Intersection of tickers that have the function
 # - Batch processing automatically handles any number of tickers efficiently
-
-# System prompt for the chatbot
-SYSTEM_PROMPT = """You are an expert financial trading analyst assistant for MindWealth. 
-You help users analyze stock market signal data, trading signal data, and provide insights based on historical signal data.
-
-Your capabilities include:
-- Analyzing stock price movements and trends
-- Interpreting trading signals and technical indicators
-- Providing insights on market performance
-- Comparing multiple tickers
-- Identifying patterns and opportunities
-
-IMPORTANT OUTPUT FORMATTING REQUIREMENTS:
-1. ALWAYS use proper Markdown formatting
-2. ALWAYS include spaces between words and punctuation
-3. Use bullet points (- or •) for lists
-4. Use **bold** for emphasis
-5. Use headers (##, ###) to organize sections
-6. Use line breaks between paragraphs
-7. Format numbers with proper spacing: "245.27 is significantly above the track level (169.28)"
-8. NEVER concatenate words without spaces
-
-When analyzing signal data:
-1. Be precise and signal-data-driven in your analysis
-2. Highlight key trends and patterns
-3. Provide actionable insights when possible
-4. Use technical analysis terminology appropriately
-5. Consider the time period and context of the signal data
-6. Structure your response with clear sections and proper spacing
-
-CRITICAL DATA ACCURACY REQUIREMENTS:
-🚨 FINANCIAL DATA INTEGRITY IS CRITICAL 🚨
-
-**When Signal Data IS Provided:**
-1. The user query will include sections like "=== SIGNAL DATA CONTEXT ===" or "=== ENTRY SIGNALS (JSON) ===" with actual signal data
-2. If you see JSON with fields like "signal_type", "record_count", "data", etc., then SIGNAL DATA HAS BEEN PROVIDED
-3. Extract and analyze information EXACTLY as it appears in the provided JSON
-4. Use the exact function names, symbols, dates, and prices from the records
-5. Provide thorough analysis based on the signal data provided
-
-**When Signal Data IS NOT Provided:**
-1. Internal MindWealth signal data is absent when there is no substantive signal payload (e.g. missing or empty "=== SOURCE A: MINDWEALTH SIGNAL DATA", "STATUS: NO DATA RETURNED", or no "=== SIGNAL DATA CONTEXT ===" / JSON signal blocks with usable rows).
-2. If internal signal data is absent **but** live web context is present ("=== SOURCE B: LIVE WEB CONTEXT", "=== WEB SEARCH RESULTS ==="), use that web material for **current** stock figures and calculations — cite URLs/snippets; do not invent prices or metrics missing from the provided context.
-3. If **both** internal signal data and web context are absent for numbers you need, say so clearly and avoid fabricating function names, symbols, dates, prices, or performance metrics.
-
-**NEVER DO THIS (Hallucination):**
-- Make up function names like "HIGH VOLTAGE", "RADAR SWEEP" that don't exist in the provided signal data
-- Invent signal dates or prices not in the signal data
-- Create fake symbols or tickers
-- Fabricate performance metrics or CAGR values
-
-**ALWAYS DO THIS (Accurate):**
-- Check SOURCE A / "=== SIGNAL DATA CONTEXT ===" (or JSON signal blocks): if present with usable rows, extract EXACT values from those records for MindWealth-specific fields
-- **Mark-to-market, holding period, and \"today\" prices on signals:** Use SOURCE A **exactly** as exported: **Current Mark to Market and Holding Period** (and **Trading Days between Signal and Today Date** when present) are the **authoritative** MTM and holding values — same as the Outstanding Signals report. **Today Trading Date/Price** reflects **trade_store/stock_data** OHLC when the pipeline refreshes. Web search is **not** required for routine MTM on exported signals.
-- **Open / entry signals:** When ``trade_store/US/*_outstanding_signal.csv`` or ``outstanding_signal.csv`` exists (or ``OUTSTANDING_SIGNAL_CSV`` is set), the assistant loads **open positions** from that report first so rows and MTM/holding columns match the file (e.g. ``2026-05-08_outstanding_signal.csv``).
-- When SOURCE B / web results are present, use them for **news, catalysts, macro**, or **optional** alternate quotes; cite URLs/snippets. Do not treat web as mandatory for basic MTM when SOURCE A already has today price and MTM fields.
-- If neither source supplies a figure you need, say so — do not guess
-
-**CURRENT STOCK DATA & CALCULATIONS:**
-1. **Primary for signal MTM and holding:** Prefer **\"Current Mark to Market and Holding Period\"** (and related columns) from SOURCE A. **Recompute** only when those report fields are missing; use **one** consistent current price from the Today column when you must derive MTM yourself.
-2. **SOURCE B (web):** When **"=== SOURCE B: LIVE WEB CONTEXT"** or **"=== WEB SEARCH RESULTS ==="** appears, use it for supplementary context — breaking news, alternate quotes, earnings timing — not as the only valid \"current\" price when SOURCE A already provides trade_store-derived marks.
-
-CRITICAL: Always format your response in clean, readable Markdown with proper spacing.
-Ground factual claims in the message: internal signal data from SOURCE A first; cite SOURCE B when used for news or supplemental quotes.
-"""
 
 # Data processing settings
 DATE_FORMAT = "%Y-%m-%d"

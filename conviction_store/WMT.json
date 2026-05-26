@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.015698,
   "dividend_yield_5y_std": 0.011217,
-  "dividend_yield_current": 0.008159,
-  "dividend_yield_zscore": -0.6721,
-  "enterprise_value": 1018276959899.4609,
+  "dividend_yield_current": 0.008331,
+  "dividend_yield_zscore": -0.6568,
+  "enterprise_value": 998349483611.9609,
   "eps_fwd": 3.29322,
   "eps_ttm": 2.73,
-  "ev_fwd_rev": 1.4278,
+  "ev_fwd_rev": 1.3999,
   "fcf_ttm": 15263000000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 713163014144.0,
   "industry": "Discount Stores",
-  "last_daily_update": "2026-05-21T21:11:20+00:00",
+  "last_daily_update": "2026-05-26T14:34:16+00:00",
   "last_full_calc": "2026-05-18T20:51:09+00:00",
   "manual_overrides": {},
-  "market_cap": 967199959899.4609,
+  "market_cap": 947272483611.9609,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 51077000000.0,
-  "owner_earnings_yield": 0.015781,
+  "owner_earnings_yield": 0.016113,
   "pe_20y_array": [
     35.3776,
     38.6399,
@@ -235,7 +235,7 @@
     48.6642
   ],
   "pe_percentile_20y": 50.0,
-  "pe_ttm": 44.4469,
+  "pe_ttm": 43.5311,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -244,12 +244,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 121.33999633789062,
+  "price": 118.83999633789062,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.21847,
   "sector": "Consumer Defensive",
   "ticker": "WMT",
-  "updated_at": "2026-05-21T21:11:20+00:00",
+  "updated_at": "2026-05-26T14:34:16+00:00",
   "valuation_tax": 0.0,
   "yield_trap_warning": false
 }

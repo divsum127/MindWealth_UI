@@ -18,3 +18,4 @@ __pycache__/
 
 # Flagged exports (kept on server disk, e.g. EC2; do not commit)
 chatbot/flagged_pairs/*.json
+chatbot/deep_research_logs/*.json

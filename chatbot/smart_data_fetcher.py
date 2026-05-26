@@ -5,7 +5,7 @@ Fetches data based on asset name, function, date, and selected columns.
 
 import pandas as pd
 from pathlib import Path
-from typing import List, Dict, Optional, Union
+from typing import Dict, List, Optional, Tuple, Union
 import logging
 import re
 from datetime import datetime
@@ -65,6 +65,21 @@ CONSOLIDATED_MTM_REPORT_COLUMN_NAMES = (
     "Today Trading Date/Price[$], Today Price vs Signal",
     "Current Mark to Market and Holding Period",
     "Trading Days between Signal and Today Date",
+)
+
+ENTRY_TARGETS_COLUMN = (
+    "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/"
+    "Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]"
+)
+ENTRY_STOP_COLUMN = (
+    "Stop Loss (Recent Extrema/Horizontal/F-Stack 1/F-Stack 2/F-Track 1/F-Track 2/EMA 200) [$]"
+)
+ENTRY_TARGETS_STOP_COLUMN_NAMES = (ENTRY_TARGETS_COLUMN, ENTRY_STOP_COLUMN)
+
+_TARGETS_STOP_QUERY_RE = re.compile(
+    r"\b(stop\s*loss|stop\s*level|stops?|take\s*profit|targets?|tp\b|sl\b|"
+    r"open\s+position|deep[- ]?dive|levels?\s+vs)\b",
+    re.I,
 )
 
 
@@ -310,6 +325,110 @@ class SmartDataFetcher:
         if SOURCE_COL in out.columns:
             out = out.drop(columns=[SOURCE_COL], errors="ignore")
         return out
+
+    @staticmethod
+    def parse_cited_entry_hints(user_message: Optional[str]) -> List[Tuple[str, Optional[float]]]:
+        """
+        Extract (signal_date YYYY-MM-DD, optional open price) pairs from user/assistant text.
+        Used to keep the CSV row that matches a cited entry block.
+        """
+        if not user_message or not str(user_message).strip():
+            return []
+        text = str(user_message)
+        hints: List[Tuple[str, Optional[float]]] = []
+        seen: set = set()
+
+        def _add(date: str, price: Optional[float]) -> None:
+            key = (date, price)
+            if date and key not in seen:
+                seen.add(key)
+                hints.append((date, price))
+
+        for m in re.finditer(
+            r"(?:entry|open)\s*:?\s*\$?(\d+(?:\.\d+)?)\s+on\s+(\d{4}-\d{2}-\d{2})",
+            text,
+            re.I,
+        ):
+            _add(m.group(2), float(m.group(1)))
+        for m in re.finditer(
+            r"(\d{4}-\d{2}-\d{2})\s*\([^)]*entry[^)]*\$?(\d+(?:\.\d+)?)",
+            text,
+            re.I,
+        ):
+            _add(m.group(1), float(m.group(2)))
+        for m in re.finditer(
+            r"\(\s*Entry:\s*\$?(\d+(?:\.\d+)?)\s+on\s+(\d{4}-\d{2}-\d{2})\s*\)",
+            text,
+            re.I,
+        ):
+            _add(m.group(2), float(m.group(1)))
+        return hints
+
+    @classmethod
+    def filter_rows_by_cited_entry_hints(
+        cls,
+        df: pd.DataFrame,
+        user_message: Optional[str],
+        price_tolerance: float = 0.06,
+    ) -> pd.DataFrame:
+        """When the query cites explicit entry date/price, keep only matching open rows."""
+        hints = cls.parse_cited_entry_hints(user_message)
+        if df.empty or not hints or SYMBOL_SIGNAL_COMPOUND_COL not in df.columns:
+            return df
+
+        def _row_matches(row: pd.Series) -> bool:
+            sym_col = str(row.get(SYMBOL_SIGNAL_COMPOUND_COL, ""))
+            m_date = re.search(r"(\d{4}-\d{2}-\d{2})", sym_col)
+            row_date = m_date.group(1) if m_date else ""
+            open_px = row.get("Signal Open Price")
+            try:
+                open_f = float(open_px) if open_px is not None and str(open_px).strip() else None
+            except (TypeError, ValueError):
+                open_f = None
+            for hint_date, hint_px in hints:
+                if row_date != hint_date:
+                    continue
+                if hint_px is None:
+                    return True
+                if open_f is not None and abs(open_f - hint_px) <= price_tolerance:
+                    return True
+                pm = re.search(r"\(Price:\s*([\d.]+)\)", sym_col, re.I)
+                if pm and abs(float(pm.group(1)) - hint_px) <= price_tolerance:
+                    return True
+            return False
+
+        filtered = df[df.apply(_row_matches, axis=1)]
+        if not filtered.empty:
+            logger.info(
+                "Cited entry hints %s: narrowed %s -> %s rows",
+                hints,
+                len(df),
+                len(filtered),
+            )
+            return filtered.copy()
+        return df
+
+    @classmethod
+    def collapse_latest_per_function_interval(cls, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        For one ticker with multiple open rows sharing function+interval, keep latest signal date.
+        Skipped when deep-dive mode needs every overlapping row.
+        """
+        if df.empty or SYMBOL_SIGNAL_COMPOUND_COL not in df.columns or "Function" not in df.columns:
+            return df
+        work = df.copy()
+        def _signal_date(cell: str) -> Optional[str]:
+            m = re.search(r"(\d{4}-\d{2}-\d{2})", str(cell))
+            return m.group(1) if m else None
+
+        work["_sig_date"] = work[SYMBOL_SIGNAL_COMPOUND_COL].astype(str).apply(_signal_date)
+        work["_interval"] = ""
+        if INTERVAL_CONFIRMATION_COL in work.columns:
+            work["_interval"] = work[INTERVAL_CONFIRMATION_COL].astype(str).str.split(",").str[0].str.strip()
+        work = work.sort_values("_sig_date", ascending=False, na_position="last")
+        keys = ["Function", "_interval"]
+        deduped = work.drop_duplicates(subset=keys, keep="first")
+        return deduped.drop(columns=["_sig_date", "_interval"], errors="ignore")
 
     def _prepare_open_entry_frame(
         self,
@@ -644,6 +763,7 @@ class SmartDataFetcher:
         column_indices: Optional[Dict[str, List[int]]] = None,
         position_side: Optional[str] = None,
         date_filter_mode: Optional[str] = None,
+        user_message: Optional[str] = None,
     ) -> Dict[str, pd.DataFrame]:
         """
         Fetch data from specified signal types with the required columns or ALL columns.
@@ -689,6 +809,7 @@ class SmartDataFetcher:
                     column_indices=column_indices,
                     position_side=position_side,
                     date_filter_mode=date_filter_mode,
+                    user_message=user_message,
                 )
 
         # Fall back to folder-based approach
@@ -849,6 +970,7 @@ class SmartDataFetcher:
         column_indices: Optional[Dict[str, List[int]]] = None,
         position_side: Optional[str] = None,
         date_filter_mode: Optional[str] = None,
+        user_message: Optional[str] = None,
     ) -> Dict[str, pd.DataFrame]:
         """
         Fetch data from consolidated CSV files.
@@ -893,6 +1015,7 @@ class SmartDataFetcher:
                         column_indices=signal_col_indices,
                         position_side=position_side,
                         date_filter_mode=mode,
+                        user_message=user_message,
                     )
 
                 if not df.empty:
@@ -916,6 +1039,7 @@ class SmartDataFetcher:
         column_indices: Optional[List[int]] = None,
         position_side: Optional[str] = None,
         date_filter_mode: str = "primary",
+        user_message: Optional[str] = None,
     ) -> pd.DataFrame:
         """
         Fetch data from consolidated CSV for a signal type (entry/exit/target).
@@ -988,6 +1112,17 @@ class SmartDataFetcher:
                 df = df.sort_values("_extracted_date", ascending=False, na_position="last")
                 df = df.drop(columns=["_extracted_date"])
 
+            if assets and len(assets) == 1 and signal_type == "entry":
+                df = self.filter_rows_by_cited_entry_hints(df, user_message)
+                if infer_date_filter_mode(user_message) != "entry_or_exit":
+                    before = len(df)
+                    df = self.collapse_latest_per_function_interval(df)
+                    if len(df) < before:
+                        logger.info(
+                            "Collapsed duplicate function+interval rows: %s -> %s",
+                            before,
+                            len(df),
+                        )
             if assets and len(assets) == 1 and signal_type in ("entry", "exit"):
                 df = self.dedupe_single_asset_signals(df)
 

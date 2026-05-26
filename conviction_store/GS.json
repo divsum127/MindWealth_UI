@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.018137,
   "dividend_yield_5y_std": 0.009128,
-  "dividend_yield_current": 0.018215,
-  "dividend_yield_zscore": 0.0085,
-  "enterprise_value": 484849478167.9393,
+  "dividend_yield_current": 0.018068,
+  "dividend_yield_zscore": -0.0076,
+  "enterprise_value": 487231666693.6791,
   "eps_fwd": 65.38839,
   "eps_ttm": 54.73,
-  "ev_fwd_rev": 7.8795,
+  "ev_fwd_rev": 7.9182,
   "fcf_ttm": -47218000000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 61532999680.0,
   "industry": "Capital Markets",
-  "last_daily_update": "2026-05-21T21:11:19+00:00",
+  "last_daily_update": "2026-05-26T14:34:16+00:00",
   "last_full_calc": "2026-05-18T20:48:54+00:00",
   "manual_overrides": {},
-  "market_cap": 291517478167.9393,
+  "market_cap": 293899666693.6791,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 193332000000.0,
-  "owner_earnings_yield": -0.161973,
+  "owner_earnings_yield": -0.16066,
   "pe_20y_array": [
     17.1378,
     18.2377,
@@ -233,7 +233,7 @@
     17.2946
   ],
   "pe_percentile_20y": 83.33,
-  "pe_ttm": 18.0554,
+  "pe_ttm": 18.2029,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -242,12 +242,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 988.1699829101562,
+  "price": 996.2449951171875,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.14548,
   "sector": "Financial Services",
   "ticker": "GS",
-  "updated_at": "2026-05-21T21:11:19+00:00",
+  "updated_at": "2026-05-26T14:34:16+00:00",
   "valuation_tax": -5.0,
   "yield_trap_warning": false
 }
