@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.009411,
   "dividend_yield_5y_std": 0.009853,
-  "dividend_yield_current": 0.022176,
-  "dividend_yield_zscore": 1.2955,
-  "enterprise_value": 125700447673.16895,
+  "dividend_yield_current": 0.022121,
+  "dividend_yield_zscore": 1.29,
+  "enterprise_value": 125965584300.0,
   "eps_fwd": 373.5,
   "eps_ttm": 178.17,
-  "ev_fwd_rev": 0.6331,
+  "ev_fwd_rev": 0.6345,
   "fcf_ttm": 20499537920.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 198534397952.0,
   "industry": "Packaged Foods",
-  "last_daily_update": "2026-05-26T14:34:16+00:00",
+  "last_daily_update": "2026-05-27T04:48:33+00:00",
   "last_full_calc": "2026-05-18T20:47:38+00:00",
   "manual_overrides": {},
-  "market_cap": 106974273673.16895,
+  "market_cap": 107239410300.0,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 18726174000.0,
-  "owner_earnings_yield": 0.191631,
+  "owner_earnings_yield": 0.191157,
   "pe_20y_array": [
     11.485,
     12.8674,
@@ -236,7 +236,7 @@
     9.3389
   ],
   "pe_percentile_20y": 11.11,
-  "pe_ttm": 8.6053,
+  "pe_ttm": 8.6266,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -245,12 +245,25 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 1533.199951171875,
+  "price": 1537.0,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.28709,
   "sector": "Consumer Defensive",
   "ticker": "BBTC.NS",
-  "updated_at": "2026-05-26T14:34:16+00:00",
+  "updated_at": "2026-05-27T04:48:33+00:00",
   "valuation_tax": 0.0,
+  "valuation_tax_breakdown": {
+    "components": {
+      "business_type_relief": 0.0,
+      "deal_delay_signal": 0.0,
+      "entry_multiple": 0.0,
+      "growth_multiple_fragility": 0.0,
+      "market_regime_beta": 0.0,
+      "oey_penalty": 0.0,
+      "pe_hist_percentile": 0.0
+    },
+    "total": 0.0
+  },
+  "yield_trap_mkt_threshold": 0.06,
   "yield_trap_warning": false
 }

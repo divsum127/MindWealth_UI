@@ -15,6 +15,11 @@ __pycache__/
 # Streamlit secrets
 .streamlit/secrets.toml
 
+# Runic Agent runtime artifacts
+macro_intelligence/data/runic.db
+macro_intelligence/output/runic_output.json
+macro_intelligence/data/*.csv
+
 
 # Flagged exports (kept on server disk, e.g. EC2; do not commit)
 chatbot/flagged_pairs/*.json

@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.041294,
   "dividend_yield_5y_std": 0.022616,
-  "dividend_yield_current": 0.009173,
-  "dividend_yield_zscore": -1.4203,
-  "enterprise_value": 49070350396.7041,
+  "dividend_yield_current": 0.009216,
+  "dividend_yield_zscore": -1.4184,
+  "enterprise_value": 39068724027.03027,
   "eps_fwd": 19.51673,
   "eps_ttm": 11.65,
-  "ev_fwd_rev": 0.012,
+  "ev_fwd_rev": 0.0095,
   "fcf_ttm": 975193115000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -206,10 +206,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 4103904165888.0,
   "industry": "Semiconductors",
-  "last_daily_update": "2026-05-26T14:34:16+00:00",
+  "last_daily_update": "2026-05-27T04:48:33+00:00",
   "last_full_calc": "2026-05-18T20:50:55+00:00",
   "manual_overrides": {},
-  "market_cap": 2148488629396.704,
+  "market_cap": 2138487003027.0303,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -224,7 +224,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": -2099418279000.0,
-  "owner_earnings_yield": 0.453897,
+  "owner_earnings_yield": 0.45602,
   "pe_20y_array": [
     0.9175,
     0.9981,
@@ -234,7 +234,7 @@
     1.0647
   ],
   "pe_percentile_20y": 100.0,
-  "pe_ttm": 35.5578,
+  "pe_ttm": 35.3923,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -243,12 +243,25 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 414.2484130859375,
+  "price": 412.32000732421875,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.3621,
   "sector": "Technology",
   "ticker": "TSM",
-  "updated_at": "2026-05-26T14:34:16+00:00",
+  "updated_at": "2026-05-27T04:48:33+00:00",
   "valuation_tax": -3.0,
+  "valuation_tax_breakdown": {
+    "components": {
+      "business_type_relief": 0.0,
+      "deal_delay_signal": 0.0,
+      "entry_multiple": 0.0,
+      "growth_multiple_fragility": 0.0,
+      "market_regime_beta": 0.0,
+      "oey_penalty": 0.0,
+      "pe_hist_percentile": -3.0
+    },
+    "total": -3.0
+  },
+  "yield_trap_mkt_threshold": 0.06,
   "yield_trap_warning": false
 }

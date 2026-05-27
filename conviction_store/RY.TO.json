@@ -21,7 +21,7 @@
   "bq_raw": 3.0,
   "business_type": "compounder",
   "business_type_source": "auto",
-  "conviction_score": -2.0,
+  "conviction_score": -5.0,
   "created_at": "2026-05-12T20:19:38+00:00",
   "data_coverage": {
     "bq_auto_dimensions": {
@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.047456,
   "dividend_yield_5y_std": 0.011536,
-  "dividend_yield_current": 0.025053,
-  "dividend_yield_zscore": -1.942,
-  "enterprise_value": 737877082519.5813,
+  "dividend_yield_current": 0.025007,
+  "dividend_yield_zscore": -1.946,
+  "enterprise_value": 738544927314.5212,
   "eps_fwd": 17.43703,
   "eps_ttm": 14.57,
-  "ev_fwd_rev": 11.0906,
+  "ev_fwd_rev": 11.1006,
   "fcf_ttm": 52977000000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 66532000000.0,
   "industry": "Banks - Diversified",
-  "last_daily_update": "2026-05-26T14:34:16+00:00",
+  "last_daily_update": "2026-05-27T04:48:33+00:00",
   "last_full_calc": "2026-05-18T20:50:21+00:00",
   "manual_overrides": {},
-  "market_cap": 364338082519.5813,
+  "market_cap": 365005927314.52124,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 373539000000.0,
-  "owner_earnings_yield": 0.145406,
+  "owner_earnings_yield": 0.14514,
   "pe_20y_array": [
     15.9045,
     15.682,
@@ -231,7 +231,7 @@
     17.6081
   ],
   "pe_percentile_20y": 100.0,
-  "pe_ttm": 17.9719,
+  "pe_ttm": 18.0048,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -240,12 +240,25 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 261.8500061035156,
+  "price": 262.3299865722656,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.15395,
   "sector": "Financial Services",
   "ticker": "RY.TO",
-  "updated_at": "2026-05-26T14:34:16+00:00",
-  "valuation_tax": -5.0,
+  "updated_at": "2026-05-27T04:48:33+00:00",
+  "valuation_tax": -8.0,
+  "valuation_tax_breakdown": {
+    "components": {
+      "business_type_relief": 0.0,
+      "deal_delay_signal": 0.0,
+      "entry_multiple": -5.0,
+      "growth_multiple_fragility": 0.0,
+      "market_regime_beta": 0.0,
+      "oey_penalty": 0.0,
+      "pe_hist_percentile": -3.0
+    },
+    "total": -8.0
+  },
+  "yield_trap_mkt_threshold": 0.07,
   "yield_trap_warning": false
 }

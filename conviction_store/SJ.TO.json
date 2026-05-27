@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.0177,
   "dividend_yield_5y_std": 0.009711,
-  "dividend_yield_current": 0.018294,
-  "dividend_yield_zscore": 0.0612,
-  "enterprise_value": 5708721163.748566,
+  "dividend_yield_current": 0.017836,
+  "dividend_yield_zscore": 0.014,
+  "enterprise_value": 5812924051.25,
   "eps_fwd": 6.37744,
   "eps_ttm": 5.52,
-  "ev_fwd_rev": 1.6264,
+  "ev_fwd_rev": 1.6561,
   "fcf_ttm": 330000000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 3510000128.0,
   "industry": "Lumber & Wood Production",
-  "last_daily_update": "2026-05-26T14:34:16+00:00",
+  "last_daily_update": "2026-05-27T04:48:33+00:00",
   "last_full_calc": "2026-05-18T20:50:26+00:00",
   "manual_overrides": {},
-  "market_cap": 4055721163.7485657,
+  "market_cap": 4159924051.25,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 1653000000.0,
-  "owner_earnings_yield": 0.081367,
+  "owner_earnings_yield": 0.079328,
   "pe_20y_array": [
     15.7066,
     16.845,
@@ -233,7 +233,7 @@
     13.0483
   ],
   "pe_percentile_20y": 16.67,
-  "pe_ttm": 13.4674,
+  "pe_ttm": 13.8134,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -242,12 +242,25 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 74.33999633789062,
+  "price": 76.25,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.14840001,
   "sector": "Basic Materials",
   "ticker": "SJ.TO",
-  "updated_at": "2026-05-26T14:34:16+00:00",
+  "updated_at": "2026-05-27T04:48:33+00:00",
   "valuation_tax": -1.0,
+  "valuation_tax_breakdown": {
+    "components": {
+      "business_type_relief": 0.0,
+      "deal_delay_signal": 0.0,
+      "entry_multiple": -1.0,
+      "growth_multiple_fragility": 0.0,
+      "market_regime_beta": 0.0,
+      "oey_penalty": 0.0,
+      "pe_hist_percentile": 0.0
+    },
+    "total": -1.0
+  },
+  "yield_trap_mkt_threshold": 0.07,
   "yield_trap_warning": false
 }

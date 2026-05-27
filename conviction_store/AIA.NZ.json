@@ -21,7 +21,7 @@
   "bq_raw": 0.0,
   "business_type": "compounder",
   "business_type_source": "auto",
-  "conviction_score": -5.0,
+  "conviction_score": -7.0,
   "created_at": "2026-05-12T20:17:08+00:00",
   "data_coverage": {
     "bq_auto_dimensions": {
@@ -187,12 +187,12 @@
   },
   "dividend_yield_5y_mean": 0.04668,
   "dividend_yield_5y_std": 0.024793,
-  "dividend_yield_current": 0.016908,
-  "dividend_yield_zscore": -1.2008,
-  "enterprise_value": 15955173088.0,
+  "dividend_yield_current": 0.016837,
+  "dividend_yield_zscore": -1.2037,
+  "enterprise_value": 16014501600.0,
   "eps_fwd": 0.18762,
   "eps_ttm": 0.24,
-  "ev_fwd_rev": 16.2443,
+  "ev_fwd_rev": 16.3047,
   "fcf_ttm": -538825024.0,
   "fd_direction": "positive",
   "fd_votes": {},
@@ -203,10 +203,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 982200000.0,
   "industry": "Airports & Air Services",
-  "last_daily_update": "2026-05-26T14:34:16+00:00",
+  "last_daily_update": "2026-05-27T04:48:33+00:00",
   "last_full_calc": "2026-05-18T20:47:19+00:00",
   "manual_overrides": {},
-  "market_cap": 14035673088.0,
+  "market_cap": 14095001600.0,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,9 +223,9 @@
     "valuation:pe_percentile_20y"
   ],
   "net_debt_stored": 1919500000.0,
-  "owner_earnings_yield": -0.03839,
+  "owner_earnings_yield": -0.038228,
   "pe_percentile_20y": null,
-  "pe_ttm": 34.5,
+  "pe_ttm": 34.6458,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -234,12 +234,25 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 8.279999732971191,
+  "price": 8.3149995803833,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.03979,
   "sector": "Industrials",
   "ticker": "AIA.NZ",
-  "updated_at": "2026-05-26T14:34:16+00:00",
-  "valuation_tax": -5.0,
+  "updated_at": "2026-05-27T04:48:33+00:00",
+  "valuation_tax": -7.0,
+  "valuation_tax_breakdown": {
+    "components": {
+      "business_type_relief": 0.0,
+      "deal_delay_signal": 0.0,
+      "entry_multiple": -5.0,
+      "growth_multiple_fragility": 0.0,
+      "market_regime_beta": 0.0,
+      "oey_penalty": -2.0,
+      "pe_hist_percentile": 0.0
+    },
+    "total": -7.0
+  },
+  "yield_trap_mkt_threshold": 0.12,
   "yield_trap_warning": false
 }

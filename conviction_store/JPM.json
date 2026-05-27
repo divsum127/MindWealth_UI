@@ -21,7 +21,7 @@
   "bq_raw": 0.0,
   "business_type": "compounder",
   "business_type_source": "auto",
-  "conviction_score": -2.0,
+  "conviction_score": -5.0,
   "created_at": "2026-05-12T20:18:43+00:00",
   "data_coverage": {
     "bq_auto_dimensions": {
@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.053698,
   "dividend_yield_5y_std": 0.040862,
-  "dividend_yield_current": 0.019472,
-  "dividend_yield_zscore": -0.8376,
-  "enterprise_value": 871965687593.1755,
+  "dividend_yield_current": 0.019561,
+  "dividend_yield_zscore": -0.8354,
+  "enterprise_value": 868214306190.2163,
   "eps_fwd": 23.53498,
   "eps_ttm": 20.88,
-  "ev_fwd_rev": 4.7796,
+  "ev_fwd_rev": 4.759,
   "fd_direction": "negative",
   "fd_votes": {},
   "flags": [],
@@ -204,10 +204,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 182435000000.0,
   "industry": "Banks - Diversified",
-  "last_daily_update": "2026-05-26T14:34:16+00:00",
+  "last_daily_update": "2026-05-27T04:48:33+00:00",
   "last_full_calc": "2026-05-18T20:49:10+00:00",
   "manual_overrides": {},
-  "market_cap": 825664687593.1755,
+  "market_cap": 821913306190.2163,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -234,7 +234,7 @@
     14.4028
   ],
   "pe_percentile_20y": 33.33,
-  "pe_ttm": 14.7577,
+  "pe_ttm": 14.6906,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -243,12 +243,25 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 308.1400146484375,
+  "price": 306.739990234375,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.16465001,
   "sector": "Financial Services",
   "ticker": "JPM",
-  "updated_at": "2026-05-26T14:34:16+00:00",
-  "valuation_tax": -2.0,
+  "updated_at": "2026-05-27T04:48:33+00:00",
+  "valuation_tax": -5.0,
+  "valuation_tax_breakdown": {
+    "components": {
+      "business_type_relief": 0.0,
+      "deal_delay_signal": 0.0,
+      "entry_multiple": -5.0,
+      "growth_multiple_fragility": 0.0,
+      "market_regime_beta": 0.0,
+      "oey_penalty": 0.0,
+      "pe_hist_percentile": 0.0
+    },
+    "total": -5.0
+  },
+  "yield_trap_mkt_threshold": 0.06,
   "yield_trap_warning": false
 }

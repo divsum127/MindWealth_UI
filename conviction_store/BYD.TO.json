@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.119755,
   "dividend_yield_5y_std": 0.29094,
-  "dividend_yield_current": 0.004195,
-  "dividend_yield_zscore": -0.3972,
-  "enterprise_value": 5365341823.947754,
+  "dividend_yield_current": 0.004227,
+  "dividend_yield_zscore": -0.3971,
+  "enterprise_value": 5334728583.686523,
   "eps_fwd": 7.359056,
   "eps_ttm": 0.91,
-  "ev_fwd_rev": 1.5963,
+  "ev_fwd_rev": 1.5872,
   "fcf_ttm": 290589000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 3361146880.0,
   "industry": "Auto & Truck Dealerships",
-  "last_daily_update": "2026-05-26T14:34:16+00:00",
+  "last_daily_update": "2026-05-27T04:48:33+00:00",
   "last_full_calc": "2026-05-18T20:47:58+00:00",
   "manual_overrides": {},
-  "market_cap": 4112726823.947754,
+  "market_cap": 4082113583.6865234,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 1252615000.0,
-  "owner_earnings_yield": 0.070656,
+  "owner_earnings_yield": 0.071186,
   "pe_20y_array": [
     292.3117,
     288.5974,
@@ -307,7 +307,7 @@
     188.2208
   ],
   "pe_percentile_20y": 0.0,
-  "pe_ttm": 162.3956,
+  "pe_ttm": 161.1868,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -316,12 +316,25 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 147.77999877929688,
+  "price": 146.67999267578125,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.010290001,
   "sector": "Consumer Cyclical",
   "ticker": "BYD.TO",
-  "updated_at": "2026-05-26T14:34:16+00:00",
+  "updated_at": "2026-05-27T04:48:33+00:00",
   "valuation_tax": -1.0,
+  "valuation_tax_breakdown": {
+    "components": {
+      "business_type_relief": 0.0,
+      "deal_delay_signal": 0.0,
+      "entry_multiple": -1.0,
+      "growth_multiple_fragility": 0.0,
+      "market_regime_beta": 0.0,
+      "oey_penalty": 0.0,
+      "pe_hist_percentile": 0.0
+    },
+    "total": -1.0
+  },
+  "yield_trap_mkt_threshold": 0.07,
   "yield_trap_warning": false
 }

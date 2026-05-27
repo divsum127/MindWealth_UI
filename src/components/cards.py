@@ -7,6 +7,7 @@ import pandas as pd
 
 from .charts import create_interactive_chart, create_outstanding_signal_chart
 from ..utils.helpers import format_days
+from ..utils.sbi_display import sbi_activity_status, SBI_PERCENTILE_HELP
 
 
 def create_summary_cards(df):
@@ -794,19 +795,31 @@ def create_breadth_summary_cards(df):
         with col3:
             st.markdown(f"""
             <div class="metric-card">
-                <h3>Long Percentile (Top)</h3>
+                <h3>Long Percentile From Top</h3>
                 <h2>{combined.get('Today_Long_Percentile', 0):.1f}%</h2>
-                <p>vs last 6 months</p>
+                <p>lower = busier vs 6 months</p>
             </div>
             """, unsafe_allow_html=True)
         with col4:
             st.markdown(f"""
             <div class="metric-card">
-                <h3>Short Percentile (Top)</h3>
+                <h3>Short Percentile From Top</h3>
                 <h2>{combined.get('Today_Short_Percentile', 0):.1f}%</h2>
-                <p>vs last 6 months</p>
+                <p>lower = busier vs 6 months</p>
             </div>
             """, unsafe_allow_html=True)
+        status, color, expl = sbi_activity_status(
+            combined.get('Today_Long_Percentile', 0),
+            combined.get('Today_Short_Percentile', 0),
+            combined.get('Total_New_Long', 0),
+            combined.get('Total_New_Short', 0),
+        )
+        st.markdown(f"""
+        <div style="text-align: center; margin: 0.5rem 0 0;">
+            <span style="color: {color}; font-weight: 600;">{status}</span>
+            <span style="color: #555; font-size: 0.9em;"> — {expl}</span>
+        </div>
+        """, unsafe_allow_html=True)
         return
 
     col1, col2, col3, col4 = st.columns(4)
@@ -862,9 +875,9 @@ def create_breadth_cards(df):
                             help="New long signals today (S&P 500 universe)",
                         )
                         st.metric(
-                            "Long Percentile (Top)",
+                            "Long Percentile From Top",
                             f"{row.get('Today_Long_Percentile', 0):.1f}%",
-                            help="Today's long count vs last 6 months (top-percentile; lower = quieter day)",
+                            help=SBI_PERCENTILE_HELP,
                         )
                     with c2:
                         st.metric(
@@ -873,27 +886,24 @@ def create_breadth_cards(df):
                             help="New short signals today (S&P 500 universe)",
                         )
                         st.metric(
-                            "Short Percentile (Top)",
+                            "Short Percentile From Top",
                             f"{row.get('Today_Short_Percentile', 0):.1f}%",
-                            help="Today's short count vs last 6 months (top-percentile)",
+                            help=SBI_PERCENTILE_HELP,
                         )
                     st.caption(
                         f"6-month top-10% thresholds — Long: {row.get('Top10_Long_Threshold', 0):.0f}, "
                         f"Short: {row.get('Top10_Short_Threshold', 0):.0f}"
                     )
-                    long_p = row.get('Today_Long_Percentile', 0) or 0
-                    short_p = row.get('Today_Short_Percentile', 0) or 0
-                    avg_p = (long_p + short_p) / 2
-                    if avg_p >= 70:
-                        status, color = "🟢 High activity", "green"
-                    elif avg_p >= 40:
-                        status, color = "🟡 Moderate", "orange"
-                    else:
-                        status, color = "🔵 Quiet day", "steelblue"
+                    status, color, expl = sbi_activity_status(
+                        row.get('Today_Long_Percentile', 0),
+                        row.get('Today_Short_Percentile', 0),
+                        row.get('Total_New_Long', 0),
+                        row.get('Total_New_Short', 0),
+                    )
                     st.markdown(f"""
                     <div style="text-align: center; margin-top: 10px;">
                         <h4 style="color: {color};">{status}</h4>
-                        <p>Avg top-percentile: {avg_p:.1f}%</p>
+                        <p style="font-size: 0.9em; color: #555;">{expl}</p>
                     </div>
                     """, unsafe_allow_html=True)
                 else:

@@ -97,6 +97,7 @@ class SignalModification:
     business_type: str | None = None
     bq_raw: float | None = None
     valuation_tax: float | None = None
+    fd_direction: str | None = None
     asset_type: str | None = None
     rationale: list[str] = field(default_factory=list)
     position_layers: PositionLayers = field(default_factory=PositionLayers)

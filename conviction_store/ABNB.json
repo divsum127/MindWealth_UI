@@ -21,7 +21,7 @@
   "bq_raw": 4.0,
   "business_type": "compounder",
   "business_type_source": "auto",
-  "conviction_score": 1.0,
+  "conviction_score": -2.0,
   "created_at": "2026-05-12T20:17:05+00:00",
   "data_coverage": {
     "bq_auto_dimensions": {
@@ -189,10 +189,10 @@
   },
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 74358035912.75,
+  "enterprise_value": 73426228836.68011,
   "eps_fwd": 6.04492,
   "eps_ttm": 4.05,
-  "ev_fwd_rev": 5.8795,
+  "ev_fwd_rev": 5.8058,
   "fcf_ttm": 3191000064.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -203,10 +203,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 12647000064.0,
   "industry": "Travel Services",
-  "last_daily_update": "2026-05-26T14:34:16+00:00",
+  "last_daily_update": "2026-05-27T04:48:33+00:00",
   "last_full_calc": "2026-05-15T16:28:08+00:00",
   "manual_overrides": {},
-  "market_cap": 79678035912.75,
+  "market_cap": 78746228836.68011,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -225,7 +225,7 @@
     "valuation:dividend_yield_zscore"
   ],
   "net_debt_stored": -5320000000.0,
-  "owner_earnings_yield": 0.040049,
+  "owner_earnings_yield": 0.040523,
   "pe_20y_array": [
     33.1188,
     32.7104,
@@ -308,8 +308,8 @@
     32.9236,
     32.8461
   ],
-  "pe_percentile_20y": 68.75,
-  "pe_ttm": 33.1481,
+  "pe_percentile_20y": 55.0,
+  "pe_ttm": 32.7605,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -318,12 +318,25 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 134.25,
+  "price": 132.67999267578125,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.32325,
   "sector": "Consumer Cyclical",
   "ticker": "ABNB",
-  "updated_at": "2026-05-26T14:34:16+00:00",
-  "valuation_tax": -3.0,
+  "updated_at": "2026-05-27T04:48:33+00:00",
+  "valuation_tax": -6.0,
+  "valuation_tax_breakdown": {
+    "components": {
+      "business_type_relief": 0.0,
+      "deal_delay_signal": 0.0,
+      "entry_multiple": -5.0,
+      "growth_multiple_fragility": 0.0,
+      "market_regime_beta": 0.0,
+      "oey_penalty": 0.0,
+      "pe_hist_percentile": -1.0
+    },
+    "total": -6.0
+  },
+  "yield_trap_mkt_threshold": 0.06,
   "yield_trap_warning": false
 }

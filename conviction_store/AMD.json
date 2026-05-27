@@ -21,7 +21,7 @@
   "bq_raw": 0.5,
   "business_type": "compounder",
   "business_type_source": "auto",
-  "conviction_score": -4.5,
+  "conviction_score": -9.5,
   "created_at": "2026-05-12T20:17:09+00:00",
   "data_coverage": {
     "bq_auto_dimensions": {
@@ -189,10 +189,10 @@
   },
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 803534065506.25,
+  "enterprise_value": 820068379871.4615,
   "eps_fwd": 12.95421,
   "eps_ttm": 3.01,
-  "ev_fwd_rev": 21.4539,
+  "ev_fwd_rev": 21.8953,
   "fcf_ttm": 5448000000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -203,10 +203,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 37454000128.0,
   "industry": "Semiconductors",
-  "last_daily_update": "2026-05-26T14:34:16+00:00",
+  "last_daily_update": "2026-05-27T04:48:33+00:00",
   "last_full_calc": "2026-05-15T16:28:15+00:00",
   "manual_overrides": {},
-  "market_cap": 805109065506.25,
+  "market_cap": 821643379871.4615,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -225,7 +225,7 @@
     "valuation:dividend_yield_zscore"
   ],
   "net_debt_stored": -1575000000.0,
-  "owner_earnings_yield": 0.006767,
+  "owner_earnings_yield": 0.006631,
   "pe_20y_array": [
     95.7472,
     97.9925,
@@ -309,7 +309,7 @@
     162.9434
   ],
   "pe_percentile_20y": 93.75,
-  "pe_ttm": 164.0365,
+  "pe_ttm": 167.4053,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -318,12 +318,25 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 493.75,
+  "price": 503.8900146484375,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.08063,
   "sector": "Technology",
   "ticker": "AMD",
-  "updated_at": "2026-05-26T14:34:16+00:00",
-  "valuation_tax": -5.0,
+  "updated_at": "2026-05-27T04:48:33+00:00",
+  "valuation_tax": -10.0,
+  "valuation_tax_breakdown": {
+    "components": {
+      "business_type_relief": 0.0,
+      "deal_delay_signal": 0.0,
+      "entry_multiple": -5.0,
+      "growth_multiple_fragility": 0.0,
+      "market_regime_beta": 0.0,
+      "oey_penalty": -2.0,
+      "pe_hist_percentile": -3.0
+    },
+    "total": -10.0
+  },
+  "yield_trap_mkt_threshold": 0.06,
   "yield_trap_warning": false
 }

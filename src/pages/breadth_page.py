@@ -17,6 +17,27 @@ _COMBINED_CHART_FUNCTIONS = (
     'All Function Combined',
 )
 
+_LONG_PCT_COL = 'Today Long Signal Percentile From Top (Last 6 Month)'
+_SHORT_PCT_COL = 'Today Short Signal Percentile From Top (Last 6 Month)'
+
+
+def _has_valid_sbi_percentile(val) -> bool:
+    if val is None or (isinstance(val, float) and pd.isna(val)):
+        return False
+    s = str(val).strip()
+    return s not in ('', 'nan', 'N/A', 'Not Applicable')
+
+
+def _filter_sbi_chart_rows(df: pd.DataFrame) -> pd.DataFrame:
+    """Keep Combined rows with at least one populated SBI percentile."""
+    if df.empty:
+        return df
+    has_long = df[_LONG_PCT_COL].apply(_has_valid_sbi_percentile) if _LONG_PCT_COL in df.columns else False
+    has_short = df[_SHORT_PCT_COL].apply(_has_valid_sbi_percentile) if _SHORT_PCT_COL in df.columns else False
+    if isinstance(has_long, bool) and isinstance(has_short, bool):
+        return df.iloc[0:0]
+    return df[has_long | has_short].copy()
+
 
 def _breadth_entry_csv_path(data_file):
     """Companion file: YYYY-MM-DD_breadth_entry.csv next to YYYY-MM-DD_breadth.csv, or breadth_entry.csv next to breadth.csv."""
@@ -58,7 +79,7 @@ def create_breadth_page(data_file, page_title):
 
             ### Key metrics (trade-arrival SBI)
             - **Total New Long/Short Signal**: Count of new signals today
-            - **Today Long/Short Percentile From Top**: Rank vs last 6 months (lower = quieter; high = top activity)
+            - **Today Long/Short Percentile From Top**: Rank vs last 6 months (**lower = busier**, e.g. 10 ≈ top 10% activity; **higher = quieter**; 100 with 0 signals = no new signals)
             - **Last 6 Month Top 10 Percentile**: Historical threshold for extreme days
             - Legacy reports may still show Bullish Asset/Signal % when present
             """)
@@ -101,8 +122,11 @@ def create_breadth_page(data_file, page_title):
             data_rows = data_rows.sort_values('Date')
             data_rows = data_rows.drop_duplicates(subset=['Date'], keep='last')
 
+        use_sbi_chart = _breadth_is_sbi_schema(data_rows) if not data_rows.empty else False
+        if use_sbi_chart:
+            data_rows = _filter_sbi_chart_rows(data_rows)
+
         if not data_rows.empty:
-            use_sbi_chart = _breadth_is_sbi_schema(data_rows)
             x = data_rows['Date'].dt.strftime('%Y-%m-%d').tolist() if 'Date' in data_rows.columns else list(range(1, len(data_rows) + 1))
             xaxis_title = 'Date'
 
@@ -112,24 +136,24 @@ def create_breadth_page(data_file, page_title):
             if use_sbi_chart:
                 y_long = [
                     _breadth_parse_number(v)
-                    for v in data_rows['Today Long Signal Percentile From Top (Last 6 Month)'].tolist()
+                    for v in data_rows[_LONG_PCT_COL].tolist()
                 ]
                 y_short = [
                     _breadth_parse_number(v)
-                    for v in data_rows['Today Short Signal Percentile From Top (Last 6 Month)'].tolist()
+                    for v in data_rows[_SHORT_PCT_COL].tolist()
                 ]
                 fig.add_trace(go.Scatter(
                     x=x, y=y_long, mode='lines+markers',
-                    name='Today Long Signal Percentile From Top (Last 6 Month)',
+                    name='Long percentile from top',
                     line=dict(color='#1f77b4', width=3),
                 ))
                 fig.add_trace(go.Scatter(
                     x=x, y=y_short, mode='lines+markers',
-                    name='Today Short Signal Percentile From Top (Last 6 Month)',
+                    name='Short percentile from top',
                     line=dict(color='#ff7f0e', width=3),
                 ))
-                chart_title = 'SBI trade-arrival percentiles (Combined row)'
-                yaxis_title = 'Top-percentile (%)'
+                chart_title = 'SBI trade-arrival percentiles (Combined row; lower = busier)'
+                yaxis_title = 'Percentile from top (%)'
             else:
                 y1 = [_breadth_parse_number(v) for v in data_rows['Bullish Asset vs Total Asset (%)'].tolist()]
                 y2 = [_breadth_parse_number(v) for v in data_rows['Bullish Signal vs Total Signal (%)'].tolist()]
@@ -173,6 +197,18 @@ def create_breadth_page(data_file, page_title):
                 ),
             )
             st.plotly_chart(fig, use_container_width=True)
+            if use_sbi_chart and len(data_rows) >= 1:
+                min_d = data_rows['Date'].min().strftime('%Y-%m-%d')
+                max_d = data_rows['Date'].max().strftime('%Y-%m-%d')
+                st.caption(
+                    f"Showing {len(data_rows)} Combined observations with SBI percentiles ({min_d} – {max_d}). "
+                    "Lower values indicate busier signal days."
+                )
+        elif use_sbi_chart:
+            st.info(
+                "Not enough Combined-row SBI percentile history to chart yet. "
+                "Re-run data sync after more daily breadth reports are ingested."
+            )
         else:
             st.info(
                 "No Combined-row observations found in breadth history "

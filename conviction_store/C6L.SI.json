@@ -189,7 +189,7 @@
   "dividend_yield_5y_std": 0.037055,
   "dividend_yield_current": 0.066265,
   "dividend_yield_zscore": 0.3491,
-  "enterprise_value": 25169271231.711563,
+  "enterprise_value": 25169271652.399998,
   "eps_fwd": 0.41553,
   "eps_ttm": 0.38,
   "ev_fwd_rev": 1.2265,
@@ -203,10 +203,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 20522000384.0,
   "industry": "Airlines",
-  "last_daily_update": "2026-05-26T14:34:16+00:00",
+  "last_daily_update": "2026-05-27T04:48:33+00:00",
   "last_full_calc": "2026-05-18T20:48:03+00:00",
   "manual_overrides": {},
-  "market_cap": 20921871231.711563,
+  "market_cap": 20921871652.399998,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -234,12 +234,25 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 6.639999866485596,
+  "price": 6.64,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.072459996,
   "sector": "Industrials",
   "ticker": "C6L.SI",
-  "updated_at": "2026-05-26T14:34:16+00:00",
+  "updated_at": "2026-05-27T04:48:33+00:00",
   "valuation_tax": 0.0,
+  "valuation_tax_breakdown": {
+    "components": {
+      "business_type_relief": 1.0,
+      "deal_delay_signal": 0.0,
+      "entry_multiple": 0.0,
+      "growth_multiple_fragility": 0.0,
+      "market_regime_beta": 0.0,
+      "oey_penalty": 0.0,
+      "pe_hist_percentile": 0.0
+    },
+    "total": 0.0
+  },
+  "yield_trap_mkt_threshold": 0.06,
   "yield_trap_warning": false
 }

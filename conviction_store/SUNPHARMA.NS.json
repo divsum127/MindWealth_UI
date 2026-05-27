@@ -21,7 +21,7 @@
   "bq_raw": 6.5,
   "business_type": "compounder",
   "business_type_source": "auto",
-  "conviction_score": 1.5,
+  "conviction_score": -1.5,
   "created_at": "2026-05-12T20:19:50+00:00",
   "data_coverage": {
     "bq_auto_dimensions": {
@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.01042,
   "dividend_yield_5y_std": 0.005276,
-  "dividend_yield_current": 0.008963,
-  "dividend_yield_zscore": -0.2762,
-  "enterprise_value": 4362290029931.0273,
+  "dividend_yield_current": 0.008987,
+  "dividend_yield_zscore": -0.2716,
+  "enterprise_value": 4350533230000.5137,
   "eps_fwd": 56.58245,
   "eps_ttm": 45.45,
-  "ev_fwd_rev": 7.6789,
+  "ev_fwd_rev": 7.6582,
   "fd_direction": "negative",
   "fd_votes": {},
   "flags": [],
@@ -204,10 +204,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 568090886144.0,
   "industry": "Drug Manufacturers - Specialty & Generic",
-  "last_daily_update": "2026-05-26T14:34:16+00:00",
+  "last_daily_update": "2026-05-27T04:48:33+00:00",
   "last_full_calc": "2026-05-18T20:50:34+00:00",
   "manual_overrides": {},
-  "market_cap": 4416695929931.027,
+  "market_cap": 4404939130000.514,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -234,7 +234,7 @@
     38.8861
   ],
   "pe_percentile_20y": 100.0,
-  "pe_ttm": 40.5017,
+  "pe_ttm": 40.3938,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -243,12 +243,25 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 1840.800048828125,
+  "price": 1835.9000244140625,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.15006966659866397,
   "sector": "Healthcare",
   "ticker": "SUNPHARMA.NS",
-  "updated_at": "2026-05-26T14:34:16+00:00",
-  "valuation_tax": -5.0,
+  "updated_at": "2026-05-27T04:48:33+00:00",
+  "valuation_tax": -8.0,
+  "valuation_tax_breakdown": {
+    "components": {
+      "business_type_relief": 0.0,
+      "deal_delay_signal": 0.0,
+      "entry_multiple": -5.0,
+      "growth_multiple_fragility": 0.0,
+      "market_regime_beta": 0.0,
+      "oey_penalty": 0.0,
+      "pe_hist_percentile": -3.0
+    },
+    "total": -8.0
+  },
+  "yield_trap_mkt_threshold": 0.06,
   "yield_trap_warning": false
 }

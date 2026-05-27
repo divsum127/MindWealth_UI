@@ -21,7 +21,7 @@
   "bq_raw": -2.0,
   "business_type": "compounder",
   "business_type_source": "auto",
-  "conviction_score": -7.0,
+  "conviction_score": -9.0,
   "created_at": "2026-05-12T20:19:48+00:00",
   "data_coverage": {
     "bq_auto_dimensions": {
@@ -187,12 +187,12 @@
   },
   "dividend_yield_5y_mean": 0.022793,
   "dividend_yield_5y_std": 0.008706,
-  "dividend_yield_current": 0.033121,
-  "dividend_yield_zscore": 1.1863,
-  "enterprise_value": 3619091940.2618084,
+  "dividend_yield_current": 0.033016,
+  "dividend_yield_zscore": 1.1742,
+  "enterprise_value": 3625157501.5,
   "eps_fwd": 1.13503,
   "eps_ttm": 1.08,
-  "ev_fwd_rev": 10.029,
+  "ev_fwd_rev": 10.0459,
   "fcf_ttm": -74282728.0,
   "fd_direction": "positive",
   "fd_votes": {},
@@ -203,10 +203,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 360860992.0,
   "industry": "Medical Care Facilities",
-  "last_daily_update": "2026-05-26T14:34:16+00:00",
+  "last_daily_update": "2026-05-27T04:48:33+00:00",
   "last_full_calc": "2026-05-18T20:50:31+00:00",
   "manual_overrides": {},
-  "market_cap": 1904578940.2618084,
+  "market_cap": 1910644501.5,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,9 +223,9 @@
     "valuation:pe_percentile_20y"
   ],
   "net_debt_stored": 1714513000.0,
-  "owner_earnings_yield": -0.039002,
+  "owner_earnings_yield": -0.038878,
   "pe_percentile_20y": null,
-  "pe_ttm": 7.2685,
+  "pe_ttm": 7.2917,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -234,12 +234,25 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 7.849999904632568,
+  "price": 7.875,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.08281,
   "sector": "Healthcare",
   "ticker": "SUM.NZ",
-  "updated_at": "2026-05-26T14:34:16+00:00",
-  "valuation_tax": -5.0,
+  "updated_at": "2026-05-27T04:48:33+00:00",
+  "valuation_tax": -7.0,
+  "valuation_tax_breakdown": {
+    "components": {
+      "business_type_relief": 0.0,
+      "deal_delay_signal": 0.0,
+      "entry_multiple": -5.0,
+      "growth_multiple_fragility": 0.0,
+      "market_regime_beta": 0.0,
+      "oey_penalty": -2.0,
+      "pe_hist_percentile": 0.0
+    },
+    "total": -7.0
+  },
+  "yield_trap_mkt_threshold": 0.12,
   "yield_trap_warning": false
 }

@@ -1,0 +1,4 @@
+Function,"Symbol, Signal, Signal Date/Price[$]",ticker,asset_type,business_type,signal_timeframe,bq_raw,valuation_tax,conviction_raw,conviction_score,fs_score,fs_class,yield_trap_warning,verdict,sizing_pct,rationale
+OSCILLATOR DELTA,"BEL.NS, Long, 2026-05-26 (Price: 420.1)",BEL.NS,EQUITY,compounder,short,6.5,-5.0,1.5,1.5,63.25,moderate_high,False,CANCEL BUY,0.0,BQ 6.5 + valuation tax -5.0 = 1.5 | FS class moderate_high
+TRENDPULSE,"3033.HK, Long, 2026-05-26 (Price: 4.84)",3033.HK,ETF,,short,,,,,,,False,NOT_APPLICABLE,0.0,quoteType=ETF
+DELTADRIFT,"TWR.NZ, Long, 2026-05-26 (Price: 1.905)",TWR.NZ,EQUITY,income,short,6.0,0.0,6.0,6.0,70.0,moderate_high,False,TACTICAL BUY,75.0,BQ 6.0 + valuation tax 0.0 = 6.0 | FS class moderate_high

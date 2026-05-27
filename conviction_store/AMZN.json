@@ -21,7 +21,7 @@
   "bq_raw": 3.5,
   "business_type": "compounder",
   "business_type_source": "auto",
-  "conviction_score": -1.5,
+  "conviction_score": -5.5,
   "created_at": "2026-05-12T20:17:11+00:00",
   "data_coverage": {
     "bq_auto_dimensions": {
@@ -189,10 +189,10 @@
   },
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 2927030633224.3716,
+  "enterprise_value": 2920791654195.0996,
   "eps_fwd": 9.87073,
   "eps_ttm": 8.36,
-  "ev_fwd_rev": 3.9407,
+  "ev_fwd_rev": 3.9323,
   "fcf_ttm": 7695000000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -203,10 +203,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 742775980032.0,
   "industry": "Internet Retail",
-  "last_daily_update": "2026-05-26T14:34:16+00:00",
+  "last_daily_update": "2026-05-27T04:48:33+00:00",
   "last_full_calc": "2026-05-15T16:28:17+00:00",
   "manual_overrides": {},
-  "market_cap": 2859992633224.3716,
+  "market_cap": 2853753654195.0996,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -225,7 +225,7 @@
     "valuation:dividend_yield_zscore"
   ],
   "net_debt_stored": 67038000000.0,
-  "owner_earnings_yield": 0.002691,
+  "owner_earnings_yield": 0.002696,
   "pe_20y_array": [
     32.6834,
     33.3556,
@@ -308,8 +308,8 @@
     31.9641,
     31.4234
   ],
-  "pe_percentile_20y": 76.25,
-  "pe_ttm": 31.8026,
+  "pe_percentile_20y": 75.0,
+  "pe_ttm": 31.7333,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -318,12 +318,25 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 265.8699951171875,
+  "price": 265.2900085449219,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.24285,
   "sector": "Consumer Cyclical",
   "ticker": "AMZN",
-  "updated_at": "2026-05-26T14:34:16+00:00",
-  "valuation_tax": -5.0,
+  "updated_at": "2026-05-27T04:48:33+00:00",
+  "valuation_tax": -9.0,
+  "valuation_tax_breakdown": {
+    "components": {
+      "business_type_relief": 0.0,
+      "deal_delay_signal": 0.0,
+      "entry_multiple": -5.0,
+      "growth_multiple_fragility": 0.0,
+      "market_regime_beta": 0.0,
+      "oey_penalty": -2.0,
+      "pe_hist_percentile": -2.0
+    },
+    "total": -9.0
+  },
+  "yield_trap_mkt_threshold": 0.06,
   "yield_trap_warning": false
 }

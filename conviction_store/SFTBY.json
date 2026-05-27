@@ -189,11 +189,11 @@
   },
   "dividend_yield_5y_mean": 0.003008,
   "dividend_yield_5y_std": 0.001333,
-  "dividend_yield_current": 0.001648,
-  "dividend_yield_zscore": -1.0203,
-  "enterprise_value": 16127406761664.06,
+  "dividend_yield_current": 0.001618,
+  "dividend_yield_zscore": -1.0428,
+  "enterprise_value": 16132535779951.16,
   "eps_ttm": 1.69,
-  "ev_fwd_rev": 2.1053,
+  "ev_fwd_rev": 2.106,
   "fcf_ttm": -1433729105920.0,
   "fd_direction": "positive",
   "fd_votes": {},
@@ -204,10 +204,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 7660422823936.0,
   "industry": "Telecom Services",
-  "last_daily_update": "2026-05-26T14:34:16+00:00",
+  "last_daily_update": "2026-05-27T04:48:33+00:00",
   "last_full_calc": "2026-05-18T20:50:23+00:00",
   "manual_overrides": {},
-  "market_cap": 276625761664.0605,
+  "market_cap": 281754779951.1593,
   "missing_fields": [
     "distribution_coverage_ratio",
     "eps_fwd",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 15850781000000.0,
-  "owner_earnings_yield": -5.18292,
+  "owner_earnings_yield": -5.088571,
   "pe_20y_array": [
     0.0489,
     0.068,
@@ -236,7 +236,7 @@
     0.0741
   ],
   "pe_percentile_20y": 100.0,
-  "pe_ttm": 14.3609,
+  "pe_ttm": 14.6272,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -245,12 +245,25 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 24.270000457763672,
+  "price": 24.719999313354492,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.32724,
   "sector": "Communication Services",
   "ticker": "SFTBY",
-  "updated_at": "2026-05-26T14:34:16+00:00",
+  "updated_at": "2026-05-27T04:48:33+00:00",
   "valuation_tax": -4.0,
+  "valuation_tax_breakdown": {
+    "components": {
+      "business_type_relief": 1.0,
+      "deal_delay_signal": 0.0,
+      "entry_multiple": 0.0,
+      "growth_multiple_fragility": 0.0,
+      "market_regime_beta": 0.0,
+      "oey_penalty": -2.0,
+      "pe_hist_percentile": -3.0
+    },
+    "total": -4.0
+  },
+  "yield_trap_mkt_threshold": 0.06,
   "yield_trap_warning": false
 }

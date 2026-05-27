@@ -12,8 +12,8 @@ import streamlit as st
 from ..conviction_engine.data_coverage import summarize_pe_history_distribution
 from ..conviction_engine.daily_run import run_daily_conviction_pipeline
 # from ..conviction_engine.engine import generate_daily_report, update_overrides  # Daily Report / Manual Overrides tabs (disabled)
-from ..conviction_engine.scoring import market_yield_threshold
 from ..conviction_engine.formatting import display_columns, summarize_overlay
+from ..conviction_engine.scoring import market_yield_threshold
 from ..conviction_engine.fundamentals_enriched import PE_HISTORY_TARGET_YEARS
 from ..conviction_engine.signals import PRIMARY_DAILY_REPORT
 from ..conviction_engine.store import (
@@ -25,9 +25,129 @@ from ..conviction_engine.store import (
 )
 
 
+FS_CLASS_LABELS = {
+    "strong": "Strong",
+    "moderate_high": "Moderate high",
+    "moderate": "Moderate",
+    "moderate_low": "Moderate low",
+    "weak": "Weak",
+}
+
+
+def _fmt_pct(value: object, digits: int = 2) -> str:
+    if value is None:
+        return "N/A"
+    try:
+        return f"{float(value) * 100:.{digits}f}%"
+    except (TypeError, ValueError):
+        return str(value)
+
+
+def _fmt_num(value: object, digits: int = 2) -> str:
+    if value is None:
+        return "N/A"
+    try:
+        return f"{float(value):.{digits}f}"
+    except (TypeError, ValueError):
+        return str(value)
+
+
 @st.cache_data(show_spinner=False)
 def _load_archived_overlay(report_date: str) -> pd.DataFrame:
     return load_daily_new_signal_overlay(report_date)
+
+
+def _v6_scorecard(record: dict) -> None:
+    """v6 Internal scorecard: BQ components, FD votes, valuation breakdown, key flags."""
+    st.markdown("#### v6 scorecard")
+
+    row1 = st.columns(6)
+    row1[0].metric("Fundamental direction", str(record.get("fd_direction") or "N/A"))
+    fd_adj = record.get("fd_sizing_adj")
+    row1[1].metric(
+        "FD sizing adj",
+        _fmt_pct(fd_adj) if fd_adj is not None else "0%",
+        help="Applied to BUY sizing: +10% positive, −15% negative, 0 stable.",
+    )
+    row1[2].metric("P/E 20Y percentile", _fmt_num(record.get("pe_percentile_20y"), 1))
+    row1[3].metric("Owner earnings yield", _fmt_pct(record.get("owner_earnings_yield")))
+    row1[4].metric("Revenue accelerating", str(record.get("revenue_accelerating", "N/A")))
+    row1[5].metric("Debt purpose", str(record.get("debt_purpose") or "N/A"))
+
+    bq = record.get("bq_components") or {}
+    if bq:
+        bq_df = pd.DataFrame(
+            [{"dimension": k, "score": v} for k, v in sorted(bq.items(), key=lambda x: x[0])]
+        )
+        st.markdown("**Business quality (15 dimensions)**")
+        st.dataframe(bq_df, use_container_width=True, hide_index=True)
+    else:
+        st.caption("No `bq_components` on record — run full recalculation.")
+
+    fd_votes = record.get("fd_votes") or {}
+    if fd_votes:
+        vote_rows = []
+        for name, detail in fd_votes.items():
+            if isinstance(detail, dict):
+                vote_rows.append(
+                    {
+                        "vote": name,
+                        "result": detail.get("vote", ""),
+                        "rationale": detail.get("rationale", ""),
+                    }
+                )
+            else:
+                vote_rows.append({"vote": name, "result": detail, "rationale": ""})
+        st.markdown("**Fundamental direction votes (5)**")
+        st.dataframe(pd.DataFrame(vote_rows), use_container_width=True, hide_index=True)
+
+    breakdown = record.get("valuation_tax_breakdown") or {}
+    components = breakdown.get("components") if isinstance(breakdown, dict) else None
+    if components:
+        tax_df = pd.DataFrame(
+            [{"component": k, "points": v} for k, v in sorted(components.items(), key=lambda x: x[0])]
+        )
+        st.markdown(
+            f"**Valuation tax breakdown** (total **{breakdown.get('total', record.get('valuation_tax', 'N/A'))}**)"
+        )
+        st.dataframe(tax_df, use_container_width=True, hide_index=True)
+    elif record.get("valuation_tax") is not None:
+        st.caption(f"Valuation tax total: {record.get('valuation_tax')} (component breakdown not stored on record).")
+
+    macro = record.get("macro_tailwind_detail") or (record.get("manual_overrides") or {}).get("macro_tailwind_detail")
+    if macro and isinstance(macro, dict):
+        with st.expander("Macro tailwind (agent)", expanded=False):
+            st.json(macro)
+
+
+def _yield_trap_diagnostics(record: dict, ticker: str) -> None:
+    cy = record.get("dividend_yield_current")
+    z = record.get("dividend_yield_zscore")
+    mean = record.get("dividend_yield_5y_mean")
+    std = record.get("dividend_yield_5y_std")
+    thresh = record.get("yield_trap_mkt_threshold")
+    if thresh is None:
+        thresh = market_yield_threshold(ticker)
+
+    z_ok = z is not None and float(z) > 1.5
+    yield_ok = cy is not None and float(cy) >= float(thresh)
+
+    st.markdown(
+        "Hard gate when **both** are true: z-score **> 1.5** (vs 5Y own history) "
+        "and current yield **≥** market threshold."
+    )
+    st.write(
+        {
+            "dividend_yield_current": cy,
+            "dividend_yield_zscore": z,
+            "dividend_yield_5y_mean": mean,
+            "dividend_yield_5y_std": std,
+            "yield_trap_mkt_threshold": thresh,
+            "z_above_1_5": z_ok,
+            "yield_at_or_above_market": yield_ok,
+            "yield_trap_warning": record.get("yield_trap_warning"),
+        }
+    )
 
 
 def _metric_cards(summary: dict[str, int]) -> None:
@@ -138,7 +258,12 @@ def _ticker_detail(df: pd.DataFrame, archive_date: str | None = None) -> None:
         cols[0].metric("BQ Raw", record.get("bq_raw", "N/A"))
         cols[1].metric("Valuation Tax", record.get("valuation_tax", "N/A"))
         cols[2].metric("Conviction", record.get("conviction_score", "N/A"))
-        cols[3].metric("FS Class", record.get("fs_class", "N/A"))
+        fs_key = str(record.get("fs_class") or "")
+        cols[3].metric(
+            "Financial strength",
+            FS_CLASS_LABELS.get(fs_key, fs_key or "N/A"),
+            help=f"fs_class={fs_key}" if fs_key else None,
+        )
         cols[4].metric("Yield Trap", str(record.get("yield_trap_warning", False)))
         cols[5].metric("Business Type", record.get("business_type", "N/A"))
         ratio = coverage.get("coverage_ratio")
@@ -148,24 +273,12 @@ def _ticker_detail(df: pd.DataFrame, archive_date: str | None = None) -> None:
             help="Share of critical fundamental fields present on the record.",
         )
         cols[7].metric("Low confidence", "Yes" if low_conf else "No")
+        with st.expander("v6 scorecard", expanded=True):
+            _v6_scorecard(record)
+
         with st.expander("Yield trap diagnostics", expanded=False):
-            cy = record.get("dividend_yield_current")
-            z = record.get("dividend_yield_zscore")
-            mean = record.get("dividend_yield_5y_mean")
-            std = record.get("dividend_yield_5y_std")
-            thresh = market_yield_threshold(ticker)
-            st.write(
-                {
-                    "dividend_yield_current": cy,
-                    "dividend_yield_zscore": z,
-                    "dividend_yield_5y_mean": mean,
-                    "dividend_yield_5y_std": std,
-                    "market_threshold": thresh,
-                    "z_above_1_5": (z is not None and float(z) > 1.5),
-                    "yield_above_market": (cy is not None and float(cy) > thresh),
-                    "yield_trap_warning": record.get("yield_trap_warning"),
-                }
-            )
+            _yield_trap_diagnostics(record, ticker)
+
         pe_hist = record.get("pe_history_meta") or coverage.get("pe_history") or {}
         years = pe_hist.get("years_available")
         if years is not None:

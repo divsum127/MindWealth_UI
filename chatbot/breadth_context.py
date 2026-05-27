@@ -40,12 +40,13 @@ BREADTH_COLUMN_DESCRIPTIONS = {
     "Last 6 Month Top 10 Percentile No of Long Signal": "90th-percentile threshold of daily long signal counts over last 6 months.",
     "Last 6 Month Top 10 Percentile No of Short Signal": "90th-percentile threshold of daily short signal counts over last 6 months.",
     "Today Long Signal Percentile From Top (Last 6 Month)": (
-        "Where today's long count ranks vs last 6 months (top-percentile). "
-        "Example: 10 = today is in the top 10% of long-signal days; low values = quiet long-signal day."
+        "Where today's long count ranks vs last 6 months (percentile from top). "
+        "Example: 10 = today is in the top 10% busiest long-signal days; "
+        "high values (e.g. 90–100) = quiet day; 100 with 0 signals = no new signals."
     ),
     "Today Short Signal Percentile From Top (Last 6 Month)": (
-        "Where today's short count ranks vs last 6 months (top-percentile). "
-        "Example: 10 = today is in the top 10% of short-signal days."
+        "Where today's short count ranks vs last 6 months (percentile from top). "
+        "Example: 10 = today is in the top 10% busiest short-signal days."
     ),
 }
 
@@ -55,9 +56,10 @@ def build_breadth_schema_note() -> str:
     lines = [
         "SIGNAL BREADTH INDICATOR (SBI) — trade-arrival metrics on S&P 500 stocks.",
         f"For market-wide analysis, prioritize Function = '{COMBINED_FUNCTION_NAME}'.",
-        "Percentile semantics: 'Today ... Percentile From Top' = distance from the busiest day in the last 6 months.",
-        "  - High value (e.g. >= 90): extreme activity (top ~10% of days).",
-        "  - Low value (e.g. <= 10): quiet day (bottom ~10% vs 6-month history).",
+        "Percentile semantics: 'Today ... Percentile From Top' = percentile from the busiest day in the last 6 months.",
+        "  - Low value (e.g. <= 10): extreme activity (top ~10% busiest days).",
+        "  - High value (e.g. >= 90): quiet day (few signals vs 6-month history).",
+        "  - 100 with 0 new signals: no qualifying signals (e.g. market holiday).",
         "Bottom/top 10% in the selected date range: rank percentile columns across days in range; "
         "bottom decile = lowest percentiles, top decile = highest.",
         "Column definitions:",

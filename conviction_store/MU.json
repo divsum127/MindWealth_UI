@@ -21,7 +21,7 @@
   "bq_raw": 2.5,
   "business_type": "compounder",
   "business_type_source": "auto",
-  "conviction_score": -2.5,
+  "conviction_score": -7.5,
   "created_at": "2026-05-12T20:19:02+00:00",
   "data_coverage": {
     "bq_auto_dimensions": {
@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.005057,
   "dividend_yield_5y_std": 0.003147,
-  "dividend_yield_current": 0.000681,
-  "dividend_yield_zscore": -1.3905,
-  "enterprise_value": 1000354899375.1932,
+  "dividend_yield_current": 0.00067,
+  "dividend_yield_zscore": -1.394,
+  "enterprise_value": 1017716387116.3939,
   "eps_fwd": 102.5821,
   "eps_ttm": 21.16,
-  "ev_fwd_rev": 17.2122,
+  "ev_fwd_rev": 17.5109,
   "fcf_ttm": 4652000000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 58119000064.0,
   "industry": "Semiconductors",
-  "last_daily_update": "2026-05-26T14:34:16+00:00",
+  "last_daily_update": "2026-05-27T04:48:33+00:00",
   "last_full_calc": "2026-05-18T20:49:36+00:00",
   "manual_overrides": {},
-  "market_cap": 992952899375.1932,
+  "market_cap": 1010314387116.3939,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 7402000000.0,
-  "owner_earnings_yield": 0.004685,
+  "owner_earnings_yield": 0.004605,
   "pe_20y_array": [
     27.1302,
     39.4373,
@@ -233,7 +233,7 @@
     32.1785
   ],
   "pe_percentile_20y": 100.0,
-  "pe_ttm": 41.6108,
+  "pe_ttm": 42.3384,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -242,12 +242,25 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 880.4849853515625,
+  "price": 895.8800048828125,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.39823002,
   "sector": "Technology",
   "ticker": "MU",
-  "updated_at": "2026-05-26T14:34:16+00:00",
-  "valuation_tax": -5.0,
+  "updated_at": "2026-05-27T04:48:33+00:00",
+  "valuation_tax": -10.0,
+  "valuation_tax_breakdown": {
+    "components": {
+      "business_type_relief": 0.0,
+      "deal_delay_signal": 0.0,
+      "entry_multiple": -5.0,
+      "growth_multiple_fragility": 0.0,
+      "market_regime_beta": 0.0,
+      "oey_penalty": -2.0,
+      "pe_hist_percentile": -3.0
+    },
+    "total": -10.0
+  },
+  "yield_trap_mkt_threshold": 0.06,
   "yield_trap_warning": false
 }

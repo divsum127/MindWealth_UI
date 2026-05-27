@@ -21,7 +21,7 @@
   "bq_raw": -4.0,
   "business_type": "compounder",
   "business_type_source": "auto",
-  "conviction_score": -8.0,
+  "conviction_score": -11.0,
   "created_at": "2026-05-12T20:17:32+00:00",
   "data_coverage": {
     "bq_auto_dimensions": {
@@ -189,11 +189,11 @@
   },
   "dividend_yield_5y_mean": 0.030908,
   "dividend_yield_5y_std": 0.020213,
-  "dividend_yield_current": 0.005991,
-  "dividend_yield_zscore": -1.2327,
-  "enterprise_value": 361417973395.43933,
+  "dividend_yield_current": 0.005975,
+  "dividend_yield_zscore": -1.2335,
+  "enterprise_value": 361797680567.80347,
   "eps_ttm": 0.7,
-  "ev_fwd_rev": 4.5684,
+  "ev_fwd_rev": 4.5732,
   "fcf_ttm": -2792000000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -204,10 +204,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 79113003008.0,
   "industry": "Asset Management",
-  "last_daily_update": "2026-05-26T14:34:16+00:00",
+  "last_daily_update": "2026-05-27T04:48:33+00:00",
   "last_full_calc": "2026-05-18T20:47:50+00:00",
   "manual_overrides": {},
-  "market_cap": 141676973395.4393,
+  "market_cap": 142056680567.8035,
   "missing_fields": [
     "distribution_coverage_ratio",
     "eps_fwd",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 219741000000.0,
-  "owner_earnings_yield": -0.019707,
+  "owner_earnings_yield": -0.019654,
   "pe_20y_array": [
     127.32,
     129.18,
@@ -236,7 +236,7 @@
     113.9636
   ],
   "pe_percentile_20y": 0.0,
-  "pe_ttm": 90.6143,
+  "pe_ttm": 90.8571,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -245,12 +245,25 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 63.43000030517578,
+  "price": 63.599998474121094,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.02503,
   "sector": "Financial Services",
   "ticker": "BN.TO",
-  "updated_at": "2026-05-26T14:34:16+00:00",
-  "valuation_tax": -4.0,
+  "updated_at": "2026-05-27T04:48:33+00:00",
+  "valuation_tax": -7.0,
+  "valuation_tax_breakdown": {
+    "components": {
+      "business_type_relief": 0.0,
+      "deal_delay_signal": 0.0,
+      "entry_multiple": -5.0,
+      "growth_multiple_fragility": 0.0,
+      "market_regime_beta": 0.0,
+      "oey_penalty": -2.0,
+      "pe_hist_percentile": 0.0
+    },
+    "total": -7.0
+  },
+  "yield_trap_mkt_threshold": 0.07,
   "yield_trap_warning": false
 }

@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.015698,
   "dividend_yield_5y_std": 0.011217,
-  "dividend_yield_current": 0.008331,
-  "dividend_yield_zscore": -0.6568,
-  "enterprise_value": 998349483611.9609,
+  "dividend_yield_current": 0.008349,
+  "dividend_yield_zscore": -0.6552,
+  "enterprise_value": 996197342930.9967,
   "eps_fwd": 3.29322,
   "eps_ttm": 2.73,
-  "ev_fwd_rev": 1.3999,
+  "ev_fwd_rev": 1.3969,
   "fcf_ttm": 15263000000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 713163014144.0,
   "industry": "Discount Stores",
-  "last_daily_update": "2026-05-26T14:34:16+00:00",
+  "last_daily_update": "2026-05-27T04:48:33+00:00",
   "last_full_calc": "2026-05-18T20:51:09+00:00",
   "manual_overrides": {},
-  "market_cap": 947272483611.9609,
+  "market_cap": 945120342930.9967,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 51077000000.0,
-  "owner_earnings_yield": 0.016113,
+  "owner_earnings_yield": 0.016149,
   "pe_20y_array": [
     35.3776,
     38.6399,
@@ -235,7 +235,7 @@
     48.6642
   ],
   "pe_percentile_20y": 50.0,
-  "pe_ttm": 43.5311,
+  "pe_ttm": 43.4322,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -244,12 +244,25 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 118.83999633789062,
+  "price": 118.56999969482422,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.21847,
   "sector": "Consumer Defensive",
   "ticker": "WMT",
-  "updated_at": "2026-05-26T14:34:16+00:00",
+  "updated_at": "2026-05-27T04:48:33+00:00",
   "valuation_tax": 0.0,
+  "valuation_tax_breakdown": {
+    "components": {
+      "business_type_relief": 0.0,
+      "deal_delay_signal": 0.0,
+      "entry_multiple": 0.0,
+      "growth_multiple_fragility": 0.0,
+      "market_regime_beta": 0.0,
+      "oey_penalty": 0.0,
+      "pe_hist_percentile": 0.0
+    },
+    "total": 0.0
+  },
+  "yield_trap_mkt_threshold": 0.06,
   "yield_trap_warning": false
 }

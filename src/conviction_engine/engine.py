@@ -415,6 +415,7 @@ def modify_signal(
         business_type=record.get("business_type"),
         bq_raw=record.get("bq_raw"),
         valuation_tax=record.get("valuation_tax"),
+        fd_direction=str(record.get("fd_direction") or "stable"),
         asset_type=asset_type,
         rationale=rationale,
         position_layers=layers,

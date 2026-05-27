@@ -18,6 +18,7 @@ from src.pages import (
     create_levels_altitude_page,
     create_conviction_engine_page
 )
+from src.pages.runic_page import create_runic_page
 from src.pages.monitored_trades_page import create_monitored_trades_page
 from src.pages.horizontal_page import create_horizontal_page
 from src.utils import discover_csv_files, get_latest_csv_file
@@ -211,6 +212,7 @@ def main():
             "Dashboard": None,
             "AI Chatbot": "chatbot",
             "Conviction Engine": "conviction_engine",
+            "Runic Macro Intelligence": "runic",
             "Monitored Trades": "monitored_trades",
             "Virtual Trading": "virtual_trading",
             "All Historical Report Signals": "all_data",
@@ -248,6 +250,7 @@ def main():
             "Dashboard": None,
             "AI Chatbot": "chatbot",
             "Conviction Engine": "conviction_engine",
+            "Runic Macro Intelligence": "runic",
             "Monitored Trades": "monitored_trades",
             "Virtual Trading": "virtual_trading",
             "All Historical Report Signals": "all_data",
@@ -267,6 +270,8 @@ def main():
         render_chatbot_page()
     elif page == "Conviction Engine":
         create_conviction_engine_page()
+    elif page == "Runic Macro Intelligence":
+        create_runic_page()
     elif page == "Monitored Trades":
         create_monitored_trades_page()
     elif page == "Virtual Trading":

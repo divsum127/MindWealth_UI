@@ -21,7 +21,7 @@
   "bq_raw": 2.0,
   "business_type": "income",
   "business_type_source": "auto",
-  "conviction_score": 0.0,
+  "conviction_score": -3.0,
   "created_at": "2026-05-12T20:17:37+00:00",
   "data_coverage": {
     "bq_auto_dimensions": {
@@ -187,12 +187,12 @@
   },
   "dividend_yield_5y_mean": 0.069804,
   "dividend_yield_5y_std": 0.032633,
-  "dividend_yield_current": 0.051164,
-  "dividend_yield_zscore": -0.5712,
-  "enterprise_value": 175232533178.45947,
+  "dividend_yield_current": 0.051432,
+  "dividend_yield_zscore": -0.563,
+  "enterprise_value": 174497288307.08105,
   "eps_fwd": 5.3206,
   "eps_ttm": 4.72,
-  "ev_fwd_rev": 6.8423,
+  "ev_fwd_rev": 6.8136,
   "fcf_ttm": 2993750016.0,
   "fd_direction": "stable",
   "fd_votes": {},
@@ -203,10 +203,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 25610000384.0,
   "industry": "Tobacco",
-  "last_daily_update": "2026-05-26T14:34:16+00:00",
+  "last_daily_update": "2026-05-27T04:48:33+00:00",
   "last_full_calc": "2026-05-18T20:47:56+00:00",
   "manual_overrides": {},
-  "market_cap": 141168533178.45947,
+  "market_cap": 140433288307.08105,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,9 +223,9 @@
     "valuation:pe_percentile_20y"
   ],
   "net_debt_stored": 34064000000.0,
-  "owner_earnings_yield": 0.021207,
+  "owner_earnings_yield": 0.021318,
   "pe_percentile_20y": null,
-  "pe_ttm": 13.8305,
+  "pe_ttm": 13.7585,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -234,12 +234,25 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 65.27999877929688,
+  "price": 64.94000244140625,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.15824,
   "sector": "Consumer Defensive",
   "ticker": "BTI",
-  "updated_at": "2026-05-26T14:34:16+00:00",
-  "valuation_tax": -2.0,
+  "updated_at": "2026-05-27T04:48:33+00:00",
+  "valuation_tax": -5.0,
+  "valuation_tax_breakdown": {
+    "components": {
+      "business_type_relief": 0.0,
+      "deal_delay_signal": 0.0,
+      "entry_multiple": -5.0,
+      "growth_multiple_fragility": 0.0,
+      "market_regime_beta": 0.0,
+      "oey_penalty": 0.0,
+      "pe_hist_percentile": 0.0
+    },
+    "total": -5.0
+  },
+  "yield_trap_mkt_threshold": 0.06,
   "yield_trap_warning": false
 }

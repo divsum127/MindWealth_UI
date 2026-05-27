@@ -189,24 +189,24 @@
   },
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 71679577614.86166,
+  "enterprise_value": 71400416375.38199,
   "eps_fwd": 2.70502,
   "eps_ttm": 2.06,
-  "ev_fwd_rev": 15.5386,
+  "ev_fwd_rev": 15.4781,
   "fcf_ttm": 1584000000.0,
   "fd_direction": "stable",
   "fd_votes": {},
   "flags": [],
   "fs_class": "moderate",
   "fs_quality_base": 57.5,
-  "fs_score": 49.5,
+  "fs_score": 54.5,
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 4613000192.0,
   "industry": "Capital Markets",
-  "last_daily_update": "2026-05-26T14:34:16+00:00",
+  "last_daily_update": "2026-05-27T04:48:33+00:00",
   "last_full_calc": "2026-05-15T16:30:41+00:00",
   "manual_overrides": {},
-  "market_cap": 66997577614.86167,
+  "market_cap": 66718416375.38199,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -225,7 +225,7 @@
     "valuation:dividend_yield_zscore"
   ],
   "net_debt_stored": 4682000000.0,
-  "owner_earnings_yield": 0.023643,
+  "owner_earnings_yield": 0.023742,
   "pe_20y_array": [
     51.5777,
     51.9369,
@@ -308,8 +308,8 @@
     38.9855,
     37.099
   ],
-  "pe_percentile_20y": 31.25,
-  "pe_ttm": 36.1165,
+  "pe_percentile_20y": 30.0,
+  "pe_ttm": 35.966,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -318,12 +318,25 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 74.4000015258789,
+  "price": 74.08999633789062,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.21461001,
   "sector": "Financial Services",
   "ticker": "HOOD",
-  "updated_at": "2026-05-26T14:34:16+00:00",
+  "updated_at": "2026-05-27T04:48:33+00:00",
   "valuation_tax": -5.0,
+  "valuation_tax_breakdown": {
+    "components": {
+      "business_type_relief": 0.0,
+      "deal_delay_signal": 0.0,
+      "entry_multiple": -5.0,
+      "growth_multiple_fragility": 0.0,
+      "market_regime_beta": 0.0,
+      "oey_penalty": 0.0,
+      "pe_hist_percentile": 0.0
+    },
+    "total": -5.0
+  },
+  "yield_trap_mkt_threshold": 0.06,
   "yield_trap_warning": false
 }

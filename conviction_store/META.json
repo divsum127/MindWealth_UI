@@ -21,7 +21,7 @@
   "bq_raw": 3.5,
   "business_type": "compounder",
   "business_type_source": "auto",
-  "conviction_score": 0.5,
+  "conviction_score": -1.5,
   "created_at": "2026-05-12T20:18:58+00:00",
   "data_coverage": {
     "bq_auto_dimensions": {
@@ -189,26 +189,26 @@
   },
   "dividend_yield_5y_mean": 0.003301,
   "dividend_yield_5y_std": 0.001336,
-  "dividend_yield_current": 0.003454,
-  "dividend_yield_zscore": 0.1145,
-  "enterprise_value": 1564104804876.607,
+  "dividend_yield_current": 0.003429,
+  "dividend_yield_zscore": 0.0958,
+  "enterprise_value": 1575147194141.9077,
   "eps_fwd": 36.16212,
   "eps_ttm": 27.52,
-  "ev_fwd_rev": 7.2762,
+  "ev_fwd_rev": 7.3275,
   "fcf_ttm": 46109000000.0,
   "fd_direction": "negative",
   "fd_votes": {},
   "flags": [],
   "fs_class": "moderate_high",
   "fs_quality_base": 58.75,
-  "fs_score": 63.75,
+  "fs_score": 58.75,
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 214962995200.0,
   "industry": "Internet Content & Information",
-  "last_daily_update": "2026-05-26T14:34:16+00:00",
+  "last_daily_update": "2026-05-27T04:48:33+00:00",
   "last_full_calc": "2026-05-18T20:49:28+00:00",
   "manual_overrides": {},
-  "market_cap": 1543335804876.607,
+  "market_cap": 1554378194141.9077,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 20769000000.0,
-  "owner_earnings_yield": 0.029876,
+  "owner_earnings_yield": 0.029664,
   "pe_20y_array": [
     28.0889,
     30.4894,
@@ -232,8 +232,8 @@
     22.2432,
     22.2177
   ],
-  "pe_percentile_20y": 16.67,
-  "pe_ttm": 22.0927,
+  "pe_percentile_20y": 50.0,
+  "pe_ttm": 22.2507,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -242,12 +242,25 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 607.9899291992188,
+  "price": 612.3400268554688,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.32930002,
   "sector": "Communication Services",
   "ticker": "META",
-  "updated_at": "2026-05-26T14:34:16+00:00",
-  "valuation_tax": -3.0,
+  "updated_at": "2026-05-27T04:48:33+00:00",
+  "valuation_tax": -5.0,
+  "valuation_tax_breakdown": {
+    "components": {
+      "business_type_relief": 0.0,
+      "deal_delay_signal": 0.0,
+      "entry_multiple": -5.0,
+      "growth_multiple_fragility": 0.0,
+      "market_regime_beta": 0.0,
+      "oey_penalty": 0.0,
+      "pe_hist_percentile": 0.0
+    },
+    "total": -5.0
+  },
+  "yield_trap_mkt_threshold": 0.06,
   "yield_trap_warning": false
 }

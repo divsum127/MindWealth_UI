@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.031777,
   "dividend_yield_5y_std": 0.026318,
-  "dividend_yield_current": 0.038302,
-  "dividend_yield_zscore": 0.2479,
-  "enterprise_value": 154822284698.41003,
+  "dividend_yield_current": 0.038616,
+  "dividend_yield_zscore": 0.2599,
+  "enterprise_value": 153716860944.44275,
   "eps_fwd": 5.07987,
   "eps_ttm": 5.59,
-  "ev_fwd_rev": 3.4775,
+  "ev_fwd_rev": 3.4527,
   "fcf_ttm": 8379000000.0,
   "fd_direction": "positive",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 44521000000.0,
   "industry": "Oil & Gas E&P",
-  "last_daily_update": "2026-05-26T14:34:16+00:00",
+  "last_daily_update": "2026-05-27T04:48:33+00:00",
   "last_full_calc": "2026-05-18T20:48:08+00:00",
   "manual_overrides": {},
-  "market_cap": 136134284698.41003,
+  "market_cap": 135028860944.44275,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 18688000000.0,
-  "owner_earnings_yield": 0.06155,
+  "owner_earnings_yield": 0.062053,
   "pe_20y_array": [
     10.8629,
     11.132,
@@ -239,7 +239,7 @@
     12.1919
   ],
   "pe_percentile_20y": 66.67,
-  "pe_ttm": 11.6762,
+  "pe_ttm": 11.5814,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -248,12 +248,25 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 65.2699966430664,
+  "price": 64.73999786376953,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.22825001,
   "sector": "Energy",
   "ticker": "CNQ.TO",
-  "updated_at": "2026-05-26T14:34:16+00:00",
+  "updated_at": "2026-05-27T04:48:33+00:00",
   "valuation_tax": -3.0,
+  "valuation_tax_breakdown": {
+    "components": {
+      "business_type_relief": 0.0,
+      "deal_delay_signal": 0.0,
+      "entry_multiple": -2.0,
+      "growth_multiple_fragility": 0.0,
+      "market_regime_beta": 0.0,
+      "oey_penalty": 0.0,
+      "pe_hist_percentile": -1.0
+    },
+    "total": -3.0
+  },
+  "yield_trap_mkt_threshold": 0.07,
   "yield_trap_warning": false
 }

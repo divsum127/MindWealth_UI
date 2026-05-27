@@ -23,6 +23,16 @@ CONVICTION_OUTPUT_DIR = CONVICTION_STORE_DIR / os.getenv("CONVICTION_OUTPUT_SUBD
 CONVICTION_DAILY_DIR = CONVICTION_STORE_DIR / os.getenv("CONVICTION_DAILY_SUBDIR", "daily")
 CONVICTION_UNIVERSE_FILE = BASE_DIR / os.getenv("CONVICTION_UNIVERSE_FILE", "conviction_universe.txt")
 
+# Macro Intelligence (Runic Agent)
+MACRO_INTEL_DIR = BASE_DIR / os.getenv("MACRO_INTEL_DIR", "macro_intelligence")
+MACRO_INTEL_DATA_DIR = MACRO_INTEL_DIR / "data"
+MACRO_INTEL_OUTPUT_DIR = MACRO_INTEL_DIR / "output"
+MACRO_INTEL_DB = Path(os.getenv("MACRO_INTEL_DB", str(MACRO_INTEL_DATA_DIR / "runic.db")))
+MACRO_INTEL_JSON_PATH = Path(
+    os.getenv("MACRO_INTEL_JSON_PATH", str(MACRO_INTEL_OUTPUT_DIR / "runic_output.json"))
+)
+MACRO_INTEL_CONFIG = MACRO_INTEL_DIR / "CONFIG.yaml"
+
 # Additional data paths
 DATA_FETCH_DATETIME_JSON = TRADE_STORE_US_DIR / "data_fetch_datetime.json"
 VIRTUAL_TRADING_LONG_CSV = TRADE_STORE_US_DIR / "virtual_trading_long.csv"  
@@ -46,3 +56,6 @@ CHATBOT_DATA_DIR.mkdir(parents=True, exist_ok=True)
 CONVICTION_STORE_DIR.mkdir(parents=True, exist_ok=True)
 CONVICTION_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 CONVICTION_DAILY_DIR.mkdir(parents=True, exist_ok=True)
+MACRO_INTEL_DIR.mkdir(parents=True, exist_ok=True)
+MACRO_INTEL_DATA_DIR.mkdir(parents=True, exist_ok=True)
+MACRO_INTEL_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)

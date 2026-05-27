@@ -1,0 +1,254 @@
+# Runic Agent v2.2 — Macro Intelligence Agent configuration
+version: "2.2"
+
+claude:
+  model: "claude-sonnet-4-20250514"  # fallback; spec prefers claude-sonnet-4-6 when available
+  regime_max_tokens: 150
+  narrative_max_tokens: 500
+
+schedules:
+  friday_pull_cron: "0 18 * * 5"   # Friday 6pm UTC (~after CFTC 3:30pm ET)
+  nightly_cron: "0 21 * * 1-5"     # Mon-Fri 21:00 ET — set TZ on host
+  monthly_review_cron: "0 10 1 * *"  # first day of month
+
+prefilter:
+  min_historical_fires: 3
+  min_hit_rate: 0.60
+  candidate_named_min_fires: 3
+  candidate_named_min_hit_rate: 0.75
+
+forward_returns:
+  spx_ticker: "^GSPC"
+  horizons_trading_days: [5, 21, 63, 126]
+
+variables:
+  - id: NFCI
+    name: "Financial Conditions (NFCI)"
+    source: "FRED"
+    ticker: "NFCI"
+    paradigm: DUAL
+    pctile_window: full
+    pctile_start: "1973-01-01"
+    combos: [A, E]
+    rare:
+      high_pctile: 80
+      low_pctile: 20
+      high_sd: 0.3
+      low_sd: -0.3
+    extreme:
+      high_pctile: 95
+      low_pctile: 5
+      high_sd: 0.8
+      low_sd: -0.8
+  - id: HY
+    name: "HY Credit Spreads OAS"
+    source: "FRED"
+    ticker: "BAMLH0A0HYM2"
+    paradigm: DUAL
+    pctile_window: full
+    pctile_start: "1996-01-01"
+    combos: [A, B, F, G]
+    rare:
+      abs_bps: 400
+      high_pctile: 80
+    extreme:
+      abs_bps: 500
+      high_pctile: 95
+  - id: WALCL
+    name: "Fed Balance Sheet MoM"
+    source: "FRED"
+    ticker: "WALCL"
+    paradigm: ROC
+    pctile_window: rolling_3y
+    combos: [A, C]
+    rare:
+      mom_pct: 0.8
+    extreme:
+      mom_pct: 2.0
+  - id: CNH
+    name: "USD/CNH 4wk change"
+    source: "YAHOO"
+    ticker: "USDCNH=X"
+    paradigm: ROC
+    pctile_window: rolling_3y
+    pctile_start: "2010-01-01"
+    combos: [A, C, G]
+    rare:
+      pct_4wk: 1.5
+    extreme:
+      pct_4wk: 3.5
+  - id: WTI
+    name: "WTI Oil 4wk change"
+    source: "YAHOO"
+    ticker: "CL=F"
+    paradigm: ROC
+    pctile_window: rolling_3y
+    combos: [C]
+    rare:
+      pct_4wk: 6.0
+    extreme:
+      pct_4wk: 10.0
+  - id: VIX
+    name: "VIX Level"
+    source: "YAHOO"
+    ticker: "^VIX"
+    paradigm: DUAL
+    pctile_window: full
+    pctile_start: "1990-01-01"
+    combos: [B, D, G]
+    rare:
+      abs_level: 25
+      high_pctile: 80
+    extreme:
+      abs_level: 35
+      high_pctile: 95
+  - id: VXTS
+    name: "VIX Term Structure"
+    source: "YAHOO"
+    ticker_ratio: ["^VIX3M", "^VIX"]
+    paradigm: RATIO
+    pctile_window: full
+    pctile_start: "2007-01-01"
+    combos: [D, G]
+    rare:
+      low_ratio: 0.95
+      high_ratio: 1.10
+    extreme:
+      low_ratio: 0.85
+      high_ratio: 1.20
+  - id: CFTC
+    name: "CFTC Net Spec (Fast Money)"
+    source: "CFTC"
+    paradigm: PCTILE
+    pctile_window: rolling_3y
+    pctile_start: "2006-01-01"
+    combos: [B, D, E, F]
+    rare:
+      low_pctile: 15
+      high_pctile: 85
+    extreme:
+      low_pctile: 5
+      high_pctile: 95
+  - id: CURVE
+    name: "10Y-2Y Yield Curve"
+    source: "FRED"
+    ticker: "T10Y2Y"
+    paradigm: DUAL
+    pctile_window: full
+    pctile_start: "1976-01-01"
+    combos: [A, E]
+    rare:
+      spread_bps: -30
+      steepen_4wk_bps: 15
+    extreme:
+      spread_bps: -80
+      steepen_4wk_bps: 40
+  - id: CPI
+    name: "CPI Surprise"
+    source: "CPI"
+    paradigm: ABS
+    pctile_window: rolling_3y
+    combos: [C]
+    rare:
+      surprise_pp: 0.2
+    extreme:
+      surprise_pp: 0.4
+  - id: GSR
+    name: "Gold/Silver Ratio 4wk change"
+    source: "YAHOO"
+    ticker_ratio: ["GC=F", "SI=F"]
+    paradigm: ROC
+    pctile_window: rolling_3y
+    combos: [A]
+    rare:
+      pct_4wk: 5.0
+    extreme:
+      pct_4wk: 8.0
+  - id: CAPE
+    name: "CAPE / Shiller P/E"
+    source: "CAPE"
+    paradigm: ABS
+    pctile_window: full
+    pctile_start: "1881-01-01"
+    combos: [E]
+    rare:
+      high_level: 28
+      low_level: 16
+    extreme:
+      high_level: 32
+      low_level: 12
+
+named_combos:
+  A:
+    min_of_four: 2
+    vars: [NFCI, HY, WALCL, CNH]
+  B:
+    all_required: [VIX, HY, CFTC]
+    vix_min: 25
+    hy_bps_min: 400
+    cftc_max_pctile: 15
+  C:
+    wti_4wk_min: 10.0
+    cpi_surprise_min: 0.2
+    walcl_flat: true
+  D:
+    vxts_min: 1.10
+    cftc_min_pctile: 85
+    vix_max: 18
+  E:
+    min_of_three: 2
+    cape_min: 28
+    nfci_easy_max: -0.3
+    cftc_min_pctile: 80
+  F:
+    spx_50wma_reclaim_weekly_pct: 3.0
+    cftc_max_pctile: 50
+    active_weeks: 26
+  G:
+    vxts_max: 1.0
+    hy_widen_4wk_bps: 30
+    vix_max: 20
+
+persistence_rules:
+  - name: 7WK_GRIND
+    variable: SPX
+    condition: "weekly_return_gt"
+    value: 0.5
+    periods: 7
+    period_unit: weeks
+  - name: 3WK_SURGE
+    variable: SPX
+    condition: "weekly_return_gte"
+    value: 3.0
+    periods: 3
+    period_unit: weeks
+  - name: VIX_SUPPRESSED
+    variable: VIX
+    condition: "below"
+    value: 15
+    periods: 10
+    period_unit: trading_days
+  - name: HY_GRIND_TIGHT
+    variable: HY
+    condition: "tightening_4wk"
+    periods: 8
+    period_unit: weeks
+  - name: FCI_EASING_STREAK
+    variable: NFCI
+    condition: "improving"
+    periods: 6
+    period_unit: weeks
+  - name: OIL_VOLATILE
+    variable: WTI
+    condition: "abs_weekly_pct_gte"
+    value: 5.0
+    periods: 4
+    period_unit: weeks
+
+vix_bypass:
+  combos: [B]
+  ssi_confirmed_combo_f: true
+  docstring: |
+    CRITICAL RULE: VIX_REGIME_BYPASS
+    When runic_combo = 'B' (Maximum Capitulation) is confirmed active,
+    the VIX regime size multiplier is BYPASSED.

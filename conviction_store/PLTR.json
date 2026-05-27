@@ -21,7 +21,7 @@
   "bq_raw": 3.5,
   "business_type": "saas",
   "business_type_source": "auto",
-  "conviction_score": -1.5,
+  "conviction_score": -3.5,
   "created_at": "2026-05-12T20:19:28+00:00",
   "data_coverage": {
     "bq_auto_dimensions": {
@@ -189,10 +189,10 @@
   },
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 322674877301.344,
+  "enterprise_value": 326723962690.2311,
   "eps_fwd": 2.06464,
   "eps_ttm": 0.9,
-  "ev_fwd_rev": 61.7657,
+  "ev_fwd_rev": 62.5408,
   "fcf_ttm": 2100591000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -203,10 +203,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 5224174080.0,
   "industry": "Software - Infrastructure",
-  "last_daily_update": "2026-05-26T14:34:16+00:00",
+  "last_daily_update": "2026-05-27T04:48:33+00:00",
   "last_full_calc": "2026-05-15T16:32:25+00:00",
   "manual_overrides": {},
-  "market_cap": 323423745301.344,
+  "market_cap": 327472830690.2311,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -225,7 +225,7 @@
     "valuation:dividend_yield_zscore"
   ],
   "net_debt_stored": -748868000.0,
-  "owner_earnings_yield": 0.006495,
+  "owner_earnings_yield": 0.006415,
   "pe_20y_array": [
     263.1441,
     269.0129,
@@ -308,8 +308,8 @@
     150.182,
     151.2769
   ],
-  "pe_percentile_20y": 5.0,
-  "pe_ttm": 149.9011,
+  "pe_percentile_20y": 8.75,
+  "pe_ttm": 151.7778,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -318,12 +318,25 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 134.91099548339844,
+  "price": 136.60000610351562,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.32587,
   "sector": "Technology",
   "ticker": "PLTR",
-  "updated_at": "2026-05-26T14:34:16+00:00",
-  "valuation_tax": -5.0,
+  "updated_at": "2026-05-27T04:48:33+00:00",
+  "valuation_tax": -7.0,
+  "valuation_tax_breakdown": {
+    "components": {
+      "business_type_relief": 0.0,
+      "deal_delay_signal": 0.0,
+      "entry_multiple": -5.0,
+      "growth_multiple_fragility": 0.0,
+      "market_regime_beta": 0.0,
+      "oey_penalty": -2.0,
+      "pe_hist_percentile": 0.0
+    },
+    "total": -7.0
+  },
+  "yield_trap_mkt_threshold": 0.06,
   "yield_trap_warning": false
 }
