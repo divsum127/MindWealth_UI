@@ -26,7 +26,7 @@ Body: report_date, fundamentals_mode, skip_fundamentals, skip_overlays, dry_run,
 ## Example
 
 ```bash
-curl -s -X POST http://localhost:8000/api/v1/conviction/pipeline/daily -H "Content-Type: application/json" -d '{"dry_run":true}' | jq
+curl -s -X POST http://51.20.53.218:8506/api/v1/conviction/pipeline/daily -H "Content-Type: application/json" -d '{"dry_run":true}' | jq
 ```
 
 ## Notes

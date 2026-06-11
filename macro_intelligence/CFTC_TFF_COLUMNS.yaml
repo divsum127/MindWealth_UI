@@ -1,0 +1,43 @@
+# CFTC Traders in Financial Futures (TFF) — Futures Only
+# Validated against:
+#   - https://www.cftc.gov/MarketReports/CommitmentsofTraders/HistoricalViewable/cotvariablestfm
+#   - macro_intelligence_docs/SOURCING_DATA_FOR_MACRO_RUNIC_AGENT_variables_and_for_SSI_Layers'.pdf
+#   - Live file: fut_fin_txt_{year}.zip → FinFutYY.txt (87 columns)
+
+report_type: traders_in_financial_futures_fut
+download:
+  bulk_zip: fin_fut_txt_2006_2016.zip
+  bulk_txt: F_TFF_2006_2016.txt
+  annual_zip: "fut_fin_txt_{year}.zip"
+  annual_txt: FinFutYY.txt
+
+# Production market (Rohit: SPX / consolidated index, not stacking e-mini + micro + dividend indices)
+market:
+  primary: "S&P 500 Consolidated"
+  exclude_patterns:
+    - "E-MINI"
+    - "MICRO"
+    - "DIVIDEND"
+    - "ADJUSTED INT RATE"
+
+required_columns:
+  market: Market_and_Exchange_Names
+  date: Report_Date_as_YYYY-MM-DD
+  fm_long: Lev_Money_Positions_Long_All
+  fm_short: Lev_Money_Positions_Short_All
+  rm_long: Asset_Mgr_Positions_Long_All
+  rm_short: Asset_Mgr_Positions_Short_All
+
+optional_columns:
+  date_alt: As_of_Date_In_Form_YYMMDD
+  fm_spread: Lev_Money_Positions_Spread_All
+  rm_spread: Asset_Mgr_Positions_Spread_All
+
+net_formulas:
+  fm_net: "Lev_Money_Positions_Long_All - Lev_Money_Positions_Short_All"
+  rm_net: "Asset_Mgr_Positions_Long_All - Asset_Mgr_Positions_Short_All"
+
+notes:
+  - TFF is one row per market per report date (NOT separate rows per trader category).
+  - Legacy deacot*.zip is a different report; do not use for Runic variable #8.
+  - FM net drives combo thresholds B/D/E/F; RM net is dashboard/SSI only.

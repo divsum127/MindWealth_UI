@@ -1,0 +1,65 @@
+{
+  "test_id": "16_friday_pull",
+  "items": [
+    {
+      "var": "NFCI",
+      "job": "run_macro_friday_pull / pull_all",
+      "status": "PASS"
+    },
+    {
+      "var": "HY OAS",
+      "job": "FRED pull",
+      "status": "PASS"
+    },
+    {
+      "var": "VIX/VIX3M",
+      "job": "Yahoo + SSI daily",
+      "status": "PASS"
+    },
+    {
+      "var": "WTI/CNH/GSR",
+      "job": "Friday pull",
+      "status": "PASS"
+    },
+    {
+      "var": "CFTC FM/RM",
+      "job": "cftc_pull + Friday",
+      "status": "PASS"
+    },
+    {
+      "var": "Curve/WALCL/CAPE",
+      "job": "FRED + scrape",
+      "status": "PASS"
+    },
+    {
+      "var": "CPI surprise",
+      "job": "bls + investing",
+      "status": "WARN"
+    },
+    {
+      "var": "HYG/LQD",
+      "job": "run_ssi_daily",
+      "status": "PASS"
+    },
+    {
+      "var": "DBMF beta",
+      "job": "run_ssi_daily",
+      "status": "PASS"
+    },
+    {
+      "var": "CNN F&G",
+      "job": "run_ssi_daily",
+      "status": "PASS"
+    },
+    {
+      "var": "AAII",
+      "job": "ingest_aaii_sentiment.py",
+      "status": "WARN"
+    },
+    {
+      "var": "NAAIM",
+      "job": "naaim_pull",
+      "status": "PASS"
+    }
+  ]
+}

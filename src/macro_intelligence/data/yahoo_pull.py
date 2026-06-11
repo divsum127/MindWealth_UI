@@ -23,10 +23,29 @@ def rolling_pct_change(series: pd.Series, periods: int = 20) -> pd.Series:
     return ((s / s.shift(periods)) - 1) * 100
 
 
+def calendar_pct_change(series: pd.Series, calendar_days: int = 28) -> pd.Series:
+    """v3 ROC: percent change vs value N calendar days ago (not trading bars)."""
+    s = series.sort_index()
+    prior = s.reindex(s.index - pd.Timedelta(days=calendar_days), method="ffill")
+    prior.index = s.index
+    return ((s / prior) - 1) * 100
+
+
 def vix_term_structure(start: str = "2007-01-01") -> pd.Series:
+    """VIX term structure ratio: ^VIX3M (93-day) ÷ ^VIX (30-day).
+
+    Ratio > 1  → contango (calm, normal).  Threshold ≥ 1.10 = Combo D watch.
+    Ratio < 1  → backwardation (near-term panic). Threshold ≤ 0.95 = Combo G watch.
+
+    Primary ticker : ^VIX3M  (CBOE 93-day implied vol — available from ~2007)
+    Fallback ticker: ^VXV    (equivalent 93-day series; now delisted, useful for
+                              older historical research only)
+    """
     vix3m = fetch_yahoo_close("^VIX3M", start=start)
+    if vix3m.empty:
+        # ^VXV was the predecessor 93-day series; delisted but may cover older history
+        vix3m = fetch_yahoo_close("^VXV", start=start)
     vix = fetch_yahoo_close("^VIX", start=start)
-    aligned = pd.concat([vix3m.rename("vix"), vix3m.rename("vix3m")], axis=1)
     aligned = pd.DataFrame({"vix": vix, "vix3m": vix3m}).dropna()
     return (aligned["vix3m"] / aligned["vix"]).rename("vxts")
 

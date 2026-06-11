@@ -1,0 +1,229 @@
+{
+  "test_id": "08_hyg_lqd",
+  "rows": [
+    {
+      "threshold_pct": -1.0,
+      "n_crossings": 110,
+      "metrics": {
+        "n_events": 110,
+        "1w": {
+          "n": 110,
+          "avg": 0.4618,
+          "median": 0.6992,
+          "win_pct": 67.27,
+          "worst": -9.082,
+          "sharpe": 1.4779
+        },
+        "2w": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "1m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "3m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "6m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "12m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        }
+      },
+      "median_days_to_vix25": 10
+    },
+    {
+      "threshold_pct": -1.5,
+      "n_crossings": 70,
+      "metrics": {
+        "n_events": 70,
+        "1w": {
+          "n": 70,
+          "avg": 0.0283,
+          "median": 0.6161,
+          "win_pct": 61.43,
+          "worst": -14.9796,
+          "sharpe": 0.0534
+        },
+        "2w": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "1m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "3m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "6m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "12m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        }
+      },
+      "median_days_to_vix25": 3
+    },
+    {
+      "threshold_pct": -2.0,
+      "n_crossings": 52,
+      "metrics": {
+        "n_events": 52,
+        "1w": {
+          "n": 52,
+          "avg": 0.1825,
+          "median": 0.7799,
+          "win_pct": 57.69,
+          "worst": -14.9796,
+          "sharpe": 0.3392
+        },
+        "2w": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "1m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "3m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "6m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "12m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        }
+      },
+      "median_days_to_vix25": 1
+    },
+    {
+      "threshold_pct": -3.0,
+      "n_crossings": 28,
+      "metrics": {
+        "n_events": 28,
+        "1w": {
+          "n": 28,
+          "avg": 1.6823,
+          "median": 1.7706,
+          "win_pct": 75.0,
+          "worst": -6.6888,
+          "sharpe": 2.6658
+        },
+        "2w": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "1m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "3m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "6m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "12m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        }
+      },
+      "median_days_to_vix25": 0
+    }
+  ]
+}

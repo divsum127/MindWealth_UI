@@ -26,7 +26,7 @@ Query: fs_class, yield_trap, limit, offset, fields (summary|full)
 ## Example
 
 ```bash
-curl -s "http://localhost:8000/api/v1/conviction/tickers?limit=10" | jq
+curl -s "http://51.20.53.218:8506/api/v1/conviction/tickers?limit=10" | jq
 ```
 
 ## Notes

@@ -27,7 +27,7 @@ Job object with flow_steps, result, error
 ## Example
 
 ```bash
-curl -s http://localhost:8000/api/v1/chatbot/jobs/{job_id} | jq
+curl -s http://51.20.53.218:8506/api/v1/chatbot/jobs/{job_id} | jq
 ```
 
 ## Notes

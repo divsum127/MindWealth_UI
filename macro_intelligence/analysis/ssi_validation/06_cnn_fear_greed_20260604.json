@@ -1,0 +1,230 @@
+{
+  "test_id": "06_cnn_fear_greed",
+  "start": "2015-01-01",
+  "rules": [
+    {
+      "rule": "fear_20",
+      "level": 20,
+      "n_crossings": 3,
+      "metrics": {
+        "n_events": 3,
+        "1w": {
+          "n": 3,
+          "avg": -0.745,
+          "median": -0.4951,
+          "win_pct": 33.33,
+          "worst": -2.23,
+          "sharpe": -4.7032
+        },
+        "2w": {
+          "n": 3,
+          "avg": -0.369,
+          "median": -0.7454,
+          "win_pct": 33.33,
+          "worst": -2.7141,
+          "sharpe": -0.8883
+        },
+        "1m": {
+          "n": 3,
+          "avg": 2.9697,
+          "median": 0.7347,
+          "win_pct": 100.0,
+          "worst": 0.6064,
+          "sharpe": 3.1635
+        },
+        "3m": {
+          "n": 3,
+          "avg": 9.7252,
+          "median": 11.8919,
+          "win_pct": 100.0,
+          "worst": 2.8398,
+          "sharpe": 3.9065
+        },
+        "6m": {
+          "n": 3,
+          "avg": 12.5781,
+          "median": 11.8919,
+          "win_pct": 100.0,
+          "worst": 11.3986,
+          "sharpe": 13.3283
+        },
+        "12m": {
+          "n": 3,
+          "avg": 13.3205,
+          "median": 13.6257,
+          "win_pct": 100.0,
+          "worst": 11.8919,
+          "sharpe": 12.5193
+        }
+      }
+    },
+    {
+      "rule": "fear_10",
+      "level": 10,
+      "n_crossings": 3,
+      "metrics": {
+        "n_events": 3,
+        "1w": {
+          "n": 3,
+          "avg": 1.315,
+          "median": 2.245,
+          "win_pct": 66.67,
+          "worst": -2.1153,
+          "sharpe": 3.721
+        },
+        "2w": {
+          "n": 3,
+          "avg": 4.4183,
+          "median": 3.512,
+          "win_pct": 100.0,
+          "worst": 1.6192,
+          "sharpe": 8.1193
+        },
+        "1m": {
+          "n": 3,
+          "avg": 7.6791,
+          "median": 8.5688,
+          "win_pct": 100.0,
+          "worst": 2.3792,
+          "sharpe": 6.6275
+        },
+        "3m": {
+          "n": 3,
+          "avg": 13.3268,
+          "median": 16.5234,
+          "win_pct": 100.0,
+          "worst": 4.4155,
+          "sharpe": 4.1747
+        },
+        "6m": {
+          "n": 3,
+          "avg": 16.0278,
+          "median": 16.5234,
+          "win_pct": 100.0,
+          "worst": 12.5187,
+          "sharpe": 8.4393
+        },
+        "12m": {
+          "n": 3,
+          "avg": 16.7121,
+          "median": 16.5234,
+          "win_pct": 100.0,
+          "worst": 14.5716,
+          "sharpe": 9.134
+        }
+      }
+    },
+    {
+      "rule": "greed_80",
+      "level": 80,
+      "n_crossings": 0,
+      "metrics": {
+        "n_events": 0,
+        "1w": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "2w": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "1m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "3m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "6m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "12m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        }
+      }
+    },
+    {
+      "rule": "greed_90",
+      "level": 90,
+      "n_crossings": 0,
+      "metrics": {
+        "n_events": 0,
+        "1w": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "2w": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "1m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "3m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "6m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "12m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        }
+      }
+    }
+  ]
+}

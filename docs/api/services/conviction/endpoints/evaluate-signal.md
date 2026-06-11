@@ -26,7 +26,7 @@ Body: ticker, technical_signal (BUY|SELL), signal_timeframe (long|short), option
 ## Example
 
 ```bash
-curl -s -X POST http://localhost:8000/api/v1/conviction/signals/evaluate -H "Content-Type: application/json" -d '{"ticker":"AAPL","technical_signal":"BUY","signal_timeframe":"long"}' | jq
+curl -s -X POST http://51.20.53.218:8506/api/v1/conviction/signals/evaluate -H "Content-Type: application/json" -d '{"ticker":"AAPL","technical_signal":"BUY","signal_timeframe":"long"}' | jq
 ```
 
 ## Notes

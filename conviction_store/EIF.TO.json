@@ -21,7 +21,7 @@
   "bq_raw": 2.0,
   "business_type": "income",
   "business_type_source": "auto",
-  "conviction_score": 1.0,
+  "conviction_score": 0.0,
   "created_at": "2026-05-21T21:06:25+00:00",
   "data_coverage": {
     "bq_auto_dimensions": {
@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.102253,
   "dividend_yield_5y_std": 0.042481,
-  "dividend_yield_current": 0.024328,
-  "dividend_yield_zscore": -1.8343,
-  "enterprise_value": 8619020701.156174,
+  "dividend_yield_current": 0.021688,
+  "dividend_yield_zscore": -1.8965,
+  "enterprise_value": 9396885387.265678,
   "eps_fwd": 5.08516,
   "eps_ttm": 3.47,
-  "ev_fwd_rev": 2.4797,
+  "ev_fwd_rev": 2.7035,
   "fcf_ttm": -82222000.0,
   "fd_direction": "stable",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 3475802112.0,
   "industry": "Airlines",
-  "last_daily_update": "2026-05-27T04:48:33+00:00",
+  "last_daily_update": "2026-06-11T18:42:12+00:00",
   "last_full_calc": "2026-05-21T21:06:25+00:00",
   "manual_overrides": {},
-  "market_cap": 6390203701.156174,
+  "market_cap": 7168068387.265678,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 2228817000.0,
-  "owner_earnings_yield": -0.012867,
+  "owner_earnings_yield": -0.011471,
   "pe_20y_array": [
     26.797,
     28.3542,
@@ -235,8 +235,8 @@
     38.187,
     41.9427
   ],
-  "pe_percentile_20y": 44.44,
-  "pe_ttm": 32.6945,
+  "pe_percentile_20y": 55.56,
+  "pe_ttm": 36.6744,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -245,13 +245,13 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 113.44999694824219,
+  "price": 127.26000213623047,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.11579,
   "sector": "Industrials",
   "ticker": "EIF.TO",
-  "updated_at": "2026-05-27T04:48:33+00:00",
-  "valuation_tax": -1.0,
+  "updated_at": "2026-06-11T18:42:12+00:00",
+  "valuation_tax": -2.0,
   "valuation_tax_breakdown": {
     "components": {
       "business_type_relief": 1.0,
@@ -260,9 +260,9 @@
       "growth_multiple_fragility": 0.0,
       "market_regime_beta": 0.0,
       "oey_penalty": -2.0,
-      "pe_hist_percentile": 0.0
+      "pe_hist_percentile": -1.0
     },
-    "total": -1.0
+    "total": -2.0
   },
   "yield_trap_mkt_threshold": 0.07,
   "yield_trap_warning": false

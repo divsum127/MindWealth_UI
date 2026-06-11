@@ -1,0 +1,18 @@
+{
+  "G1_seven_week_grind": {
+    "n": 2,
+    "spx_6m": {
+      "n": 2,
+      "hit_rate": 0.0,
+      "avg": -5.910517429080587,
+      "median": -5.910517429080587,
+      "worst": -7.193675612780933
+    },
+    "standalone_short_ok": false
+  },
+  "G2_vix_suppressed": {
+    "n": 1973,
+    "median_days_to_vix25": 35.5,
+    "lead_rate": 0.08514951849974658
+  }
+}

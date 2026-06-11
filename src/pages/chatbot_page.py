@@ -27,6 +27,7 @@ from prompts.ui_buttons import (
     format_signal_insights_prompt,
 )
 from chatbot.config import MAX_CHATS_DISPLAY, ENGINE_LOG_LINES_CAP, FLAGGED_PAIRS_DIR
+from constant import UI_FEATURE_DEFAULTS, ui_feature_enabled
 from chatbot.flagged_export import save_flagged_pair
 from chatbot.agents.intent_classifier import INTENT_LABELS
 
@@ -970,7 +971,9 @@ def render_chatbot_page():
     """Render the AI Chatbot page."""
     
     # Info button at the top
-    if st.button("ℹ️ Info About Page", key="info_chatbot", help="Click to learn about this page"):
+    if ui_feature_enabled("info_about_page_button") and st.button(
+        "ℹ️ Info About Page", key="info_chatbot", help="Click to learn about this page"
+    ):
         st.session_state['show_info_chatbot'] = not st.session_state.get('show_info_chatbot', False)
     
     if st.session_state.get('show_info_chatbot', False):
@@ -1410,45 +1413,51 @@ def render_chatbot_page():
     default_to_date = datetime.now()
 
     # Keep date inputs near top so Deep Dive controls can use them.
-    st.sidebar.subheader("Select Date Range")
-    col1, col2 = st.sidebar.columns(2)
-    with col1:
-        from_date = st.date_input(
-            "From Date",
-            value=default_from_date,
-            help="Start date for signal data (default: 15 days ago)"
-        )
-
-    with col2:
-        to_date = st.date_input(
-            "To Date",
-            value=default_to_date,
-            help="End date for signal data (default: today)"
-        )
+    if ui_feature_enabled("date_range_picker"):
+        st.sidebar.subheader("Select Date Range")
+        col1, col2 = st.sidebar.columns(2)
+        with col1:
+            from_date = st.date_input(
+                "From Date",
+                value=default_from_date,
+                help="Start date for signal data (default: 15 days ago)",
+            )
+        with col2:
+            to_date = st.date_input(
+                "To Date",
+                value=default_to_date,
+                help="End date for signal data (default: today)",
+            )
+    else:
+        from_date = default_from_date
+        to_date = default_to_date
 
     # Asset selection for Analyze feature (kept high in sidebar, just below page selector)
-    st.sidebar.markdown("---")
-    st.sidebar.subheader("🔍 Deep Dive Analysis")
-    
-    # Get available assets
-    if available_tickers:
+    if ui_feature_enabled("deep_dive_section"):
+        st.sidebar.markdown("---")
+        st.sidebar.subheader("🔍 Deep Dive Analysis")
+
+    selected_asset = ""
+    if ui_feature_enabled("deep_dive_section") and available_tickers:
         selected_asset = st.sidebar.selectbox(
             "Select Asset",
             options=[""] + sorted(available_tickers),
             help="Choose an asset for deep dive analysis",
-            key="analyze_asset_selector"
+            key="analyze_asset_selector",
         )
-        
-        # Analyze button
-        analyze_button = st.sidebar.button(
-            "📊 Analyze Asset",
-            key="chatbot_analyze_asset_button",
-            use_container_width=True,
-            type="primary",
-            disabled=not selected_asset,
-            help="Run deep dive analysis on selected asset"
-        )
-        
+
+        if ui_feature_enabled("analyze_asset_button"):
+            analyze_button = st.sidebar.button(
+                "📊 Analyze Asset",
+                key="chatbot_analyze_asset_button",
+                use_container_width=True,
+                type="primary",
+                disabled=not selected_asset,
+                help="Run deep dive analysis on selected asset",
+            )
+        else:
+            analyze_button = False
+
         if analyze_button and selected_asset:
             # Save current chat session before creating new one
             if 'chatbot_engine' in st.session_state and st.session_state.chatbot_engine is not None:
@@ -1478,20 +1487,21 @@ def render_chatbot_page():
             st.session_state.pending_analysis_from_date = from_date
             st.session_state.pending_analysis_to_date = to_date
             st.rerun()
-    else:
+    elif ui_feature_enabled("deep_dive_section"):
         st.sidebar.info("No assets available. Please ensure signal data files are present.")
-    
+
     # Signal Insights button (works across all assets, entry signals only)
-    # This button is always visible, regardless of asset availability
-    st.sidebar.markdown("---")
-    signal_insights_button = st.sidebar.button(
-        "💡 Signal Insights",
-        key="chatbot_signal_insights_button",
-        use_container_width=True,
-        type="secondary",
-        help="Find high-quality entry signals across all assets (Sharpe >1.5, Win Rate >80%, Forward Testing >65%)"
-    )
-    
+    signal_insights_button = False
+    if ui_feature_enabled("signal_insights_button"):
+        st.sidebar.markdown("---")
+        signal_insights_button = st.sidebar.button(
+            "💡 Signal Insights",
+            key="chatbot_signal_insights_button",
+            use_container_width=True,
+            type="secondary",
+            help="Find high-quality entry signals across all assets (Sharpe >1.5, Win Rate >80%, Forward Testing >65%)",
+        )
+
     if signal_insights_button:
         # Save current chat session before creating new one
         if 'chatbot_engine' in st.session_state and st.session_state.chatbot_engine is not None:
@@ -1521,15 +1531,17 @@ def render_chatbot_page():
         st.rerun()
     
     # Breadth Analysis button (analyzes breadth reports and identifies percentile days)
-    st.sidebar.markdown("---")
-    breadth_analysis_button = st.sidebar.button(
-        "📊 Breadth Analysis",
-        key="chatbot_breadth_analysis_button",
-        use_container_width=True,
-        type="secondary",
-        help="Analyze breadth reports and identify top/bottom 10% days (days with breadth values in bottom 10 percentile)"
-    )
-    
+    breadth_analysis_button = False
+    if ui_feature_enabled("breadth_analysis_button"):
+        st.sidebar.markdown("---")
+        breadth_analysis_button = st.sidebar.button(
+            "📊 Breadth Analysis",
+            key="chatbot_breadth_analysis_button",
+            use_container_width=True,
+            type="secondary",
+            help="Analyze breadth reports and identify top/bottom 10% days (days with breadth values in bottom 10 percentile)",
+        )
+
     if breadth_analysis_button:
         # Save current chat session before creating new one
         if 'chatbot_engine' in st.session_state and st.session_state.chatbot_engine is not None:
@@ -1559,87 +1571,112 @@ def render_chatbot_page():
         st.rerun()
     
     # Signal Type selection is AI-driven
-    st.sidebar.subheader("Signal Types (auto-selected)")
-    st.sidebar.caption("The assistant reads your question and chooses the relevant signal categories.")
-    
-    signal_selection_placeholder = st.sidebar.empty()
-    
-    def render_signal_selection(selected, reasoning):
-        with signal_selection_placeholder.container():
-            selection_text = ", ".join(get_signal_type_label(sig) for sig in selected) if selected else "None"
-            st.markdown(f"**AI Selection:** {selection_text}")
-            if reasoning:
-                st.caption(f"💡 {reasoning}")
-    
+    if ui_feature_enabled("signal_types_section"):
+        st.sidebar.subheader("Signal Types (auto-selected)")
+        st.sidebar.caption("The assistant reads your question and chooses the relevant signal categories.")
+
+        signal_selection_placeholder = st.sidebar.empty()
+
+        def render_signal_selection(selected, reasoning):
+            with signal_selection_placeholder.container():
+                selection_text = ", ".join(get_signal_type_label(sig) for sig in selected) if selected else "None"
+                st.markdown(f"**AI Selection:** {selection_text}")
+                if reasoning:
+                    st.caption(f"💡 {reasoning}")
+
+        with st.sidebar.expander("Available Signal Types", expanded=False):
+            for key, (title, description) in SIGNAL_TYPE_DESCRIPTIONS.items():
+                st.markdown(f"**{title}**")
+                st.markdown(description)
+    else:
+        def render_signal_selection(selected, reasoning):
+            pass
+
     last_signal_types = st.session_state.get("last_signal_types", DEFAULT_SIGNAL_TYPES)
     last_signal_reason = st.session_state.get("last_signal_reason", "")
-    
+
     # Handle None case for last_signal_types
     if last_signal_types is None:
         last_signal_types = DEFAULT_SIGNAL_TYPES
-    
-    render_signal_selection(last_signal_types, last_signal_reason)
-    
-    with st.sidebar.expander("Available Signal Types", expanded=False):
-        for key, (title, description) in SIGNAL_TYPE_DESCRIPTIONS.items():
-            st.markdown(f"**{title}**")
-            st.markdown(description)
+
+    if ui_feature_enabled("signal_types_section"):
+        render_signal_selection(last_signal_types, last_signal_reason)
 
     # --- SIDEBAR QUERY CONFIGURATION ---
-    st.sidebar.markdown("---")
-    st.sidebar.header("📊 Query Configuration")
-
-    # Web Search toggle
-    st.sidebar.subheader("🌐 Web Search")
-    web_search_enabled = st.sidebar.toggle(
-        "Enable Web Search (Tavily)",
-        value=st.session_state.get("web_search_enabled", True),
-        help=(
-            "When enabled, the chatbot can search the web for live market news, "
-            "earnings, and macro data. Requires TAVILY_API_KEY in your .env or secrets.toml."
-        ),
-    )
-    st.session_state["web_search_enabled"] = web_search_enabled
-    if web_search_enabled:
-        st.sidebar.caption("🟢 Web search active — news/macro queries will use Tavily.")
-    else:
-        st.sidebar.caption("🔴 Web search disabled — all queries use internal data only.")
-
-    # Propagate toggle to engine config at runtime
     import chatbot.config as _cfg
+
+    show_web = ui_feature_enabled("web_search_toggle")
+    show_llm = ui_feature_enabled("llm_router_toggle")
+    show_deep = ui_feature_enabled("deep_research_toggle")
+    if show_web or show_llm or show_deep:
+        st.sidebar.markdown("---")
+        st.sidebar.header("📊 Query Configuration")
+
+    if show_web:
+        st.sidebar.subheader("🌐 Web Search")
+        web_search_enabled = st.sidebar.toggle(
+            "Enable Web Search (Tavily)",
+            value=st.session_state.get(
+                "web_search_enabled", UI_FEATURE_DEFAULTS["web_search_enabled"]
+            ),
+            help=(
+                "When enabled, the chatbot can search the web for live market news, "
+                "earnings, and macro data. Requires TAVILY_API_KEY in your .env or secrets.toml."
+            ),
+        )
+        if web_search_enabled:
+            st.sidebar.caption("🟢 Web search active — news/macro queries will use Tavily.")
+        else:
+            st.sidebar.caption("🔴 Web search disabled — all queries use internal data only.")
+    else:
+        web_search_enabled = UI_FEATURE_DEFAULTS["web_search_enabled"]
+
+    st.session_state["web_search_enabled"] = web_search_enabled
     _cfg.ENABLE_WEB_SEARCH = web_search_enabled
 
-    llm_router_enabled = st.sidebar.toggle(
-        "LLM router (web vs internal)",
-        value=st.session_state.get("llm_router_enabled", True),
-        help=(
-            "Uses gpt-4o-mini to decide if each question needs internal signal data, "
-            "web search (Tavily), both, or chat-only. Turn off to use keyword-based routing only."
-        ),
-    )
+    if show_llm:
+        llm_router_enabled = st.sidebar.toggle(
+            "LLM router (web vs internal)",
+            value=st.session_state.get(
+                "llm_router_enabled", UI_FEATURE_DEFAULTS["llm_router_enabled"]
+            ),
+            help=(
+                "Uses gpt-4o-mini to decide if each question needs internal signal data, "
+                "web search (Tavily), both, or chat-only. Turn off to use keyword-based routing only."
+            ),
+        )
+    else:
+        llm_router_enabled = UI_FEATURE_DEFAULTS["llm_router_enabled"]
+
     st.session_state["llm_router_enabled"] = llm_router_enabled
     _cfg.LLM_ROUTER_ENABLED = llm_router_enabled
 
-    deep_research_enabled = st.sidebar.toggle(
-        "Deep Research mode",
-        value=st.session_state.get("deep_research_enabled", False),
-        help=(
-            "Multi-step research: decomposes complex questions into sub-queries, "
-            "runs web/internal/hybrid retrieval per subtask, refines when evidence is thin, "
-            "then synthesizes an evidence-bound answer. Also auto-triggers on complex historical questions."
-        ),
-    )
+    if show_deep:
+        deep_research_enabled = st.sidebar.toggle(
+            "Deep Research mode",
+            value=st.session_state.get(
+                "deep_research_enabled", UI_FEATURE_DEFAULTS["deep_research_enabled"]
+            ),
+            help=(
+                "Multi-step research: decomposes complex questions into sub-queries, "
+                "runs web/internal/hybrid retrieval per subtask, refines when evidence is thin, "
+                "then synthesizes an evidence-bound answer. Also auto-triggers on complex historical questions."
+            ),
+        )
+        if deep_research_enabled:
+            st.sidebar.caption("🔬 Deep research active for this session.")
+    else:
+        deep_research_enabled = UI_FEATURE_DEFAULTS["deep_research_enabled"]
+
     st.session_state["deep_research_enabled"] = deep_research_enabled
-    if deep_research_enabled:
-        st.sidebar.caption("🔬 Deep research active for this session.")
-    _cfg.ENABLE_DEEP_RESEARCH = True
 
     # Reset cached router so toggles take effect
     chatbot._master_router = None
 
     # Render Chat History after Query Configuration
-    st.sidebar.markdown("---")
-    render_chat_history_sidebar()
+    if ui_feature_enabled("chat_history_sidebar"):
+        st.sidebar.markdown("---")
+        render_chat_history_sidebar()
     
     # Auto-extract functions is always enabled (no manual selection)
     use_auto_extract = True
@@ -1659,8 +1696,15 @@ def render_chatbot_page():
     }
     
     # Clear everything button in sidebar
-    st.sidebar.markdown("---")
-    if st.sidebar.button("🗑️ Clear Current Chat", key="chatbot_clear_current_chat_button"):
+    if ui_feature_enabled("clear_current_chat_button"):
+        st.sidebar.markdown("---")
+        clear_chat_clicked = st.sidebar.button(
+            "🗑️ Clear Current Chat", key="chatbot_clear_current_chat_button"
+        )
+    else:
+        clear_chat_clicked = False
+
+    if clear_chat_clicked:
         chatbot.clear_history()
         # Update title to "New Chat"
         chatbot.history_manager.update_session_title("New Chat")
@@ -1832,45 +1876,47 @@ def render_chatbot_page():
                             or getattr(chatbot.history_manager, "session_id", "")
                             or ""
                         )
-                        with st.expander("Flag this exchange for debugging", expanded=False):
-                            st.caption(
-                                "Engine log lines are only captured for queries run in this session. "
-                                "Older messages still include flow_trace and metadata from the saved session."
-                            )
-                            st.caption(
-                                f"Files are written under **`{FLAGGED_PAIRS_DIR.resolve()}`** on this machine "
-                                "(e.g. EC2 disk—open that folder in Remote Desktop or copy via SCP)."
-                            )
-                            flag_notes = st.text_area(
-                                "Notes (issue description)",
-                                key=f"flag_notes_{sid}_{idx}",
-                                height=100,
-                                placeholder="Describe the issue…",
-                            )
-                            flag_full_tables = st.checkbox(
-                                "Include full signal tables in JSON",
-                                value=False,
-                                key=f"flag_full_tables_{sid}_{idx}",
-                            )
-                            if st.button("Save JSON", key=f"flag_save_{sid}_{idx}"):
-                                try:
-                                    out_path = save_flagged_pair(
-                                        session_id=sid,
-                                        notes=flag_notes,
-                                        user_message=um,
-                                        assistant_message=am,
-                                        include_full_tables=flag_full_tables,
-                                        max_rows_sample=50,
-                                    )
-                                    st.success(f"Saved: `{out_path.resolve()}`")
-                                except Exception as exc:
-                                    st.error(f"Could not save: {exc}")
+                        if ui_feature_enabled("flag_exchange_panel"):
+                            with st.expander("Flag this exchange for debugging", expanded=False):
+                                st.caption(
+                                    "Engine log lines are only captured for queries run in this session. "
+                                    "Older messages still include flow_trace and metadata from the saved session."
+                                )
+                                st.caption(
+                                    f"Files are written under **`{FLAGGED_PAIRS_DIR.resolve()}`** on this machine "
+                                    "(e.g. EC2 disk—open that folder in Remote Desktop or copy via SCP)."
+                                )
+                                flag_notes = st.text_area(
+                                    "Notes (issue description)",
+                                    key=f"flag_notes_{sid}_{idx}",
+                                    height=100,
+                                    placeholder="Describe the issue…",
+                                )
+                                flag_full_tables = st.checkbox(
+                                    "Include full signal tables in JSON",
+                                    value=False,
+                                    key=f"flag_full_tables_{sid}_{idx}",
+                                )
+                                if st.button("Save JSON", key=f"flag_save_{sid}_{idx}"):
+                                    try:
+                                        out_path = save_flagged_pair(
+                                            session_id=sid,
+                                            notes=flag_notes,
+                                            user_message=um,
+                                            assistant_message=am,
+                                            include_full_tables=flag_full_tables,
+                                            max_rows_sample=50,
+                                        )
+                                        st.success(f"Saved: `{out_path.resolve()}`")
+                                    except Exception as exc:
+                                        st.error(f"Could not save: {exc}")
     
     # Chat input
-    st.markdown("### 💬 Ask a Question")
-    
-    user_input = st.chat_input("Ask a question about your trading signal data...")
-    
+    user_input = None
+    if ui_feature_enabled("chat_input"):
+        st.markdown("### 💬 Ask a Question")
+        user_input = st.chat_input("Ask a question about your trading signal data...")
+
     if user_input:
         # Don't call determine_signal_types here - let smart_followup_query do it internally
         # This avoids duplicate extraction calls

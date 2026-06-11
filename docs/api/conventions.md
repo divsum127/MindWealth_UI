@@ -34,6 +34,9 @@ List endpoints support:
 | Code | Meaning |
 |------|---------|
 | 200 | Success |
+| 201 | Created (e.g. `POST /monitored-trades`) |
+| 202 | Accepted — async job queued (chatbot messages and presets) |
+| 204 | No content (e.g. `DELETE /monitored-trades/{id}`) |
 | 400 | Bad request (e.g. pipeline could not resolve report date) |
 | 401 | Missing or invalid `X-API-Key` when `API_KEY` is configured |
 | 404 | Ticker, overlay date, or signal file not found |
@@ -58,5 +61,7 @@ Validation errors include a `detail` array with `loc` and `msg` per field.
 |----------|------------------|-------|
 | `POST .../recalculate` | 10–30s per ticker | yfinance fetch |
 | `POST .../pipeline/daily` | minutes | Full universe; may timeout behind reverse proxies |
+| `POST .../chatbot/sessions/{id}/messages` | seconds–minutes | Returns **202**; poll job URL |
+| `GET /signals/*`, `/analytics/*`, `/macro/*` | < 1s | Read-only CSV/JSON |
 
 Run pipeline via CLI (`scripts/run_conviction_engine_daily.py`) for production batch jobs if HTTP timeouts are an issue.

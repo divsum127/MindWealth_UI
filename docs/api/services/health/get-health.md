@@ -22,7 +22,7 @@ Returns API version and conviction store path/writability.
 ```json
 {
   "status": "ok",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "conviction_store": "/path/to/conviction_store",
   "conviction_store_writable": true
 }
@@ -31,7 +31,7 @@ Returns API version and conviction store path/writability.
 ## Example
 
 ```bash
-curl -s http://localhost:8000/api/v1/health | jq
+curl -s http://51.20.53.218:8506/api/v1/health | jq
 ```
 
 ## Notes

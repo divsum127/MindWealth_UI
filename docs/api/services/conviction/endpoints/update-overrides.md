@@ -26,7 +26,7 @@ Body: {"overrides": {"bq_raw": 7}, "recompute": true}
 ## Example
 
 ```bash
-curl -s -X PATCH http://localhost:8000/api/v1/conviction/tickers/AAPL/overrides -H "Content-Type: application/json" -d '{"overrides":{"bq_raw":7}}' | jq
+curl -s -X PATCH http://51.20.53.218:8506/api/v1/conviction/tickers/AAPL/overrides -H "Content-Type: application/json" -d '{"overrides":{"bq_raw":7}}' | jq
 ```
 
 ## Notes

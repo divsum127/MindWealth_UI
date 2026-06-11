@@ -26,7 +26,7 @@ None
 ## Example
 
 ```bash
-curl -s http://localhost:8000/api/v1/conviction/alerts/daily | jq
+curl -s http://51.20.53.218:8506/api/v1/conviction/alerts/daily | jq
 ```
 
 ## Notes

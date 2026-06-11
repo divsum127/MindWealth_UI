@@ -1,0 +1,280 @@
+{
+  "test_id": "10_layer2_sweep",
+  "rows": [
+    {
+      "min_votes": 0,
+      "n_long_with_gate": 419,
+      "metrics": {
+        "n_events": 419,
+        "1w": {
+          "n": 419,
+          "avg": 0.5249,
+          "median": 0.8192,
+          "win_pct": 67.54,
+          "worst": -19.723,
+          "sharpe": 1.2132
+        },
+        "2w": {
+          "n": 419,
+          "avg": 0.7803,
+          "median": 1.3606,
+          "win_pct": 72.08,
+          "worst": -24.7267,
+          "sharpe": 0.8989
+        },
+        "1m": {
+          "n": 419,
+          "avg": 1.1468,
+          "median": 2.2165,
+          "win_pct": 73.03,
+          "worst": -29.2776,
+          "sharpe": 0.6409
+        },
+        "3m": {
+          "n": 419,
+          "avg": 3.1442,
+          "median": 5.8593,
+          "win_pct": 78.04,
+          "worst": -30.1984,
+          "sharpe": 0.5953
+        },
+        "6m": {
+          "n": 415,
+          "avg": 10.8494,
+          "median": 14.3535,
+          "win_pct": 79.52,
+          "worst": -8.0418,
+          "sharpe": 1.6397
+        },
+        "12m": {
+          "n": 415,
+          "avg": 22.1303,
+          "median": 23.9893,
+          "win_pct": 89.16,
+          "worst": -13.8298,
+          "sharpe": 1.4146
+        }
+      }
+    },
+    {
+      "min_votes": 1,
+      "n_long_with_gate": 413,
+      "metrics": {
+        "n_events": 413,
+        "1w": {
+          "n": 413,
+          "avg": 0.5236,
+          "median": 0.822,
+          "win_pct": 67.31,
+          "worst": -19.723,
+          "sharpe": 1.2025
+        },
+        "2w": {
+          "n": 413,
+          "avg": 0.7839,
+          "median": 1.3606,
+          "win_pct": 72.4,
+          "worst": -24.7267,
+          "sharpe": 0.8983
+        },
+        "1m": {
+          "n": 413,
+          "avg": 1.2105,
+          "median": 2.277,
+          "win_pct": 73.37,
+          "worst": -29.2776,
+          "sharpe": 0.6784
+        },
+        "3m": {
+          "n": 413,
+          "avg": 3.2338,
+          "median": 5.8664,
+          "win_pct": 78.45,
+          "worst": -30.1984,
+          "sharpe": 0.6126
+        },
+        "6m": {
+          "n": 409,
+          "avg": 10.9034,
+          "median": 14.3535,
+          "win_pct": 79.71,
+          "worst": -8.0418,
+          "sharpe": 1.6461
+        },
+        "12m": {
+          "n": 409,
+          "avg": 22.2351,
+          "median": 24.1287,
+          "win_pct": 89.0,
+          "worst": -13.8298,
+          "sharpe": 1.4132
+        }
+      }
+    },
+    {
+      "min_votes": 2,
+      "n_long_with_gate": 314,
+      "metrics": {
+        "n_events": 314,
+        "1w": {
+          "n": 314,
+          "avg": 0.7255,
+          "median": 0.9203,
+          "win_pct": 69.43,
+          "worst": -19.723,
+          "sharpe": 1.5703
+        },
+        "2w": {
+          "n": 314,
+          "avg": 1.1416,
+          "median": 1.571,
+          "win_pct": 75.16,
+          "worst": -24.7267,
+          "sharpe": 1.2685
+        },
+        "1m": {
+          "n": 314,
+          "avg": 2.4736,
+          "median": 2.9351,
+          "win_pct": 78.34,
+          "worst": -17.7424,
+          "sharpe": 1.8855
+        },
+        "3m": {
+          "n": 314,
+          "avg": 6.3646,
+          "median": 7.341,
+          "win_pct": 89.81,
+          "worst": -30.1984,
+          "sharpe": 1.4922
+        },
+        "6m": {
+          "n": 310,
+          "avg": 14.4905,
+          "median": 15.6571,
+          "win_pct": 91.94,
+          "worst": -8.0418,
+          "sharpe": 2.7151
+        },
+        "12m": {
+          "n": 310,
+          "avg": 27.072,
+          "median": 29.289,
+          "win_pct": 96.45,
+          "worst": -12.2493,
+          "sharpe": 1.967
+        }
+      }
+    },
+    {
+      "min_votes": 3,
+      "n_long_with_gate": 231,
+      "metrics": {
+        "n_events": 231,
+        "1w": {
+          "n": 231,
+          "avg": 0.9348,
+          "median": 1.1592,
+          "win_pct": 73.59,
+          "worst": -19.723,
+          "sharpe": 1.8968
+        },
+        "2w": {
+          "n": 231,
+          "avg": 1.576,
+          "median": 1.9419,
+          "win_pct": 81.82,
+          "worst": -24.7267,
+          "sharpe": 1.73
+        },
+        "1m": {
+          "n": 231,
+          "avg": 3.1121,
+          "median": 3.4521,
+          "win_pct": 84.42,
+          "worst": -17.7424,
+          "sharpe": 2.4682
+        },
+        "3m": {
+          "n": 231,
+          "avg": 7.4485,
+          "median": 7.9147,
+          "win_pct": 93.51,
+          "worst": -30.1984,
+          "sharpe": 1.8666
+        },
+        "6m": {
+          "n": 231,
+          "avg": 16.4621,
+          "median": 16.2431,
+          "win_pct": 96.97,
+          "worst": -3.2185,
+          "sharpe": 3.8573
+        },
+        "12m": {
+          "n": 231,
+          "avg": 31.162,
+          "median": 31.5226,
+          "win_pct": 100.0,
+          "worst": 2.8763,
+          "sharpe": 2.9155
+        }
+      }
+    },
+    {
+      "min_votes": 4,
+      "n_long_with_gate": 78,
+      "metrics": {
+        "n_events": 78,
+        "1w": {
+          "n": 78,
+          "avg": 1.161,
+          "median": 1.1846,
+          "win_pct": 78.21,
+          "worst": -13.123,
+          "sharpe": 2.8645
+        },
+        "2w": {
+          "n": 78,
+          "avg": 1.8988,
+          "median": 1.7355,
+          "win_pct": 87.18,
+          "worst": -18.5381,
+          "sharpe": 2.5854
+        },
+        "1m": {
+          "n": 78,
+          "avg": 3.1392,
+          "median": 2.9073,
+          "win_pct": 87.18,
+          "worst": -4.7169,
+          "sharpe": 2.6431
+        },
+        "3m": {
+          "n": 78,
+          "avg": 7.7365,
+          "median": 6.7918,
+          "win_pct": 96.15,
+          "worst": -0.7482,
+          "sharpe": 2.7343
+        },
+        "6m": {
+          "n": 78,
+          "avg": 16.9022,
+          "median": 15.7746,
+          "win_pct": 100.0,
+          "worst": 10.6016,
+          "sharpe": 4.9737
+        },
+        "12m": {
+          "n": 78,
+          "avg": 31.8399,
+          "median": 31.1779,
+          "win_pct": 100.0,
+          "worst": 22.7501,
+          "sharpe": 3.8717
+        }
+      }
+    }
+  ]
+}

@@ -9,24 +9,28 @@ from typing import Any
 import pandas as pd
 
 from src.macro_intelligence.config import load_config
+from src.macro_intelligence.data.bls_pull import load_cpi_surprise_series, try_bls_cpi_pull, try_fred_cpi_fallback_if_stale
 from src.macro_intelligence.data.cape_scrape import load_cape_series
-from src.macro_intelligence.data.cftc_pull import fetch_cftc_fast_money_net
+from src.macro_intelligence.data.cftc_pull import fetch_cftc_fast_money_net, persist_cftc_snapshot, refresh_cftc_zip_if_stale
 from src.macro_intelligence.data.cpi_pull import load_cpi_surprises
 from src.macro_intelligence.data.fred_pull import curve_features, fetch_fred_series, walcl_mom_pct
 from src.macro_intelligence.data.yahoo_pull import (
     fetch_yahoo_close,
     gsr_ratio,
+    calendar_pct_change,
     rolling_pct_change,
     spx_with_50wma,
     vix_term_structure,
 )
 from src.macro_intelligence.db.connection import get_connection
+from src.macro_intelligence.engine.percentiles import (
+    compute_pctile_for_series,
+    compute_regime_pctile,
+    compute_unconditional_pctile,
+    evaluate_variable_tier,
+)
 
 _CACHE: dict[str, pd.Series | pd.DataFrame] = {}
-
-
-def _cache_key(name: str) -> str:
-    return name
 
 
 def load_all_series(force: bool = False) -> dict[str, Any]:
@@ -40,11 +44,30 @@ def load_all_series(force: bool = False) -> dict[str, Any]:
     vix = fetch_yahoo_close("^VIX", "1990-01-01")
     vxts = vix_term_structure("2007-01-01")
     wti = fetch_yahoo_close("CL=F", "1985-01-01")
+    if len(wti) < 100:
+        # CL=F (WTI futures) rarely fails but FRED DCOILWTICO is the spec fallback (back to 1986).
+        wti = fetch_fred_series("DCOILWTICO", "1985-01-01")
     cnh = fetch_yahoo_close("USDCNH=X", "2010-01-01")
+    if len(cnh) < 100:
+        # Yahoo often returns a single stale USDCNH=X bar; FRED DEXCHUS is the production fallback.
+        cnh = fetch_fred_series("DEXCHUS", "2010-01-01")
     gsr = gsr_ratio("1990-01-01")
     cape = load_cape_series()
+    # Auto-refresh current-year CFTC ZIP before parsing — handles Friday releases
+    # and missed weeks without any manual intervention.
+    refresh_cftc_zip_if_stale()
     cftc = fetch_cftc_fast_money_net(2006)
-    cpi = load_cpi_surprises()
+    try_bls_cpi_pull()
+    try_fred_cpi_fallback_if_stale()
+    try:
+        from src.macro_intelligence.data.investing_cpi_consensus import sync_cpi_releases_to_db
+
+        sync_cpi_releases_to_db()
+    except Exception:
+        pass
+    cpi_db = load_cpi_surprise_series()
+    cpi_csv = load_cpi_surprises()
+    cpi = cpi_db if not cpi_db.empty else cpi_csv
     spx_w = spx_with_50wma("1990-01-01")
 
     _CACHE.clear()
@@ -56,9 +79,9 @@ def load_all_series(force: bool = False) -> dict[str, Any]:
             "CURVE": curve_features(curve),
             "VIX": vix,
             "VXTS": vxts,
-            "WTI": rolling_pct_change(wti, 20),
-            "CNH": rolling_pct_change(cnh, 20),
-            "GSR": rolling_pct_change(gsr, 20),
+            "WTI": calendar_pct_change(wti, 28),
+            "CNH": calendar_pct_change(cnh, 28),
+            "GSR": calendar_pct_change(gsr, 28),
             "CAPE": cape,
             "CFTC": cftc,
             "CPI": cpi,
@@ -68,15 +91,27 @@ def load_all_series(force: bool = False) -> dict[str, Any]:
     return _CACHE
 
 
-def pull_all_series(as_of: str | None = None) -> list[dict[str, Any]]:
+def pull_all_series(
+    as_of: str | None = None,
+    fed_cycle: str | None = None,
+    *,
+    persist_cftc: bool | None = None,
+) -> list[dict[str, Any]]:
     as_of = as_of or datetime.now().strftime("%Y-%m-%d")
     series = load_all_series()
+    do_cftc = persist_cftc if persist_cftc is not None else datetime.now().weekday() == 4
+    if do_cftc:
+        persist_cftc_snapshot(as_of)
     cfg = load_config()
     readings: list[dict[str, Any]] = []
+    if fed_cycle is None:
+        from src.macro_intelligence.engine.regime_rules import build_python_regime
+
+        fed_cycle = build_python_regime(as_of).get("fed_cycle")
 
     for var_cfg in cfg["variables"]:
         vid = var_cfg["id"]
-        reading = _reading_for_var(vid, var_cfg, series, as_of)
+        reading = _reading_for_var(vid, var_cfg, series, as_of, fed_cycle)
         if reading:
             readings.append(reading)
             _upsert_reading(reading)
@@ -89,9 +124,8 @@ def _reading_for_var(
     var_cfg: dict[str, Any],
     series: dict[str, Any],
     as_of: str,
+    fed_cycle: str | None,
 ) -> dict[str, Any] | None:
-    from src.macro_intelligence.engine.percentiles import compute_pctile_for_series, evaluate_variable_tier
-
     as_of_ts = pd.Timestamp(as_of)
 
     if vid == "CURVE":
@@ -100,9 +134,12 @@ def _reading_for_var(
             return None
         row = df.loc[:as_of_ts].iloc[-1]
         raw = float(row["spread_bps"])
-        pctile = compute_pctile_for_series(df["spread_bps"], var_cfg, as_of_ts)
-        tier, direction = evaluate_variable_tier(vid, var_cfg, raw, pctile, meta={"steepen_4wk": float(row.get("steepen_4wk_bps", 0))})
-        return _pack(vid, as_of, raw, pctile, tier, direction)
+        uncond = compute_unconditional_pctile(df["spread_bps"], var_cfg, as_of_ts)
+        regime_p, _ = compute_regime_pctile(df["spread_bps"], var_cfg, as_of_ts, fed_cycle)
+        tier, direction = evaluate_variable_tier(
+            vid, var_cfg, raw, uncond, meta={"steepen_4wk_bps": float(row.get("steepen_4wk_bps", 0))}
+        )
+        return _pack(vid, as_of, raw, uncond, regime_p, tier, direction, meta={"steepen_4wk_bps": row.get("steepen_4wk_bps")})
 
     if vid == "SPX_W":
         return None
@@ -116,20 +153,24 @@ def _reading_for_var(
     if hist.empty:
         return None
     raw = float(hist.iloc[-1])
-    pctile = compute_pctile_for_series(s, var_cfg, as_of_ts)
-    tier, direction = evaluate_variable_tier(vid, var_cfg, raw, pctile)
-    return _pack(vid, as_of, raw, pctile, tier, direction)
+    uncond = compute_unconditional_pctile(s, var_cfg, as_of_ts)
+    regime_p, _ = compute_regime_pctile(s, var_cfg, as_of_ts, fed_cycle)
+    tier, direction = evaluate_variable_tier(vid, var_cfg, raw, uncond)
+    return _pack(vid, as_of, raw, uncond, regime_p, tier, direction)
 
 
-def _pack(vid, as_of, raw, pctile, tier, direction) -> dict[str, Any]:
+def _pack(vid, as_of, raw, uncond, regime_p, tier, direction, meta=None) -> dict[str, Any]:
+    meta = meta or {}
     return {
         "var_id": vid,
         "date": as_of,
         "raw_value": raw,
-        "pctile_rank_3yr": pctile,
+        "pctile_rank_3yr": uncond,
+        "unconditional_pctile": uncond,
+        "regime_pctile": regime_p,
         "signal_tier": tier.value if hasattr(tier, "value") else tier,
         "direction": direction,
-        "meta_json": "{}",
+        "meta_json": json.dumps(meta),
     }
 
 
@@ -137,11 +178,15 @@ def _upsert_reading(r: dict[str, Any]) -> None:
     with get_connection() as conn:
         conn.execute(
             """
-            INSERT INTO daily_readings (date, var_id, raw_value, pctile_rank_3yr, signal_tier, direction, meta_json)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO daily_readings
+            (date, var_id, raw_value, pctile_rank_3yr, unconditional_pctile, regime_pctile,
+             signal_tier, direction, meta_json)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(date, var_id) DO UPDATE SET
               raw_value=excluded.raw_value,
               pctile_rank_3yr=excluded.pctile_rank_3yr,
+              unconditional_pctile=excluded.unconditional_pctile,
+              regime_pctile=excluded.regime_pctile,
               signal_tier=excluded.signal_tier,
               direction=excluded.direction,
               meta_json=excluded.meta_json
@@ -151,6 +196,8 @@ def _upsert_reading(r: dict[str, Any]) -> None:
                 r["var_id"],
                 r["raw_value"],
                 r["pctile_rank_3yr"],
+                r.get("unconditional_pctile"),
+                r.get("regime_pctile"),
                 r["signal_tier"],
                 r["direction"],
                 r.get("meta_json", "{}"),

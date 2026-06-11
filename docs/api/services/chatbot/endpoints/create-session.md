@@ -27,7 +27,7 @@ Body: {"title"?}
 ## Example
 
 ```bash
-curl -s -X POST http://localhost:8000/api/v1/chatbot/sessions -H "Content-Type: application/json" -d '{"title":"My chat"}'
+curl -s -X POST http://51.20.53.218:8506/api/v1/chatbot/sessions -H "Content-Type: application/json" -d '{"title":"My chat"}'
 ```
 
 ## Notes

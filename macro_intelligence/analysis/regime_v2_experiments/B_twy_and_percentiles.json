@@ -1,0 +1,63 @@
+{
+  "B1_B2_twy_roc_apr2025": {
+    "2025-04-07": {
+      "twy_roc_pp": -0.55,
+      "direction": "DOVISH",
+      "dgs2": 3.73
+    },
+    "2025-04-04": {
+      "twy_roc_pp": -0.61,
+      "direction": "DOVISH",
+      "dgs2": 3.68
+    }
+  },
+  "B2_validation": {
+    "expected_dovish_bps": "65-75 over 8 weeks",
+    "observed_pp": -0.55,
+    "direction": "DOVISH",
+    "pass_dovish": true
+  },
+  "B3_dual_percentile": {
+    "rows_with_unconditional_only": 0,
+    "rows_with_both": 14505
+  },
+  "B4_window_audit": {
+    "n_vars": 12,
+    "mismatches": [
+      {
+        "var_id": "HY",
+        "configured": "full",
+        "expected": "rolling_3y"
+      },
+      {
+        "var_id": "VIX",
+        "configured": "full",
+        "expected": "rolling_3y"
+      },
+      {
+        "var_id": "VXTS",
+        "configured": "full",
+        "expected": "rolling_3y"
+      }
+    ],
+    "pass": false
+  },
+  "B5_cape_triple_storage": {
+    "combo_e_high_cape_6m": {
+      "n": 507,
+      "hit_rate": 0.7909270216962525,
+      "avg": 6.406878456655596,
+      "median": 7.338339984451586,
+      "worst": -25.222342684956878
+    },
+    "combo_e_moderate_cape_6m": {
+      "n": 0,
+      "hit_rate": null,
+      "avg": null,
+      "median": null,
+      "worst": null
+    },
+    "winner": "level_extreme"
+  },
+  "C1_emission_vectors_backfilled": 12803
+}

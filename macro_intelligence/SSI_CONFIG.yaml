@@ -1,0 +1,60 @@
+version: "1.0"
+
+schedules:
+  daily_cron: "0 8 * * 1-5"  # 08:00 ET Mon-Fri
+
+paths:
+  ssi_data_dir: "macro_intelligence/data/ssi"
+  analysis_dir: "macro_intelligence/analysis/ssi_validation"
+
+tickers:
+  hyg: "HYG"
+  lqd: "LQD"
+  dbmf: "DBMF"
+  spy: "SPY"
+  vix: "^VIX"
+  vix3m: "^VIX3M"
+
+ssi_score:
+  history_years: 5
+  design_percentile: 20  # ~20th percentile of 5y distribution by design intent
+  zscore_clip: 3.0
+  weights:
+    hyg_lqd: 0.30
+    dbmf_beta: 0.25
+    cnn_fg: 0.25
+    vix_ratio: 0.20
+
+layer2:
+  min_confirmed: 2
+  multipliers:
+    CONFIRMED: 1.20
+    PARTIAL: 1.00
+    UNCONFIRMED: 0.80
+  votes:
+    hyg_lqd:
+      risk_on_pctile_min: 70
+      risk_off_pctile_max: 30
+    dbmf_beta:
+      low_beta_max: 0.5
+      high_beta_min: 1.2
+    cnn_fg:
+      fear_max: 25
+      greed_min: 75
+    vix_ratio:
+      stress_min: 1.05
+      complacency_max: 0.95
+
+thresholds:
+  long_entry: -0.6
+  short_entry: 0.85
+  long_entry_pctile: 20
+  short_entry_pctile: 85
+  long_sweep_start: -0.3
+  long_sweep_end: -0.9
+  long_sweep_step: 0.1
+  short_sweep_values: [0.6, 0.7, 0.8, 0.85, 0.9]
+
+forward_returns:
+  spx_ticker: "^GSPC"
+  horizons_trading_days: [5, 21, 63, 126]

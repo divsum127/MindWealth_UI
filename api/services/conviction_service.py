@@ -119,6 +119,18 @@ def overlay_signal_file(
         save_output=save_output,
         update_layers=update_layers,
     )
+    if df.empty and "claude" in report_name.lower():
+        from api.services import reports_service as reports
+
+        shortlist = reports.get_shortlist_report()
+        return {
+            "source_file": str(path),
+            "row_count": 0,
+            "summary": summarize_overlay(df),
+            "records": [],
+            "csv_empty": True,
+            "shortlist": shortlist,
+        }
     return {
         "source_file": str(path),
         "row_count": int(len(df)),

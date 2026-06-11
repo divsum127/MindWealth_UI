@@ -1,0 +1,52 @@
+/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/cftc_pull.py:242: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  sub[date_col] = pd.to_datetime(sub[date_col], errors="coerce")
+/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/cftc_pull.py:242: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  sub[date_col] = pd.to_datetime(sub[date_col], errors="coerce")
+/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/cftc_pull.py:242: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  sub[date_col] = pd.to_datetime(sub[date_col], errors="coerce")
+/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/cftc_pull.py:242: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  sub[date_col] = pd.to_datetime(sub[date_col], errors="coerce")
+{
+  "date": "2026-06-08",
+  "path": "macro_intelligence/output/positioning.json",
+  "ssi_multiplier": 1.2
+}
+/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/cftc_pull.py:242: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  sub[date_col] = pd.to_datetime(sub[date_col], errors="coerce")
+/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/cftc_pull.py:242: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  sub[date_col] = pd.to_datetime(sub[date_col], errors="coerce")
+/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/cftc_pull.py:242: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  sub[date_col] = pd.to_datetime(sub[date_col], errors="coerce")
+/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/cftc_pull.py:242: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  sub[date_col] = pd.to_datetime(sub[date_col], errors="coerce")
+{
+  "date": "2026-06-09",
+  "path": "macro_intelligence/output/positioning.json",
+  "ssi_multiplier": 1.2
+}
+/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/cftc_pull.py:242: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  sub[date_col] = pd.to_datetime(sub[date_col], errors="coerce")
+/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/cftc_pull.py:242: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  sub[date_col] = pd.to_datetime(sub[date_col], errors="coerce")
+/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/cftc_pull.py:242: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  sub[date_col] = pd.to_datetime(sub[date_col], errors="coerce")
+/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/cftc_pull.py:242: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  sub[date_col] = pd.to_datetime(sub[date_col], errors="coerce")
+{
+  "date": "2026-06-10",
+  "path": "macro_intelligence/output/positioning.json",
+  "ssi_multiplier": 1.2
+}
+/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/cftc_pull.py:242: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  sub[date_col] = pd.to_datetime(sub[date_col], errors="coerce")
+/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/cftc_pull.py:242: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  sub[date_col] = pd.to_datetime(sub[date_col], errors="coerce")
+/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/cftc_pull.py:242: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  sub[date_col] = pd.to_datetime(sub[date_col], errors="coerce")
+/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/cftc_pull.py:242: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  sub[date_col] = pd.to_datetime(sub[date_col], errors="coerce")
+{
+  "date": "2026-06-11",
+  "path": "macro_intelligence/output/positioning.json",
+  "ssi_multiplier": 1.2
+}

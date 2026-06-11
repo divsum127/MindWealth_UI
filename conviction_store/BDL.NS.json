@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.02231,
   "dividend_yield_5y_std": 0.017076,
-  "dividend_yield_current": 0.003842,
-  "dividend_yield_zscore": -1.0815,
-  "enterprise_value": 489425872949.2798,
+  "dividend_yield_current": 0.004439,
+  "dividend_yield_zscore": -1.0466,
+  "enterprise_value": 423407957750.0,
   "eps_fwd": 27.96667,
   "eps_ttm": 15.77,
-  "ev_fwd_rev": 12.3033,
+  "ev_fwd_rev": 10.6437,
   "fd_direction": "positive",
   "fd_votes": {},
   "flags": [],
@@ -204,10 +204,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 39780084000.0,
   "industry": "Aerospace & Defense",
-  "last_daily_update": "2026-05-27T04:48:33+00:00",
+  "last_daily_update": "2026-06-11T18:42:12+00:00",
   "last_full_calc": "2026-05-18T20:47:43+00:00",
   "manual_overrides": {},
-  "market_cap": 491340383949.2798,
+  "market_cap": 425322468750.0,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -237,7 +237,7 @@
     106.9734
   ],
   "pe_percentile_20y": 0.0,
-  "pe_ttm": 84.9968,
+  "pe_ttm": 73.5764,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -246,12 +246,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 1340.4000244140625,
+  "price": 1160.3,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.17527214334394448,
   "sector": "Industrials",
   "ticker": "BDL.NS",
-  "updated_at": "2026-05-27T04:48:33+00:00",
+  "updated_at": "2026-06-11T18:42:12+00:00",
   "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {

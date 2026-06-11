@@ -60,7 +60,7 @@
   },
   "dividend_yield_current": null,
   "dividend_yield_zscore": null,
-  "enterprise_value": 136689136260.0,
+  "enterprise_value": 141011003379.1809,
   "ev_fwd_rev": null,
   "fd_direction": "stable",
   "fd_votes": {},
@@ -68,10 +68,10 @@
   "fs_class": "moderate",
   "fs_quality_base": 50.0,
   "fs_score": 50.0,
-  "last_daily_update": "2026-05-27T04:48:33+00:00",
+  "last_daily_update": "2026-06-11T18:42:12+00:00",
   "last_full_calc": null,
   "manual_overrides": {},
-  "market_cap": 136689136260.0,
+  "market_cap": 141011003379.1809,
   "missing_fields": [
     "annual_div_per_share_stored",
     "distribution_coverage_ratio",
@@ -111,9 +111,9 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 111.0,
+  "price": 115.01000213623047,
   "ticker": "BNS.TO",
-  "updated_at": "2026-05-27T04:48:33+00:00",
+  "updated_at": "2026-06-11T18:42:12+00:00",
   "valuation_tax": 0.0,
   "valuation_tax_breakdown": {
     "components": {

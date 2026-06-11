@@ -179,13 +179,6 @@ def update_ticker_fundamentals(
 ) -> dict[str, Any]:
     """Fetch fundamentals for one ticker and update the conviction JSON store."""
     symbol = sanitize_ticker(ticker)
-    payload = fetcher(symbol)
-    info = payload.get("info", {})
-    raw_fetch = payload.get("raw_fetch") or {}
-    fundamentals = dict(payload.get("fundamentals", {}))
-    fetch_errors = list(payload.get("fetch_errors") or fundamentals.pop("fetch_errors", None) or [])
-    if fetch_errors:
-        fundamentals["fetch_errors"] = fetch_errors
     existing = load_record(symbol, store_dir)
 
     selected_mode = mode
@@ -197,9 +190,17 @@ def update_ticker_fundamentals(
             "ticker": symbol,
             "status": "dry_run",
             "mode": selected_mode,
-            "quote_type": info.get("quoteType") or fundamentals.get("quote_type"),
-            "fields": sorted(fundamentals.keys()),
+            "quote_type": (existing or {}).get("quote_type") or (existing or {}).get("asset_type"),
+            "fields": sorted((existing or {}).keys()),
         }
+
+    payload = fetcher(symbol)
+    info = payload.get("info", {})
+    raw_fetch = payload.get("raw_fetch") or {}
+    fundamentals = dict(payload.get("fundamentals", {}))
+    fetch_errors = list(payload.get("fetch_errors") or fundamentals.pop("fetch_errors", None) or [])
+    if fetch_errors:
+        fundamentals["fetch_errors"] = fetch_errors
 
     if selected_mode == "full":
         record = full_recalculation(

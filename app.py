@@ -208,7 +208,7 @@ def main():
         # We need to peek at what page will be selected
         # Get the current page from session state or default to first option
         csv_files = discover_csv_files()
-        page_options = {
+        page_options = filter_pages_by_feature_flags({
             "Dashboard": None,
             "AI Chatbot": "chatbot",
             "Conviction Engine": "conviction_engine",
@@ -218,21 +218,32 @@ def main():
             "All Historical Report Signals": "all_data",
             "Claude Shortlisted Signal": "text_files",
             "Trade Details": "trade_details",
-        }
+        })
         horizontal_new_high_file = get_latest_csv_file("horizontal_new_high_report.csv")
         if horizontal_new_high_file:
-            page_options["Horizontal & New High Report"] = "levels_new_high_report"
-        page_options.update(csv_files)
+            page_options.update(
+                filter_pages_by_feature_flags(
+                    {"Horizontal & New High Report": "levels_new_high_report"}
+                )
+            )
+        page_options.update(filter_pages_by_feature_flags(csv_files))
 
-        # Get current page selection (default to first option if not set)
+        if not page_options:
+            st.sidebar.error("No pages enabled. Turn on at least one flag in constant.py PAGE_FEATURE_FLAGS.")
+            return
+
+        page_keys = list(page_options.keys())
+        if st.session_state.get("page_selector") not in page_keys:
+            st.session_state.pop("page_selector", None)
+
         current_page_key = st.sidebar.selectbox(
             "**Select Page**",
-            list(page_options.keys()),
-            key="page_selector"
+            page_keys,
+            key="page_selector",
         )
 
         # Keep New Chat action directly under page dropdown on chatbot page.
-        if current_page_key == "AI Chatbot":
+        if current_page_key == "AI Chatbot" and ui_feature_enabled("new_chat_button"):
             if st.sidebar.button("➕ New Chat", use_container_width=True, type="primary"):
                 new_session_id = SessionManager.create_new_session()
                 st.session_state.current_session_id = new_session_id
@@ -246,17 +257,9 @@ def main():
         st.sidebar.error(f"Error loading navigation: {e}")
         # Set default page on error
         current_page_key = "Dashboard"
-        page_options = {
-            "Dashboard": None,
-            "AI Chatbot": "chatbot",
-            "Conviction Engine": "conviction_engine",
-            "Runic Macro Intelligence": "runic",
-            "Monitored Trades": "monitored_trades",
-            "Virtual Trading": "virtual_trading",
-            "All Historical Report Signals": "all_data",
-            "Claude Shortlisted Signal": "text_files",
-            "Trade Details": "trade_details",
-        }
+        page_options = filter_pages_by_feature_flags({"Dashboard": None})
+        if not page_options:
+            page_options = {"Dashboard": None}
 
     st.sidebar.markdown("---")
 

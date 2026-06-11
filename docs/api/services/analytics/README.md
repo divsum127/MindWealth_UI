@@ -1,12 +1,29 @@
 # Analytics API
 
-**Status:** planned
+**Status:** implemented (v1.2.0)
 
-**Source module:** `breadth_page, performance_page`
+**Router:** `api/routers/analytics.py`
 
-## Proposed endpoints
+**Source:** Latest trade-store CSVs, virtual trading long CSV, SSI positioning JSON
 
-- `GET /analytics/breadth`
-- `GET /analytics/performance`
+## Endpoints
 
-Not implemented in v1.0.0.
+| Method | Path | Doc |
+|--------|------|-----|
+| GET | `/analytics/sigma` | [get-sigma.md](endpoints/get-sigma.md) |
+| GET | `/analytics/sentiment` | [get-sentiment.md](endpoints/get-sentiment.md) |
+| GET | `/analytics/sentiment/layers` | [get-sentiment-layers.md](endpoints/get-sentiment-layers.md) |
+| GET | `/analytics/performance` | [get-performance.md](endpoints/get-performance.md) |
+| GET | `/analytics/portfolio-ytd` | [get-portfolio-ytd.md](endpoints/get-portfolio-ytd.md) |
+
+All paths are prefixed with `/api/v1`.
+
+## Frontend mapping (Alpha Terminal)
+
+| UI area | Endpoint |
+|---------|----------|
+| Dashboard sigma KPI | `/analytics/sigma` |
+| PULSEGAUGE rows | `/analytics/sentiment` |
+| SSI layers | `/analytics/sentiment/layers` |
+| Performance table | `/analytics/performance` |
+| Overwatch YTD | `/analytics/portfolio-ytd` |

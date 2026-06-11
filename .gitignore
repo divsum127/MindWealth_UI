@@ -12,6 +12,9 @@ __pycache__/
 *.so
 .Python
 
+# Environment secrets
+.env
+
 # Streamlit secrets
 .streamlit/secrets.toml
 
@@ -19,6 +22,7 @@ __pycache__/
 macro_intelligence/data/runic.db
 macro_intelligence/output/runic_output.json
 macro_intelligence/data/*.csv
+macro_intelligence/data_cache/cftc/*.zip
 
 
 # Flagged exports (kept on server disk, e.g. EC2; do not commit)

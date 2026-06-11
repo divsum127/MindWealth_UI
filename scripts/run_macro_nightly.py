@@ -22,6 +22,10 @@ def main() -> None:
     args = parser.parse_args()
     result = run_nightly(args.date, use_claude=not args.no_claude)
     print(json.dumps({k: v for k, v in result.items() if k != "narrative"}, indent=2, default=str))
+    if result.get("briefing_paths"):
+        print("\n--- briefing outputs ---")
+        for fmt, path in result["briefing_paths"].items():
+            print(f"  {fmt}: {path}")
     print("\n--- narrative ---\n")
     print(result.get("narrative", ""))
 

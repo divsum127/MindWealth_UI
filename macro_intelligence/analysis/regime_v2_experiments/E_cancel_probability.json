@@ -1,0 +1,20 @@
+{
+  "E1_combo_c_cancel": {
+    "wti_leg": {
+      "monte_carlo_prob_all_4": 0.0831,
+      "marginal_week1_prob": 0.16330550764685525,
+      "current_wti": 89.38999938964844,
+      "strike": 85.13333275204613,
+      "vol_annual": 0.35,
+      "n_sim": 10000
+    },
+    "cpi_leg_prob": 0.27040000000000003,
+    "combined_cancel_prob": 0.02247024
+  },
+  "E2_combo_c_calibration": {
+    "n_episodes": 4,
+    "realized_cancel_rate": 0.0,
+    "predicted_example": 0.02247024
+  },
+  "E3_note": "Combo D/F/G formulas documented in report"
+}

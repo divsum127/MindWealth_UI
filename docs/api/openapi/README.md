@@ -1,5 +1,7 @@
 # OpenAPI Schema
 
+**Snapshot version:** 1.2.0 — **55 operations** across 8 services.
+
 ## Live vs snapshot
 
 | Source | Location | When to use |

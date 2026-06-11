@@ -1,0 +1,22 @@
+{
+  "C2_sub_threshold_vix_65_79": {
+    "n": 7,
+    "hit_rate": 0.8571428571428571,
+    "avg": 2.71503891515211,
+    "median": 3.2317909798349365,
+    "worst": -2.6355202243006777
+  },
+  "C2_random_friday_3m_baseline": {
+    "n": 0,
+    "hit_rate": null,
+    "avg": null,
+    "median": null,
+    "worst": null
+  },
+  "C2_edge_delta_avg": 2.71503891515211,
+  "C3_binary_vs_vector": {
+    "first_rare_binary_count": 868,
+    "first_vector_mean_count": 868,
+    "median_lag_days_binary_minus_vector": 0.0
+  }
+}

@@ -21,7 +21,7 @@
   "bq_raw": 3.0,
   "business_type": "compounder",
   "business_type_source": "auto",
-  "conviction_score": -4.0,
+  "conviction_score": -2.0,
   "created_at": "2026-05-12T20:17:19+00:00",
   "data_coverage": {
     "bq_auto_dimensions": {
@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.027109,
   "dividend_yield_5y_std": 0.015595,
-  "dividend_yield_current": 0.006161,
-  "dividend_yield_zscore": -1.3433,
-  "enterprise_value": 2055349366566.834,
+  "dividend_yield_current": 0.006783,
+  "dividend_yield_zscore": -1.3034,
+  "enterprise_value": 1880947676342.918,
   "eps_fwd": 18.2558,
   "eps_ttm": 5.14,
-  "ev_fwd_rev": 30.1009,
+  "ev_fwd_rev": 27.5468,
   "fcf_ttm": 26914000000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 68281999360.0,
   "industry": "Semiconductors",
-  "last_daily_update": "2026-05-27T04:48:33+00:00",
+  "last_daily_update": "2026-06-11T18:42:12+00:00",
   "last_full_calc": "2026-05-18T20:47:29+00:00",
   "manual_overrides": {},
-  "market_cap": 1998077366566.834,
+  "market_cap": 1823675676342.918,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 57272000000.0,
-  "owner_earnings_yield": 0.01347,
+  "owner_earnings_yield": 0.014758,
   "pe_20y_array": [
     77.6534,
     84.6555,
@@ -234,8 +234,8 @@
     81.5293,
     82.1699
   ],
-  "pe_percentile_20y": 75.0,
-  "pe_ttm": 82.1031,
+  "pe_percentile_20y": 50.0,
+  "pe_ttm": 74.5759,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -244,13 +244,13 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 422.010009765625,
+  "price": 383.32000732421875,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.33370999,
   "sector": "Technology",
   "ticker": "AVGO",
-  "updated_at": "2026-05-27T04:48:33+00:00",
-  "valuation_tax": -7.0,
+  "updated_at": "2026-06-11T18:42:12+00:00",
+  "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {
       "business_type_relief": 0.0,
@@ -259,9 +259,9 @@
       "growth_multiple_fragility": 0.0,
       "market_regime_beta": 0.0,
       "oey_penalty": 0.0,
-      "pe_hist_percentile": -2.0
+      "pe_hist_percentile": 0.0
     },
-    "total": -7.0
+    "total": -5.0
   },
   "yield_trap_mkt_threshold": 0.06,
   "yield_trap_warning": false

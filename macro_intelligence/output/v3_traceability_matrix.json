@@ -1,0 +1,462 @@
+[
+  {
+    "req_id": "var-macro-NFCI",
+    "category": "variable",
+    "spec_ref": "DATA_SOURCES.yaml #NFCI",
+    "implementation": "fred_pull.fetch_fred_series",
+    "test_module": "tests/test_macro_percentiles.py",
+    "live_check": "validate_production_data_sources.check_macro_series",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "var-macro-HY",
+    "category": "variable",
+    "spec_ref": "DATA_SOURCES.yaml #HY",
+    "implementation": "fred_pull.fetch_fred_series",
+    "test_module": "tests/test_macro_percentiles.py",
+    "live_check": "validate_production_data_sources.check_macro_series",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "var-macro-WALCL",
+    "category": "variable",
+    "spec_ref": "DATA_SOURCES.yaml #WALCL",
+    "implementation": "fred_pull + walcl_mom_pct",
+    "test_module": "tests/test_macro_percentiles.py",
+    "live_check": "validate_production_data_sources.check_macro_series",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "var-macro-CNH",
+    "category": "variable",
+    "spec_ref": "DATA_SOURCES.yaml #CNH",
+    "implementation": "yahoo_pull + FRED DEXCHUS fallback",
+    "test_module": "tests/test_scraper_pipelines.py",
+    "live_check": "validate_production_data_sources.check_macro_series",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "var-macro-WTI",
+    "category": "variable",
+    "spec_ref": "DATA_SOURCES.yaml #WTI",
+    "implementation": "yahoo_pull calendar_pct_change 28d",
+    "test_module": "tests/test_scraper_pipelines.py",
+    "live_check": "validate_production_data_sources.check_macro_series",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "var-macro-VIX",
+    "category": "variable",
+    "spec_ref": "DATA_SOURCES.yaml #VIX",
+    "implementation": "yahoo_pull.fetch_yahoo_close",
+    "test_module": "tests/test_combo_b_oct_2022.py",
+    "live_check": "validate_production_data_sources.check_macro_series",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "var-macro-VXTS",
+    "category": "variable",
+    "spec_ref": "DATA_SOURCES.yaml #VXTS",
+    "implementation": "yahoo_pull.vix_term_structure",
+    "test_module": "tests/test_ssi_layer2.py",
+    "live_check": "validate_production_data_sources.check_macro_series",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "var-macro-CFTC",
+    "category": "variable",
+    "spec_ref": "DATA_SOURCES.yaml #CFTC",
+    "implementation": "cftc_pull S&P500 Consolidated",
+    "test_module": "tests/test_cftc_parser.py",
+    "live_check": "validate_production_data_sources.check_macro_series",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "var-macro-CURVE",
+    "category": "variable",
+    "spec_ref": "DATA_SOURCES.yaml #CURVE",
+    "implementation": "fred_pull.curve_features",
+    "test_module": "tests/test_macro_percentiles.py",
+    "live_check": "validate_production_data_sources.check_macro_series",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "var-macro-CPI",
+    "category": "variable",
+    "spec_ref": "DATA_SOURCES.yaml #CPI",
+    "implementation": "bls_pull + investing_cpi_consensus",
+    "test_module": "tests/test_cpi_pull.py",
+    "live_check": "validate_production_data_sources.check_macro_series",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "var-macro-GSR",
+    "category": "variable",
+    "spec_ref": "DATA_SOURCES.yaml #GSR",
+    "implementation": "yahoo_pull.gsr_ratio GC=F/SI=F",
+    "test_module": "\u2014",
+    "live_check": "validate_production_data_sources.check_macro_series",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "var-macro-CAPE",
+    "category": "variable",
+    "spec_ref": "DATA_SOURCES.yaml #CAPE",
+    "implementation": "cape_scrape multpl",
+    "test_module": "tests/test_scraper_pipelines.py",
+    "live_check": "validate_production_data_sources.check_macro_series",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "var-ssi-AAII",
+    "category": "variable",
+    "spec_ref": "DATA_SOURCES.yaml AAII",
+    "implementation": "aaii_pull",
+    "test_module": "tests/test_scraper_pipelines.py",
+    "live_check": "validate_production_data_sources.check_ssi_series",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "var-ssi-NAAIM",
+    "category": "variable",
+    "spec_ref": "DATA_SOURCES.yaml NAAIM",
+    "implementation": "naaim_pull",
+    "test_module": "tests/test_scraper_pipelines.py",
+    "live_check": "validate_production_data_sources.check_ssi_series",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "var-ssi-CNN_FG",
+    "category": "variable",
+    "spec_ref": "DATA_SOURCES.yaml CNN_FG",
+    "implementation": "cnn_fear_greed",
+    "test_module": "tests/test_scraper_pipelines.py",
+    "live_check": "validate_production_data_sources.check_ssi_series",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "var-ssi-PCT_ABOVE_200DMA",
+    "category": "variable",
+    "spec_ref": "DATA_SOURCES.yaml PCT_ABOVE_200DMA",
+    "implementation": "pct_200dma_pull sp500",
+    "test_module": "tests/test_scraper_pipelines.py",
+    "live_check": "validate_production_data_sources.check_ssi_series",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "var-ssi-MCCLELLAN",
+    "category": "variable",
+    "spec_ref": "DATA_SOURCES.yaml MCCLELLAN",
+    "implementation": "mcclellan_pull sp500",
+    "test_module": "tests/test_scraper_pipelines.py",
+    "live_check": "validate_production_data_sources.check_ssi_series",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "var-ssi-NH_NL_RATIO",
+    "category": "variable",
+    "spec_ref": "DATA_SOURCES.yaml NH_NL_RATIO",
+    "implementation": "nh_nl_pull sp500",
+    "test_module": "tests/test_scraper_pipelines.py",
+    "live_check": "validate_production_data_sources.check_ssi_series",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "var-ssi-HYG_LQD",
+    "category": "variable",
+    "spec_ref": "DATA_SOURCES.yaml HYG_LQD",
+    "implementation": "yahoo_inputs.hyg_lqd_ratio",
+    "test_module": "tests/test_ssi_layer2.py",
+    "live_check": "validate_production_data_sources.check_ssi_series",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "var-ssi-SKEW",
+    "category": "variable",
+    "spec_ref": "DATA_SOURCES.yaml SKEW",
+    "implementation": "skew_pull",
+    "test_module": "\u2014",
+    "live_check": "validate_production_data_sources.check_ssi_series",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "var-ssi-CFTC_FM",
+    "category": "variable",
+    "spec_ref": "DATA_SOURCES.yaml CFTC_FM",
+    "implementation": "cftc_ssi layer3",
+    "test_module": "tests/test_cftc_parser.py",
+    "live_check": "validate_production_data_sources.check_ssi_series",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "var-ssi-CFTC_RM",
+    "category": "variable",
+    "spec_ref": "DATA_SOURCES.yaml CFTC_RM",
+    "implementation": "cftc_ssi rm_pctile dashboard",
+    "test_module": "tests/test_cftc_parser.py",
+    "live_check": "validate_production_data_sources.check_ssi_series",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "var-ssi-GROSS_NET_DIV",
+    "category": "variable",
+    "spec_ref": "DATA_SOURCES.yaml GROSS_NET_DIV",
+    "implementation": "cftc_ssi derived",
+    "test_module": "\u2014",
+    "live_check": "validate_production_data_sources.check_ssi_series",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "var-ssi-DBMF",
+    "category": "variable",
+    "spec_ref": "DATA_SOURCES.yaml DBMF",
+    "implementation": "yahoo_inputs.dbmf_beta",
+    "test_module": "tests/test_ssi_layer2.py",
+    "live_check": "validate_production_data_sources.check_ssi_series",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "combo-A",
+    "category": "named_combo",
+    "spec_ref": "CONFIG named_combos.A",
+    "implementation": "combo_detector.py combo_detector detect_named + direction vote",
+    "test_module": "tests/test_combo_a_vote.py",
+    "live_check": "detect_named_combos live",
+    "notes": "v3 Combo A BRAVE/FEARFUL",
+    "status": "PASS"
+  },
+  {
+    "req_id": "combo-B",
+    "category": "named_combo",
+    "spec_ref": "CONFIG named_combos.B",
+    "implementation": "combo_detector.py combo_detector Combo B ALL3",
+    "test_module": "tests/test_combo_b_oct_2022.py",
+    "live_check": "detect_named_combos live",
+    "notes": "vix_bypass",
+    "status": "PASS"
+  },
+  {
+    "req_id": "combo-C",
+    "category": "named_combo",
+    "spec_ref": "CONFIG named_combos.C",
+    "implementation": "combo_detector.py combo_detector + combo_c_cancel",
+    "test_module": "tests/test_combo_c_cancel.py",
+    "live_check": "detect_named_combos live",
+    "notes": "28d WTI calendar ROC",
+    "status": "PASS"
+  },
+  {
+    "req_id": "combo-D",
+    "category": "named_combo",
+    "spec_ref": "CONFIG named_combos.D",
+    "implementation": "combo_detector.py combo_detector VXTS+VIX+CFTC",
+    "test_module": "tests/test_combo_b_oct_2022.py",
+    "live_check": "detect_named_combos live",
+    "notes": "RM pctile dashboard",
+    "status": "PASS"
+  },
+  {
+    "req_id": "combo-E",
+    "category": "named_combo",
+    "spec_ref": "CONFIG named_combos.E",
+    "implementation": "combo_detector.py combo_detector 2of3 CONFIRMED",
+    "test_module": "\u2014",
+    "live_check": "detect_named_combos live",
+    "notes": "CONFIRMED_3_OF_3 when 3 legs",
+    "status": "PASS"
+  },
+  {
+    "req_id": "combo-F",
+    "category": "named_combo",
+    "spec_ref": "CONFIG named_combos.F",
+    "implementation": "combo_detector.py combo_detector 50WMA + lifecycle",
+    "test_module": "tests/test_combo_f_jun_2020.py",
+    "live_check": "detect_named_combos live",
+    "notes": "2020-06-08 validation date",
+    "status": "PASS"
+  },
+  {
+    "req_id": "combo-G",
+    "category": "named_combo",
+    "spec_ref": "CONFIG named_combos.G",
+    "implementation": "combo_detector.py combo_detector + hy_widen_4wk",
+    "test_module": "tests/test_combo_g.py",
+    "live_check": "detect_named_combos live",
+    "notes": "hy_widen_4wk_bps",
+    "status": "PASS"
+  },
+  {
+    "req_id": "json-dominant_signal",
+    "category": "json_output",
+    "spec_ref": "v3 nightly JSON contract",
+    "implementation": "dominant.resolve_dominant PRIORITY",
+    "test_module": "tests/test_dominant_priority.py",
+    "live_check": "run_macro_nightly.py",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "json-analog_details",
+    "category": "json_output",
+    "spec_ref": "v3 nightly JSON contract",
+    "implementation": "dominant.find_analog_details + backfill",
+    "test_module": "tests/test_backfill_hit_rates.py",
+    "live_check": "run_macro_nightly.py",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "json-spx_3m_hit_rate",
+    "category": "json_output",
+    "spec_ref": "v3 nightly JSON contract",
+    "implementation": "hit_rates.raw_hit_rate",
+    "test_module": "tests/test_hit_rates.py",
+    "live_check": "run_macro_nightly.py",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "json-combo_c_cancel",
+    "category": "json_output",
+    "spec_ref": "v3 nightly JSON contract",
+    "implementation": "combo_c_cancel.run_combo_c_cancel_check",
+    "test_module": "tests/test_combo_c_cancel.py",
+    "live_check": "run_macro_nightly.py",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "json-cftc_status",
+    "category": "json_output",
+    "spec_ref": "v3 nightly JSON contract",
+    "implementation": "json_writer._cftc_status",
+    "test_module": "tests/test_runic_output_schema.py",
+    "live_check": "run_macro_nightly.py",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "json-pending_cpi_release",
+    "category": "json_output",
+    "spec_ref": "v3 nightly JSON contract",
+    "implementation": "json_writer._pending_cpi_release",
+    "test_module": "tests/test_runic_output_schema.py",
+    "live_check": "run_macro_nightly.py",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "json-ssi_multiplier",
+    "category": "json_output",
+    "spec_ref": "v3 nightly JSON contract",
+    "implementation": "json_writer.read_ssi_multiplier",
+    "test_module": "tests/test_ssi_positioning_json.py",
+    "live_check": "run_macro_nightly.py",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "json-vix_bypass",
+    "category": "json_output",
+    "spec_ref": "v3 nightly JSON contract",
+    "implementation": "vix_bypass.compute_vix_bypass",
+    "test_module": "tests/test_ssi_vix_regime_oct_2022.py",
+    "live_check": "run_macro_nightly.py",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "json-dual_percentiles",
+    "category": "json_output",
+    "spec_ref": "v3 nightly JSON contract",
+    "implementation": "percentiles unconditional+regime",
+    "test_module": "tests/test_macro_percentiles.py",
+    "live_check": "run_macro_nightly.py",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "json-generic_prefilter",
+    "category": "json_output",
+    "spec_ref": "v3 nightly JSON contract",
+    "implementation": "prefilter.apply_prefilter + nightly generic_watch",
+    "test_module": "\u2014",
+    "live_check": "run_macro_nightly.py",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "ops-backfill",
+    "category": "operations",
+    "spec_ref": "SYSTEM_DOCUMENTATION",
+    "implementation": "backfill_macro_history + forward_returns",
+    "test_module": "tests/test_backfill_hit_rates.py",
+    "live_check": "run_full_v3_verification.py",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "ops-ssi_daily",
+    "category": "operations",
+    "spec_ref": "SYSTEM_DOCUMENTATION",
+    "implementation": "run_ssi_daily",
+    "test_module": "tests/test_ssi_positioning_json.py",
+    "live_check": "run_full_v3_verification.py",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "ops-friday_pull",
+    "category": "operations",
+    "spec_ref": "SYSTEM_DOCUMENTATION",
+    "implementation": "run_macro_friday_pull detect_all",
+    "test_module": "tests/test_friday_pull_integration.py",
+    "live_check": "run_full_v3_verification.py",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "ops-nightly",
+    "category": "operations",
+    "spec_ref": "SYSTEM_DOCUMENTATION",
+    "implementation": "run_macro_nightly",
+    "test_module": "tests/test_runic_output_schema.py",
+    "live_check": "run_full_v3_verification.py",
+    "notes": "",
+    "status": "PASS"
+  },
+  {
+    "req_id": "ops-no_prod_mock",
+    "category": "operations",
+    "spec_ref": "SYSTEM_DOCUMENTATION",
+    "implementation": "production paths no tests/fixtures",
+    "test_module": "scripts/audit_production_no_mocks.py",
+    "live_check": "run_full_v3_verification.py",
+    "notes": "",
+    "status": "PASS"
+  }
+]

@@ -201,12 +201,17 @@ def create_analysis_page(data_file, page_title, show_page_header=True):
     else:
         st.session_state[f'selected_symbols_{page_title}'] = []
     
+    # New Signals email report uses win rate >= 70% and trade count >= 4 only (no Sharpe filter).
+    email_aligned_defaults = page_title == "New Signals"
+    default_min_win_rate = 70
+    default_min_sharpe = -5.0 if email_aligned_defaults else 0.5
+
     # Win rate filter
     min_win_rate = st.sidebar.slider(
         "Min Win Rate (%)",
         min_value=0,
         max_value=100,
-        value=70,
+        value=default_min_win_rate,
         help="Minimum win rate threshold",
         key=f"win_rate_slider_{page_title}"
     )
@@ -216,11 +221,18 @@ def create_analysis_page(data_file, page_title, show_page_header=True):
         "Min Strategy Sharpe Ratio",
         min_value=-5.0,
         max_value=5.0,
-        value=0.5,
+        value=default_min_sharpe,
         step=0.1,
-        help="Minimum Strategy Sharpe Ratio threshold",
-        key=f"sharpe_ratio_slider_{page_title}"
+        help="Minimum Strategy Sharpe Ratio threshold"
+        + (" (New Signals default matches email: no Sharpe filter)" if email_aligned_defaults else ""),
+        key=f"sharpe_ratio_slider_{page_title}_email_aligned"
     )
+
+    if email_aligned_defaults:
+        st.sidebar.caption(
+            "New Signals defaults match the email report: Win Rate ≥ 70%, no Sharpe minimum. "
+            "Lower the Sharpe slider if signals from your email are missing."
+        )
     
     # Use the same display_interval_tabs function but with unique keys
     def display_interval_tabs_for_page(position_df, position_name):

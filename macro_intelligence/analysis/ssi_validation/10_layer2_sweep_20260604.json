@@ -1,0 +1,280 @@
+{
+  "test_id": "10_layer2_sweep",
+  "rows": [
+    {
+      "min_votes": 0,
+      "n_long_with_gate": 16,
+      "metrics": {
+        "n_events": 16,
+        "1w": {
+          "n": 16,
+          "avg": 1.0758,
+          "median": 0.3867,
+          "win_pct": 81.25,
+          "worst": -0.3534,
+          "sharpe": 5.626
+        },
+        "2w": {
+          "n": 16,
+          "avg": 1.4435,
+          "median": 0.3867,
+          "win_pct": 81.25,
+          "worst": -0.3534,
+          "sharpe": 4.3207
+        },
+        "1m": {
+          "n": 16,
+          "avg": 3.0707,
+          "median": 0.3867,
+          "win_pct": 81.25,
+          "worst": -0.3534,
+          "sharpe": 3.0962
+        },
+        "3m": {
+          "n": 16,
+          "avg": 4.0697,
+          "median": 0.3867,
+          "win_pct": 81.25,
+          "worst": -0.3534,
+          "sharpe": 1.7923
+        },
+        "6m": {
+          "n": 16,
+          "avg": 4.0697,
+          "median": 0.3867,
+          "win_pct": 81.25,
+          "worst": -0.3534,
+          "sharpe": 1.2673
+        },
+        "12m": {
+          "n": 16,
+          "avg": 4.0697,
+          "median": 0.3867,
+          "win_pct": 81.25,
+          "worst": -0.3534,
+          "sharpe": 0.8961
+        }
+      }
+    },
+    {
+      "min_votes": 1,
+      "n_long_with_gate": 16,
+      "metrics": {
+        "n_events": 16,
+        "1w": {
+          "n": 16,
+          "avg": 1.0758,
+          "median": 0.3867,
+          "win_pct": 81.25,
+          "worst": -0.3534,
+          "sharpe": 5.626
+        },
+        "2w": {
+          "n": 16,
+          "avg": 1.4435,
+          "median": 0.3867,
+          "win_pct": 81.25,
+          "worst": -0.3534,
+          "sharpe": 4.3207
+        },
+        "1m": {
+          "n": 16,
+          "avg": 3.0707,
+          "median": 0.3867,
+          "win_pct": 81.25,
+          "worst": -0.3534,
+          "sharpe": 3.0962
+        },
+        "3m": {
+          "n": 16,
+          "avg": 4.0697,
+          "median": 0.3867,
+          "win_pct": 81.25,
+          "worst": -0.3534,
+          "sharpe": 1.7923
+        },
+        "6m": {
+          "n": 16,
+          "avg": 4.0697,
+          "median": 0.3867,
+          "win_pct": 81.25,
+          "worst": -0.3534,
+          "sharpe": 1.2673
+        },
+        "12m": {
+          "n": 16,
+          "avg": 4.0697,
+          "median": 0.3867,
+          "win_pct": 81.25,
+          "worst": -0.3534,
+          "sharpe": 0.8961
+        }
+      }
+    },
+    {
+      "min_votes": 2,
+      "n_long_with_gate": 16,
+      "metrics": {
+        "n_events": 16,
+        "1w": {
+          "n": 16,
+          "avg": 1.0758,
+          "median": 0.3867,
+          "win_pct": 81.25,
+          "worst": -0.3534,
+          "sharpe": 5.626
+        },
+        "2w": {
+          "n": 16,
+          "avg": 1.4435,
+          "median": 0.3867,
+          "win_pct": 81.25,
+          "worst": -0.3534,
+          "sharpe": 4.3207
+        },
+        "1m": {
+          "n": 16,
+          "avg": 3.0707,
+          "median": 0.3867,
+          "win_pct": 81.25,
+          "worst": -0.3534,
+          "sharpe": 3.0962
+        },
+        "3m": {
+          "n": 16,
+          "avg": 4.0697,
+          "median": 0.3867,
+          "win_pct": 81.25,
+          "worst": -0.3534,
+          "sharpe": 1.7923
+        },
+        "6m": {
+          "n": 16,
+          "avg": 4.0697,
+          "median": 0.3867,
+          "win_pct": 81.25,
+          "worst": -0.3534,
+          "sharpe": 1.2673
+        },
+        "12m": {
+          "n": 16,
+          "avg": 4.0697,
+          "median": 0.3867,
+          "win_pct": 81.25,
+          "worst": -0.3534,
+          "sharpe": 0.8961
+        }
+      }
+    },
+    {
+      "min_votes": 3,
+      "n_long_with_gate": 16,
+      "metrics": {
+        "n_events": 16,
+        "1w": {
+          "n": 16,
+          "avg": 1.0758,
+          "median": 0.3867,
+          "win_pct": 81.25,
+          "worst": -0.3534,
+          "sharpe": 5.626
+        },
+        "2w": {
+          "n": 16,
+          "avg": 1.4435,
+          "median": 0.3867,
+          "win_pct": 81.25,
+          "worst": -0.3534,
+          "sharpe": 4.3207
+        },
+        "1m": {
+          "n": 16,
+          "avg": 3.0707,
+          "median": 0.3867,
+          "win_pct": 81.25,
+          "worst": -0.3534,
+          "sharpe": 3.0962
+        },
+        "3m": {
+          "n": 16,
+          "avg": 4.0697,
+          "median": 0.3867,
+          "win_pct": 81.25,
+          "worst": -0.3534,
+          "sharpe": 1.7923
+        },
+        "6m": {
+          "n": 16,
+          "avg": 4.0697,
+          "median": 0.3867,
+          "win_pct": 81.25,
+          "worst": -0.3534,
+          "sharpe": 1.2673
+        },
+        "12m": {
+          "n": 16,
+          "avg": 4.0697,
+          "median": 0.3867,
+          "win_pct": 81.25,
+          "worst": -0.3534,
+          "sharpe": 0.8961
+        }
+      }
+    },
+    {
+      "min_votes": 4,
+      "n_long_with_gate": 0,
+      "metrics": {
+        "n_events": 0,
+        "1w": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "2w": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "1m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "3m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "6m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "12m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        }
+      }
+    }
+  ]
+}

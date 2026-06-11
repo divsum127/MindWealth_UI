@@ -1,0 +1,7 @@
+{
+  "test_id": "15_sbi_short",
+  "status": "PARTIAL",
+  "note": "MindWealth accessible. calculate_trade_arrival_stats_for_breadth loads ~500 stocks per day; iterating 2015-2026 (~2800 days) requires a dedicated overnight/batch run inside the MindWealth environment. Run: cd /home/ubuntu/MindWealth && .venv/bin/python /home/ubuntu/uiv2/git/MindWealth_UI/scripts/mindwealth_adapters/sbi_breadth.py --start 2015-01-01",
+  "n_short_entries": null,
+  "metrics": {}
+}

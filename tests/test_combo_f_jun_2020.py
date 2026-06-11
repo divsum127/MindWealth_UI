@@ -28,7 +28,18 @@ def _has_network() -> bool:
 
 
 class TestComboFJun2020(unittest.TestCase):
-    """Jun 29, 2020: SPX reclaimed 50WMA with +5.1% weekly gain; CFTC 31st pctile."""
+    """Jun 29, 2020 (May 26) and Jun 8, 2020 (v3) gate dates."""
+
+    def test_combo_f_v3_jun_8_2020(self):
+        self.assertTrue(
+            evaluate_combo_f_at_date(
+                "2020-06-08",
+                weekly_gain_pct=6.2,
+                cftc_pctile=31.0,
+                above_50wma=True,
+                was_below_prior_week=True,
+            )
+        )
 
     def test_combo_f_conditions_documented(self):
         self.assertTrue(
@@ -42,7 +53,7 @@ class TestComboFJun2020(unittest.TestCase):
         )
 
     def test_regime_classifier_fixture(self):
-        regime = classify_regime("2020-06-29", use_claude=False)
+        regime = classify_regime("2020-06-08", use_claude=False)
         self.assertEqual(regime.fed_cycle, "QE")
         self.assertEqual(regime.geo_overlay, "PANDEMIC")
 

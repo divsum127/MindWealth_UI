@@ -1,0 +1,91 @@
+{
+  "start": "2015-01-01",
+  "end": "2026-06-04",
+  "horizon_trading_days": 63,
+  "long_sweep": [
+    {
+      "threshold": -0.3,
+      "n_fires": 0,
+      "hit_rate": null,
+      "avg_return": null
+    },
+    {
+      "threshold": -0.4,
+      "n_fires": 0,
+      "hit_rate": null,
+      "avg_return": null
+    },
+    {
+      "threshold": -0.5,
+      "n_fires": 0,
+      "hit_rate": null,
+      "avg_return": null
+    },
+    {
+      "threshold": -0.6,
+      "n_fires": 0,
+      "hit_rate": null,
+      "avg_return": null
+    },
+    {
+      "threshold": -0.7,
+      "n_fires": 0,
+      "hit_rate": null,
+      "avg_return": null
+    },
+    {
+      "threshold": -0.8,
+      "n_fires": 0,
+      "hit_rate": null,
+      "avg_return": null
+    },
+    {
+      "threshold": -0.9,
+      "n_fires": 0,
+      "hit_rate": null,
+      "avg_return": null
+    }
+  ],
+  "short_sweep": [
+    {
+      "threshold": 0.6,
+      "n_fires": 56,
+      "hit_rate": 0.0357,
+      "avg_return": 5.7966,
+      "median_return": 4.6431
+    },
+    {
+      "threshold": 0.7,
+      "n_fires": 53,
+      "hit_rate": 0.0377,
+      "avg_return": 5.7097,
+      "median_return": 3.3243
+    },
+    {
+      "threshold": 0.8,
+      "n_fires": 34,
+      "hit_rate": 0.0,
+      "avg_return": 6.4582,
+      "median_return": 3.8787
+    },
+    {
+      "threshold": 0.85,
+      "n_fires": 30,
+      "hit_rate": 0.0,
+      "avg_return": 6.3003,
+      "median_return": 3.2084
+    },
+    {
+      "threshold": 0.9,
+      "n_fires": 23,
+      "hit_rate": 0.0,
+      "avg_return": 7.3293,
+      "median_return": 4.433
+    }
+  ],
+  "recommended": {
+    "long_entry_threshold": -0.6,
+    "short_entry_threshold": 0.7,
+    "rationale": "Max avg SPX forward return (long); min avg return for short entries"
+  }
+}

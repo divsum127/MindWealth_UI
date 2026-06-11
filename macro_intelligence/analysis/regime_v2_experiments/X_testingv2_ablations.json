@@ -1,0 +1,91 @@
+{
+  "combo_b_confirmed_only": {
+    "all_fires": {
+      "n": 89,
+      "hit_rate": 0.797752808988764,
+      "avg_win": 7.022149721642455,
+      "avg_loss": -2.8210545045528543,
+      "pw_expected": 5.0313893163445265,
+      "benchmark_pct": 2.5,
+      "excess_pct": 2.5313893163445265,
+      "avg": 5.031389316344529,
+      "median": 4.194971646525298,
+      "worst": -9.711428756233612
+    },
+    "confirmed_only": {
+      "n": 0,
+      "hit_rate": null,
+      "avg_win": null,
+      "avg_loss": null,
+      "pw_expected": null,
+      "benchmark_pct": 2.5,
+      "excess_pct": null
+    },
+    "watch_only": {
+      "n": 89,
+      "hit_rate": 0.797752808988764,
+      "avg_win": 7.022149721642455,
+      "avg_loss": -2.8210545045528543,
+      "pw_expected": 5.0313893163445265,
+      "benchmark_pct": 2.5,
+      "excess_pct": 2.5313893163445265,
+      "avg": 5.031389316344529,
+      "median": 4.194971646525298,
+      "worst": -9.711428756233612
+    },
+    "n_all": 89,
+    "n_confirmed": 0,
+    "n_watch": 89
+  },
+  "combo_a_twy_gsr_ablation": {
+    "baseline_combo_a_3m": {
+      "n": 174,
+      "hit_rate": 0.22988505747126436,
+      "avg_win": -10.332981932331837,
+      "avg_loss": 6.353720250465952,
+      "pw_expected": 2.5176967601676097,
+      "benchmark_pct": 2.5,
+      "excess_pct": 0.017696760167609682,
+      "avg": 2.5176967601676092,
+      "median": 4.115751289897251,
+      "worst": 37.564754622382814
+    },
+    "subset_twy_dovish_3m": {
+      "n": 28,
+      "hit_rate": 0.7142857142857143,
+      "avg_win": -12.500248327274951,
+      "avg_loss": 9.864136195797666,
+      "pw_expected": -6.110424177825632,
+      "benchmark_pct": 2.5,
+      "excess_pct": -8.610424177825632,
+      "avg": -6.1104241778256325,
+      "median": -6.799769212813008,
+      "worst": 27.768874509369194
+    },
+    "subset_twy_hawkish_3m": {
+      "n": 19,
+      "hit_rate": 0.21052631578947367,
+      "avg_win": -5.110492839074525,
+      "avg_loss": 5.390746139929527,
+      "pw_expected": 3.1799589864549898,
+      "benchmark_pct": 2.5,
+      "excess_pct": 0.6799589864549898,
+      "avg": 3.1799589864549893,
+      "median": 4.499803551493603,
+      "worst": 11.384089469691009
+    },
+    "subset_gsr_pctile_80plus_3m": {
+      "n": 174,
+      "hit_rate": 0.22988505747126436,
+      "avg_win": -10.332981932331837,
+      "avg_loss": 6.353720250465952,
+      "pw_expected": 2.5176967601676097,
+      "benchmark_pct": 2.5,
+      "excess_pct": 0.017696760167609682,
+      "avg": 2.5176967601676092,
+      "median": 4.115751289897251,
+      "worst": 37.564754622382814
+    },
+    "note": "Post-hoc slice on existing Combo A fires \u2014 not a re-fired combo rule."
+  }
+}

@@ -1,0 +1,492 @@
+{
+  "status": "OK",
+  "windows": [
+    {
+      "test_year": 2015,
+      "train_through": "2014-12-31",
+      "status": "OK",
+      "state_mapping": {
+        "0": "Risk-On",
+        "1": "Risk-Off",
+        "2": "Transition"
+      },
+      "transition_matrix": [
+        [
+          0.7863943951752604,
+          0.21360560482473964,
+          1.7458269100570663e-235
+        ],
+        [
+          0.015695797560533048,
+          0.9223567527431465,
+          0.06194744969632036
+        ],
+        [
+          0.010903946174846952,
+          0.005647252728748225,
+          0.9834488010964048
+        ]
+      ],
+      "risk_off_track": {
+        "n": 49,
+        "median_weeks": 0.0,
+        "min_weeks": 0,
+        "max_weeks": 8,
+        "pct_any_lead": 0.2653061224489796
+      },
+      "risk_on_track": {
+        "n": 39,
+        "median_weeks": 0.0,
+        "min_weeks": 0,
+        "max_weeks": 0,
+        "pct_any_lead": 0.0
+      },
+      "n_train_weeks": 261
+    },
+    {
+      "test_year": 2016,
+      "train_through": "2015-12-31",
+      "status": "OK",
+      "state_mapping": {
+        "0": "Risk-On",
+        "1": "Risk-Off",
+        "2": "Transition"
+      },
+      "transition_matrix": [
+        [
+          0.7317656354577511,
+          0.26823436454224897,
+          1.3926133449704286e-20
+        ],
+        [
+          0.030841526666341126,
+          0.8458381987604167,
+          0.12332027457324218
+        ],
+        [
+          0.011335769857129236,
+          0.003778826652576996,
+          0.9848854034902937
+        ]
+      ],
+      "risk_off_track": {
+        "n": 47,
+        "median_weeks": 0.0,
+        "min_weeks": 0,
+        "max_weeks": 0,
+        "pct_any_lead": 0.0
+      },
+      "risk_on_track": {
+        "n": 42,
+        "median_weeks": 0.0,
+        "min_weeks": 0,
+        "max_weeks": 0,
+        "pct_any_lead": 0.0
+      },
+      "n_train_weeks": 313
+    },
+    {
+      "test_year": 2017,
+      "train_through": "2016-12-31",
+      "status": "OK",
+      "state_mapping": {
+        "1": "Risk-On",
+        "0": "Risk-Off",
+        "2": "Transition"
+      },
+      "transition_matrix": [
+        [
+          0.8627720493736637,
+          0.06862912702169909,
+          0.06859882360463715
+        ],
+        [
+          0.04650716863244326,
+          0.9048046192781527,
+          0.04868821208940399
+        ],
+        [
+          1.2038057863907508e-50,
+          0.015261536326915731,
+          0.9847384636730842
+        ]
+      ],
+      "risk_off_track": {
+        "n": 98,
+        "median_weeks": 0.0,
+        "min_weeks": 0,
+        "max_weeks": 8,
+        "pct_any_lead": 0.16326530612244897
+      },
+      "risk_on_track": {
+        "n": 52,
+        "median_weeks": 0.0,
+        "min_weeks": 0,
+        "max_weeks": 0,
+        "pct_any_lead": 0.0
+      },
+      "n_train_weeks": 366
+    },
+    {
+      "test_year": 2018,
+      "train_through": "2017-12-31",
+      "status": "OK",
+      "state_mapping": {
+        "1": "Risk-On",
+        "0": "Risk-Off",
+        "2": "Transition"
+      },
+      "transition_matrix": [
+        [
+          0.9060041837518328,
+          0.05654723561774721,
+          0.03744858063041999
+        ],
+        [
+          0.07523853698591375,
+          0.8942449508143094,
+          0.030516512199776857
+        ],
+        [
+          3.6846424655689455e-150,
+          0.010210135350416455,
+          0.9897898646495836
+        ]
+      ],
+      "risk_off_track": {
+        "n": 80,
+        "median_weeks": 0.0,
+        "min_weeks": 0,
+        "max_weeks": 0,
+        "pct_any_lead": 0.0
+      },
+      "risk_on_track": {
+        "n": 45,
+        "median_weeks": 0.0,
+        "min_weeks": 0,
+        "max_weeks": 8,
+        "pct_any_lead": 0.17777777777777778
+      },
+      "n_train_weeks": 418
+    },
+    {
+      "test_year": 2019,
+      "train_through": "2018-12-31",
+      "status": "OK",
+      "state_mapping": {
+        "0": "Risk-On",
+        "1": "Risk-Off",
+        "2": "Transition"
+      },
+      "transition_matrix": [
+        [
+          0.9372675096643709,
+          0.0627324903356291,
+          2.319673083250241e-99
+        ],
+        [
+          0.016666749089439464,
+          0.9167584557282498,
+          0.06657479518231084
+        ],
+        [
+          3.7306164603844464e-180,
+          0.007627449276966934,
+          0.9923725507230331
+        ]
+      ],
+      "risk_off_track": {
+        "n": 81,
+        "median_weeks": 0.0,
+        "min_weeks": 0,
+        "max_weeks": 8,
+        "pct_any_lead": 0.13580246913580246
+      },
+      "risk_on_track": {
+        "n": 52,
+        "median_weeks": 0.0,
+        "min_weeks": 0,
+        "max_weeks": 0,
+        "pct_any_lead": 0.0
+      },
+      "n_train_weeks": 470
+    },
+    {
+      "test_year": 2020,
+      "train_through": "2019-12-31",
+      "status": "OK",
+      "state_mapping": {
+        "0": "Risk-On",
+        "1": "Transition",
+        "2": "Risk-Off"
+      },
+      "transition_matrix": [
+        [
+          0.9304174440363968,
+          0.06958255596360317,
+          2.390281072376619e-160
+        ],
+        [
+          0.015543001274889848,
+          0.9844569987251102,
+          3.7700620404614513e-63
+        ],
+        [
+          0.0,
+          0.003927733246189679,
+          0.9960722667538103
+        ]
+      ],
+      "risk_off_track": {
+        "n": 43,
+        "median_weeks": 0.0,
+        "min_weeks": 0,
+        "max_weeks": 7,
+        "pct_any_lead": 0.2558139534883721
+      },
+      "risk_on_track": {
+        "n": 42,
+        "median_weeks": 0.0,
+        "min_weeks": 0,
+        "max_weeks": 0,
+        "pct_any_lead": 0.0
+      },
+      "n_train_weeks": 522
+    },
+    {
+      "test_year": 2021,
+      "train_through": "2020-12-31",
+      "status": "OK",
+      "state_mapping": {
+        "0": "Risk-On",
+        "2": "Risk-Off",
+        "1": "Transition"
+      },
+      "transition_matrix": [
+        [
+          1.0808494396071731e-08,
+          0.9999943757353649,
+          5.6134561406110464e-06
+        ],
+        [
+          0.9068771563486001,
+          4.433937282785267e-07,
+          0.0931224002576716
+        ],
+        [
+          0.039903532555918775,
+          0.00025966563418332414,
+          0.9598368018098978
+        ]
+      ],
+      "risk_off_track": {
+        "n": 78,
+        "median_weeks": 1.0,
+        "min_weeks": 0,
+        "max_weeks": 8,
+        "pct_any_lead": 0.8846153846153846
+      },
+      "risk_on_track": {
+        "n": 69,
+        "median_weeks": 0.0,
+        "min_weeks": 0,
+        "max_weeks": 8,
+        "pct_any_lead": 0.37681159420289856
+      },
+      "n_train_weeks": 574
+    },
+    {
+      "test_year": 2022,
+      "train_through": "2021-12-31",
+      "status": "OK",
+      "state_mapping": {
+        "0": "Risk-On",
+        "1": "Risk-Off",
+        "2": "Transition"
+      },
+      "transition_matrix": [
+        [
+          0.9441134711202593,
+          6.18252114682033e-169,
+          0.05588652887974067
+        ],
+        [
+          2.958035476313101e-169,
+          0.9369482779846227,
+          0.06305172201537733
+        ],
+        [
+          0.0018361459798203674,
+          0.005509253589575481,
+          0.992654600430604
+        ]
+      ],
+      "risk_off_track": {
+        "n": 19,
+        "median_weeks": 0.0,
+        "min_weeks": 0,
+        "max_weeks": 8,
+        "pct_any_lead": 0.42105263157894735
+      },
+      "risk_on_track": {
+        "n": 10,
+        "median_weeks": 0.0,
+        "min_weeks": 0,
+        "max_weeks": 0,
+        "pct_any_lead": 0.0
+      },
+      "n_train_weeks": 627
+    },
+    {
+      "test_year": 2023,
+      "train_through": "2022-12-31",
+      "status": "OK",
+      "state_mapping": {
+        "0": "Risk-Off",
+        "1": "Risk-On",
+        "2": "Transition"
+      },
+      "transition_matrix": [
+        [
+          0.8096362345798045,
+          0.19036376542019545,
+          1.2797335147346675e-30
+        ],
+        [
+          0.009512288677528178,
+          0.9201536591105324,
+          0.07033405221193935
+        ],
+        [
+          0.005299968811877903,
+          0.011505838394961637,
+          0.9831941927931604
+        ]
+      ],
+      "risk_off_track": {
+        "n": 53,
+        "median_weeks": 1.0,
+        "min_weeks": 1,
+        "max_weeks": 2,
+        "pct_any_lead": 1.0
+      },
+      "risk_on_track": {
+        "n": 73,
+        "median_weeks": 0.0,
+        "min_weeks": 0,
+        "max_weeks": 8,
+        "pct_any_lead": 0.1643835616438356
+      },
+      "n_train_weeks": 679
+    },
+    {
+      "test_year": 2024,
+      "train_through": "2023-12-31",
+      "status": "OK",
+      "state_mapping": {
+        "2": "Risk-On",
+        "0": "Risk-Off",
+        "1": "Transition"
+      },
+      "transition_matrix": [
+        [
+          0.6367788467001577,
+          0.36322115329984217,
+          5.145412419125849e-43
+        ],
+        [
+          0.15702306930832793,
+          0.8429769306916721,
+          1.7946580494616496e-53
+        ],
+        [
+          0.001428570349044878,
+          5.097231367585934e-25,
+          0.9985714296509551
+        ]
+      ],
+      "risk_off_track": {
+        "n": 109,
+        "median_weeks": 1.0,
+        "min_weeks": 0,
+        "max_weeks": 1,
+        "pct_any_lead": 0.926605504587156
+      },
+      "risk_on_track": {
+        "n": 72,
+        "median_weeks": 0.0,
+        "min_weeks": 0,
+        "max_weeks": 8,
+        "pct_any_lead": 0.2777777777777778
+      },
+      "n_train_weeks": 731
+    },
+    {
+      "test_year": 2025,
+      "train_through": "2024-12-31",
+      "status": "OK",
+      "state_mapping": {
+        "1": "Risk-On",
+        "0": "Risk-Off",
+        "2": "Transition"
+      },
+      "transition_matrix": [
+        [
+          3.8247815325835503e-25,
+          0.9997937540972938,
+          0.00020624590270624838
+        ],
+        [
+          6.652830162210171e-24,
+          0.9985754677211278,
+          0.0014245322788721468
+        ],
+        [
+          2.615464882039988e-126,
+          2.681109764259019e-85,
+          1.0
+        ]
+      ],
+      "risk_off_track": {
+        "n": 81,
+        "median_weeks": 1.0,
+        "min_weeks": 0,
+        "max_weeks": 1,
+        "pct_any_lead": 0.9753086419753086
+      },
+      "risk_on_track": {
+        "n": 64,
+        "median_weeks": 0.0,
+        "min_weeks": 0,
+        "max_weeks": 0,
+        "pct_any_lead": 0.0
+      },
+      "n_train_weeks": 783
+    }
+  ],
+  "anchors": {
+    "Risk-Off": [
+      "1998-08-01",
+      "2002-10-01",
+      "2008-10-01",
+      "2009-03-01",
+      "2011-08-01",
+      "2020-03-01"
+    ],
+    "Risk-On": [
+      "1995-01-01",
+      "2003-03-01",
+      "2009-07-01",
+      "2011-10-01",
+      "2013-03-01",
+      "2018-01-01",
+      "2020-06-01"
+    ],
+    "Transition": [
+      "2007-07-01",
+      "2018-12-01",
+      "2022-10-01",
+      "2025-04-01"
+    ]
+  }
+}

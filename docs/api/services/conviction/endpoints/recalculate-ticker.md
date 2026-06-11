@@ -26,7 +26,7 @@ Path: ticker
 ## Example
 
 ```bash
-curl -s -X POST http://localhost:8000/api/v1/conviction/tickers/AAPL/recalculate | jq
+curl -s -X POST http://51.20.53.218:8506/api/v1/conviction/tickers/AAPL/recalculate | jq
 ```
 
 ## Notes

@@ -21,7 +21,7 @@
   "bq_raw": 3.5,
   "business_type": "compounder",
   "business_type_source": "auto",
-  "conviction_score": -2.5,
+  "conviction_score": -1.5,
   "created_at": "2026-05-12T20:18:23+00:00",
   "data_coverage": {
     "bq_auto_dimensions": {
@@ -189,26 +189,26 @@
   },
   "dividend_yield_5y_mean": 0.003616,
   "dividend_yield_5y_std": 0.001339,
-  "dividend_yield_current": 0.002287,
-  "dividend_yield_zscore": -0.9925,
-  "enterprise_value": 4661817483857.278,
+  "dividend_yield_current": 0.002513,
+  "dividend_yield_zscore": -0.8237,
+  "enterprise_value": 4270463993412.3555,
   "eps_fwd": 14.45135,
   "eps_ttm": 13.1,
-  "ev_fwd_rev": 11.0339,
+  "ev_fwd_rev": 10.1077,
   "fcf_ttm": 73266000000.0,
   "fd_direction": "negative",
   "fd_votes": {},
   "flags": [],
-  "fs_class": "moderate",
+  "fs_class": "moderate_high",
   "fs_quality_base": 58.75,
-  "fs_score": 50.75,
+  "fs_score": 55.75,
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 422498009088.0,
   "industry": "Internet Content & Information",
-  "last_daily_update": "2026-05-27T04:48:33+00:00",
+  "last_daily_update": "2026-06-11T18:42:12+00:00",
   "last_full_calc": "2026-05-18T20:48:49+00:00",
   "manual_overrides": {},
-  "market_cap": 4662507483857.278,
+  "market_cap": 4271153993412.3555,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": -690000000.0,
-  "owner_earnings_yield": 0.015714,
+  "owner_earnings_yield": 0.017154,
   "pe_20y_array": [
     29.0287,
     31.3164,
@@ -232,8 +232,8 @@
     29.1335,
     29.9855
   ],
-  "pe_percentile_20y": 66.67,
-  "pe_ttm": 29.3771,
+  "pe_percentile_20y": 16.67,
+  "pe_ttm": 26.7359,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -242,13 +242,13 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 384.8399963378906,
+  "price": 350.239990234375,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.38884997,
   "sector": "Communication Services",
   "ticker": "GOOG",
-  "updated_at": "2026-05-27T04:48:33+00:00",
-  "valuation_tax": -6.0,
+  "updated_at": "2026-06-11T18:42:12+00:00",
+  "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {
       "business_type_relief": 0.0,
@@ -257,9 +257,9 @@
       "growth_multiple_fragility": 0.0,
       "market_regime_beta": 0.0,
       "oey_penalty": 0.0,
-      "pe_hist_percentile": -1.0
+      "pe_hist_percentile": 0.0
     },
-    "total": -6.0
+    "total": -5.0
   },
   "yield_trap_mkt_threshold": 0.06,
   "yield_trap_warning": false

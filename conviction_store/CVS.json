@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.032209,
   "dividend_yield_5y_std": 0.025805,
-  "dividend_yield_current": 0.029318,
-  "dividend_yield_zscore": -0.112,
-  "enterprise_value": 186901888847.31323,
+  "dividend_yield_current": 0.02672,
+  "dividend_yield_zscore": -0.2127,
+  "enterprise_value": 198155567305.67114,
   "eps_fwd": 8.36284,
   "eps_ttm": 2.28,
-  "ev_fwd_rev": 0.4608,
+  "ev_fwd_rev": 0.4885,
   "fcf_ttm": 7807000000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 405617999872.0,
   "industry": "Healthcare Plans",
-  "last_daily_update": "2026-05-27T04:48:33+00:00",
+  "last_daily_update": "2026-06-11T18:42:12+00:00",
   "last_full_calc": "2026-05-18T20:48:25+00:00",
   "manual_overrides": {},
-  "market_cap": 115764888847.31323,
+  "market_cap": 127018567305.67113,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 71137000000.0,
-  "owner_earnings_yield": 0.067438,
+  "owner_earnings_yield": 0.061463,
   "pe_20y_array": [
     57.5072,
     54.0,
@@ -232,8 +232,8 @@
     36.6916,
     42.2863
   ],
-  "pe_percentile_20y": 33.33,
-  "pe_ttm": 39.7939,
+  "pe_percentile_20y": 50.0,
+  "pe_ttm": 43.6623,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -242,12 +242,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 90.7300033569336,
+  "price": 99.55000305175781,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.037520003,
   "sector": "Healthcare",
   "ticker": "CVS",
-  "updated_at": "2026-05-27T04:48:33+00:00",
+  "updated_at": "2026-06-11T18:42:12+00:00",
   "valuation_tax": 0.0,
   "valuation_tax_breakdown": {
     "components": {

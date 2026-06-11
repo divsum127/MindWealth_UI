@@ -27,7 +27,7 @@ No body
 ## Example
 
 ```bash
-curl -s -X DELETE http://localhost:8000/api/v1/chatbot/sessions/{session_id}
+curl -s -X DELETE http://51.20.53.218:8506/api/v1/chatbot/sessions/{session_id}
 ```
 
 ## Notes

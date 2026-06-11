@@ -1,0 +1,81 @@
+{
+  "job_id": "bc017124-957c-4f30-beab-278e50b7d76c",
+  "session_id": "ee2c0596-0ea7-4727-9ea8-1a7b28615e06",
+  "status": "completed",
+  "created_at": "2026-06-05T00:34:36.497900+00:00",
+  "started_at": "2026-06-05T00:35:33.125334+00:00",
+  "completed_at": "2026-06-05T00:35:40.867785+00:00",
+  "request": {
+    "message": "hi",
+    "preset": "freeform",
+    "asset": null,
+    "from_date": null,
+    "to_date": null,
+    "assets": null,
+    "functions": null,
+    "selected_signal_types": [],
+    "auto_extract_tickers": true,
+    "deep_research_enabled": false,
+    "query_kind": null,
+    "additional_context": null
+  },
+  "flow_steps": [
+    {
+      "stage": "Router",
+      "detail": "Analyzing user query intent and selecting route",
+      "timestamp": "2026-06-05T00:35:33.458505+00:00"
+    },
+    {
+      "stage": "Route Selected",
+      "detail": "CONVERSATIONAL (intent=CONVERSATIONAL, conf=0.92)",
+      "timestamp": "2026-06-05T00:35:34.631948+00:00"
+    },
+    {
+      "stage": "Conversation Mode",
+      "detail": "Using conversation history only (no web/internal data fetch)",
+      "timestamp": "2026-06-05T00:35:34.632729+00:00"
+    }
+  ],
+  "result": {
+    "content": "# Hello! \ud83d\udc4b\n\nWelcome to **MindWealth Financial Analysis**!\n\nI'm here to help you analyze stock market signals, trading data, and market trends. I can assist you with:\n\n- **Signal Analysis** - Interpreting entry and exit signals from the MindWealth system\n- **Stock Performance** - Analyzing price movements and trends\n- **Technical Indicators** - Understanding support, resistance, and momentum signals\n- **Portfolio Insights** - Reviewing open positions and their performance\n- **Market Comparisons** - Comparing multiple tickers and sectors\n\n## How can I help you today?\n\nYou can ask me to:\n- Analyze specific tickers or symbols\n- Review outstanding signals and positions\n- Explain market trends or patterns\n- Compare performance across different stocks\n- Provide insights on entry or exit opportunities\n\n**What would you like to explore?**",
+    "metadata": {
+      "intent": "CONVERSATIONAL",
+      "intent_label": "Conversational",
+      "intent_confidence": 0.92,
+      "intent_classified_by": "llm_router",
+      "route": "CONVERSATIONAL",
+      "web_search_used": false,
+      "web_sources": [],
+      "llm_router_reasoning": "The user has initiated a conversation without asking for specific data or information.",
+      "input_type": "conversational",
+      "model": "claude-sonnet-4-5-20250929",
+      "tokens_used": {
+        "prompt": 1561,
+        "completion": 194,
+        "total": 1755
+      },
+      "finish_reason": "end_turn",
+      "batch_processing_used": true,
+      "batch_count": 1,
+      "batch_mode": "single",
+      "flow_trace": [
+        {
+          "stage": "Router",
+          "detail": "Analyzing user query intent and selecting route",
+          "timestamp": "00:35:33"
+        },
+        {
+          "stage": "Route Selected",
+          "detail": "CONVERSATIONAL (intent=CONVERSATIONAL, conf=0.92)",
+          "timestamp": "00:35:34"
+        },
+        {
+          "stage": "Conversation Mode",
+          "detail": "Using conversation history only (no web/internal data fetch)",
+          "timestamp": "00:35:34"
+        }
+      ]
+    }
+  },
+  "error": null
+}

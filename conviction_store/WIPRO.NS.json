@@ -189,26 +189,26 @@
   },
   "dividend_yield_5y_mean": 0.012176,
   "dividend_yield_5y_std": 0.012598,
-  "dividend_yield_current": 0.083374,
-  "dividend_yield_zscore": 5.6515,
-  "enterprise_value": 2206800340509.194,
+  "dividend_yield_current": 0.095845,
+  "dividend_yield_zscore": 6.6415,
+  "enterprise_value": 1928622617550.25,
   "eps_fwd": 14.36752,
   "eps_ttm": 12.56,
-  "ev_fwd_rev": 2.3825,
+  "ev_fwd_rev": 2.0822,
   "fcf_ttm": 145935000000.0,
   "fd_direction": "stable",
   "fd_votes": {},
   "flags": [],
-  "fs_class": "moderate_high",
+  "fs_class": "strong",
   "fs_quality_base": 62.5,
-  "fs_score": 70.5,
+  "fs_score": 75.5,
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 926240014336.0,
   "industry": "Information Technology Services",
-  "last_daily_update": "2026-05-27T04:48:33+00:00",
+  "last_daily_update": "2026-06-11T18:42:12+00:00",
   "last_full_calc": "2026-05-18T20:51:05+00:00",
   "manual_overrides": {},
-  "market_cap": 2138985340509.1938,
+  "market_cap": 1860807617550.25,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 67815000000.0,
-  "owner_earnings_yield": 0.068226,
+  "owner_earnings_yield": 0.078426,
   "pe_20y_array": [
     20.6819,
     18.6096,
@@ -232,8 +232,8 @@
     15.6026,
     14.7745
   ],
-  "pe_percentile_20y": 66.67,
-  "pe_ttm": 16.2341,
+  "pe_percentile_20y": 0.0,
+  "pe_ttm": 14.1218,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -242,12 +242,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 203.89999389648438,
+  "price": 177.37,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.15487,
   "sector": "Technology",
   "ticker": "WIPRO.NS",
-  "updated_at": "2026-05-27T04:48:33+00:00",
+  "updated_at": "2026-06-11T18:42:12+00:00",
   "valuation_tax": 0.0,
   "valuation_tax_breakdown": {
     "components": {
@@ -257,7 +257,7 @@
       "growth_multiple_fragility": 0.0,
       "market_regime_beta": 0.0,
       "oey_penalty": 0.0,
-      "pe_hist_percentile": -1.0
+      "pe_hist_percentile": 0.0
     },
     "total": 0.0
   },

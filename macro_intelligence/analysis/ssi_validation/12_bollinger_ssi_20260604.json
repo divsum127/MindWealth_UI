@@ -1,0 +1,107 @@
+{
+  "test_id": "12_bollinger_ssi",
+  "n_bb_only": 80,
+  "n_combo": 0,
+  "bb_only_metrics": {
+    "n_events": 80,
+    "1w": {
+      "n": 80,
+      "avg": 0.3307,
+      "median": 0.4628,
+      "win_pct": 58.75,
+      "worst": -13.123,
+      "sharpe": 0.7288
+    },
+    "2w": {
+      "n": 80,
+      "avg": 1.0571,
+      "median": 1.6744,
+      "win_pct": 67.5,
+      "worst": -18.5381,
+      "sharpe": 1.2538
+    },
+    "1m": {
+      "n": 80,
+      "avg": 1.8943,
+      "median": 2.6294,
+      "win_pct": 71.25,
+      "worst": -20.8634,
+      "sharpe": 1.1269
+    },
+    "3m": {
+      "n": 80,
+      "avg": 5.5585,
+      "median": 5.522,
+      "win_pct": 80.0,
+      "worst": -8.5472,
+      "sharpe": 1.5942
+    },
+    "6m": {
+      "n": 80,
+      "avg": 9.275,
+      "median": 10.8305,
+      "win_pct": 80.0,
+      "worst": -15.9765,
+      "sharpe": 1.2589
+    },
+    "12m": {
+      "n": 80,
+      "avg": 14.6632,
+      "median": 15.3381,
+      "win_pct": 85.0,
+      "worst": -16.7594,
+      "sharpe": 1.0168
+    }
+  },
+  "combo_metrics": {
+    "n_events": 0,
+    "1w": {
+      "n": 0,
+      "avg": null,
+      "median": null,
+      "win_pct": null,
+      "worst": null,
+      "sharpe": null
+    },
+    "2w": {
+      "n": 0,
+      "avg": null,
+      "median": null,
+      "win_pct": null,
+      "worst": null,
+      "sharpe": null
+    },
+    "1m": {
+      "n": 0,
+      "avg": null,
+      "median": null,
+      "win_pct": null,
+      "worst": null,
+      "sharpe": null
+    },
+    "3m": {
+      "n": 0,
+      "avg": null,
+      "median": null,
+      "win_pct": null,
+      "worst": null,
+      "sharpe": null
+    },
+    "6m": {
+      "n": 0,
+      "avg": null,
+      "median": null,
+      "win_pct": null,
+      "worst": null,
+      "sharpe": null
+    },
+    "12m": {
+      "n": 0,
+      "avg": null,
+      "median": null,
+      "win_pct": null,
+      "worst": null,
+      "sharpe": null
+    }
+  }
+}

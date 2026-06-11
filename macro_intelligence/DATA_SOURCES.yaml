@@ -1,0 +1,234 @@
+# Authoritative 26-variable source table (SOURCING PDF v2.0, May 2026)
+version: "2.0"
+
+governing_principles:
+  - free_primary_source
+  - yahoo_via_yfinance_for_prices
+  - scrape_only_when_no_api
+  - no_paid_subscriptions
+  - government_shutdown_retry_cache
+
+variables:
+  - id: 1
+    var_id: NFCI
+    system: macro
+    frequency: weekly
+    schedule_et: "Wed ~8:30"
+    source: FRED
+    ticker: NFCI
+    pull: fredapi
+    lookback: "1973-01-01"
+    shutdown_risk: false
+  - id: 2
+    var_id: HY
+    system: macro
+    frequency: daily
+    schedule_et: EOD
+    source: FRED
+    ticker: BAMLH0A0HYM2
+    pull: fredapi
+    lookback: "1996-01-01"
+    overlap_note: "SSI uses HYG/LQD — do not double-count"
+  - id: 3
+    var_id: WALCL
+    system: macro
+    frequency: weekly
+    schedule_et: "Thu ~4:30"
+    source: FRED
+    ticker: WALCL
+    pull: fredapi
+    lookback: "2008-01-01"
+    shutdown_risk: true
+  - id: 4
+    var_id: CNH
+    system: macro
+    frequency: daily
+    schedule_et: "Fri EOD"
+    source: YAHOO
+    ticker: USDCNH=X
+    fallback: FRED:DEXCHUS
+    pull: yfinance
+    lookback: "2010-01-01"
+  - id: 5
+    var_id: WTI
+    system: macro
+    frequency: daily
+    schedule_et: "Fri EOD"
+    source: YAHOO
+    ticker: CL=F
+    fallback: FRED:DCOILWTICO
+    pull: yfinance
+    lookback: "1985-01-01"
+  - id: 6
+    var_id: VIX
+    system: macro
+    frequency: daily
+    schedule_et: "EOD ~4:15"
+    source: YAHOO
+    ticker: ^VIX
+    pull: yfinance
+    lookback: "1990-01-01"
+    overlap_note: "Runic only — not in SSI combined score"
+  - id: 7
+    var_id: VXTS
+    system: "macro+ssi"
+    frequency: daily
+    schedule_et: "EOD ~4:15"
+    source: YAHOO
+    ticker_ratio: ["^VIX3M", "^VIX"]
+    pull: yfinance
+    lookback: "2007-01-01"
+    overlap_note: "One pull — used in Runic combos and SSI layer2"
+  - id: 8
+    var_id: CFTC
+    system: macro
+    frequency: weekly
+    schedule_et: "Fri 3:30pm (Tue positions)"
+    source: CFTC
+    columns_fm: [Lev_Money_Positions_Long_All, Lev_Money_Positions_Short_All]
+    columns_rm: [Asset_Mgr_Positions_Long_All, Asset_Mgr_Positions_Short_All]
+    market_primary: "S&P 500 Consolidated"
+    market_filter: "S&P 500"
+    market_exclude: "E-MINI|MICRO|DIVIDEND|ADJUSTED INT RATE"
+    pull: cftc_csv
+    lookback: rolling_3y
+    shutdown_risk: true
+    combo_uses: FM_only
+  - id: 9
+    var_id: CURVE
+    system: macro
+    frequency: daily
+    schedule_et: "~4:15"
+    source: FRED
+    ticker: T10Y2Y
+    pull: fredapi
+    lookback: "1976-01-01"
+  - id: 10
+    var_id: CPI
+    system: macro
+    frequency: monthly
+    schedule_et: "~2nd Tue/Wed 8:30"
+    source: BLS
+    bls_series: CUSR0000SA0
+    fallback: FRED:CPIAUCSL
+    consensus: tradingeconomics_primary
+    consensus_pull: src/macro_intelligence/data/investing_cpi_consensus.py
+    consensus_fallback: investing_com  # only when INVESTING_HTTP_PROXY is set
+    consensus_release_dates: fred_release_id_10
+    consensus_csv: macro_intelligence/data/cpi_consensus.csv  # emergency cache only
+    consensus_sync_script: scripts/sync_cpi_consensus.py
+    pull: bls_api
+    shutdown_risk: true
+  - id: 11
+    var_id: GSR
+    system: macro
+    frequency: daily
+    schedule_et: "Fri EOD"
+    source: YAHOO
+    ticker_ratio: [GC=F, SI=F]
+    pull: yfinance
+    lookback: "1968-01-01"
+  - id: 12
+    var_id: CAPE
+    system: macro
+    frequency: daily
+    schedule_et: intraday
+    source: multpl
+    fallback: FRED:MULTPL_CAPE
+    pull: scrape
+    lookback: "1881-01-01"
+  - id: 13
+    var_id: AAII
+    system: ssi_layer1
+    frequency: weekly
+    schedule_et: "Thu ~9am"
+    source: aaii
+    url: "https://www.aaii.com/files/surveys/sentiment.xls"
+    pull: "urllib direct XLS (AWS OK) → curl_cffi|cloudscraper|requests; GHA sync_aaii_sentiment.yml backup"
+    fallback: "aaii_github_raw (AAII_GITHUB_RAW_BASE) + local aaii_sentiment.{xls,csv}; ingest_aaii_sentiment.py"
+  - id: 14
+    var_id: NAAIM
+    system: ssi_layer1
+    frequency: weekly
+    schedule_et: "Wed"
+    source: naaim
+    pull: scrape_or_manual
+  - id: 15
+    var_id: CNN_FG
+    system: ssi_layer1
+    frequency: daily
+    schedule_et: intraday
+    source: CNN
+    pull: cnn_scrape
+  - id: 16
+    var_id: PCT_ABOVE_200DMA
+    system: ssi_layer1
+    frequency: daily
+    schedule_et: EOD
+    source: computed
+    pull: spx_constituents_ma200
+  - id: 17
+    var_id: MCCLELLAN
+    system: ssi_layer2
+    frequency: daily
+    schedule_et: EOD
+    source: computed
+    pull: nyse_adv_decl
+  - id: 18
+    var_id: NH_NL_RATIO
+    system: ssi_layer2
+    frequency: daily
+    schedule_et: EOD
+    source: YAHOO
+    ticker_ratio: ["^NAHGH", "^NALOW"]
+    pull: yfinance_test_first
+    fallback: stockcharts
+  - id: 19
+    var_id: HYG_LQD
+    system: ssi_layer2
+    frequency: daily
+    schedule_et: EOD
+    source: YAHOO
+    ticker_ratio: [HYG, LQD]
+    pull: yfinance
+    lookback: "2007-01-01"
+  - id: 20
+    var_id: SKEW
+    system: ssi_layer2
+    frequency: daily
+    schedule_et: "EOD ~5pm"
+    source: YAHOO
+    ticker: ^SKEW
+    pull: yfinance
+    lookback: "1990-01-01"
+  - id: 21
+    var_id: CFTC_FM
+    system: ssi_layer3
+    frequency: weekly
+    schedule_et: "Fri 3:30pm"
+    source: CFTC
+    pull: shared_with_8
+  - id: 22
+    var_id: CFTC_RM
+    system: ssi_layer3
+    frequency: weekly
+    schedule_et: "Fri 3:30pm"
+    source: CFTC
+    pull: shared_with_8
+    dashboard_only: true
+  - id: 23
+    var_id: GROSS_NET_DIV
+    system: ssi_layer3
+    frequency: weekly
+    schedule_et: derived
+    source: derived
+    pull: derived_fm_rm
+  - id: 24
+    var_id: DBMF
+    system: ssi_layer3
+    frequency: daily
+    schedule_et: EOD
+    source: YAHOO
+    tickers: [DBMF, SPY]
+    pull: yfinance_beta_21d
+    lookback: "2015-01-01"

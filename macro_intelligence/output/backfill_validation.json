@@ -1,0 +1,65 @@
+{
+  "fed_fixtures": {
+    "2022-10-13": {
+      "expected": "HIKING_LATE",
+      "actual": "HIKING_LATE",
+      "source": "FRED_DFF",
+      "ok": true
+    },
+    "2020-03-23": {
+      "expected": "QE",
+      "actual": "QE",
+      "source": "COVID_QE_WINDOW",
+      "ok": true
+    },
+    "2020-06-29": {
+      "expected": "QE",
+      "actual": "QE",
+      "source": "COVID_QE_WINDOW",
+      "ok": true
+    },
+    "2015-12-16": {
+      "expected": "HIKING_EARLY",
+      "actual": "HIKING_EARLY",
+      "source": "FOMC_ANCHOR",
+      "ok": true
+    },
+    "2024-09-18": {
+      "expected": "CUTTING_EARLY",
+      "actual": "CUTTING_EARLY",
+      "source": "FOMC_ANCHOR",
+      "ok": true
+    }
+  },
+  "counts": {
+    "macro_regime_log": 1914,
+    "combo_fires": 15019,
+    "combo_fires_with_regime": 1930,
+    "forward_returns": 15019,
+    "regime_duplicate_dates": 0
+  },
+  "hit_rates": {
+    "B": {
+      "combo": "B",
+      "n_obs": 89,
+      "hit_rate": 0.7978,
+      "avg_return": 5.0314
+    },
+    "F": {
+      "combo": "F",
+      "n_obs": 704,
+      "hit_rate": 0.7486,
+      "avg_return": 2.6513
+    }
+  },
+  "regime_adjusted_B_cut": {
+    "hit_rate": 0.7560975609756098,
+    "n_obs": 41,
+    "avg_return": 5.419947804231799
+  },
+  "regime_adjusted_B_hike": {
+    "hit_rate": 0.8333333333333334,
+    "n_obs": 48,
+    "avg_return": 4.699495607940819
+  }
+}

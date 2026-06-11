@@ -1,0 +1,2124 @@
+{
+  "run_date": "2026-06-11",
+  "artifacts": {},
+  "part_a": {
+    "A1_fed_cycle_v2_distribution": {
+      "EASY": 384,
+      "PIVOTING": 27,
+      "EASING": 727,
+      "TIGHTENING": 763
+    },
+    "A2_geo_overlay_v2_distribution": {
+      "NEUTRAL": 1855,
+      "CRISIS": 21,
+      "ELEVATED_RISK": 25
+    },
+    "A3_liquidity_v2_distribution": {
+      "NEUTRAL_FLAT": 219,
+      "TIGHT_FLAT": 30,
+      "EASY_FLAT": 746,
+      "EASY_TIGHTENING": 287,
+      "EASY_IMPROVING": 403,
+      "NEUTRAL_TIGHTENING": 72,
+      "NEUTRAL_IMPROVING": 62,
+      "TIGHT_IMPROVING": 50,
+      "TIGHT_TIGHTENING": 32
+    },
+    "A4_val_regime_distribution": {
+      "NORMAL": 1105,
+      "CHEAP_CAPE": 51,
+      "ELEVATED_CAPE": 309,
+      "EXTREME_CAPE": 436
+    },
+    "A4_cape_velocity": {
+      "level_extreme_3m": {
+        "n": 845,
+        "hit_rate": 0.7479289940828402,
+        "avg": 3.069706550074289,
+        "median": 3.900745288087626,
+        "worst": -24.024745270941587
+      },
+      "fresh_cross_into_extreme_3m": {
+        "n": 0,
+        "hit_rate": null,
+        "avg": null,
+        "median": null,
+        "worst": null
+      },
+      "velocity_rank_delta_6m_3m": {
+        "n": 513,
+        "hit_rate": 0.7563352826510721,
+        "avg": 2.6429517231258837,
+        "median": 3.450186618574365,
+        "worst": -17.66208411602467
+      },
+      "winner_3m_avg_return": "level_extreme"
+    },
+    "A5_fiscal_caveat": {
+      "n_episodes": 13,
+      "fiscal_offset_bucket": {
+        "n": 1,
+        "hit_rate": 0.0,
+        "avg": -13.210078946098342,
+        "median": -13.210078946098342,
+        "worst": -13.210078946098342
+      },
+      "no_offset_bucket": {
+        "n": 12,
+        "hit_rate": 0.4166666666666667,
+        "avg": -1.6340878950913826,
+        "median": -2.0888462361638656,
+        "worst": -17.597241447565896
+      },
+      "note": "2022-23 invert may cluster in fiscal_offset bucket"
+    },
+    "n_fridays_backfilled": 1901,
+    "A1_pass_no_degenerate_dominance": false,
+    "A1_notes": "PIVOTING n=27 may fail \u226530 obs threshold; no state >80% dominance"
+  },
+  "part_b": {
+    "B1_B2_twy_roc_apr2025": {
+      "2025-04-07": {
+        "twy_roc_pp": -0.55,
+        "direction": "DOVISH",
+        "dgs2": 3.73
+      },
+      "2025-04-04": {
+        "twy_roc_pp": -0.61,
+        "direction": "DOVISH",
+        "dgs2": 3.68
+      }
+    },
+    "B2_validation": {
+      "expected_dovish_bps": "65-75 over 8 weeks",
+      "observed_pp": -0.55,
+      "direction": "DOVISH",
+      "pass_dovish": true
+    },
+    "B3_dual_percentile": {
+      "rows_with_unconditional_only": 0,
+      "rows_with_both": 14505
+    },
+    "B4_window_audit": {
+      "n_vars": 12,
+      "mismatches": [
+        {
+          "var_id": "HY",
+          "configured": "full",
+          "expected": "rolling_3y"
+        },
+        {
+          "var_id": "VIX",
+          "configured": "full",
+          "expected": "rolling_3y"
+        },
+        {
+          "var_id": "VXTS",
+          "configured": "full",
+          "expected": "rolling_3y"
+        }
+      ],
+      "pass": false
+    },
+    "B5_cape_triple_storage": {
+      "combo_e_high_cape_6m": {
+        "n": 507,
+        "hit_rate": 0.7909270216962525,
+        "avg": 6.406878456655596,
+        "median": 7.338339984451586,
+        "worst": -25.222342684956878
+      },
+      "combo_e_moderate_cape_6m": {
+        "n": 0,
+        "hit_rate": null,
+        "avg": null,
+        "median": null,
+        "worst": null
+      },
+      "winner": "level_extreme"
+    },
+    "C1_emission_vectors_backfilled": 12803
+  },
+  "part_c": {
+    "C2_sub_threshold_vix_65_79": {
+      "n": 7,
+      "hit_rate": 0.8571428571428571,
+      "avg": 2.71503891515211,
+      "median": 3.2317909798349365,
+      "worst": -2.6355202243006777
+    },
+    "C2_random_friday_3m_baseline": {
+      "n": 0,
+      "hit_rate": null,
+      "avg": null,
+      "median": null,
+      "worst": null
+    },
+    "C2_edge_delta_avg": 2.71503891515211,
+    "C3_binary_vs_vector": {
+      "first_rare_binary_count": 868,
+      "first_vector_mean_count": 868,
+      "median_lag_days_binary_minus_vector": 0.0
+    }
+  },
+  "part_e": {
+    "E1_combo_c_cancel": {
+      "wti_leg": {
+        "monte_carlo_prob_all_4": 0.0831,
+        "marginal_week1_prob": 0.16330550764685525,
+        "current_wti": 89.38999938964844,
+        "strike": 85.13333275204613,
+        "vol_annual": 0.35,
+        "n_sim": 10000
+      },
+      "cpi_leg_prob": 0.27040000000000003,
+      "combined_cancel_prob": 0.02247024
+    },
+    "E2_combo_c_calibration": {
+      "n_episodes": 4,
+      "realized_cancel_rate": 0.0,
+      "predicted_example": 0.02247024
+    },
+    "E3_note": "Combo D/F/G formulas documented in report"
+  },
+  "part_f": {
+    "F1_oct2022": {
+      "fed_cycle_v2": "TIGHTENING",
+      "fed_cycle_legacy": "HIKING_LATE",
+      "curve_regime_v2": "NORMAL",
+      "curve_regime_legacy": "NORMAL",
+      "val_regime": "NORMAL",
+      "liquidity_v2": "NEUTRAL_FLAT",
+      "liquidity_legacy": "NEUTRAL",
+      "geo_overlay_v2": "NEUTRAL",
+      "geo_overlay": "NEUTRAL",
+      "balance_sheet_policy": null,
+      "inverted_weeks": 14,
+      "hiking_period_f3": true,
+      "tightening_late_f1": false,
+      "cape_level": null
+    },
+    "F1_tightening_late": false,
+    "F4_steepening_short_grid": [
+      {
+        "trough_bps": -50.0,
+        "steepen_4wk_bps": 15,
+        "n": 17,
+        "spx_3m": {
+          "n": 17,
+          "hit_rate": 0.17647058823529413,
+          "avg": 5.776101705201783,
+          "median": 7.423095862091418,
+          "worst": 15.161355576413582
+        },
+        "spx_3m_pw": {
+          "n": 17,
+          "hit_rate": 0.17647058823529413,
+          "avg_win": -5.301407685503513,
+          "avg_loss": 8.149853717495775,
+          "pw_expected": 5.776101705201783,
+          "benchmark_pct": 2.5,
+          "excess_pct": 3.276101705201783,
+          "avg": 5.776101705201783,
+          "median": 7.423095862091418,
+          "worst": 15.161355576413582
+        },
+        "instances": [
+          {
+            "date": "2000-05-05",
+            "spx_3m": 2.1149947107664766
+          },
+          {
+            "date": "2022-10-21",
+            "spx_3m": 7.040169240473652
+          },
+          {
+            "date": "2022-12-23",
+            "spx_3m": 3.288839241463711
+          },
+          {
+            "date": "2022-12-30",
+            "spx_3m": 7.423095862091418
+          },
+          {
+            "date": "2023-03-17",
+            "spx_3m": 12.586042237531087
+          },
+          {
+            "date": "2023-03-24",
+            "spx_3m": 9.011098866135777
+          },
+          {
+            "date": "2023-03-31",
+            "spx_3m": 8.426713492501724
+          },
+          {
+            "date": "2023-04-07",
+            "spx_3m": 8.142219636042523
+          },
+          {
+            "date": "2023-07-28",
+            "spx_3m": -9.711428756233612
+          },
+          {
+            "date": "2023-08-04",
+            "spx_3m": -3.5785827180336285
+          },
+          {
+            "date": "2023-08-11",
+            "spx_3m": -2.614211582243299
+          },
+          {
+            "date": "2023-08-18",
+            "spx_3m": 3.1702395508140087
+          },
+          {
+            "date": "2023-09-29",
+            "spx_3m": 11.23541692334916
+          },
+          {
+            "date": "2023-10-06",
+            "spx_3m": 10.561449206510387
+          },
+          {
+            "date": "2023-10-13",
+            "spx_3m": 10.12528864836128
+          },
+          {
+            "date": "2023-10-20",
+            "spx_3m": 15.161355576413582
+          },
+          {
+            "date": "2024-01-12",
+            "spx_3m": 5.811028852486056
+          }
+        ]
+      },
+      {
+        "trough_bps": -50.0,
+        "steepen_4wk_bps": 40,
+        "n": 4,
+        "spx_3m": {
+          "n": 4,
+          "hit_rate": 0.25,
+          "avg": 5.411632320972917,
+          "median": 9.786274036323082,
+          "worst": 15.161355576413582
+        },
+        "spx_3m_pw": {
+          "n": 4,
+          "hit_rate": 0.25,
+          "avg_win": -13.087374365168078,
+          "avg_loss": 11.577967883019916,
+          "pw_expected": 5.411632320972918,
+          "benchmark_pct": 2.5,
+          "excess_pct": 2.9116323209729176,
+          "avg": 5.411632320972917,
+          "median": 9.786274036323082,
+          "worst": 15.161355576413582
+        },
+        "instances": [
+          {
+            "date": "2001-01-05",
+            "spx_3m": -13.087374365168078
+          },
+          {
+            "date": "2023-03-24",
+            "spx_3m": 9.011098866135777
+          },
+          {
+            "date": "2023-10-06",
+            "spx_3m": 10.561449206510387
+          },
+          {
+            "date": "2023-10-20",
+            "spx_3m": 15.161355576413582
+          }
+        ]
+      },
+      {
+        "trough_bps": -80.0,
+        "steepen_4wk_bps": 15,
+        "n": 9,
+        "spx_3m": {
+          "n": 9,
+          "hit_rate": 0.3333333333333333,
+          "avg": 4.074167516651526,
+          "median": 8.142219636042523,
+          "worst": 12.586042237531087
+        },
+        "spx_3m_pw": {
+          "n": 9,
+          "hit_rate": 0.3333333333333333,
+          "avg_win": -5.301407685503513,
+          "avg_loss": 8.761955117729046,
+          "pw_expected": 4.074167516651528,
+          "benchmark_pct": 2.5,
+          "excess_pct": 1.5741675166515279,
+          "avg": 4.074167516651526,
+          "median": 8.142219636042523,
+          "worst": 12.586042237531087
+        },
+        "instances": [
+          {
+            "date": "2023-03-17",
+            "spx_3m": 12.586042237531087
+          },
+          {
+            "date": "2023-03-24",
+            "spx_3m": 9.011098866135777
+          },
+          {
+            "date": "2023-03-31",
+            "spx_3m": 8.426713492501724
+          },
+          {
+            "date": "2023-04-07",
+            "spx_3m": 8.142219636042523
+          },
+          {
+            "date": "2023-07-28",
+            "spx_3m": -9.711428756233612
+          },
+          {
+            "date": "2023-08-04",
+            "spx_3m": -3.5785827180336285
+          },
+          {
+            "date": "2023-08-11",
+            "spx_3m": -2.614211582243299
+          },
+          {
+            "date": "2023-08-18",
+            "spx_3m": 3.1702395508140087
+          },
+          {
+            "date": "2023-09-29",
+            "spx_3m": 11.23541692334916
+          }
+        ]
+      },
+      {
+        "trough_bps": -80.0,
+        "steepen_4wk_bps": 40,
+        "n": 2,
+        "spx_3m": {
+          "n": 2,
+          "hit_rate": 0.0,
+          "avg": 9.786274036323082,
+          "median": 9.786274036323082,
+          "worst": 10.561449206510387
+        },
+        "spx_3m_pw": {
+          "n": 2,
+          "hit_rate": 0.0,
+          "avg_win": 0.0,
+          "avg_loss": 9.786274036323082,
+          "pw_expected": 9.786274036323082,
+          "benchmark_pct": 2.5,
+          "excess_pct": 7.286274036323082,
+          "avg": 9.786274036323082,
+          "median": 9.786274036323082,
+          "worst": 10.561449206510387
+        },
+        "instances": [
+          {
+            "date": "2023-03-24",
+            "spx_3m": 9.011098866135777
+          },
+          {
+            "date": "2023-10-06",
+            "spx_3m": 10.561449206510387
+          }
+        ]
+      }
+    ],
+    "F4_mechanism_analogs": [
+      "2000",
+      "2007",
+      "2022-23 failure (fiscal/AI offset)"
+    ]
+  },
+  "part_g": {
+    "G1_seven_week_grind": {
+      "n": 2,
+      "spx_6m": {
+        "n": 2,
+        "hit_rate": 0.0,
+        "avg": -5.910517429080587,
+        "median": -5.910517429080587,
+        "worst": -7.193675612780933
+      },
+      "standalone_short_ok": false
+    },
+    "G2_vix_suppressed": {
+      "n": 1973,
+      "median_days_to_vix25": 35.5,
+      "lead_rate": 0.08514951849974658
+    }
+  },
+  "xfm": {
+    "experiments": {
+      "X-FM-1_extreme_short": {
+        "n_crossings": 35,
+        "by_horizon": {
+          "spx_1w": {
+            "n": 35,
+            "hit_rate": 0.5714285714285714,
+            "avg": 0.28846583201984144,
+            "median": 0.26528500233549523,
+            "worst": -4.5639858332909
+          },
+          "spx_1m": {
+            "n": 33,
+            "hit_rate": 0.6363636363636364,
+            "avg": 0.7804105601874503,
+            "median": 1.5511958725681319,
+            "worst": -25.17543527022308
+          },
+          "spx_3m": {
+            "n": 33,
+            "hit_rate": 0.6363636363636364,
+            "avg": 1.472852062726648,
+            "median": 4.194971646525298,
+            "worst": -20.184615550558753
+          },
+          "spx_6m": {
+            "n": 30,
+            "hit_rate": 0.7666666666666667,
+            "avg": 6.464161834611732,
+            "median": 6.517630380491989,
+            "worst": -19.546737398979623
+          }
+        },
+        "regime_slices_3m": {
+          "fed_cycle_v2": {
+            "EASING": {
+              "n": 20,
+              "hit_rate": 0.6,
+              "avg": 1.0759390189895974,
+              "median": 3.7510223101133002,
+              "worst": -15.279157624681883
+            },
+            "EASY": {
+              "n": 6,
+              "hit_rate": 0.8333333333333334,
+              "avg": 2.9620294169169643,
+              "median": 6.1355546024883445,
+              "worst": -20.184615550558753
+            },
+            "TIGHTENING": {
+              "n": 7,
+              "hit_rate": 0.5714285714285714,
+              "avg": 1.3304515983836631,
+              "median": 4.05048337889372,
+              "worst": -14.152354203542986
+            }
+          },
+          "curve_regime_v2": {
+            "FLAT": {
+              "n": 6,
+              "hit_rate": 0.3333333333333333,
+              "avg": -8.559585457229135,
+              "median": -14.036185606580823,
+              "worst": -20.184615550558753
+            },
+            "INVERTED": {
+              "n": 3,
+              "hit_rate": 0.6666666666666666,
+              "avg": 3.66015549994902,
+              "median": 4.05048337889372,
+              "worst": -0.005559810994756426
+            },
+            "NORMAL": {
+              "n": 1,
+              "hit_rate": 0.0,
+              "avg": -3.971397194816383,
+              "median": -3.971397194816383,
+              "worst": -3.971397194816383
+            },
+            "STEEPENING": {
+              "n": 23,
+              "hit_rate": 0.7391304347826086,
+              "avg": 4.041415717753197,
+              "median": 4.28287534393313,
+              "worst": -9.441199679240421
+            }
+          },
+          "liquidity_v2": {
+            "EASY_FLAT": {
+              "n": 5,
+              "hit_rate": 0.6,
+              "avg": -1.0914409611275406,
+              "median": 4.28287534393313,
+              "worst": -15.279157624681883
+            },
+            "EASY_IMPROVING": {
+              "n": 9,
+              "hit_rate": 0.6666666666666666,
+              "avg": -1.0494921514688014,
+              "median": 2.4370336181871144,
+              "worst": -20.184615550558753
+            },
+            "EASY_TIGHTENING": {
+              "n": 10,
+              "hit_rate": 0.5,
+              "avg": 0.4461271459247185,
+              "median": 2.0947059177652707,
+              "worst": -13.920017009618658
+            },
+            "NEUTRAL_FLAT": {
+              "n": 3,
+              "hit_rate": 0.3333333333333333,
+              "avg": 1.611178143897778,
+              "median": -1.5406189777835775,
+              "worst": -3.971397194816383
+            },
+            "NEUTRAL_IMPROVING": {
+              "n": 3,
+              "hit_rate": 1.0,
+              "avg": 11.24129163268366,
+              "median": 9.154482800624878,
+              "worst": 9.011098866135777
+            },
+            "NEUTRAL_TIGHTENING": {
+              "n": 3,
+              "hit_rate": 1.0,
+              "avg": 6.829357149948264,
+              "median": 6.9355429319480955,
+              "worst": 4.05048337889372
+            }
+          },
+          "val_regime": {
+            "ELEVATED_CAPE": {
+              "n": 11,
+              "hit_rate": 0.5454545454545454,
+              "avg": -1.4477872649019032,
+              "median": 4.05048337889372,
+              "worst": -20.184615550558753
+            },
+            "EXTREME_CAPE": {
+              "n": 8,
+              "hit_rate": 0.625,
+              "avg": -0.00200880366279943,
+              "median": 3.316002632356206,
+              "worst": -14.152354203542986
+            },
+            "NORMAL": {
+              "n": 14,
+              "hit_rate": 0.7142857142857143,
+              "avg": 4.610417743800193,
+              "median": 4.944395221498529,
+              "worst": -4.527292807048888
+            }
+          },
+          "geo_overlay_v2": {
+            "CRISIS": {
+              "n": 2,
+              "hit_rate": 0.5,
+              "avg": 0.13956780330422092,
+              "median": 0.13956780330422092,
+              "worst": -15.279157624681883
+            },
+            "ELEVATED_RISK": {
+              "n": 1,
+              "hit_rate": 0.0,
+              "avg": -14.152354203542986,
+              "median": -14.152354203542986,
+              "worst": -14.152354203542986
+            },
+            "NEUTRAL": {
+              "n": 30,
+              "hit_rate": 0.6666666666666666,
+              "avg": 2.0825778888971302,
+              "median": 4.2339713968149155,
+              "worst": -20.184615550558753
+            }
+          }
+        },
+        "evidence_tag": "STATISTICAL",
+        "interpretation": "Insufficient n or mixed results."
+      },
+      "X-FM-1_extreme_long": {
+        "n_crossings": 39,
+        "by_horizon": {
+          "spx_1w": {
+            "n": 39,
+            "hit_rate": 0.41025641025641024,
+            "avg": 0.47214094812924345,
+            "median": 0.721485834046381,
+            "worst": 10.262831544954365
+          },
+          "spx_1m": {
+            "n": 39,
+            "hit_rate": 0.3076923076923077,
+            "avg": 1.4988220778679473,
+            "median": 1.2041186228010143,
+            "worst": 18.72690381224266
+          },
+          "spx_3m": {
+            "n": 38,
+            "hit_rate": 0.18421052631578946,
+            "avg": 4.951676944422684,
+            "median": 5.280143556394144,
+            "worst": 34.39685955399413
+          },
+          "spx_6m": {
+            "n": 38,
+            "hit_rate": 0.15789473684210525,
+            "avg": 7.026898127112107,
+            "median": 5.738501972209906,
+            "worst": 44.01671568714681
+          }
+        },
+        "regime_slices_3m": {
+          "fed_cycle_v2": {
+            "EASING": {
+              "n": 8,
+              "hit_rate": 0.25,
+              "avg": 4.081588278886719,
+              "median": 4.526042656018052,
+              "worst": 12.092938555210052
+            },
+            "EASY": {
+              "n": 10,
+              "hit_rate": 0.0,
+              "avg": 10.168992276626987,
+              "median": 7.910293648145265,
+              "worst": 34.39685955399413
+            },
+            "TIGHTENING": {
+              "n": 20,
+              "hit_rate": 0.25,
+              "avg": 2.6910547445349184,
+              "median": 2.662785303616748,
+              "worst": 10.248481711328909
+            }
+          },
+          "curve_regime_v2": {
+            "FLAT": {
+              "n": 5,
+              "hit_rate": 0.6,
+              "avg": 1.1649109929146522,
+              "median": -0.32189055484789814,
+              "worst": 8.947099811773345
+            },
+            "STEEPENING": {
+              "n": 33,
+              "hit_rate": 0.12121212121212122,
+              "avg": 5.5254293613178405,
+              "median": 5.31649462415809,
+              "worst": 34.39685955399413
+            }
+          },
+          "liquidity_v2": {
+            "EASY_FLAT": {
+              "n": 18,
+              "hit_rate": 0.16666666666666666,
+              "avg": 3.8130574726161126,
+              "median": 3.7223101922827158,
+              "worst": 10.248481711328909
+            },
+            "EASY_IMPROVING": {
+              "n": 9,
+              "hit_rate": 0.1111111111111111,
+              "avg": 5.5383542755021855,
+              "median": 5.899951524835412,
+              "worst": 9.533242827080063
+            },
+            "EASY_TIGHTENING": {
+              "n": 7,
+              "hit_rate": 0.42857142857142855,
+              "avg": 1.5483038182380346,
+              "median": 1.6115231653506736,
+              "worst": 8.947099811773345
+            },
+            "NEUTRAL_FLAT": {
+              "n": 2,
+              "hit_rate": 0.0,
+              "avg": 6.407985325966065,
+              "median": 6.407985325966065,
+              "worst": 12.092938555210052
+            },
+            "NEUTRAL_IMPROVING": {
+              "n": 2,
+              "hit_rate": 0.0,
+              "avg": 23.01470176092696,
+              "median": 23.01470176092696,
+              "worst": 34.39685955399413
+            }
+          },
+          "val_regime": {
+            "ELEVATED_CAPE": {
+              "n": 12,
+              "hit_rate": 0.08333333333333333,
+              "avg": 4.066574745658653,
+              "median": 3.994559049651741,
+              "worst": 10.248481711328909
+            },
+            "EXTREME_CAPE": {
+              "n": 7,
+              "hit_rate": 0.7142857142857143,
+              "avg": -0.888998098052807,
+              "median": -3.5199879251240795,
+              "worst": 9.390323087478082
+            },
+            "NORMAL": {
+              "n": 19,
+              "hit_rate": 0.05263157894736842,
+              "avg": 7.662516506659358,
+              "median": 6.611566415894838,
+              "worst": 34.39685955399413
+            }
+          },
+          "geo_overlay_v2": {
+            "CRISIS": {
+              "n": 1,
+              "hit_rate": 0.0,
+              "avg": 34.39685955399413,
+              "median": 34.39685955399413,
+              "worst": 34.39685955399413
+            },
+            "ELEVATED_RISK": {
+              "n": 1,
+              "hit_rate": 1.0,
+              "avg": -0.32189055484789814,
+              "median": -0.32189055484789814,
+              "worst": -0.32189055484789814
+            },
+            "NEUTRAL": {
+              "n": 36,
+              "hit_rate": 0.16666666666666666,
+              "avg": 4.28024319135877,
+              "median": 5.280143556394144,
+              "worst": 12.092938555210052
+            }
+          }
+        },
+        "evidence_tag": "STATISTICAL",
+        "interpretation": "FM extreme long: 1w SPX down rate 0.41025641025641024; 3m may degrade."
+      },
+      "X-FM-1_moderate": {
+        "n_crossings": 84,
+        "by_horizon": {
+          "spx_1w": {
+            "n": 84,
+            "hit_rate": 0.5833333333333334,
+            "avg": 0.23700934159498616,
+            "median": 0.40609552414976413,
+            "worst": -14.979605267779133
+          },
+          "spx_1m": {
+            "n": 84,
+            "hit_rate": 0.7380952380952381,
+            "avg": 1.6406316950798991,
+            "median": 1.9049325459075879,
+            "worst": -8.162350829184708
+          },
+          "spx_3m": {
+            "n": 82,
+            "hit_rate": 0.7560975609756098,
+            "avg": 3.064859415490295,
+            "median": 4.1650704402191385,
+            "worst": -24.024745270941587
+          },
+          "spx_6m": {
+            "n": 81,
+            "hit_rate": 0.8518518518518519,
+            "avg": 7.340481047122133,
+            "median": 7.385441811712725,
+            "worst": -25.222342684956878
+          }
+        },
+        "regime_slices_3m": {
+          "fed_cycle_v2": {
+            "EASING": {
+              "n": 33,
+              "hit_rate": 0.6363636363636364,
+              "avg": 1.1539736634188178,
+              "median": 3.7802672318448227,
+              "worst": -14.812362250382677
+            },
+            "EASY": {
+              "n": 26,
+              "hit_rate": 0.8846153846153846,
+              "avg": 5.0325495550121,
+              "median": 5.251909817965973,
+              "worst": -24.024745270941587
+            },
+            "TIGHTENING": {
+              "n": 23,
+              "hit_rate": 0.782608695652174,
+              "avg": 3.5822196846551573,
+              "median": 4.159349502459119,
+              "worst": -8.422817338486741
+            }
+          },
+          "curve_regime_v2": {
+            "FLAT": {
+              "n": 16,
+              "hit_rate": 0.5,
+              "avg": -0.8362796826817844,
+              "median": 0.2524140859299529,
+              "worst": -24.024745270941587
+            },
+            "INVERTED": {
+              "n": 1,
+              "hit_rate": 1.0,
+              "avg": 5.85149026841626,
+              "median": 5.85149026841626,
+              "worst": 5.85149026841626
+            },
+            "STEEPENING": {
+              "n": 65,
+              "hit_rate": 0.8153846153846154,
+              "avg": 3.9822685649953304,
+              "median": 4.533058065694155,
+              "worst": -14.812362250382677
+            }
+          },
+          "liquidity_v2": {
+            "EASY_FLAT": {
+              "n": 20,
+              "hit_rate": 0.7,
+              "avg": 2.109595006332101,
+              "median": 3.172752805545287,
+              "worst": -5.681428900276406
+            },
+            "EASY_IMPROVING": {
+              "n": 28,
+              "hit_rate": 0.8214285714285714,
+              "avg": 2.773528144146472,
+              "median": 4.391815324086128,
+              "worst": -24.024745270941587
+            },
+            "EASY_TIGHTENING": {
+              "n": 23,
+              "hit_rate": 0.6521739130434783,
+              "avg": 1.32244755243875,
+              "median": 4.05477573935233,
+              "worst": -14.812362250382677
+            },
+            "NEUTRAL_FLAT": {
+              "n": 3,
+              "hit_rate": 0.6666666666666666,
+              "avg": 5.171244072839133,
+              "median": 7.4307117665657145,
+              "worst": -3.0693302877992164
+            },
+            "NEUTRAL_IMPROVING": {
+              "n": 4,
+              "hit_rate": 1.0,
+              "avg": 10.397757240548609,
+              "median": 10.778066088616587,
+              "worst": 6.678371552388905
+            },
+            "NEUTRAL_TIGHTENING": {
+              "n": 3,
+              "hit_rate": 1.0,
+              "avg": 5.392618170429564,
+              "median": 5.85149026841626,
+              "worst": 3.288839241463711
+            },
+            "TIGHT_IMPROVING": {
+              "n": 1,
+              "hit_rate": 1.0,
+              "avg": 27.768874509369194,
+              "median": 27.768874509369194,
+              "worst": 27.768874509369194
+            }
+          },
+          "val_regime": {
+            "ELEVATED_CAPE": {
+              "n": 16,
+              "hit_rate": 0.75,
+              "avg": 1.3929378511008235,
+              "median": 3.6563836550943174,
+              "worst": -24.024745270941587
+            },
+            "EXTREME_CAPE": {
+              "n": 21,
+              "hit_rate": 0.6190476190476191,
+              "avg": 1.2196494499942414,
+              "median": 5.085449308476577,
+              "worst": -14.812362250382677
+            },
+            "NORMAL": {
+              "n": 45,
+              "hit_rate": 0.8222222222222222,
+              "avg": 4.520418400060266,
+              "median": 4.250572582478102,
+              "worst": -5.836558251732829
+            }
+          },
+          "geo_overlay_v2": {
+            "CRISIS": {
+              "n": 3,
+              "hit_rate": 1.0,
+              "avg": 17.769546133521025,
+              "median": 13.356525232572361,
+              "worst": 12.183238658621523
+            },
+            "ELEVATED_RISK": {
+              "n": 2,
+              "hit_rate": 0.0,
+              "avg": -3.396986238001072,
+              "median": -3.396986238001072,
+              "worst": -6.075019438908349
+            },
+            "NEUTRAL": {
+              "n": 77,
+              "hit_rate": 0.7662337662337663,
+              "avg": 2.6597896902031595,
+              "median": 4.159349502459119,
+              "worst": -24.024745270941587
+            }
+          }
+        },
+        "evidence_tag": "STATISTICAL",
+        "interpretation": "Moderate FM band: no strong contrary/trend edge assumed \u2014 verify with n."
+      },
+      "X-FM-2_combo_b": {
+        "n_fires": 89,
+        "spx_up_3m_pct": 0.797752808988764,
+        "n_with_3m": 89,
+        "instances": [
+          {
+            "date": "2023-06-09",
+            "status": "WATCH",
+            "spx_3m": 4.3872120435276205,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2023-06-16",
+            "status": "WATCH",
+            "spx_3m": 0.9964632304414651,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2023-06-23",
+            "status": "WATCH",
+            "spx_3m": -0.6501350868800657,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2023-06-30",
+            "status": "WATCH",
+            "spx_3m": -3.6475555435598572,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2023-07-07",
+            "status": "WATCH",
+            "spx_3m": -3.1998601406363605,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2023-07-14",
+            "status": "WATCH",
+            "spx_3m": -3.4582804998320165,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2023-07-21",
+            "status": "WATCH",
+            "spx_3m": -5.694896164050209,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2023-07-28",
+            "status": "WATCH",
+            "spx_3m": -9.711428756233612,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2023-08-04",
+            "status": "WATCH",
+            "spx_3m": -3.5785827180336285,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2023-08-11",
+            "status": "WATCH",
+            "spx_3m": -2.614211582243299,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2023-08-18",
+            "status": "WATCH",
+            "spx_3m": 3.1702395508140087,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2023-08-25",
+            "status": "WATCH",
+            "spx_3m": 3.487063019913567,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2023-09-01",
+            "status": "WATCH",
+            "spx_3m": 1.7463215119497135,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2023-09-08",
+            "status": "WATCH",
+            "spx_3m": 2.873805721146157,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2023-09-15",
+            "status": "WATCH",
+            "spx_3m": 6.049677126654894,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2023-09-22",
+            "status": "WATCH",
+            "spx_3m": 9.876944663244903,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2023-09-29",
+            "status": "WATCH",
+            "spx_3m": 11.23541692334916,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2023-10-06",
+            "status": "WATCH",
+            "spx_3m": 10.561449206510387,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2023-10-13",
+            "status": "WATCH",
+            "spx_3m": 10.12528864836128,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2023-11-10",
+            "status": "WATCH",
+            "spx_3m": 12.183474940093419,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2023-11-17",
+            "status": "WATCH",
+            "spx_3m": 10.362820349317497,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2023-11-24",
+            "status": "WATCH",
+            "spx_3m": 11.379724912203743,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2023-12-01",
+            "status": "WATCH",
+            "spx_3m": 10.534472457550116,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2023-12-08",
+            "status": "WATCH",
+            "spx_3m": 12.39908799278878,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2023-12-15",
+            "status": "WATCH",
+            "spx_3m": 9.733022614509967,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2023-12-22",
+            "status": "WATCH",
+            "spx_3m": 9.442379457030063,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2023-12-29",
+            "status": "WATCH",
+            "spx_3m": 9.140367126875343,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2023-12-29",
+            "status": "WATCH",
+            "spx_3m": 9.140367126875343,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2024-01-05",
+            "status": "WATCH",
+            "spx_3m": 10.754184949856278,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2024-01-05",
+            "status": "WATCH",
+            "spx_3m": 10.754184949856278,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2024-01-26",
+            "status": "WATCH",
+            "spx_3m": 4.272971147104532,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2024-01-26",
+            "status": "WATCH",
+            "spx_3m": 4.272971147104532,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2024-02-02",
+            "status": "WATCH",
+            "spx_3m": 3.4118468773685446,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2024-02-02",
+            "status": "WATCH",
+            "spx_3m": 3.4118468773685446,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2024-02-09",
+            "status": "WATCH",
+            "spx_3m": 3.9006471127244002,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2024-02-09",
+            "status": "WATCH",
+            "spx_3m": 3.9006471127244002,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2024-02-16",
+            "status": "WATCH",
+            "spx_3m": 5.947378735426269,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2024-02-16",
+            "status": "WATCH",
+            "spx_3m": 5.947378735426269,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2024-02-23",
+            "status": "WATCH",
+            "spx_3m": 3.518315633041389,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2024-02-23",
+            "status": "WATCH",
+            "spx_3m": 3.518315633041389,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2024-03-01",
+            "status": "WATCH",
+            "spx_3m": 2.733648013352673,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2024-03-01",
+            "status": "WATCH",
+            "spx_3m": 2.733648013352673,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2024-03-08",
+            "status": "WATCH",
+            "spx_3m": 4.358192933654821,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2024-03-08",
+            "status": "WATCH",
+            "spx_3m": 4.358192933654821,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2024-03-15",
+            "status": "WATCH",
+            "spx_3m": 6.1462718754174706,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2024-03-22",
+            "status": "WATCH",
+            "spx_3m": 4.082586655977214,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2024-03-29",
+            "status": "WATCH",
+            "spx_3m": 4.201085614607465,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2024-04-05",
+            "status": "WATCH",
+            "spx_3m": 7.080826098410957,
+            "fed_cycle_v2": "TIGHTENING"
+          },
+          {
+            "date": "2025-01-24",
+            "status": "WATCH",
+            "spx_3m": -9.441199679240421,
+            "fed_cycle_v2": "EASING"
+          },
+          {
+            "date": "2025-01-31",
+            "status": "WATCH",
+            "spx_3m": -5.85809317836344,
+            "fed_cycle_v2": "EASING"
+          }
+        ],
+        "evidence_tag": "MECHANISM+ANALOG"
+      },
+      "X-FM-3_combo_d": {
+        "n_fires": 452,
+        "short_horizon_1w": {
+          "n": 452,
+          "hit_rate": 0.38495575221238937,
+          "avg": 0.15759776026129096,
+          "median": 0.2721435064565407,
+          "worst": 3.4128036306914353
+        },
+        "long_horizon_3m": {
+          "n": 452,
+          "hit_rate": 0.2809734513274336,
+          "avg": 1.5470009068646364,
+          "median": 2.6327463336861405,
+          "worst": 13.672411011575331
+        }
+      },
+      "X-FM-5_fm_rm_divergence": {
+        "SQUEEZE_fm_low_rm_high": {
+          "n": 176,
+          "overall_3m": {
+            "n": 163,
+            "hit_rate": 0.7484662576687117,
+            "avg": 2.9098269895378563,
+            "median": 4.05477573935233,
+            "worst": -20.184615550558753
+          },
+          "by_fed_cycle_v2": {}
+        },
+        "LIQUIDITY_EXIT_rm_low_fm_high": {
+          "n": 117,
+          "overall_3m": {
+            "n": 117,
+            "hit_rate": 0.7435897435897436,
+            "avg": 3.0008459228902953,
+            "median": 3.3338722340147133,
+            "worst": -17.66208411602467
+          },
+          "by_fed_cycle_v2": {}
+        }
+      }
+    }
+  },
+  "combo_regime_slices": {
+    "A": {
+      "overall_3m": {
+        "n": 174,
+        "hit_rate": 0.22988505747126436,
+        "avg": 2.5176967601676092,
+        "median": 4.115751289897251,
+        "worst": 37.564754622382814
+      },
+      "by_fed_cycle_legacy": {
+        "HIKING_LATE": {
+          "n": 36,
+          "hit_rate": 0.1111111111111111,
+          "avg": 5.441608711213968,
+          "median": 4.761016990208102,
+          "worst": 19.61446444382092
+        },
+        "CUTTING_LATE": {
+          "n": 26,
+          "hit_rate": 0.5,
+          "avg": -1.242236744455743,
+          "median": 0.5151947749196992,
+          "worst": 15.964533447396192
+        },
+        "QE": {
+          "n": 112,
+          "hit_rate": 0.20535714285714285,
+          "avg": 2.4507096251902722,
+          "median": 4.0973807775531625,
+          "worst": 37.564754622382814
+        }
+      }
+    },
+    "B": {
+      "overall_3m": {
+        "n": 89,
+        "hit_rate": 0.797752808988764,
+        "avg": 5.031389316344529,
+        "median": 4.194971646525298,
+        "worst": -9.711428756233612
+      },
+      "by_fed_cycle_legacy": {
+        "HIKING_LATE": {
+          "n": 48,
+          "hit_rate": 0.8333333333333334,
+          "avg": 4.699495607940818,
+          "median": 4.272971147104532,
+          "worst": -9.711428756233612
+        },
+        "CUTTING_LATE": {
+          "n": 41,
+          "hit_rate": 0.7560975609756098,
+          "avg": 5.4199478042318,
+          "median": 2.7734602264456916,
+          "worst": -9.441199679240421
+        }
+      }
+    },
+    "C": {
+      "overall_3m": {
+        "n": 4,
+        "hit_rate": 0.0,
+        "avg": 17.82496796334076,
+        "median": 17.82496796334076,
+        "worst": 19.084449190989623
+      },
+      "by_fed_cycle_legacy": {
+        "CUTTING_LATE": {
+          "n": 4,
+          "hit_rate": 0.0,
+          "avg": 17.82496796334076,
+          "median": 17.82496796334076,
+          "worst": 19.084449190989623
+        }
+      }
+    },
+    "D": {
+      "overall_3m": {
+        "n": 452,
+        "hit_rate": 0.2809734513274336,
+        "avg": 1.5470009068646364,
+        "median": 2.6327463336861405,
+        "worst": 13.672411011575331
+      },
+      "by_fed_cycle_legacy": {
+        "HIKING_LATE": {
+          "n": 197,
+          "hit_rate": 0.18274111675126903,
+          "avg": 3.133622121715467,
+          "median": 3.6534711918183147,
+          "worst": 13.672411011575331
+        },
+        "CUTTING_LATE": {
+          "n": 155,
+          "hit_rate": 0.432258064516129,
+          "avg": -0.3539980078920498,
+          "median": 0.08708677778685957,
+          "worst": 8.246006078574226
+        },
+        "QE": {
+          "n": 100,
+          "hit_rate": 0.24,
+          "avg": 1.3679054314813641,
+          "median": 2.8013003563147167,
+          "worst": 11.204544014519916
+        }
+      }
+    },
+    "E": {
+      "overall_3m": {
+        "n": 507,
+        "hit_rate": 0.1992110453648915,
+        "avg": 3.38234625723772,
+        "median": 4.170791377979158,
+        "worst": 22.692585132234175
+      },
+      "by_fed_cycle_legacy": {
+        "HIKING_LATE": {
+          "n": 221,
+          "hit_rate": 0.18099547511312217,
+          "avg": 3.23970778707968,
+          "median": 3.7877544143682584,
+          "worst": 16.628175892935438
+        },
+        "CUTTING_LATE": {
+          "n": 159,
+          "hit_rate": 0.27044025157232704,
+          "avg": 2.8211574709339233,
+          "median": 3.5933175261461456,
+          "worst": 22.692585132234175
+        },
+        "QE": {
+          "n": 127,
+          "hit_rate": 0.14173228346456693,
+          "avg": 4.333150343278906,
+          "median": 5.918272222185578,
+          "worst": 17.01397277955489
+        }
+      }
+    },
+    "F": {
+      "overall_3m": {
+        "n": 704,
+        "hit_rate": 0.7485795454545454,
+        "avg": 2.651289286400214,
+        "median": 3.6029279473287135,
+        "worst": -24.024745270941587
+      },
+      "by_fed_cycle_legacy": {
+        "CUTTING_LATE": {
+          "n": 248,
+          "hit_rate": 0.6411290322580645,
+          "avg": 1.580433939512977,
+          "median": 2.2573529378381147,
+          "worst": -15.279157624681883
+        },
+        "QE": {
+          "n": 212,
+          "hit_rate": 0.8160377358490566,
+          "avg": 3.4793765176064158,
+          "median": 5.161758510706949,
+          "worst": -24.024745270941587
+        },
+        "HIKING_LATE": {
+          "n": 244,
+          "hit_rate": 0.7991803278688525,
+          "avg": 3.0202140118605416,
+          "median": 3.6816251681275958,
+          "worst": -17.66208411602467
+        }
+      }
+    },
+    "G": {
+      "overall_3m": {
+        "n": 0,
+        "hit_rate": null,
+        "avg": null,
+        "median": null,
+        "worst": null
+      },
+      "by_fed_cycle_legacy": {}
+    }
+  },
+  "part_d": {
+    "status": "RESEARCH_PROTOTYPE",
+    "n_obs": 500,
+    "risk_off_3m": {
+      "n": 39,
+      "hit_rate": 0.717948717948718,
+      "avg": 2.26324955838733,
+      "median": 3.598506437766811,
+      "worst": -15.2107503935292
+    },
+    "risk_on_3m": {
+      "n": 34,
+      "hit_rate": 0.7352941176470589,
+      "avg": 2.873585848981229,
+      "median": 5.326907337540452,
+      "worst": -24.024745270941587
+    },
+    "note": "Production HMM deferred until 6mo live emission_vectors",
+    "sample_posteriors": [
+      {
+        "date": "2026-06-11",
+        "state": "Risk-Off",
+        "posterior": {
+          "Risk-Off": 0.3333333333333333,
+          "Transition": 0.3333333333333333,
+          "Risk-On": 0.3333333333333333
+        }
+      },
+      {
+        "date": "2026-06-12",
+        "state": "Transition",
+        "posterior": {
+          "Risk-Off": 0.3333333333333333,
+          "Transition": 0.38095238095238093,
+          "Risk-On": 0.2857142857142857
+        }
+      },
+      {
+        "date": "2026-06-19",
+        "state": "Transition",
+        "posterior": {
+          "Risk-Off": 0.2857142857142857,
+          "Transition": 0.42857142857142855,
+          "Risk-On": 0.2857142857142857
+        }
+      },
+      {
+        "date": "2026-06-26",
+        "state": "Transition",
+        "posterior": {
+          "Risk-Off": 0.2857142857142857,
+          "Transition": 0.42857142857142855,
+          "Risk-On": 0.2857142857142857
+        }
+      },
+      {
+        "date": "2026-07-03",
+        "state": "Risk-Off",
+        "posterior": {
+          "Risk-Off": 0.3333333333333333,
+          "Transition": 0.42857142857142855,
+          "Risk-On": 0.23809523809523808
+        }
+      }
+    ],
+    "state_by_date": {
+      "2017-01-20": "Transition",
+      "2017-01-27": "Transition",
+      "2017-02-03": "Transition",
+      "2017-02-10": "Transition",
+      "2017-02-17": "Transition",
+      "2017-02-24": "Risk-On",
+      "2017-03-03": "Risk-On",
+      "2017-03-10": "Risk-On",
+      "2017-03-17": "Risk-On",
+      "2017-03-24": "Risk-On",
+      "2017-03-31": "Transition",
+      "2017-04-07": "Risk-On",
+      "2017-04-14": "Risk-On",
+      "2017-04-21": "Risk-On",
+      "2017-04-28": "Risk-On",
+      "2017-05-05": "Risk-On",
+      "2017-05-12": "Risk-On",
+      "2017-05-19": "Transition",
+      "2017-05-26": "Transition",
+      "2017-06-02": "Risk-Off",
+      "2017-06-09": "Risk-Off",
+      "2017-06-16": "Transition",
+      "2017-06-23": "Transition",
+      "2017-06-30": "Transition",
+      "2017-07-07": "Risk-On",
+      "2017-07-14": "Risk-On",
+      "2017-07-21": "Risk-On",
+      "2017-07-28": "Risk-On",
+      "2017-08-04": "Transition",
+      "2017-08-11": "Risk-Off",
+      "2017-08-18": "Risk-Off",
+      "2017-08-25": "Transition",
+      "2017-09-01": "Risk-Off",
+      "2017-09-08": "Risk-Off",
+      "2017-09-15": "Risk-On",
+      "2017-09-22": "Transition",
+      "2017-09-29": "Risk-On",
+      "2017-10-06": "Risk-On",
+      "2017-10-13": "Transition",
+      "2017-10-20": "Risk-On",
+      "2017-10-27": "Risk-On",
+      "2017-11-03": "Risk-On",
+      "2017-11-10": "Risk-On",
+      "2017-11-17": "Transition",
+      "2017-11-24": "Transition",
+      "2017-12-01": "Transition",
+      "2017-12-08": "Transition",
+      "2017-12-15": "Risk-On",
+      "2017-12-22": "Transition",
+      "2017-12-29": "Transition",
+      "2018-01-05": "Transition",
+      "2018-01-12": "Risk-Off",
+      "2018-01-19": "Transition",
+      "2018-01-26": "Transition",
+      "2018-02-02": "Transition",
+      "2018-02-09": "Transition",
+      "2018-02-16": "Transition",
+      "2018-02-23": "Transition",
+      "2018-03-02": "Transition",
+      "2018-03-09": "Risk-On",
+      "2018-03-16": "Transition",
+      "2018-03-23": "Transition",
+      "2018-03-30": "Risk-On",
+      "2018-04-06": "Transition",
+      "2018-04-13": "Transition",
+      "2018-04-20": "Risk-Off",
+      "2018-04-27": "Risk-On",
+      "2018-05-04": "Risk-On",
+      "2018-05-11": "Transition",
+      "2018-05-18": "Risk-On",
+      "2018-05-25": "Transition",
+      "2018-06-01": "Transition",
+      "2018-06-08": "Transition",
+      "2018-06-15": "Transition",
+      "2018-06-22": "Transition",
+      "2018-06-29": "Risk-On",
+      "2018-07-06": "Risk-On",
+      "2018-07-13": "Risk-On",
+      "2018-07-20": "Risk-On",
+      "2018-07-27": "Transition",
+      "2018-08-03": "Transition",
+      "2018-08-10": "Transition",
+      "2018-08-17": "Transition",
+      "2018-08-24": "Transition",
+      "2018-08-31": "Transition",
+      "2018-09-07": "Transition",
+      "2018-09-14": "Transition",
+      "2018-09-21": "Transition",
+      "2018-09-28": "Risk-Off",
+      "2018-10-05": "Risk-Off",
+      "2018-10-12": "Risk-Off",
+      "2018-10-19": "Transition",
+      "2018-10-26": "Transition",
+      "2018-11-02": "Risk-Off",
+      "2018-11-09": "Risk-Off",
+      "2018-11-16": "Risk-Off",
+      "2018-11-23": "Risk-Off",
+      "2018-11-30": "Transition",
+      "2018-12-07": "Risk-Off",
+      "2018-12-14": "Risk-Off",
+      "2018-12-21": "Risk-Off",
+      "2018-12-28": "Risk-Off",
+      "2019-01-04": "Risk-Off",
+      "2019-01-11": "Risk-Off",
+      "2019-01-18": "Risk-Off",
+      "2019-01-25": "Transition",
+      "2019-02-01": "Transition",
+      "2019-02-08": "Risk-Off",
+      "2019-02-15": "Transition",
+      "2019-02-22": "Risk-Off",
+      "2019-03-01": "Risk-Off",
+      "2019-03-08": "Risk-Off",
+      "2019-03-15": "Risk-Off",
+      "2019-03-22": "Transition",
+      "2019-03-29": "Transition",
+      "2019-04-05": "Transition",
+      "2019-04-12": "Transition",
+      "2019-04-19": "Risk-Off",
+      "2019-04-26": "Transition",
+      "2019-05-03": "Risk-Off",
+      "2019-05-10": "Transition",
+      "2019-05-17": "Transition",
+      "2019-05-24": "Transition",
+      "2019-05-31": "Transition",
+      "2019-06-07": "Transition",
+      "2019-06-14": "Risk-Off",
+      "2019-06-21": "Risk-Off",
+      "2019-06-28": "Risk-Off",
+      "2019-07-05": "Risk-Off",
+      "2019-07-12": "Transition",
+      "2019-07-19": "Risk-Off",
+      "2019-07-26": "Risk-Off",
+      "2019-08-02": "Risk-Off",
+      "2019-08-09": "Risk-Off",
+      "2019-08-16": "Risk-Off",
+      "2019-08-23": "Risk-Off",
+      "2019-08-30": "Risk-Off",
+      "2019-09-06": "Risk-Off",
+      "2019-09-13": "Risk-Off",
+      "2019-09-20": "Transition",
+      "2019-09-27": "Transition",
+      "2019-10-04": "Risk-On",
+      "2019-10-11": "Transition",
+      "2019-10-18": "Transition",
+      "2019-10-25": "Transition",
+      "2019-11-01": "Risk-Off",
+      "2019-11-08": "Transition",
+      "2019-11-15": "Transition",
+      "2019-11-22": "Transition",
+      "2019-11-29": "Transition",
+      "2019-12-06": "Risk-On",
+      "2019-12-13": "Transition",
+      "2019-12-20": "Risk-On",
+      "2019-12-27": "Transition",
+      "2020-01-03": "Transition",
+      "2020-01-10": "Risk-Off",
+      "2020-01-17": "Risk-Off",
+      "2020-01-24": "Risk-Off",
+      "2020-01-31": "Risk-Off",
+      "2020-02-07": "Transition",
+      "2020-02-14": "Transition",
+      "2020-02-21": "Risk-On",
+      "2020-02-28": "Risk-On",
+      "2020-03-06": "Risk-On",
+      "2020-03-13": "Risk-On",
+      "2020-03-20": "Risk-On",
+      "2020-03-27": "Risk-On",
+      "2020-04-03": "Risk-On",
+      "2020-04-10": "Risk-On",
+      "2020-04-17": "Risk-Off",
+      "2020-04-24": "Risk-On",
+      "2020-05-01": "Transition",
+      "2020-05-08": "Risk-On",
+      "2020-05-15": "Risk-On",
+      "2020-05-22": "Risk-On",
+      "2020-05-29": "Risk-On",
+      "2020-06-05": "Risk-On",
+      "2020-06-12": "Risk-On",
+      "2020-06-19": "Risk-On",
+      "2020-06-26": "Risk-On",
+      "2020-07-03": "Transition",
+      "2020-07-10": "Risk-Off",
+      "2020-07-17": "Risk-Off",
+      "2020-07-24": "Risk-Off",
+      "2020-07-31": "Risk-Off",
+      "2020-08-07": "Transition",
+      "2020-08-14": "Transition",
+      "2020-08-21": "Transition",
+      "2020-08-28": "Transition",
+      "2020-09-04": "Transition",
+      "2020-09-11": "Transition",
+      "2020-09-18": "Transition",
+      "2020-09-25": "Risk-On",
+      "2020-10-02": "Risk-On",
+      "2020-10-09": "Risk-On",
+      "2020-10-16": "Risk-On",
+      "2020-10-23": "Transition",
+      "2020-10-30": "Transition",
+      "2020-11-06": "Transition",
+      "2020-11-13": "Transition",
+      "2020-11-20": "Risk-On",
+      "2020-11-27": "Risk-On",
+      "2020-12-04": "Risk-On",
+      "2020-12-11": "Risk-On",
+      "2020-12-18": "Risk-On",
+      "2020-12-25": "Risk-On",
+      "2021-01-01": "Risk-On",
+      "2021-01-08": "Risk-On",
+      "2021-01-15": "Risk-On",
+      "2021-01-22": "Risk-On",
+      "2021-01-29": "Transition",
+      "2021-02-05": "Risk-On",
+      "2021-02-12": "Risk-On",
+      "2021-02-19": "Risk-On",
+      "2021-02-26": "Risk-On",
+      "2021-03-05": "Risk-On",
+      "2021-03-12": "Risk-On",
+      "2021-03-19": "Risk-On",
+      "2021-03-26": "Risk-On",
+      "2021-04-02": "Risk-On",
+      "2021-04-09": "Risk-On",
+      "2021-04-16": "Risk-On",
+      "2021-04-23": "Risk-On",
+      "2021-04-30": "Transition",
+      "2021-05-07": "Transition",
+      "2021-05-14": "Transition",
+      "2021-05-21": "Risk-On",
+      "2021-05-28": "Risk-On",
+      "2021-06-04": "Risk-On",
+      "2021-06-11": "Risk-On",
+      "2021-06-18": "Risk-On",
+      "2021-06-25": "Risk-On",
+      "2021-07-02": "Risk-On",
+      "2021-07-09": "Risk-On",
+      "2021-07-16": "Risk-On",
+      "2021-07-23": "Risk-On",
+      "2021-07-30": "Risk-On",
+      "2021-08-06": "Risk-On",
+      "2021-08-13": "Risk-On",
+      "2021-08-20": "Risk-On",
+      "2021-08-27": "Risk-On",
+      "2021-09-03": "Risk-On",
+      "2021-09-10": "Risk-On",
+      "2021-09-17": "Risk-On",
+      "2021-09-24": "Risk-On",
+      "2021-10-01": "Risk-On",
+      "2021-10-08": "Risk-On",
+      "2021-10-15": "Risk-On",
+      "2021-10-22": "Risk-On",
+      "2021-10-29": "Risk-On",
+      "2021-11-05": "Risk-On",
+      "2021-11-12": "Risk-On",
+      "2021-11-19": "Risk-On",
+      "2021-11-26": "Risk-On",
+      "2021-12-03": "Risk-On",
+      "2021-12-10": "Risk-On",
+      "2021-12-17": "Risk-On",
+      "2021-12-24": "Risk-On",
+      "2021-12-31": "Risk-On",
+      "2022-01-07": "Risk-On",
+      "2022-01-14": "Risk-On",
+      "2022-01-21": "Risk-On",
+      "2022-01-28": "Risk-On",
+      "2022-02-04": "Risk-On",
+      "2022-02-11": "Risk-On",
+      "2022-02-18": "Risk-On",
+      "2022-02-25": "Risk-On",
+      "2022-03-04": "Risk-On",
+      "2022-03-11": "Risk-On",
+      "2022-03-18": "Risk-On",
+      "2022-03-25": "Risk-On",
+      "2022-04-01": "Transition",
+      "2022-04-08": "Transition",
+      "2022-04-15": "Risk-On",
+      "2022-04-22": "Risk-On",
+      "2022-04-29": "Risk-On",
+      "2022-05-06": "Risk-On",
+      "2022-05-13": "Risk-On",
+      "2022-05-20": "Risk-On",
+      "2022-05-27": "Risk-On",
+      "2022-06-03": "Risk-On",
+      "2022-06-10": "Risk-Off",
+      "2022-06-17": "Transition",
+      "2022-06-24": "Transition",
+      "2022-07-01": "Transition",
+      "2022-07-08": "Risk-Off",
+      "2022-07-15": "Transition",
+      "2022-07-22": "Transition",
+      "2022-07-29": "Risk-Off",
+      "2022-08-05": "Risk-Off",
+      "2022-08-12": "Risk-Off",
+      "2022-08-19": "Risk-Off",
+      "2022-08-26": "Transition",
+      "2022-09-02": "Transition",
+      "2022-09-09": "Transition",
+      "2022-09-16": "Risk-Off",
+      "2022-09-23": "Risk-Off",
+      "2022-09-30": "Risk-Off",
+      "2022-10-07": "Risk-Off",
+      "2022-10-14": "Transition",
+      "2022-10-21": "Transition",
+      "2022-10-28": "Transition",
+      "2022-11-04": "Risk-Off",
+      "2022-11-11": "Risk-Off",
+      "2022-11-18": "Risk-Off",
+      "2022-11-25": "Risk-Off",
+      "2022-12-02": "Risk-Off",
+      "2022-12-09": "Risk-Off",
+      "2022-12-16": "Risk-Off",
+      "2022-12-23": "Risk-Off",
+      "2022-12-30": "Risk-Off",
+      "2023-01-06": "Risk-Off",
+      "2023-01-13": "Risk-Off",
+      "2023-01-20": "Risk-Off",
+      "2023-01-27": "Risk-Off",
+      "2023-02-03": "Risk-Off",
+      "2023-02-10": "Transition",
+      "2023-02-17": "Risk-Off",
+      "2023-02-24": "Transition",
+      "2023-03-03": "Transition",
+      "2023-03-10": "Transition",
+      "2023-03-17": "Risk-On",
+      "2023-03-24": "Risk-Off",
+      "2023-03-31": "Risk-Off",
+      "2023-04-07": "Transition",
+      "2023-04-14": "Risk-Off",
+      "2023-04-21": "Risk-Off",
+      "2023-04-28": "Risk-Off",
+      "2023-05-05": "Risk-Off",
+      "2023-05-12": "Transition",
+      "2023-05-19": "Transition",
+      "2023-05-26": "Risk-Off",
+      "2023-06-02": "Transition",
+      "2023-06-09": "Risk-Off",
+      "2023-06-16": "Risk-Off",
+      "2023-06-23": "Transition",
+      "2023-06-30": "Risk-Off",
+      "2023-07-07": "Risk-Off",
+      "2023-07-14": "Risk-Off",
+      "2023-07-21": "Risk-Off",
+      "2023-07-28": "Risk-Off",
+      "2023-08-04": "Risk-Off",
+      "2023-08-11": "Transition",
+      "2023-08-18": "Transition",
+      "2023-08-25": "Risk-Off",
+      "2023-09-01": "Risk-Off",
+      "2023-09-08": "Risk-Off",
+      "2023-09-15": "Risk-Off",
+      "2023-09-22": "Risk-Off",
+      "2023-09-29": "Risk-Off",
+      "2023-10-06": "Risk-Off",
+      "2023-10-13": "Risk-Off",
+      "2023-10-20": "Transition",
+      "2023-10-27": "Transition",
+      "2023-11-03": "Risk-Off",
+      "2023-11-10": "Risk-Off",
+      "2023-11-17": "Risk-Off",
+      "2023-11-24": "Risk-Off",
+      "2023-12-01": "Risk-Off",
+      "2023-12-08": "Risk-Off",
+      "2023-12-15": "Risk-Off",
+      "2023-12-22": "Risk-Off",
+      "2023-12-29": "Risk-Off",
+      "2024-01-05": "Risk-Off",
+      "2024-01-12": "Transition",
+      "2024-01-19": "Transition",
+      "2024-01-26": "Transition",
+      "2024-02-02": "Risk-Off",
+      "2024-02-09": "Transition",
+      "2024-02-16": "Risk-Off",
+      "2024-02-23": "Risk-Off",
+      "2024-03-01": "Risk-Off",
+      "2024-03-08": "Risk-Off",
+      "2024-03-15": "Risk-Off",
+      "2024-03-22": "Risk-Off",
+      "2024-03-29": "Risk-Off",
+      "2024-04-05": "Risk-Off",
+      "2024-04-12": "Risk-Off",
+      "2024-04-19": "Risk-Off",
+      "2024-04-26": "Risk-Off",
+      "2024-05-03": "Risk-Off",
+      "2024-05-10": "Risk-Off",
+      "2024-05-17": "Risk-Off",
+      "2024-05-24": "Risk-Off",
+      "2024-05-31": "Risk-Off",
+      "2024-06-07": "Risk-Off",
+      "2024-06-14": "Risk-Off",
+      "2024-06-21": "Risk-Off",
+      "2024-06-28": "Transition",
+      "2024-07-05": "Transition",
+      "2024-07-12": "Risk-Off",
+      "2024-07-19": "Risk-Off",
+      "2024-07-26": "Risk-Off",
+      "2024-08-02": "Risk-Off",
+      "2024-08-09": "Transition",
+      "2024-08-16": "Transition",
+      "2024-08-23": "Risk-Off",
+      "2024-08-30": "Risk-Off",
+      "2024-09-06": "Risk-Off",
+      "2024-09-13": "Risk-Off",
+      "2024-09-18": "Transition",
+      "2024-09-20": "Risk-Off",
+      "2024-09-27": "Risk-Off",
+      "2024-10-04": "Risk-Off",
+      "2024-10-11": "Risk-Off",
+      "2024-10-18": "Risk-Off",
+      "2024-10-25": "Transition",
+      "2024-11-01": "Transition",
+      "2024-11-08": "Transition",
+      "2024-11-15": "Transition",
+      "2024-11-22": "Transition",
+      "2024-11-29": "Risk-Off",
+      "2024-12-06": "Risk-Off",
+      "2024-12-13": "Transition",
+      "2024-12-20": "Transition",
+      "2024-12-27": "Transition",
+      "2025-01-03": "Risk-On",
+      "2025-01-10": "Transition",
+      "2025-01-17": "Transition",
+      "2025-01-24": "Risk-Off",
+      "2025-01-31": "Risk-Off",
+      "2025-02-07": "Risk-Off",
+      "2025-02-14": "Risk-Off",
+      "2025-02-21": "Risk-Off",
+      "2025-02-28": "Risk-Off",
+      "2025-03-07": "Risk-Off",
+      "2025-03-14": "Transition",
+      "2025-03-21": "Risk-On",
+      "2025-03-28": "Transition",
+      "2025-04-04": "Risk-On",
+      "2025-04-11": "Risk-On",
+      "2025-04-18": "Risk-On",
+      "2025-04-25": "Risk-On",
+      "2025-05-02": "Risk-On",
+      "2025-05-09": "Risk-On",
+      "2025-05-16": "Transition",
+      "2025-05-23": "Transition",
+      "2025-05-30": "Risk-On",
+      "2025-06-06": "Transition",
+      "2025-06-13": "Transition",
+      "2025-06-20": "Transition",
+      "2025-06-27": "Risk-On",
+      "2025-07-04": "Transition",
+      "2025-07-11": "Risk-Off",
+      "2025-07-18": "Risk-Off",
+      "2025-07-25": "Transition",
+      "2025-08-01": "Risk-On",
+      "2025-08-08": "Transition",
+      "2025-08-15": "Transition",
+      "2025-08-22": "Transition",
+      "2025-08-29": "Risk-Off",
+      "2025-09-05": "Risk-Off",
+      "2025-09-12": "Risk-Off",
+      "2025-09-19": "Transition",
+      "2025-09-26": "Transition",
+      "2025-10-03": "Risk-Off",
+      "2025-10-10": "Transition",
+      "2025-10-17": "Risk-Off",
+      "2025-10-24": "Transition",
+      "2025-10-31": "Risk-On",
+      "2025-11-07": "Transition",
+      "2025-11-14": "Transition",
+      "2025-11-21": "Risk-Off",
+      "2025-11-28": "Risk-Off",
+      "2025-12-05": "Risk-Off",
+      "2025-12-12": "Risk-Off",
+      "2025-12-19": "Risk-Off",
+      "2025-12-26": "Risk-Off",
+      "2026-01-02": "Risk-Off",
+      "2026-01-09": "Risk-Off",
+      "2026-01-16": "Risk-Off",
+      "2026-01-23": "Transition",
+      "2026-01-30": "Transition",
+      "2026-02-06": "Risk-On",
+      "2026-02-13": "Risk-On",
+      "2026-02-20": "Risk-On",
+      "2026-02-27": "Risk-Off",
+      "2026-03-06": "Transition",
+      "2026-03-13": "Risk-On",
+      "2026-03-20": "Risk-On",
+      "2026-03-27": "Risk-On",
+      "2026-04-03": "Risk-On",
+      "2026-04-10": "Risk-On",
+      "2026-04-17": "Transition",
+      "2026-04-24": "Transition",
+      "2026-05-01": "Transition",
+      "2026-05-08": "Transition",
+      "2026-05-15": "Risk-On",
+      "2026-05-22": "Transition",
+      "2026-05-29": "Transition",
+      "2026-06-05": "Risk-Off",
+      "2026-06-06": "Risk-Off",
+      "2026-06-08": "Risk-Off",
+      "2026-06-09": "Risk-Off",
+      "2026-06-10": "Risk-Off",
+      "2026-06-11": "Risk-Off",
+      "2026-06-12": "Transition",
+      "2026-06-19": "Transition",
+      "2026-06-26": "Transition",
+      "2026-07-03": "Risk-Off"
+    },
+    "regime_backtest": {
+      "status": "RESEARCH",
+      "comparisons": {
+        "B": {
+          "overall_3m": {
+            "n": 89,
+            "hit_rate": 0.797752808988764,
+            "avg": 5.031389316344529,
+            "median": 4.194971646525298,
+            "worst": -9.711428756233612
+          },
+          "hmm_risk_off_only_3m": {
+            "n": 55,
+            "hit_rate": 0.7636363636363637,
+            "avg": 4.093091831688165,
+            "median": 4.201085614607465,
+            "worst": -9.711428756233612
+          },
+          "note": "Research prototype \u2014 production HMM deferred 6mo"
+        },
+        "D": {
+          "overall_3m": {
+            "n": 452,
+            "hit_rate": 0.2809734513274336,
+            "avg": 1.5470009068646364,
+            "median": 2.6327463336861405,
+            "worst": 13.672411011575331
+          },
+          "hmm_risk_off_only_3m": {
+            "n": 98,
+            "hit_rate": 0.2755102040816326,
+            "avg": 2.407681582813191,
+            "median": 3.4118468773685446,
+            "worst": 13.672411011575331
+          },
+          "note": "Research prototype \u2014 production HMM deferred 6mo"
+        }
+      },
+      "hmm_n_obs": 500
+    }
+  },
+  "manifest_path": "macro_intelligence/analysis/regime_v2_experiments/experiment_manifest.json"
+}

@@ -26,7 +26,7 @@ Path: report_date
 ## Example
 
 ```bash
-curl -s http://localhost:8000/api/v1/conviction/overlays/2026-05-20/summary | jq
+curl -s http://51.20.53.218:8506/api/v1/conviction/overlays/2026-05-20/summary | jq
 ```
 
 ## Notes

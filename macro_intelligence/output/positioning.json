@@ -1,0 +1,87 @@
+{
+  "date": "2026-06-11",
+  "ssi_level": 0.3279,
+  "ssi_percentile_5y": 27.37,
+  "layer2_status": "CONFIRMED",
+  "layer2_confirmed_count": 3,
+  "ssi_multiplier": 1.2,
+  "signals": {
+    "long": {
+      "size_mult": 1.0,
+      "entry_threshold": -0.6,
+      "active": false
+    },
+    "short": {
+      "size_mult": 1.0,
+      "entry_threshold": 0.85,
+      "active": false
+    }
+  },
+  "inputs": {
+    "hyg_lqd": {
+      "raw": 0.7344340933216866,
+      "norm": 1.3365968083639606
+    },
+    "dbmf_beta": {
+      "raw": 0.46319595587292006,
+      "norm": -0.6323866946890446
+    },
+    "cnn_fg": {
+      "raw": 27.2,
+      "norm": 0.456
+    },
+    "vix_ratio": {
+      "raw": 1.0724709897276754,
+      "norm": -0.1449419794553508
+    },
+    "layer2_votes": [
+      {
+        "input": "hyg_lqd",
+        "raw": 0.7344340933216866,
+        "pctile": 99.51609000725865,
+        "vote": true,
+        "signal": "risk_on"
+      },
+      {
+        "input": "dbmf_beta",
+        "raw": 0.46319595587292267,
+        "vote": true,
+        "signal": "low_beta"
+      },
+      {
+        "input": "cnn_fg",
+        "raw": 27.2,
+        "vote": false,
+        "signal": "neutral"
+      },
+      {
+        "input": "vix_ratio",
+        "raw": 1.0724709897276754,
+        "vote": true,
+        "signal": "stress"
+      }
+    ],
+    "layer3_cftc": {
+      "fm_net": -503509.0,
+      "rm_net": 984921.0,
+      "fm_pctile": 0.6451612903225806,
+      "rm_pctile": 80.64516129032258,
+      "status": "PENDING_CFTC_CONFIRM",
+      "gross_net_divergence": 481412.0
+    },
+    "layer1": {
+      "aaii_spread": -0.7325999999999999,
+      "naaim_exposure": 86.82,
+      "cnn_fg_raw": 27.2,
+      "pct_above_200dma": 60.95617529880478,
+      "mcclellan": 36.821635302039795,
+      "nh_nl_ratio": 9.666666666666666,
+      "skew": 141.97000122070312
+    }
+  },
+  "validation": {
+    "threshold_source": "SSI_CONFIG.yaml",
+    "design_percentile": 20,
+    "notes": "Empirical sweep: run scripts/run_ssi_threshold_sweep.py"
+  }
+}

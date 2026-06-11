@@ -1,0 +1,75 @@
+{
+  "A1_fed_cycle_v2_distribution": {
+    "EASY": 384,
+    "PIVOTING": 27,
+    "EASING": 727,
+    "TIGHTENING": 763
+  },
+  "A2_geo_overlay_v2_distribution": {
+    "NEUTRAL": 1855,
+    "CRISIS": 21,
+    "ELEVATED_RISK": 25
+  },
+  "A3_liquidity_v2_distribution": {
+    "NEUTRAL_FLAT": 219,
+    "TIGHT_FLAT": 30,
+    "EASY_FLAT": 746,
+    "EASY_TIGHTENING": 287,
+    "EASY_IMPROVING": 403,
+    "NEUTRAL_TIGHTENING": 72,
+    "NEUTRAL_IMPROVING": 62,
+    "TIGHT_IMPROVING": 50,
+    "TIGHT_TIGHTENING": 32
+  },
+  "A4_val_regime_distribution": {
+    "NORMAL": 1105,
+    "CHEAP_CAPE": 51,
+    "ELEVATED_CAPE": 309,
+    "EXTREME_CAPE": 436
+  },
+  "A4_cape_velocity": {
+    "level_extreme_3m": {
+      "n": 845,
+      "hit_rate": 0.7479289940828402,
+      "avg": 3.069706550074289,
+      "median": 3.900745288087626,
+      "worst": -24.024745270941587
+    },
+    "fresh_cross_into_extreme_3m": {
+      "n": 0,
+      "hit_rate": null,
+      "avg": null,
+      "median": null,
+      "worst": null
+    },
+    "velocity_rank_delta_6m_3m": {
+      "n": 513,
+      "hit_rate": 0.7563352826510721,
+      "avg": 2.6429517231258837,
+      "median": 3.450186618574365,
+      "worst": -17.66208411602467
+    },
+    "winner_3m_avg_return": "level_extreme"
+  },
+  "A5_fiscal_caveat": {
+    "n_episodes": 13,
+    "fiscal_offset_bucket": {
+      "n": 1,
+      "hit_rate": 0.0,
+      "avg": -13.210078946098342,
+      "median": -13.210078946098342,
+      "worst": -13.210078946098342
+    },
+    "no_offset_bucket": {
+      "n": 12,
+      "hit_rate": 0.4166666666666667,
+      "avg": -1.6340878950913826,
+      "median": -2.0888462361638656,
+      "worst": -17.597241447565896
+    },
+    "note": "2022-23 invert may cluster in fiscal_offset bucket"
+  },
+  "n_fridays_backfilled": 1901,
+  "A1_pass_no_degenerate_dominance": false,
+  "A1_notes": "PIVOTING n=27 may fail \u226530 obs threshold; no state >80% dominance"
+}

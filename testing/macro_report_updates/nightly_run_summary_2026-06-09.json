@@ -1,0 +1,17 @@
+{
+  "date": "2026-06-09",
+  "generated_at": "2026-06-09T06:38:52.951839",
+  "dominant_signal": "F",
+  "brave_fearful": "TACTICAL EASY MONEY",
+  "narrative_chars": 2635,
+  "combo_status_rows": 7,
+  "testing_dir": {
+    "html": "testing/macro_report_updates/runic_briefing_2026-06-09.html",
+    "pdf": "testing/macro_report_updates/runic_briefing_2026-06-09.pdf",
+    "json": "testing/macro_report_updates/runic_output_2026-06-09.json"
+  },
+  "default_dir": {
+    "html": "macro_intelligence/output/runic_briefing_2026-06-09.html",
+    "pdf": "macro_intelligence/output/runic_briefing_2026-06-09.pdf"
+  }
+}

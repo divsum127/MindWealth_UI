@@ -30,7 +30,7 @@ Path: ticker
 ## Example
 
 ```bash
-curl -s http://localhost:8000/api/v1/conviction/tickers/AAPL | jq
+curl -s http://51.20.53.218:8506/api/v1/conviction/tickers/AAPL | jq
 ```
 
 ## Notes

@@ -1,0 +1,131 @@
+---
+description: MindWealth_UI Repository Operating Rules
+alwaysApply: true
+---
+
+# MindWealth_UI Repository Rules
+
+## Repository Scope
+
+Unless the user explicitly specifies another path, ONLY search, inspect, modify, or reference files within the following directories:
+
+1. MindWealth Core Repository
+   Path: /home/ubuntu/MindWealth
+
+   Contains:
+
+   * Trading strategies
+   * Signal generation logic
+   * C++ codebase
+   * Dash UI
+
+2. MindWealth UI Repository
+   Path: /home/ubuntu/uiv2/git/MindWealth_UI
+
+   Contains:
+
+   * Chatbot functionality
+   * Streamlit UI
+   * User-facing features
+
+Do not search outside these directories unless:
+
+* The user explicitly provides another path.
+* The user explicitly requests a broader search.
+
+---
+
+## Job Status Tracking
+
+All tasks, jobs, features, bug fixes, investigations, and implementations are tracked in two files:
+
+### File 1 — Job Status (TODO / DONE)
+
+**Path:** `/home/ubuntu/uiv2/git/MindWealth_UI/docs/mindwealth_ui_job_status.md`
+
+This file has two sections:
+
+- `## TODO` — Tasks that are planned or in-progress.
+- `## DONE` — Tasks that have been completed (SUCCESSFUL or UNSUCCESSFUL).
+
+### File 2 — Job Status Details
+
+**Path:** `/home/ubuntu/uiv2/git/MindWealth_UI/docs/mindwealth_ui_repo_job_status_details.md`
+
+This file records minute implementation details for every completed task, including:
+
+- Assumptions made during implementation
+- Things left for future (deferred, potential improvements, known gaps)
+- Edge cases identified but not handled
+- Architecture decisions and trade-offs
+- Any caveats the next developer should know
+
+---
+
+## Mandatory Logging Protocol
+
+After completing any task, whether SUCCESSFUL or UNSUCCESSFUL:
+
+### Step 1 — Update Job Status file
+
+Open `/home/ubuntu/uiv2/git/MindWealth_UI/docs/mindwealth_ui_job_status.md` and:
+
+1. **Check if the task already exists under `## TODO`.**
+   - If YES: Move the entry from `## TODO` to `## DONE`, updating its status and adding outcome details.
+   - If NO: Add a new entry directly under `## DONE`.
+
+2. Each DONE entry must include:
+   - Task description
+   - Status: SUCCESSFUL / UNSUCCESSFUL
+   - Date (YYYY-MM-DD)
+   - Summary of outcome
+   - Relevant files changed (if any)
+
+3. Maintain sequential date-based numbering within each section.
+
+### Step 2 — Update Job Status Details file
+
+Open `/home/ubuntu/uiv2/git/MindWealth_UI/docs/mindwealth_ui_repo_job_status_details.md` and add a detail block for the task containing:
+
+- Implementation assumptions
+- Things deferred or left for future
+- Edge cases not handled
+- Key decisions made
+- Any caveats
+
+---
+
+## Date-Based Numbering
+
+Maintain sequential numbering for entries within each date group.
+
+Example (DONE section):
+
+### 2026-06-06
+
+1. Added new signal generation logic — SUCCESSFUL
+2. Fixed Streamlit authentication issue — SUCCESSFUL
+3. Investigated portfolio calculation bug — UNSUCCESSFUL
+
+### 2026-06-07
+
+1. Added risk management module — SUCCESSFUL
+2. Investigated websocket disconnect issue — UNSUCCESSFUL
+
+Always continue numbering from the latest entry for that date.
+
+---
+
+## Completion Protocol
+
+Before declaring any task complete:
+
+1. Verify implementation or investigation results.
+2. Update `mindwealth_ui_job_status.md` — move from TODO to DONE (or add to DONE if not previously in TODO).
+3. Update `mindwealth_ui_repo_job_status_details.md` with implementation details.
+4. Record status as SUCCESSFUL or UNSUCCESSFUL.
+5. Record the current date.
+6. Maintain correct numbering for that date.
+7. Then provide the final response to the user.
+
+Failure to update both tracking files is considered an incomplete task.

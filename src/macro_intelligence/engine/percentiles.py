@@ -29,16 +29,75 @@ def percentile_rank(value: float, history: pd.Series) -> float | None:
     return float((arr <= value).sum() / len(arr) * 100)
 
 
+def compute_unconditional_pctile(
+    series: pd.Series,
+    var_cfg: dict[str, Any],
+    as_of: pd.Timestamp,
+) -> float | None:
+    """Full-history percentile for combo detection (Layer 1)."""
+    hist = series.loc[:as_of].dropna()
+    start = var_cfg.get("pctile_start")
+    if start:
+        hist = hist[hist.index >= pd.Timestamp(start)]
+    window = var_cfg.get("pctile_window", "rolling_3y")
+    if window == "rolling_3y":
+        cutoff = as_of - pd.DateOffset(years=3)
+        hist = hist[hist.index >= cutoff]
+    if hist.empty:
+        return None
+    val = float(hist.iloc[-1])
+    return percentile_rank(val, hist)
+
+
+def compute_regime_pctile(
+    series: pd.Series,
+    var_cfg: dict[str, Any],
+    as_of: pd.Timestamp,
+    fed_cycle: str | None,
+) -> tuple[float | None, bool]:
+    """Fed-cycle-conditioned percentile; fallback if < min regime days."""
+    from src.macro_intelligence.config import load_config
+
+    hist = series.loc[:as_of].dropna()
+    if hist.empty or not fed_cycle:
+        return compute_unconditional_pctile(series, var_cfg, as_of), True
+    from src.macro_intelligence.engine.fed_cycle import fed_cycle_dates_matching
+
+    regime_dates = fed_cycle_dates_matching(fed_cycle)
+    if len(regime_dates) < 10:
+        with __import__(
+            "src.macro_intelligence.db.connection", fromlist=["get_connection"]
+        ).get_connection() as conn:
+            rows = conn.execute(
+                """
+                SELECT date FROM macro_regime_log
+                WHERE json_extract(regime_json, '$.fed_cycle') = ?
+                """,
+                (fed_cycle,),
+            ).fetchall()
+        regime_dates = {pd.Timestamp(r["date"]) for r in rows}
+    if len(regime_dates) < load_config().get("regime", {}).get("min_regime_days_for_pctile", 50):
+        return compute_unconditional_pctile(series, var_cfg, as_of), True
+    regime_hist = hist[hist.index.isin(regime_dates)]
+    if len(regime_hist) < 10:
+        return compute_unconditional_pctile(series, var_cfg, as_of), True
+    val = float(hist.iloc[-1])
+    return percentile_rank(val, regime_hist), False
+
+
 def compute_pctile_for_series(
     series: pd.Series,
     var_cfg: dict[str, Any],
     as_of: pd.Timestamp,
 ) -> float | None:
-    hist = _window_slice(series, var_cfg, as_of)
-    if hist.empty:
+    """Backward-compatible: unconditional for combo detection."""
+    return compute_unconditional_pctile(series, var_cfg, as_of)
+
+
+def combo_pctile_from_reading(reading: dict[str, Any] | None) -> float | None:
+    if not reading:
         return None
-    val = float(hist.iloc[-1])
-    return percentile_rank(val, hist)
+    return reading.get("unconditional_pctile") or reading.get("pctile_rank_3yr")
 
 
 def evaluate_variable_tier(

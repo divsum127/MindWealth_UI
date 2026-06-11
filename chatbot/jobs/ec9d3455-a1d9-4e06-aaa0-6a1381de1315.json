@@ -1,0 +1,561 @@
+{
+  "job_id": "ec9d3455-a1d9-4e06-aaa0-6a1381de1315",
+  "session_id": "f43c0be4-33eb-4cd7-af1c-26cdf78c122b",
+  "status": "completed",
+  "created_at": "2026-06-05T00:34:15.443769+00:00",
+  "started_at": "2026-06-05T00:34:15.444533+00:00",
+  "completed_at": "2026-06-05T00:35:28.174657+00:00",
+  "request": {
+    "message": "",
+    "preset": "analyze_asset",
+    "asset": "AAPL",
+    "from_date": null,
+    "to_date": null,
+    "assets": null,
+    "functions": null,
+    "selected_signal_types": [],
+    "auto_extract_tickers": true,
+    "deep_research_enabled": false,
+    "query_kind": null,
+    "additional_context": null
+  },
+  "flow_steps": [
+    {
+      "stage": "Router",
+      "detail": "Analyzing user query intent and selecting route",
+      "timestamp": "2026-06-05T00:34:16.408516+00:00"
+    },
+    {
+      "stage": "Route Selected",
+      "detail": "INTERNAL (intent=SIGNAL_LOOKUP, conf=0.85)",
+      "timestamp": "2026-06-05T00:34:19.790089+00:00"
+    },
+    {
+      "stage": "Internal Search",
+      "detail": "Using internal signal data pipeline",
+      "timestamp": "2026-06-05T00:34:19.790946+00:00"
+    },
+    {
+      "stage": "Context Handling",
+      "detail": "No prior context found; running fresh internal smart query",
+      "timestamp": "2026-06-05T00:34:19.791847+00:00"
+    },
+    {
+      "stage": "Internal Data Query",
+      "detail": "Fetched internal signal data (selector + columns + date filters)",
+      "timestamp": "2026-06-05T00:35:28.166820+00:00"
+    },
+    {
+      "stage": "Response Generation",
+      "detail": "Generated final response from internal analysis",
+      "timestamp": "2026-06-05T00:35:28.167695+00:00"
+    }
+  ],
+  "result": {
+    "content": "# AAPL Deep Dive Analysis\n**Analysis Window:** 2026-03-07 to 2026-06-05  \n**Report Date:** 2026-05-26 (Today Price: $308.33)\n\n---\n\n## Open Signal Inventory\n**Total Open Positions:** 14 rows\n\n### Table 1 \u2014 Open Signal Summary\n\n| Function | Interval | Direction | Entry Date | Entry $ | MTM | Days Held | Today $ | Status |\n|----------|----------|-----------|------------|---------|-----|-----------|---------|--------|\n| TRENDPULSE | Weekly | Long | 2026-05-10 | 279.66 | 10.25% | 16 days | 308.33 | Early (max: 1.4 yr) |\n| TRENDPULSE | Weekly | Long | 2026-05-08 | 279.66 | 10.25% | 18 days | 308.33 | Early (max: 1.4 yr) |\n| TRENDPULSE | Daily | Long | 2026-05-06 | 281.92 | 9.37% | 20 days | 308.33 | Approaching avg (18d) |\n| FRACTAL TRACK | Daily | Long | 2026-03-17 | 253.08 | 21.83% | 70 days | 308.33 | Early (avg: 4.5 mo) |\n| FRACTAL TRACK | Daily | Long | 2026-03-11 | 261.21 | 18.04% | 76 days | 308.33 | Early (avg: 4.5 mo) |\n| DELTADRIFT | Daily | Long | 2026-03-17 | 253.08 | 21.83% | 70 days | 308.33 | Beyond max (21d avg) |\n| FRACTAL TRACK | Weekly | Long | 2026-02-08 | 260.03 | 18.57% | 107 days | 308.33 | Early (avg: 7.8 mo) |\n| FRACTAL TRACK | Weekly | Long | 2026-02-06 | 260.02 | 18.58% | 109 days | 308.33 | Early (avg: 7.8 mo) |\n| TRENDPULSE | Daily | Long | 2025-12-02 | 283.00 | 8.95% | 175 days | 308.33 | Beyond max (23d avg) |\n| DELTADRIFT | Daily | Long | 2026-01-12 | 259.16 | 18.97% | 134 days | 308.33 | Beyond max (20d avg) |\n| FRACTAL TRACK | Daily | Long | 2026-01-12 | 259.16 | 18.97% | 134 days | 308.33 | Early (avg: 4.5 mo) |\n| FRACTAL TRACK | Quarterly | Long | 2025-12-31 | 254.79 | 21.01% | 146 days | 308.33 | Early (avg: 10.6 mo) |\n| TRENDPULSE | Daily | Long | 2025-11-25 | 275.27 | 12.01% | 182 days | 308.33 | Beyond max (23d avg) |\n| FRACTAL TRACK | Weekly | Long | 2026-04-19 | 270.23 | 14.10% | \u2014 | 308.33 | Virtual Trading |\n\n---\n\n### Table 2 \u2014 Open Signal Take Profit & Stop Loss\n\n| Function | Interval | Entry Date | TP Pivot | TP Avg | TP Func | TP Horiz | TP FS1 | TP FS2 | TP EMA200 | SL Extrema | SL Horiz | SL FS1 | SL FS2 | SL FT1 | SL FT2 | SL EMA200 |\n|----------|----------|------------|----------|--------|---------|----------|--------|--------|-----------|------------|----------|--------|--------|--------|--------|-----------|\n| TRENDPULSE | Weekly | 2026-05-10 | 333.65 | 321.48 | 296.14 | \u2014 | 294.72 | 309.08 | \u2014 | 247.99 | 136.32 | 189.87 | 119.03 | \u2014 | \u2014 | 257.02 |\n| TRENDPULSE | Weekly | 2026-05-08 | 333.65 | 321.48 | 296.14 | \u2014 | 297.11 | 321.98 | \u2014 | 247.99 | 136.32 | 275.11 | 248.42 | 265.05 | 246.80 | 257.02 |\n| TRENDPULSE | Daily | 2026-05-06 | \u2014 | 295.56 | 293.62 | \u2014 | 297.11 | 321.98 | \u2014 | 246.63 | 136.32 | 275.11 | 248.42 | \u2014 | \u2014 | 256.26 |\n| FRACTAL TRACK | Daily | 2026-03-17 | 267.14 | 281.20 | 276.72 | 284.77 | 289.24 | 325.38 | \u2014 | 250.12 | 136.32 | 202.80 | 187.56 | \u2014 | \u2014 | 246.60 |\n| FRACTAL TRACK | Daily | 2026-03-11 | 274.06 | 288.48 | 283.30 | \u2014 | 289.24 | 325.38 | \u2014 | 257.46 | 136.57 | 202.80 | 187.56 | \u2014 | \u2014 | 245.85 |\n| DELTADRIFT | Daily | 2026-03-17 | 270.37 | 263.97 | 267.17 | 284.77 | 289.24 | 325.38 | \u2014 | 250.12 | 136.32 | 202.80 | 187.56 | \u2014 | \u2014 | 246.83 |\n| FRACTAL TRACK | Weekly | 2026-02-08 | 305.63 | 324.73 | 349.77 | \u2014 | 289.24 | 325.38 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 |\n| FRACTAL TRACK | Weekly | 2026-02-06 | 303.20 | 322.15 | 347.56 | \u2014 | 297.11 | 321.98 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 |\n| TRENDPULSE | Daily | 2025-12-02 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 |\n| DELTADRIFT | Daily | 2026-01-12 | 277.30 | 270.50 | 273.90 | \u2014 | 297.11 | 321.98 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 |\n| FRACTAL TRACK | Daily | 2026-01-12 | 273.47 | 287.86 | 331.90 | \u2014 | 297.11 | 321.98 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 |\n| FRACTAL TRACK | Quarterly | 2025-12-31 | 390.15 | 368.78 | 414.50 | \u2014 | 297.11 | 321.98 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 |\n| TRENDPULSE | Daily | 2025-11-25 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 |\n| FRACTAL TRACK | Weekly | 2026-04-19 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 |\n\n**Notes:**\n- **TRENDPULSE Weekly 2026-05-08:** SL F-Stack 1 at $275.11 is **breached** (below today $308.33 for long); stop is stale.\n- **DELTADRIFT Daily 2026-03-17:** All take-profit targets already exceeded; position is well into profit-taking zone.\n- **Five positions** (TRENDPULSE Daily 2025-12-02, 2025-11-25; DELTADRIFT/FRACTAL TRACK Daily 2026-01-12; FRACTAL TRACK Weekly 2026-02-06, 2026-02-08, 2026-04-19) have **no stop-loss ladders** in export.\n\n---\n\n## Exited Signals\n\n| Function | Interval | Direction | Entry Date | Entry $ | Exit Date | Exit $ | Result % | Held Days |\n|----------|----------|-----------|------------|---------|-----------|--------|----------|-----------|\n| TRENDPULSE | Daily | Long | 2026-05-06 | 281.92 | 2026-05-13 | 298.87 | 9.37% | 20 days |\n| TRENDPULSE | Daily | Long | 2025-12-02 | 283.00 | 2026-05-13 | 298.87 | 8.95% | 175 days |\n| TRENDPULSE | Daily | Long | 2026-02-04 | 272.29 | 2026-05-08 | 293.32 | 13.24% | 111 days |\n| DELTADRIFT | Daily | Long | 2026-03-17 | 253.08 | 2026-04-09 | 260.49 | 21.83% | 70 days |\n\n**Exit Summary:**\n- **4 closed trades** in the analysis window, all profitable\n- **Average gain:** 13.35%\n- **Average holding period:** 94 days\n- **Best performer:** DELTADRIFT Daily (21.83% in 70 days)\n\n---\n\n## Analysis\n\n### 1. Contradictions\nNo genuine directional conflicts detected. All 14 open positions and 4 exits are **Long** signals across daily, weekly, and quarterly timeframes, indicating unified bullish alignment.\n\n### 2. Timeframe Alignment\n**Strong multi-timeframe bullish convergence.** Daily signals (TRENDPULSE, FRACTAL TRACK, DELTADRIFT) initiated the rally from March lows ($253\u2013$261 entry range), now showing 9\u201322% gains. Weekly FRACTAL TRACK and TRENDPULSE signals from February and May confirm the uptrend with 10\u201319% MTM. The quarterly FRACTAL TRACK (entry $254.79, Dec 2025) provides long-term structural support with a 21% gain and ambitious targets ($368\u2013$414). All timeframes point to sustained upward momentum with current price ($308.33) comfortably above all entry levels.\n\n### 3. Stance\n**HOLD** \u2014 Maintain existing long positions; await profit-taking opportunities at defined targets.\n\n- **Profit-taking zone active:** DELTADRIFT Daily 2026-03-17 has exceeded all targets (highest was $289.24); FRACTAL TRACK Daily 2026-03-17 approaching TP Avg ($281.20) and TP Func ($276.72) already breached.\n- **Recent momentum strong:** Three TRENDPULSE signals from May (daily/weekly) showing 9\u201310% gains in 16\u201320 days, validating near-term bullish continuation.\n- **Risk management needed:** Three daily TRENDPULSE/DELTADRIFT positions (2025-11-25, 2025-12-02, 2026-01-12) are 134\u2013182 days old, **far beyond** their 20\u201323 day average holding periods; consider trimming despite profitability.\n\n### 4. Key Risks & Triggers\n\n- **Overextended daily signals:** TRENDPULSE 2025-11-25 (182 days, 12% gain) and DELTADRIFT 2026-01-12 (134 days, 19% gain) are 6\u20138x their typical holding periods; trailing stops recommended.\n- **Stop-loss gaps:** Five positions lack defined stop ladders; manual stops below recent support ($290\u2013$295) advised for newer May entries.\n- **Profit-taking levels:** Watch $321.98 (TP FS2 for multiple signals) and $325.38 (FRACTAL TRACK TP FS2) as potential resistance zones for partial exits.\n- **Quarterly target:** FRACTAL TRACK Quarterly ($254.79 entry) has ambitious $368\u2013$414 targets; current $308.33 is only 43% of the way to TP Avg \u2014 long runway remains.\n- **Breached stop alert:** TRENDPULSE Weekly 2026-05-08 has SL F-Stack 1 at $275.11 (well below current price); this stop is no longer protective and should be raised or replaced.",
+    "metadata": {
+      "input_type": "smart_followup",
+      "selected_signal_types": [
+        "entry",
+        "exit"
+      ],
+      "position_side": null,
+      "assets": [
+        "AAPL"
+      ],
+      "functions": null,
+      "from_date": "2026-03-07",
+      "to_date": "2026-06-05",
+      "columns_by_signal_type": {
+        "entry": [
+          "Function",
+          "Symbol, Signal, Signal Date/Price[$]",
+          "Current Mark to Market and Holding Period",
+          "Interval, Confirmation Status",
+          "Today Trading Date/Price[$], Today Price vs Signal",
+          "Trading Days between Signal and Today Date",
+          "Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)",
+          "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]",
+          "Stop Loss (Recent Extrema/Horizontal/F-Stack 1/F-Stack 2/F-Track 1/F-Track 2/EMA 200) [$]",
+          "Signal Open Price"
+        ],
+        "exit": [
+          "Function",
+          "Symbol, Signal, Signal Date/Price[$]",
+          "Exit Signal Date/Price[$]",
+          "Current Mark to Market and Holding Period",
+          "Interval, Confirmation Status",
+          "Signal Open Price",
+          "Today Trading Date/Price[$], Today Price vs Signal",
+          "Trading Days between Signal and Today Date"
+        ]
+      },
+      "reasoning_by_signal_type": {
+        "entry": "Needed to build the mandatory open-signal inventory tables: Function + symbol/direction/entry date & entry price (from the combined Symbol column), Interval (from Interval, Confirmation Status), MTM and days held (from Current Mark to Market and Holding Period and Trading Days between Signal and Today Date), today price (from Today Trading Date/Price[$], Today Price vs Signal), holding-period status classification (from Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)), and take-profit/stop-loss ladders (from Targets (...) [$] and Stop Loss (...) [$]) bound to the same entry row.Guardrail: consolidated MTM / Today / holding-period columns included.Guardrail: paired Targets + Stop Loss columns (7-slot ladders) included.",
+        "exit": "Needed to produce the exited-signals table: Function, Interval (from Interval, Confirmation Status), direction/entry date/entry price (from Symbol, Signal, Signal Date/Price[$]), exit date/exit price (from Exit Signal Date/Price[$]), and realized result % plus held days (from Current Mark to Market and Holding Period) for each closed trade in the specified window.Guardrail: consolidated MTM / Today / holding-period columns included."
+      },
+      "rows_fetched": 18,
+      "signal_types_with_data": [
+        "entry",
+        "exit"
+      ],
+      "signal_type_reasoning": "API preset: analyze_asset",
+      "claude_report_loaded": false,
+      "query_kind": "deep_dive",
+      "deep_dive_date_fallback_used": false,
+      "missing_signal_keys": [],
+      "model": "claude-sonnet-4-5-20250929",
+      "tokens_used": {
+        "prompt": 10083,
+        "completion": 3294,
+        "total": 13377
+      },
+      "finish_reason": "end_turn",
+      "batch_processing_used": true,
+      "batch_count": 1,
+      "batch_mode": "single",
+      "input_truncated": false,
+      "history_trimmed_count": 0,
+      "full_signal_tables": {
+        "entry": [
+          {
+            "Function": "TRENDPULSE",
+            "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-05-10 (Price: 293.32)",
+            "Current Mark to Market and Holding Period": "10.25%, 16 days",
+            "Interval, Confirmation Status": "Weekly, is CONFIRMED on 2026-05-08",
+            "Today Trading Date/Price[$], Today Price vs Signal": "2026-05-26 (Price: 308.3300), 10.25% above",
+            "Trading Days between Signal and Today Date": "16 days",
+            "Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)": "1.4 year/1.2 month/4.4 months",
+            "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]": "333.6515/321.4787/296.14/No Horizontal Resistance/294.7231/309.0801/No EMA 200 Target",
+            "Stop Loss (Recent Extrema/Horizontal/F-Stack 1/F-Stack 2/F-Track 1/F-Track 2/EMA 200) [$]": "247.99/136.32/189.8723/119.0319/No F-Track Level/No F-Track Level/257.02",
+            "Signal Open Price": 279.655
+          },
+          {
+            "Function": "TRENDPULSE",
+            "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-05-08 (Price: 293.32)",
+            "Current Mark to Market and Holding Period": "10.25%, 18 days",
+            "Interval, Confirmation Status": "Weekly, is CONFIRMED on 2026-05-08",
+            "Today Trading Date/Price[$], Today Price vs Signal": "2026-05-26 (Price: 308.3300), 10.25% above",
+            "Trading Days between Signal and Today Date": "18 days",
+            "Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)": "1.4 year/1.2 month/4.4 months",
+            "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]": "333.6515/321.4787/296.14/No Horizontal Resistance/297.1089/321.9834/No EMA 200 Target",
+            "Stop Loss (Recent Extrema/Horizontal/F-Stack 1/F-Stack 2/F-Track 1/F-Track 2/EMA 200) [$]": "247.99/136.32/275.1059/248.4166/265.0549/246.7999/257.02",
+            "Signal Open Price": 279.655
+          },
+          {
+            "Function": "TRENDPULSE",
+            "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-05-06 (Price: 287.51)",
+            "Current Mark to Market and Holding Period": "9.37%, 20 days",
+            "Interval, Confirmation Status": "Daily, is CONFIRMED on 2026-05-06",
+            "Today Trading Date/Price[$], Today Price vs Signal": "2026-05-26 (Price: 308.3300), 9.37% above",
+            "Trading Days between Signal and Today Date": "20 days",
+            "Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)": "3 months/6 days/18 days",
+            "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]": "No Target/295.5603/293.62/No Horizontal Resistance/297.1089/321.9834/No EMA 200 Target",
+            "Stop Loss (Recent Extrema/Horizontal/F-Stack 1/F-Stack 2/F-Track 1/F-Track 2/EMA 200) [$]": "246.63/136.32/275.1059/248.4166/No stop loss/No stop loss/256.26",
+            "Signal Open Price": 281.915
+          },
+          {
+            "Function": "FRACTAL TRACK",
+            "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-03-17 (Price: 254.23)",
+            "Current Mark to Market and Holding Period": "21.83%, 70 days",
+            "Interval, Confirmation Status": "Daily, was CONFIRMED on 2026-03-17",
+            "Today Trading Date/Price[$], Today Price vs Signal": "2026-05-26 (Price: 308.3300), 21.83% above",
+            "Trading Days between Signal and Today Date": "70 days",
+            "Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)": "1.2 year/7 days/4.5 months",
+            "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]": "267.1449/281.2038/276.72/284.765/289.238/325.3828/No EMA 200 Target",
+            "Stop Loss (Recent Extrema/Horizontal/F-Stack 1/F-Stack 2/F-Track 1/F-Track 2/EMA 200) [$]": "250.12/136.32/202.8031/187.5583/No F-Track Level/No F-Track Level/246.6",
+            "Signal Open Price": 253.0785
+          },
+          {
+            "Function": "FRACTAL TRACK",
+            "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-03-11 (Price: 260.81)",
+            "Current Mark to Market and Holding Period": "18.04%, 76 days",
+            "Interval, Confirmation Status": "Daily, was CONFIRMED on 2026-03-11",
+            "Today Trading Date/Price[$], Today Price vs Signal": "2026-05-26 (Price: 308.3300), 18.04% above",
+            "Trading Days between Signal and Today Date": "76 days",
+            "Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)": "1.2 year/7 days/4.5 months",
+            "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]": "274.0591/288.4819/283.3/No Horizontal Resistance/289.238/325.3828/No EMA 200 Target",
+            "Stop Loss (Recent Extrema/Horizontal/F-Stack 1/F-Stack 2/F-Track 1/F-Track 2/EMA 200) [$]": "257.46/136.57/202.8031/187.5583/No F-Track Level/No F-Track Level/245.85",
+            "Signal Open Price": 261.21
+          },
+          {
+            "Function": "DELTADRIFT",
+            "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-03-17 (Price: 254.23)",
+            "Current Mark to Market and Holding Period": "21.83%, 70 days",
+            "Interval, Confirmation Status": "Daily, was CONFIRMED on 2026-03-17",
+            "Today Trading Date/Price[$], Today Price vs Signal": "2026-05-26 (Price: 308.3300), 21.83% above",
+            "Trading Days between Signal and Today Date": "70 days",
+            "Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)": "2.3 months/2 days/21 days",
+            "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]": "270.3736/263.967/267.17/284.765/289.238/325.3828/No EMA 200 Target",
+            "Stop Loss (Recent Extrema/Horizontal/F-Stack 1/F-Stack 2/F-Track 1/F-Track 2/EMA 200) [$]": "250.12/136.32/202.8031/187.5583/No F-Track Level/No F-Track Level/246.83",
+            "Signal Open Price": 253.0785
+          },
+          {
+            "Function": "FRACTAL TRACK",
+            "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-02-08 (Price: 278.12)",
+            "Current Mark to Market and Holding Period": "18.57%, 107 days",
+            "Interval, Confirmation Status": "Weekly, was CONFIRMED on 2026-02-08",
+            "Today Trading Date/Price[$], Today Price vs Signal": "2026-05-26 (Price: 308.3300), 18.57% above",
+            "Trading Days between Signal and Today Date": "107 days",
+            "Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)": "1.7 year/1.4 month/7.8 months",
+            "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]": "305.6261/324.7329/349.77/No Horizontal Resistance/289.238/325.3828/No EMA 200 Target",
+            "Stop Loss (Recent Extrema/Horizontal/F-Stack 1/F-Stack 2/F-Track 1/F-Track 2/EMA 200) [$]": NaN,
+            "Signal Open Price": 260.03
+          },
+          {
+            "Function": "FRACTAL TRACK",
+            "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-02-06 (Price: 275.91)",
+            "Current Mark to Market and Holding Period": "18.58%, 109 days",
+            "Interval, Confirmation Status": "Weekly, is CONFIRMED on 2026-02-06",
+            "Today Trading Date/Price[$], Today Price vs Signal": "2026-05-26 (Price: 308.3300), 18.58% above",
+            "Trading Days between Signal and Today Date": "109 days",
+            "Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)": "1.7 year/1.4 month/7.8 months",
+            "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]": "303.1975/322.1525/347.56/No Horizontal Resistance/297.1089/321.9834/No EMA 200 Target",
+            "Stop Loss (Recent Extrema/Horizontal/F-Stack 1/F-Stack 2/F-Track 1/F-Track 2/EMA 200) [$]": NaN,
+            "Signal Open Price": 260.02
+          },
+          {
+            "Function": "TRENDPULSE",
+            "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2025-12-02 (Price: 286.19)",
+            "Current Mark to Market and Holding Period": "8.95%, 175 days",
+            "Interval, Confirmation Status": "Daily, is CONFIRMED on 2025-12-02",
+            "Today Trading Date/Price[$], Today Price vs Signal": "2026-05-26 (Price: 308.3300), 8.95% above",
+            "Trading Days between Signal and Today Date": "175 days",
+            "Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)": "2.6 months/4 days/23 days",
+            "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]": NaN,
+            "Stop Loss (Recent Extrema/Horizontal/F-Stack 1/F-Stack 2/F-Track 1/F-Track 2/EMA 200) [$]": NaN,
+            "Signal Open Price": 283.0
+          },
+          {
+            "Function": "DELTADRIFT",
+            "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-01-12 (Price: 260.25)",
+            "Current Mark to Market and Holding Period": "18.97%, 134 days",
+            "Interval, Confirmation Status": "Daily, is CONFIRMED on 2026-01-12",
+            "Today Trading Date/Price[$], Today Price vs Signal": "2026-05-26 (Price: 308.3300), 18.97% above",
+            "Trading Days between Signal and Today Date": "134 days",
+            "Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)": "2.3 months/2 days/20 days",
+            "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]": "277.2964/270.5038/273.9/No Horizontal Resistance/297.1089/321.9834/No EMA 200 Target",
+            "Stop Loss (Recent Extrema/Horizontal/F-Stack 1/F-Stack 2/F-Track 1/F-Track 2/EMA 200) [$]": NaN,
+            "Signal Open Price": 259.16
+          },
+          {
+            "Function": "FRACTAL TRACK",
+            "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-01-12 (Price: 260.25)",
+            "Current Mark to Market and Holding Period": "18.97%, 134 days",
+            "Interval, Confirmation Status": "Daily, is CONFIRMED on 2026-01-12",
+            "Today Trading Date/Price[$], Today Price vs Signal": "2026-05-26 (Price: 308.3300), 18.97% above",
+            "Trading Days between Signal and Today Date": "134 days",
+            "Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)": "1.2 year/7 days/4.5 months",
+            "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]": "273.4707/287.8625/331.9/No Horizontal Resistance/297.1089/321.9834/No EMA 200 Target",
+            "Stop Loss (Recent Extrema/Horizontal/F-Stack 1/F-Stack 2/F-Track 1/F-Track 2/EMA 200) [$]": NaN,
+            "Signal Open Price": 259.16
+          },
+          {
+            "Function": "FRACTAL TRACK",
+            "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2025-12-31 (Price: 271.86)",
+            "Current Mark to Market and Holding Period": "21.01%, 146 days",
+            "Interval, Confirmation Status": "Quarterly, is CONFIRMED on 2025-12-31",
+            "Today Trading Date/Price[$], Today Price vs Signal": "2026-05-26 (Price: 308.3300), 21.01% above",
+            "Trading Days between Signal and Today Date": "146 days",
+            "Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)": "1 year/9.1 months/10.6 months",
+            "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]": "390.1463/368.7781/414.5/No Horizontal Resistance/297.1089/321.9834/No EMA 200 Target",
+            "Stop Loss (Recent Extrema/Horizontal/F-Stack 1/F-Stack 2/F-Track 1/F-Track 2/EMA 200) [$]": NaN,
+            "Signal Open Price": 254.793
+          },
+          {
+            "Function": "TRENDPULSE",
+            "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2025-11-25 (Price: 276.97)",
+            "Current Mark to Market and Holding Period": "12.01%, 182 days",
+            "Interval, Confirmation Status": "Daily, is CONFIRMED on 2025-11-25",
+            "Today Trading Date/Price[$], Today Price vs Signal": "2026-05-26 (Price: 308.3300), 12.01% above",
+            "Trading Days between Signal and Today Date": "182 days",
+            "Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)": "2.6 months/4 days/23 days",
+            "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]": NaN,
+            "Stop Loss (Recent Extrema/Horizontal/F-Stack 1/F-Stack 2/F-Track 1/F-Track 2/EMA 200) [$]": NaN,
+            "Signal Open Price": 275.27
+          },
+          {
+            "Function": "FRACTAL TRACK",
+            "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-04-19 (Price: 270.23)",
+            "Current Mark to Market and Holding Period": "14.0991%",
+            "Interval, Confirmation Status": "Weekly, is CONFIRMED on 2026-04-19",
+            "Today Trading Date/Price[$], Today Price vs Signal": "(Price: 308.33), Virtual Trading export",
+            "Trading Days between Signal and Today Date": NaN,
+            "Backtested Holding Period(Win Trades) (days) (Max/Min/Avg)": NaN,
+            "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]": NaN,
+            "Stop Loss (Recent Extrema/Horizontal/F-Stack 1/F-Stack 2/F-Track 1/F-Track 2/EMA 200) [$]": NaN,
+            "Signal Open Price": "270.23"
+          }
+        ],
+        "exit": [
+          {
+            "Function": "TRENDPULSE",
+            "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-05-06 (Price: 287.51)",
+            "Exit Signal Date/Price[$]": "2026-05-13 (Price: 298.87)",
+            "Current Mark to Market and Holding Period": "9.37%, 20 days",
+            "Interval, Confirmation Status": "Daily, is CONFIRMED on 2026-05-06",
+            "Signal Open Price": 281.915,
+            "Today Trading Date/Price[$], Today Price vs Signal": "2026-05-26 (Price: 308.3300), 9.37% above",
+            "Trading Days between Signal and Today Date": "20 days"
+          },
+          {
+            "Function": "TRENDPULSE",
+            "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2025-12-02 (Price: 286.19)",
+            "Exit Signal Date/Price[$]": "2026-05-13 (Price: 298.87)",
+            "Current Mark to Market and Holding Period": "8.95%, 175 days",
+            "Interval, Confirmation Status": "Daily, is CONFIRMED on 2025-12-02",
+            "Signal Open Price": 283.0,
+            "Today Trading Date/Price[$], Today Price vs Signal": "2026-05-26 (Price: 308.3300), 8.95% above",
+            "Trading Days between Signal and Today Date": "175 days"
+          },
+          {
+            "Function": "TRENDPULSE",
+            "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-02-04 (Price: 276.49)",
+            "Exit Signal Date/Price[$]": "2026-05-08 (Price: 293.32)",
+            "Current Mark to Market and Holding Period": "13.24%, 111 days",
+            "Interval, Confirmation Status": "Daily, is CONFIRMED on 2026-02-04",
+            "Signal Open Price": 272.29,
+            "Today Trading Date/Price[$], Today Price vs Signal": "2026-05-26 (Price: 308.3300), 13.24% above",
+            "Trading Days between Signal and Today Date": "111 days"
+          },
+          {
+            "Function": "DELTADRIFT",
+            "Symbol, Signal, Signal Date/Price[$]": "AAPL, Long, 2026-03-17 (Price: 254.23)",
+            "Exit Signal Date/Price[$]": "2026-04-09 (Price: 260.49)",
+            "Current Mark to Market and Holding Period": "21.83%, 70 days",
+            "Interval, Confirmation Status": "Daily, was CONFIRMED on 2026-03-17",
+            "Signal Open Price": 253.0785,
+            "Today Trading Date/Price[$], Today Price vs Signal": "2026-05-26 (Price: 308.3300), 21.83% above",
+            "Trading Days between Signal and Today Date": "70 days"
+          }
+        ]
+      },
+      "signals_table": [
+        {
+          "Symbol": "AAPL",
+          "Function": "TRENDPULSE",
+          "Signal_Type": "ENTRY",
+          "Signal_Direction": "Long",
+          "Signal_Date": "2026-05-10",
+          "Price": "$293.32",
+          "Interval": "Weekly",
+          "Status": "Unknown"
+        },
+        {
+          "Symbol": "AAPL",
+          "Function": "TRENDPULSE",
+          "Signal_Type": "ENTRY",
+          "Signal_Direction": "Long",
+          "Signal_Date": "2026-05-08",
+          "Price": "$293.32",
+          "Interval": "Weekly",
+          "Status": "Unknown"
+        },
+        {
+          "Symbol": "AAPL",
+          "Function": "TRENDPULSE",
+          "Signal_Type": "ENTRY",
+          "Signal_Direction": "Long",
+          "Signal_Date": "2026-05-06",
+          "Price": "$287.51",
+          "Interval": "Daily",
+          "Status": "Unknown"
+        },
+        {
+          "Symbol": "AAPL",
+          "Function": "FRACTAL TRACK",
+          "Signal_Type": "ENTRY",
+          "Signal_Direction": "Long",
+          "Signal_Date": "2026-03-17",
+          "Price": "$254.23",
+          "Interval": "Daily",
+          "Status": "Unknown"
+        },
+        {
+          "Symbol": "AAPL",
+          "Function": "FRACTAL TRACK",
+          "Signal_Type": "ENTRY",
+          "Signal_Direction": "Long",
+          "Signal_Date": "2026-03-11",
+          "Price": "$260.81",
+          "Interval": "Daily",
+          "Status": "Unknown"
+        },
+        {
+          "Symbol": "AAPL",
+          "Function": "DELTADRIFT",
+          "Signal_Type": "ENTRY",
+          "Signal_Direction": "Long",
+          "Signal_Date": "2026-03-17",
+          "Price": "$254.23",
+          "Interval": "Daily",
+          "Status": "Unknown"
+        },
+        {
+          "Symbol": "AAPL",
+          "Function": "FRACTAL TRACK",
+          "Signal_Type": "ENTRY",
+          "Signal_Direction": "Long",
+          "Signal_Date": "2026-02-08",
+          "Price": "$278.12",
+          "Interval": "Weekly",
+          "Status": "Unknown"
+        },
+        {
+          "Symbol": "AAPL",
+          "Function": "FRACTAL TRACK",
+          "Signal_Type": "ENTRY",
+          "Signal_Direction": "Long",
+          "Signal_Date": "2026-02-06",
+          "Price": "$275.91",
+          "Interval": "Weekly",
+          "Status": "Unknown"
+        },
+        {
+          "Symbol": "AAPL",
+          "Function": "TRENDPULSE",
+          "Signal_Type": "ENTRY",
+          "Signal_Direction": "Long",
+          "Signal_Date": "2025-12-02",
+          "Price": "$286.19",
+          "Interval": "Daily",
+          "Status": "Unknown"
+        },
+        {
+          "Symbol": "AAPL",
+          "Function": "DELTADRIFT",
+          "Signal_Type": "ENTRY",
+          "Signal_Direction": "Long",
+          "Signal_Date": "2026-01-12",
+          "Price": "$260.25",
+          "Interval": "Daily",
+          "Status": "Unknown"
+        },
+        {
+          "Symbol": "AAPL",
+          "Function": "FRACTAL TRACK",
+          "Signal_Type": "ENTRY",
+          "Signal_Direction": "Long",
+          "Signal_Date": "2026-01-12",
+          "Price": "$260.25",
+          "Interval": "Daily",
+          "Status": "Unknown"
+        },
+        {
+          "Symbol": "AAPL",
+          "Function": "FRACTAL TRACK",
+          "Signal_Type": "ENTRY",
+          "Signal_Direction": "Long",
+          "Signal_Date": "2025-12-31",
+          "Price": "$271.86",
+          "Interval": "Quarterly",
+          "Status": "Unknown"
+        },
+        {
+          "Symbol": "AAPL",
+          "Function": "TRENDPULSE",
+          "Signal_Type": "ENTRY",
+          "Signal_Direction": "Long",
+          "Signal_Date": "2025-11-25",
+          "Price": "$276.97",
+          "Interval": "Daily",
+          "Status": "Unknown"
+        },
+        {
+          "Symbol": "AAPL",
+          "Function": "FRACTAL TRACK",
+          "Signal_Type": "ENTRY",
+          "Signal_Direction": "Long",
+          "Signal_Date": "2026-04-19",
+          "Price": "$270.23",
+          "Interval": "Weekly",
+          "Status": "Unknown"
+        },
+        {
+          "Symbol": "AAPL",
+          "Function": "TRENDPULSE",
+          "Signal_Type": "EXIT",
+          "Signal_Direction": "Long",
+          "Signal_Date": "2026-05-06",
+          "Price": "$287.51",
+          "Interval": "Daily",
+          "Status": "Closed"
+        },
+        {
+          "Symbol": "AAPL",
+          "Function": "TRENDPULSE",
+          "Signal_Type": "EXIT",
+          "Signal_Direction": "Long",
+          "Signal_Date": "2025-12-02",
+          "Price": "$286.19",
+          "Interval": "Daily",
+          "Status": "Closed"
+        },
+        {
+          "Symbol": "AAPL",
+          "Function": "TRENDPULSE",
+          "Signal_Type": "EXIT",
+          "Signal_Direction": "Long",
+          "Signal_Date": "2026-02-04",
+          "Price": "$276.49",
+          "Interval": "Daily",
+          "Status": "Closed"
+        },
+        {
+          "Symbol": "AAPL",
+          "Function": "DELTADRIFT",
+          "Signal_Type": "EXIT",
+          "Signal_Direction": "Long",
+          "Signal_Date": "2026-03-17",
+          "Price": "$254.23",
+          "Interval": "Daily",
+          "Status": "Closed"
+        }
+      ],
+      "intent": "SIGNAL_LOOKUP",
+      "intent_label": "Signal Lookup",
+      "intent_confidence": 0.85,
+      "intent_classified_by": "llm_router",
+      "route": "INTERNAL",
+      "web_search_used": false,
+      "web_sources": [],
+      "llm_router_reasoning": "The user requested a detailed analysis of AAPL signals within a specific date range, requiring access to internal signal data for both open and exited signals.",
+      "followup_mode": "dynamic_fresh",
+      "conversation_context_used": false,
+      "history_exchanges_used": 0,
+      "flow_trace": [
+        {
+          "stage": "Router",
+          "detail": "Analyzing user query intent and selecting route",
+          "timestamp": "00:34:16"
+        },
+        {
+          "stage": "Route Selected",
+          "detail": "INTERNAL (intent=SIGNAL_LOOKUP, conf=0.85)",
+          "timestamp": "00:34:19"
+        },
+        {
+          "stage": "Internal Search",
+          "detail": "Using internal signal data pipeline",
+          "timestamp": "00:34:19"
+        },
+        {
+          "stage": "Context Handling",
+          "detail": "No prior context found; running fresh internal smart query",
+          "timestamp": "00:34:19"
+        },
+        {
+          "stage": "Internal Data Query",
+          "detail": "Fetched internal signal data (selector + columns + date filters)",
+          "timestamp": "00:35:28"
+        },
+        {
+          "stage": "Response Generation",
+          "detail": "Generated final response from internal analysis",
+          "timestamp": "00:35:28"
+        }
+      ]
+    }
+  },
+  "error": null
+}

@@ -1,0 +1,11 @@
+<!-- generated from 15_sbi_short_20260606.md -->
+
+# Test 15: SBI short signal validation
+
+**Status: PARTIAL** — MindWealth accessible and imports verified.
+
+**Blocker:**  loads the full S&P 500 universe per day (~500 stocks). Iterating 2015–2026 (~2800 business days) requires a dedicated batch run. Run overnight:
+
+
+
+**Expected output:** JSON artifact at 

@@ -55,3 +55,31 @@ def regime_adjusted_hit_rate(
     if not row or row["n_obs"] == 0:
         return {"hit_rate": None, "n_obs": 0, "avg_return": None}
     return {"hit_rate": row["hit_rate"], "n_obs": row["n_obs"], "avg_return": row["avg_return"]}
+
+
+def generic_hit_rate(
+    var_ids: tuple[str, ...] | list[str],
+    horizon: str = "spx_3m",
+    bullish: bool = True,
+) -> dict[str, Any]:
+    """Hit rate for unnamed combos with matching var set (order-independent)."""
+    ids = sorted(set(var_ids))
+    col = horizon
+    with get_connection() as conn:
+        rows = conn.execute(
+            f"""
+            SELECT cf.var1_id, cf.var2_id, cf.var3_id, fr.{col} AS ret
+            FROM combo_fires cf
+            JOIN forward_returns fr ON cf.combo_id = fr.combo_id
+            WHERE cf.runic_combo IS NULL AND fr.{col} IS NOT NULL
+            """
+        ).fetchall()
+    rets: list[float] = []
+    for r in rows:
+        present = sorted(x for x in (r["var1_id"], r["var2_id"], r["var3_id"]) if x)
+        if present == ids:
+            rets.append(float(r["ret"]))
+    if not rets:
+        return {"hit_rate": None, "n_obs": 0, "avg_return": None}
+    hr = sum(1 for x in rets if (x > 0 if bullish else x < 0)) / len(rets)
+    return {"hit_rate": hr, "n_obs": len(rets), "avg_return": sum(rets) / len(rets)}

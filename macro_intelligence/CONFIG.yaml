@@ -4,7 +4,7 @@ version: "2.2"
 claude:
   model: "claude-sonnet-4-20250514"  # fallback; spec prefers claude-sonnet-4-6 when available
   regime_max_tokens: 150
-  narrative_max_tokens: 500
+  narrative_max_tokens: 1200
 
 schedules:
   friday_pull_cron: "0 18 * * 5"   # Friday 6pm UTC (~after CFTC 3:30pm ET)
@@ -16,6 +16,19 @@ prefilter:
   min_hit_rate: 0.60
   candidate_named_min_fires: 3
   candidate_named_min_hit_rate: 0.75
+
+combo_discovery:
+  primary_horizon: spx_3m
+  surface_min_fires: 3
+  surface_min_hit_rate: 0.60
+  promotion_min_fires: 5
+  promotion_min_hit_rate: 0.80
+  beta_min_hit_rate: 0.55
+  beta_min_hit_rate_alt: 0.60
+  directionality_min_dims: 2
+  directionality_min_hit_rate: 0.50
+  hostile_fed_cycles: [HIKING_EARLY, HIKING_LATE, TIGHTENING]
+  hostile_curve_regimes: [INVERTED]
 
 forward_returns:
   spx_ticker: "^GSPC"
@@ -59,7 +72,8 @@ variables:
     source: "FRED"
     ticker: "WALCL"
     paradigm: ROC
-    pctile_window: rolling_3y
+    pctile_window: full
+    pctile_start: "2008-01-01"
     combos: [A, C]
     rare:
       mom_pct: 0.8
@@ -69,6 +83,7 @@ variables:
     name: "USD/CNH 4wk change"
     source: "YAHOO"
     ticker: "USDCNH=X"
+    fallback: "FRED:DEXCHUS"
     paradigm: ROC
     pctile_window: rolling_3y
     pctile_start: "2010-01-01"
@@ -252,3 +267,121 @@ vix_bypass:
     CRITICAL RULE: VIX_REGIME_BYPASS
     When runic_combo = 'B' (Maximum Capitulation) is confirmed active,
     the VIX regime size multiplier is BYPASSED.
+
+dominant:
+  PRIORITY:
+    C: 100
+    B: 90
+    F: 80
+    E: 70
+    D: 60
+    G: 50
+    A: 40
+  combo_f_validation_date: "2020-06-08"
+
+cpi:
+  consensus_source: tradingeconomics.com  # primary; investing.com if INVESTING_HTTP_PROXY; CSV emergency only
+  bls_series_id: CUSR0000SA0
+  fred_fallback: CPIAUCSL
+  fred_fallback_after_calendar_days: 2
+  retry_times_et: ["08:30", "09:00", "10:00", "13:00", "16:00", "20:00"]
+  hot_surprise_min_pp: 0.2
+  not_hot_rule: "actual <= consensus"
+
+ppi_cooling:
+  bls_series_id: WPSFD49207
+  enabled: true
+  affects_combo_cancel: false
+  cooling_mom_max_pct: 0.0
+
+combo_c_cancel:
+  wti_4wk_max_pct: 5.0
+  consecutive_fridays: 4
+
+cftc:
+  # Official zips: scripts/download_cftc_tff_zip.py → macro_intelligence/data_cache/cftc/
+  local_cache_dir: macro_intelligence/data_cache/cftc
+  market_primary: "S&P 500 Consolidated"
+  market_filter: "S&P 500"
+  market_exclude: "E-MINI|MICRO|DIVIDEND|ADJUSTED INT RATE"
+  fm_classification: "Lev Money|Leveraged Funds"
+  rm_classification: "Asset Mgr|Asset Manager"
+  pending_status: PENDING_CFTC_CONFIRM
+  pctile_window_weeks: 156
+
+regime:
+  min_regime_days_for_pctile: 50
+  geo_model: claude-sonnet-4-20250514
+  tavily_max_results: 5
+  fed_funds_series: DFF
+  fed_funds_start: "1990-01-01"
+  fed_direction_weeks: 13
+  fed_direction_weeks_short: 4
+  fed_hike_3m_thresh: 0.25
+  fed_cut_3m_thresh: -0.25
+  cycle_early_months: 6
+  qe_walcl_mom_min: 1.0
+  qt_walcl_mom_max: -0.5
+
+combo_hit_rates:
+  A:
+    direction: bullish
+    primary_horizon: spx_6m
+    secondary_horizon: spx_3m
+    show_hit_rate: true
+  B:
+    direction: bullish
+    primary_horizon: spx_3m
+    show_hit_rate: true
+  C:
+    direction: bearish
+    primary_horizon: spx_6m
+    secondary_horizon: spx_3m
+    show_hit_rate: true
+  D:
+    direction: bearish
+    primary_horizon: spx_1w
+    show_hit_rate: true
+  E:
+    direction: bearish
+    primary_horizon: spx_12m
+    show_hit_rate: true
+  F:
+    direction: bullish
+    primary_horizon: spx_6m
+    secondary_horizon: spx_3m
+    show_hit_rate: true
+  G:
+    direction: null
+    show_hit_rate: false
+
+briefing:
+  output_dir: macro_intelligence/output
+  formats: [html, pdf]
+  combo_labels:
+    A: "Liquidity"
+    B: "Capitulation"
+    C: "Stagflation / Energy Shock"
+    D: "FOMO Top"
+    E: "Valuation Extreme"
+    F: "Recovery"
+    G: "Hidden Stress"
+  combo_direction:
+    A: "BEARISH"
+    B: "BULLISH"
+    C: "BEARISH"
+    D: "BEARISH"
+    E: "BEARISH"
+    F: "BULLISH"
+    G: "BEARISH"
+  combo_max_weeks:
+    C: 16
+    F: 26
+    D: 10
+
+aws:
+  host: "51.20.53.218"
+  tz: America/New_York
+  friday_pull_et: "17:30"
+  nightly_et: "18:00"
+  ssi_daily_et: "08:00"

@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.012534,
   "dividend_yield_5y_std": 0.021425,
-  "dividend_yield_current": 0.012113,
-  "dividend_yield_zscore": -0.0196,
-  "enterprise_value": 737450723434.7025,
+  "dividend_yield_current": 0.011584,
+  "dividend_yield_zscore": -0.0443,
+  "enterprise_value": 759892013428.1709,
   "eps_fwd": 5.0270185,
   "eps_ttm": 3.56,
-  "ev_fwd_rev": 0.96,
+  "ev_fwd_rev": 0.9892,
   "fcf_ttm": 130086625280.0,
   "fd_direction": "positive",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 768201981952.0,
   "industry": "Internet Content & Information",
-  "last_daily_update": "2026-05-27T04:48:33+00:00",
+  "last_daily_update": "2026-06-11T18:42:12+00:00",
   "last_full_calc": "2026-05-18T20:50:40+00:00",
   "manual_overrides": {},
-  "market_cap": 507021723434.7025,
+  "market_cap": 529463013428.17096,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 230429000000.0,
-  "owner_earnings_yield": 0.25657,
+  "owner_earnings_yield": 0.245695,
   "pe_20y_array": [
     3.6406,
     3.479,
@@ -236,7 +236,7 @@
     2.3751
   ],
   "pe_percentile_20y": 100.0,
-  "pe_ttm": 15.7697,
+  "pe_ttm": 16.4888,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -245,12 +245,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 56.13999938964844,
+  "price": 58.70000076293945,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.20515,
   "sector": "Communication Services",
   "ticker": "TCEHY",
-  "updated_at": "2026-05-27T04:48:33+00:00",
+  "updated_at": "2026-06-11T18:42:12+00:00",
   "valuation_tax": -3.0,
   "valuation_tax_breakdown": {
     "components": {

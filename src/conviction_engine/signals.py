@@ -122,9 +122,13 @@ def discover_signal_sources(trade_store_dir: Path | None = None) -> dict[str, Pa
 
 def load_signal_file(file_path: Path | str) -> pd.DataFrame:
     path = Path(file_path)
-    if not path.exists():
+    if not path.exists() or path.stat().st_size == 0:
         return pd.DataFrame()
-    return pd.read_csv(path)
+    try:
+        df = pd.read_csv(path)
+    except pd.errors.EmptyDataError:
+        return pd.DataFrame()
+    return df if not df.empty else pd.DataFrame()
 
 
 def signal_timeframe_from_interval(interval: str | None) -> str:

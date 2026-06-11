@@ -1,0 +1,47 @@
+req_id,category,spec_ref,implementation,test_module,live_check,notes,status
+var-macro-NFCI,variable,DATA_SOURCES.yaml #NFCI,fred_pull.fetch_fred_series,tests/test_macro_percentiles.py,validate_production_data_sources.check_macro_series,,PASS
+var-macro-HY,variable,DATA_SOURCES.yaml #HY,fred_pull.fetch_fred_series,tests/test_macro_percentiles.py,validate_production_data_sources.check_macro_series,,PASS
+var-macro-WALCL,variable,DATA_SOURCES.yaml #WALCL,fred_pull + walcl_mom_pct,tests/test_macro_percentiles.py,validate_production_data_sources.check_macro_series,,PASS
+var-macro-CNH,variable,DATA_SOURCES.yaml #CNH,yahoo_pull + FRED DEXCHUS fallback,tests/test_scraper_pipelines.py,validate_production_data_sources.check_macro_series,,PASS
+var-macro-WTI,variable,DATA_SOURCES.yaml #WTI,yahoo_pull calendar_pct_change 28d,tests/test_scraper_pipelines.py,validate_production_data_sources.check_macro_series,,PASS
+var-macro-VIX,variable,DATA_SOURCES.yaml #VIX,yahoo_pull.fetch_yahoo_close,tests/test_combo_b_oct_2022.py,validate_production_data_sources.check_macro_series,,PASS
+var-macro-VXTS,variable,DATA_SOURCES.yaml #VXTS,yahoo_pull.vix_term_structure,tests/test_ssi_layer2.py,validate_production_data_sources.check_macro_series,,PASS
+var-macro-CFTC,variable,DATA_SOURCES.yaml #CFTC,cftc_pull S&P500 Consolidated,tests/test_cftc_parser.py,validate_production_data_sources.check_macro_series,,PASS
+var-macro-CURVE,variable,DATA_SOURCES.yaml #CURVE,fred_pull.curve_features,tests/test_macro_percentiles.py,validate_production_data_sources.check_macro_series,,PASS
+var-macro-CPI,variable,DATA_SOURCES.yaml #CPI,bls_pull + investing_cpi_consensus,tests/test_cpi_pull.py,validate_production_data_sources.check_macro_series,,PASS
+var-macro-GSR,variable,DATA_SOURCES.yaml #GSR,yahoo_pull.gsr_ratio GC=F/SI=F,—,validate_production_data_sources.check_macro_series,,PASS
+var-macro-CAPE,variable,DATA_SOURCES.yaml #CAPE,cape_scrape multpl,tests/test_scraper_pipelines.py,validate_production_data_sources.check_macro_series,,PASS
+var-ssi-AAII,variable,DATA_SOURCES.yaml AAII,aaii_pull,tests/test_scraper_pipelines.py,validate_production_data_sources.check_ssi_series,,PASS
+var-ssi-NAAIM,variable,DATA_SOURCES.yaml NAAIM,naaim_pull,tests/test_scraper_pipelines.py,validate_production_data_sources.check_ssi_series,,PASS
+var-ssi-CNN_FG,variable,DATA_SOURCES.yaml CNN_FG,cnn_fear_greed,tests/test_scraper_pipelines.py,validate_production_data_sources.check_ssi_series,,PASS
+var-ssi-PCT_ABOVE_200DMA,variable,DATA_SOURCES.yaml PCT_ABOVE_200DMA,pct_200dma_pull sp500,tests/test_scraper_pipelines.py,validate_production_data_sources.check_ssi_series,,PASS
+var-ssi-MCCLELLAN,variable,DATA_SOURCES.yaml MCCLELLAN,mcclellan_pull sp500,tests/test_scraper_pipelines.py,validate_production_data_sources.check_ssi_series,,PASS
+var-ssi-NH_NL_RATIO,variable,DATA_SOURCES.yaml NH_NL_RATIO,nh_nl_pull sp500,tests/test_scraper_pipelines.py,validate_production_data_sources.check_ssi_series,,PASS
+var-ssi-HYG_LQD,variable,DATA_SOURCES.yaml HYG_LQD,yahoo_inputs.hyg_lqd_ratio,tests/test_ssi_layer2.py,validate_production_data_sources.check_ssi_series,,PASS
+var-ssi-SKEW,variable,DATA_SOURCES.yaml SKEW,skew_pull,—,validate_production_data_sources.check_ssi_series,,PASS
+var-ssi-CFTC_FM,variable,DATA_SOURCES.yaml CFTC_FM,cftc_ssi layer3,tests/test_cftc_parser.py,validate_production_data_sources.check_ssi_series,,PASS
+var-ssi-CFTC_RM,variable,DATA_SOURCES.yaml CFTC_RM,cftc_ssi rm_pctile dashboard,tests/test_cftc_parser.py,validate_production_data_sources.check_ssi_series,,PASS
+var-ssi-GROSS_NET_DIV,variable,DATA_SOURCES.yaml GROSS_NET_DIV,cftc_ssi derived,—,validate_production_data_sources.check_ssi_series,,PASS
+var-ssi-DBMF,variable,DATA_SOURCES.yaml DBMF,yahoo_inputs.dbmf_beta,tests/test_ssi_layer2.py,validate_production_data_sources.check_ssi_series,,PASS
+combo-A,named_combo,CONFIG named_combos.A,combo_detector.py combo_detector detect_named + direction vote,tests/test_combo_a_vote.py,detect_named_combos live,v3 Combo A BRAVE/FEARFUL,PASS
+combo-B,named_combo,CONFIG named_combos.B,combo_detector.py combo_detector Combo B ALL3,tests/test_combo_b_oct_2022.py,detect_named_combos live,vix_bypass,PASS
+combo-C,named_combo,CONFIG named_combos.C,combo_detector.py combo_detector + combo_c_cancel,tests/test_combo_c_cancel.py,detect_named_combos live,28d WTI calendar ROC,PASS
+combo-D,named_combo,CONFIG named_combos.D,combo_detector.py combo_detector VXTS+VIX+CFTC,tests/test_combo_b_oct_2022.py,detect_named_combos live,RM pctile dashboard,PASS
+combo-E,named_combo,CONFIG named_combos.E,combo_detector.py combo_detector 2of3 CONFIRMED,—,detect_named_combos live,CONFIRMED_3_OF_3 when 3 legs,PASS
+combo-F,named_combo,CONFIG named_combos.F,combo_detector.py combo_detector 50WMA + lifecycle,tests/test_combo_f_jun_2020.py,detect_named_combos live,2020-06-08 validation date,PASS
+combo-G,named_combo,CONFIG named_combos.G,combo_detector.py combo_detector + hy_widen_4wk,tests/test_combo_g.py,detect_named_combos live,hy_widen_4wk_bps,PASS
+json-dominant_signal,json_output,v3 nightly JSON contract,dominant.resolve_dominant PRIORITY,tests/test_dominant_priority.py,run_macro_nightly.py,,PASS
+json-analog_details,json_output,v3 nightly JSON contract,dominant.find_analog_details + backfill,tests/test_backfill_hit_rates.py,run_macro_nightly.py,,PASS
+json-spx_3m_hit_rate,json_output,v3 nightly JSON contract,hit_rates.raw_hit_rate,tests/test_hit_rates.py,run_macro_nightly.py,,PASS
+json-combo_c_cancel,json_output,v3 nightly JSON contract,combo_c_cancel.run_combo_c_cancel_check,tests/test_combo_c_cancel.py,run_macro_nightly.py,,PASS
+json-cftc_status,json_output,v3 nightly JSON contract,json_writer._cftc_status,tests/test_runic_output_schema.py,run_macro_nightly.py,,PASS
+json-pending_cpi_release,json_output,v3 nightly JSON contract,json_writer._pending_cpi_release,tests/test_runic_output_schema.py,run_macro_nightly.py,,PASS
+json-ssi_multiplier,json_output,v3 nightly JSON contract,json_writer.read_ssi_multiplier,tests/test_ssi_positioning_json.py,run_macro_nightly.py,,PASS
+json-vix_bypass,json_output,v3 nightly JSON contract,vix_bypass.compute_vix_bypass,tests/test_ssi_vix_regime_oct_2022.py,run_macro_nightly.py,,PASS
+json-dual_percentiles,json_output,v3 nightly JSON contract,percentiles unconditional+regime,tests/test_macro_percentiles.py,run_macro_nightly.py,,PASS
+json-generic_prefilter,json_output,v3 nightly JSON contract,prefilter.apply_prefilter + nightly generic_watch,—,run_macro_nightly.py,,PASS
+ops-backfill,operations,SYSTEM_DOCUMENTATION,backfill_macro_history + forward_returns,tests/test_backfill_hit_rates.py,run_full_v3_verification.py,,PASS
+ops-ssi_daily,operations,SYSTEM_DOCUMENTATION,run_ssi_daily,tests/test_ssi_positioning_json.py,run_full_v3_verification.py,,PASS
+ops-friday_pull,operations,SYSTEM_DOCUMENTATION,run_macro_friday_pull detect_all,tests/test_friday_pull_integration.py,run_full_v3_verification.py,,PASS
+ops-nightly,operations,SYSTEM_DOCUMENTATION,run_macro_nightly,tests/test_runic_output_schema.py,run_full_v3_verification.py,,PASS
+ops-no_prod_mock,operations,SYSTEM_DOCUMENTATION,production paths no tests/fixtures,scripts/audit_production_no_mocks.py,run_full_v3_verification.py,,PASS

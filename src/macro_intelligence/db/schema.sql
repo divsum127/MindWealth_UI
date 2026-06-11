@@ -26,10 +26,54 @@ CREATE TABLE IF NOT EXISTS daily_readings (
     var_id TEXT NOT NULL REFERENCES variables(var_id),
     raw_value REAL,
     pctile_rank_3yr REAL,
+    unconditional_pctile REAL,
+    regime_pctile REAL,
     signal_tier TEXT,
     direction TEXT,
     meta_json TEXT,
     PRIMARY KEY (date, var_id)
+);
+
+CREATE TABLE IF NOT EXISTS pending_releases (
+    release_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    release_type TEXT NOT NULL,
+    release_date TEXT NOT NULL,
+    actual REAL,
+    consensus REAL,
+    surprise_pp REAL,
+    source TEXT,
+    applied INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now')),
+    UNIQUE(release_type, release_date)
+);
+
+CREATE TABLE IF NOT EXISTS combo_c_cancel (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    wti_potential_week INTEGER DEFAULT 0,
+    last_check_date TEXT,
+    cpi_leg_passed INTEGER DEFAULT 1,
+    active INTEGER DEFAULT 0,
+    cancel_date TEXT,
+    updated_at TEXT DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS cftc_positioning (
+    date TEXT PRIMARY KEY,
+    fm_net REAL,
+    rm_net REAL,
+    fm_pctile REAL,
+    rm_pctile REAL,
+    status TEXT DEFAULT 'CONFIRMED',
+    updated_at TEXT DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS data_pull_log (
+    log_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    source_id TEXT NOT NULL,
+    pulled_at TEXT NOT NULL,
+    status TEXT NOT NULL,
+    last_good_value TEXT,
+    error_message TEXT
 );
 
 CREATE TABLE IF NOT EXISTS signal_fires (
@@ -68,6 +112,8 @@ CREATE TABLE IF NOT EXISTS forward_returns (
     spx_1m REAL,
     spx_3m REAL,
     spx_6m REAL,
+    spx_9m REAL,
+    spx_12m REAL,
     UNIQUE(combo_id)
 );
 

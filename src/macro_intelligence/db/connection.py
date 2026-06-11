@@ -21,13 +21,17 @@ def init_db(path: Path | None = None) -> Path:
     ensure_db_dir()
     db = path or db_path()
     db.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(db)
+    conn = sqlite3.connect(db, timeout=60)
     try:
         conn.executescript(_SCHEMA_PATH.read_text(encoding="utf-8"))
         _seed_variables(conn)
+        conn.execute("INSERT OR IGNORE INTO combo_c_cancel (id, wti_potential_week) VALUES (1, 0)")
         conn.commit()
     finally:
         conn.close()
+    from src.macro_intelligence.db.migrate import migrate_db
+
+    migrate_db(db)
     return db
 
 
@@ -61,7 +65,8 @@ def get_connection(path: Path | None = None) -> Generator[sqlite3.Connection, No
     db = path or db_path()
     if not db.exists():
         init_db(db)
-    conn = sqlite3.connect(db)
+    conn = sqlite3.connect(db, timeout=60)
+    conn.execute("PRAGMA journal_mode=WAL")
     conn.row_factory = sqlite3.Row
     try:
         yield conn

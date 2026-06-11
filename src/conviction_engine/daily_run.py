@@ -16,6 +16,7 @@ from .models import utc_now_iso
 from .signals import (
     COMPOUND_SIGNAL_COLUMN,
     PRIMARY_DAILY_REPORT,
+    TODAY_PRICE_COLUMN,
     discover_daily_signal_files,
     resolve_report_date,
 )
@@ -34,7 +35,12 @@ def conviction_score_sheet(overlay_df: pd.DataFrame) -> pd.DataFrame:
         return overlay_df
     signal_col = COMPOUND_SIGNAL_COLUMN if COMPOUND_SIGNAL_COLUMN in overlay_df.columns else None
     prefix = ["Function", signal_col] if signal_col else ["Function"]
-    cols = [c for c in prefix + CONVICTION_COLUMNS if c in overlay_df.columns]
+    mtm_cols = [
+        "Current Mark to Market and Holding Period",
+        TODAY_PRICE_COLUMN,
+        "Trading Days between Signal and Today Date",
+    ]
+    cols = [c for c in prefix + CONVICTION_COLUMNS + mtm_cols if c in overlay_df.columns]
     return overlay_df[cols].copy()
 
 

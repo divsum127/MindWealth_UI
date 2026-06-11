@@ -21,7 +21,7 @@
   "bq_raw": 1.0,
   "business_type": "compounder",
   "business_type_source": "auto",
-  "conviction_score": -8.0,
+  "conviction_score": -9.0,
   "created_at": "2026-05-12T20:18:25+00:00",
   "data_coverage": {
     "bq_auto_dimensions": {
@@ -189,26 +189,26 @@
   },
   "dividend_yield_5y_mean": 0.018137,
   "dividend_yield_5y_std": 0.009128,
-  "dividend_yield_current": 0.018099,
-  "dividend_yield_zscore": -0.0042,
-  "enterprise_value": 486722786094.7837,
+  "dividend_yield_current": 0.017572,
+  "dividend_yield_zscore": -0.0619,
+  "enterprise_value": 495516938588.7367,
   "eps_fwd": 65.38839,
   "eps_ttm": 54.73,
-  "ev_fwd_rev": 7.9099,
+  "ev_fwd_rev": 8.0529,
   "fcf_ttm": -47218000000.0,
   "fd_direction": "negative",
   "fd_votes": {},
   "flags": [],
   "fs_class": "moderate_low",
   "fs_quality_base": 52.5,
-  "fs_score": 38.5,
+  "fs_score": 30.5,
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 61532999680.0,
   "industry": "Capital Markets",
-  "last_daily_update": "2026-05-27T04:48:33+00:00",
+  "last_daily_update": "2026-06-11T18:42:12+00:00",
   "last_full_calc": "2026-05-18T20:48:54+00:00",
   "manual_overrides": {},
-  "market_cap": 293390786094.7837,
+  "market_cap": 302184938588.7367,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 193332000000.0,
-  "owner_earnings_yield": -0.160939,
+  "owner_earnings_yield": -0.156255,
   "pe_20y_array": [
     17.1378,
     18.2377,
@@ -232,8 +232,8 @@
     16.8818,
     17.2946
   ],
-  "pe_percentile_20y": 83.33,
-  "pe_ttm": 18.1714,
+  "pe_percentile_20y": 100.0,
+  "pe_ttm": 18.7161,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -242,13 +242,13 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 994.52001953125,
+  "price": 1024.3299560546875,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.14548,
   "sector": "Financial Services",
   "ticker": "GS",
-  "updated_at": "2026-05-27T04:48:33+00:00",
-  "valuation_tax": -9.0,
+  "updated_at": "2026-06-11T18:42:12+00:00",
+  "valuation_tax": -10.0,
   "valuation_tax_breakdown": {
     "components": {
       "business_type_relief": 0.0,
@@ -257,9 +257,9 @@
       "growth_multiple_fragility": 0.0,
       "market_regime_beta": 0.0,
       "oey_penalty": -2.0,
-      "pe_hist_percentile": -2.0
+      "pe_hist_percentile": -3.0
     },
-    "total": -9.0
+    "total": -10.0
   },
   "yield_trap_mkt_threshold": 0.06,
   "yield_trap_warning": false

@@ -1,0 +1,77 @@
+{
+  "test_id": "14_gross_net",
+  "n_events": 21,
+  "metrics": {
+    "n_events": 21,
+    "1w": {
+      "n": 0,
+      "avg": null,
+      "median": null,
+      "win_pct": null,
+      "worst": null,
+      "sharpe": null
+    },
+    "2w": {
+      "n": 0,
+      "avg": null,
+      "median": null,
+      "win_pct": null,
+      "worst": null,
+      "sharpe": null
+    },
+    "1m": {
+      "n": 0,
+      "avg": null,
+      "median": null,
+      "win_pct": null,
+      "worst": null,
+      "sharpe": null
+    },
+    "3m": {
+      "n": 0,
+      "avg": null,
+      "median": null,
+      "win_pct": null,
+      "worst": null,
+      "sharpe": null
+    },
+    "6m": {
+      "n": 0,
+      "avg": null,
+      "median": null,
+      "win_pct": null,
+      "worst": null,
+      "sharpe": null
+    },
+    "12m": {
+      "n": 0,
+      "avg": null,
+      "median": null,
+      "win_pct": null,
+      "worst": null,
+      "sharpe": null
+    }
+  },
+  "instances": [
+    "2017-11-14",
+    "2017-12-05",
+    "2019-05-14",
+    "2019-06-04",
+    "2019-07-23",
+    "2019-08-06",
+    "2020-02-04",
+    "2020-02-25",
+    "2021-07-13",
+    "2021-07-20",
+    "2021-07-27",
+    "2021-08-03",
+    "2021-11-09",
+    "2021-11-30",
+    "2024-06-18",
+    "2024-08-06",
+    "2024-08-13",
+    "2025-03-04",
+    "2025-03-11",
+    "2025-03-18"
+  ]
+}

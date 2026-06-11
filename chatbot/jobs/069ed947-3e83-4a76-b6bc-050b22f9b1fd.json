@@ -1,0 +1,81 @@
+{
+  "job_id": "069ed947-3e83-4a76-b6bc-050b22f9b1fd",
+  "session_id": "35eccdee-caf0-4cd3-a8aa-d91ab0acfc85",
+  "status": "completed",
+  "created_at": "2026-06-05T00:35:43.754281+00:00",
+  "started_at": "2026-06-05T00:35:43.755015+00:00",
+  "completed_at": "2026-06-05T00:35:53.087897+00:00",
+  "request": {
+    "message": "Say hi",
+    "preset": "freeform",
+    "asset": null,
+    "from_date": null,
+    "to_date": null,
+    "assets": null,
+    "functions": null,
+    "selected_signal_types": [],
+    "auto_extract_tickers": true,
+    "deep_research_enabled": false,
+    "query_kind": null,
+    "additional_context": null
+  },
+  "flow_steps": [
+    {
+      "stage": "Router",
+      "detail": "Analyzing user query intent and selecting route",
+      "timestamp": "2026-06-05T00:35:44.099315+00:00"
+    },
+    {
+      "stage": "Route Selected",
+      "detail": "CONVERSATIONAL (intent=CONVERSATIONAL, conf=0.92)",
+      "timestamp": "2026-06-05T00:35:45.358380+00:00"
+    },
+    {
+      "stage": "Conversation Mode",
+      "detail": "Using conversation history only (no web/internal data fetch)",
+      "timestamp": "2026-06-05T00:35:45.359263+00:00"
+    }
+  ],
+  "result": {
+    "content": "# Hello! \ud83d\udc4b\n\nI'm your **MindWealth Financial Trading Analyst Assistant**. I'm here to help you analyze stock market data, trading signals, and provide insights based on historical performance.\n\n## How I Can Help You\n\nI can assist with:\n\n- **Signal Analysis** - Interpreting trading signals and technical indicators\n- **Stock Performance** - Analyzing price movements and trends\n- **Market Insights** - Identifying patterns and opportunities\n- **Comparative Analysis** - Comparing multiple tickers and strategies\n- **Data-Driven Recommendations** - Providing actionable insights based on signal data\n\n## Getting Started\n\nFeel free to ask me about:\n\n- Specific stock tickers or symbols\n- Trading signal performance\n- Market trends and patterns\n- Technical analysis questions\n- Portfolio insights\n\n**Just provide me with the signal data or ask your question, and I'll deliver a thorough, data-driven analysis!**\n\nWhat would you like to explore today? \ud83d\udcca",
+    "metadata": {
+      "intent": "CONVERSATIONAL",
+      "intent_label": "Conversational",
+      "intent_confidence": 0.92,
+      "intent_classified_by": "llm_router",
+      "route": "CONVERSATIONAL",
+      "web_search_used": false,
+      "web_sources": [],
+      "llm_router_reasoning": "The user is simply greeting, which does not require any data or information retrieval.",
+      "input_type": "conversational",
+      "model": "claude-sonnet-4-5-20250929",
+      "tokens_used": {
+        "prompt": 1562,
+        "completion": 217,
+        "total": 1779
+      },
+      "finish_reason": "end_turn",
+      "batch_processing_used": true,
+      "batch_count": 1,
+      "batch_mode": "single",
+      "flow_trace": [
+        {
+          "stage": "Router",
+          "detail": "Analyzing user query intent and selecting route",
+          "timestamp": "00:35:44"
+        },
+        {
+          "stage": "Route Selected",
+          "detail": "CONVERSATIONAL (intent=CONVERSATIONAL, conf=0.92)",
+          "timestamp": "00:35:45"
+        },
+        {
+          "stage": "Conversation Mode",
+          "detail": "Using conversation history only (no web/internal data fetch)",
+          "timestamp": "00:35:45"
+        }
+      ]
+    }
+  },
+  "error": null
+}

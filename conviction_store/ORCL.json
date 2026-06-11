@@ -21,7 +21,7 @@
   "bq_raw": 4.0,
   "business_type": "saas",
   "business_type_source": "auto",
-  "conviction_score": -5.0,
+  "conviction_score": -4.0,
   "created_at": "2026-05-12T20:19:22+00:00",
   "data_coverage": {
     "bq_auto_dimensions": {
@@ -189,26 +189,26 @@
   },
   "dividend_yield_5y_mean": 0.016973,
   "dividend_yield_5y_std": 0.005638,
-  "dividend_yield_current": 0.010359,
-  "dividend_yield_zscore": -1.1731,
-  "enterprise_value": 634119433738.4033,
+  "dividend_yield_current": 0.011062,
+  "dividend_yield_zscore": -1.0484,
+  "enterprise_value": 598859125576.9958,
   "eps_fwd": 8.03251,
   "eps_ttm": 5.58,
-  "ev_fwd_rev": 9.8964,
+  "ev_fwd_rev": 9.3461,
   "fcf_ttm": -13181000000.0,
   "fd_direction": "stable",
   "fd_votes": {},
   "flags": [],
   "fs_class": "moderate",
   "fs_quality_base": 60.0,
-  "fs_score": 46.0,
+  "fs_score": 52.0,
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 64076001280.0,
   "industry": "Software - Infrastructure",
-  "last_daily_update": "2026-05-27T04:48:33+00:00",
+  "last_daily_update": "2026-06-11T18:42:12+00:00",
   "last_full_calc": "2026-05-18T20:49:58+00:00",
   "manual_overrides": {},
-  "market_cap": 555249433738.4033,
+  "market_cap": 519989125576.99585,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 78870000000.0,
-  "owner_earnings_yield": -0.023739,
+  "owner_earnings_yield": -0.025349,
   "pe_20y_array": [
     37.2677,
     31.4685,
@@ -232,8 +232,8 @@
     29.887,
     34.5574
   ],
-  "pe_percentile_20y": 83.33,
-  "pe_ttm": 34.5986,
+  "pe_percentile_20y": 66.67,
+  "pe_ttm": 32.4014,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -242,13 +242,13 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 193.05999755859375,
+  "price": 180.8000030517578,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.57572,
   "sector": "Technology",
   "ticker": "ORCL",
-  "updated_at": "2026-05-27T04:48:33+00:00",
-  "valuation_tax": -9.0,
+  "updated_at": "2026-06-11T18:42:12+00:00",
+  "valuation_tax": -8.0,
   "valuation_tax_breakdown": {
     "components": {
       "business_type_relief": 0.0,
@@ -257,9 +257,9 @@
       "growth_multiple_fragility": 0.0,
       "market_regime_beta": 0.0,
       "oey_penalty": -2.0,
-      "pe_hist_percentile": -2.0
+      "pe_hist_percentile": -1.0
     },
-    "total": -9.0
+    "total": -8.0
   },
   "yield_trap_mkt_threshold": 0.06,
   "yield_trap_warning": false

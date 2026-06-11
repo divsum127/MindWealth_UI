@@ -9,6 +9,10 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
+# Macro Claude client uses ANTHROPIC_API_KEY; accept CLAUDE_API_KEY alias from Streamlit secrets.
+if not os.getenv("ANTHROPIC_API_KEY") and os.getenv("CLAUDE_API_KEY"):
+    os.environ["ANTHROPIC_API_KEY"] = os.environ["CLAUDE_API_KEY"]
+
 # Base directory
 BASE_DIR = Path(__file__).parent.parent.resolve()
 
@@ -32,6 +36,17 @@ MACRO_INTEL_JSON_PATH = Path(
     os.getenv("MACRO_INTEL_JSON_PATH", str(MACRO_INTEL_OUTPUT_DIR / "runic_output.json"))
 )
 MACRO_INTEL_CONFIG = MACRO_INTEL_DIR / "CONFIG.yaml"
+SSI_CONFIG = MACRO_INTEL_DIR / "SSI_CONFIG.yaml"
+SSI_DATA_DIR = MACRO_INTEL_DATA_DIR / "ssi"
+SSI_POSITIONING_JSON = Path(
+    os.getenv("SSI_POSITIONING_JSON", str(MACRO_INTEL_OUTPUT_DIR / "positioning.json"))
+)
+SSI_DB = Path(os.getenv("SSI_DB", str(SSI_DATA_DIR / "ssi.db")))
+SSI_ANALYSIS_DIR = MACRO_INTEL_DIR / "analysis" / "ssi_validation"
+MINDWEALTH_ROOT = Path(os.getenv("MINDWEALTH_ROOT", "/home/ubuntu/MindWealth"))
+MINDWEALTH_TRADE_STORE = Path(
+    os.getenv("MINDWEALTH_TRADE_STORE", str(MINDWEALTH_ROOT / "trade_store" / "US"))
+)
 
 # Additional data paths
 DATA_FETCH_DATETIME_JSON = TRADE_STORE_US_DIR / "data_fetch_datetime.json"
@@ -59,3 +74,5 @@ CONVICTION_DAILY_DIR.mkdir(parents=True, exist_ok=True)
 MACRO_INTEL_DIR.mkdir(parents=True, exist_ok=True)
 MACRO_INTEL_DATA_DIR.mkdir(parents=True, exist_ok=True)
 MACRO_INTEL_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+SSI_DATA_DIR.mkdir(parents=True, exist_ok=True)
+SSI_ANALYSIS_DIR.mkdir(parents=True, exist_ok=True)

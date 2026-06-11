@@ -1,0 +1,107 @@
+{
+  "test_id": "12_bollinger_ssi",
+  "n_bb_only": 115,
+  "n_combo": 1,
+  "bb_only_metrics": {
+    "n_events": 115,
+    "1w": {
+      "n": 115,
+      "avg": 0.4609,
+      "median": 0.5334,
+      "win_pct": 59.13,
+      "worst": -13.123,
+      "sharpe": 1.052
+    },
+    "2w": {
+      "n": 115,
+      "avg": 1.1789,
+      "median": 1.6353,
+      "win_pct": 67.83,
+      "worst": -18.5381,
+      "sharpe": 1.4902
+    },
+    "1m": {
+      "n": 115,
+      "avg": 2.2347,
+      "median": 2.9393,
+      "win_pct": 73.91,
+      "worst": -20.8634,
+      "sharpe": 1.4784
+    },
+    "3m": {
+      "n": 112,
+      "avg": 5.0533,
+      "median": 5.4386,
+      "win_pct": 80.36,
+      "worst": -14.6922,
+      "sharpe": 1.5504
+    },
+    "6m": {
+      "n": 109,
+      "avg": 8.5984,
+      "median": 9.6813,
+      "win_pct": 81.65,
+      "worst": -15.9765,
+      "sharpe": 1.2259
+    },
+    "12m": {
+      "n": 106,
+      "avg": 14.7296,
+      "median": 15.6452,
+      "win_pct": 84.91,
+      "worst": -16.7594,
+      "sharpe": 1.0713
+    }
+  },
+  "combo_metrics": {
+    "n_events": 1,
+    "1w": {
+      "n": 1,
+      "avg": -13.123,
+      "median": -13.123,
+      "win_pct": 0.0,
+      "worst": -13.123,
+      "sharpe": null
+    },
+    "2w": {
+      "n": 1,
+      "avg": -18.5381,
+      "median": -18.5381,
+      "win_pct": 0.0,
+      "worst": -18.5381,
+      "sharpe": null
+    },
+    "1m": {
+      "n": 1,
+      "avg": -3.1731,
+      "median": -3.1731,
+      "win_pct": 0.0,
+      "worst": -3.1731,
+      "sharpe": null
+    },
+    "3m": {
+      "n": 1,
+      "avg": 17.6887,
+      "median": 17.6887,
+      "win_pct": 100.0,
+      "worst": 17.6887,
+      "sharpe": null
+    },
+    "6m": {
+      "n": 1,
+      "avg": 24.7728,
+      "median": 24.7728,
+      "win_pct": 100.0,
+      "worst": 24.7728,
+      "sharpe": null
+    },
+    "12m": {
+      "n": 1,
+      "avg": 41.1016,
+      "median": 41.1016,
+      "win_pct": 100.0,
+      "worst": 41.1016,
+      "sharpe": null
+    }
+  }
+}

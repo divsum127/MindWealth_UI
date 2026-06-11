@@ -1,0 +1,228 @@
+{
+  "test_id": "07_dbmf_beta",
+  "rows": [
+    {
+      "beta_threshold": -0.05,
+      "n_crossings": 27,
+      "metrics": {
+        "n_events": 27,
+        "1w": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "2w": {
+          "n": 27,
+          "avg": -0.0998,
+          "median": 1.1926,
+          "win_pct": 55.56,
+          "worst": -9.8265,
+          "sharpe": -0.1477
+        },
+        "1m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "3m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "6m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "12m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        }
+      }
+    },
+    {
+      "beta_threshold": -0.1,
+      "n_crossings": 29,
+      "metrics": {
+        "n_events": 29,
+        "1w": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "2w": {
+          "n": 29,
+          "avg": 0.6066,
+          "median": 1.1926,
+          "win_pct": 62.07,
+          "worst": -7.7759,
+          "sharpe": 0.8491
+        },
+        "1m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "3m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "6m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "12m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        }
+      }
+    },
+    {
+      "beta_threshold": -0.15,
+      "n_crossings": 22,
+      "metrics": {
+        "n_events": 22,
+        "1w": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "2w": {
+          "n": 22,
+          "avg": 0.7374,
+          "median": 1.1277,
+          "win_pct": 59.09,
+          "worst": -4.345,
+          "sharpe": 1.4348
+        },
+        "1m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "3m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "6m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "12m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        }
+      }
+    },
+    {
+      "beta_threshold": -0.2,
+      "n_crossings": 18,
+      "metrics": {
+        "n_events": 18,
+        "1w": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "2w": {
+          "n": 18,
+          "avg": 0.6772,
+          "median": 1.2632,
+          "win_pct": 61.11,
+          "worst": -4.8618,
+          "sharpe": 1.2003
+        },
+        "1m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "3m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "6m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        },
+        "12m": {
+          "n": 0,
+          "avg": null,
+          "median": null,
+          "win_pct": null,
+          "worst": null,
+          "sharpe": null
+        }
+      }
+    }
+  ],
+  "granger_p": {
+    "note": "statsmodels unavailable or insufficient data"
+  }
+}

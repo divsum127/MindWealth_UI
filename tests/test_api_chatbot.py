@@ -33,6 +33,8 @@ class TestChatbotSessionsAPI(unittest.TestCase):
             patch("chatbot.history_manager.HISTORY_DIR", self.history_dir),
             patch("api.jobs.store.CHATBOT_JOBS_DIR", self.jobs_dir),
             patch("api.jobs.store._store", None),
+            patch.dict("os.environ", {"API_KEY": ""}, clear=False),
+            patch("api.dependencies.API_KEY", ""),
         ]
         for p in self.patches:
             p.start()
@@ -80,6 +82,8 @@ class TestChatbotAsyncJobs(unittest.TestCase):
             patch("chatbot.history_manager.HISTORY_DIR", self.history_dir),
             patch("api.jobs.store.CHATBOT_JOBS_DIR", self.jobs_dir),
             patch("api.jobs.store._store", None),
+            patch.dict("os.environ", {"API_KEY": ""}, clear=False),
+            patch("api.dependencies.API_KEY", ""),
         ]
         for p in self.patches:
             p.start()
@@ -125,7 +129,17 @@ class TestChatbotAsyncJobs(unittest.TestCase):
 
 class TestChatbotUtilitiesAPI(unittest.TestCase):
     def setUp(self) -> None:
+        self.patches = [
+            patch.dict("os.environ", {"API_KEY": ""}, clear=False),
+            patch("api.dependencies.API_KEY", ""),
+        ]
+        for p in self.patches:
+            p.start()
         self.client = TestClient(app)
+
+    def tearDown(self) -> None:
+        for p in reversed(self.patches):
+            p.stop()
 
     def test_config(self) -> None:
         r = self.client.get("/api/v1/chatbot/config")

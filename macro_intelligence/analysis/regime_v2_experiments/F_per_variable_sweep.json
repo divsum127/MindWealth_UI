@@ -1,0 +1,1867 @@
+{
+  "start": "2010-01-01",
+  "variables": {
+    "VIX": {
+      "config": {
+        "id": "VIX",
+        "name": "VIX Level",
+        "source": "YAHOO",
+        "ticker": "^VIX",
+        "paradigm": "DUAL",
+        "pctile_window": "full",
+        "pctile_start": "1990-01-01",
+        "combos": [
+          "B",
+          "D",
+          "G"
+        ],
+        "rare": {
+          "abs_level": 25,
+          "high_pctile": 80
+        },
+        "extreme": {
+          "abs_level": 35,
+          "high_pctile": 95
+        }
+      },
+      "bands": [
+        {
+          "band": "high_70_79",
+          "pctile_range": [
+            0.7,
+            0.79
+          ],
+          "bullish": false,
+          "n_events": 5,
+          "horizons": {
+            "spx_1m": {
+              "n": 5,
+              "hit_rate": 0.2,
+              "avg_win": -1.1269813648844003,
+              "avg_loss": 2.798919775061379,
+              "pw_expected": 2.013739547072223,
+              "benchmark_pct": 1.25,
+              "excess_pct": 0.7637395470722228,
+              "avg": 2.0137395470722232,
+              "median": 1.2520386686654132,
+              "worst": 5.810292657757588
+            },
+            "spx_3m": {
+              "n": 5,
+              "hit_rate": 0.2,
+              "avg_win": -2.6355202243006777,
+              "avg_loss": 3.365328392318668,
+              "pw_expected": 2.165158668994799,
+              "benchmark_pct": 2.5,
+              "excess_pct": -0.33484133100520097,
+              "avg": 2.165158668994799,
+              "median": 3.2317909798349365,
+              "worst": 3.900745288087626
+            },
+            "spx_6m": {
+              "n": 5,
+              "hit_rate": 0.0,
+              "avg_win": 0.0,
+              "avg_loss": 8.23229156691875,
+              "pw_expected": 8.23229156691875,
+              "benchmark_pct": 5.0,
+              "excess_pct": 3.23229156691875,
+              "avg": 8.23229156691875,
+              "median": 7.731334549768327,
+              "worst": 15.42938864013845
+            },
+            "spx_9m": {
+              "n": 5,
+              "hit_rate": 0.0,
+              "avg_win": 0.0,
+              "avg_loss": 9.850865893474936,
+              "pw_expected": 9.850865893474936,
+              "benchmark_pct": 7.5,
+              "excess_pct": 2.3508658934749356,
+              "avg": 9.850865893474936,
+              "median": 10.405157287332312,
+              "worst": 11.579340465259786
+            },
+            "spx_12m": {
+              "n": 5,
+              "hit_rate": 0.2,
+              "avg_win": -8.036258157953613,
+              "avg_loss": 15.778417592392664,
+              "pw_expected": 11.015482442323409,
+              "benchmark_pct": 10.0,
+              "excess_pct": 1.0154824423234086,
+              "avg": 11.015482442323409,
+              "median": 13.3691997469415,
+              "worst": 24.353620844659833
+            }
+          },
+          "instances": [
+            {
+              "date": "2017-01-27",
+              "raw_value": 10.579999923706055,
+              "pctile": 0.7621280961453907,
+              "returns": {
+                "spx_1m": 3.0047611194748405,
+                "spx_3m": 3.900745288087626,
+                "spx_6m": 7.731334549768327,
+                "spx_9m": 11.579340465259786,
+                "spx_12m": 24.353620844659833
+              }
+            },
+            {
+              "date": "2017-05-05",
+              "raw_value": 10.569999694824219,
+              "pctile": 0.783630822812364,
+              "returns": {
+                "spx_1m": 1.2520386686654132,
+                "spx_3m": 3.2317909798349365,
+                "spx_6m": 7.525561964334339,
+                "spx_9m": 10.405157287332312,
+                "spx_12m": 11.392530261026923
+              }
+            },
+            {
+              "date": "2017-06-16",
+              "raw_value": 10.380000114440918,
+              "pctile": 0.7514450867052023,
+              "returns": {
+                "spx_1m": 1.128586654347673,
+                "spx_3m": 2.756923363430449,
+                "spx_6m": 8.994929051064892,
+                "spx_9m": 11.498264832008887,
+                "spx_12m": 13.998319516942395
+              }
+            },
+            {
+              "date": "2017-07-28",
+              "raw_value": 10.289999961853027,
+              "pctile": 0.7626996690171248,
+              "returns": {
+                "spx_1m": -1.1269813648844003,
+                "spx_3m": 3.571853937921661,
+                "spx_6m": 15.42938864013845,
+                "spx_9m": 7.117428268324964,
+                "spx_12m": 13.3691997469415
+              }
+            },
+            {
+              "date": "2017-12-22",
+              "raw_value": 9.899999618530273,
+              "pctile": 0.7090187180941577,
+              "returns": {
+                "spx_1m": 5.810292657757588,
+                "spx_3m": -2.6355202243006777,
+                "spx_6m": 1.4802436292877392,
+                "spx_9m": 8.654138614448728,
+                "spx_12m": -8.036258157953613
+              }
+            }
+          ]
+        },
+        {
+          "band": "high_80_plus",
+          "pctile_range": [
+            0.8,
+            1.0
+          ],
+          "bullish": false,
+          "n_events": 0,
+          "horizons": {
+            "spx_1m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 1.25,
+              "excess_pct": null
+            },
+            "spx_3m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 2.5,
+              "excess_pct": null
+            },
+            "spx_6m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 5.0,
+              "excess_pct": null
+            },
+            "spx_9m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 7.5,
+              "excess_pct": null
+            },
+            "spx_12m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 10.0,
+              "excess_pct": null
+            }
+          },
+          "instances": []
+        }
+      ]
+    },
+    "HY": {
+      "config": {
+        "id": "HY",
+        "name": "HY Credit Spreads OAS",
+        "source": "FRED",
+        "ticker": "BAMLH0A0HYM2",
+        "paradigm": "DUAL",
+        "pctile_window": "full",
+        "pctile_start": "1996-01-01",
+        "combos": [
+          "A",
+          "B",
+          "F",
+          "G"
+        ],
+        "rare": {
+          "abs_bps": 400,
+          "high_pctile": 80
+        },
+        "extreme": {
+          "abs_bps": 500,
+          "high_pctile": 95
+        }
+      },
+      "bands": [
+        {
+          "band": "high_75_84",
+          "pctile_range": [
+            0.75,
+            0.84
+          ],
+          "bullish": false,
+          "n_events": 1,
+          "horizons": {
+            "spx_1m": {
+              "n": 1,
+              "hit_rate": 0.0,
+              "avg_win": 0.0,
+              "avg_loss": 5.60466570785527,
+              "pw_expected": 5.60466570785527,
+              "benchmark_pct": 1.25,
+              "excess_pct": 4.35466570785527,
+              "avg": 5.60466570785527,
+              "median": 5.60466570785527,
+              "worst": 5.60466570785527
+            },
+            "spx_3m": {
+              "n": 1,
+              "hit_rate": 0.0,
+              "avg_win": 0.0,
+              "avg_loss": 5.807153105769898,
+              "pw_expected": 5.807153105769898,
+              "benchmark_pct": 2.5,
+              "excess_pct": 3.307153105769898,
+              "avg": 5.807153105769898,
+              "median": 5.807153105769898,
+              "worst": 5.807153105769898
+            },
+            "spx_6m": {
+              "n": 1,
+              "hit_rate": 1.0,
+              "avg_win": -1.7022766173720327,
+              "avg_loss": 0.0,
+              "pw_expected": -1.7022766173720327,
+              "benchmark_pct": 5.0,
+              "excess_pct": -6.702276617372033,
+              "avg": -1.7022766173720327,
+              "median": -1.7022766173720327,
+              "worst": -1.7022766173720327
+            },
+            "spx_9m": {
+              "n": 1,
+              "hit_rate": 0.0,
+              "avg_win": 0.0,
+              "avg_loss": 10.668904764526683,
+              "pw_expected": 10.668904764526683,
+              "benchmark_pct": 7.5,
+              "excess_pct": 3.1689047645266832,
+              "avg": 10.668904764526683,
+              "median": 10.668904764526683,
+              "worst": 10.668904764526683
+            },
+            "spx_12m": {
+              "n": 1,
+              "hit_rate": 0.0,
+              "avg_win": 0.0,
+              "avg_loss": 18.633750013424155,
+              "pw_expected": 18.633750013424155,
+              "benchmark_pct": 10.0,
+              "excess_pct": 8.633750013424155,
+              "avg": 18.633750013424155,
+              "median": 18.633750013424155,
+              "worst": 18.633750013424155
+            }
+          },
+          "instances": [
+            {
+              "date": "2024-11-01",
+              "raw_value": 2.83,
+              "pctile": 0.8064516129032258,
+              "returns": {
+                "spx_1m": 5.60466570785527,
+                "spx_3m": 5.807153105769898,
+                "spx_6m": -1.7022766173720327,
+                "spx_9m": 10.668904764526683,
+                "spx_12m": 18.633750013424155
+              }
+            }
+          ]
+        },
+        {
+          "band": "high_85_plus",
+          "pctile_range": [
+            0.85,
+            1.0
+          ],
+          "bullish": false,
+          "n_events": 1,
+          "horizons": {
+            "spx_1m": {
+              "n": 1,
+              "hit_rate": 1.0,
+              "avg_win": -3.126189118419613,
+              "avg_loss": 0.0,
+              "pw_expected": -3.126189118419613,
+              "benchmark_pct": 1.25,
+              "excess_pct": -4.376189118419613,
+              "avg": -3.126189118419613,
+              "median": -3.126189118419613,
+              "worst": -3.126189118419613
+            },
+            "spx_3m": {
+              "n": 1,
+              "hit_rate": 0.0,
+              "avg_win": 0.0,
+              "avg_loss": 4.082586655977214,
+              "pw_expected": 4.082586655977214,
+              "benchmark_pct": 2.5,
+              "excess_pct": 1.582586655977214,
+              "avg": 4.082586655977214,
+              "median": 4.082586655977214,
+              "worst": 4.082586655977214
+            },
+            "spx_6m": {
+              "n": 1,
+              "hit_rate": 0.0,
+              "avg_win": 0.0,
+              "avg_loss": 9.254355642528113,
+              "pw_expected": 9.254355642528113,
+              "benchmark_pct": 5.0,
+              "excess_pct": 4.254355642528113,
+              "avg": 9.254355642528113,
+              "median": 9.254355642528113,
+              "worst": 9.254355642528113
+            },
+            "spx_9m": {
+              "n": 1,
+              "hit_rate": 0.0,
+              "avg_win": 0.0,
+              "avg_loss": 13.310010325944036,
+              "pw_expected": 13.310010325944036,
+              "benchmark_pct": 7.5,
+              "excess_pct": 5.810010325944036,
+              "avg": 13.310010325944036,
+              "median": 13.310010325944036,
+              "worst": 13.310010325944036
+            },
+            "spx_12m": {
+              "n": 1,
+              "hit_rate": 0.0,
+              "avg_win": 0.0,
+              "avg_loss": 9.132662680262072,
+              "pw_expected": 9.132662680262072,
+              "benchmark_pct": 10.0,
+              "excess_pct": -0.8673373197379277,
+              "avg": 9.132662680262072,
+              "median": 9.132662680262072,
+              "worst": 9.132662680262072
+            }
+          },
+          "instances": [
+            {
+              "date": "2024-03-22",
+              "raw_value": 3.08,
+              "pctile": 0.9523809523809524,
+              "returns": {
+                "spx_1m": -3.126189118419613,
+                "spx_3m": 4.082586655977214,
+                "spx_6m": 9.254355642528113,
+                "spx_9m": 13.310010325944036,
+                "spx_12m": 9.132662680262072
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "VXTS": {
+      "config": {
+        "id": "VXTS",
+        "name": "VIX Term Structure",
+        "source": "YAHOO",
+        "ticker_ratio": [
+          "^VIX3M",
+          "^VIX"
+        ],
+        "paradigm": "RATIO",
+        "pctile_window": "full",
+        "pctile_start": "2007-01-01",
+        "combos": [
+          "D",
+          "G"
+        ],
+        "rare": {
+          "low_ratio": 0.95,
+          "high_ratio": 1.1
+        },
+        "extreme": {
+          "low_ratio": 0.85,
+          "high_ratio": 1.2
+        }
+      },
+      "bands": [
+        {
+          "band": "high_75_84",
+          "pctile_range": [
+            0.75,
+            0.84
+          ],
+          "bullish": false,
+          "n_events": 0,
+          "horizons": {
+            "spx_1m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 1.25,
+              "excess_pct": null
+            },
+            "spx_3m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 2.5,
+              "excess_pct": null
+            },
+            "spx_6m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 5.0,
+              "excess_pct": null
+            },
+            "spx_9m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 7.5,
+              "excess_pct": null
+            },
+            "spx_12m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 10.0,
+              "excess_pct": null
+            }
+          },
+          "instances": []
+        },
+        {
+          "band": "high_85_plus",
+          "pctile_range": [
+            0.85,
+            1.0
+          ],
+          "bullish": false,
+          "n_events": 0,
+          "horizons": {
+            "spx_1m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 1.25,
+              "excess_pct": null
+            },
+            "spx_3m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 2.5,
+              "excess_pct": null
+            },
+            "spx_6m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 5.0,
+              "excess_pct": null
+            },
+            "spx_9m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 7.5,
+              "excess_pct": null
+            },
+            "spx_12m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 10.0,
+              "excess_pct": null
+            }
+          },
+          "instances": []
+        }
+      ]
+    },
+    "NFCI": {
+      "config": {
+        "id": "NFCI",
+        "name": "Financial Conditions (NFCI)",
+        "source": "FRED",
+        "ticker": "NFCI",
+        "paradigm": "DUAL",
+        "pctile_window": "full",
+        "pctile_start": "1973-01-01",
+        "combos": [
+          "A",
+          "E"
+        ],
+        "rare": {
+          "high_pctile": 80,
+          "low_pctile": 20,
+          "high_sd": 0.3,
+          "low_sd": -0.3
+        },
+        "extreme": {
+          "high_pctile": 95,
+          "low_pctile": 5,
+          "high_sd": 0.8,
+          "low_sd": -0.8
+        }
+      },
+      "bands": [
+        {
+          "band": "tight_70_79",
+          "pctile_range": [
+            0.7,
+            0.79
+          ],
+          "bullish": false,
+          "n_events": 0,
+          "horizons": {
+            "spx_1m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 1.25,
+              "excess_pct": null
+            },
+            "spx_3m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 2.5,
+              "excess_pct": null
+            },
+            "spx_6m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 5.0,
+              "excess_pct": null
+            },
+            "spx_9m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 7.5,
+              "excess_pct": null
+            },
+            "spx_12m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 10.0,
+              "excess_pct": null
+            }
+          },
+          "instances": []
+        },
+        {
+          "band": "tight_80_plus",
+          "pctile_range": [
+            0.8,
+            1.0
+          ],
+          "bullish": false,
+          "n_events": 0,
+          "horizons": {
+            "spx_1m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 1.25,
+              "excess_pct": null
+            },
+            "spx_3m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 2.5,
+              "excess_pct": null
+            },
+            "spx_6m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 5.0,
+              "excess_pct": null
+            },
+            "spx_9m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 7.5,
+              "excess_pct": null
+            },
+            "spx_12m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 10.0,
+              "excess_pct": null
+            }
+          },
+          "instances": []
+        }
+      ]
+    },
+    "WALCL": {
+      "config": {
+        "id": "WALCL",
+        "name": "Fed Balance Sheet MoM",
+        "source": "FRED",
+        "ticker": "WALCL",
+        "paradigm": "ROC",
+        "pctile_window": "full",
+        "pctile_start": "2008-01-01",
+        "combos": [
+          "A",
+          "C"
+        ],
+        "rare": {
+          "mom_pct": 0.8
+        },
+        "extreme": {
+          "mom_pct": 2.0
+        }
+      },
+      "bands": [
+        {
+          "band": "high_75_84",
+          "pctile_range": [
+            0.75,
+            0.84
+          ],
+          "bullish": true,
+          "n_events": 0,
+          "horizons": {
+            "spx_1m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 1.25,
+              "excess_pct": null
+            },
+            "spx_3m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 2.5,
+              "excess_pct": null
+            },
+            "spx_6m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 5.0,
+              "excess_pct": null
+            },
+            "spx_9m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 7.5,
+              "excess_pct": null
+            },
+            "spx_12m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 10.0,
+              "excess_pct": null
+            }
+          },
+          "instances": []
+        },
+        {
+          "band": "high_85_plus",
+          "pctile_range": [
+            0.85,
+            1.0
+          ],
+          "bullish": true,
+          "n_events": 0,
+          "horizons": {
+            "spx_1m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 1.25,
+              "excess_pct": null
+            },
+            "spx_3m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 2.5,
+              "excess_pct": null
+            },
+            "spx_6m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 5.0,
+              "excess_pct": null
+            },
+            "spx_9m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 7.5,
+              "excess_pct": null
+            },
+            "spx_12m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 10.0,
+              "excess_pct": null
+            }
+          },
+          "instances": []
+        }
+      ]
+    },
+    "CNH": {
+      "config": {
+        "id": "CNH",
+        "name": "USD/CNH 4wk change",
+        "source": "YAHOO",
+        "ticker": "USDCNH=X",
+        "fallback": "FRED:DEXCHUS",
+        "paradigm": "ROC",
+        "pctile_window": "rolling_3y",
+        "pctile_start": "2010-01-01",
+        "combos": [
+          "A",
+          "C",
+          "G"
+        ],
+        "rare": {
+          "pct_4wk": 1.5
+        },
+        "extreme": {
+          "pct_4wk": 3.5
+        }
+      },
+      "bands": [
+        {
+          "band": "high_75_84",
+          "pctile_range": [
+            0.75,
+            0.84
+          ],
+          "bullish": false,
+          "n_events": 2,
+          "horizons": {
+            "spx_1m": {
+              "n": 2,
+              "hit_rate": 0.5,
+              "avg_win": -0.25660281129618606,
+              "avg_loss": 0.895445423642991,
+              "pw_expected": 0.3194213061734025,
+              "benchmark_pct": 1.25,
+              "excess_pct": -0.9305786938265975,
+              "avg": 0.3194213061734025,
+              "median": 0.3194213061734025,
+              "worst": 0.895445423642991
+            },
+            "spx_3m": {
+              "n": 2,
+              "hit_rate": 0.5,
+              "avg_win": -0.383538046641622,
+              "avg_loss": 1.219684093115527,
+              "pw_expected": 0.4180730232369525,
+              "benchmark_pct": 2.5,
+              "excess_pct": -2.0819269767630475,
+              "avg": 0.4180730232369525,
+              "median": 0.4180730232369525,
+              "worst": 1.219684093115527
+            },
+            "spx_6m": {
+              "n": 2,
+              "hit_rate": 0.0,
+              "avg_win": 0.0,
+              "avg_loss": 9.742840282299841,
+              "pw_expected": 9.742840282299841,
+              "benchmark_pct": 5.0,
+              "excess_pct": 4.7428402822998414,
+              "avg": 9.742840282299841,
+              "median": 9.742840282299841,
+              "worst": 11.046972985786107
+            },
+            "spx_9m": {
+              "n": 2,
+              "hit_rate": 0.0,
+              "avg_win": 0.0,
+              "avg_loss": 13.996490363096562,
+              "pw_expected": 13.996490363096562,
+              "benchmark_pct": 7.5,
+              "excess_pct": 6.496490363096562,
+              "avg": 13.996490363096562,
+              "median": 13.996490363096562,
+              "worst": 14.44421130200903
+            },
+            "spx_12m": {
+              "n": 2,
+              "hit_rate": 0.0,
+              "avg_win": 0.0,
+              "avg_loss": 16.215518030318243,
+              "pw_expected": 16.215518030318243,
+              "benchmark_pct": 10.0,
+              "excess_pct": 6.215518030318243,
+              "avg": 16.215518030318243,
+              "median": 16.215518030318243,
+              "worst": 18.028770317749306
+            }
+          },
+          "instances": [
+            {
+              "date": "2017-06-09",
+              "raw_value": -1.4527634402366152,
+              "pctile": 0.796812749003984,
+              "returns": {
+                "spx_1m": -0.25660281129618606,
+                "spx_3m": 1.219684093115527,
+                "spx_6m": 8.438707578813577,
+                "spx_9m": 14.44421130200903,
+                "spx_12m": 14.402265742887177
+              }
+            },
+            {
+              "date": "2022-12-09",
+              "raw_value": -3.1751113585746116,
+              "pctile": 0.7989347536617843,
+              "returns": {
+                "spx_1m": 0.895445423642991,
+                "spx_3m": -0.383538046641622,
+                "spx_6m": 11.046972985786107,
+                "spx_9m": 13.548769424184096,
+                "spx_12m": 18.028770317749306
+              }
+            }
+          ]
+        },
+        {
+          "band": "high_85_plus",
+          "pctile_range": [
+            0.85,
+            1.0
+          ],
+          "bullish": false,
+          "n_events": 1,
+          "horizons": {
+            "spx_1m": {
+              "n": 1,
+              "hit_rate": 0.0,
+              "avg_win": 0.0,
+              "avg_loss": 3.443660213825974,
+              "pw_expected": 3.443660213825974,
+              "benchmark_pct": 1.25,
+              "excess_pct": 2.193660213825974,
+              "avg": 3.443660213825974,
+              "median": 3.443660213825974,
+              "worst": 3.443660213825974
+            },
+            "spx_3m": {
+              "n": 1,
+              "hit_rate": 0.0,
+              "avg_win": 0.0,
+              "avg_loss": 6.678371552388905,
+              "pw_expected": 6.678371552388905,
+              "benchmark_pct": 2.5,
+              "excess_pct": 4.178371552388905,
+              "avg": 6.678371552388905,
+              "median": 6.678371552388905,
+              "worst": 6.678371552388905
+            },
+            "spx_6m": {
+              "n": 1,
+              "hit_rate": 0.0,
+              "avg_win": 0.0,
+              "avg_loss": 16.717746585407387,
+              "pw_expected": 16.717746585407387,
+              "benchmark_pct": 5.0,
+              "excess_pct": 11.717746585407387,
+              "avg": 16.717746585407387,
+              "median": 16.717746585407387,
+              "worst": 16.717746585407387
+            },
+            "spx_9m": {
+              "n": 1,
+              "hit_rate": 0.0,
+              "avg_win": 0.0,
+              "avg_loss": 22.01419414843385,
+              "pw_expected": 22.01419414843385,
+              "benchmark_pct": 7.5,
+              "excess_pct": 14.514194148433852,
+              "avg": 22.01419414843385,
+              "median": 22.01419414843385,
+              "worst": 22.01419414843385
+            },
+            "spx_12m": {
+              "n": 1,
+              "hit_rate": 0.0,
+              "avg_win": 0.0,
+              "avg_loss": 17.802475915498995,
+              "pw_expected": 17.802475915498995,
+              "benchmark_pct": 10.0,
+              "excess_pct": 7.802475915498995,
+              "avg": 17.802475915498995,
+              "median": 17.802475915498995,
+              "worst": 17.802475915498995
+            }
+          },
+          "instances": [
+            {
+              "date": "2010-06-25",
+              "raw_value": -0.57682453700314,
+              "pctile": 0.9708737864077669,
+              "returns": {
+                "spx_1m": 3.443660213825974,
+                "spx_3m": 6.678371552388905,
+                "spx_6m": 16.717746585407387,
+                "spx_9m": 22.01419414843385,
+                "spx_12m": 17.802475915498995
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "WTI": {
+      "config": {
+        "id": "WTI",
+        "name": "WTI Oil 4wk change",
+        "source": "YAHOO",
+        "ticker": "CL=F",
+        "paradigm": "ROC",
+        "pctile_window": "rolling_3y",
+        "combos": [
+          "C"
+        ],
+        "rare": {
+          "pct_4wk": 6.0
+        },
+        "extreme": {
+          "pct_4wk": 10.0
+        }
+      },
+      "bands": [
+        {
+          "band": "high_75_84",
+          "pctile_range": [
+            0.75,
+            0.84
+          ],
+          "bullish": false,
+          "n_events": 1,
+          "horizons": {
+            "spx_1m": {
+              "n": 1,
+              "hit_rate": 0.0,
+              "avg_win": 0.0,
+              "avg_loss": 12.666682100750432,
+              "pw_expected": 12.666682100750432,
+              "benchmark_pct": 1.25,
+              "excess_pct": 11.416682100750432,
+              "avg": 12.666682100750432,
+              "median": 12.666682100750432,
+              "worst": 12.666682100750432
+            },
+            "spx_3m": {
+              "n": 1,
+              "hit_rate": 0.0,
+              "avg_win": 0.0,
+              "avg_loss": 18.39801703404109,
+              "pw_expected": 18.39801703404109,
+              "benchmark_pct": 2.5,
+              "excess_pct": 15.89801703404109,
+              "avg": 18.39801703404109,
+              "median": 18.39801703404109,
+              "worst": 18.39801703404109
+            },
+            "spx_6m": {
+              "n": 1,
+              "hit_rate": 0.0,
+              "avg_win": 0.0,
+              "avg_loss": 29.785517789334552,
+              "pw_expected": 29.785517789334552,
+              "benchmark_pct": 5.0,
+              "excess_pct": 24.785517789334552,
+              "avg": 29.785517789334552,
+              "median": 29.785517789334552,
+              "worst": 29.785517789334552
+            },
+            "spx_9m": {
+              "n": 1,
+              "hit_rate": 0.0,
+              "avg_win": 0.0,
+              "avg_loss": 45.70544217641331,
+              "pw_expected": 45.70544217641331,
+              "benchmark_pct": 7.5,
+              "excess_pct": 38.20544217641331,
+              "avg": 45.70544217641331,
+              "median": 45.70544217641331,
+              "worst": 45.70544217641331
+            },
+            "spx_12m": {
+              "n": 1,
+              "hit_rate": 0.0,
+              "avg_win": 0.0,
+              "avg_loss": 56.251702112064706,
+              "pw_expected": 56.251702112064706,
+              "benchmark_pct": 10.0,
+              "excess_pct": 46.251702112064706,
+              "avg": 56.251702112064706,
+              "median": 56.251702112064706,
+              "worst": 56.251702112064706
+            }
+          },
+          "instances": [
+            {
+              "date": "2020-03-27",
+              "raw_value": -51.943697418474265,
+              "pctile": 0.7926023778071334,
+              "returns": {
+                "spx_1m": 12.666682100750432,
+                "spx_3m": 18.39801703404109,
+                "spx_6m": 29.785517789334552,
+                "spx_9m": 45.70544217641331,
+                "spx_12m": 56.251702112064706
+              }
+            }
+          ]
+        },
+        {
+          "band": "high_85_plus",
+          "pctile_range": [
+            0.85,
+            1.0
+          ],
+          "bullish": false,
+          "n_events": 1,
+          "horizons": {
+            "spx_1m": {
+              "n": 1,
+              "hit_rate": 1.0,
+              "avg_win": -8.38038852002746,
+              "avg_loss": 0.0,
+              "pw_expected": -8.38038852002746,
+              "benchmark_pct": 1.25,
+              "excess_pct": -9.63038852002746,
+              "avg": -8.38038852002746,
+              "median": -8.38038852002746,
+              "worst": -8.38038852002746
+            },
+            "spx_3m": {
+              "n": 1,
+              "hit_rate": 0.0,
+              "avg_win": 0.0,
+              "avg_loss": 1.411039956059024,
+              "pw_expected": 1.411039956059024,
+              "benchmark_pct": 2.5,
+              "excess_pct": -1.088960043940976,
+              "avg": 1.411039956059024,
+              "median": 1.411039956059024,
+              "worst": 1.411039956059024
+            },
+            "spx_6m": {
+              "n": 1,
+              "hit_rate": 0.0,
+              "avg_win": 0.0,
+              "avg_loss": 4.385532098201229,
+              "pw_expected": 4.385532098201229,
+              "benchmark_pct": 5.0,
+              "excess_pct": -0.6144679017987711,
+              "avg": 4.385532098201229,
+              "median": 4.385532098201229,
+              "worst": 4.385532098201229
+            },
+            "spx_9m": {
+              "n": 1,
+              "hit_rate": 0.0,
+              "avg_win": 0.0,
+              "avg_loss": 6.876511117919884,
+              "pw_expected": 6.876511117919884,
+              "benchmark_pct": 7.5,
+              "excess_pct": -0.6234888820801157,
+              "avg": 6.876511117919884,
+              "median": 6.876511117919884,
+              "worst": 6.876511117919884
+            },
+            "spx_12m": {
+              "n": 1,
+              "hit_rate": 0.0,
+              "avg_win": 0.0,
+              "avg_loss": 14.03041035311064,
+              "pw_expected": 14.03041035311064,
+              "benchmark_pct": 10.0,
+              "excess_pct": 4.030410353110639,
+              "avg": 14.03041035311064,
+              "median": 14.03041035311064,
+              "worst": 14.03041035311064
+            }
+          },
+          "instances": [
+            {
+              "date": "2018-11-16",
+              "raw_value": -18.31597679260134,
+              "pctile": 0.9259259259259258,
+              "returns": {
+                "spx_1m": -8.38038852002746,
+                "spx_3m": 1.411039956059024,
+                "spx_6m": 4.385532098201229,
+                "spx_9m": 6.876511117919884,
+                "spx_12m": 14.03041035311064
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "CFTC": {
+      "config": {
+        "id": "CFTC",
+        "name": "CFTC Net Spec (Fast Money)",
+        "source": "CFTC",
+        "paradigm": "PCTILE",
+        "pctile_window": "rolling_3y",
+        "pctile_start": "2006-01-01",
+        "combos": [
+          "B",
+          "D",
+          "E",
+          "F"
+        ],
+        "rare": {
+          "low_pctile": 15,
+          "high_pctile": 85
+        },
+        "extreme": {
+          "low_pctile": 5,
+          "high_pctile": 95
+        }
+      },
+      "bands": [
+        {
+          "band": "low_5_14",
+          "pctile_range": [
+            0.05,
+            0.14
+          ],
+          "bullish": true,
+          "n_events": 0,
+          "horizons": {
+            "spx_1m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 1.25,
+              "excess_pct": null
+            },
+            "spx_3m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 2.5,
+              "excess_pct": null
+            },
+            "spx_6m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 5.0,
+              "excess_pct": null
+            },
+            "spx_9m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 7.5,
+              "excess_pct": null
+            },
+            "spx_12m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 10.0,
+              "excess_pct": null
+            }
+          },
+          "instances": []
+        },
+        {
+          "band": "low_below_5",
+          "pctile_range": [
+            0.0,
+            0.05
+          ],
+          "bullish": true,
+          "n_events": 0,
+          "horizons": {
+            "spx_1m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 1.25,
+              "excess_pct": null
+            },
+            "spx_3m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 2.5,
+              "excess_pct": null
+            },
+            "spx_6m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 5.0,
+              "excess_pct": null
+            },
+            "spx_9m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 7.5,
+              "excess_pct": null
+            },
+            "spx_12m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 10.0,
+              "excess_pct": null
+            }
+          },
+          "instances": []
+        }
+      ]
+    },
+    "CAPE": {
+      "config": {
+        "id": "CAPE",
+        "name": "CAPE / Shiller P/E",
+        "source": "CAPE",
+        "paradigm": "ABS",
+        "pctile_window": "full",
+        "pctile_start": "1881-01-01",
+        "combos": [
+          "E"
+        ],
+        "rare": {
+          "high_level": 28,
+          "low_level": 16
+        },
+        "extreme": {
+          "high_level": 32,
+          "low_level": 12
+        }
+      },
+      "bands": [
+        {
+          "band": "high_85_94",
+          "pctile_range": [
+            0.85,
+            0.94
+          ],
+          "bullish": false,
+          "n_events": 0,
+          "horizons": {
+            "spx_1m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 1.25,
+              "excess_pct": null
+            },
+            "spx_3m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 2.5,
+              "excess_pct": null
+            },
+            "spx_6m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 5.0,
+              "excess_pct": null
+            },
+            "spx_9m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 7.5,
+              "excess_pct": null
+            },
+            "spx_12m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 10.0,
+              "excess_pct": null
+            }
+          },
+          "instances": []
+        },
+        {
+          "band": "high_95_plus",
+          "pctile_range": [
+            0.95,
+            1.0
+          ],
+          "bullish": false,
+          "n_events": 0,
+          "horizons": {
+            "spx_1m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 1.25,
+              "excess_pct": null
+            },
+            "spx_3m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 2.5,
+              "excess_pct": null
+            },
+            "spx_6m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 5.0,
+              "excess_pct": null
+            },
+            "spx_9m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 7.5,
+              "excess_pct": null
+            },
+            "spx_12m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 10.0,
+              "excess_pct": null
+            }
+          },
+          "instances": []
+        }
+      ]
+    },
+    "CPI": {
+      "config": {
+        "id": "CPI",
+        "name": "CPI Surprise",
+        "source": "CPI",
+        "paradigm": "ABS",
+        "pctile_window": "rolling_3y",
+        "combos": [
+          "C"
+        ],
+        "rare": {
+          "surprise_pp": 0.2
+        },
+        "extreme": {
+          "surprise_pp": 0.4
+        }
+      },
+      "bands": [
+        {
+          "band": "high_75_84",
+          "pctile_range": [
+            0.75,
+            0.84
+          ],
+          "bullish": false,
+          "n_events": 0,
+          "horizons": {
+            "spx_1m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 1.25,
+              "excess_pct": null
+            },
+            "spx_3m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 2.5,
+              "excess_pct": null
+            },
+            "spx_6m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 5.0,
+              "excess_pct": null
+            },
+            "spx_9m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 7.5,
+              "excess_pct": null
+            },
+            "spx_12m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 10.0,
+              "excess_pct": null
+            }
+          },
+          "instances": []
+        },
+        {
+          "band": "high_85_plus",
+          "pctile_range": [
+            0.85,
+            1.0
+          ],
+          "bullish": false,
+          "n_events": 0,
+          "horizons": {
+            "spx_1m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 1.25,
+              "excess_pct": null
+            },
+            "spx_3m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 2.5,
+              "excess_pct": null
+            },
+            "spx_6m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 5.0,
+              "excess_pct": null
+            },
+            "spx_9m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 7.5,
+              "excess_pct": null
+            },
+            "spx_12m": {
+              "n": 0,
+              "hit_rate": null,
+              "avg_win": null,
+              "avg_loss": null,
+              "pw_expected": null,
+              "benchmark_pct": 10.0,
+              "excess_pct": null
+            }
+          },
+          "instances": []
+        }
+      ]
+    },
+    "GSR": {
+      "config": {
+        "id": "GSR",
+        "name": "Gold/Silver Ratio 4wk change",
+        "source": "YAHOO",
+        "ticker_ratio": [
+          "GC=F",
+          "SI=F"
+        ],
+        "paradigm": "ROC",
+        "pctile_window": "rolling_3y",
+        "combos": [
+          "A"
+        ],
+        "rare": {
+          "pct_4wk": 5.0
+        },
+        "extreme": {
+          "pct_4wk": 8.0
+        }
+      },
+      "bands": [
+        {
+          "band": "high_75_84",
+          "pctile_range": [
+            0.75,
+            0.84
+          ],
+          "bullish": false,
+          "n_events": 1,
+          "horizons": {
+            "spx_1m": {
+              "n": 1,
+              "hit_rate": 0.0,
+              "avg_win": 0.0,
+              "avg_loss": 0.7047107161816325,
+              "pw_expected": 0.7047107161816325,
+              "benchmark_pct": 1.25,
+              "excess_pct": -0.5452892838183675,
+              "avg": 0.7047107161816325,
+              "median": 0.7047107161816325,
+              "worst": 0.7047107161816325
+            },
+            "spx_3m": {
+              "n": 1,
+              "hit_rate": 1.0,
+              "avg_win": -1.079057932613616,
+              "avg_loss": 0.0,
+              "pw_expected": -1.079057932613616,
+              "benchmark_pct": 2.5,
+              "excess_pct": -3.5790579326136163,
+              "avg": -1.079057932613616,
+              "median": -1.079057932613616,
+              "worst": -1.079057932613616
+            },
+            "spx_6m": {
+              "n": 1,
+              "hit_rate": 1.0,
+              "avg_win": -7.2062995412280975,
+              "avg_loss": 0.0,
+              "pw_expected": -7.2062995412280975,
+              "benchmark_pct": 5.0,
+              "excess_pct": -12.206299541228098,
+              "avg": -7.2062995412280975,
+              "median": -7.2062995412280975,
+              "worst": -7.2062995412280975
+            },
+            "spx_9m": {
+              "n": 1,
+              "hit_rate": 1.0,
+              "avg_win": -1.9709330070182471,
+              "avg_loss": 0.0,
+              "pw_expected": -1.9709330070182471,
+              "benchmark_pct": 7.5,
+              "excess_pct": -9.470933007018248,
+              "avg": -1.9709330070182471,
+              "median": -1.9709330070182471,
+              "worst": -1.9709330070182471
+            },
+            "spx_12m": {
+              "n": 1,
+              "hit_rate": 0.0,
+              "avg_win": 0.0,
+              "avg_loss": 5.3876676688417415,
+              "pw_expected": 5.3876676688417415,
+              "benchmark_pct": 10.0,
+              "excess_pct": -4.6123323311582585,
+              "avg": 5.3876676688417415,
+              "median": 5.3876676688417415,
+              "worst": 5.3876676688417415
+            }
+          },
+          "instances": [
+            {
+              "date": "2011-04-15",
+              "raw_value": -13.596631351640664,
+              "pctile": 0.7905138339920948,
+              "returns": {
+                "spx_1m": 0.7047107161816325,
+                "spx_3m": -1.079057932613616,
+                "spx_6m": -7.2062995412280975,
+                "spx_9m": -1.9709330070182471,
+                "spx_12m": 5.3876676688417415
+              }
+            }
+          ]
+        },
+        {
+          "band": "high_85_plus",
+          "pctile_range": [
+            0.85,
+            1.0
+          ],
+          "bullish": false,
+          "n_events": 3,
+          "horizons": {
+            "spx_1m": {
+              "n": 3,
+              "hit_rate": 0.0,
+              "avg_win": 0.0,
+              "avg_loss": 3.312649207813736,
+              "pw_expected": 3.312649207813736,
+              "benchmark_pct": 1.25,
+              "excess_pct": 2.062649207813736,
+              "avg": 3.312649207813736,
+              "median": 2.7604173124997557,
+              "worst": 6.7063111845371965
+            },
+            "spx_3m": {
+              "n": 3,
+              "hit_rate": 0.0,
+              "avg_win": 0.0,
+              "avg_loss": 8.969681768605414,
+              "pw_expected": 8.969681768605414,
+              "benchmark_pct": 2.5,
+              "excess_pct": 6.4696817686054136,
+              "avg": 8.969681768605414,
+              "median": 7.396998911262587,
+              "worst": 12.18168744911543
+            },
+            "spx_6m": {
+              "n": 3,
+              "hit_rate": 0.0,
+              "avg_win": 0.0,
+              "avg_loss": 14.566897374649438,
+              "pw_expected": 14.566897374649438,
+              "benchmark_pct": 5.0,
+              "excess_pct": 9.566897374649438,
+              "avg": 14.566897374649438,
+              "median": 19.894398544705805,
+              "worst": 21.178198294270235
+            },
+            "spx_9m": {
+              "n": 3,
+              "hit_rate": 0.0,
+              "avg_win": 0.0,
+              "avg_loss": 22.1971055015435,
+              "pw_expected": 22.1971055015435,
+              "benchmark_pct": 7.5,
+              "excess_pct": 14.6971055015435,
+              "avg": 22.1971055015435,
+              "median": 30.227055656195855,
+              "worst": 31.089624957895225
+            },
+            "spx_12m": {
+              "n": 3,
+              "hit_rate": 0.0,
+              "avg_win": 0.0,
+              "avg_loss": 33.988455548257456,
+              "pw_expected": 33.988455548257456,
+              "benchmark_pct": 10.0,
+              "excess_pct": 23.988455548257456,
+              "avg": 33.988455548257456,
+              "median": 37.525149530567404,
+              "worst": 44.83119784464301
+            }
+          },
+          "instances": [
+            {
+              "date": "2019-08-30",
+              "raw_value": -6.259053938479619,
+              "pctile": 0.9296148738379815,
+              "returns": {
+                "spx_1m": 0.47121912640425534,
+                "spx_3m": 7.330358945438224,
+                "spx_6m": 2.628095284972278,
+                "spx_9m": 5.274635890539411,
+                "spx_12m": 19.609019269561966
+              }
+            },
+            {
+              "date": "2020-04-17",
+              "raw_value": -7.747218736324102,
+              "pctile": 0.9259259259259258,
+              "returns": {
+                "spx_1m": 2.7604173124997557,
+                "spx_3m": 12.18168744911543,
+                "spx_6m": 21.178198294270235,
+                "spx_9m": 31.089624957895225,
+                "spx_12m": 44.83119784464301
+              }
+            },
+            {
+              "date": "2020-07-24",
+              "raw_value": -15.415719587020682,
+              "pctile": 0.9259259259259258,
+              "returns": {
+                "spx_1m": 6.7063111845371965,
+                "spx_3m": 7.396998911262587,
+                "spx_6m": 19.894398544705805,
+                "spx_9m": 30.227055656195855,
+                "spx_12m": 37.525149530567404
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

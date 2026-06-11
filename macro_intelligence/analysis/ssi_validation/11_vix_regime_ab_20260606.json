@@ -1,0 +1,11 @@
+{
+  "test_id": "11_vix_regime_ab",
+  "oct_2022": {
+    "date": "2022-10-13",
+    "combo_b": true,
+    "vix_bypass": true
+  },
+  "avg_multiplier_with_layer2": 1.1988,
+  "avg_multiplier_without": 1.0,
+  "note": "Full equity-curve backtest requires MindWealth virtual_trading; Oct 2022 vix_bypass verified."
+}

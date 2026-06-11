@@ -32,7 +32,7 @@ Maximum wait: `deep_research_total_timeout_seconds` from `GET /config` limits (p
 ## Example (bash)
 
 ```bash
-BASE=http://localhost:8000/api/v1/chatbot
+BASE=http://51.20.53.218:8506/api/v1/chatbot
 
 # Create session
 SID=$(curl -s -X POST "$BASE/sessions" -H "Content-Type: application/json" -d '{}' | jq -r .session_id)

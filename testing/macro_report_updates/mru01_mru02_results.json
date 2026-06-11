@@ -1,0 +1,228 @@
+{
+  "generated_at": "2026-06-06T23:01:56.332013",
+  "scan_range": {
+    "start": "2007-01-01",
+    "end": "2026-07-03"
+  },
+  "db_combo_fires_summary": [
+    {
+      "runic_combo": "B",
+      "status": "WATCH",
+      "n": 89,
+      "MIN(date)": "2023-06-09",
+      "MAX(date)": "2026-07-03"
+    }
+  ],
+  "detector_rescan": {
+    "b_active_fridays": 13,
+    "b_episodes": [
+      "2012-06-01",
+      "2020-05-01",
+      "2020-07-10"
+    ],
+    "g_active_fridays": 0,
+    "g_episodes": [],
+    "b_watch_fridays": 255
+  },
+  "mru01_g_b_cascade": {
+    "window_weeks": 6,
+    "episodes": [
+      {
+        "b_episode_start": "2012-06-01",
+        "nearest_prior_g": null,
+        "weeks_g_to_b": null,
+        "g_within_6w": false
+      },
+      {
+        "b_episode_start": "2020-05-01",
+        "nearest_prior_g": null,
+        "weeks_g_to_b": null,
+        "g_within_6w": false
+      },
+      {
+        "b_episode_start": "2020-07-10",
+        "nearest_prior_g": null,
+        "weeks_g_to_b": null,
+        "g_within_6w": false
+      }
+    ],
+    "summary": {
+      "b_episodes_post_2007": 3,
+      "with_prior_g_within_6w": 0,
+      "without_g_warning": 3,
+      "pct_with_g": 0.0
+    }
+  },
+  "mru02_hy_audit": {
+    "episodes": [
+      {
+        "b_episode_start": "2012-06-01",
+        "hy_raw_pct": 6.8168,
+        "hy_bps": 681.7,
+        "hy_pctile": null,
+        "abs_ok": true,
+        "pctile_ok": false,
+        "dual_ok": false,
+        "vix_vix": 26.66,
+        "vix_vix_pctile": 83.5,
+        "vix_vix_ok": true,
+        "cftc_pctile": 14.6,
+        "cftc_ok": true,
+        "all_three_ok": false
+      },
+      {
+        "b_episode_start": "2020-05-01",
+        "hy_raw_pct": 6.4883,
+        "hy_bps": 648.8,
+        "hy_pctile": null,
+        "abs_ok": true,
+        "pctile_ok": false,
+        "dual_ok": false,
+        "vix_vix": 37.19,
+        "vix_vix_pctile": 96.6,
+        "vix_vix_ok": true,
+        "cftc_pctile": 60.7,
+        "cftc_ok": false,
+        "all_three_ok": false
+      },
+      {
+        "b_episode_start": "2020-07-10",
+        "hy_raw_pct": 5.4414,
+        "hy_bps": 544.1,
+        "hy_pctile": null,
+        "abs_ok": true,
+        "pctile_ok": false,
+        "dual_ok": false,
+        "vix_vix": 27.29,
+        "vix_vix_pctile": 87.2,
+        "vix_vix_ok": true,
+        "cftc_pctile": 53.2,
+        "cftc_ok": false,
+        "all_three_ok": false
+      }
+    ],
+    "edge_375_400bps": [],
+    "reference_dates": [
+      {
+        "label": "Pre-Aug 2015",
+        "date": "2015-08-21",
+        "hy_raw_pct": 6.1804,
+        "hy_bps": 618.0,
+        "hy_pctile": null,
+        "abs_ok": true,
+        "pctile_ok": false,
+        "dual_ok": false
+      },
+      {
+        "label": "Pre-Dec 2018",
+        "date": "2018-12-21",
+        "hy_raw_pct": 4.5587,
+        "hy_bps": 455.9,
+        "hy_pctile": null,
+        "abs_ok": true,
+        "pctile_ok": false,
+        "dual_ok": false
+      },
+      {
+        "label": "Pre-COVID",
+        "date": "2020-03-20",
+        "hy_raw_pct": 8.5001,
+        "hy_bps": 850.0,
+        "hy_pctile": null,
+        "abs_ok": true,
+        "pctile_ok": false,
+        "dual_ok": false
+      },
+      {
+        "label": "Oct 2022 bottom",
+        "date": "2022-10-07",
+        "hy_raw_pct": 4.2713,
+        "hy_bps": 427.1,
+        "hy_pctile": null,
+        "abs_ok": true,
+        "pctile_ok": false,
+        "dual_ok": false
+      }
+    ],
+    "recommendation": "keep_400bps",
+    "dual_failures": [
+      {
+        "b_episode_start": "2012-06-01",
+        "hy_raw_pct": 6.8168,
+        "hy_bps": 681.7,
+        "hy_pctile": null,
+        "abs_ok": true,
+        "pctile_ok": false,
+        "dual_ok": false,
+        "vix_vix": 26.66,
+        "vix_vix_pctile": 83.5,
+        "vix_vix_ok": true,
+        "cftc_pctile": 14.6,
+        "cftc_ok": true,
+        "all_three_ok": false
+      },
+      {
+        "b_episode_start": "2020-05-01",
+        "hy_raw_pct": 6.4883,
+        "hy_bps": 648.8,
+        "hy_pctile": null,
+        "abs_ok": true,
+        "pctile_ok": false,
+        "dual_ok": false,
+        "vix_vix": 37.19,
+        "vix_vix_pctile": 96.6,
+        "vix_vix_ok": true,
+        "cftc_pctile": 60.7,
+        "cftc_ok": false,
+        "all_three_ok": false
+      },
+      {
+        "b_episode_start": "2020-07-10",
+        "hy_raw_pct": 5.4414,
+        "hy_bps": 544.1,
+        "hy_pctile": null,
+        "abs_ok": true,
+        "pctile_ok": false,
+        "dual_ok": false,
+        "vix_vix": 27.29,
+        "vix_vix_pctile": 87.2,
+        "vix_vix_ok": true,
+        "cftc_pctile": 53.2,
+        "cftc_ok": false,
+        "all_three_ok": false
+      }
+    ]
+  },
+  "reference_episodes": [
+    {
+      "label": "Pre-Aug 2015",
+      "g_approx": "2015-07-01",
+      "b_approx": "2015-08-24",
+      "note": "~3 weeks G\u2192B"
+    },
+    {
+      "label": "Pre-Dec 2018",
+      "g_approx": "2018-11-01",
+      "b_approx": "2018-12-24",
+      "note": "~4 weeks G\u2192B"
+    },
+    {
+      "label": "Pre-COVID",
+      "g_approx": "2020-02-01",
+      "b_approx": "2020-03-20",
+      "note": "~3 weeks G\u2192B"
+    },
+    {
+      "label": "Oct 2022 bottom",
+      "g_approx": null,
+      "b_approx": "2022-10-13",
+      "note": "Canonical B validation date"
+    },
+    {
+      "label": "Apr 2025",
+      "g_approx": "2025-04-01",
+      "b_approx": null,
+      "note": "G fired; B never completed"
+    }
+  ]
+}

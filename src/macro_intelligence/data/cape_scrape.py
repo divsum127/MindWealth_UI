@@ -6,10 +6,10 @@ import re
 from pathlib import Path
 
 import pandas as pd
-import requests
 from bs4 import BeautifulSoup
 
 from src.config_paths import MACRO_INTEL_DATA_DIR
+from src.sentiment_superindex.data.scraper_utils import BROWSER_HEADERS, http_get
 
 CAPE_CACHE = MACRO_INTEL_DATA_DIR / "cape_history.csv"
 MULTPL_URL = "https://www.multpl.com/shiller-pe/table/by-month"
@@ -24,7 +24,7 @@ def load_cape_series() -> pd.Series:
 
 def fetch_cape_history() -> pd.Series:
     try:
-        resp = requests.get(MULTPL_URL, timeout=30, headers={"User-Agent": "MindWealth-Runic/2.2"})
+        resp = http_get(MULTPL_URL, headers=BROWSER_HEADERS, timeout=30)
         resp.raise_for_status()
         soup = BeautifulSoup(resp.text, "lxml")
         table = soup.find("table")
