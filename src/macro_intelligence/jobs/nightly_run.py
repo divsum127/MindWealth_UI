@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import json
 from datetime import datetime
 from typing import Any
 
 from src.macro_intelligence.claude.nightly_briefing import generate_nightly_briefing
 from src.macro_intelligence.claude.regime_classifier import classify_regime
 from src.macro_intelligence.data.pull_all import get_readings_as_of, pull_all_series
+from src.macro_intelligence.data.source_freshness import get_last_freshness_audit
 from src.macro_intelligence.db.connection import init_db
 from src.macro_intelligence.engine.combo_detector import detect_all_combos, detect_named_combos
 from src.macro_intelligence.engine.prefilter import apply_prefilter
@@ -74,6 +76,12 @@ def _variables_dashboard(readings: dict[str, dict]) -> list[dict[str, Any]]:
             cftc_rm_pct = cftc_row["rm_pctile"]
     for i, vid in enumerate(order, 1):
         r = readings.get(vid, {})
+        meta: dict = {}
+        if r.get("meta_json"):
+            try:
+                meta = json.loads(r["meta_json"]) if isinstance(r["meta_json"], str) else r["meta_json"]
+            except (json.JSONDecodeError, TypeError):
+                meta = {}
         row = {
             "num": i,
             "variable": vid,
@@ -83,13 +91,26 @@ def _variables_dashboard(readings: dict[str, dict]) -> list[dict[str, Any]]:
             "unconditional_pctile": r.get("unconditional_pctile"),
             "regime_pctile": r.get("regime_pctile"),
             "direction": r.get("direction"),
+            "source_date": meta.get("source_date"),
+            "lag_days": meta.get("lag_days"),
+            "expected_source_date": meta.get("expected_source_date"),
         }
         if vid == "CFTC":
             if cftc_rm_pct is not None:
                 row["cftc_rm_pctile"] = cftc_rm_pct
+            src = meta.get("source_date") or "?"
+            lag = meta.get("lag_days")
+            exp = meta.get("expected_source_date")
+            lag_txt = f", {lag}d lag vs report" if lag is not None else ""
+            exp_txt = f", expected Tue {exp}" if exp else ""
             row["source_note"] = (
-                "CFTC.gov TFF · S&P 500 Consolidated · Lev Money net (Fri report = Tue positions)"
+                f"CFTC.gov TFF · Lev Money net · data as of {src}{lag_txt}{exp_txt}"
             )
+        elif vid == "CAPE":
+            src = meta.get("source_date") or "?"
+            lag = meta.get("lag_days")
+            lag_txt = f", {lag}d lag vs report" if lag is not None else ""
+            row["source_note"] = f"multpl.com Shiller CAPE · data as of {src}{lag_txt}"
         rows.append(row)
     return rows
 
@@ -156,6 +177,7 @@ def run_nightly(as_of: str | None = None, use_claude: bool = True) -> dict[str, 
         ssi_layer2_status=read_ssi_layer2_status(),
     )
     payload["generic_combo_watch"] = generic_watch[:10]
+    payload["source_freshness"] = get_last_freshness_audit()
     payload["combo_c_cancel"] = {
         **_combo_c_cancel_state(),
         **{k: v for k, v in cancel_result.items() if k not in ("governing_cpi",)},
@@ -164,8 +186,9 @@ def run_nightly(as_of: str | None = None, use_claude: bool = True) -> dict[str, 
         "model_cpi_leg_prob": cancel_model.get("cpi_leg_prob"),
     }
     payload["brave_fearful_display"] = posture_display(brave)
-    payload["narrative"] = generate_nightly_briefing(payload, use_claude=use_claude)
+    # Build combo_status_rows BEFORE narrative so the briefing has all 7 combo rows
     payload["combo_status_rows"] = build_combo_status_rows(payload)
+    payload["narrative"] = generate_nightly_briefing(payload, use_claude=use_claude)
     payload["regime_grid"] = build_regime_grid(payload)
     payload["system_recommendation"] = build_system_recommendation(payload)
     path = write_runic_json(payload)

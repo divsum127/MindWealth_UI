@@ -96,6 +96,25 @@ def refresh_cftc_zip_if_stale(year: int | None = None) -> bool:
         return False
 
 
+def force_refresh_cftc_zip(year: int | None = None) -> bool:
+    """Download current-year CFTC TFF ZIP unconditionally (nightly lag recovery)."""
+    global _TFF_RAW_CACHE
+
+    year = year or datetime.now().year
+    local_path = CFTC_LOCAL_CACHE_DIR / f"fut_fin_txt_{year}.zip"
+    url = CFTC_TFF_YEAR_URL.format(year=year)
+    try:
+        resp = requests.get(url, timeout=120)
+        if resp.status_code != 200:
+            return False
+        CFTC_LOCAL_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        local_path.write_bytes(resp.content)
+        _TFF_RAW_CACHE = None
+        return True
+    except Exception:
+        return False
+
+
 def _local_zip_paths(start_year: int) -> list[Path]:
     """Prefer zips saved by scripts/download_cftc_tff_zip.py before hitting CFTC."""
     cache = CFTC_LOCAL_CACHE_DIR

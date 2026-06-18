@@ -273,6 +273,11 @@ def build_variable_rows(payload: dict[str, Any]) -> list[dict[str, Any]]:
             entry["source_note"] = row.get("source_note") or (
                 "CFTC.gov TFF · S&P 500 Consolidated · Lev Money net"
             )
+        elif vid == "CAPE" and row.get("source_note"):
+            entry["source_note"] = row["source_note"]
+        if row.get("source_date"):
+            entry["source_date"] = row["source_date"]
+            entry["lag_days"] = row.get("lag_days")
         rows.append(entry)
     return rows
 

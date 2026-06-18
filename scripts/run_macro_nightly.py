@@ -21,7 +21,10 @@ def main() -> None:
     parser.add_argument("--no-claude", action="store_true", help="Skip Claude API calls")
     args = parser.parse_args()
     result = run_nightly(args.date, use_claude=not args.no_claude)
-    print(json.dumps({k: v for k, v in result.items() if k != "narrative"}, indent=2, default=str))
+    print(json.dumps({k: v for k, v in result.items() if k not in ("narrative",)}, indent=2, default=str))
+    if result.get("source_freshness"):
+        print("\n--- source freshness (CAPE / CFTC) ---")
+        print(json.dumps(result["source_freshness"], indent=2))
     if result.get("briefing_paths"):
         print("\n--- briefing outputs ---")
         for fmt, path in result["briefing_paths"].items():

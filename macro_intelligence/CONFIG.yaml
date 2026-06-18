@@ -4,7 +4,7 @@ version: "2.2"
 claude:
   model: "claude-sonnet-4-20250514"  # fallback; spec prefers claude-sonnet-4-6 when available
   regime_max_tokens: 150
-  narrative_max_tokens: 1200
+  narrative_max_tokens: 2200
 
 schedules:
   friday_pull_cron: "0 18 * * 5"   # Friday 6pm UTC (~after CFTC 3:30pm ET)
@@ -297,6 +297,11 @@ ppi_cooling:
 combo_c_cancel:
   wti_4wk_max_pct: 5.0
   consecutive_fridays: 4
+
+source_freshness:
+  # Re-scrape CAPE when source observation is more than N days before report as_of.
+  cape_max_lag_days: 7
+  # CFTC: stale when latest Tuesday position in series is older than expected_latest_cftc_tuesday(as_of).
 
 cftc:
   # Official zips: scripts/download_cftc_tff_zip.py → macro_intelligence/data_cache/cftc/

@@ -1,0 +1,703 @@
+{
+  "variable": "CPI",
+  "current_rare_threshold": {
+    "surprise_pp": 0.2
+  },
+  "current_extreme_threshold": {
+    "surprise_pp": 0.4
+  },
+  "primary_horizon": "spx_3m",
+  "sweep_results": [
+    {
+      "band_label": "CPI_hot_0.05",
+      "threshold_value": 0.05,
+      "direction": "UP",
+      "bullish": false,
+      "is_current": false,
+      "n": 3,
+      "horizons": {
+        "spx_1m": {
+          "n": 1,
+          "hit_rate": 0.0,
+          "avg_win": 0.0,
+          "avg_loss": 3.4549501351375476,
+          "pw_expected": 3.4549501351375476,
+          "benchmark_pct": 0.5,
+          "excess_pct": 2.9549501351375476,
+          "avg": 3.4549501351375476,
+          "median": 3.4549501351375476,
+          "worst": 3.4549501351375476,
+          "hostile": {
+            "n": 1,
+            "hit_rate": 0.0,
+            "avg_win": 0.0,
+            "avg_loss": 3.4549501351375476,
+            "pw_expected": 3.4549501351375476,
+            "benchmark_pct": 0.5,
+            "excess_pct": 2.9549501351375476,
+            "avg": 3.4549501351375476,
+            "median": 3.4549501351375476,
+            "worst": 3.4549501351375476
+          }
+        },
+        "spx_3m": {
+          "n": 1,
+          "hit_rate": 0.0,
+          "avg_win": 0.0,
+          "avg_loss": 5.947378735426269,
+          "pw_expected": 5.947378735426269,
+          "benchmark_pct": 2.5,
+          "excess_pct": 3.447378735426269,
+          "avg": 5.947378735426269,
+          "median": 5.947378735426269,
+          "worst": 5.947378735426269,
+          "hostile": {
+            "n": 1,
+            "hit_rate": 0.0,
+            "avg_win": 0.0,
+            "avg_loss": 5.947378735426269,
+            "pw_expected": 5.947378735426269,
+            "benchmark_pct": 2.5,
+            "excess_pct": 3.447378735426269,
+            "avg": 5.947378735426269,
+            "median": 5.947378735426269,
+            "worst": 5.947378735426269
+          }
+        },
+        "spx_6m": {
+          "n": 1,
+          "hit_rate": 0.0,
+          "avg_win": 0.0,
+          "avg_loss": 12.040191165954099,
+          "pw_expected": 12.040191165954099,
+          "benchmark_pct": 5.0,
+          "excess_pct": 7.0401911659540986,
+          "avg": 12.040191165954099,
+          "median": 12.040191165954099,
+          "worst": 12.040191165954099,
+          "hostile": {
+            "n": 1,
+            "hit_rate": 0.0,
+            "avg_win": 0.0,
+            "avg_loss": 12.040191165954099,
+            "pw_expected": 12.040191165954099,
+            "benchmark_pct": 5.0,
+            "excess_pct": 7.0401911659540986,
+            "avg": 12.040191165954099,
+            "median": 12.040191165954099,
+            "worst": 12.040191165954099
+          }
+        },
+        "spx_9m": {
+          "n": 1,
+          "hit_rate": 0.0,
+          "avg_win": 0.0,
+          "avg_loss": 17.281754592320837,
+          "pw_expected": 17.281754592320837,
+          "benchmark_pct": 7.5,
+          "excess_pct": 9.781754592320837,
+          "avg": 17.281754592320837,
+          "median": 17.281754592320837,
+          "worst": 17.281754592320837,
+          "hostile": {
+            "n": 1,
+            "hit_rate": 0.0,
+            "avg_win": 0.0,
+            "avg_loss": 17.281754592320837,
+            "pw_expected": 17.281754592320837,
+            "benchmark_pct": 7.5,
+            "excess_pct": 9.781754592320837,
+            "avg": 17.281754592320837,
+            "median": 17.281754592320837,
+            "worst": 17.281754592320837
+          }
+        },
+        "spx_12m": {
+          "n": 1,
+          "hit_rate": 0.0,
+          "avg_win": 0.0,
+          "avg_loss": 22.21425800380377,
+          "pw_expected": 22.21425800380377,
+          "benchmark_pct": 10.0,
+          "excess_pct": 12.21425800380377,
+          "avg": 22.21425800380377,
+          "median": 22.21425800380377,
+          "worst": 22.21425800380377,
+          "hostile": {
+            "n": 1,
+            "hit_rate": 0.0,
+            "avg_win": 0.0,
+            "avg_loss": 22.21425800380377,
+            "pw_expected": 22.21425800380377,
+            "benchmark_pct": 10.0,
+            "excess_pct": 12.21425800380377,
+            "avg": 22.21425800380377,
+            "median": 22.21425800380377,
+            "worst": 22.21425800380377
+          }
+        }
+      }
+    },
+    {
+      "band_label": "CPI_hot_0.10",
+      "threshold_value": 0.1,
+      "direction": "UP",
+      "bullish": false,
+      "is_current": false,
+      "n": 2,
+      "horizons": {
+        "spx_1m": {
+          "n": 1,
+          "hit_rate": 0.0,
+          "avg_win": 0.0,
+          "avg_loss": 3.4549501351375476,
+          "pw_expected": 3.4549501351375476,
+          "benchmark_pct": 0.5,
+          "excess_pct": 2.9549501351375476,
+          "avg": 3.4549501351375476,
+          "median": 3.4549501351375476,
+          "worst": 3.4549501351375476,
+          "hostile": {
+            "n": 1,
+            "hit_rate": 0.0,
+            "avg_win": 0.0,
+            "avg_loss": 3.4549501351375476,
+            "pw_expected": 3.4549501351375476,
+            "benchmark_pct": 0.5,
+            "excess_pct": 2.9549501351375476,
+            "avg": 3.4549501351375476,
+            "median": 3.4549501351375476,
+            "worst": 3.4549501351375476
+          }
+        },
+        "spx_3m": {
+          "n": 1,
+          "hit_rate": 0.0,
+          "avg_win": 0.0,
+          "avg_loss": 5.947378735426269,
+          "pw_expected": 5.947378735426269,
+          "benchmark_pct": 2.5,
+          "excess_pct": 3.447378735426269,
+          "avg": 5.947378735426269,
+          "median": 5.947378735426269,
+          "worst": 5.947378735426269,
+          "hostile": {
+            "n": 1,
+            "hit_rate": 0.0,
+            "avg_win": 0.0,
+            "avg_loss": 5.947378735426269,
+            "pw_expected": 5.947378735426269,
+            "benchmark_pct": 2.5,
+            "excess_pct": 3.447378735426269,
+            "avg": 5.947378735426269,
+            "median": 5.947378735426269,
+            "worst": 5.947378735426269
+          }
+        },
+        "spx_6m": {
+          "n": 1,
+          "hit_rate": 0.0,
+          "avg_win": 0.0,
+          "avg_loss": 12.040191165954099,
+          "pw_expected": 12.040191165954099,
+          "benchmark_pct": 5.0,
+          "excess_pct": 7.0401911659540986,
+          "avg": 12.040191165954099,
+          "median": 12.040191165954099,
+          "worst": 12.040191165954099,
+          "hostile": {
+            "n": 1,
+            "hit_rate": 0.0,
+            "avg_win": 0.0,
+            "avg_loss": 12.040191165954099,
+            "pw_expected": 12.040191165954099,
+            "benchmark_pct": 5.0,
+            "excess_pct": 7.0401911659540986,
+            "avg": 12.040191165954099,
+            "median": 12.040191165954099,
+            "worst": 12.040191165954099
+          }
+        },
+        "spx_9m": {
+          "n": 1,
+          "hit_rate": 0.0,
+          "avg_win": 0.0,
+          "avg_loss": 17.281754592320837,
+          "pw_expected": 17.281754592320837,
+          "benchmark_pct": 7.5,
+          "excess_pct": 9.781754592320837,
+          "avg": 17.281754592320837,
+          "median": 17.281754592320837,
+          "worst": 17.281754592320837,
+          "hostile": {
+            "n": 1,
+            "hit_rate": 0.0,
+            "avg_win": 0.0,
+            "avg_loss": 17.281754592320837,
+            "pw_expected": 17.281754592320837,
+            "benchmark_pct": 7.5,
+            "excess_pct": 9.781754592320837,
+            "avg": 17.281754592320837,
+            "median": 17.281754592320837,
+            "worst": 17.281754592320837
+          }
+        },
+        "spx_12m": {
+          "n": 1,
+          "hit_rate": 0.0,
+          "avg_win": 0.0,
+          "avg_loss": 22.21425800380377,
+          "pw_expected": 22.21425800380377,
+          "benchmark_pct": 10.0,
+          "excess_pct": 12.21425800380377,
+          "avg": 22.21425800380377,
+          "median": 22.21425800380377,
+          "worst": 22.21425800380377,
+          "hostile": {
+            "n": 1,
+            "hit_rate": 0.0,
+            "avg_win": 0.0,
+            "avg_loss": 22.21425800380377,
+            "pw_expected": 22.21425800380377,
+            "benchmark_pct": 10.0,
+            "excess_pct": 12.21425800380377,
+            "avg": 22.21425800380377,
+            "median": 22.21425800380377,
+            "worst": 22.21425800380377
+          }
+        }
+      }
+    },
+    {
+      "band_label": "CPI_hot_0.20_CURRENT_RARE",
+      "threshold_value": 0.2,
+      "direction": "UP",
+      "bullish": false,
+      "is_current": true,
+      "n": 2,
+      "horizons": {
+        "spx_1m": {
+          "n": 1,
+          "hit_rate": 0.0,
+          "avg_win": 0.0,
+          "avg_loss": 3.4549501351375476,
+          "pw_expected": 3.4549501351375476,
+          "benchmark_pct": 0.5,
+          "excess_pct": 2.9549501351375476,
+          "avg": 3.4549501351375476,
+          "median": 3.4549501351375476,
+          "worst": 3.4549501351375476,
+          "hostile": {
+            "n": 1,
+            "hit_rate": 0.0,
+            "avg_win": 0.0,
+            "avg_loss": 3.4549501351375476,
+            "pw_expected": 3.4549501351375476,
+            "benchmark_pct": 0.5,
+            "excess_pct": 2.9549501351375476,
+            "avg": 3.4549501351375476,
+            "median": 3.4549501351375476,
+            "worst": 3.4549501351375476
+          }
+        },
+        "spx_3m": {
+          "n": 1,
+          "hit_rate": 0.0,
+          "avg_win": 0.0,
+          "avg_loss": 5.947378735426269,
+          "pw_expected": 5.947378735426269,
+          "benchmark_pct": 2.5,
+          "excess_pct": 3.447378735426269,
+          "avg": 5.947378735426269,
+          "median": 5.947378735426269,
+          "worst": 5.947378735426269,
+          "hostile": {
+            "n": 1,
+            "hit_rate": 0.0,
+            "avg_win": 0.0,
+            "avg_loss": 5.947378735426269,
+            "pw_expected": 5.947378735426269,
+            "benchmark_pct": 2.5,
+            "excess_pct": 3.447378735426269,
+            "avg": 5.947378735426269,
+            "median": 5.947378735426269,
+            "worst": 5.947378735426269
+          }
+        },
+        "spx_6m": {
+          "n": 1,
+          "hit_rate": 0.0,
+          "avg_win": 0.0,
+          "avg_loss": 12.040191165954099,
+          "pw_expected": 12.040191165954099,
+          "benchmark_pct": 5.0,
+          "excess_pct": 7.0401911659540986,
+          "avg": 12.040191165954099,
+          "median": 12.040191165954099,
+          "worst": 12.040191165954099,
+          "hostile": {
+            "n": 1,
+            "hit_rate": 0.0,
+            "avg_win": 0.0,
+            "avg_loss": 12.040191165954099,
+            "pw_expected": 12.040191165954099,
+            "benchmark_pct": 5.0,
+            "excess_pct": 7.0401911659540986,
+            "avg": 12.040191165954099,
+            "median": 12.040191165954099,
+            "worst": 12.040191165954099
+          }
+        },
+        "spx_9m": {
+          "n": 1,
+          "hit_rate": 0.0,
+          "avg_win": 0.0,
+          "avg_loss": 17.281754592320837,
+          "pw_expected": 17.281754592320837,
+          "benchmark_pct": 7.5,
+          "excess_pct": 9.781754592320837,
+          "avg": 17.281754592320837,
+          "median": 17.281754592320837,
+          "worst": 17.281754592320837,
+          "hostile": {
+            "n": 1,
+            "hit_rate": 0.0,
+            "avg_win": 0.0,
+            "avg_loss": 17.281754592320837,
+            "pw_expected": 17.281754592320837,
+            "benchmark_pct": 7.5,
+            "excess_pct": 9.781754592320837,
+            "avg": 17.281754592320837,
+            "median": 17.281754592320837,
+            "worst": 17.281754592320837
+          }
+        },
+        "spx_12m": {
+          "n": 1,
+          "hit_rate": 0.0,
+          "avg_win": 0.0,
+          "avg_loss": 22.21425800380377,
+          "pw_expected": 22.21425800380377,
+          "benchmark_pct": 10.0,
+          "excess_pct": 12.21425800380377,
+          "avg": 22.21425800380377,
+          "median": 22.21425800380377,
+          "worst": 22.21425800380377,
+          "hostile": {
+            "n": 1,
+            "hit_rate": 0.0,
+            "avg_win": 0.0,
+            "avg_loss": 22.21425800380377,
+            "pw_expected": 22.21425800380377,
+            "benchmark_pct": 10.0,
+            "excess_pct": 12.21425800380377,
+            "avg": 22.21425800380377,
+            "median": 22.21425800380377,
+            "worst": 22.21425800380377
+          }
+        }
+      }
+    },
+    {
+      "band_label": "CPI_hot_0.30",
+      "threshold_value": 0.3,
+      "direction": "UP",
+      "bullish": false,
+      "is_current": false,
+      "n": 1,
+      "horizons": {
+        "spx_1m": {
+          "n": 0,
+          "hit_rate": null,
+          "avg_win": null,
+          "avg_loss": null,
+          "pw_expected": null,
+          "benchmark_pct": 0.5,
+          "excess_pct": null,
+          "hostile": {
+            "n": 0,
+            "hit_rate": null,
+            "avg_win": null,
+            "avg_loss": null,
+            "pw_expected": null,
+            "benchmark_pct": 0.5,
+            "excess_pct": null
+          }
+        },
+        "spx_3m": {
+          "n": 0,
+          "hit_rate": null,
+          "avg_win": null,
+          "avg_loss": null,
+          "pw_expected": null,
+          "benchmark_pct": 2.5,
+          "excess_pct": null,
+          "hostile": {
+            "n": 0,
+            "hit_rate": null,
+            "avg_win": null,
+            "avg_loss": null,
+            "pw_expected": null,
+            "benchmark_pct": 2.5,
+            "excess_pct": null
+          }
+        },
+        "spx_6m": {
+          "n": 0,
+          "hit_rate": null,
+          "avg_win": null,
+          "avg_loss": null,
+          "pw_expected": null,
+          "benchmark_pct": 5.0,
+          "excess_pct": null,
+          "hostile": {
+            "n": 0,
+            "hit_rate": null,
+            "avg_win": null,
+            "avg_loss": null,
+            "pw_expected": null,
+            "benchmark_pct": 5.0,
+            "excess_pct": null
+          }
+        },
+        "spx_9m": {
+          "n": 0,
+          "hit_rate": null,
+          "avg_win": null,
+          "avg_loss": null,
+          "pw_expected": null,
+          "benchmark_pct": 7.5,
+          "excess_pct": null,
+          "hostile": {
+            "n": 0,
+            "hit_rate": null,
+            "avg_win": null,
+            "avg_loss": null,
+            "pw_expected": null,
+            "benchmark_pct": 7.5,
+            "excess_pct": null
+          }
+        },
+        "spx_12m": {
+          "n": 0,
+          "hit_rate": null,
+          "avg_win": null,
+          "avg_loss": null,
+          "pw_expected": null,
+          "benchmark_pct": 10.0,
+          "excess_pct": null,
+          "hostile": {
+            "n": 0,
+            "hit_rate": null,
+            "avg_win": null,
+            "avg_loss": null,
+            "pw_expected": null,
+            "benchmark_pct": 10.0,
+            "excess_pct": null
+          }
+        }
+      }
+    },
+    {
+      "band_label": "CPI_hot_0.40_CURRENT_EXTREME",
+      "threshold_value": 0.4,
+      "direction": "UP",
+      "bullish": false,
+      "is_current": true,
+      "n": 0,
+      "horizons": {
+        "spx_1m": {
+          "n": 0,
+          "hit_rate": null,
+          "avg_win": null,
+          "avg_loss": null,
+          "pw_expected": null,
+          "benchmark_pct": 0.5,
+          "excess_pct": null,
+          "hostile": {
+            "n": 0,
+            "hit_rate": null,
+            "avg_win": null,
+            "avg_loss": null,
+            "pw_expected": null,
+            "benchmark_pct": 0.5,
+            "excess_pct": null
+          }
+        },
+        "spx_3m": {
+          "n": 0,
+          "hit_rate": null,
+          "avg_win": null,
+          "avg_loss": null,
+          "pw_expected": null,
+          "benchmark_pct": 2.5,
+          "excess_pct": null,
+          "hostile": {
+            "n": 0,
+            "hit_rate": null,
+            "avg_win": null,
+            "avg_loss": null,
+            "pw_expected": null,
+            "benchmark_pct": 2.5,
+            "excess_pct": null
+          }
+        },
+        "spx_6m": {
+          "n": 0,
+          "hit_rate": null,
+          "avg_win": null,
+          "avg_loss": null,
+          "pw_expected": null,
+          "benchmark_pct": 5.0,
+          "excess_pct": null,
+          "hostile": {
+            "n": 0,
+            "hit_rate": null,
+            "avg_win": null,
+            "avg_loss": null,
+            "pw_expected": null,
+            "benchmark_pct": 5.0,
+            "excess_pct": null
+          }
+        },
+        "spx_9m": {
+          "n": 0,
+          "hit_rate": null,
+          "avg_win": null,
+          "avg_loss": null,
+          "pw_expected": null,
+          "benchmark_pct": 7.5,
+          "excess_pct": null,
+          "hostile": {
+            "n": 0,
+            "hit_rate": null,
+            "avg_win": null,
+            "avg_loss": null,
+            "pw_expected": null,
+            "benchmark_pct": 7.5,
+            "excess_pct": null
+          }
+        },
+        "spx_12m": {
+          "n": 0,
+          "hit_rate": null,
+          "avg_win": null,
+          "avg_loss": null,
+          "pw_expected": null,
+          "benchmark_pct": 10.0,
+          "excess_pct": null,
+          "hostile": {
+            "n": 0,
+            "hit_rate": null,
+            "avg_win": null,
+            "avg_loss": null,
+            "pw_expected": null,
+            "benchmark_pct": 10.0,
+            "excess_pct": null
+          }
+        }
+      }
+    },
+    {
+      "band_label": "CPI_hot_0.60",
+      "threshold_value": 0.6,
+      "direction": "UP",
+      "bullish": false,
+      "is_current": false,
+      "n": 0,
+      "horizons": {
+        "spx_1m": {
+          "n": 0,
+          "hit_rate": null,
+          "avg_win": null,
+          "avg_loss": null,
+          "pw_expected": null,
+          "benchmark_pct": 0.5,
+          "excess_pct": null,
+          "hostile": {
+            "n": 0,
+            "hit_rate": null,
+            "avg_win": null,
+            "avg_loss": null,
+            "pw_expected": null,
+            "benchmark_pct": 0.5,
+            "excess_pct": null
+          }
+        },
+        "spx_3m": {
+          "n": 0,
+          "hit_rate": null,
+          "avg_win": null,
+          "avg_loss": null,
+          "pw_expected": null,
+          "benchmark_pct": 2.5,
+          "excess_pct": null,
+          "hostile": {
+            "n": 0,
+            "hit_rate": null,
+            "avg_win": null,
+            "avg_loss": null,
+            "pw_expected": null,
+            "benchmark_pct": 2.5,
+            "excess_pct": null
+          }
+        },
+        "spx_6m": {
+          "n": 0,
+          "hit_rate": null,
+          "avg_win": null,
+          "avg_loss": null,
+          "pw_expected": null,
+          "benchmark_pct": 5.0,
+          "excess_pct": null,
+          "hostile": {
+            "n": 0,
+            "hit_rate": null,
+            "avg_win": null,
+            "avg_loss": null,
+            "pw_expected": null,
+            "benchmark_pct": 5.0,
+            "excess_pct": null
+          }
+        },
+        "spx_9m": {
+          "n": 0,
+          "hit_rate": null,
+          "avg_win": null,
+          "avg_loss": null,
+          "pw_expected": null,
+          "benchmark_pct": 7.5,
+          "excess_pct": null,
+          "hostile": {
+            "n": 0,
+            "hit_rate": null,
+            "avg_win": null,
+            "avg_loss": null,
+            "pw_expected": null,
+            "benchmark_pct": 7.5,
+            "excess_pct": null
+          }
+        },
+        "spx_12m": {
+          "n": 0,
+          "hit_rate": null,
+          "avg_win": null,
+          "avg_loss": null,
+          "pw_expected": null,
+          "benchmark_pct": 10.0,
+          "excess_pct": null,
+          "hostile": {
+            "n": 0,
+            "hit_rate": null,
+            "avg_win": null,
+            "avg_loss": null,
+            "pw_expected": null,
+            "benchmark_pct": 10.0,
+            "excess_pct": null
+          }
+        }
+      }
+    }
+  ],
+  "run_date": "2026-06-15"
+}

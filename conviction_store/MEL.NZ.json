@@ -187,12 +187,12 @@
   },
   "dividend_yield_5y_mean": 0.066786,
   "dividend_yield_5y_std": 0.023697,
-  "dividend_yield_current": 0.035593,
-  "dividend_yield_zscore": -1.3163,
-  "enterprise_value": 17014762934.053036,
+  "dividend_yield_current": 0.036713,
+  "dividend_yield_zscore": -1.2691,
+  "enterprise_value": 16539782928.283321,
   "eps_fwd": 0.23352,
   "eps_ttm": -0.04,
-  "ev_fwd_rev": 3.7085,
+  "ev_fwd_rev": 3.605,
   "fcf_ttm": 426000000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -203,10 +203,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 4588000256.0,
   "industry": "Utilities - Renewable",
-  "last_daily_update": "2026-06-11T18:42:12+00:00",
+  "last_daily_update": "2026-06-18T08:14:31+00:00",
   "last_full_calc": "2026-05-18T20:49:25+00:00",
   "manual_overrides": {},
-  "market_cap": 15568762934.053036,
+  "market_cap": 15093782928.283321,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -224,7 +224,7 @@
     "valuation:pe_ttm"
   ],
   "net_debt_stored": 1446000000.0,
-  "owner_earnings_yield": 0.027362,
+  "owner_earnings_yield": 0.028224,
   "pe_percentile_20y": null,
   "pe_ttm": null,
   "position_layers": {
@@ -235,12 +235,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 5.900000095367432,
+  "price": 5.71999979019165,
   "quote_type": "EQUITY",
   "roic_5y_avg": -0.01243,
   "sector": "Utilities",
   "ticker": "MEL.NZ",
-  "updated_at": "2026-06-11T18:42:12+00:00",
+  "updated_at": "2026-06-18T08:14:31+00:00",
   "valuation_tax": 0.0,
   "valuation_tax_breakdown": {
     "components": {

@@ -1,0 +1,62 @@
+{
+  "date": "2026-06-10",
+  "generated_at": "2026-06-11T20:30:00.396452",
+  "dominant_signal": "F",
+  "brave_fearful": "TACTICAL EASY MONEY",
+  "active_combos": [
+    {
+      "combo": "F",
+      "status": "ACTIVE",
+      "duration_weeks": 10,
+      "duration_bucket": "MEDIUM",
+      "episode_start": "2026-04-03",
+      "confirmed_legs": null,
+      "show_hit_rate": true,
+      "primary_horizon": "spx_6m",
+      "primary_label": "6M",
+      "hit_rate_primary": 0.7883522727272727,
+      "avg_return_primary": 5.543659716209679,
+      "n_obs_primary": 704,
+      "hit_rate_secondary": 0.7485795454545454,
+      "avg_return_secondary": 2.651289286400214,
+      "secondary_label": "3M",
+      "n_obs_secondary": 704,
+      "hit_rate_3m": 0.7883522727272727,
+      "avg_return_3m": 5.543659716209679
+    },
+    {
+      "combo": "E",
+      "status": "CONFIRMED",
+      "duration_weeks": null,
+      "duration_bucket": null,
+      "episode_start": null,
+      "confirmed_legs": [
+        "CAPE",
+        "NFCI"
+      ],
+      "show_hit_rate": true,
+      "primary_horizon": "spx_12m",
+      "primary_label": "12M",
+      "hit_rate_primary": 0.1893491124260355,
+      "avg_return_primary": 10.93078368383251,
+      "n_obs_primary": 507,
+      "hit_rate_secondary": null,
+      "avg_return_secondary": null,
+      "secondary_label": null,
+      "n_obs_secondary": null,
+      "hit_rate_3m": 0.1893491124260355,
+      "avg_return_3m": 10.93078368383251
+    }
+  ],
+  "watch_combos": [
+    "B"
+  ],
+  "briefing_paths": {
+    "html": "testing/macro_report_updates/runic_briefing_2026-06-10.html",
+    "pdf": "testing/macro_report_updates/runic_briefing_2026-06-10.pdf"
+  },
+  "default_paths": {
+    "html": "macro_intelligence/output/runic_briefing_2026-06-10.html",
+    "pdf": "macro_intelligence/output/runic_briefing_2026-06-10.pdf"
+  }
+}

@@ -1,0 +1,224 @@
+{
+  "combo": "D",
+  "validated_horizon": "spx_5d",
+  "direction": "bearish",
+  "current_gates": {
+    "vxts_min": 1.1,
+    "cftc_min_pctile": 85,
+    "vix_max": 18
+  },
+  "tests": [
+    {
+      "test_id": "CD_VXTS_1.05",
+      "param": "vxts_min",
+      "value": 1.05,
+      "cftc_min_pctile": 85,
+      "vix_max": 18,
+      "legs_required": 3,
+      "n": 32,
+      "pw_5d": {
+        "n": 32,
+        "hit_rate": 0.375,
+        "avg_win": -1.252936160744268,
+        "avg_loss": 1.1784952429648798,
+        "pw_expected": 0.2667084665739494,
+        "benchmark_pct": 0.5,
+        "excess_pct": -0.23329153342605058,
+        "avg": 0.26670846657394964,
+        "median": 0.6772031175027677,
+        "worst": 2.4248502825348712
+      }
+    },
+    {
+      "test_id": "CD_VXTS_1.1",
+      "param": "vxts_min",
+      "value": 1.1,
+      "cftc_min_pctile": 85,
+      "vix_max": 18,
+      "legs_required": 3,
+      "n": 31,
+      "pw_5d": {
+        "n": 31,
+        "hit_rate": 0.41935483870967744,
+        "avg_win": -1.1813822842102275,
+        "avg_loss": 1.22560928757221,
+        "pw_expected": 0.21622572521183292,
+        "benchmark_pct": 0.5,
+        "excess_pct": -0.2837742747881671,
+        "avg": 0.2162257252118331,
+        "median": 0.6329204009591546,
+        "worst": 2.9597538022939545
+      }
+    },
+    {
+      "test_id": "CD_VXTS_1.15",
+      "param": "vxts_min",
+      "value": 1.15,
+      "cftc_min_pctile": 85,
+      "vix_max": 18,
+      "legs_required": 3,
+      "n": 25,
+      "pw_5d": {
+        "n": 25,
+        "hit_rate": 0.4,
+        "avg_win": -1.391511160673401,
+        "avg_loss": 0.9625497027278588,
+        "pw_expected": 0.020925357367354902,
+        "benchmark_pct": 0.5,
+        "excess_pct": -0.4790746426326451,
+        "avg": 0.020925357367354947,
+        "median": 0.22755843254588995,
+        "worst": 2.0009185927887922
+      }
+    },
+    {
+      "test_id": "CD_CFTC_80",
+      "param": "cftc_min_pctile",
+      "value": 80,
+      "vxts_min": 1.1,
+      "vix_max": 18,
+      "legs_required": 3,
+      "n": 33,
+      "pw_5d": {
+        "n": 33,
+        "hit_rate": 0.3939393939393939,
+        "avg_win": -0.9474473776633269,
+        "avg_loss": 1.2621062888675796,
+        "pw_expected": 0.3916760565978286,
+        "benchmark_pct": 0.5,
+        "excess_pct": -0.10832394340217139,
+        "avg": 0.39167605659782856,
+        "median": 0.6329204009591546,
+        "worst": 3.4128036306914353
+      }
+    },
+    {
+      "test_id": "CD_CFTC_85",
+      "param": "cftc_min_pctile",
+      "value": 85,
+      "vxts_min": 1.1,
+      "vix_max": 18,
+      "legs_required": 3,
+      "n": 31,
+      "pw_5d": {
+        "n": 31,
+        "hit_rate": 0.41935483870967744,
+        "avg_win": -1.1813822842102275,
+        "avg_loss": 1.22560928757221,
+        "pw_expected": 0.21622572521183292,
+        "benchmark_pct": 0.5,
+        "excess_pct": -0.2837742747881671,
+        "avg": 0.2162257252118331,
+        "median": 0.6329204009591546,
+        "worst": 2.9597538022939545
+      }
+    },
+    {
+      "test_id": "CD_CFTC_90",
+      "param": "cftc_min_pctile",
+      "value": 90,
+      "vxts_min": 1.1,
+      "vix_max": 18,
+      "legs_required": 3,
+      "n": 25,
+      "pw_5d": {
+        "n": 25,
+        "hit_rate": 0.4,
+        "avg_win": -1.4337111195367296,
+        "avg_loss": 1.2315514253954423,
+        "pw_expected": 0.16544640742257344,
+        "benchmark_pct": 0.5,
+        "excess_pct": -0.33455359257742656,
+        "avg": 0.1654464074225737,
+        "median": 0.6665721320562568,
+        "worst": 2.9597538022939545
+      }
+    },
+    {
+      "test_id": "CD_VIX_15",
+      "param": "vix_max",
+      "value": 15,
+      "vxts_min": 1.1,
+      "cftc_min_pctile": 85,
+      "legs_required": 3,
+      "n": 24,
+      "pw_5d": {
+        "n": 24,
+        "hit_rate": 0.4583333333333333,
+        "avg_win": -1.3168034001374407,
+        "avg_loss": 1.1734241392701028,
+        "pw_expected": 0.03206985037497889,
+        "benchmark_pct": 0.5,
+        "excess_pct": -0.4679301496250211,
+        "avg": 0.03206985037497867,
+        "median": 0.2196121219935108,
+        "worst": 2.9597538022939545
+      }
+    },
+    {
+      "test_id": "CD_VIX_18",
+      "param": "vix_max",
+      "value": 18,
+      "vxts_min": 1.1,
+      "cftc_min_pctile": 85,
+      "legs_required": 3,
+      "n": 31,
+      "pw_5d": {
+        "n": 31,
+        "hit_rate": 0.41935483870967744,
+        "avg_win": -1.1813822842102275,
+        "avg_loss": 1.22560928757221,
+        "pw_expected": 0.21622572521183292,
+        "benchmark_pct": 0.5,
+        "excess_pct": -0.2837742747881671,
+        "avg": 0.2162257252118331,
+        "median": 0.6329204009591546,
+        "worst": 2.9597538022939545
+      }
+    },
+    {
+      "test_id": "CD_VIX_20",
+      "param": "vix_max",
+      "value": 20,
+      "vxts_min": 1.1,
+      "cftc_min_pctile": 85,
+      "legs_required": 3,
+      "n": 38,
+      "pw_5d": {
+        "n": 38,
+        "hit_rate": 0.42105263157894735,
+        "avg_win": -1.555644737617562,
+        "avg_loss": 1.4005303318281694,
+        "pw_expected": 0.15582503942996684,
+        "benchmark_pct": 0.5,
+        "excess_pct": -0.34417496057003316,
+        "avg": 0.15582503942996678,
+        "median": 0.6093556932007536,
+        "worst": 4.535351394467628
+      }
+    },
+    {
+      "test_id": "CD_2of3_legs",
+      "param": "legs_required",
+      "value": 2,
+      "vxts_min": 1.1,
+      "cftc_min_pctile": 85,
+      "vix_max": 18,
+      "legs_required": 2,
+      "n": 87,
+      "pw_5d": {
+        "n": 86,
+        "hit_rate": 0.3372093023255814,
+        "avg_win": -1.7556440214399849,
+        "avg_loss": 1.2980967890730588,
+        "pw_expected": 0.2683469808768001,
+        "benchmark_pct": 0.5,
+        "excess_pct": -0.2316530191231999,
+        "avg": 0.2683469808767999,
+        "median": 0.6191773044620128,
+        "worst": 5.492967002231294
+      }
+    }
+  ],
+  "run_date": "2026-06-16"
+}

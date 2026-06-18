@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.034372,
   "dividend_yield_5y_std": 0.051721,
-  "dividend_yield_current": 0.00473,
-  "dividend_yield_zscore": -0.5731,
-  "enterprise_value": 710794620837.486,
+  "dividend_yield_current": 0.004706,
+  "dividend_yield_zscore": -0.5736,
+  "enterprise_value": 714477260279.6503,
   "eps_fwd": 47.573627,
   "eps_ttm": 30.34,
-  "ev_fwd_rev": 21.0964,
+  "ev_fwd_rev": 21.2057,
   "fcf_ttm": 11066200000.0,
   "fd_direction": "stable",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 33692700672.0,
   "industry": "Semiconductor Equipment & Materials",
-  "last_daily_update": "2026-06-11T18:42:12+00:00",
+  "last_daily_update": "2026-06-18T08:14:30+00:00",
   "last_full_calc": "2026-05-18T20:47:22+00:00",
   "manual_overrides": {},
-  "market_cap": 716212020837.486,
+  "market_cap": 719894660279.6503,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": -5417400000.0,
-  "owner_earnings_yield": 0.015451,
+  "owner_earnings_yield": 0.015372,
   "pe_20y_array": [
     41.6937,
     55.456,
@@ -233,7 +233,7 @@
     56.6958
   ],
   "pe_percentile_20y": 100.0,
-  "pe_ttm": 61.2484,
+  "pe_ttm": 61.5633,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -242,12 +242,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 1858.2750244140625,
+  "price": 1867.8299560546875,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.52236,
   "sector": "Technology",
   "ticker": "ASML",
-  "updated_at": "2026-06-11T18:42:12+00:00",
+  "updated_at": "2026-06-18T08:14:30+00:00",
   "valuation_tax": -7.0,
   "valuation_tax_breakdown": {
     "components": {

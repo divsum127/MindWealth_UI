@@ -195,7 +195,7 @@
   "fs_quality_base": 50.0,
   "fs_score": null,
   "full_recalc_trigger": "daily_fundamentals_script",
-  "last_daily_update": "2026-06-11T18:42:12+00:00",
+  "last_daily_update": "2026-06-18T08:14:31+00:00",
   "last_full_calc": "2026-05-15T16:29:15+00:00",
   "manual_overrides": {},
   "market_cap": null,
@@ -240,10 +240,10 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 1.3982000350952148,
+  "price": 1.4106700420379639,
   "quote_type": "CURRENCY",
   "ticker": "CAD=X",
-  "updated_at": "2026-06-11T18:42:12+00:00",
+  "updated_at": "2026-06-18T08:14:31+00:00",
   "valuation_tax": null,
   "yield_trap_warning": false
 }

@@ -11,7 +11,8 @@ import pandas as pd
 from src.macro_intelligence.config import load_config
 from src.macro_intelligence.data.bls_pull import load_cpi_surprise_series, try_bls_cpi_pull, try_fred_cpi_fallback_if_stale
 from src.macro_intelligence.data.cape_scrape import load_cape_series
-from src.macro_intelligence.data.cftc_pull import fetch_cftc_fast_money_net, persist_cftc_snapshot, refresh_cftc_zip_if_stale
+from src.macro_intelligence.data.cftc_pull import fetch_cftc_fast_money_net, persist_cftc_snapshot
+from src.macro_intelligence.data.source_freshness import ensure_cape_cftc_fresh, get_last_freshness_audit, latest_observation_as_of
 from src.macro_intelligence.data.cpi_pull import load_cpi_surprises
 from src.macro_intelligence.data.fred_pull import curve_features, fetch_fred_series, walcl_mom_pct
 from src.macro_intelligence.data.yahoo_pull import (
@@ -33,9 +34,12 @@ from src.macro_intelligence.engine.percentiles import (
 _CACHE: dict[str, pd.Series | pd.DataFrame] = {}
 
 
-def load_all_series(force: bool = False) -> dict[str, Any]:
+def load_all_series(force: bool = False, as_of: str | None = None) -> dict[str, Any]:
+    as_of = as_of or datetime.now().strftime("%Y-%m-%d")
     if _CACHE and not force:
         return _CACHE
+
+    ensure_cape_cftc_fresh(as_of)
 
     nfci = fetch_fred_series("NFCI", "1973-01-01")
     hy = fetch_fred_series("BAMLH0A0HYM2", "1996-01-01")
@@ -53,9 +57,6 @@ def load_all_series(force: bool = False) -> dict[str, Any]:
         cnh = fetch_fred_series("DEXCHUS", "2010-01-01")
     gsr = gsr_ratio("1990-01-01")
     cape = load_cape_series()
-    # Auto-refresh current-year CFTC ZIP before parsing — handles Friday releases
-    # and missed weeks without any manual intervention.
-    refresh_cftc_zip_if_stale()
     cftc = fetch_cftc_fast_money_net(2006)
     try_bls_cpi_pull()
     try_fred_cpi_fallback_if_stale()
@@ -98,7 +99,7 @@ def pull_all_series(
     persist_cftc: bool | None = None,
 ) -> list[dict[str, Any]]:
     as_of = as_of or datetime.now().strftime("%Y-%m-%d")
-    series = load_all_series()
+    series = load_all_series(as_of=as_of)
     do_cftc = persist_cftc if persist_cftc is not None else datetime.now().weekday() == 4
     if do_cftc:
         persist_cftc_snapshot(as_of)
@@ -117,6 +118,16 @@ def pull_all_series(
             _upsert_reading(reading)
 
     return readings
+
+
+def pull_all_series_with_audit(
+    as_of: str | None = None,
+    fed_cycle: str | None = None,
+    *,
+    persist_cftc: bool | None = None,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    readings = pull_all_series(as_of, fed_cycle, persist_cftc=persist_cftc)
+    return readings, get_last_freshness_audit()
 
 
 def _reading_for_var(
@@ -156,7 +167,30 @@ def _reading_for_var(
     uncond = compute_unconditional_pctile(s, var_cfg, as_of_ts)
     regime_p, _ = compute_regime_pctile(s, var_cfg, as_of_ts, fed_cycle)
     tier, direction = evaluate_variable_tier(vid, var_cfg, raw, uncond)
-    return _pack(vid, as_of, raw, uncond, regime_p, tier, direction)
+    meta = _variable_source_meta(vid, s, as_of)
+    return _pack(vid, as_of, raw, uncond, regime_p, tier, direction, meta=meta)
+
+
+def _variable_source_meta(vid: str, series: pd.Series, as_of: str) -> dict[str, Any]:
+    """Attach source observation date + lag for variables with publication delay."""
+    if vid not in ("CAPE", "CFTC"):
+        return {}
+    src_date, _ = latest_observation_as_of(series, as_of)
+    if src_date is None:
+        return {"report_date": as_of, "source_date": None, "lag_days": None}
+    lag = (pd.Timestamp(as_of) - src_date).days
+    meta: dict[str, Any] = {
+        "report_date": as_of,
+        "source_date": src_date.strftime("%Y-%m-%d"),
+        "lag_days": lag,
+    }
+    if vid == "CFTC":
+        from src.macro_intelligence.data.source_freshness import expected_latest_cftc_tuesday
+
+        expected = expected_latest_cftc_tuesday(as_of)
+        meta["expected_source_date"] = expected.strftime("%Y-%m-%d")
+        meta["source_lags_expected"] = src_date < expected
+    return meta
 
 
 def _pack(vid, as_of, raw, uncond, regime_p, tier, direction, meta=None) -> dict[str, Any]:

@@ -1,0 +1,7 @@
+{
+  "start_date": "1990-01-01",
+  "rare_events": 4169,
+  "extreme_events": 3726,
+  "rare_path": "/home/ubuntu/uiv2/git/MindWealth_UI/testing/macro_th_exp/testingv2/section_4a_rare_threshold_raw_returns.csv",
+  "extreme_path": "/home/ubuntu/uiv2/git/MindWealth_UI/testing/macro_th_exp/testingv2/section_4b_extreme_threshold_raw_returns.csv"
+}

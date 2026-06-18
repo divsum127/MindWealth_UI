@@ -463,3 +463,120 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
    - Summary: Updated all plan step Status values from `testingv2_status.md`; added **In v2 report?** column mapping each step to `testingv2_report.md` sections (✅/🔄/⏳); added step 5.4 (TWY/GSR ablation); refreshed priority order for remaining work.
    - Files changed:
      - `testing/macro_th_exp/testingv1_feedback/testingv2_plan.md`
+
+4. **Generate nightly macro briefing for 2026-06-12 + website data snapshot MD** — SUCCESSFUL
+   - Date: 2026-06-12
+   - Summary: Ran full nightly pipeline (`run_nightly(as_of=2026-06-12, use_claude=True)`). Dominant Combo F week 11 (MEDIUM), posture TACTICAL EASY MONEY; Combo E CONFIRMED (CAPE+NFCI); Combo B WATCH (CFTC 1.3rd pctile); Combo C CANCELLED (2026-07-03). WTI EXTREME at −14.58% 4wk (1st pctile), CFTC EXTREME at −503,509 contracts (1st pctile), CAPE EXTREME at 42.70x (99.5th pctile), GSR EXTREME at 13.87 (96.6th pctile). Created `website_data_2026-06-12.md` with full page data snapshot.
+   - Files changed:
+     - `macro_intelligence/output/runic_briefing_2026-06-12.pdf`
+     - `macro_intelligence/output/runic_briefing_2026-06-12.html`
+     - `testing/macro_report_updates/runic_briefing_2026-06-12.pdf`
+     - `testing/macro_report_updates/runic_briefing_2026-06-12.html`
+     - `testing/macro_report_updates/runic_output_2026-06-12.json`
+     - `testing/macro_report_updates/website_data_2026-06-12.md`
+
+4. **Macro variable threshold validation plan — testingv2 refined** — SUCCESSFUL
+   - Date: 2026-06-16
+   - Summary: Refined `testing/macro_th_exp/testingv2/` plan after DB verification: mixed 0–1/0–100 percentile storage (~220 legacy rows), prior sweep 13/22 bands n=0, pctile-only bands vs CONFIG raw thresholds. Added Combo D gate sweeps, hostile-regime PW methodology (HIKING/INVERTED), benchmark table (1m–12m), infrastructure gaps audit, P1.0 DB normalization step. Plan-only — no backtests executed.
+   - Files changed:
+     - `testing/macro_th_exp/testingv2/threshold_validation_plan.md` (updated)
+     - `testing/macro_th_exp/testingv2/testingv2_status.md` (updated)
+
+5. **Macro Regime Report inline edits + 6 new DB queries (testingv4)** — SUCCESSFUL
+   - Date: 2026-06-16
+   - Summary: Ran 6 new tests against `macro_intelligence/data/runic.db` (T2: 9-state WALCL SPX tables; T3: TIGHT_* combo fires; T4: Combo E multi-horizon CAPE; T5: geo overlay non-neutral episodes; T6: TWY_ROC band sweep; T10: historical T10Y2Y inversion episodes). Inserted all results as data tables directly inline in the report at the specified sections. Added 8 text clarifications from Rohit's 2026-06-11/2026-06-16 feedback. Created `testingv4_status.md`.
+   - Files changed:
+     - `testing/macro_th_exp/testingv1_feedback/Macro_Regime_Threshold_Experiments_Report_2026-06-09.md` (inline edits)
+     - `testing/macro_th_exp/testingv1_feedback/testingv4_status.md` (new)
+
+6. **Execute full testingv2 threshold validation experiment (P1–P4)** — SUCCESSFUL
+   - Date: 2026-06-16
+   - Summary: Completed end-to-end threshold validation: normalized 220 legacy 0–1 percentile rows; fixed `per_variable_threshold_sweep.py` (0–100 bands + CURVE); built and ran `threshold_sweep_v2.py` (12 variable JSONs + SUMMARY.json with first-crossing PW + hostile slice); extended `combo_threshold_sweep.py` for Combo B/F/E/D gate sweeps via leg replay; wrote `threshold_validation_report.md` + PDF. Key finding: WTI threshold change justified (down-side −15% band); Combo B 3-of-3 n=0; most CONFIG thresholds confirmed.
+   - Files changed:
+     - `scripts/normalize_pctile_scale.py`, `scripts/threshold_sweep_v2.py`, `scripts/combo_gate_sweep_v2.py`
+     - `scripts/per_variable_threshold_sweep.py`
+     - `src/macro_intelligence/analysis/combo_threshold_sweep.py`
+     - `macro_intelligence/analysis/regime_v2_experiments/F_per_variable_sweep_v2.json`
+     - `macro_intelligence/analysis/regime_v2_experiments/threshold_sweep_v2/` (12 sweeps + SUMMARY + 4 combo JSONs)
+     - `testing/macro_th_exp/testingv2/threshold_validation_report.md`, `.pdf`, `testingv2_status.md`
+
+7. **Rohit feedback sectionwise answers document** — SUCCESSFUL
+   - Date: 2026-06-16
+   - Summary: Created `feedback_sectionwise_answers.md` answering all 32 TODO/question blocks from `feedback_sectionwise_details.md` with inline data tables (validated horizons, 9-state liquidity, TWY_ROC band sweep, geo combo slices, CAPE buckets, inversion episodes, HMM reframe). 28 answered with data; 4 pending (i3 cheatsheet compare, 18M horizon, WALCL FM threshold sweep, Parth web UI).
+   - Files changed:
+     - `testing/macro_th_exp/testingv1_feedback/feedback_sectionwise_answers.md` (created)
+
+8. **Expand threshold_validation_report.md with full supporting data** — SUCCESSFUL
+   - Date: 2026-06-16
+   - Summary: Expanded testingv2 report (~1,679 lines) with method/instruments/duration/band-range tables, instrument reference (12 variables + SPX forward), and appendix sections for every variable and combo showing n, hit%, avg win/loss, PW expected, benchmark, excess at 1M/3M/6M/9M/12M per swept band. Re-exported PDF (251 KB).
+   - Files changed:
+     - `testing/macro_th_exp/testingv2/threshold_validation_report.md`, `.pdf`
+     - `testing/macro_th_exp/testingv2/testingv2_status.md`
+
+9. **Contextual verdict columns for threshold validation §4a/§4b** — SUCCESSFUL
+   - Date: 2026-06-16
+   - Summary: Replaced mechanical verdict logic (Δ≥2pp, hit≥60%) with variable-aware analyst judgments in `generate_section4_tables.py`; regenerated all §4a/§4b tables and report/PDF. Only WTI down-leg flagged "Consider down_15pct"; all other variables Keep CONFIG or Defer (CPI/CAPE sparse).
+   - Files changed:
+     - `scripts/generate_section4_tables.py`
+     - `testing/macro_th_exp/testingv2/threshold_validation_report.md`, `.pdf`
+     - `testing/macro_th_exp/testingv2/_section_4a_table.md`, `_section_4b_table.md`
+
+10. **Threshold validation v2 understanding doc** — SUCCESSFUL
+   - Date: 2026-06-16
+   - Summary: Created plain-English understanding guide from threshold_validation_plan + report + testingv2_status: top summary of P1–P4 experiments/outcomes, glossary, per-phase Q&A tables, consolidated doubts for Rohit Sir, artifact index.
+   - Files changed:
+     - `testing/macro_th_exp/testingv2/understanding_and_research/Threshold_Validation_v2_Understanding.md`
+
+11. **Rohit feedback sectionwise answers understanding doc** — SUCCESSFUL
+   - Date: 2026-06-16
+   - Summary: Plain-English guide from feedback_sectionwise_details + feedback_sectionwise_answers + testingv4_status: top summary table of §1/T2–T10 experiments and outcomes, glossary, per-section Q&A, 15 consolidated doubts for Rohit Sir, deliverables checklist, artifact index.
+   - Files changed:
+     - `testing/macro_th_exp/testingv1_feedback/understanding_and_research/Rohit_Feedback_Sectionwise_Answers_Understanding.md`
+
+12. **Combo E horizon validation sweep 6M–18M (T11)** — SUCCESSFUL
+   - Date: 2026-06-18
+   - Summary: Planned and ran `combo_e_horizon_sweep.py` for Combo E at 6/9/12/15/18M (3M steps); bear hit 18.9% at 12M (n=507) validates keeping 12M primary; updated main experiments report B3, feedback_sectionwise_answers, testingv4_status, understanding doc.
+   - Files changed:
+     - `testing/macro_th_exp/testingv1_feedback/combo_e_horizon_plan.md`
+     - `scripts/combo_e_horizon_sweep.py`
+     - `macro_intelligence/analysis/regime_v2_experiments/COMBO_E_horizon_sweep_6_18m.json`
+     - `testing/macro_th_exp/testingv1_feedback/Macro_Regime_Threshold_Experiments_Report_2026-06-09.md`
+     - `testing/macro_th_exp/testingv1_feedback/feedback_sectionwise_answers.md`
+     - `testing/macro_th_exp/testingv1_feedback/testingv4_status.md`
+     - `testing/macro_th_exp/testingv1_feedback/understanding_and_research/Rohit_Feedback_Sectionwise_Answers_Understanding.md`
+
+3. **Generate nightly macro briefing for 2026-06-10** — SUCCESSFUL
+   - Date: 2026-06-11
+   - Summary: Ran full nightly pipeline (`run_nightly(as_of=2026-06-10, use_claude=True)`) with live DB data (12 variables). Dominant Combo F week 10 (MEDIUM), posture TACTICAL EASY MONEY; Combo E CONFIRMED (CAPE+NFCI, 19% 12M); Combo B WATCH. Briefing PDF/HTML/JSON written to `macro_intelligence/output/` and `testing/macro_report_updates/`.
+   - Files changed:
+     - `macro_intelligence/output/runic_briefing_2026-06-10.pdf`
+     - `macro_intelligence/output/runic_briefing_2026-06-10.html`
+     - `testing/macro_report_updates/runic_briefing_2026-06-10.pdf`
+     - `testing/macro_report_updates/runic_briefing_2026-06-10.html`
+     - `testing/macro_report_updates/runic_output_2026-06-10.json`
+     - `testing/macro_report_updates/nightly_run_summary_2026-06-10.json`
+
+### 2026-06-17
+
+1. **Nightly CAPE/CFTC source freshness check + auto-refresh on lag** — SUCCESSFUL
+   - Date: 2026-06-17
+   - Summary: Every nightly run now compares CAPE and CFTC source observation dates to report `as_of`, re-scrapes multpl when CAPE lag > 7d, force-refreshes CFTC ZIP when latest Tuesday position is older than expected. JSON `source_freshness` audit; CAPE/CFTC dashboard notes show source date + lag. Verified on 2026-06-16: CAPE refreshed 2026-06-04 → 2026-06-16; CFTC Jun 9 expected (7d lag OK).
+   - Files changed:
+     - `src/macro_intelligence/data/source_freshness.py`
+     - `src/macro_intelligence/data/pull_all.py`
+     - `src/macro_intelligence/data/cftc_pull.py`
+     - `src/macro_intelligence/jobs/nightly_run.py`
+     - `src/macro_intelligence/output/briefing_renderer.py`
+     - `macro_intelligence/CONFIG.yaml`
+     - `scripts/run_macro_nightly.py`
+     - `tests/test_source_freshness.py`
+
+### 2026-06-18
+
+1. **Upgrade Claude prompt + template briefing — analytical narrative, full combo coverage** — SUCCESSFUL
+   - Date: 2026-06-18
+   - Summary: Fixed ordering bug (`combo_status_rows` built after narrative — now built before). Rewrote SYSTEM prompt with 12-variable + 7-combo significance guides; 600-750w five-section format. Updated USER prompt with all 7 combo rows, EXTREME/RARE tier lists, CFTC RM note, SSI multiplier, VIX bypass. Completely rewrote `_template_briefing` fallback to produce ~200 words of interpretive analytical prose — CFTC fuel, WTI implications, Combo E headwind, VXTS/Combo D gap, competing combo summary, posture conditions. Verified on 2026-06-16 run.
+   - Files changed:
+     - `src/macro_intelligence/claude/nightly_briefing.py`
+     - `src/macro_intelligence/jobs/nightly_run.py`
+     - `macro_intelligence/CONFIG.yaml`

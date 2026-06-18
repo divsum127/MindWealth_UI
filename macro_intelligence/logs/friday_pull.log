@@ -1,0 +1,21 @@
+/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/cftc_pull.py:242: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  sub[date_col] = pd.to_datetime(sub[date_col], errors="coerce")
+/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/cftc_pull.py:242: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  sub[date_col] = pd.to_datetime(sub[date_col], errors="coerce")
+/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/cftc_pull.py:242: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  sub[date_col] = pd.to_datetime(sub[date_col], errors="coerce")
+forward_returns: 28 combo fires to fill
+forward_returns: 28 combo fires to fill
+{
+  "date": "2026-06-12",
+  "readings_count": 12,
+  "persistence_count": 0,
+  "combo_fires": 28,
+  "returns_updated": 56,
+  "combo_c_cancel": {
+    "wti_potential_week": 4,
+    "cancelled": true,
+    "active": false,
+    "cancel_date": "2026-07-03"
+  }
+}

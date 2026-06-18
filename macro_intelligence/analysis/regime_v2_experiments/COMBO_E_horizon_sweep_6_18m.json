@@ -1,0 +1,99 @@
+{
+  "combo": "E",
+  "direction": "bearish",
+  "n_total_fires": 508,
+  "run_date": "2026-06-18",
+  "horizons_trading_days": {
+    "6M": 126,
+    "9M": 189,
+    "12M": 252,
+    "15M": 315,
+    "18M": 378
+  },
+  "horizons": [
+    {
+      "horizon_label": "6M",
+      "horizon_col": "spx_6m",
+      "benchmark_pct": 5.0,
+      "n_mature": 507,
+      "bear_hit_pct": 19.7,
+      "bull_up_pct": 79.1,
+      "avg_return_pct": 6.41,
+      "bear_avg_win_pct": -6.65,
+      "bear_avg_loss_pct": 9.61,
+      "bear_pw_expected_pct": 6.41,
+      "bear_excess_pct": 1.41,
+      "bull_pw_expected_pct": 6.41,
+      "bull_excess_pct": 1.41
+    },
+    {
+      "horizon_label": "9M",
+      "horizon_col": "spx_9m",
+      "benchmark_pct": 7.5,
+      "n_mature": 507,
+      "bear_hit_pct": 18.7,
+      "bull_up_pct": 80.1,
+      "avg_return_pct": 8.44,
+      "bear_avg_win_pct": -7.91,
+      "bear_avg_loss_pct": 12.2,
+      "bear_pw_expected_pct": 8.44,
+      "bear_excess_pct": 0.94,
+      "bull_pw_expected_pct": 8.44,
+      "bull_excess_pct": 0.94
+    },
+    {
+      "horizon_label": "12M",
+      "horizon_col": "spx_12m",
+      "benchmark_pct": 10.0,
+      "n_mature": 507,
+      "bear_hit_pct": 18.9,
+      "bull_up_pct": 79.9,
+      "avg_return_pct": 10.93,
+      "bear_avg_win_pct": -7.77,
+      "bear_avg_loss_pct": 15.3,
+      "bear_pw_expected_pct": 10.93,
+      "bear_excess_pct": 0.93,
+      "bull_pw_expected_pct": 10.93,
+      "bull_excess_pct": 0.93
+    },
+    {
+      "horizon_label": "15M",
+      "horizon_col": "spx_15m",
+      "benchmark_pct": 12.5,
+      "n_mature": 427,
+      "bear_hit_pct": 15.5,
+      "bull_up_pct": 84.5,
+      "avg_return_pct": 13.5,
+      "bear_avg_win_pct": -8.15,
+      "bear_avg_loss_pct": 17.46,
+      "bear_pw_expected_pct": 13.5,
+      "bear_excess_pct": 1.0,
+      "bull_pw_expected_pct": 13.5,
+      "bull_excess_pct": 1.0
+    },
+    {
+      "horizon_label": "18M",
+      "horizon_col": "spx_18m",
+      "benchmark_pct": 15.0,
+      "n_mature": 413,
+      "bear_hit_pct": 14.5,
+      "bull_up_pct": 85.5,
+      "avg_return_pct": 16.65,
+      "bear_avg_win_pct": -7.51,
+      "bear_avg_loss_pct": 20.76,
+      "bear_pw_expected_pct": 16.65,
+      "bear_excess_pct": 1.65,
+      "bull_pw_expected_pct": 16.65,
+      "bull_excess_pct": 1.65
+    }
+  ],
+  "recommendation": {
+    "config_primary": "12M",
+    "highest_bear_hit_horizon": "6M",
+    "highest_bear_hit_pct": 19.7,
+    "note": "Combo E is structural bearish; low bear hit at all horizons is expected. Keep 12M primary unless Rohit prefers horizon with best bear hit + n_mature.",
+    "12M_bear_hit_pct": 18.9,
+    "12M_n_mature": 507
+  },
+  "markdown_table": "*Combo E horizon sweep \u2014 computed via `scripts/combo_e_horizon_sweep.py` (2026-06-18). n_total fires = 508. Bear hit = % SPX down. PW bear uses down moves as wins. 15M/18M computed from Yahoo ^GSPC (not stored in `forward_returns` yet).*\n\n**Overall Combo E \u2014 bearish framing (validated direction):**\n\n| Horizon | n_mature | Bear Hit% \u2193 | Avg Return% | Bear Avg Win% | Bear Avg Loss% | PW Bear% | Benchmark | Bear Excess |\n|---------|----------|-------------|-------------|---------------|----------------|----------|-----------|-------------|\n| 6M | 507 | 19.7% | +6.41% | -6.65% | +9.61% | +6.41% | 5.0% | +1.41pp |\n| 9M | 507 | 18.7% | +8.44% | -7.91% | +12.20% | +8.44% | 7.5% | +0.94pp |\n| 12M | 507 | 18.9% | +10.93% | -7.77% | +15.30% | +10.93% | 10.0% | +0.93pp |\n| 15M | 427 | 15.5% | +13.50% | -8.15% | +17.46% | +13.50% | 12.5% | +1.00pp |\n| 18M | 413 | 14.5% | +16.65% | -7.51% | +20.76% | +16.65% | 15.0% | +1.65pp |\n\n**SPX Up% (diagnostic \u2014 Combo E fires often coincide with positive drift):**\n\n| Horizon | n_mature | SPX Up% | PW Bull% | Bull Excess |\n|---------|----------|---------|----------|-------------|\n| 6M | 507 | 79.1% | +6.41% | +1.41pp |\n| 9M | 507 | 80.1% | +8.44% | +0.94pp |\n| 12M | 507 | 79.9% | +10.93% | +0.93pp |\n| 15M | 427 | 84.5% | +13.50% | +1.00pp |\n| 18M | 413 | 85.5% | +16.65% | +1.65pp |"
+}

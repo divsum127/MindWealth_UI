@@ -21,7 +21,7 @@
   "bq_raw": 4.0,
   "business_type": "compounder",
   "business_type_source": "auto",
-  "conviction_score": -1.0,
+  "conviction_score": -4.0,
   "created_at": "2026-05-12T20:17:05+00:00",
   "data_coverage": {
     "bq_auto_dimensions": {
@@ -189,24 +189,24 @@
   },
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 71645714067.68011,
+  "enterprise_value": 78091177893.70677,
   "eps_fwd": 6.04492,
   "eps_ttm": 4.05,
-  "ev_fwd_rev": 5.665,
+  "ev_fwd_rev": 6.1747,
   "fcf_ttm": 3191000064.0,
   "fd_direction": "negative",
   "fd_votes": {},
   "flags": [],
-  "fs_class": "moderate_high",
+  "fs_class": "moderate",
   "fs_quality_base": 60.0,
-  "fs_score": 65.0,
+  "fs_score": 54.0,
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 12647000064.0,
   "industry": "Travel Services",
-  "last_daily_update": "2026-06-11T18:42:12+00:00",
+  "last_daily_update": "2026-06-18T08:14:30+00:00",
   "last_full_calc": "2026-05-15T16:28:08+00:00",
   "manual_overrides": {},
-  "market_cap": 76965714067.68011,
+  "market_cap": 83411177893.70677,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -225,7 +225,7 @@
     "valuation:dividend_yield_zscore"
   ],
   "net_debt_stored": -5320000000.0,
-  "owner_earnings_yield": 0.04146,
+  "owner_earnings_yield": 0.038256,
   "pe_20y_array": [
     33.1188,
     32.7104,
@@ -308,8 +308,8 @@
     32.9236,
     32.8461
   ],
-  "pe_percentile_20y": 35.0,
-  "pe_ttm": 32.0198,
+  "pe_percentile_20y": 88.75,
+  "pe_ttm": 34.7012,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -318,13 +318,13 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 129.67999267578125,
+  "price": 140.5399932861328,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.32325,
   "sector": "Consumer Cyclical",
   "ticker": "ABNB",
-  "updated_at": "2026-06-11T18:42:12+00:00",
-  "valuation_tax": -5.0,
+  "updated_at": "2026-06-18T08:14:30+00:00",
+  "valuation_tax": -8.0,
   "valuation_tax_breakdown": {
     "components": {
       "business_type_relief": 0.0,
@@ -333,9 +333,9 @@
       "growth_multiple_fragility": 0.0,
       "market_regime_beta": 0.0,
       "oey_penalty": 0.0,
-      "pe_hist_percentile": 0.0
+      "pe_hist_percentile": -3.0
     },
-    "total": -5.0
+    "total": -8.0
   },
   "yield_trap_mkt_threshold": 0.06,
   "yield_trap_warning": false

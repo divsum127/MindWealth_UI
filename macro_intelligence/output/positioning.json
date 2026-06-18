@@ -1,7 +1,7 @@
 {
-  "date": "2026-06-11",
-  "ssi_level": 0.3279,
-  "ssi_percentile_5y": 27.37,
+  "date": "2026-06-18",
+  "ssi_level": 0.2955,
+  "ssi_percentile_5y": 24.1,
   "layer2_status": "CONFIRMED",
   "layer2_confirmed_count": 3,
   "ssi_multiplier": 1.2,
@@ -19,64 +19,64 @@
   },
   "inputs": {
     "hyg_lqd": {
-      "raw": 0.7344340933216866,
-      "norm": 1.3365968083639606
+      "raw": 0.7330146714867626,
+      "norm": 1.2925381994726148
     },
     "dbmf_beta": {
-      "raw": 0.46319595587292006,
-      "norm": -0.6323866946890446
+      "raw": 0.26287501733808416,
+      "norm": -0.16851546820653077
     },
     "cnn_fg": {
-      "raw": 27.2,
-      "norm": 0.456
+      "raw": 32.0285714285714,
+      "norm": 0.3594285714285721
     },
     "vix_ratio": {
-      "raw": 1.0724709897276754,
-      "norm": -0.1449419794553508
+      "raw": 1.1600678662249557,
+      "norm": -0.7
     },
     "layer2_votes": [
       {
         "input": "hyg_lqd",
-        "raw": 0.7344340933216866,
-        "pctile": 99.51609000725865,
+        "raw": 0.7330146714867626,
+        "pctile": 99.03358299106064,
         "vote": true,
         "signal": "risk_on"
       },
       {
         "input": "dbmf_beta",
-        "raw": 0.46319595587292267,
+        "raw": 0.2628750173380812,
         "vote": true,
         "signal": "low_beta"
       },
       {
         "input": "cnn_fg",
-        "raw": 27.2,
+        "raw": 32.0285714285714,
         "vote": false,
         "signal": "neutral"
       },
       {
         "input": "vix_ratio",
-        "raw": 1.0724709897276754,
+        "raw": 1.1600678662249557,
         "vote": true,
         "signal": "stress"
       }
     ],
     "layer3_cftc": {
-      "fm_net": -503509.0,
-      "rm_net": 984921.0,
-      "fm_pctile": 0.6451612903225806,
-      "rm_pctile": 80.64516129032258,
+      "fm_net": -459690.0,
+      "rm_net": 986838.0,
+      "fm_pctile": 4.516129032258064,
+      "rm_pctile": 81.93548387096774,
       "status": "PENDING_CFTC_CONFIRM",
-      "gross_net_divergence": 481412.0
+      "gross_net_divergence": 527148.0
     },
     "layer1": {
-      "aaii_spread": -0.7325999999999999,
-      "naaim_exposure": 86.82,
-      "cnn_fg_raw": 27.2,
-      "pct_above_200dma": 60.95617529880478,
-      "mcclellan": 36.821635302039795,
-      "nh_nl_ratio": 9.666666666666666,
-      "skew": 141.97000122070312
+      "aaii_spread": -17.2898,
+      "naaim_exposure": 79.27,
+      "cnn_fg_raw": 32.0285714285714,
+      "pct_above_200dma": 61.354581673306775,
+      "mcclellan": 82.97532317227888,
+      "nh_nl_ratio": 0.7307692307692307,
+      "skew": 142.6199951171875
     }
   },
   "validation": {

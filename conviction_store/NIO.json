@@ -187,10 +187,10 @@
   },
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 27586492950.99097,
+  "enterprise_value": 27148001939.01806,
   "eps_fwd": -0.019909643,
   "eps_ttm": -1.01,
-  "ev_fwd_rev": 0.3153,
+  "ev_fwd_rev": 0.3103,
   "fcf_ttm": -1905713792.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -201,10 +201,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 87487512576.0,
   "industry": "Auto Manufacturers",
-  "last_daily_update": "2026-06-11T18:42:12+00:00",
+  "last_daily_update": "2026-06-18T08:14:31+00:00",
   "last_full_calc": "2026-05-15T16:31:56+00:00",
   "manual_overrides": {},
-  "market_cap": 13092109950.99097,
+  "market_cap": 12653618939.018057,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -226,7 +226,7 @@
     "valuation:pe_ttm"
   ],
   "net_debt_stored": 14494383000.0,
-  "owner_earnings_yield": -0.145562,
+  "owner_earnings_yield": -0.150606,
   "pe_percentile_20y": null,
   "pe_ttm": null,
   "position_layers": {
@@ -237,12 +237,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 5.224999904632568,
+  "price": 5.050000190734863,
   "quote_type": "EQUITY",
   "roic_5y_avg": -1.18725,
   "sector": "Consumer Cyclical",
   "ticker": "NIO",
-  "updated_at": "2026-06-11T18:42:12+00:00",
+  "updated_at": "2026-06-18T08:14:31+00:00",
   "valuation_tax": -2.0,
   "valuation_tax_breakdown": {
     "components": {

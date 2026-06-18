@@ -21,7 +21,7 @@
   "bq_raw": 5.0,
   "business_type": "cyclical",
   "business_type_source": "auto",
-  "conviction_score": 2.0,
+  "conviction_score": 3.0,
   "created_at": "2026-05-12T20:17:44+00:00",
   "data_coverage": {
     "bq_auto_dimensions": {
@@ -189,26 +189,26 @@
   },
   "dividend_yield_5y_mean": 0.031777,
   "dividend_yield_5y_std": 0.026318,
-  "dividend_yield_current": 0.038898,
-  "dividend_yield_zscore": 0.2706,
-  "enterprise_value": 152736574698.41003,
+  "dividend_yield_current": 0.041827,
+  "dividend_yield_zscore": 0.3819,
+  "enterprise_value": 143350887654.76227,
   "eps_fwd": 5.07987,
   "eps_ttm": 5.59,
-  "ev_fwd_rev": 3.4307,
+  "ev_fwd_rev": 3.2198,
   "fcf_ttm": 8379000000.0,
   "fd_direction": "positive",
   "fd_votes": {},
   "flags": [],
   "fs_class": "moderate_high",
   "fs_quality_base": 62.5,
-  "fs_score": 67.5,
+  "fs_score": 72.5,
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 44521000000.0,
   "industry": "Oil & Gas E&P",
-  "last_daily_update": "2026-06-11T18:42:12+00:00",
+  "last_daily_update": "2026-06-18T08:14:31+00:00",
   "last_full_calc": "2026-05-18T20:48:08+00:00",
   "manual_overrides": {},
-  "market_cap": 134048574698.41003,
+  "market_cap": 124662887654.76227,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 18688000000.0,
-  "owner_earnings_yield": 0.062507,
+  "owner_earnings_yield": 0.067213,
   "pe_20y_array": [
     10.8629,
     11.132,
@@ -238,8 +238,8 @@
     11.9631,
     12.1919
   ],
-  "pe_percentile_20y": 66.67,
-  "pe_ttm": 11.4973,
+  "pe_percentile_20y": 16.67,
+  "pe_ttm": 10.6923,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -248,13 +248,13 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 64.2699966430664,
+  "price": 59.77000045776367,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.22825001,
   "sector": "Energy",
   "ticker": "CNQ.TO",
-  "updated_at": "2026-06-11T18:42:12+00:00",
-  "valuation_tax": -3.0,
+  "updated_at": "2026-06-18T08:14:31+00:00",
+  "valuation_tax": -2.0,
   "valuation_tax_breakdown": {
     "components": {
       "business_type_relief": 0.0,
@@ -263,9 +263,9 @@
       "growth_multiple_fragility": 0.0,
       "market_regime_beta": 0.0,
       "oey_penalty": 0.0,
-      "pe_hist_percentile": -1.0
+      "pe_hist_percentile": 0.0
     },
-    "total": -3.0
+    "total": -2.0
   },
   "yield_trap_mkt_threshold": 0.07,
   "yield_trap_warning": false

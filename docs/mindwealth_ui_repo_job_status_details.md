@@ -914,3 +914,324 @@ This file captures minute-level implementation context for each completed task:
 **Things deferred:** None — doc-only sync.
 
 **Caveats:** Step 5.5 (Rohit unsent email) has no report section until attachment received.
+
+---
+
+### Task — Generate nightly macro briefing for 2026-06-10 (2026-06-11)
+
+**Implementation assumptions:**
+- `daily_readings` for 2026-06-10 already had 12 variables in `runic.db`; no forced FRED re-pull required.
+- `use_claude=True` for full five-paragraph narrative (Tavily headlines + regime context).
+- Copies written to `testing/macro_report_updates/` alongside default `macro_intelligence/output/`.
+
+**Key decisions:**
+- Used inline `run_nightly` + `write_briefing` to testing dir (same pattern as 2026-06-09 run).
+- Did not regenerate markdown pipeline report; deliverable is the Runic briefing PDF.
+
+**Things deferred:**
+- Analog forward returns show 0% for recent dates (2026-06-19/26, 2026-07-03) because outcomes are not yet realized.
+
+**Edge cases:**
+- Combo C not in active list on this date (prior cancel state from MRU-03 may apply on later dates only).
+- Combo E shows CONFIRMED with CAPE+NFCI legs but 19% 12M hit rate; F outranks on priority/horizon fit.
+
+**Caveats:**
+- Run completed in ~46s; CFTC parse warning (date format inference) is benign.
+
+---
+
+### Task — Macro threshold validation plan refinement (testingv2) (2026-06-16)
+
+**Implementation assumptions:**
+- Plan-only task; no backtests executed. Quick DB query via Python confirmed percentile scale inconsistency.
+- `percentiles.py` returns 0–100; ~220 legacy rows in `daily_readings` still on 0–1 scale.
+- Prior `F_per_variable_sweep.json` is regression baseline only — 13/22 bands have n=0 due to band/scale mismatch.
+
+**Key decisions:**
+- Added P1.0 DB normalization before any sweep re-runs.
+- `threshold_sweep_v2.py` uses raw CONFIG thresholds + first-crossing + hostile-regime PW slice (HIKING/TIGHTENING/INVERTED).
+- Named combo gate sweeps cover B, F, E, D at validated horizons (3M/6M/12M/5D).
+- Output path: `macro_intelligence/analysis/regime_v2_experiments/threshold_sweep_v2/`.
+
+**Things deferred:**
+- P1.0–P4 execution (script build, sweeps, report) — next session.
+- Combo B leg replay logic (0 ACTIVE fires in DB; must simulate from daily legs).
+
+**Edge cases not handled in plan:**
+- Dual-condition vars (VIX, HY, NFCI) may have very low n at tightest bands.
+- CPI surprise n≈31 may fail n≥5 at extreme bands.
+
+**Caveats:**
+- `combo_threshold_sweep.py` is a stub — Phase 3 requires substantial extension, not just CLI wrapper.
+- testingv1_feedback `testingv2_plan.md` covers broader Rohit feedback (HMM, curve fix); this testingv2 dir is threshold-validation-only scope.
+
+---
+
+## 2026-06-16 — Macro Regime Report inline edits + 6 new DB queries (testingv4)
+
+**Task:** Run T2/T3/T4/T5/T6/T10 queries against `runic.db`, insert results inline in report at specified sections, add 8 Rohit text clarifications, create testingv4_status.md.
+
+**Implementation assumptions:**
+- `forward_returns` stores SPX returns as decimal percentages (e.g., 6.41 = 6.41%, not 0.0641). Verified from sample values and min/max range.
+- T2 (9-state SPX tables) computed on combo-fire basis (dates when combo fires occurred in each regime state), not raw calendar-date SPX returns. This is the correct interpretation — regime-conditional combo returns, not unconditional SPX returns.
+- T3 (TIGHT_* fires): 1,639 total rows; all 46 named-combo TIGHT_* fires are Combo A. No Combo B/D/E/F ever fired in TIGHT_* states. Full named-combo table (46 rows) included; unnamed fires summarized by sub-state.
+- T4 (Combo E multi-horizon): spx_18m NOT in DB — documented with ⚠️. Used 9m as nearest proxy below 18m. CAPE breakdown uses subquery on `daily_readings.raw_value` for CAPE on the fire date.
+- T5 (geo overlay): Used `macro_regime_log_v2.geo_overlay_v2` field (not legacy `geo_overlay`). Legacy `macro_regime_log` has all geo = NEUTRAL. Non-neutral data is only in v2 (3 episodes: COVID 2020, Ukraine 2022, tariff shock 2025).
+- T6 (TWY_ROC): DGS2 not stored in DB. Computed as: DGS2 ≈ T10Y (^TNX Yahoo) − T10Y2Y_bps/100 (CURVE var_id in daily_readings). Minor discrepancy vs FRED DGS2 (~±0.07pp). April 2025 anchor: computed −0.632pp on Apr 4 vs report's −0.55pp on Apr 7 (Friday vs Monday + rounding).
+- T10 (inversion episodes): 5 episodes, gap in 2006 treated as two separate episodes (7-week gap between Jul and Aug 2006 inversions). steepen_4wk_bps pulled from `meta_json` field of CURVE rows.
+
+**Things deferred / left for future:**
+- spx_18m: Not in DB. Would require extending the pipeline to compute and store 18-month SPX forward returns.
+- TWY_ROC as stored var_id: Currently must be computed on-the-fly from ^TNX + CURVE. Should be stored as a daily_readings row (var_id = 'DGS2' or 'TWY_ROC') from weekly FRED pull.
+- MODERATE CAPE Combo E bucket (25–30): n=127 historically but n=0 since 2018. Monitoring needed — if CAPE falls to 25–30, these thresholds would be most relevant.
+- HMM anchor labelling and posterior threshold tuning: 0w median lead time; needs 6+ months of live emission vectors before December decision.
+
+**Edge cases not handled:**
+- T2 join: Some combo fires may be double-counted if multiple combos fired on the same date in the same liquidity state. This is by design (each combo fire is an independent observation).
+- T6 TWY_ROC: Uses T10Y from Yahoo as proxy for Fed Funds rate context; not a direct DGS2 pull. FRED API would be more accurate.
+- T3 TIGHT_* includes generic (unnamed) fires which share SPX forward returns with named fires if they occur on the same date. Summary table correctly separates by runic_combo.
+
+**Key decisions made:**
+- Kept all 1,639 T3 rows as summary + full named-combo detail (not truncated) per Rohit's "insert every row" instruction.
+- T10 first-steepen-after defined as "after episode end" not "after episode trough" — steepening begins when the inversion ends and balance sheet dynamics change.
+- Used weekly Friday alignment throughout T2/T3/T5 since macro_regime_log_v2 is a weekly Friday series.
+
+**Caveats for next developer:**
+- The report file now has ~54K chars (up from ~29K). Consider splitting into sub-documents if it grows further.
+- T6 TWY_ROC band sweep uses Yahoo Finance ^TNX + CURVE from DB — requires internet access to refresh. The April 2025 values match the report's narrative anchor well.
+- All T2 returns are on combo-fire basis, not buy-and-hold. Comparing to unconditional SPX returns requires stripping market drift.
+
+---
+
+### Task — Execute full testingv2 threshold validation experiment (P1–P4) (2026-06-16)
+
+**Implementation assumptions:**
+- Legacy percentile normalization: rows with `0 < unconditional_pctile <= 1.0` multiplied by 100 in-place on `runic.db` (220 rows across 9 variables).
+- First-crossing uses 5 calendar-day cooldown (not trading-day) after each fire; hostile slice joins `macro_regime_log` + `macro_regime_log_v2` on event date (7-day lookback).
+- Combo B leg replay requires simultaneous VIX level+pctile≥80, HY bps+pctile≥80, CFTC≤threshold on aligned `daily_readings` dates (not `combo_fires` ACTIVE rows).
+- Benchmarks per user spec: 1m=+0.5%, 3m=+2.5%, 6m=+5%, 9m=+7.5%, 12m=+10% (differs from `metrics.py` default 1.25% for 1m).
+
+**Key decisions:**
+- Built `threshold_sweep_v2.py` with raw CONFIG bands per plan tables; SUMMARY prefers `CURRENT_RARE` band for baseline comparison.
+- Extended `combo_threshold_sweep.py` with `run_all_combo_sweeps()`; separate CLI `combo_gate_sweep_v2.py`.
+- Combo D uses `spx_1w` horizon key with 5 trading days (validated 5D per Rohit).
+- Only WTI cleared all four success criteria (change_justified=true at 6M: WTI_down_15pct vs WTI_up_6pct).
+
+**Things deferred:**
+- Combo B combo_detector AND vs CONFIG OR for HY level/pctile — may explain n=0 for 3-of-3; align detector or document strictness.
+- CPI threshold validation (n=1 at 0.20pp RARE since 1990).
+- Hostile-regime null slices for sparse CAPE/VXTS events.
+
+**Edge cases not handled:**
+- Combo B 3-of-3 first-crossing n=0 for all gate variants; 2-of-3 produces n=12 with strong PW (+5.06% excess).
+- HY best alternative (pctile_70plus) has high excess but hit rate 9.1% — correctly rejected by criteria.
+- WTI justified change is directional (down-side collapse vs up-side spike), not a simple symmetric threshold tweak.
+
+**Caveats for next developer:**
+- Re-run `normalize_pctile_scale.py` is idempotent (0 rows after first run).
+- `threshold_sweep_v2.py` ~227s runtime (Yahoo SPX fetch + 12 vars); combo sweeps ~20s.
+- Report at `testing/macro_th_exp/testingv2/threshold_validation_report.md` + PDF (41KB).
+
+---
+
+### Task — Rohit feedback sectionwise answers document (2026-06-16)
+
+**Implementation assumptions:**
+- `feedback_sectionwise_details.md` is the authoritative question list; each TODO block gets an **Answer (2026-06-16):** block immediately below.
+- Data pulled from v4 inline report edits (T2/T3/T4/T5/T6/T10 queries), `testingv2_report.md`, `threshold_validation_report.md`, and JSON artifacts in `regime_v2_experiments/`.
+- First-person analyst voice (Divyanshu); no em dashes per report-creation skill.
+
+**Key decisions:**
+- Preserved section numbering from feedback doc (§1, §2, A1, A3, A4, A6, B1, B2, B3, C, F).
+- PENDING items called out explicitly: i3 Invest cheatsheet compare (needs Rohit reference values), 18M forward returns (not in DB), WALCL 0.1/0.2/0.3 FM-event sweep, Parth web UI Combo A naming.
+- B2 history window answer uses Rohit June 11 correction (VIX/HY/VXTS = full expanding, not rolling_3y) superseding June 6 B4 audit FAIL.
+
+**Things deferred:**
+- Google Drive Excel exports (inline tables provided; full JSON at `threshold_sweep_v2/` and `regime_v2_experiments/`).
+- Formal B4 audit re-run with corrected expected-window map.
+
+**Edge cases not handled:**
+- Combo C n=4 at all horizons included for transparency despite statistical gate failure.
+- TIGHT_TIGHTENING 3M anomalously positive due to 2009 recovery fires (noted in main report).
+
+**Caveats for next developer:**
+- i3 cheatsheet diff column blocked until Rohit reshare reference hit rates.
+- Document is ~580 lines; send to Rohit as standalone file per his §10 format instruction.
+
+---
+
+### Task — Expand threshold_validation_report.md with full supporting data (2026-06-16)
+
+**Implementation assumptions:**
+- All appendix numbers sourced from JSON artifacts in `macro_intelligence/analysis/regime_v2_experiments/threshold_sweep_v2/` (12 variable sweeps + 4 combo sweeps + SUMMARY.json).
+- SPX forward returns at 21/63/126/189/252 trading days; benchmarks 0.5/2.5/5.0/7.5/10.0% at those horizons.
+- Primary validation horizon per variable follows SUMMARY.json (most 3M; WTI 6M; CAPE 12M).
+
+**Key decisions:**
+- Added top-level **Method, instruments, and test specification** plus **Instrument and test window reference** table (data source, percentile window, DB date range, row counts).
+- Each of 12 variables gets **full sweep data** (CONFIG bands + current-band multi-horizon table + all bands × 5 horizons appendix).
+- Combo B/F/E/D get separate gate-sweep detail sections with all tested variants.
+
+**Things deferred:**
+- 18M horizon (not in `forward_returns` schema).
+- CPI full validation (n=1 at current RARE band).
+
+**Edge cases not handled:**
+- Combo B leg replay AND vs CONFIG OR for HY may explain n=0 for strict 3-of-3 (noted in report).
+
+**Caveats for next developer:**
+- Report is ~1,679 lines; PDF ~251 KB. Temp `_report_appendix_generated.md` removed after merge.
+
+---
+
+### Task — Contextual verdict columns for threshold validation §4a/§4b (2026-06-16)
+
+**Implementation assumptions:**
+- Verdicts are hand-authored per (variable, tier, side, band) in `_VERDICT_OVERRIDES`; generic fallback only when no override exists.
+- Best alt selection unchanged: same-side bands only; bear ranked by hit then excess; bull by excess then hit; n≥5 for alts.
+- Sparse bands (n<3) return Defer unless an override supplies a policy Keep CONFIG message.
+
+**Key decisions:**
+- Dropped hard gates (Δ≥2pp, hit≥60%) from verdict column and methodology table; replaced with combo-role + economic-meaning narrative.
+- WTI down_15pct is the only "Consider" across all 12 variables (RARE and EXTREME down legs); symmetric up-leg stays CONFIG.
+- CAPE high bear: keep CONFIG despite alt improving bear hit — PW excess on current band is misleading (SPX rallied; structural valuation not a 12M timer).
+
+**Things deferred:**
+- Hostile-regime check not embedded in per-row verdict text (still in appendix data).
+- NFCI EXTREME rows use same ±0.3 SD bands as RARE in production — noted in verdict.
+
+**Edge cases not handled:**
+- CNH/CURVE extreme sparse rows use override Keep CONFIG even when best alt looks better on paper (n too small to retune policy extremes).
+
+**Caveats for next developer:**
+- Re-run `python3.12 scripts/generate_section4_tables.py` then patch report tables from `_section_4a_table.md` / `_section_4b_table.md` if sweep JSONs change.
+- PDF regenerated at ~243 KB after verdict update.
+
+---
+
+### Task — Threshold validation v2 understanding doc (2026-06-16)
+
+**Implementation assumptions:**
+- Source spec = `threshold_validation_plan.md`; status = `threshold_validation_report.md` + `testingv2_status.md`.
+- Follows create-understanding-doc skill: Q&A columns use Doubts to ask Rohit Sir (no Gap/sign-off language).
+- User requested summary section at top listing all experiments and outcomes.
+
+**Key decisions:**
+- Grouped work as P1 (data), P2 (12-var sweep + §4a/b), P3 (combos B/F/E/D), P4 (report/CSVs).
+- Highlighted only actionable change candidates: WTI down_15pct, Combo B 2-of-3, Combo F optional 5%.
+- Consolidated 12 doubts from report §8 and per-section Q&A.
+
+**Things deferred:**
+- No PDF for understanding doc (skill: markdown only unless asked).
+- Did not duplicate full appendix band tables — pointed to report.
+
+**Caveats for next developer:**
+- Update understanding doc if CONFIG changes or sweeps re-run; summary table is the quick entry point.
+
+---
+
+### Task — Rohit feedback sectionwise answers understanding doc (2026-06-16)
+
+**Implementation assumptions:**
+- Source spec = `feedback_sectionwise_details.md` (32 Rohit TODO blocks); status = `feedback_sectionwise_answers.md` + `testingv4_status.md`.
+- Follows create-understanding-doc skill: Q&A columns use Doubts to ask Rohit Sir; no Gap/sign-off language.
+- User requested summary section at top listing all experiments performed and outcomes.
+
+**Key decisions:**
+- Top summary table covers §1 horizon re-query, §2/B2 window audit, T2–T6/T10 DB tests, A1/A3/A4/A6/B1/C/F2 thematic answers, and 13k fires explanation.
+- Mirrored major answer sections (horizons, liquidity, CAPE, geo, TWY, HMM, inversion) with plan vs status blocks and selective Q&A rows (not duplicating every inline table from answers doc).
+- Cross-linked to testingv2 threshold validation understanding doc as separate workstream.
+- Consolidated 15 doubts deduplicated from per-section Q&A.
+
+**Things deferred:**
+- No PDF for understanding doc (skill: markdown only unless asked).
+- i3 cheatsheet compare remains blocked until Rohit reshare reference file.
+
+**Edge cases not handled:**
+- Combo C n=4 and thin geo slices flagged in doubts but not expanded with full fire lists (point to answers doc).
+
+**Caveats for next developer:**
+- Update summary table if testingv5 runs or pending items (18M, WALCL FM sweep) close.
+- Output path: `testing/macro_th_exp/testingv1_feedback/understanding_and_research/`.
+
+---
+
+### Task — Nightly CAPE/CFTC source freshness + auto-refresh (2026-06-17)
+
+**Implementation assumptions:**
+- CAPE stale when `(report_date - source_date).days > cape_max_lag_days` (default 7); monthly Shiller data may still fail to improve after re-scrape.
+- CFTC stale when latest Tuesday position in series is **older than** `expected_latest_cftc_tuesday(as_of)` (Tue positions published Fri = Tue + 3 calendar days).
+- `ensure_cape_cftc_fresh` runs at start of every `load_all_series(as_of=...)` before CAPE/CFTC series are read into cache.
+
+**Key decisions:**
+- CAPE refresh: `fetch_cape_history()` re-scrapes multpl.com (not cache-only read).
+- CFTC refresh: existing `refresh_cftc_zip_if_stale()` then `force_refresh_cftc_zip()` if still behind expected Tuesday.
+- Audit exposed as JSON `source_freshness` on nightly payload; CAPE/CFTC `meta_json` stores `source_date`, `lag_days`, `expected_source_date` (CFTC).
+- Variable dashboard `source_note` includes data-as-of date and lag for CAPE/CFTC.
+
+**Things deferred:**
+- Surfacing freshness in PDF variable table column (only footnote via source_note on CFTC/CAPE rows if renderer uses it).
+- Auto-refresh for other slow variables (NFCI weekly, WALCL weekly).
+
+**Edge cases:**
+- CFTC 7-day lag on Tuesday report is **expected** (not stale) when source equals expected Tuesday.
+- Historical `--date` runs refresh against that as_of's expected CFTC Tuesday, not today's ZIP only.
+
+**Caveats:**
+- `force_refresh_cftc_zip` downloads current calendar year ZIP; historical backfill dates cannot retrieve future CFTC rows.
+- Smoke 2026-06-16: CAPE 2026-06-04 → 2026-06-16 after refresh; CFTC Jun 9 OK.
+
+---
+
+### 2026-06-18 — Upgrade Claude Narrative Prompt (Full Combo Coverage + Variable Significance)
+
+**Task:** Rewrite `nightly_briefing.py` to produce a 600-750 word structured briefing covering all 7 combos and all 12 variables with significance context.
+
+**Implementation decisions:**
+- Embedded a 12-variable significance guide and a 7-combo significance guide directly in the SYSTEM prompt so Claude always has the correct thresholds and directional meaning, regardless of what context it was trained on.
+- Changed mandatory output from 5 short paragraphs (380-450w) to 5 detailed sections (600-750w) with specific coverage requirements for each combo.
+- Section 2 now requires Claude to cover ALL 7 combos A-G (including inactive/cancelled), stating which legs are met and which are missing with exact values vs thresholds.
+- Section 3 requires walking through EXTREME/RARE variables first, then three numbered reasons the dominant signal wins.
+- USER prompt enriched: passes `combo_status_rows` (all 7 rows including INACTIVE), explicit EXTREME/RARE tier lists, CFTC FM + RM percentile note, SSI multiplier, VIX bypass flag.
+- `_template_briefing` fallback rewritten to produce a structured five-section output using `combo_status_rows`, variable tiers, analog details (3m/6m/12m), and regime dimensions — much more informative than the previous single-paragraph template.
+- `narrative_max_tokens` raised from 1200 to 2200 in `CONFIG.yaml` to allow the longer output.
+
+**Assumptions:**
+- `combo_status_rows` is already built before `generate_nightly_briefing` is called (it is — built in `run_nightly` before narrative generation).
+- `cftc_rm_pctile` key on the CFTC variable row is populated by `_variables_dashboard` when the DB has RM percentile data.
+
+**Things deferred:**
+- Leg-level variable values for inactive/watch combos are not passed to Claude — Claude must infer from the 12-variable dashboard which legs are met. A future improvement would pass per-combo leg detail (e.g. `{"B": {"vix_met": false, "hy_met": false, "cftc_met": true}}`).
+- Prompt currently targets English text only; no multi-language support.
+
+**Edge cases:**
+- If `combo_status_rows` is empty (e.g. first run before `build_combo_status_rows` is populated), the USER prompt falls back to iterating `active_combos` and `watch_combos` only — watch combos merged in `_template_briefing` will not have leg detail.
+
+**Caveats:**
+- The SYSTEM prompt contains hardcoded thresholds (e.g. VIX 25, CAPE 28). If CONFIG.yaml thresholds are changed, the SYSTEM prompt must be updated manually to stay consistent.
+
+---
+
+### Task — Combo E horizon validation sweep 6M–18M T11 (2026-06-18)
+
+**Implementation assumptions:**
+- Population: all `combo_fires` with `runic_combo='E'` (n=508).
+- Horizons: 126/189/252/315/378 NYSE trading days = 6/9/12/15/18M.
+- Bear metrics use `probability_weighted_summary(bullish=False)`; bull up% table retained for continuity with T4.
+- 6M/9M/12M prefer DB `forward_returns` when present; 15M/18M computed via Yahoo `^GSPC`.
+
+**Key decisions:**
+- **Keep 12M as CONFIG primary** — bear hit 18.9% with full n_mature=507; 6M only +0.8pp higher bear hit; 15M/18M lower bear hit and thinner samples.
+- Report both bear-framing (validated direction) and SPX Up% diagnostic tables.
+- Did not change `combo_hit_rates.E` in CONFIG (experiment validates existing choice).
+
+**Things deferred:**
+- Persist `spx_15m` / `spx_18m` in `forward_returns` schema and backfill pipeline.
+- CAPE bucket breakdown at 15M/18M.
+
+**Edge cases not handled:**
+- Recent fires lack mature 15M/18M windows (n drops to 427/413).
+
+**Caveats for next developer:**
+- Re-run: `python3 scripts/combo_e_horizon_sweep.py`
+- Artifact: `macro_intelligence/analysis/regime_v2_experiments/COMBO_E_horizon_sweep_6_18m.json`

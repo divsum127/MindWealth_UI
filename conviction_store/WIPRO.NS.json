@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.012176,
   "dividend_yield_5y_std": 0.012598,
-  "dividend_yield_current": 0.095845,
-  "dividend_yield_zscore": 6.6415,
-  "enterprise_value": 1928622617550.25,
+  "dividend_yield_current": 0.093355,
+  "dividend_yield_zscore": 6.4438,
+  "enterprise_value": 1978245616865.1345,
   "eps_fwd": 14.36752,
   "eps_ttm": 12.56,
-  "ev_fwd_rev": 2.0822,
+  "ev_fwd_rev": 2.1358,
   "fcf_ttm": 145935000000.0,
   "fd_direction": "stable",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 926240014336.0,
   "industry": "Information Technology Services",
-  "last_daily_update": "2026-06-11T18:42:12+00:00",
+  "last_daily_update": "2026-06-18T08:14:31+00:00",
   "last_full_calc": "2026-05-18T20:51:05+00:00",
   "manual_overrides": {},
-  "market_cap": 1860807617550.25,
+  "market_cap": 1910430616865.1345,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 67815000000.0,
-  "owner_earnings_yield": 0.078426,
+  "owner_earnings_yield": 0.076389,
   "pe_20y_array": [
     20.6819,
     18.6096,
@@ -233,7 +233,7 @@
     14.7745
   ],
   "pe_percentile_20y": 0.0,
-  "pe_ttm": 14.1218,
+  "pe_ttm": 14.4984,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -242,12 +242,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 177.37,
+  "price": 182.10000610351562,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.15487,
   "sector": "Technology",
   "ticker": "WIPRO.NS",
-  "updated_at": "2026-06-11T18:42:12+00:00",
+  "updated_at": "2026-06-18T08:14:31+00:00",
   "valuation_tax": 0.0,
   "valuation_tax_breakdown": {
     "components": {

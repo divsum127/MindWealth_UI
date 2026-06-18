@@ -1,0 +1,251 @@
+{
+  "combo": "B",
+  "validated_horizon": "spx_3m",
+  "direction": "bullish",
+  "current_gates": {
+    "all_required": [
+      "VIX",
+      "HY",
+      "CFTC"
+    ],
+    "vix_min": 25,
+    "hy_bps_min": 400,
+    "cftc_max_pctile": 15
+  },
+  "note": "Leg replay on daily_readings; HY leg uses CONFIG OR (OAS\u2265threshold OR pctile\u226580); VIX uses AND (level+pctile)",
+  "tests": [
+    {
+      "test_id": "CB_VIX_20",
+      "param": "vix_min",
+      "value": 20,
+      "hy_bps_min": 400,
+      "cftc_max_pctile": 15,
+      "legs_required": 3,
+      "n": 10,
+      "pw_3m": {
+        "n": 10,
+        "hit_rate": 0.7,
+        "avg_win": 8.639997130067615,
+        "avg_loss": -2.0964354745851863,
+        "pw_expected": 5.419067348671774,
+        "benchmark_pct": 2.5,
+        "excess_pct": 2.919067348671774,
+        "avg": 5.419067348671777,
+        "median": 7.438640098118006,
+        "worst": -3.971397194816383
+      }
+    },
+    {
+      "test_id": "CB_VIX_25",
+      "param": "vix_min",
+      "value": 25,
+      "hy_bps_min": 400,
+      "cftc_max_pctile": 15,
+      "legs_required": 3,
+      "n": 9,
+      "pw_3m": {
+        "n": 9,
+        "hit_rate": 0.7777777777777778,
+        "avg_win": 8.639997130067615,
+        "avg_loss": -1.158954614469588,
+        "pw_expected": 6.462452297948236,
+        "benchmark_pct": 2.5,
+        "excess_pct": 3.9624522979482357,
+        "avg": 6.462452297948238,
+        "median": 7.941737264287915,
+        "worst": -1.5406189777835775
+      }
+    },
+    {
+      "test_id": "CB_VIX_30",
+      "param": "vix_min",
+      "value": 30,
+      "hy_bps_min": 400,
+      "cftc_max_pctile": 15,
+      "legs_required": 3,
+      "n": 7,
+      "pw_3m": {
+        "n": 7,
+        "hit_rate": 0.8571428571428571,
+        "avg_win": 11.363093047880609,
+        "avg_loss": -1.5406189777835775,
+        "pw_expected": 9.519705615642868,
+        "benchmark_pct": 2.5,
+        "excess_pct": 7.019705615642868,
+        "avg": 9.519705615642868,
+        "median": 9.61798266606053,
+        "worst": -1.5406189777835775
+      }
+    },
+    {
+      "test_id": "CB_HY_350",
+      "param": "hy_bps_min",
+      "value": 350,
+      "vix_min": 25,
+      "cftc_max_pctile": 15,
+      "legs_required": 3,
+      "n": 9,
+      "pw_3m": {
+        "n": 9,
+        "hit_rate": 0.7777777777777778,
+        "avg_win": 8.639997130067615,
+        "avg_loss": -1.158954614469588,
+        "pw_expected": 6.462452297948236,
+        "benchmark_pct": 2.5,
+        "excess_pct": 3.9624522979482357,
+        "avg": 6.462452297948238,
+        "median": 7.941737264287915,
+        "worst": -1.5406189777835775
+      }
+    },
+    {
+      "test_id": "CB_HY_400",
+      "param": "hy_bps_min",
+      "value": 400,
+      "vix_min": 25,
+      "cftc_max_pctile": 15,
+      "legs_required": 3,
+      "n": 9,
+      "pw_3m": {
+        "n": 9,
+        "hit_rate": 0.7777777777777778,
+        "avg_win": 8.639997130067615,
+        "avg_loss": -1.158954614469588,
+        "pw_expected": 6.462452297948236,
+        "benchmark_pct": 2.5,
+        "excess_pct": 3.9624522979482357,
+        "avg": 6.462452297948238,
+        "median": 7.941737264287915,
+        "worst": -1.5406189777835775
+      }
+    },
+    {
+      "test_id": "CB_HY_450",
+      "param": "hy_bps_min",
+      "value": 450,
+      "vix_min": 25,
+      "cftc_max_pctile": 15,
+      "legs_required": 3,
+      "n": 7,
+      "pw_3m": {
+        "n": 7,
+        "hit_rate": 0.8571428571428571,
+        "avg_win": 10.00096302423478,
+        "avg_loss": -1.5406189777835775,
+        "pw_expected": 8.352165595375014,
+        "benchmark_pct": 2.5,
+        "excess_pct": 5.8521655953750145,
+        "avg": 8.352165595375016,
+        "median": 9.502045139002975,
+        "worst": -1.5406189777835775
+      }
+    },
+    {
+      "test_id": "CB_CFTC_10",
+      "param": "cftc_max_pctile",
+      "value": 10,
+      "vix_min": 25,
+      "hy_bps_min": 400,
+      "legs_required": 3,
+      "n": 7,
+      "pw_3m": {
+        "n": 7,
+        "hit_rate": 0.7142857142857143,
+        "avg_win": 8.14740209514052,
+        "avg_loss": -1.158954614469588,
+        "pw_expected": 5.488443035251919,
+        "benchmark_pct": 2.5,
+        "excess_pct": 2.988443035251919,
+        "avg": 5.488443035251919,
+        "median": 7.040169240473652,
+        "worst": -1.5406189777835775
+      }
+    },
+    {
+      "test_id": "CB_CFTC_15",
+      "param": "cftc_max_pctile",
+      "value": 15,
+      "vix_min": 25,
+      "hy_bps_min": 400,
+      "legs_required": 3,
+      "n": 9,
+      "pw_3m": {
+        "n": 9,
+        "hit_rate": 0.7777777777777778,
+        "avg_win": 8.639997130067615,
+        "avg_loss": -1.158954614469588,
+        "pw_expected": 6.462452297948236,
+        "benchmark_pct": 2.5,
+        "excess_pct": 3.9624522979482357,
+        "avg": 6.462452297948238,
+        "median": 7.941737264287915,
+        "worst": -1.5406189777835775
+      }
+    },
+    {
+      "test_id": "CB_CFTC_20",
+      "param": "cftc_max_pctile",
+      "value": 20,
+      "vix_min": 25,
+      "hy_bps_min": 400,
+      "legs_required": 3,
+      "n": 10,
+      "pw_3m": {
+        "n": 10,
+        "hit_rate": 0.7,
+        "avg_win": 9.372842919142062,
+        "avg_loss": -2.8614318516246935,
+        "pw_expected": 5.702560487912035,
+        "benchmark_pct": 2.5,
+        "excess_pct": 3.2025604879120353,
+        "avg": 5.702560487912035,
+        "median": 8.721891201645445,
+        "worst": -6.266386325934905
+      }
+    },
+    {
+      "test_id": "CB_2of3_legs",
+      "param": "legs_required",
+      "value": 2,
+      "vix_min": 25,
+      "hy_bps_min": 400,
+      "cftc_max_pctile": 15,
+      "legs_required": 2,
+      "n": 41,
+      "pw_3m": {
+        "n": 41,
+        "hit_rate": 0.7560975609756098,
+        "avg_win": 7.87663041553881,
+        "avg_loss": -5.361922123629354,
+        "pw_expected": 4.64771516208316,
+        "benchmark_pct": 2.5,
+        "excess_pct": 2.14771516208316,
+        "avg": 4.647715162083161,
+        "median": 5.371893455738896,
+        "worst": -15.279157624681883
+      }
+    }
+  ],
+  "current_baseline": {
+    "test_id": "CB_VIX_25",
+    "param": "vix_min",
+    "value": 25,
+    "hy_bps_min": 400,
+    "cftc_max_pctile": 15,
+    "legs_required": 3,
+    "n": 9,
+    "pw_3m": {
+      "n": 9,
+      "hit_rate": 0.7777777777777778,
+      "avg_win": 8.639997130067615,
+      "avg_loss": -1.158954614469588,
+      "pw_expected": 6.462452297948236,
+      "benchmark_pct": 2.5,
+      "excess_pct": 3.9624522979482357,
+      "avg": 6.462452297948238,
+      "median": 7.941737264287915,
+      "worst": -1.5406189777835775
+    }
+  },
+  "run_date": "2026-06-16"
+}

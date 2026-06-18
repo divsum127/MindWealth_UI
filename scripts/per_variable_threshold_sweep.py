@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Per-variable threshold sweep (Rohit v2 §1d) — isolation, not combos.
 
-For each of 11 non-curve variables, fire on first crossing into percentile
-bands (two levels per var) and measure SPX forward returns with PW columns.
+For each of 12 variables, fire on first crossing into percentile bands
+(0-100 scale) and measure SPX forward returns with PW columns.
 """
 
 from __future__ import annotations
@@ -27,19 +27,33 @@ from src.macro_intelligence.data.yahoo_pull import fetch_yahoo_close  # noqa: E4
 from src.macro_intelligence.db.connection import get_connection, init_db  # noqa: E402
 from src.macro_intelligence.engine.forward_returns import forward_return_pct  # noqa: E402
 
+def _norm_pctile(p: float | None) -> float | None:
+    """Legacy rows stored 0-1; current pipeline uses 0-100."""
+    if p is None:
+        return None
+    val = float(p)
+    if 0 < val <= 1.0:
+        return val * 100.0
+    return val
+
+
 # var_id -> list of (label, low_pctile_inclusive, high_pctile_inclusive), bullish
 SWEEP_BANDS: dict[str, list[tuple[str, float, float, bool]]] = {
-    "VIX": [("high_70_79", 0.70, 0.79, False), ("high_80_plus", 0.80, 1.0, False)],
-    "HY": [("high_75_84", 0.75, 0.84, False), ("high_85_plus", 0.85, 1.0, False)],
-    "VXTS": [("high_75_84", 0.75, 0.84, False), ("high_85_plus", 0.85, 1.0, False)],
-    "NFCI": [("tight_70_79", 0.70, 0.79, False), ("tight_80_plus", 0.80, 1.0, False)],
-    "WALCL": [("high_75_84", 0.75, 0.84, True), ("high_85_plus", 0.85, 1.0, True)],
-    "CNH": [("high_75_84", 0.75, 0.84, False), ("high_85_plus", 0.85, 1.0, False)],
-    "WTI": [("high_75_84", 0.75, 0.84, False), ("high_85_plus", 0.85, 1.0, False)],
-    "CFTC": [("low_5_14", 0.05, 0.14, True), ("low_below_5", 0.0, 0.05, True)],
-    "CAPE": [("high_85_94", 0.85, 0.94, False), ("high_95_plus", 0.95, 1.0, False)],
-    "CPI": [("high_75_84", 0.75, 0.84, False), ("high_85_plus", 0.85, 1.0, False)],
-    "GSR": [("high_75_84", 0.75, 0.84, False), ("high_85_plus", 0.85, 1.0, False)],
+    "VIX": [("high_70_79", 70, 79, False), ("high_80_plus", 80, 100, False)],
+    "HY": [("high_75_84", 75, 84, False), ("high_85_plus", 85, 100, False)],
+    "VXTS": [("high_75_84", 75, 84, False), ("high_85_plus", 85, 100, False)],
+    "NFCI": [("tight_70_79", 70, 79, False), ("tight_80_plus", 80, 100, False)],
+    "WALCL": [("high_75_84", 75, 84, True), ("high_85_plus", 85, 100, True)],
+    "CNH": [("high_75_84", 75, 84, False), ("high_85_plus", 85, 100, False)],
+    "WTI": [("high_75_84", 75, 84, False), ("high_85_plus", 85, 100, False)],
+    "CFTC": [("low_5_14", 5, 14, True), ("low_below_5", 0, 5, True)],
+    "CAPE": [("high_85_94", 85, 94, False), ("high_95_plus", 95, 100, False)],
+    "CPI": [("high_75_84", 75, 84, False), ("high_85_plus", 85, 100, False)],
+    "GSR": [("high_75_84", 75, 84, False), ("high_85_plus", 85, 100, False)],
+    "CURVE": [
+        ("inverted_70_79", 70, 79, False),
+        ("inverted_80_plus", 80, 100, False),
+    ],
 }
 
 HORIZONS = [
@@ -71,7 +85,10 @@ def _first_cross_events(
     events: list[dict[str, Any]] = []
     prev_in = False
     for r in rows:
-        p = float(r["unconditional_pctile"])
+        p = _norm_pctile(r["unconditional_pctile"])
+        if p is None:
+            prev_in = False
+            continue
         in_band = lo <= p <= hi
         if in_band and not prev_in:
             dt = pd.Timestamp(r["date"])
@@ -127,7 +144,7 @@ def main() -> None:
     parser.add_argument("--start", default="2010-01-01")
     parser.add_argument(
         "--out",
-        default="macro_intelligence/analysis/regime_v2_experiments/F_per_variable_sweep.json",
+        default="macro_intelligence/analysis/regime_v2_experiments/F_per_variable_sweep_v2.json",
     )
     args = parser.parse_args()
     payload = run_sweep(args.start)

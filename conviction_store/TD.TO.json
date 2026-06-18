@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.047175,
   "dividend_yield_5y_std": 0.013091,
-  "dividend_yield_current": 0.026714,
-  "dividend_yield_zscore": -1.563,
-  "enterprise_value": 589902178301.651,
+  "dividend_yield_current": 0.025799,
+  "dividend_yield_zscore": -1.6329,
+  "enterprise_value": 599384934908.3405,
   "eps_fwd": 10.41024,
   "eps_ttm": 12.35,
-  "ev_fwd_rev": 8.9406,
+  "ev_fwd_rev": 9.0843,
   "fcf_ttm": -71791000000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 65979998208.0,
   "industry": "Banks - Diversified",
-  "last_daily_update": "2026-06-11T18:42:12+00:00",
+  "last_daily_update": "2026-06-18T08:14:31+00:00",
   "last_full_calc": "2026-05-18T20:50:49+00:00",
   "manual_overrides": {},
-  "market_cap": 267153178301.651,
+  "market_cap": 276635934908.34045,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 322749000000.0,
-  "owner_earnings_yield": -0.268726,
+  "owner_earnings_yield": -0.259514,
   "pe_20y_array": [
     11.0274,
     10.7817,
@@ -231,7 +231,7 @@
     12.3071
   ],
   "pe_percentile_20y": 100.0,
-  "pe_ttm": 13.0939,
+  "pe_ttm": 13.5587,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -240,12 +240,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 161.7100067138672,
+  "price": 167.4499969482422,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.17815,
   "sector": "Financial Services",
   "ticker": "TD.TO",
-  "updated_at": "2026-06-11T18:42:12+00:00",
+  "updated_at": "2026-06-18T08:14:31+00:00",
   "valuation_tax": -10.0,
   "valuation_tax_breakdown": {
     "components": {

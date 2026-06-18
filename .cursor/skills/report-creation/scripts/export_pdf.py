@@ -53,18 +53,23 @@ table {
     border-collapse: collapse;
     width: 100%;
     margin: 16px 0;
-    font-size: 13px;
+    font-size: 10px;
+    table-layout: fixed;
+    word-wrap: break-word;
 }
 th {
     background: #1a3a5c;
     color: white;
-    padding: 8px 12px;
+    padding: 5px 6px;
     text-align: left;
     font-weight: bold;
+    overflow-wrap: anywhere;
 }
 td {
-    padding: 7px 12px;
+    padding: 4px 6px;
     border-bottom: 1px solid #dde3ea;
+    overflow-wrap: anywhere;
+    vertical-align: top;
 }
 tr:nth-child(even) { background: #f4f7fb; }
 blockquote {

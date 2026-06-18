@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.009411,
   "dividend_yield_5y_std": 0.009853,
-  "dividend_yield_current": 0.022819,
-  "dividend_yield_zscore": 1.3608,
-  "enterprise_value": 122686305000.0,
+  "dividend_yield_current": 0.022288,
+  "dividend_yield_zscore": 1.3069,
+  "enterprise_value": 125163207450.0,
   "eps_fwd": 373.5,
   "eps_ttm": 178.17,
-  "ev_fwd_rev": 0.618,
+  "ev_fwd_rev": 0.6304,
   "fcf_ttm": 20499537920.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 198534397952.0,
   "industry": "Packaged Foods",
-  "last_daily_update": "2026-06-11T18:42:12+00:00",
+  "last_daily_update": "2026-06-18T08:14:30+00:00",
   "last_full_calc": "2026-05-18T20:47:38+00:00",
   "manual_overrides": {},
-  "market_cap": 103960131000.0,
+  "market_cap": 106437033450.0,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 18726174000.0,
-  "owner_earnings_yield": 0.197187,
+  "owner_earnings_yield": 0.192598,
   "pe_20y_array": [
     11.485,
     12.8674,
@@ -236,7 +236,7 @@
     9.3389
   ],
   "pe_percentile_20y": 11.11,
-  "pe_ttm": 8.3628,
+  "pe_ttm": 8.562,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -245,12 +245,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 1490.0,
+  "price": 1525.5,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.28709,
   "sector": "Consumer Defensive",
   "ticker": "BBTC.NS",
-  "updated_at": "2026-06-11T18:42:12+00:00",
+  "updated_at": "2026-06-18T08:14:30+00:00",
   "valuation_tax": 0.0,
   "valuation_tax_breakdown": {
     "components": {

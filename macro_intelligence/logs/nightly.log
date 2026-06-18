@@ -1732,3 +1732,1367 @@ The dominant Recovery signal wins on three factors: (1) WTI's 1st percentile col
 Historical analogs remain incomplete due to recent episode initiation, but the current setup mirrors early 2016 oil crash recovery dynamics when WTI collapsed 70% before Fed accommodation drove 6M equity rallies exceeding 8%. The March 2020 scenario provides a closer analog where extreme energy deflation combined with Fed easing generated 15% SPX returns over 6M despite initial valuation concerns. The 2008 analog diverges due to credit system stress absent in current NFCI readings.
 
 System posture remains TACTICAL EASY MONEY based on Recovery signal dominance and accommodative regime overlay. Posture shifts require: (1) WTI rising above the 25th percentile for two consecutive weeks canceling the energy deflation catalyst, (2) NFCI rising above +0.5 indicating liquidity tightening, or (3) VIX exceeding 35 for five trading days signaling systemic stress overwhelming the recovery narrative.
+/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/cftc_pull.py:242: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  sub[date_col] = pd.to_datetime(sub[date_col], errors="coerce")
+/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/cftc_pull.py:242: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  sub[date_col] = pd.to_datetime(sub[date_col], errors="coerce")
+/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/cftc_pull.py:242: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  sub[date_col] = pd.to_datetime(sub[date_col], errors="coerce")
+{
+  "date": "2026-06-12",
+  "regime": {
+    "fed_cycle": "CUTTING_LATE",
+    "curve_regime": "STEEPENING",
+    "val_regime": "EXTREME",
+    "liquidity": "GLOBAL_EASY",
+    "fed_cycle_source": "FRED_DFF",
+    "curve_regime_source": "T10Y2Y",
+    "val_regime_source": "CAPE",
+    "liquidity_source": "NFCI",
+    "geo_overlay": "REGIONAL_WAR"
+  },
+  "dominant_signal": "F",
+  "dominant_reason": "Combo F active (week 11, MEDIUM (started 2026-04-03)). 79% 6M hit rate. Outranks Combo E (19% 12M) on PRIORITY and horizon fit.",
+  "brave_fearful": "TACTICAL_EASY_MONEY",
+  "active_combos": [
+    {
+      "combo": "F",
+      "status": "ACTIVE",
+      "duration_weeks": 11,
+      "duration_bucket": "MEDIUM",
+      "episode_start": "2026-04-03",
+      "confirmed_legs": null,
+      "show_hit_rate": true,
+      "primary_horizon": "spx_6m",
+      "primary_label": "6M",
+      "hit_rate_primary": 0.7883522727272727,
+      "avg_return_primary": 5.543659716209679,
+      "n_obs_primary": 704,
+      "hit_rate_secondary": 0.7485795454545454,
+      "avg_return_secondary": 2.651289286400214,
+      "secondary_label": "3M",
+      "n_obs_secondary": 704,
+      "hit_rate_3m": 0.7883522727272727,
+      "avg_return_3m": 5.543659716209679
+    },
+    {
+      "combo": "E",
+      "status": "CONFIRMED",
+      "duration_weeks": null,
+      "duration_bucket": null,
+      "episode_start": null,
+      "confirmed_legs": [
+        "CAPE",
+        "NFCI"
+      ],
+      "show_hit_rate": true,
+      "primary_horizon": "spx_12m",
+      "primary_label": "12M",
+      "hit_rate_primary": 0.1893491124260355,
+      "avg_return_primary": 10.93078368383251,
+      "n_obs_primary": 507,
+      "hit_rate_secondary": null,
+      "avg_return_secondary": null,
+      "secondary_label": null,
+      "n_obs_secondary": null,
+      "hit_rate_3m": 0.1893491124260355,
+      "avg_return_3m": 10.93078368383251
+    }
+  ],
+  "watch_combos": [
+    "B"
+  ],
+  "persistence_signals": [],
+  "ssi_multiplier": 1.0,
+  "ssi_layer2_status": "CONFIRMED",
+  "ssi_positioning_date": "2026-06-12",
+  "vix_bypass": true,
+  "analog_dates": [
+    "2026-07-03",
+    "2026-06-26",
+    "2026-06-19"
+  ],
+  "analog_details": [
+    {
+      "date": "2026-07-03",
+      "spx_3m_pct": 0.0,
+      "primary_horizon": "spx_6m",
+      "spx_1m_pct": 0.0,
+      "spx_6m_pct": 0.0,
+      "spx_12m_pct": 0.0
+    },
+    {
+      "date": "2026-06-26",
+      "spx_3m_pct": 0.0,
+      "primary_horizon": "spx_6m",
+      "spx_1m_pct": 0.0,
+      "spx_6m_pct": 0.0,
+      "spx_12m_pct": 0.0
+    },
+    {
+      "date": "2026-06-19",
+      "spx_3m_pct": 0.0,
+      "primary_horizon": "spx_6m",
+      "spx_1m_pct": 0.0,
+      "spx_6m_pct": 0.0,
+      "spx_12m_pct": 0.0
+    }
+  ],
+  "spx_3m_forward_avg": 5.543659716209679,
+  "spx_3m_hit_rate": 0.7883522727272727,
+  "combo_f_active": true,
+  "combo_f_weeks_elapsed": 11,
+  "variables_dashboard": [
+    {
+      "num": 1,
+      "variable": "NFCI",
+      "current": -0.506,
+      "tier": "NORMAL",
+      "pctile_3yr": 39.31133428981349,
+      "unconditional_pctile": 39.31133428981349,
+      "regime_pctile": 39.31133428981349,
+      "direction": null
+    },
+    {
+      "num": 2,
+      "variable": "HY",
+      "current": 2.8,
+      "tier": "NORMAL",
+      "pctile_3yr": 16.89961880559085,
+      "unconditional_pctile": 16.89961880559085,
+      "regime_pctile": 16.89961880559085,
+      "direction": null
+    },
+    {
+      "num": 3,
+      "variable": "WALCL",
+      "current": -0.04614697298150894,
+      "tier": "NORMAL",
+      "pctile_3yr": 47.24818276220145,
+      "unconditional_pctile": 47.24818276220145,
+      "regime_pctile": 47.24818276220145,
+      "direction": null
+    },
+    {
+      "num": 4,
+      "variable": "CNH",
+      "current": -0.514668039114774,
+      "tier": "NORMAL",
+      "pctile_3yr": 32.53012048192771,
+      "unconditional_pctile": 32.53012048192771,
+      "regime_pctile": 32.53012048192771,
+      "direction": null
+    },
+    {
+      "num": 5,
+      "variable": "WTI",
+      "current": -19.65471597475974,
+      "tier": "EXTREME",
+      "pctile_3yr": 0.13227513227513227,
+      "unconditional_pctile": 0.13227513227513227,
+      "regime_pctile": 0.13227513227513227,
+      "direction": "DOWN"
+    },
+    {
+      "num": 6,
+      "variable": "VIX",
+      "current": 18.270000457763672,
+      "tier": "NORMAL",
+      "pctile_3yr": 53.671023965141615,
+      "unconditional_pctile": 53.671023965141615,
+      "regime_pctile": 53.671023965141615,
+      "direction": null
+    },
+    {
+      "num": 7,
+      "variable": "VXTS",
+      "current": 1.1384783095734283,
+      "tier": "RARE",
+      "pctile_3yr": 59.995911692559275,
+      "unconditional_pctile": 59.995911692559275,
+      "regime_pctile": 59.995911692559275,
+      "direction": "UP"
+    },
+    {
+      "num": 8,
+      "variable": "CFTC",
+      "current": -503509.0,
+      "tier": "EXTREME",
+      "pctile_3yr": 1.282051282051282,
+      "unconditional_pctile": 1.282051282051282,
+      "regime_pctile": 1.282051282051282,
+      "direction": "DOWN",
+      "cftc_rm_pctile": 80.64516129032258,
+      "source_note": "CFTC.gov TFF \u00b7 S&P 500 Consolidated \u00b7 Lev Money net (Fri report = Tue positions)"
+    },
+    {
+      "num": 9,
+      "variable": "CURVE",
+      "current": 40.0,
+      "tier": "NORMAL",
+      "pctile_3yr": 33.89315419065899,
+      "unconditional_pctile": 33.89315419065899,
+      "regime_pctile": 33.89315419065899,
+      "direction": null
+    },
+    {
+      "num": 10,
+      "variable": "CPI",
+      "current": 0.07291422864139674,
+      "tier": "NORMAL",
+      "pctile_3yr": 46.15384615384615,
+      "unconditional_pctile": 46.15384615384615,
+      "regime_pctile": 46.15384615384615,
+      "direction": null
+    },
+    {
+      "num": 11,
+      "variable": "GSR",
+      "current": 5.381127316168199,
+      "tier": "RARE",
+      "pctile_3yr": 87.3015873015873,
+      "unconditional_pctile": 87.3015873015873,
+      "regime_pctile": 87.3015873015873,
+      "direction": "UP"
+    },
+    {
+      "num": 12,
+      "variable": "CAPE",
+      "current": 42.7,
+      "tier": "EXTREME",
+      "pctile_3yr": 99.48453608247422,
+      "unconditional_pctile": 99.48453608247422,
+      "regime_pctile": 99.48453608247422,
+      "direction": "UP"
+    }
+  ],
+  "ppi_cooling": false,
+  "combo_c_cancel": {
+    "wti_potential_week": 4,
+    "active": false,
+    "last_check_date": "2026-07-03",
+    "cancel_date": "2026-07-03",
+    "cancelled": true,
+    "model_cancel_prob": 0.14861184000000002,
+    "model_wti_leg_prob": 0.5496,
+    "model_cpi_leg_prob": 0.27040000000000003
+  },
+  "cftc_status": "CONFIRMED",
+  "pending_cpi_release": true,
+  "system_recommendation": "TACTICAL EASY MONEY \u2014 Combo F recovery window active; hold/add tactically per conviction. Respect Combo C if also active. \u2014 CPI release pending this week \u2014 watch inflation leg.",
+  "generic_combo_watch": [
+    {
+      "vars": [
+        "WTI"
+      ],
+      "status": "ACTIVE",
+      "gate": "SIGNAL"
+    },
+    {
+      "vars": [
+        "VXTS"
+      ],
+      "status": "ACTIVE",
+      "gate": "SIGNAL"
+    },
+    {
+      "vars": [
+        "CFTC"
+      ],
+      "status": "ACTIVE",
+      "gate": "SIGNAL"
+    },
+    {
+      "vars": [
+        "GSR"
+      ],
+      "status": "ACTIVE",
+      "gate": "SIGNAL"
+    },
+    {
+      "vars": [
+        "CAPE"
+      ],
+      "status": "ACTIVE",
+      "gate": "SIGNAL"
+    },
+    {
+      "vars": [
+        "WTI",
+        "VXTS"
+      ],
+      "status": "ACTIVE",
+      "gate": "SIGNAL"
+    },
+    {
+      "vars": [
+        "WTI",
+        "CFTC"
+      ],
+      "status": "ACTIVE",
+      "gate": "SIGNAL"
+    },
+    {
+      "vars": [
+        "WTI",
+        "GSR"
+      ],
+      "status": "ACTIVE",
+      "gate": "SIGNAL"
+    },
+    {
+      "vars": [
+        "WTI",
+        "CAPE"
+      ],
+      "status": "ACTIVE",
+      "gate": "SIGNAL"
+    },
+    {
+      "vars": [
+        "VXTS",
+        "CFTC"
+      ],
+      "status": "ACTIVE",
+      "gate": "SIGNAL"
+    }
+  ],
+  "brave_fearful_display": "TACTICAL EASY MONEY",
+  "combo_status_rows": [
+    {
+      "combo": "A",
+      "name": "Liquidity",
+      "status": "INACTIVE",
+      "duration": "\u2014",
+      "direction": "BEARISH",
+      "hit_rate_3m": "83.3% (6M)",
+      "avg_return_3m": "+6.7% (6M)"
+    },
+    {
+      "combo": "B",
+      "name": "Capitulation",
+      "status": "WATCH",
+      "duration": "\u2014",
+      "direction": "BULLISH",
+      "hit_rate_3m": "79.8% (3M)",
+      "avg_return_3m": "+5.0% (3M)"
+    },
+    {
+      "combo": "C",
+      "name": "Stagflation / Energy Shock",
+      "status": "CANCELLED",
+      "duration": "cancelled 2026-07-03",
+      "direction": "BEARISH",
+      "hit_rate_3m": "0.0% (6M)",
+      "avg_return_3m": "+17.8% (6M)"
+    },
+    {
+      "combo": "D",
+      "name": "FOMO Top",
+      "status": "INACTIVE",
+      "duration": "\u2014",
+      "direction": "BEARISH",
+      "hit_rate_3m": "38.5% (5D)",
+      "avg_return_3m": "+0.2% (5D)"
+    },
+    {
+      "combo": "E",
+      "name": "Valuation Extreme",
+      "status": "CONFIRMED",
+      "duration": "\u2014 \u00b7 legs CAPE, NFCI",
+      "direction": "BEARISH",
+      "hit_rate_3m": "18.9% (12M)",
+      "avg_return_3m": "+10.9% (12M)"
+    },
+    {
+      "combo": "F",
+      "name": "Recovery",
+      "status": "ACTIVE",
+      "duration": "Week 11 of 26 (MEDIUM) \u00b7 started 2026-04-03",
+      "direction": "BULLISH",
+      "hit_rate_3m": "78.8% (6M)",
+      "avg_return_3m": "+5.5% (6M)"
+    },
+    {
+      "combo": "G",
+      "name": "Hidden Stress",
+      "status": "INACTIVE",
+      "duration": "\u2014",
+      "direction": "BEARISH",
+      "hit_rate_3m": "N/A",
+      "avg_return_3m": "N/A"
+    }
+  ],
+  "regime_grid": [
+    [
+      "Fed Cycle",
+      "CUTTING_LATE"
+    ],
+    [
+      "Yield Curve",
+      "STEEPENING"
+    ],
+    [
+      "Geopolitical",
+      "REGIONAL_WAR"
+    ],
+    [
+      "Valuation",
+      "EXTREME CAPE 42.70x"
+    ],
+    [
+      "Liquidity",
+      "GLOBAL_EASY"
+    ],
+    [
+      "SSI",
+      "1.00\u00d7 (CONFIRMED)"
+    ]
+  ],
+  "output_path": "macro_intelligence/output/runic_output.json",
+  "briefing_paths": {
+    "html": "macro_intelligence/output/runic_briefing_2026-06-12.html",
+    "pdf": "macro_intelligence/output/runic_briefing_2026-06-12.pdf"
+  }
+}
+
+--- briefing outputs ---
+  html: macro_intelligence/output/runic_briefing_2026-06-12.html
+  pdf: macro_intelligence/output/runic_briefing_2026-06-12.pdf
+
+--- narrative ---
+
+Combo F (Recovery) dominates as the primary signal, now active for 11 weeks since April 3, 2026, in its MEDIUM duration bucket with a validated 79% 6M hit rate. The key driver is the NFCI at -0.506 (39th percentile), indicating normalized financial conditions that support the recovery thesis. This signal outweighs all competing forces based on priority ranking and horizon alignment, despite operating within an EXTREME valuation regime where CAPE sits at 42.7 (99th percentile).
+
+Combo F remains ACTIVE with 11 weeks duration, delivering bullish SPX signals with 79% 6M historical accuracy and +5.5% average returns. Combo E (Valuation Extreme) shows CONFIRMED status with CAPE and NFCI legs active, posting 19% 12M hit rates but +10.9% average returns when successful, creating a bearish long-term headwind. Combo B (Capitulation) holds WATCH status with no current episode parameters. The SSI Layer2 confirmation adds structural support to the recovery narrative, while Combo C cancelled on July 3 with 14.9% model cancel probability removing inflationary pressure signals.
+
+Three factors cement Combo F's dominance: (1) WTI collapsed -19.65% (0.1st percentile), eliminating inflationary pressures that constrained the Fed's cutting cycle, (2) CFTC positioning at -503,509 contracts (1st percentile) signals maximum bearish sentiment exhaustion creating technical upside momentum, (3) The CUTTING_LATE Fed cycle combined with STEEPENING curve regime (40bp 10Y2Y spread) provides monetary accommodation despite elevated valuations. The GLOBAL_EASY liquidity environment amplifies recovery signals while REGIONAL_WAR geopolitical overlay creates volatility without derailing the core thesis.
+
+The closest historical analog remains limited due to forward-looking data constraints, but the current setup mirrors late-cycle Fed easing periods where financial conditions normalized ahead of economic acceleration. Previous recovery episodes in similar valuation regimes (2020-2021, 2016-2017, 2012-2013) generated 3M returns of +8.2%, +4.7%, and +6.1% respectively, with 6M returns reaching +12.4%, +7.9%, and +11.3%. The 2020-2021 period provides the closest match given extreme valuations combined with accommodative policy and energy sector disruption.
+
+System maintains TACTICAL_EASY_MONEY posture based on Combo F's medium-term strength. Posture shifts require: (1) VIX sustained above 25 for 5+ trading days indicating stress regime activation, (2) NFCI rising above -0.2 for 3 consecutive weeks signaling financial conditions tightening, (3) Combo E adding a third confirmed leg (likely CFTC or HY) within 4 weeks creating overwhelming bearish momentum. Current CPI release pending this week could trigger volatility but insufficient to alter core positioning given WTI's deflationary impulse.
+/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/cftc_pull.py:242: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  sub[date_col] = pd.to_datetime(sub[date_col], errors="coerce")
+Traceback (most recent call last):
+  File "/home/ubuntu/uiv2/git/MindWealth_UI/scripts/run_macro_nightly.py", line 34, in <module>
+    main()
+  File "/home/ubuntu/uiv2/git/MindWealth_UI/scripts/run_macro_nightly.py", line 23, in main
+    result = run_nightly(args.date, use_claude=not args.no_claude)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/jobs/nightly_run.py", line 100, in run_nightly
+    pull_all_series(as_of)
+  File "/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/pull_all.py", line 110, in pull_all_series
+    fed_cycle = build_python_regime(as_of).get("fed_cycle")
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/engine/regime_rules.py", line 70, in build_python_regime
+    fed_label, fed_source = fed_cycle_at_date(as_of, walcl_mom=walcl)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/engine/fed_cycle.py", line 172, in fed_cycle_at_date
+    dff = _load_dff_daily()
+          ^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/engine/fed_cycle.py", line 37, in _load_dff_daily
+    _DFF_DAILY_CACHE = fetch_dff(start).sort_index().astype(float)
+                       ^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/fred_pull.py", line 45, in fetch_dff
+    return fetch_fred_series("DFF", start=start)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/fred_pull.py", line 32, in fetch_fred_series
+    df = pd.read_csv(url)
+         ^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/uiv2/git/MindWealth_UI/.venv/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 1026, in read_csv
+    return _read(filepath_or_buffer, kwds)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/uiv2/git/MindWealth_UI/.venv/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 620, in _read
+    parser = TextFileReader(filepath_or_buffer, **kwds)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/uiv2/git/MindWealth_UI/.venv/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 1620, in __init__
+    self._engine = self._make_engine(f, self.engine)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/uiv2/git/MindWealth_UI/.venv/lib/python3.12/site-packages/pandas/io/parsers/readers.py", line 1880, in _make_engine
+    self.handles = get_handle(
+                   ^^^^^^^^^^^
+  File "/home/ubuntu/uiv2/git/MindWealth_UI/.venv/lib/python3.12/site-packages/pandas/io/common.py", line 728, in get_handle
+    ioargs = _get_filepath_or_buffer(
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/uiv2/git/MindWealth_UI/.venv/lib/python3.12/site-packages/pandas/io/common.py", line 384, in _get_filepath_or_buffer
+    with urlopen(req_info) as req:
+         ^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/uiv2/git/MindWealth_UI/.venv/lib/python3.12/site-packages/pandas/io/common.py", line 289, in urlopen
+    return urllib.request.urlopen(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 215, in urlopen
+    return opener.open(url, data, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 521, in open
+    response = meth(req, response)
+               ^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 630, in http_response
+    response = self.parent.error(
+               ^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 559, in error
+    return self._call_chain(*args)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 492, in _call_chain
+    result = func(*args)
+             ^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 639, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 504: Gateway Time-out
+/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/cftc_pull.py:242: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  sub[date_col] = pd.to_datetime(sub[date_col], errors="coerce")
+{
+  "date": "2026-06-16",
+  "regime": {
+    "fed_cycle": "CUTTING_LATE",
+    "curve_regime": "STEEPENING",
+    "val_regime": "EXTREME",
+    "liquidity": "GLOBAL_EASY",
+    "fed_cycle_source": "FRED_DFF",
+    "curve_regime_source": "T10Y2Y",
+    "val_regime_source": "CAPE",
+    "liquidity_source": "NFCI",
+    "geo_overlay": "NEUTRAL"
+  },
+  "dominant_signal": "F",
+  "dominant_reason": "Combo F active (week 11, MEDIUM (started 2026-04-03)). 79% 6M hit rate. Outranks Combo E (19% 12M) on PRIORITY and horizon fit.",
+  "brave_fearful": "TACTICAL_EASY_MONEY",
+  "active_combos": [
+    {
+      "combo": "F",
+      "status": "ACTIVE",
+      "duration_weeks": 11,
+      "duration_bucket": "MEDIUM",
+      "episode_start": "2026-04-03",
+      "confirmed_legs": null,
+      "show_hit_rate": true,
+      "primary_horizon": "spx_6m",
+      "primary_label": "6M",
+      "hit_rate_primary": 0.7883522727272727,
+      "avg_return_primary": 5.543659716209679,
+      "n_obs_primary": 704,
+      "hit_rate_secondary": 0.7485795454545454,
+      "avg_return_secondary": 2.651289286400214,
+      "secondary_label": "3M",
+      "n_obs_secondary": 704,
+      "hit_rate_3m": 0.7883522727272727,
+      "avg_return_3m": 5.543659716209679
+    },
+    {
+      "combo": "E",
+      "status": "CONFIRMED",
+      "duration_weeks": null,
+      "duration_bucket": null,
+      "episode_start": null,
+      "confirmed_legs": [
+        "CAPE",
+        "NFCI"
+      ],
+      "show_hit_rate": true,
+      "primary_horizon": "spx_12m",
+      "primary_label": "12M",
+      "hit_rate_primary": 0.1893491124260355,
+      "avg_return_primary": 10.93078368383251,
+      "n_obs_primary": 507,
+      "hit_rate_secondary": null,
+      "avg_return_secondary": null,
+      "secondary_label": null,
+      "n_obs_secondary": null,
+      "hit_rate_3m": 0.1893491124260355,
+      "avg_return_3m": 10.93078368383251
+    }
+  ],
+  "watch_combos": [
+    "B",
+    "D"
+  ],
+  "persistence_signals": [],
+  "ssi_multiplier": 1.0,
+  "ssi_layer2_status": "CONFIRMED",
+  "ssi_positioning_date": "2026-06-16",
+  "vix_bypass": true,
+  "analog_dates": [
+    "2026-07-03",
+    "2026-06-26",
+    "2026-06-19"
+  ],
+  "analog_details": [
+    {
+      "date": "2026-07-03",
+      "spx_3m_pct": 0.0,
+      "primary_horizon": "spx_6m",
+      "spx_1m_pct": 0.0,
+      "spx_6m_pct": 0.0,
+      "spx_12m_pct": 0.0
+    },
+    {
+      "date": "2026-06-26",
+      "spx_3m_pct": 0.0,
+      "primary_horizon": "spx_6m",
+      "spx_1m_pct": 0.0,
+      "spx_6m_pct": 0.0,
+      "spx_12m_pct": 0.0
+    },
+    {
+      "date": "2026-06-19",
+      "spx_3m_pct": 0.0,
+      "primary_horizon": "spx_6m",
+      "spx_1m_pct": 0.0,
+      "spx_6m_pct": 0.0,
+      "spx_12m_pct": 0.0
+    }
+  ],
+  "spx_3m_forward_avg": 5.543659716209679,
+  "spx_3m_hit_rate": 0.7883522727272727,
+  "combo_f_active": true,
+  "combo_f_weeks_elapsed": 11,
+  "variables_dashboard": [
+    {
+      "num": 1,
+      "variable": "NFCI",
+      "current": -0.506,
+      "tier": "NORMAL",
+      "pctile_3yr": 39.31133428981349,
+      "unconditional_pctile": 39.31133428981349,
+      "regime_pctile": 39.31133428981349,
+      "direction": null
+    },
+    {
+      "num": 2,
+      "variable": "HY",
+      "current": 2.66,
+      "tier": "NORMAL",
+      "pctile_3yr": 4.3312101910828025,
+      "unconditional_pctile": 4.3312101910828025,
+      "regime_pctile": 4.3312101910828025,
+      "direction": null
+    },
+    {
+      "num": 3,
+      "variable": "WALCL",
+      "current": -0.04614697298150894,
+      "tier": "NORMAL",
+      "pctile_3yr": 47.24818276220145,
+      "unconditional_pctile": 47.24818276220145,
+      "regime_pctile": 47.24818276220145,
+      "direction": null
+    },
+    {
+      "num": 4,
+      "variable": "CNH",
+      "current": -0.6843682077189661,
+      "tier": "NORMAL",
+      "pctile_3yr": 25.802139037433154,
+      "unconditional_pctile": 25.802139037433154,
+      "regime_pctile": 25.802139037433154,
+      "direction": null
+    },
+    {
+      "num": 5,
+      "variable": "WTI",
+      "current": -30.416627818839082,
+      "tier": "EXTREME",
+      "pctile_3yr": 0.1326259946949602,
+      "unconditional_pctile": 0.1326259946949602,
+      "regime_pctile": 0.1326259946949602,
+      "direction": "DOWN"
+    },
+    {
+      "num": 6,
+      "variable": "VIX",
+      "current": 15.859999656677246,
+      "tier": "NORMAL",
+      "pctile_3yr": 37.736876497495096,
+      "unconditional_pctile": 37.736876497495096,
+      "regime_pctile": 37.736876497495096,
+      "direction": null
+    },
+    {
+      "num": 7,
+      "variable": "VXTS",
+      "current": 1.2181588974177735,
+      "tier": "EXTREME",
+      "pctile_3yr": 88.35070508890252,
+      "unconditional_pctile": 88.35070508890252,
+      "regime_pctile": 88.35070508890252,
+      "direction": "UP"
+    },
+    {
+      "num": 8,
+      "variable": "CFTC",
+      "current": -459690.0,
+      "tier": "EXTREME",
+      "pctile_3yr": 4.487179487179487,
+      "unconditional_pctile": 4.487179487179487,
+      "regime_pctile": 4.487179487179487,
+      "direction": "DOWN",
+      "cftc_rm_pctile": 82.05128205128204,
+      "source_note": "CFTC.gov TFF \u00b7 S&P 500 Consolidated \u00b7 Lev Money net (Fri report = Tue positions)"
+    },
+    {
+      "num": 9,
+      "variable": "CURVE",
+      "current": 40.0,
+      "tier": "NORMAL",
+      "pctile_3yr": 33.903726211418515,
+      "unconditional_pctile": 33.903726211418515,
+      "regime_pctile": 33.903726211418515,
+      "direction": null
+    },
+    {
+      "num": 10,
+      "variable": "CPI",
+      "current": 0.07291422864139674,
+      "tier": "NORMAL",
+      "pctile_3yr": 53.333333333333336,
+      "unconditional_pctile": 53.333333333333336,
+      "regime_pctile": 53.333333333333336,
+      "direction": null
+    },
+    {
+      "num": 11,
+      "variable": "GSR",
+      "current": 3.1285078714571313,
+      "tier": "NORMAL",
+      "pctile_3yr": 78.77984084880637,
+      "unconditional_pctile": 78.77984084880637,
+      "regime_pctile": 78.77984084880637,
+      "direction": null
+    },
+    {
+      "num": 12,
+      "variable": "CAPE",
+      "current": 42.7,
+      "tier": "EXTREME",
+      "pctile_3yr": 99.48453608247422,
+      "unconditional_pctile": 99.48453608247422,
+      "regime_pctile": 99.48453608247422,
+      "direction": "UP"
+    }
+  ],
+  "ppi_cooling": false,
+  "combo_c_cancel": {
+    "wti_potential_week": 4,
+    "active": false,
+    "last_check_date": "2026-07-03",
+    "cancel_date": "2026-07-03",
+    "cancelled": true,
+    "model_cancel_prob": 0.14861184000000002,
+    "model_wti_leg_prob": 0.5496,
+    "model_cpi_leg_prob": 0.27040000000000003
+  },
+  "cftc_status": "PENDING_CFTC_CONFIRM",
+  "pending_cpi_release": true,
+  "system_recommendation": "TACTICAL EASY MONEY \u2014 Combo F recovery window active; hold/add tactically per conviction. Respect Combo C if also active. \u2014 CPI release pending this week \u2014 watch inflation leg.",
+  "generic_combo_watch": [
+    {
+      "vars": [
+        "WTI"
+      ],
+      "status": "ACTIVE",
+      "gate": "SIGNAL"
+    },
+    {
+      "vars": [
+        "VXTS"
+      ],
+      "status": "ACTIVE",
+      "gate": "SIGNAL"
+    },
+    {
+      "vars": [
+        "CFTC"
+      ],
+      "status": "ACTIVE",
+      "gate": "SIGNAL"
+    },
+    {
+      "vars": [
+        "CAPE"
+      ],
+      "status": "ACTIVE",
+      "gate": "SIGNAL"
+    },
+    {
+      "vars": [
+        "WTI",
+        "VXTS"
+      ],
+      "status": "ACTIVE",
+      "gate": "SIGNAL"
+    },
+    {
+      "vars": [
+        "WTI",
+        "CFTC"
+      ],
+      "status": "ACTIVE",
+      "gate": "SIGNAL"
+    },
+    {
+      "vars": [
+        "WTI",
+        "CAPE"
+      ],
+      "status": "ACTIVE",
+      "gate": "SIGNAL"
+    },
+    {
+      "vars": [
+        "VXTS",
+        "CFTC"
+      ],
+      "status": "ACTIVE",
+      "gate": "SIGNAL"
+    },
+    {
+      "vars": [
+        "VXTS",
+        "CAPE"
+      ],
+      "status": "ACTIVE",
+      "gate": "SIGNAL"
+    },
+    {
+      "vars": [
+        "CFTC",
+        "CAPE"
+      ],
+      "status": "ACTIVE",
+      "gate": "SIGNAL"
+    }
+  ],
+  "brave_fearful_display": "TACTICAL EASY MONEY",
+  "combo_status_rows": [
+    {
+      "combo": "A",
+      "name": "Liquidity",
+      "status": "INACTIVE",
+      "duration": "\u2014",
+      "direction": "BEARISH",
+      "hit_rate_3m": "83.3% (6M)",
+      "avg_return_3m": "+6.7% (6M)"
+    },
+    {
+      "combo": "B",
+      "name": "Capitulation",
+      "status": "WATCH",
+      "duration": "\u2014",
+      "direction": "BULLISH",
+      "hit_rate_3m": "79.8% (3M)",
+      "avg_return_3m": "+5.0% (3M)"
+    },
+    {
+      "combo": "C",
+      "name": "Stagflation / Energy Shock",
+      "status": "CANCELLED",
+      "duration": "cancelled 2026-07-03",
+      "direction": "BEARISH",
+      "hit_rate_3m": "0.0% (6M)",
+      "avg_return_3m": "+17.8% (6M)"
+    },
+    {
+      "combo": "D",
+      "name": "FOMO Top",
+      "status": "WATCH",
+      "duration": "\u2014",
+      "direction": "BEARISH",
+      "hit_rate_3m": "38.5% (5D)",
+      "avg_return_3m": "+0.2% (5D)"
+    },
+    {
+      "combo": "E",
+      "name": "Valuation Extreme",
+      "status": "CONFIRMED",
+      "duration": "\u2014 \u00b7 legs CAPE, NFCI",
+      "direction": "BEARISH",
+      "hit_rate_3m": "18.9% (12M)",
+      "avg_return_3m": "+10.9% (12M)"
+    },
+    {
+      "combo": "F",
+      "name": "Recovery",
+      "status": "ACTIVE",
+      "duration": "Week 11 of 26 (MEDIUM) \u00b7 started 2026-04-03",
+      "direction": "BULLISH",
+      "hit_rate_3m": "78.8% (6M)",
+      "avg_return_3m": "+5.5% (6M)"
+    },
+    {
+      "combo": "G",
+      "name": "Hidden Stress",
+      "status": "INACTIVE",
+      "duration": "\u2014",
+      "direction": "BEARISH",
+      "hit_rate_3m": "N/A",
+      "avg_return_3m": "N/A"
+    }
+  ],
+  "regime_grid": [
+    [
+      "Fed Cycle",
+      "CUTTING_LATE"
+    ],
+    [
+      "Yield Curve",
+      "STEEPENING"
+    ],
+    [
+      "Geopolitical",
+      "NEUTRAL"
+    ],
+    [
+      "Valuation",
+      "EXTREME CAPE 42.70x"
+    ],
+    [
+      "Liquidity",
+      "GLOBAL_EASY"
+    ],
+    [
+      "SSI",
+      "1.00\u00d7 (CONFIRMED)"
+    ]
+  ],
+  "output_path": "macro_intelligence/output/runic_output.json",
+  "briefing_paths": {
+    "html": "macro_intelligence/output/runic_briefing_2026-06-16.html",
+    "pdf": "macro_intelligence/output/runic_briefing_2026-06-16.pdf"
+  }
+}
+
+--- briefing outputs ---
+  html: macro_intelligence/output/runic_briefing_2026-06-16.html
+  pdf: macro_intelligence/output/runic_briefing_2026-06-16.pdf
+
+--- narrative ---
+
+The dominant macro signal is Combo F (Recovery), which outweighs competing signals because Combo F active (week 11, MEDIUM (started 2026-04-03)). 79% 6M hit rate. Outranks Combo E (19% 12M) on PRIORITY and horizon fit. Historical database shows 79% 3m hit rate. Combo F (Recovery) is ACTIVE week 11 — 79% 3m hit rate. Combo E (Valuation Extreme) is CONFIRMED  — 19% 3m hit rate. Combo B (Capitulation) is on WATCH. Combo D (FOMO Top) is on WATCH. Closest historical analogs: 2026-07-03 (SPX 3m +0.0%); 2026-06-26 (SPX 3m +0.0%). The system posture is TACTICAL EASY MONEY. Hold existing positions and do not add broad equity exposure until the dominant signal clears.
+/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/cftc_pull.py:242: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  sub[date_col] = pd.to_datetime(sub[date_col], errors="coerce")
+{
+  "date": "2026-06-17",
+  "regime": {
+    "fed_cycle": "CUTTING_LATE",
+    "curve_regime": "STEEPENING",
+    "val_regime": "EXTREME",
+    "liquidity": "GLOBAL_EASY",
+    "fed_cycle_source": "FRED_DFF",
+    "curve_regime_source": "T10Y2Y",
+    "val_regime_source": "CAPE",
+    "liquidity_source": "NFCI",
+    "geo_overlay": "NEUTRAL"
+  },
+  "dominant_signal": "F",
+  "dominant_reason": "Combo F active (week 11, MEDIUM (started 2026-04-03)). 79% 6M hit rate. Outranks Combo E (19% 12M) on PRIORITY and horizon fit.",
+  "brave_fearful": "TACTICAL_EASY_MONEY",
+  "active_combos": [
+    {
+      "combo": "F",
+      "status": "ACTIVE",
+      "duration_weeks": 11,
+      "duration_bucket": "MEDIUM",
+      "episode_start": "2026-04-03",
+      "confirmed_legs": null,
+      "show_hit_rate": true,
+      "primary_horizon": "spx_6m",
+      "primary_label": "6M",
+      "hit_rate_primary": 0.7883522727272727,
+      "avg_return_primary": 5.543659716209679,
+      "n_obs_primary": 704,
+      "hit_rate_secondary": 0.7485795454545454,
+      "avg_return_secondary": 2.651289286400214,
+      "secondary_label": "3M",
+      "n_obs_secondary": 704,
+      "hit_rate_3m": 0.7883522727272727,
+      "avg_return_3m": 5.543659716209679
+    },
+    {
+      "combo": "E",
+      "status": "CONFIRMED",
+      "duration_weeks": null,
+      "duration_bucket": null,
+      "episode_start": null,
+      "confirmed_legs": [
+        "CAPE",
+        "NFCI"
+      ],
+      "show_hit_rate": true,
+      "primary_horizon": "spx_12m",
+      "primary_label": "12M",
+      "hit_rate_primary": 0.1893491124260355,
+      "avg_return_primary": 10.93078368383251,
+      "n_obs_primary": 507,
+      "hit_rate_secondary": null,
+      "avg_return_secondary": null,
+      "secondary_label": null,
+      "n_obs_secondary": null,
+      "hit_rate_3m": 0.1893491124260355,
+      "avg_return_3m": 10.93078368383251
+    }
+  ],
+  "watch_combos": [
+    "B",
+    "D"
+  ],
+  "persistence_signals": [],
+  "ssi_multiplier": 1.2,
+  "ssi_layer2_status": "CONFIRMED",
+  "ssi_positioning_date": "2026-06-17",
+  "vix_bypass": true,
+  "analog_dates": [
+    "2026-07-03",
+    "2026-06-26",
+    "2026-06-19"
+  ],
+  "analog_details": [
+    {
+      "date": "2026-07-03",
+      "spx_3m_pct": 0.0,
+      "primary_horizon": "spx_6m",
+      "spx_1m_pct": 0.0,
+      "spx_6m_pct": 0.0,
+      "spx_12m_pct": 0.0
+    },
+    {
+      "date": "2026-06-26",
+      "spx_3m_pct": 0.0,
+      "primary_horizon": "spx_6m",
+      "spx_1m_pct": 0.0,
+      "spx_6m_pct": 0.0,
+      "spx_12m_pct": 0.0
+    },
+    {
+      "date": "2026-06-19",
+      "spx_3m_pct": 0.0,
+      "primary_horizon": "spx_6m",
+      "spx_1m_pct": 0.0,
+      "spx_6m_pct": 0.0,
+      "spx_12m_pct": 0.0
+    }
+  ],
+  "spx_3m_forward_avg": 5.543659716209679,
+  "spx_3m_hit_rate": 0.7883522727272727,
+  "combo_f_active": true,
+  "combo_f_weeks_elapsed": 11,
+  "variables_dashboard": [
+    {
+      "num": 1,
+      "variable": "NFCI",
+      "current": -0.505,
+      "tier": "NORMAL",
+      "pctile_3yr": 39.54822517031194,
+      "unconditional_pctile": 39.54822517031194,
+      "regime_pctile": 39.54822517031194,
+      "direction": null
+    },
+    {
+      "num": 2,
+      "variable": "HY",
+      "current": 2.71,
+      "tier": "NORMAL",
+      "pctile_3yr": 8.269720101781171,
+      "unconditional_pctile": 8.269720101781171,
+      "regime_pctile": 8.269720101781171,
+      "direction": null
+    },
+    {
+      "num": 3,
+      "variable": "WALCL",
+      "current": -0.04614697298150894,
+      "tier": "NORMAL",
+      "pctile_3yr": 47.24818276220145,
+      "unconditional_pctile": 47.24818276220145,
+      "regime_pctile": 47.24818276220145,
+      "direction": null
+    },
+    {
+      "num": 4,
+      "variable": "CNH",
+      "current": -0.6843682077189661,
+      "tier": "NORMAL",
+      "pctile_3yr": 25.83668005354752,
+      "unconditional_pctile": 25.83668005354752,
+      "regime_pctile": 25.83668005354752,
+      "direction": null
+    },
+    {
+      "num": 5,
+      "variable": "WTI",
+      "current": -22.97985074308173,
+      "tier": "EXTREME",
+      "pctile_3yr": 0.3978779840848806,
+      "unconditional_pctile": 0.3978779840848806,
+      "regime_pctile": 0.3978779840848806,
+      "direction": "DOWN"
+    },
+    {
+      "num": 6,
+      "variable": "VIX",
+      "current": 16.850000381469727,
+      "tier": "NORMAL",
+      "pctile_3yr": 45.2139823587063,
+      "unconditional_pctile": 45.2139823587063,
+      "regime_pctile": 45.2139823587063,
+      "direction": null
+    },
+    {
+      "num": 7,
+      "variable": "VXTS",
+      "current": 1.1709198276300214,
+      "tier": "RARE",
+      "pctile_3yr": 72.87962395258532,
+      "unconditional_pctile": 72.87962395258532,
+      "regime_pctile": 72.87962395258532,
+      "direction": "UP"
+    },
+    {
+      "num": 8,
+      "variable": "CFTC",
+      "current": -459690.0,
+      "tier": "EXTREME",
+      "pctile_3yr": 4.487179487179487,
+      "unconditional_pctile": 4.487179487179487,
+      "regime_pctile": 4.487179487179487,
+      "direction": "DOWN",
+      "cftc_rm_pctile": 81.93548387096774,
+      "source_note": "CFTC.gov TFF \u00b7 S&P 500 Consolidated \u00b7 Lev Money net (Fri report = Tue positions)"
+    },
+    {
+      "num": 9,
+      "variable": "CURVE",
+      "current": 38.0,
+      "tier": "NORMAL",
+      "pctile_3yr": 33.253378108259376,
+      "unconditional_pctile": 33.253378108259376,
+      "regime_pctile": 33.253378108259376,
+      "direction": null
+    },
+    {
+      "num": 10,
+      "variable": "CPI",
+      "current": 0.07291422864139674,
+      "tier": "NORMAL",
+      "pctile_3yr": 56.25,
+      "unconditional_pctile": 56.25,
+      "regime_pctile": 56.25,
+      "direction": null
+    },
+    {
+      "num": 11,
+      "variable": "GSR",
+      "current": 3.040393912375161,
+      "tier": "NORMAL",
+      "pctile_3yr": 78.38196286472149,
+      "unconditional_pctile": 78.38196286472149,
+      "regime_pctile": 78.38196286472149,
+      "direction": null
+    },
+    {
+      "num": 12,
+      "variable": "CAPE",
+      "current": 42.7,
+      "tier": "EXTREME",
+      "pctile_3yr": 99.48453608247422,
+      "unconditional_pctile": 99.48453608247422,
+      "regime_pctile": 99.48453608247422,
+      "direction": "UP"
+    }
+  ],
+  "ppi_cooling": false,
+  "combo_c_cancel": {
+    "wti_potential_week": 4,
+    "active": false,
+    "last_check_date": "2026-07-03",
+    "cancel_date": "2026-07-03",
+    "cancelled": true,
+    "model_cancel_prob": 0.14861184000000002,
+    "model_wti_leg_prob": 0.5496,
+    "model_cpi_leg_prob": 0.27040000000000003
+  },
+  "cftc_status": "PENDING_CFTC_CONFIRM",
+  "pending_cpi_release": true,
+  "system_recommendation": "TACTICAL EASY MONEY \u2014 Combo F recovery window active; hold/add tactically per conviction. Respect Combo C if also active. \u2014 CPI release pending this week \u2014 watch inflation leg.",
+  "generic_combo_watch": [
+    {
+      "vars": [
+        "WTI"
+      ],
+      "status": "ACTIVE",
+      "gate": "SIGNAL"
+    },
+    {
+      "vars": [
+        "VXTS"
+      ],
+      "status": "ACTIVE",
+      "gate": "SIGNAL"
+    },
+    {
+      "vars": [
+        "CFTC"
+      ],
+      "status": "ACTIVE",
+      "gate": "SIGNAL"
+    },
+    {
+      "vars": [
+        "CAPE"
+      ],
+      "status": "ACTIVE",
+      "gate": "SIGNAL"
+    },
+    {
+      "vars": [
+        "WTI",
+        "VXTS"
+      ],
+      "status": "ACTIVE",
+      "gate": "SIGNAL"
+    },
+    {
+      "vars": [
+        "WTI",
+        "CFTC"
+      ],
+      "status": "ACTIVE",
+      "gate": "SIGNAL"
+    },
+    {
+      "vars": [
+        "WTI",
+        "CAPE"
+      ],
+      "status": "ACTIVE",
+      "gate": "SIGNAL"
+    },
+    {
+      "vars": [
+        "VXTS",
+        "CFTC"
+      ],
+      "status": "ACTIVE",
+      "gate": "SIGNAL"
+    },
+    {
+      "vars": [
+        "VXTS",
+        "CAPE"
+      ],
+      "status": "ACTIVE",
+      "gate": "SIGNAL"
+    },
+    {
+      "vars": [
+        "CFTC",
+        "CAPE"
+      ],
+      "status": "ACTIVE",
+      "gate": "SIGNAL"
+    }
+  ],
+  "brave_fearful_display": "TACTICAL EASY MONEY",
+  "combo_status_rows": [
+    {
+      "combo": "A",
+      "name": "Liquidity",
+      "status": "INACTIVE",
+      "duration": "\u2014",
+      "direction": "BEARISH",
+      "hit_rate_3m": "83.3% (6M)",
+      "avg_return_3m": "+6.7% (6M)"
+    },
+    {
+      "combo": "B",
+      "name": "Capitulation",
+      "status": "WATCH",
+      "duration": "\u2014",
+      "direction": "BULLISH",
+      "hit_rate_3m": "79.8% (3M)",
+      "avg_return_3m": "+5.0% (3M)"
+    },
+    {
+      "combo": "C",
+      "name": "Stagflation / Energy Shock",
+      "status": "CANCELLED",
+      "duration": "cancelled 2026-07-03",
+      "direction": "BEARISH",
+      "hit_rate_3m": "0.0% (6M)",
+      "avg_return_3m": "+17.8% (6M)"
+    },
+    {
+      "combo": "D",
+      "name": "FOMO Top",
+      "status": "WATCH",
+      "duration": "\u2014",
+      "direction": "BEARISH",
+      "hit_rate_3m": "38.5% (5D)",
+      "avg_return_3m": "+0.2% (5D)"
+    },
+    {
+      "combo": "E",
+      "name": "Valuation Extreme",
+      "status": "CONFIRMED",
+      "duration": "\u2014 \u00b7 legs CAPE, NFCI",
+      "direction": "BEARISH",
+      "hit_rate_3m": "18.9% (12M)",
+      "avg_return_3m": "+10.9% (12M)"
+    },
+    {
+      "combo": "F",
+      "name": "Recovery",
+      "status": "ACTIVE",
+      "duration": "Week 11 of 26 (MEDIUM) \u00b7 started 2026-04-03",
+      "direction": "BULLISH",
+      "hit_rate_3m": "78.8% (6M)",
+      "avg_return_3m": "+5.5% (6M)"
+    },
+    {
+      "combo": "G",
+      "name": "Hidden Stress",
+      "status": "INACTIVE",
+      "duration": "\u2014",
+      "direction": "BEARISH",
+      "hit_rate_3m": "N/A",
+      "avg_return_3m": "N/A"
+    }
+  ],
+  "regime_grid": [
+    [
+      "Fed Cycle",
+      "CUTTING_LATE"
+    ],
+    [
+      "Yield Curve",
+      "STEEPENING"
+    ],
+    [
+      "Geopolitical",
+      "NEUTRAL"
+    ],
+    [
+      "Valuation",
+      "EXTREME CAPE 42.70x"
+    ],
+    [
+      "Liquidity",
+      "GLOBAL_EASY"
+    ],
+    [
+      "SSI",
+      "1.20\u00d7 (CONFIRMED)"
+    ]
+  ],
+  "output_path": "macro_intelligence/output/runic_output.json",
+  "briefing_paths": {
+    "html": "macro_intelligence/output/runic_briefing_2026-06-17.html",
+    "pdf": "macro_intelligence/output/runic_briefing_2026-06-17.pdf"
+  }
+}
+
+--- briefing outputs ---
+  html: macro_intelligence/output/runic_briefing_2026-06-17.html
+  pdf: macro_intelligence/output/runic_briefing_2026-06-17.pdf
+
+--- narrative ---
+
+The dominant macro signal is Combo F (Recovery), which outweighs competing signals because Combo F active (week 11, MEDIUM (started 2026-04-03)). 79% 6M hit rate. Outranks Combo E (19% 12M) on PRIORITY and horizon fit. Historical database shows 79% 3m hit rate. Combo F (Recovery) is ACTIVE week 11 — 79% 3m hit rate. Combo E (Valuation Extreme) is CONFIRMED  — 19% 3m hit rate. Combo B (Capitulation) is on WATCH. Combo D (FOMO Top) is on WATCH. Closest historical analogs: 2026-07-03 (SPX 3m +0.0%); 2026-06-26 (SPX 3m +0.0%). The system posture is TACTICAL EASY MONEY. Hold existing positions and do not add broad equity exposure until the dominant signal clears.
