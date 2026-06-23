@@ -3,7 +3,7 @@
   "info": {
     "title": "MindWealth API",
     "description": "REST API for MindWealth trading analysis services.",
-    "version": "1.2.0"
+    "version": "1.5.0"
   },
   "paths": {
     "/api/v1/conviction/tickers": {
@@ -2441,6 +2441,75 @@
         }
       }
     },
+    "/api/v1/signals/strategy-health": {
+      "get": {
+        "tags": [
+          "signals"
+        ],
+        "summary": "Get Strategy Health",
+        "operationId": "get_strategy_health",
+        "parameters": [
+          {
+            "name": "report_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "YYYY-MM-DD trade_store date",
+              "title": "Report Date"
+            },
+            "description": "YYYY-MM-DD trade_store date"
+          },
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Strategy Health"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/monitored-trades": {
       "get": {
         "tags": [
@@ -3030,7 +3099,8 @@
         "tags": [
           "macro"
         ],
-        "summary": "Get Runic Nightly",
+        "summary": "Full nightly Runic JSON output",
+        "description": "Complete runic_output.json payload \u2014 all fields.",
         "operationId": "get_runic_nightly",
         "parameters": [
           {
@@ -3081,7 +3151,7 @@
         "tags": [
           "macro"
         ],
-        "summary": "Get Runic Variables",
+        "summary": "Regime + 12-variable dashboard subset",
         "operationId": "get_runic_variables_current",
         "parameters": [
           {
@@ -3132,7 +3202,7 @@
         "tags": [
           "macro"
         ],
-        "summary": "Get Active Combos",
+        "summary": "Dominant signal + active and watch combo list",
         "operationId": "get_active_combos",
         "parameters": [
           {
@@ -3183,7 +3253,7 @@
         "tags": [
           "macro"
         ],
-        "summary": "Get Positioning",
+        "summary": "SSI positioning JSON",
         "operationId": "get_ssi_positioning",
         "parameters": [
           {
@@ -3212,6 +3282,1140 @@
                   "type": "object",
                   "additionalProperties": true,
                   "title": "Response Get Ssi Positioning"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/macro/status": {
+      "get": {
+        "tags": [
+          "macro"
+        ],
+        "summary": "Header status bar \u2014 dominant signal, brave/fearful, CFTC state",
+        "description": "Single endpoint for the top-strip status bar in the frontend.\nReturns dominant signal, brave/fearful display, active/watch combo IDs,\nCFTC status, VIX bypass flag, and Combo C cancel progress.",
+        "operationId": "get_macro_status_bar",
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Macro Status Bar"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/macro/overview/kpis": {
+      "get": {
+        "tags": [
+          "macro"
+        ],
+        "summary": "Five KPI cards for the Overview tab",
+        "description": "Structured data for the 5 KPI cards shown in the Overview tab:\n- Dominant signal + posture\n- Combo C duration + bucket\n- Combo F window (weeks elapsed)\n- CAPE + Combo E status\n- WTI 4-week \u0394 + cancel gate",
+        "operationId": "get_macro_overview_kpis",
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Macro Overview Kpis"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/macro/regime": {
+      "get": {
+        "tags": [
+          "macro"
+        ],
+        "summary": "5-dimension regime classification + narrative",
+        "description": "Regime classification card:\n- 5 regime dimensions (fed_cycle, curve_regime, geo_overlay, val_regime, liquidity)\n- Brave/fearful posture + display label\n- Dominant signal + reason\n- Nightly narrative (Claude Sonnet generated)\n- System recommendation\n- VIX bypass state, SSI layer2 status",
+        "operationId": "get_macro_regime",
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Macro Regime"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/macro/variables/heatmap": {
+      "get": {
+        "tags": [
+          "macro"
+        ],
+        "summary": "12-variable heatmap \u2014 tiers, thresholds, combo links",
+        "description": "Enriched 12-variable list for the heatmap panel.\nEach variable includes:\n- current value, tier (NORMAL / RARE / EXTREME / PENDING)\n- pctile_3yr, direction\n- source, compute method, rare_gate, extreme_gate thresholds\n- list of combo letters that use this variable",
+        "operationId": "get_variables_heatmap",
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Variables Heatmap"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/macro/combos": {
+      "get": {
+        "tags": [
+          "macro"
+        ],
+        "summary": "All 7 named combos A\u2013G with current status and hit rates",
+        "description": "Full list of all 7 named combos (A\u2013G).\nEach entry includes: name, direction, horizon, legs required,\ncurrent status (ACTIVE / WATCH / INACTIVE / RESOLVED),\nconfirmed_legs, duration, hit_rate_primary, avg_return_primary.",
+        "operationId": "list_named_combos",
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response List Named Combos"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/macro/combos/{combo_id}": {
+      "get": {
+        "tags": [
+          "macro"
+        ],
+        "summary": "Full detail for one named combo (A\u2013G)",
+        "description": "Full detail for a single named combo (A\u2013G):\n- Static metadata (name, variables, thresholds, description)\n- Live status, confirmed legs, duration\n- Hit rate stats (primary + secondary horizons)\n- Historical analog fire dates with SPX forward returns (1m/3m/6m/9m/12m)",
+        "operationId": "get_named_combo_detail",
+        "parameters": [
+          {
+            "name": "combo_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Combo Id"
+            }
+          },
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Named Combo Detail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/macro/combo-c/cancel": {
+      "get": {
+        "tags": [
+          "macro"
+        ],
+        "summary": "Combo C cancel condition monitor \u2014 0/4 Fridays, CPI, probability",
+        "description": "Combo C cancel tracker:\n- fridays_complete / fridays_required (0 of 4)\n- Current WTI 4-week \u0394 vs +5% cancel gate\n- Latest CPI print (not hot check)\n- Friday-by-Friday log of WTI leg and CPI leg pass/fail\n- Monte Carlo cancel probability model output\n- Upcoming CPI/PPI release dates\n- If-cancelled scenario (F becomes dominant)",
+        "operationId": "get_combo_c_cancel_tracker",
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Combo C Cancel Tracker"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/macro/combo-f/window": {
+      "get": {
+        "tags": [
+          "macro"
+        ],
+        "summary": "Combo F 26-week recovery window tracker",
+        "description": "Combo F window tracker:\n- fire_date, expiry_date, weeks_elapsed, weeks_remaining\n- progress_pct (0\u2013100 for progress bar)\n- mtm_pct (current mark-to-market from fire date)\n- hit rate stats and historical avg returns\n- Cancel condition (Combo B only)\n- D+F tension explanation",
+        "operationId": "get_combo_f_window",
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Combo F Window"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/macro/analogs/{combo_id}": {
+      "get": {
+        "tags": [
+          "macro"
+        ],
+        "summary": "Historical analog fire dates with SPX forward returns for one combo",
+        "description": "Historical analog table for a named combo (A\u2013G):\n- All stored fire dates with context\n- SPX forward returns: 1m, 3m, 6m, 9m, 12m\n- Summary median returns across instances\n- Hit rate stats",
+        "operationId": "get_combo_analog_table",
+        "parameters": [
+          {
+            "name": "combo_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Combo Id"
+            }
+          },
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Combo Analog Table"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/macro/narrative": {
+      "get": {
+        "tags": [
+          "macro"
+        ],
+        "summary": "Nightly narrative + system recommendation",
+        "description": "Nightly brief tab data:\n- Full Claude-generated narrative (200\u2013250 words)\n- System recommendation\n- Brave/fearful posture display\n- Dominant signal + reason\n- Current regime dimensions\n- CFTC status",
+        "operationId": "get_nightly_narrative",
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Nightly Narrative"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/macro/persistence": {
+      "get": {
+        "tags": [
+          "macro"
+        ],
+        "summary": "Persistence signals and generic combo watch list",
+        "description": "Persistence signals (7-week grind, VIX suppression, etc.) and\ngeneric auto-discovered combo candidates passing the \u226580% gate.\nAlso includes source freshness audit.",
+        "operationId": "get_persistence_signals",
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Persistence Signals"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/macro/data/freshness": {
+      "get": {
+        "tags": [
+          "macro"
+        ],
+        "summary": "Data source freshness audit for all 12 variables",
+        "description": "Per-variable source freshness: last data date, lag vs report, CFTC status,\npending CPI flag, and expected next source dates.",
+        "operationId": "get_data_freshness",
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Data Freshness"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/macro/ssi/summary": {
+      "get": {
+        "tags": [
+          "macro"
+        ],
+        "summary": "Latest SSI snapshot \u2014 level, percentile, multiplier, layer2 status + votes",
+        "description": "Returns the latest day's SSI data from `ssi.db`:\n\n- ssi_level (composite sentiment score)\n- ssi_percentile_5y (rank vs last 5-years)\n- ssi_multiplier (1.0 / 1.2 / 0.8 sizing factor)\n- layer2_status (CONFIRMED / UNCONFIRMED)\n- layer2_confirmed_count (how many of the 4 inputs agree)\n- posture (RISK_ON / RISK_OFF / NEUTRAL)\n- per-input breakdown (hyg_lqd, dbmf_beta, cnn_fg, vix_ratio)",
+        "operationId": "get_ssi_summary",
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Ssi Summary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/macro/ssi/history": {
+      "get": {
+        "tags": [
+          "macro"
+        ],
+        "summary": "Daily SSI time series \u2014 level, multiplier, inputs (up to 90 days)",
+        "description": "Returns chronological daily SSI series for charting.\n\n- `days` query param (default 30, max 90): number of calendar days to return.\n- Each row: date, ssi_level, ssi_percentile_5y, ssi_multiplier, layer2_status,\n  layer2_confirmed_count, and the 4 raw input values.",
+        "operationId": "get_ssi_history",
+        "parameters": [
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 30,
+              "title": "Days"
+            }
+          },
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Ssi History"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/macro/ssi/multiplier": {
+      "get": {
+        "tags": [
+          "macro"
+        ],
+        "summary": "Current SSI multiplier + sizing signals (lightweight)",
+        "description": "Lightweight endpoint for position-sizing checks.\n\nReturns the current multiplier (1.0 / 1.2 / 0.8), ssi_level,\nlayer2 status, and the long/short signal flags + entry thresholds.\nDoes NOT load the full SSI payload.",
+        "operationId": "get_ssi_multiplier",
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Ssi Multiplier"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/macro/run-nightly": {
+      "post": {
+        "tags": [
+          "macro"
+        ],
+        "summary": "Trigger a nightly Runic run (no Claude by default)",
+        "description": "Trigger the full nightly data pull + combo detection + JSON write.\nuse_claude=False (default) skips Claude API for speed and cost.\nSet use_claude=True to include geo overlay + narrative regeneration.\n\nReturns: status, date, dominant_signal, active_combos, output_path.",
+        "operationId": "trigger_nightly_run",
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/NightlyRunRequest"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Trigger Nightly Run"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/portfolio/sizer": {
+      "get": {
+        "tags": [
+          "portfolio"
+        ],
+        "summary": "Portfolio Sizer \u2014 full PortfolioResponse",
+        "description": "Return full regime-aware portfolio allocation payload.\n\nIncludes ceiling decomposition, cluster budgets, per-position sizing,\nP&L enrichment, constraints, and active combo context.",
+        "operationId": "getPortfolioSizer",
+        "parameters": [
+          {
+            "name": "scenario",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^(normal|stress|lowvol)$",
+              "description": "Scenario: normal | stress | lowvol",
+              "default": "normal",
+              "title": "Scenario"
+            },
+            "description": "Scenario: normal | stress | lowvol"
+          },
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Getportfoliosizer"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/portfolio/risk": {
+      "get": {
+        "tags": [
+          "portfolio"
+        ],
+        "summary": "Portfolio Risk \u2014 cluster correlation matrix + breaches",
+        "description": "Return cluster-level correlation matrix, breach list, and cluster weight bars.\n\nBreaches: \u03c1 > 0.75 = watch, \u03c1 > 0.85 = action required.",
+        "operationId": "getPortfolioRisk",
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Getportfoliorisk"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/portfolio/risk/analyze": {
+      "post": {
+        "tags": [
+          "portfolio"
+        ],
+        "summary": "Analyze user holdings vs model book",
+        "description": "Accept a user holdings list and return concentration warnings,\ncorrelation breaches, and suggested trims vs the model book.",
+        "operationId": "analyzeUserHoldings",
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnalyzeHoldingsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Analyzeuserholdings"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/portfolio/risk/search": {
+      "get": {
+        "tags": [
+          "portfolio"
+        ],
+        "summary": "Ticker autocomplete for holdings entry",
+        "description": "Return matching tickers from the open VT book and conviction universe.",
+        "operationId": "searchPortfolioTickers",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Partial ticker string, e.g. 'NVD'",
+              "title": "Q"
+            },
+            "description": "Partial ticker string, e.g. 'NVD'"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "title": "Response Searchportfoliotickers"
                 }
               }
             }
@@ -3281,6 +4485,27 @@
   },
   "components": {
     "schemas": {
+      "AnalyzeHoldingsRequest": {
+        "properties": {
+          "holdings": {
+            "items": {
+              "$ref": "#/components/schemas/HoldingItem"
+            },
+            "type": "array",
+            "title": "Holdings"
+          },
+          "cash_usd": {
+            "type": "number",
+            "title": "Cash Usd",
+            "default": 0.0
+          }
+        },
+        "type": "object",
+        "required": [
+          "holdings"
+        ],
+        "title": "AnalyzeHoldingsRequest"
+      },
       "ChatMessageRequest": {
         "properties": {
           "message": {
@@ -3585,6 +4810,24 @@
         ],
         "title": "HealthResponse"
       },
+      "HoldingItem": {
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "title": "Symbol"
+          },
+          "quantity": {
+            "type": "number",
+            "title": "Quantity"
+          }
+        },
+        "type": "object",
+        "required": [
+          "symbol",
+          "quantity"
+        ],
+        "title": "HoldingItem"
+      },
       "JobAcceptedResponse": {
         "properties": {
           "job_id": {
@@ -3612,6 +4855,28 @@
           "poll_url"
         ],
         "title": "JobAcceptedResponse"
+      },
+      "NightlyRunRequest": {
+        "properties": {
+          "as_of": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "As Of"
+          },
+          "use_claude": {
+            "type": "boolean",
+            "title": "Use Claude",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "NightlyRunRequest"
       },
       "OverlayFileRequest": {
         "properties": {

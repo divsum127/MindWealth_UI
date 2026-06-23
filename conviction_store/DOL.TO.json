@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.005417,
   "dividend_yield_5y_std": 0.001943,
-  "dividend_yield_current": 0.002538,
-  "dividend_yield_zscore": -1.4817,
-  "enterprise_value": 55799430881.233765,
+  "dividend_yield_current": 0.002565,
+  "dividend_yield_zscore": -1.4678,
+  "enterprise_value": 55253811081.419235,
   "eps_fwd": 5.82883,
   "eps_ttm": 4.73,
-  "ev_fwd_rev": 7.6904,
+  "ev_fwd_rev": 7.6152,
   "fcf_ttm": 1469225000.0,
   "fd_direction": "stable",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 7255754240.0,
   "industry": "Discount Stores",
-  "last_daily_update": "2026-06-18T08:14:31+00:00",
+  "last_daily_update": "2026-06-23T14:15:02+00:00",
   "last_full_calc": "2026-05-18T20:48:32+00:00",
   "manual_overrides": {},
-  "market_cap": 51212459881.233765,
+  "market_cap": 50666840081.419235,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 4586971000.0,
-  "owner_earnings_yield": 0.028689,
+  "owner_earnings_yield": 0.028998,
   "pe_20y_array": [
     42.4965,
     46.6084,
@@ -234,8 +234,8 @@
     40.4662,
     39.634
   ],
-  "pe_percentile_20y": 25.0,
-  "pe_ttm": 39.9852,
+  "pe_percentile_20y": 0.0,
+  "pe_ttm": 39.5592,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -244,12 +244,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 189.1300048828125,
+  "price": 187.11500549316406,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.99044,
   "sector": "Consumer Defensive",
   "ticker": "DOL.TO",
-  "updated_at": "2026-06-18T08:14:31+00:00",
+  "updated_at": "2026-06-23T14:15:02+00:00",
   "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {

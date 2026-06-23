@@ -21,7 +21,7 @@
   "bq_raw": 7.0,
   "business_type": "compounder",
   "business_type_source": "auto",
-  "conviction_score": 0.0,
+  "conviction_score": -1.0,
   "created_at": "2026-05-12T20:17:04+00:00",
   "data_coverage": {
     "bq_auto_dimensions": {
@@ -190,12 +190,12 @@
   "debt_purpose": null,
   "dividend_yield_5y_mean": 0.015334,
   "dividend_yield_5y_std": 0.0077,
-  "dividend_yield_current": 0.003649,
-  "dividend_yield_zscore": -1.5175,
-  "enterprise_value": 4416747187489.014,
+  "dividend_yield_current": 0.003607,
+  "dividend_yield_zscore": -1.523,
+  "enterprise_value": 4467124710995.605,
   "eps_fwd": 9.60792,
   "eps_ttm": 8.25,
-  "ev_fwd_rev": 9.7836,
+  "ev_fwd_rev": 9.8952,
   "fcf_ttm": 123324000000.0,
   "fd_direction": "stable",
   "fd_sizing_adj": 0.0,
@@ -229,12 +229,12 @@
   "full_recalc_trigger": "manual",
   "fwd_revenue_stored": 451442016256.0,
   "industry": "Consumer Electronics",
-  "last_daily_update": "2026-06-18T08:14:30+00:00",
+  "last_daily_update": "2026-06-23T14:15:01+00:00",
   "last_full_calc": "2026-06-05T00:34:08+00:00",
   "manual_overrides": {
     "bq_raw": 7
   },
-  "market_cap": 4346723187489.0137,
+  "market_cap": 4397100710995.6055,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -249,7 +249,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 70024000000.0,
-  "owner_earnings_yield": 0.028372,
+  "owner_earnings_yield": 0.028047,
   "pe_20y_array": [
     34.3692,
     32.804,
@@ -258,8 +258,8 @@
     32.8114,
     36.0145
   ],
-  "pe_percentile_20y": 83.33,
-  "pe_ttm": 35.8727,
+  "pe_percentile_20y": 100.0,
+  "pe_ttm": 36.2885,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -268,14 +268,14 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 295.95001220703125,
+  "price": 299.3800048828125,
   "quote_type": "EQUITY",
   "revenue_accelerating": null,
   "roic_5y_avg": 1.4147099,
   "sector": "Technology",
   "ticker": "AAPL",
-  "updated_at": "2026-06-18T08:14:30+00:00",
-  "valuation_tax": -7.0,
+  "updated_at": "2026-06-23T14:15:01+00:00",
+  "valuation_tax": -8.0,
   "valuation_tax_breakdown": {
     "components": {
       "business_type_relief": 0.0,
@@ -284,9 +284,9 @@
       "growth_multiple_fragility": 0.0,
       "market_regime_beta": 0.0,
       "oey_penalty": 0.0,
-      "pe_hist_percentile": -2.0
+      "pe_hist_percentile": -3.0
     },
-    "total": -7.0
+    "total": -8.0
   },
   "yield_trap_mkt_threshold": 0.06,
   "yield_trap_warning": false

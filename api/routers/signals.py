@@ -36,3 +36,13 @@ def get_dated_report(report_name: str, report_date: str) -> dict[str, Any]:
 @router.get("/shortlist", operation_id="get_claude_shortlist")
 def get_shortlist() -> dict[str, Any]:
     return svc.get_shortlist_report()
+
+
+@router.get("/strategy-health", operation_id="get_strategy_health")
+def get_strategy_health(
+    report_date: str | None = Query(default=None, description="YYYY-MM-DD trade_store date"),
+) -> dict[str, Any]:
+    try:
+        return svc.strategy_health_report(report_date=report_date)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc

@@ -10,12 +10,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from api.dependencies import optional_api_key
 from api.jobs.runner import shutdown_executor
-from api.routers import analytics, chatbot, conviction, macro, monitored_trades, signals, virtual_trading
+from api.routers import analytics, chatbot, conviction, macro, monitored_trades, portfolio, signals, virtual_trading
 from api.schemas.conviction import HealthResponse
 from api.services import conviction_service as svc
 from src.config_paths import CONVICTION_STORE_DIR
 
-API_VERSION = "1.2.0"
+API_VERSION = "1.5.0"
 API_PREFIX = "/api/v1"
 
 _default_origins = "http://localhost:8504,http://localhost:8509,http://127.0.0.1:8504,http://127.0.0.1:8509"
@@ -54,6 +54,7 @@ app.include_router(monitored_trades.router, prefix=API_PREFIX)
 app.include_router(virtual_trading.router, prefix=API_PREFIX)
 app.include_router(analytics.router, prefix=API_PREFIX)
 app.include_router(macro.router, prefix=API_PREFIX)
+app.include_router(portfolio.router, prefix=API_PREFIX)
 
 
 @app.get(

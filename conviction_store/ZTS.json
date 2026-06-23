@@ -190,12 +190,12 @@
   "debt_purpose": null,
   "dividend_yield_5y_mean": 0.010294,
   "dividend_yield_5y_std": 0.004799,
-  "dividend_yield_current": 0.02744,
-  "dividend_yield_zscore": 3.5728,
-  "enterprise_value": 37419565292.24788,
+  "dividend_yield_current": 0.027568,
+  "dividend_yield_zscore": 3.5995,
+  "enterprise_value": 37268642913.89134,
   "eps_fwd": 7.42429,
   "eps_ttm": 6.1,
-  "ev_fwd_rev": 3.9261,
+  "ev_fwd_rev": 3.9103,
   "fcf_ttm": 2283000000.0,
   "fd_direction": "stable",
   "fd_sizing_adj": 0.0,
@@ -228,10 +228,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 9530999808.0,
   "industry": "Drug Manufacturers - Specialty & Generic",
-  "last_daily_update": "2026-06-18T08:14:31+00:00",
+  "last_daily_update": "2026-06-23T14:15:02+00:00",
   "last_full_calc": "2026-06-11T18:40:55+00:00",
   "manual_overrides": {},
-  "market_cap": 32389565292.24788,
+  "market_cap": 32238642913.891342,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -245,7 +245,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 5030000000.0,
-  "owner_earnings_yield": 0.070486,
+  "owner_earnings_yield": 0.070816,
   "pe_20y_array": [
     20.9003,
     20.7342,
@@ -257,7 +257,7 @@
   ],
   "pe_history_insufficient": false,
   "pe_percentile_20y": 0.0,
-  "pe_ttm": 12.6656,
+  "pe_ttm": 12.6066,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -266,13 +266,13 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 77.26000213623047,
+  "price": 76.9000015258789,
   "quote_type": "EQUITY",
   "revenue_accelerating": false,
   "roic_5y_avg": 0.67748,
   "sector": "Healthcare",
   "ticker": "ZTS",
-  "updated_at": "2026-06-18T08:14:31+00:00",
+  "updated_at": "2026-06-23T14:15:02+00:00",
   "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {

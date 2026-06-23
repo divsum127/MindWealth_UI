@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MindWealth · Macro Intelligence · Runic Agent v2.2</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --gold:#C9A84C;--gf:rgba(201,168,76,0.07);
+  --green:#27ae60;--red:#c0392b;--amber:#e67e22;--blue:#3498db;--teal:#16a085;--purple:#8e44ad;
+  --bg:#040404;--s1:#080808;--s2:#0d0d0d;--s3:#111;
+  --b1:#131313;--b2:#1d1d1d;--b3:#272727;
+  --t1:#f0f0f0;--t2:#b8b8b8;--t3:#888;--t4:#555;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:'Inter',sans-serif;color:var(--t1)}
+.tb{display:flex;align-items:center;padding:0 24px;height:48px;border-bottom:1px solid var(--b1);background:var(--bg);flex-shrink:0}
+.logo{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:var(--gold);margin-right:22px;letter-spacing:0.5px;white-space:nowrap}
+.logo span{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--t4);letter-spacing:2px;margin-left:8px;vertical-align:middle}
+.tbtabs{display:flex;gap:1px;flex:1}
+.tn{padding:5px 12px;font-size:9px;letter-spacing:0.8px;color:var(--t4);border-radius:3px;font-family:'JetBrains Mono',monospace;cursor:default;white-space:nowrap}
+.tn.on{color:var(--gold);background:var(--gf)}
+.tbr{display:flex;align-items:center;gap:14px;flex-shrink:0}
+.lp{display:flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t4);white-space:nowrap}
+.ld{width:5px;height:5px;border-radius:50%;animation:pu 2s infinite}
+.ld.g{background:var(--green)}.ld.r{background:var(--red);animation:pu 1s infinite}
+@keyframes pu{0%,100%{opacity:1}50%{opacity:0.15}}
+.rs{display:flex;align-items:center;padding:0 20px;height:34px;flex-shrink:0;border-bottom:1px solid var(--b2);background:#070707;gap:14px;overflow:hidden}
+.rsd{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.rsd.er{background:var(--red);animation:pu 1s infinite}
+.rsl{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:1.2px;color:var(--gold);font-weight:600}
+.rssep{width:1px;height:14px;background:var(--b3);flex-shrink:0}
+.rsi{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t3);display:flex;align-items:center;gap:4px;white-space:nowrap}
+.rsi span{color:#fff;font-weight:500}
+.body{display:flex;flex:1;overflow:hidden;min-height:0;height:calc(100vh - 82px)}
+.nav{width:185px;flex-shrink:0;border-right:1px solid var(--b1);background:var(--bg);display:flex;flex-direction:column;overflow-y:auto}
+.nav::-webkit-scrollbar{width:2px}.nav::-webkit-scrollbar-thumb{background:var(--b1)}
+.ng{padding:9px 12px 6px;border-bottom:1px solid var(--b1)}
+.ngl{font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:2px;color:var(--t4);text-transform:uppercase;margin-bottom:6px}
+.ni{display:flex;align-items:flex-start;gap:7px;padding:5px 8px;border-radius:4px;margin-bottom:1px;border:1px solid transparent;cursor:pointer;transition:all .15s}
+.ni:hover{background:rgba(255,255,255,0.025);border-color:rgba(255,255,255,0.04)}
+.ni.on{background:var(--gf);border-color:rgba(201,168,76,0.12)}
+.ni.on .nn{color:var(--gold)}
+.nd{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.nd.g{background:var(--green)}.nd.gold{background:var(--gold)}.nd.r{background:var(--red)}.nd.off{background:var(--t4)}.nd.amber{background:var(--amber)}
+.nn{font-size:10.5px;color:var(--t2);font-weight:500;line-height:1.3}
+.ns2{font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4);margin-top:1px}
+.ngate{font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t3);line-height:2;padding:4px 8px}
+.scroll{flex:1;overflow-y:auto;padding:16px 20px}
+.scroll::-webkit-scrollbar{width:3px}.scroll::-webkit-scrollbar-thumb{background:var(--b2)}
+.tab-bar{display:flex;gap:2px;margin-bottom:14px;border-bottom:1px solid var(--b2);padding-bottom:0}
+.tab-btn{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.8px;padding:5px 12px;cursor:pointer;color:var(--t4);border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;transition:all .15s}
+.tab-btn:hover{color:var(--t2)}
+.tab-btn.on{color:var(--gold);border-bottom-color:var(--gold)}
+.panel{display:none}.panel.on{display:block}
+.kr{display:grid;gap:8px;margin-bottom:12px}
+.k5{grid-template-columns:repeat(5,1fr)}.k4{grid-template-columns:repeat(4,1fr)}.k3{grid-template-columns:repeat(3,1fr)}
+.kc{background:var(--s1);border:1px solid var(--b1);border-radius:6px;padding:12px 14px;position:relative;overflow:hidden}
+.kc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.kc.g::before{background:var(--green)}.kc.r::before{background:var(--red)}.kc.gold::before{background:var(--gold)}.kc.b::before{background:var(--blue)}.kc.amber::before{background:var(--amber)}
+.kl{font-size:7.5px;color:var(--t4);font-family:'JetBrains Mono',monospace;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px}
+.kv{font-size:19px;font-weight:700;color:#fff;margin-bottom:2px;line-height:1;font-family:'Playfair Display',serif}
+.kd{font-size:8.5px;font-family:'JetBrains Mono',monospace}
+.kd.g{color:var(--green)}.kd.r{color:var(--red)}.kd.gold{color:var(--gold)}.kd.b{color:var(--blue)}.kd.amber{color:var(--amber)}
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:6px;overflow:hidden;margin-bottom:10px}
+.card-hd{display:flex;align-items:center;padding:9px 14px;background:var(--s2);border-bottom:1px solid var(--b2)}
+.card-title{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:1.2px;color:var(--t3);flex:1;text-transform:uppercase}
+.badge{font-family:'JetBrains Mono',monospace;font-size:7.5px;padding:2px 7px;border-radius:3px;letter-spacing:.3px}
+.b-act{color:var(--red);background:rgba(192,57,43,0.12);border:1px solid rgba(192,57,43,0.25)}
+.b-watch{color:var(--amber);background:rgba(230,126,34,0.12);border:1px solid rgba(230,126,34,0.25)}
+.b-ok{color:var(--green);background:rgba(39,174,96,0.12);border:1px solid rgba(39,174,96,0.25)}
+.b-off{color:var(--t4);background:var(--b1);border:1px solid var(--b2)}
+.b-bull{color:var(--green);background:rgba(39,174,96,0.1);border:1px solid rgba(39,174,96,0.2)}
+.b-bear{color:var(--red);background:rgba(192,57,43,0.1);border:1px solid rgba(192,57,43,0.2)}
+.b-warn{color:var(--amber);background:rgba(230,126,34,0.1);border:1px solid rgba(230,126,34,0.2)}
+.b-conf{color:var(--gold);background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.2)}
+.tbl{width:100%;border-collapse:collapse;font-size:10px}
+.tbl th{font-family:'JetBrains Mono',monospace;font-size:7.5px;letter-spacing:.8px;color:var(--t4);text-align:left;padding:6px 9px;border-bottom:1px solid var(--b2);text-transform:uppercase;white-space:nowrap;background:var(--s2)}
+.tbl td{padding:7px 9px;border-bottom:1px solid rgba(255,255,255,0.02);color:var(--t2);vertical-align:middle}
+.tbl tr:hover td{background:rgba(255,255,255,0.01)}
+.tier{font-family:'JetBrains Mono',monospace;font-size:7.5px;padding:2px 6px;border-radius:3px;letter-spacing:.3px;font-weight:500;white-space:nowrap}
+.t-norm{color:var(--t3);background:rgba(136,136,136,0.1);border:1px solid rgba(136,136,136,0.2)}
+.t-rare{color:var(--amber);background:rgba(230,126,34,0.1);border:1px solid rgba(230,126,34,0.25)}
+.t-ext{color:var(--red);background:rgba(192,57,43,0.1);border:1px solid rgba(192,57,43,0.25)}
+.t-watch{color:var(--gold);background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.2)}
+.t-pend{color:var(--t3);background:rgba(85,85,85,0.2);border:1px solid rgba(85,85,85,0.3)}
+.combo-card{background:var(--s1);border:1px solid var(--b1);border-radius:6px;padding:13px 15px;margin-bottom:8px;transition:border-color .15s}
+.combo-card:hover{border-color:var(--b3)}
+.combo-card.active-c{border-color:rgba(192,57,43,0.3);background:rgba(192,57,43,0.025)}
+.combo-card.watch-c{border-color:rgba(230,126,34,0.22);background:rgba(230,126,34,0.015)}
+.combo-card.conf-c{border-color:rgba(201,168,76,0.25);background:rgba(201,168,76,0.015)}
+.c-hd{display:grid;grid-template-columns:36px 1fr auto;gap:10px;align-items:start}
+.c-letter{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;line-height:1;color:var(--b3)}
+.active-c .c-letter{color:rgba(192,57,43,0.35)}
+.watch-c .c-letter{color:rgba(230,126,34,0.3)}
+.conf-c .c-letter{color:rgba(201,168,76,0.25)}
+.c-name{font-size:11px;font-weight:600;color:var(--t1);margin-bottom:3px}
+.c-vars{font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4);margin-bottom:4px;line-height:1.6}
+.c-legs{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+.leg{font-family:'JetBrains Mono',monospace;font-size:7.5px;padding:3px 8px;border-radius:3px}
+.leg-ok{color:var(--green);background:rgba(39,174,96,0.08);border:1px solid rgba(39,174,96,0.15)}
+.leg-fail{color:var(--t4);background:rgba(85,85,85,0.12);border:1px solid rgba(85,85,85,0.2)}
+.leg-pend{color:var(--amber);background:rgba(230,126,34,0.08);border:1px solid rgba(230,126,34,0.15)}
+.leg-ext{color:var(--red);background:rgba(192,57,43,0.08);border:1px solid rgba(192,57,43,0.15)}
+.c-note{font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4);line-height:1.7;margin-top:8px;padding-top:7px;border-top:1px solid var(--b2)}
+.at{width:100%;border-collapse:collapse;font-size:10px}
+.at th{font-family:'JetBrains Mono',monospace;font-size:7.5px;letter-spacing:.8px;color:var(--t4);text-align:left;padding:6px 9px;border-bottom:1px solid var(--b2);text-transform:uppercase;background:var(--s2);white-space:nowrap}
+.at td{padding:7px 9px;border-bottom:1px solid rgba(255,255,255,0.02);font-family:'JetBrains Mono',monospace;font-size:8.5px;color:var(--t2);vertical-align:top}
+.at .now td{background:rgba(201,168,76,0.03);border-color:rgba(201,168,76,0.1)}
+.at .med td{background:var(--s3)}
+.atd{color:#fff;font-weight:600;font-size:10.5px;font-family:'Inter',sans-serif}
+.ret{font-weight:600;text-align:right}.ret.neg{color:var(--red)}.ret.pos{color:var(--green)}.ret.mid{color:var(--gold)}.ret.tbd{color:var(--gold)}
+.rpill{display:inline-flex;align-items:center;gap:4px;font-family:'JetBrains Mono',monospace;font-size:8.5px;padding:3px 8px;border-radius:4px;margin:2px}
+.rp-war{color:#e74c3c;background:rgba(231,76,60,0.08);border:1px solid rgba(231,76,60,0.25)}
+.rp-cut{color:var(--green);background:rgba(39,174,96,0.07);border:1px solid rgba(39,174,96,0.18)}
+.rp-steep{color:var(--blue);background:rgba(52,152,219,0.07);border:1px solid rgba(52,152,219,0.18)}
+.rp-ext{color:var(--red);background:rgba(192,57,43,0.08);border:1px solid rgba(192,57,43,0.22)}
+.rp-easy{color:var(--teal);background:rgba(22,160,133,0.07);border:1px solid rgba(22,160,133,0.18)}
+.prog-wrap{width:100%;height:6px;background:var(--b2);border-radius:3px;overflow:hidden;margin:5px 0}
+.prog-fill{height:100%;border-radius:3px}
+.fri-row{display:flex;align-items:center;gap:8px;padding:8px 13px;border-bottom:1px solid rgba(255,255,255,0.02);font-family:'JetBrains Mono',monospace;font-size:8px}
+.fri-row:last-child{border-bottom:none}
+.cftc-alert{background:rgba(230,126,34,0.05);border:1px solid rgba(230,126,34,0.18);border-radius:5px;padding:9px 13px;margin-bottom:10px;display:flex;align-items:flex-start;gap:9px}
+.json-line{font-family:'JetBrains Mono',monospace;font-size:9.5px;line-height:1.9;color:var(--t4)}
+.jk{color:var(--blue)}.js{color:var(--green)}.jn{color:var(--amber)}.jb{color:var(--purple)}
+</style>
+</head>
+<body>
+
+<div class="tb">
+  <div class="logo">MindWealth<span>ALPHA TERMINAL</span></div>
+  <div class="tbtabs">
+    <div class="tn">DASHBOARD</div><div class="tn">SIGNALS</div>
+    <div class="tn on">MACRO · RUNIC</div><div class="tn">SUPER SENTIMENT</div>
+    <div class="tn">CONVICTION</div><div class="tn">PORTFOLIO</div><div class="tn">OVERWATCH</div>
+  </div>
+  <div class="tbr">
+    <div class="lp"><div class="ld r"></div>C WK 11 · E CONFIRMED · D WATCH</div>
+    <div class="lp" style="color:var(--t4)">28 MAY 2026</div>
+  </div>
+</div>
+
+<div class="rs">
+  <div class="rsd er"></div>
+  <div class="rsl">TACTICAL FEARFUL · STRATEGIC BRAVE</div>
+  <div class="rssep"></div>
+  <div class="rsi">ACTIVE <span style="color:var(--red)">C(wk11) · E(confirmed 2/3) · F(wk8)</span></div>
+  <div class="rssep"></div>
+  <div class="rsi">WATCH <span style="color:var(--amber)">D · VXTS 1.25 · CFTC PENDING</span></div>
+  <div class="rssep"></div>
+  <div class="rsi">DOMINANT <span style="color:var(--red)">C · BEARISH 83% · 3M</span></div>
+  <div class="rssep"></div>
+  <div class="rsi">C CANCEL <span style="color:var(--amber)">WTI −17% · 0/4 FRIDAYS</span></div>
+  <div class="rssep"></div>
+  <div class="rsi" style="margin-left:auto">CFTC <span style="color:var(--amber)">3-DAY LAG · PENDING FRI</span></div>
+</div>
+
+<div class="body">
+
+<!-- LEFT NAV -->
+<div class="nav">
+  <div class="ng">
+    <div class="ngl">Active Combos</div>
+    <div class="ni on" onclick="navJump('C')">
+      <div class="nd r"></div>
+      <div><div class="nn">Combo C · Stagflation</div><div class="ns2">Wk 11 MEDIUM · 83% bearish</div></div>
+    </div>
+    <div class="ni" onclick="navJump('E')">
+      <div class="nd gold"></div>
+      <div><div class="nn">Combo E · Valuation</div><div class="ns2">CONFIRMED 2/3 · CAPE 42× + NFCI</div></div>
+    </div>
+    <div class="ni" onclick="navJump('F')">
+      <div class="nd g"></div>
+      <div><div class="nn">Combo F · Recovery</div><div class="ns2">Wk 8 of 26 · bullish 78%</div></div>
+    </div>
+  </div>
+  <div class="ng">
+    <div class="ngl">Watch</div>
+    <div class="ni" onclick="navJump('D')">
+      <div class="nd amber"></div>
+      <div><div class="nn">Combo D · FOMO Top</div><div class="ns2">2/3 legs · CFTC pending Fri</div></div>
+    </div>
+  </div>
+  <div class="ng">
+    <div class="ngl">Recently Resolved</div>
+    <div class="ni" onclick="navJump('B')">
+      <div class="nd off"></div>
+      <div><div class="nn">Combo B · Capitulation</div><div class="ns2">Apr 2025 · SPX +25%</div></div>
+    </div>
+    <div class="ni" onclick="navJump('G')">
+      <div class="nd off"></div>
+      <div><div class="nn">Combo G · Hidden Stress</div><div class="ns2">Apr 2025 resolved</div></div>
+    </div>
+  </div>
+  <div class="ng">
+    <div class="ngl">Extrema Gate</div>
+    <div class="ngate">
+      ≥80% HIT RATE<br>
+      ≥5 INSTANCES MIN<br>
+      PCTL ≥85th OR ≤15th<br>
+      OR RARE (≤8 inst, 80%+)<br>
+      <span style="color:var(--gold);font-weight:600">BACKTEST DECIDES.</span><br>
+      <span style="color:var(--t3)">Not z-score. Not theory.</span><br>
+      <span style="color:var(--t3)">Every threshold is empirically</span><br>
+      <span style="color:var(--t3)">validated vs historical fires.</span>
+    </div>
+  </div>
+  <div class="ng">
+    <div class="ngl">Runic Scope — Macro Only</div>
+    <div class="ngate" style="color:var(--t4)">
+      S&P 500 / Nasdaq 100<br>
+      VIX + Term Structure (VXTS)<br>
+      HY Credit Spreads (OAS)<br>
+      CFTC COT Flow (TFF report)<br>
+      Gold/Silver Ratio (GSR)<br>
+      WTI Oil 4-week change<br>
+      CAPE / Shiller PE<br>
+      Fed Balance Sheet (WALCL)<br>
+      USD/CNH exchange rate<br>
+      CPI Surprise vs consensus<br>
+      10Y–2Y Yield Curve<br>
+      <span style="color:var(--b3)">—</span><br>
+      <span style="color:var(--t4)">Not individual stocks</span>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="scroll">
+
+<div class="tab-bar">
+  <button class="tab-btn on" onclick="switchTab('overview',this)">OVERVIEW</button>
+  <button class="tab-btn" onclick="switchTab('variables',this)">12 VARIABLES</button>
+  <button class="tab-btn" onclick="switchTab('combos',this)">7 NAMED COMBOS</button>
+  <button class="tab-btn" onclick="switchTab('cancel',this)">COMBO TRACKER</button>
+  <button class="tab-btn" onclick="switchTab('analog',this)">ANALOG TABLES</button>
+  <button class="tab-btn" onclick="switchTab('brief',this)">NIGHTLY BRIEF</button>
+</div>
+
+<!-- ═══ OVERVIEW ═══ -->
+<div id="tab-overview" class="panel on">
+  <div class="kr k5">
+    <div class="kc r"><div class="kl">Dominant Signal</div><div class="kv" style="font-size:14px;padding-top:4px">COMBO C</div><div class="kd r">Bearish 83% · 3m horizon</div></div>
+    <div class="kc amber"><div class="kl">C Duration</div><div class="kv">Wk 11</div><div class="kd amber">MEDIUM (6–16 wks)</div></div>
+    <div class="kc g"><div class="kl">Combo F Window</div><div class="kv">Wk 8</div><div class="kd g">of 26 · +22% from fire date</div></div>
+    <div class="kc r"><div class="kl">CAPE · Combo E</div><div class="kv">42.0×</div><div class="kd r">CONFIRMED 2/3 (CAPE+NFCI)</div></div>
+    <div class="kc b"><div class="kl">WTI 4-Wk Δ</div><div class="kv">−17%</div><div class="kd g">Below +5% cancel gate · wk 1</div></div>
+  </div>
+
+  <!-- REGIME -->
+  <div class="card">
+    <div class="card-hd"><div class="card-title">Regime Classification · 5 Dimensions · Claude Sonnet 4.6 API · Weekly Sunday</div><span class="badge b-act">REGIONAL_WAR · EXTREME VAL</span></div>
+    <div style="padding:12px 15px">
+      <div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:10px">
+        <span class="rpill rp-cut">● FED_CYCLE (WALCL+T10Y2Y): CUTTING_EARLY</span>
+        <span class="rpill rp-steep">● CURVE (FRED:T10Y2Y): STEEPENING (+43bps)</span>
+        <span class="rpill rp-war">● GEO (Claude API weekly): REGIONAL_WAR</span>
+        <span class="rpill rp-ext">● VALUATION (CAPE/multpl.com): EXTREME (42×)</span>
+        <span class="rpill rp-easy">● LIQUIDITY (FRED:NFCI): GLOBAL_EASY (−0.52)</span>
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--t4);line-height:1.8;background:var(--s2);padding:10px;border-radius:4px;border:1px solid var(--b2)">
+        <span style="color:var(--gold)">BRAVE/FEARFUL:</span> TACTICAL FEARFUL (C MEDIUM active + D approaching) + STRATEGIC BRAVE (Fed cutting, NFCI loose, Combo F wk 8 of 26).
+        D+C+E = near-term caution. F+liquidity = medium-term constructive. Do NOT flatten to one signal — both horizons are simultaneously valid.
+        <br><span style="color:var(--amber)">NOTE: Combo E now CONFIRMED (CAPE 42× + NFCI −0.52 both at RARE+). If D confirms Friday → D+E structural top signal fires.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TWO COLS -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+    <div class="card">
+      <div class="card-hd"><div class="card-title">Active Combos</div></div>
+      <div style="padding:10px 14px">
+        <!-- C -->
+        <div style="padding:9px 0;border-bottom:1px solid var(--b2)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:11px;font-weight:600;color:var(--red)">C · Stagflation / Energy Shock</span>
+            <span class="badge b-act">MEDIUM WK 11</span>
+          </div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4);line-height:1.8">
+            WTI fired ~Mar 10 (Iran, +50% peak $117). Now $91 → 4wk Δ = −17%.<br>
+            WTI cancel leg: −17% 4wk Δ — below +5% gate. Potential wk 1 of 4 if confirmed Fri close.<br>
+            CPI Apr 10: 0.2% vs 0.3% → not hot ✓. Next CPI: Jun 11.<br>
+            <span style="color:var(--amber)">CANCEL: 4 consecutive Fri both legs clear. Counter at 0/4.</span>
+          </div>
+          <div style="margin-top:6px">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--t4);margin-bottom:3px">CANCEL PROGRESS · 0 of 4 Fridays</div>
+            <div style="display:flex;gap:3px">
+              <div style="flex:1;height:5px;border-radius:2px;background:var(--b3);border:1px solid var(--b2)"></div>
+              <div style="flex:1;height:5px;border-radius:2px;background:var(--b3);border:1px solid var(--b2)"></div>
+              <div style="flex:1;height:5px;border-radius:2px;background:var(--b3);border:1px solid rgba(230,126,34,0.3)"></div>
+              <div style="flex:1;height:5px;border-radius:2px;background:var(--b3);border:1px solid var(--b2)"></div>
+            </div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--t4);margin-top:2px">Fri 3 = CPI week (Jun 11/13)</div>
+          </div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--t4);margin-top:5px">
+            Historical drawdown from C fire: −8% median 1m · −22% median 3m · −35% max (2008). IF C cancels → F becomes dominant.
+          </div>
+        </div>
+        <!-- E — CONFIRMED -->
+        <div style="padding:9px 0;border-bottom:1px solid var(--b2)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:11px;font-weight:600;color:var(--gold)">E · Valuation Extreme</span>
+            <span class="badge b-conf">CONFIRMED 2 OF 3</span>
+          </div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4);line-height:1.8">
+            CAPE 42.0× &gt; 28× gate ✓ (EXTREME tier &gt;32×)<br>
+            NFCI −0.52 &lt; −0.3 gate ✓ (easy = RARE tier) ← was incorrectly shown as partial<br>
+            CFTC: PENDING Friday — 2/3 already confirmed. If &gt;80th pctile Friday → 3/3 = maximum E conviction.<br>
+            <span style="color:var(--gold)">2 of 3 required → E IS CONFIRMED. Multiplier on D active.</span>
+          </div>
+        </div>
+        <!-- F -->
+        <div style="padding:9px 0">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:11px;font-weight:600;color:var(--green)">F · Recovery / Re-entry</span>
+            <span class="badge b-bull">WK 8 OF 26</span>
+          </div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4);line-height:1.8">
+            Fired Mar 30, 2026 · SPX reclaimed 50WMA +4.2% weekly.<br>
+            SPX currently ~7,550 from fire ~6,200 = <span style="color:var(--green)">+21.8% MTD from fire.</span><br>
+            Active until Sep 22, 2026. No early cancel unless Combo B fires.<br>
+            <span style="color:var(--green)">D+F TENSION: D tactical (days–4wks) vs F strategic (3–6m). Both valid.</span>
+          </div>
+          <div style="margin-top:5px">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--t4);margin-bottom:2px">F WINDOW · 8 of 26 weeks (31%)</div>
+            <div class="prog-wrap"><div class="prog-fill" style="width:31%;background:var(--green)"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd"><div class="card-title">Watch + Resolved</div></div>
+      <div style="padding:10px 14px">
+        <!-- D -->
+        <div style="padding:9px 0;border-bottom:1px solid var(--b2)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:11px;font-weight:600;color:var(--amber)">D · FOMO Top / Euphoria</span>
+            <span class="badge b-watch">WATCH · 2/3 LEGS</span>
+          </div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4);line-height:1.8">
+            VXTS 1.25 → EXTREME contango ✓ (gate &gt;1.10 · extreme &gt;1.20)<br>
+            VIX 16.7 → below 18 (strictly &lt;18) ✓<br>
+            CFTC: est. &gt;75th–85th pctile · PENDING Friday TFF report ⚠<br>
+            <span style="color:var(--amber)">If CFTC &gt;85th confirmed → D FIRES. With E confirmed → D+E = structural top.</span><br>
+            <span style="color:var(--t4)">Tactical: 3–10 days to 4 weeks. −3 to −5% over 5 days avg.</span>
+          </div>
+        </div>
+        <!-- B -->
+        <div style="padding:9px 0;border-bottom:1px solid var(--b2)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:11px;font-weight:600;color:var(--t4)">B · Maximum Capitulation</span>
+            <span class="badge b-off">RESOLVED · Apr 2025</span>
+          </div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4);line-height:1.8">
+            Apr 7, 2025: VIX 52 + HY &gt;400bps + CFTC &lt;15th pctile. All 3 confirmed.<br>
+            8 total instances since 1990 (6 named + 2 unspecified). 7/8 positive 3m = 87.5%.<br>
+            VIX multiplier BYPASSED per critical rule. SPX +25% from lows by May 2026.<br>
+            <span style="color:var(--t4)">CRITICAL: If B fires again → Combo F 26wk window cancels immediately.</span>
+          </div>
+        </div>
+        <!-- G -->
+        <div style="padding:9px 0">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:11px;font-weight:600;color:var(--t4)">G · Hidden Stress</span>
+            <span class="badge b-off">RESOLVED · Apr 2025</span>
+          </div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4);line-height:1.8">
+            Led Apr 2025 spike by ~3 weeks (G→B cascade). VXTS now 1.25 contango (resolved from backwardation). HY OAS ~305bps — not widening.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cftc-alert">
+    <div class="nd amber" style="width:6px;height:6px;margin-top:2px;animation:pu 2s infinite;flex-shrink:0"></div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--amber);line-height:1.7">
+      CFTC 3-DAY LAG · TFF published each Friday reflects prior Tuesday's positions.
+      Combos B, D, E, F all require CFTC. Last available (Tue May 26): est. 75–85th pctile net long.
+      Flag any Combo D or B fire this week as <span style="color:#fff">PENDING CFTC CONFIRM</span> until Friday report posts (~15:30 ET).
+      Combo D is 2/3 confirmed — one leg pending Friday TFF.
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 12 VARIABLES ═══ -->
+<div id="tab-variables" class="panel">
+  <!-- HEATMAP -->
+  <div class="card" style="margin-bottom:10px">
+    <div class="card-hd"><div class="card-title">12-Variable Extreme Map · May 28, 2026</div><span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">Hover for detail</span></div>
+    <div style="padding:10px 13px">
+      <div style="display:grid;grid-template-columns:repeat(12,1fr);gap:3px;margin-bottom:7px">
+        <div title="NFCI −0.52 · RARE (easy)" style="height:26px;border-radius:3px;background:rgba(230,126,34,0.25);border:1px solid rgba(230,126,34,0.4);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--amber);cursor:pointer">NFCI</div>
+        <div title="HY OAS 305bps · NORMAL" style="height:26px;border-radius:3px;background:rgba(85,85,85,0.2);border:1px solid rgba(85,85,85,0.3);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--t4);cursor:pointer">HY</div>
+        <div title="WALCL −0.3% MoM · FLAT NORMAL" style="height:26px;border-radius:3px;background:rgba(85,85,85,0.2);border:1px solid rgba(85,85,85,0.3);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--t4);cursor:pointer">WALCL</div>
+        <div title="CNH 4wk −0.4% · NORMAL" style="height:26px;border-radius:3px;background:rgba(85,85,85,0.2);border:1px solid rgba(85,85,85,0.3);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--t4);cursor:pointer">CNH</div>
+        <div title="WTI 4wk −17% · C CANCEL ZONE" style="height:26px;border-radius:3px;background:rgba(230,126,34,0.18);border:1px solid rgba(230,126,34,0.35);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--amber);cursor:pointer">WTI</div>
+        <div title="VIX 16.7 · ~20th pctile 20yr" style="height:26px;border-radius:3px;background:rgba(85,85,85,0.2);border:1px solid rgba(85,85,85,0.3);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--t4);cursor:pointer">VIX</div>
+        <div title="VXTS 1.25 · EXTREME contango · D gate" style="height:26px;border-radius:3px;background:rgba(192,57,43,0.3);border:1px solid rgba(192,57,43,0.5);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--red);cursor:pointer;animation:pu 2s infinite">VXTS</div>
+        <div title="CFTC: est. 75–85th pctile · PENDING TFF" style="height:26px;border-radius:3px;background:rgba(85,85,85,0.12);border:1px dashed rgba(85,85,85,0.4);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--t4);cursor:pointer">CFTC</div>
+        <div title="10Y-2Y +43bps · STEEPENING NORMAL" style="height:26px;border-radius:3px;background:rgba(85,85,85,0.2);border:1px solid rgba(85,85,85,0.3);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--t4);cursor:pointer">CURVE</div>
+        <div title="CPI Apr: −0.1pp · NOT HOT" style="height:26px;border-radius:3px;background:rgba(85,85,85,0.2);border:1px solid rgba(85,85,85,0.3);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--t4);cursor:pointer">CPI</div>
+        <div title="GSR: PENDING Friday · A+ modifier" style="height:26px;border-radius:3px;background:rgba(85,85,85,0.12);border:1px dashed rgba(85,85,85,0.4);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--t4);cursor:pointer">GSR</div>
+        <div title="CAPE 42.04× · EXTREME >32×" style="height:26px;border-radius:3px;background:rgba(192,57,43,0.35);border:1px solid rgba(192,57,43,0.55);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--red);cursor:pointer;animation:pu 1.5s infinite">CAPE</div>
+      </div>
+      <div style="display:flex;gap:14px;font-family:'JetBrains Mono',monospace;font-size:7.5px">
+        <span style="color:var(--t4)">▪ NORMAL</span>
+        <span style="color:var(--amber)">▪ RARE / APPROACHING</span>
+        <span style="color:var(--red)">▪ EXTREME (pulsing)</span>
+        <span style="color:var(--t4)">▪ PENDING (dashed)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-title">All 12 Variables · Sources · Current Levels · Thresholds</div>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--amber)">⚠ CFTC / GSR require Friday pull</span>
+    </div>
+    <table class="tbl">
+      <thead><tr><th>#</th><th>Variable</th><th>Yahoo / FRED / Source</th><th>Compute</th><th>Current</th><th>RARE Gate</th><th>EXTREME Gate</th><th>Today</th><th>Combos</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr>
+          <td style="color:var(--t4);font-family:'JetBrains Mono',monospace;font-size:8px">01</td>
+          <td><b style="color:#fff">NFCI</b><br><span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">Financial Conditions</span></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">FRED: NFCI<br>Weekly · Tue release</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">Weekly level.<br>3yr pctile rank.</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;color:var(--amber)">−0.523</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">&gt;+0.3 (tight)<br>&lt;−0.3 (easy)</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">&gt;+0.8 or &lt;−0.6</td>
+          <td><span class="tier t-rare">RARE EASY ✓</span></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">A, E</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">−0.52 &lt; −0.3 → RARE easy. Triggers E leg. Also loose enough for Combo A BRAVE direction. NOT at EXTREME (&lt;−0.6).</td>
+        </tr>
+        <tr>
+          <td style="color:var(--t4);font-family:'JetBrains Mono',monospace;font-size:8px">02</td>
+          <td><b style="color:#fff">HY OAS</b><br><span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">Credit Spreads</span></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">FRED: BAMLH0A0HYM2<br>Daily (ICE BofA index)</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">Daily OAS bps.<br>3yr pctile rank.</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;color:var(--t2)">~305 bps</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">&gt;400bps OR<br>&gt;+1.0 SD 3yr</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">&gt;500bps OR<br>&gt;+2.0 SD</td>
+          <td><span class="tier t-norm">NORMAL</span></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">A,B,F,G</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">~20th pctile 3yr. B, G not firing on HY leg. [SSI uses HYG/LQD ratio — do not double-count.]</td>
+        </tr>
+        <tr>
+          <td style="color:var(--t4);font-family:'JetBrains Mono',monospace;font-size:8px">03</td>
+          <td><b style="color:#fff">WALCL</b><br><span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">Fed Balance Sheet</span></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">FRED: WALCL<br>Weekly · Thu H.4.1</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">MoM % change.<br>Flat = ±0.8%.</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;color:var(--t2)">~$6.7T<br><span style="font-size:8px">MoM: −0.3%</span></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">±0.8% MoM</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">±2.0% MoM</td>
+          <td><span class="tier t-norm">FLAT / NORMAL</span></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">A, C</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">FLAT defined as MoM −0.8% to +0.8%. Satisfies C fire condition "flat or shrinking." A: confirms QT/QE direction.</td>
+        </tr>
+        <tr>
+          <td style="color:var(--t4);font-family:'JetBrains Mono',monospace;font-size:8px">04</td>
+          <td><b style="color:#fff">USD/CNH</b><br><span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">Yuan 4wk change</span></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">Yahoo Finance: USDCNH=X<br>Daily close</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">4-week % change.<br>Rising = tightening.</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;color:var(--t2)">~7.24<br><span style="font-size:8px">4wk: −0.4%</span></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">±1.5% in 4wks</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">±3.5% in 4wks</td>
+          <td><span class="tier t-norm">NORMAL</span></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">A,C,G</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">USD/CNH rising = yuan weakening = EM tightening (FEARFUL). Falling = easing (BRAVE).</td>
+        </tr>
+        <tr style="background:rgba(192,57,43,0.02)">
+          <td style="color:var(--t4);font-family:'JetBrains Mono',monospace;font-size:8px">05</td>
+          <td><b style="color:#fff">WTI Oil</b><br><span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">4-week rolling Δ%</span></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">Yahoo Finance: CL=F<br>NYMEX close ~14:30 ET</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">(today − 28cd ago)<br>÷ 28cd ago · daily.</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;color:var(--green)">~$91<br><span style="font-size:8px">4wk Δ: −17%</span></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">±6% in 4wks<br>(fire: &gt;+10%)</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">±10% in 4wks</td>
+          <td><span class="tier t-watch">CANCEL ZONE</span></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">C</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--amber)">4wk Δ now −17% — below cancel gate (+5%). Potential week 1 of 4 if confirmed at Friday NYMEX close. Cancel gate +5% is a buffer above zero — judgment call, not empirically derived. Earliest cancel: Jun 20 if all 4 Fridays clear.</td>
+        </tr>
+        <tr>
+          <td style="color:var(--t4);font-family:'JetBrains Mono',monospace;font-size:8px">06</td>
+          <td><b style="color:#fff">VIX Level</b><br><span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">CBOE Volatility</span></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">Yahoo Finance: ^VIX<br>CBOE daily close</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">Daily close.<br>3yr pctile rank.</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;color:var(--green)">16.7</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">&gt;25 AND<br>&gt;80th pctile 3yr</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">&gt;35 AND<br>&gt;95th pctile</td>
+          <td><span class="tier t-norm">NORMAL</span></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">B,D,G</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">VIX 16.7 percentiles: 1yr ~15th · 3yr ~22nd · 10yr ~28th · 20yr ~30th. D gate &lt;18 = ~30th pctile 20yr = complacency regime. Long-run avg VIX ~19–20. Record low 9.14 (Nov 2017). VIX multiplier: STANDARD — no bypass active (B not firing).</td>
+        </tr>
+        <tr style="background:rgba(230,126,34,0.02)">
+          <td style="color:var(--t4);font-family:'JetBrains Mono',monospace;font-size:8px">07</td>
+          <td><b style="color:#fff">VXTS Ratio</b><br><span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">VIX3M ÷ VIX</span></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">Yahoo: ^VIX3M ÷ ^VIX<br>Computed daily</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">Ratio. Daily.<br>No pctile needed.</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;color:var(--red)">~1.25</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">&lt;0.95 (backw.)<br>or &gt;1.10 (contango)</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">&lt;0.85 or &gt;1.20</td>
+          <td><span class="tier t-ext">EXTREME CONTANGO</span></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">D, G</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--amber)">1.25 &gt; 1.20 = EXTREME. Near-term vol crushed vs medium-term. Long-run avg ratio = 1.07–1.10. D leg ✓ confirmed.</td>
+        </tr>
+        <tr>
+          <td style="color:var(--t4);font-family:'JetBrains Mono',monospace;font-size:8px">08</td>
+          <td><b style="color:#fff">CFTC COT</b><br><span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">Net Spec Positioning</span></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">CFTC.gov TFF report<br>Fri ~15:30 ET (Tue data)</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">Lev_Money + Asset_Mgr<br>both cols, 3yr pctile.</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;color:var(--amber)">PENDING<br><span style="font-size:8px">est. 75–85th pctile</span></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">&lt;15th or<br>&gt;85th pctile</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">&lt;5th or<br>&gt;95th pctile</td>
+          <td><span class="tier t-pend">PENDING · FRI</span></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">B,D,E,F</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--amber)">⚠ 3-DAY LAG. D uses CFTC &gt;85th = <b style="color:var(--t3)">complacency top</b> (speculators max long, no fear buffer). E uses CFTC &gt;80th = <b style="color:var(--t3)">structural overbought</b> (crowded longs amplify valuation extreme). Different thresholds, both confirm over-positioning in different contexts.</td>
+        </tr>
+        <tr>
+          <td style="color:var(--t4);font-family:'JetBrains Mono',monospace;font-size:8px">09</td>
+          <td><b style="color:#fff">10Y−2Y Curve</b><br><span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">Yield spread bps</span></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">FRED: T10Y2Y<br>Daily</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">Spread bps +<br>4wk change rate.</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;color:var(--blue)">+43bps<br><span style="font-size:8px">4wk: +12bps</span></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">&lt;−30bps OR<br>steep &gt;15bps/4wk</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">&lt;−80bps OR<br>steep &gt;40bps/4wk</td>
+          <td><span class="tier t-norm">STEEPENING</span></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">A, E</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">Post-inversion steepening (was −108bps 2023). Confirms CUTTING_EARLY regime. Not at RARE.</td>
+        </tr>
+        <tr>
+          <td style="color:var(--t4);font-family:'JetBrains Mono',monospace;font-size:8px">10</td>
+          <td><b style="color:#fff">CPI Surprise</b><br><span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">Actual vs consensus</span></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">BLS.gov (actual)<br>Investing.com (consensus)</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">Actual minus<br>consensus pp.</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;color:var(--green)">−0.1pp<br><span style="font-size:8px">Apr: 0.2 vs 0.3</span></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">±0.2pp single</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">±0.4pp OR<br>2× consec hot</td>
+          <td><span class="tier t-norm">NOT HOT ✓</span></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">C</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">C cancel: not hot = actual ≤ consensus. Apr −0.1pp passes. Next: Jun 11 CPI / Jun 12 PPI. No-print week = pass by default.</td>
+        </tr>
+        <tr>
+          <td style="color:var(--t4);font-family:'JetBrains Mono',monospace;font-size:8px">11</td>
+          <td><b style="color:#fff">Gold/Silver Ratio</b><br><span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">GSR · A+ modifier</span></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">Yahoo: GC=F ÷ SI=F<br>Alt: FRED GOLD÷SILVER<br>Friday pull required</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">4-week % change<br>of the ratio.</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;color:var(--amber)">PENDING<br><span style="font-size:8px">Fri pull needed</span></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">4wk Δ &gt;±5%</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">4wk Δ &gt;±8%</td>
+          <td><span class="tier t-pend">PENDING · FRI</span></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">A+</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">GSR rising = gold outperforming silver = stress/risk-off (silver has more industrial demand, falls harder in fear episodes). GSR is a Combo A conviction amplifier when firing alongside A. Direction: rising GSR + FEARFUL A = higher conviction. Falling GSR + BRAVE A = higher conviction.<br><span style="color:var(--amber)">⚠ OPEN GAP: 5% / 4wk threshold is in spec but not empirically validated. Requires Python backtest (GC=F ÷ SI=F history since 1990, 4wk rolling Δ, cross-reference with Combo A fire dates and SPX outcomes). Threshold may need revision post-backfill.</span></td>
+        </tr>
+        <tr style="background:rgba(192,57,43,0.025)">
+          <td style="color:var(--t4);font-family:'JetBrains Mono',monospace;font-size:8px">12</td>
+          <td><b style="color:#fff">CAPE</b><br><span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">Shiller P/E</span></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">multpl.com scrape<br>Alt: FRED CAPE<br>Monthly update</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">Absolute level.<br>Monthly. Infl-adj.</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;color:var(--red)">42.04×</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">&gt;28× or &lt;16×<br>≈ 85th / 10th pctile</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">&gt;32× or &lt;12×<br>≈ 95th / 5th pctile</td>
+          <td><span class="tier t-ext">EXTREME (&gt;32×)</span></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">E</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--red)">42.04× = highest since dot-com (CAPE ~44 in Mar 2000). Already inflation-adj. E leg confirmed. With NFCI also confirmed, E = 2/3 = CONFIRMED.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══ 7 NAMED COMBOS ═══ -->
+<div id="tab-combos" class="panel">
+  <div style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4);margin-bottom:10px;padding:9px 13px;background:var(--s2);border-radius:5px;border:1px solid var(--b2);line-height:1.8">
+    298 total combinations (12C1=12 single · 12C2=66 two-variable · 12C3=220 three-variable). 7 pre-named (A–G) bypass the auto-discovery gate.
+    291 unnamed combos: auto-discovered by Python+SQL engine nightly as soon as data is available — no wait, no delay. The 3yr rolling percentile window just needs sufficient data to build the distribution.
+    All hit rates = directional hit rate (% of fires followed by correct SPX direction). All returns = SPX index return from fire date. All instance counts are estimated — pending historical backfill validation.
+  </div>
+
+  <!-- A -->
+  <div class="combo-card" id="cc-A">
+    <div class="c-hd">
+      <div class="c-letter">A</div>
+      <div>
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:3px;flex-wrap:wrap">
+          <div class="c-name">Global Liquidity / FCI Regime</div>
+          <span class="badge b-off">INACTIVE · 0/4 LEGS</span>
+          <span class="badge b-warn">BRAVE OR FEARFUL</span>
+        </div>
+        <div class="c-vars">NFCI + HY direction + WALCL + CNH  ·  ≥2 of 4 required simultaneously  ·  3–6m horizon  ·  ~78% hit rate  ·  BRAVE +12% avg / FEARFUL −8% avg SPX</div>
+        <div class="c-legs">
+          <span class="leg leg-ok">NFCI −0.52: at RARE easy (satisfies A easing leg)</span>
+          <span class="leg leg-fail">HY 305bps: NORMAL (not RARE tight or easy)</span>
+          <span class="leg leg-fail">WALCL −0.3% MoM: FLAT (not RARE)</span>
+          <span class="leg leg-fail">CNH −0.4% 4wk: NORMAL</span>
+        </div>
+      </div>
+      <div style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--t4);white-space:nowrap">1 OF 4<br>need ≥2</div>
+    </div>
+    <div class="c-note">
+      <b style="color:var(--t3)">4 validated instances (documented by name):</b> GFC QE 2009 · COVID QE Mar 2020 · Fed pivot Jan 2019 · Hike onset Mar 2022.
+      Total count pending backfill. 78% across these 4 = approximately 3/4 correct directional calls.
+      BRAVE avg +12% / FEARFUL avg −8% are SPX total return 3–6m from fire date — not MTM of any position; the market moved this amount.
+      <b style="color:var(--amber)">GSR (A+) modifier:</b> When Combo A fires AND GSR 4wk Δ &gt;+5% simultaneously, it increases FEARFUL conviction (rising GSR = gold outperforming silver = stress/risk-off).
+      Precise multiplier rule not yet formally defined in spec — open gap.
+      Currently: only 1 of 4 legs firing (NFCI). A is not active.
+    </div>
+  </div>
+
+  <!-- B -->
+  <div class="combo-card" id="cc-B">
+    <div class="c-hd">
+      <div class="c-letter">B</div>
+      <div>
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:3px;flex-wrap:wrap">
+          <div class="c-name">Maximum Capitulation / Blood in Streets</div>
+          <span class="badge b-off">RESOLVED · Apr 2025</span>
+          <span class="badge b-bull">BULLISH CONTRARIAN</span>
+        </div>
+        <div class="c-vars">VIX &gt;25 AND &gt;80th pctile  AND  HY &gt;400bps  AND  CFTC &lt;15th pctile  ·  ALL 3 simultaneously (singles/doubles = WATCH only)  ·  3m horizon</div>
+        <div class="c-legs">
+          <span class="leg leg-fail">VIX 16.7: NORMAL (gate &gt;25 ✗)</span>
+          <span class="leg leg-fail">HY 305bps: NORMAL (gate &gt;400 ✗)</span>
+          <span class="leg leg-fail">CFTC: PENDING · est. extreme long (gate &lt;15th ✗)</span>
+        </div>
+      </div>
+      <div style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--t4);white-space:nowrap">0 OF 3<br>resolved</div>
+    </div>
+    <div class="c-note">
+      <b style="color:var(--t3)">Hit rate:</b> 7/8 fires positive SPX 3m later = 87.5% (directional). 91% in cutting cycles / 68% in hiking cycles (regime-adjusted).
+      <b style="color:var(--t3)">Avg return:</b> +14% SPX 3m from fire date.
+      <b style="color:var(--t3)">Instances:</b> 8 total since 1990. Named: Aug 2015 · Feb 2016 · Dec 2018 · Mar 2020 (VIX 82) · Oct 2022 (VIX 33.6) · Apr 2025 (VIX 52). 2 additional unspecified fires complete the count of 8. All counts are estimates pending backfill.
+      <b style="color:var(--red)">CRITICAL:</b> When B confirmed → VIX size multiplier BYPASSED. Never reduce size. Oct 2022: would have cut 25% at the exact bottom. Apr 2025: SPX +25% from lows.
+      <b style="color:var(--amber)">68% note:</b> Hiking cycle hit rate. Not a gate threshold. Internal reference only — never shown to clients.
+      <b style="color:var(--amber)">F CANCEL RULE — WHY COMBO B:</b> If B fires while F is active, it means SPX has fallen so severely (VIX&gt;25, HY&gt;400bps, CFTC extreme short) that the original recovery from F's reclaim date has failed entirely — a new bear leg started. You cancel F's thesis and start fresh with a new B buy signal at the lower price. B is a BUY signal too, but from a new, lower base — it's not contradicting F, it's replacing it. Combo D firing does NOT cancel F — D is tactical (days–4wks) and creates D+F tension (reduce new longs, tighten stops, hold core).
+    </div>
+  </div>
+
+  <!-- C -->
+  <div class="combo-card active-c" id="cc-C">
+    <div class="c-hd">
+      <div class="c-letter" style="color:rgba(192,57,43,0.4)">C</div>
+      <div>
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:3px;flex-wrap:wrap">
+          <div class="c-name" style="color:var(--red)">Stagflation / Energy Shock</div>
+          <span class="badge b-act">ACTIVE · WK 11 MEDIUM</span>
+          <span class="badge b-bear">BEARISH 83%</span>
+        </div>
+        <div class="c-vars">WTI &gt;+10% rolling 28-day change  AND  CPI actual ≤ consensus (fire condition)  AND  WALCL flat (±0.8% MoM) or shrinking  ·  1–6m  ·  83% neg 1–6m  ·  ~4–5 instances since 2005</div>
+        <div class="c-legs">
+          <span class="leg leg-ok">WALCL −0.3% MoM: FLAT ✓ (within ±0.8%)</span>
+          <span class="leg leg-ok">CPI Apr: −0.1pp vs consensus · NOT HOT ✓</span>
+          <span class="leg" style="color:var(--amber);background:rgba(230,126,34,0.08);border:1px solid rgba(230,126,34,0.2)">WTI 4wk: −17% · cancel approaching (fire was +50%)</span>
+        </div>
+      </div>
+      <div style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--red);white-space:nowrap">ACTIVE<br>WK 11</div>
+    </div>
+    <div class="c-note">
+      Fired ~Mar 10, 2026 (Iran conflict WTI +50% peak). Duration: SHORT &lt;6wks · MEDIUM 6–16wks · LONG &gt;16wks. Now MEDIUM wk 11.
+      <b style="color:var(--t3)">Historical drawdown from fire:</b> −8% median 1m · −22% median 3m · −41% 6m (2008 extreme) · −12% 3m (2022). Max drawdown from fire: −35% (2008), −22% (2022), −12% (2025 but B override).
+      Cancel requires 4 consecutive Friday assessments where BOTH WTI 4wk Δ &lt;+5% AND CPI/PPI not hot. Counter resets on any failure.
+      Analog dates: Jun 2008 · Jun 2022 · Apr 2025.
+      <b style="color:var(--amber)">Key difference vs prior instances:</b> Fed CUTTING_EARLY here (not hiking as in 2008/2022). Cutting cycle context historically moderates C downside. C + F simultaneously = contested signal.
+    </div>
+  </div>
+
+  <!-- D -->
+  <div class="combo-card watch-c" id="cc-D">
+    <div class="c-hd">
+      <div class="c-letter" style="color:rgba(230,126,34,0.3)">D</div>
+      <div>
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:3px;flex-wrap:wrap">
+          <div class="c-name" style="color:var(--amber)">FOMO Top / Euphoria Tactical</div>
+          <span class="badge b-watch">WATCH · 2/3 LEGS · CFTC PENDING</span>
+          <span class="badge b-bear">BEARISH TACTICAL</span>
+        </div>
+        <div class="c-vars">VXTS ratio &gt;1.10 (deep contango)  AND  CFTC &gt;85th pctile  AND  VIX &lt;18 (strictly less than)  ·  3–10 days to 4 weeks  ·  72–85%  ·  −3 to −5% avg over 5 days  ·  ~4–5 instances since 2018</div>
+        <div class="c-legs">
+          <span class="leg leg-ext">VXTS 1.25: EXTREME contango ✓✓ (&gt;1.20)</span>
+          <span class="leg leg-ok">VIX 16.7: strictly &lt;18 ✓</span>
+          <span class="leg leg-pend">CFTC: est. 75–85th pctile · PENDING Friday TFF</span>
+        </div>
+      </div>
+      <div style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--amber);white-space:nowrap">2 OF 3<br>CFTC pend</div>
+    </div>
+    <div class="c-note">
+      <b style="color:var(--t3)">Why tactical only:</b> VXTS compression, VIX low, and CFTC crowded longs are all conditions that resolve quickly — the compression breaks in days to weeks, not months.
+      <b style="color:var(--t3)">D = Complacency Top signal:</b> near-term vol crushed (VXTS extreme contango) + very low fear (VIX &lt;18) + speculators maximum long (CFTC &gt;85th) = the market is priced for perfection with no room for bad news. Historically precedes sharp short-horizon corrections.
+      <b style="color:var(--t3)">VIX &lt;18 rationale + percentiles:</b> VIX 16.7 today. 1yr pctile: ~15th. 3yr pctile: ~22nd. 10yr pctile: ~28th. 20yr pctile: ~30th. The &lt;18 gate = roughly bottom 30th pctile on a 20yr basis = genuine complacency regime. Not empirically optimised — it's a structural threshold. Bridgewater would use 20yr for regime definition.
+      <b style="color:var(--t3)">D+E interaction:</b> E is structural overbought (6–18m). D is complacency top (days–4wks). When D fires while E is confirmed → E multiplies D conviction — tactical sell has structural valuation backdrop. Most bearish short-term signal outside Combo B.
+      <b style="color:var(--amber)">D+F tension:</b> D says reduce new long entries, raise stop losses. F says hold core longs. Answer: no new longs (D), no capitulation on core (F), tighten stops.
+      Named instances: Jan 2018 (Volmageddon) · Feb 2020 (pre-COVID) · Nov 2021 · Apr 2026. Will surface on Signals page and Portfolio page when CONFIRMED.
+    </div>
+  </div>
+
+  <!-- E -->
+  <div class="combo-card conf-c" id="cc-E">
+    <div class="c-hd">
+      <div class="c-letter" style="color:rgba(201,168,76,0.25)">E</div>
+      <div>
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:3px;flex-wrap:wrap">
+          <div class="c-name" style="color:var(--gold)">Valuation Extreme / Slow Burn Top</div>
+          <span class="badge b-conf">CONFIRMED · 2 OF 3</span>
+          <span class="badge b-bear">BEARISH STRUCTURAL</span>
+        </div>
+        <div class="c-vars">CAPE &gt;28×  AND  NFCI easy (&lt;−0.3)  AND  CFTC &gt;80th pctile  ·  2 of 3 required  ·  6–18m  ·  ~73% neg fwd 12m  ·  ~3–4 instances since 1990</div>
+        <div class="c-legs">
+          <span class="leg leg-ext">CAPE 42.04×: EXTREME ✓ (gate &gt;28× · extreme &gt;32×)</span>
+          <span class="leg leg-ok">NFCI −0.52: RARE easy ✓ (&lt;−0.3 gate) ← was incorrectly shown as partial</span>
+          <span class="leg leg-pend">CFTC: PENDING Fri · 2/3 already met but 3/3 = stronger conviction</span>
+        </div>
+      </div>
+      <div style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--gold);white-space:nowrap">CONFIRMED<br>2 OF 3</div>
+    </div>
+    <div class="c-note">
+      <b style="color:var(--amber)">⚠ STATUS CORRECTION:</b> NFCI −0.52 IS less than −0.3 (more negative = easier conditions = RARE easy). E is CONFIRMED (2 of 3), not partial.
+      <b style="color:var(--gold)">E = Structural Overbought signal:</b> extreme valuations (CAPE) + loose financial conditions (NFCI) + crowded longs (CFTC when confirmed) = the market is simultaneously expensive, awash with liquidity, and over-positioned. Historically precedes significant multi-month drawdowns.
+      CFTC confirmation would upgrade to 3/3 — not required but meaningfully increases conviction.
+      NOT a standalone sell signal — markets can stay structurally overbought for years. Acts as a MULTIPLIER on Combo D conviction.
+      With D approaching and E confirmed: if D fires Friday → D+E = structural top signal. Most bearish constellation below Combo B.
+      CAPE 42× = highest since dot-com (~44 in Mar 2000). Historical instances: Mar 2000 · Oct 2007 · Nov 2021. ~3–4 validated.
+      Long-horizon warning (6–18m) — do NOT use for tactical position sizing or entry/exit timing.
+    </div>
+  </div>
+
+  <!-- F -->
+  <div class="combo-card active-c" id="cc-F">
+    <div class="c-hd">
+      <div class="c-letter" style="color:rgba(39,174,96,0.35)">F</div>
+      <div>
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:3px;flex-wrap:wrap">
+          <div class="c-name" style="color:var(--green)">Recovery / Re-entry Signal</div>
+          <span class="badge b-ok">ACTIVE · WK 8 OF 26</span>
+          <span class="badge b-bull">BULLISH 78%</span>
+        </div>
+        <div class="c-vars">SPX reclaims 50-Week MA with ≥+3% weekly gain  WHILE  CFTC ≤50th pctile  ·  requires prior sustained break below 50WMA (min 1 weekly close below)  ·  3–6m window (26 weeks)</div>
+        <div class="c-legs">
+          <span class="leg leg-ok">50WMA reclaim: Mar 30, 2026 · +4.2% weekly ✓</span>
+          <span class="leg leg-ok">CFTC at reclaim: ≤50th pctile ✓ (short-covering fuel)</span>
+          <span class="leg leg-ok">Prior break: confirmed (Apr 2025 drawdown) ✓</span>
+        </div>
+      </div>
+      <div style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--green);white-space:nowrap">ACTIVE<br>WK 8/26</div>
+    </div>
+    <div class="c-note">
+      <b style="color:var(--t3)">Current MTM:</b> SPX ~7,550 from fire ~6,200 = +21.8% from fire date. Historical avg at this point (wk 8): +8–10%. We are running significantly ahead of historical average.
+      <b style="color:var(--t3)">Why 26-week window:</b> Derived from return profile across instances — the positive return period from 50WMA reclaims historically persists ~5–6 months before needing re-evaluation. After 26 weeks, F is no longer the reason to hold.
+      <b style="color:var(--t3)">Why no early cancel unless Combo B:</b> Combo D firing does NOT cancel F — D is tactical (days–4wks) and creates the D+F tension. Only a new full capitulation event (B) would mean the recovery thesis has failed and a new bear leg started. D is not that.
+      <b style="color:var(--t3)">50WMA reclaim definition:</b> Minimum 1 weekly close below the 50WMA required prior to reclaim. Single weekly close below = sufficient. No minimum duration or depth.
+      <b style="color:var(--t3)">Hit rate drop:</b> ~20pp lower if CFTC was extreme long at reclaim (already crowded = less fuel). Not the case here.
+      Active until Sep 22, 2026.
+    </div>
+  </div>
+
+  <!-- G -->
+  <div class="combo-card" id="cc-G">
+    <div class="c-hd">
+      <div class="c-letter">G</div>
+      <div>
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:3px;flex-wrap:wrap">
+          <div class="c-name">Hidden Stress / Credit-Vol Divergence</div>
+          <span class="badge b-off">RESOLVED · Apr 2025</span>
+          <span class="badge b-warn">WARNING LEADING</span>
+        </div>
+        <div class="c-vars">VXTS &lt;1.0 (backwardation)  AND  HY widening &gt;+30bps in 4 weeks  WHILE  VIX &lt;20  ·  leads vol spike 3–6 weeks  ·  ~75%  ·  ~4–5 instances since 2015</div>
+        <div class="c-legs">
+          <span class="leg leg-fail">VXTS 1.25: CONTANGO (gate &lt;1.0 backwardation ✗)</span>
+          <span class="leg leg-fail">HY: not widening &gt;30bps in 4wks ✗</span>
+          <span class="leg leg-ok">VIX 16.7: below 20 ✓ (one leg only)</span>
+        </div>
+      </div>
+      <div style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--t4);white-space:nowrap">0 OF 3<br>resolved</div>
+    </div>
+    <div class="c-note">
+      Fires BEFORE the event (3–6 week lead). Watch for G→B cascade. Apr 2025: G fired Feb 2025, B fired Apr 7, SPX −25% then +25%. Now resolved.
+      Yahoo tickers: ^VIX3M (VIX3M) · ^VIX (VIX) · FRED BAMLH0A0HYM2 (HY OAS).
+      Not firing today: VXTS in contango, HY not widening.
+      Named instances: pre-Aug 2015 · pre-Dec 2018 · pre-COVID Feb 2020 · pre-Apr 2025.
+    </div>
+  </div>
+</div>
+
+<!-- ═══ COMBO C TRACKER ═══ -->
+<div id="tab-cancel" class="panel">
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:10px">
+    <div>
+      <div class="card" style="margin-bottom:10px">
+        <div class="card-hd"><div class="card-title">Combo C — Cancel Condition Monitor</div><span class="badge b-act">0 OF 4 FRIDAYS</span></div>
+        <div style="padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4);line-height:1.9;border-bottom:1px solid var(--b2)">
+          <b style="color:var(--t3)">CANCEL LOGIC:</b> WTI 4wk Δ means (today's WTI close − WTI close exactly 28 calendar days ago) ÷ WTI close 28 days ago. Computed DAILY. Checked at NYMEX close ~14:30 ET each Friday.<br>
+          <b style="color:var(--amber)">CURRENT: WTI 4wk Δ = −17%.</b> This is below the +5% cancel gate — if confirmed at Friday's NYMEX close, this would be potential week 1 of 4. Not confirmed until Friday close. Same logic as CFTC — approaching, not yet locked in.<br>
+          <b style="color:var(--t3)">The +5% gate</b> was set as a buffer above zero to avoid hair-trigger cancellation. It means WTI must have clearly stopped its shock move, not just paused. Gate is a judgment call — not empirically derived from backfill.
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 13px;background:var(--s2);border-bottom:1px solid var(--b2);font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--t4)">
+          <span style="width:50px">FRI #</span><span style="width:75px">DATE</span><span style="width:75px">WTI 4WK Δ</span><span style="width:55px">WTI LEG</span><span style="flex:1">DATA (CPI/PPI) THIS WEEK</span><span style="width:55px">DATA LEG</span><span style="width:65px">STATUS</span>
+        </div>
+        <div class="fri-row">
+          <span style="width:50px;color:var(--t4)">1 / 4</span>
+          <span style="width:75px;color:var(--t2)">May 30</span>
+          <span style="width:75px;color:var(--amber)">TBD · est. −17%</span>
+          <span style="width:55px;color:var(--amber)">POTENTIAL</span>
+          <span style="flex:1;color:var(--t4)">No CPI/PPI this week → data condition passes by default</span>
+          <span style="width:55px;color:var(--green)">PASS (dflt)</span>
+          <span class="badge b-watch" style="width:65px;text-align:center">PENDING</span>
+        </div>
+        <div class="fri-row">
+          <span style="width:50px;color:var(--t4)">2 / 4</span>
+          <span style="width:75px;color:var(--t4)">Jun 6</span>
+          <span style="width:75px;color:var(--t4)">TBD</span>
+          <span style="width:55px;color:var(--t4)">FUTURE</span>
+          <span style="flex:1;color:var(--t4)">No CPI/PPI scheduled → passes by default</span>
+          <span style="width:55px;color:var(--t4)">FUTURE</span>
+          <span class="badge b-off" style="width:65px;text-align:center">FUTURE</span>
+        </div>
+        <div class="fri-row" style="background:rgba(230,126,34,0.03);border:1px solid rgba(230,126,34,0.08)">
+          <span style="width:50px;color:var(--amber)">3 / 4 ⚡</span>
+          <span style="width:75px;color:var(--amber)">Jun 13</span>
+          <span style="width:75px;color:var(--t4)">TBD</span>
+          <span style="width:55px;color:var(--t4)">FUTURE</span>
+          <span style="flex:1;color:var(--amber)">CPI: Wed Jun 11 · PPI: Thu Jun 12 → pairs with THIS Friday's WTI reading. CRITICAL WEEK.</span>
+          <span style="width:55px;color:var(--amber)">CRITICAL</span>
+          <span class="badge b-watch" style="width:65px;text-align:center">CPI WEEK</span>
+        </div>
+        <div class="fri-row">
+          <span style="width:50px;color:var(--t4)">4 / 4</span>
+          <span style="width:75px;color:var(--t4)">Jun 20</span>
+          <span style="width:75px;color:var(--t4)">TBD</span>
+          <span style="width:55px;color:var(--t4)">FUTURE</span>
+          <span style="flex:1;color:var(--t4)">No CPI/PPI scheduled → passes by default</span>
+          <span style="width:55px;color:var(--t4)">FUTURE</span>
+          <span class="badge b-off" style="width:65px;text-align:center">FUTURE</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><div class="card-title">CPI / PPI Sourcing Rules · Developer Reference</div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4);line-height:1.8">
+          <div><div style="color:var(--gold);margin-bottom:3px">DATA SOURCES</div>
+            CPI actual: BLS.gov (FRED: CPIAUCSL)<br>CPI consensus: Investing.com calendar<br>PPI actual: BLS.gov (FRED: PPIACO)<br>PPI consensus: Investing.com calendar<br>"Not hot" = actual ≤ consensus
+          </div>
+          <div><div style="color:var(--gold);margin-bottom:3px">PAIRING RULES</div>
+            CPI Mon–Thu → pairs with THAT week's Friday<br>CPI Sat or early next week → pending_cpi_release → NEXT Friday<br>No print that week → data passes by default<br>Counter RESETS to zero on any Friday failure
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:8px">
+        <div class="card-hd"><div class="card-title">Cancel Summary</div></div>
+        <div style="padding:12px 14px">
+          <div style="display:flex;gap:4px;margin-bottom:10px">
+            <div style="flex:1;height:28px;border-radius:3px;background:var(--b3);border:1px solid rgba(230,126,34,0.3);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--amber)">FRI 1<br>PENDING</div>
+            <div style="flex:1;height:28px;border-radius:3px;background:var(--b3);border:1px solid var(--b2);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--t4)">FRI 2<br>FUTURE</div>
+            <div style="flex:1;height:28px;border-radius:3px;background:rgba(230,126,34,0.06);border:1px solid rgba(230,126,34,0.2);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--amber)">FRI 3<br>CPI WK</div>
+            <div style="flex:1;height:28px;border-radius:3px;background:var(--b3);border:1px solid var(--b2);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--t4)">FRI 4<br>FUTURE</div>
+          </div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4);line-height:1.8">
+            <div style="color:var(--amber);margin-bottom:3px">EARLIEST POSSIBLE CANCEL</div>Jun 20, 2026 (all 4 clear)<br><br>
+            <div style="color:var(--red);margin-bottom:3px">CURRENT C STATUS</div>ACTIVE · MEDIUM · WK 11<br>Dominant bearish 83%<br>Overrides F at tactical horizon<br><br>
+            <div style="color:var(--green);margin-bottom:3px">IF C CANCELS</div>F becomes dominant (wk 8/26)<br>D+F tension → hold core longs<br>E structural warning persists
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMBO F WINDOW TRACKER -->
+  <div style="margin-top:10px">
+    <div class="card">
+      <div class="card-hd"><div class="card-title">Combo F — 26-Week Recovery Window Monitor</div><span class="badge b-ok">WK 8 OF 26 · ACTIVE</span></div>
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:10px;padding:12px 14px">
+        <div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4);line-height:1.9;margin-bottom:10px">
+            Fire date: <span style="color:var(--t2)">Mar 30, 2026</span> · SPX 50WMA reclaim +4.2% weekly · CFTC ≤50th pctile ✓<br>
+            Window expires: <span style="color:var(--t2)">Sep 22, 2026</span> (26 weeks from fire date)<br>
+            Current MTM from fire: <span style="color:var(--green);font-weight:600">+21.8%</span> (SPX ~6,200 → ~7,550)<br>
+            Historical avg at wk 8: <span style="color:var(--t3)">+5–8%</span> — current instance running well ahead of historical pace<br>
+            <span style="color:var(--amber)">Cancel condition: Combo B fires (new full capitulation invalidates recovery thesis). Combo D does NOT cancel F.</span>
+          </div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--t4);margin-bottom:4px">WINDOW ELAPSED · 8 of 26 weeks (31%)</div>
+          <div style="width:100%;height:7px;background:var(--b2);border-radius:4px;overflow:hidden">
+            <div style="width:31%;height:100%;background:var(--green);border-radius:4px"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--t4);margin-top:3px">
+            <span>Mar 30 · fire</span><span style="color:var(--green)">wk 8 · now</span><span>Sep 22 · expires</span>
+          </div>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4);line-height:1.9">
+          <div style="color:var(--green);margin-bottom:4px">WINDOW STATUS</div>
+          Active · 18 weeks remaining<br>
+          Dominant: strategic BRAVE<br>
+          Tactical override: C (wk 11)<br><br>
+          <div style="color:var(--amber);margin-bottom:4px">IF COMBO B FIRES BEFORE SEP 22</div>
+          F window cancels immediately.<br>
+          B = new buy signal from new<br>
+          (lower) base price. Start fresh.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ANALOG TABLES ═══ -->
+<div id="tab-analog" class="panel">
+  <!-- COMBO C -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-hd">
+      <div class="card-title" style="color:var(--red)">Combo C · Stagflation / Energy Shock · SPX Forward Returns from Fire Date</div>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">83% neg 3m · est. ~4–5 instances · research standard table</span>
+    </div>
+    <table class="at">
+      <thead><tr><th>Fire Date</th><th>Context</th><th>WTI at Fire</th><th>Duration</th><th>Max DD</th><th>Bottom Timing</th><th>1M</th><th>3M</th><th>6M</th><th>Verdict</th></tr></thead>
+      <tbody>
+        <tr><td class="atd">Jun 16, 2008</td><td style="font-size:7.5px;color:var(--t4);max-width:120px">Oil $147 peak. Core CPI hot. Pre-GFC. WALCL pre-QE flat.</td><td style="color:var(--amber)">$132 (+38% 4wk)</td><td style="color:var(--amber)">LONG &gt;16wks</td><td class="ret neg">−48.0%</td><td style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--t3)">Mar 2009 · ~9m</td><td class="ret neg">−8.1%</td><td class="ret neg">−28.6%</td><td class="ret neg">−41.0%</td><td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;padding:2px 5px;border-radius:3px;color:var(--red);background:rgba(192,57,43,0.1)">SEVERE · GFC</td></tr>
+        <tr><td class="atd">Jun 9, 2022</td><td style="font-size:7.5px;color:var(--t4);max-width:120px">Russia-Ukraine. WTI +60% from Jan. CPI 8.6%. Fed hiking 75bp.</td><td style="color:var(--amber)">$119 (+55% 4wk)</td><td style="color:var(--amber)">MEDIUM 8wks</td><td class="ret neg">−22.0%</td><td style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--t3)">Oct 2022 · ~4m</td><td class="ret neg">−8.4%</td><td class="ret neg">−16.0%</td><td class="ret neg">−12.0%</td><td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;padding:2px 5px;border-radius:3px;color:var(--amber);background:rgba(230,126,34,0.1)">MODERATE</td></tr>
+        <tr><td class="atd">Apr 14, 2025</td><td style="font-size:7.5px;color:var(--t4);max-width:120px">Tariff shock + supply. WTI spike. Combo B fired simultaneously → VIX bypass.</td><td style="color:var(--amber)">$87 (+22% 4wk)</td><td style="color:var(--amber)">SHORT 4wks</td><td class="ret neg">−12.0%</td><td style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--t3)">Apr 7 2025 · ~4wks</td><td class="ret neg">−5.2%</td><td class="ret pos">+18.4%</td><td class="ret tbd">TBD</td><td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;padding:2px 5px;border-radius:3px;color:var(--green);background:rgba(39,174,96,0.1)">B OVERRIDE</td></tr>
+        <tr class="med"><td><b>Median (no B override)</b></td><td style="font-size:7.5px;color:var(--t4)">2/2 instances negative 3m</td><td>+47% avg</td><td>MEDIUM</td><td class="ret neg">−35%</td><td style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--t3)">4–9 months</td><td class="ret neg">−8.3%</td><td class="ret neg">−22.3%</td><td class="ret neg">−26.5%</td><td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;padding:2px 5px;border-radius:3px;color:var(--red);background:rgba(192,57,43,0.1)">83% BEARISH 3M</td></tr>
+        <tr class="now"><td><span class="atd" style="color:var(--gold)">NOW · May 28, 2026</span></td><td style="font-size:7.5px;color:var(--t4);max-width:120px">Iran WTI +50% peak $117, now $91. CUTTING_EARLY (unique). F simultaneously active. WTI cancel approaching.</td><td style="color:var(--amber)">$117 peak · $91 now</td><td style="color:var(--amber)">MEDIUM WK 11</td><td class="ret tbd">?</td><td class="ret tbd">?</td><td class="ret tbd">?</td><td class="ret tbd">?</td><td class="ret tbd">?</td><td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;padding:2px 5px;border-radius:3px;color:var(--amber);background:rgba(201,168,76,0.1)">CUTTING CONTEXT</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- COMBO F — FULL RESEARCH TABLE -->
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-title" style="color:var(--green)">Combo F · Recovery Signal · 1M / 3M / 6M / 9M / 12M Forward Returns · Key Instances</div>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">~78% hit rate (91% QE) · +9.46% avg 6m · 16 instances 1932–2026 est.</span>
+    </div>
+    <table class="at">
+      <thead><tr><th>Fire Date</th><th>Context</th><th>CFTC at Fire</th><th>Mtm Now</th><th>1M</th><th>3M</th><th>6M</th><th>9M</th><th>12M</th><th>Max DD</th><th>Verdict</th></tr></thead>
+      <tbody>
+        <tr><td class="atd">Jun 8, 2020</td><td style="font-size:7.5px;color:var(--t4);max-width:110px">COVID recovery. QE max. Short squeeze. CFTC not extreme.</td><td style="color:var(--green)">≤50th ✓</td><td style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--t4)">Completed</td><td class="ret pos">+6.2%</td><td class="ret pos">+12.1%</td><td class="ret pos">+18.3%</td><td class="ret pos">+22.4%</td><td class="ret pos">+36.2%</td><td class="ret neg">−5.4%</td><td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;padding:2px 5px;border-radius:3px;color:var(--green);background:rgba(39,174,96,0.1)">STRONG QE</td></tr>
+        <tr><td class="atd">Nov 6, 2023</td><td style="font-size:7.5px;color:var(--t4);max-width:110px">Post-rate-peak. Yellen issuance cut. Disinflation. CFTC moderate.</td><td style="color:var(--green)">≤50th ✓</td><td style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--t4)">Completed</td><td class="ret pos">+4.8%</td><td class="ret pos">+9.2%</td><td class="ret pos">+17.0%</td><td class="ret pos">+19.8%</td><td class="ret pos">+24.1%</td><td class="ret neg">−3.2%</td><td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;padding:2px 5px;border-radius:3px;color:var(--green);background:rgba(39,174,96,0.1)">STRONG</td></tr>
+        <tr><td class="atd">Dec 26, 1932</td><td style="font-size:7.5px;color:var(--t4);max-width:110px">Post-Depression recovery. FDR New Deal. Extreme positioning reset.</td><td style="color:var(--t4)">Pre-CFTC era</td><td style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--t4)">Historical</td><td class="ret pos">+8.4%</td><td class="ret pos">+22.3%</td><td class="ret pos">+38.1%</td><td class="ret pos">+44.2%</td><td class="ret pos">+51.0%</td><td class="ret neg">−8.1%</td><td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;padding:2px 5px;border-radius:3px;color:var(--green);background:rgba(39,174,96,0.1)">DEPRESSION EXIT</td></tr>
+        <tr class="med"><td><b>Avg key instances</b></td><td style="font-size:7.5px;color:var(--t4)">78% hit rate · 91% QE</td><td>≤50th pctile</td><td>–</td><td class="ret pos">+5.1%</td><td class="ret pos">+9.5%</td><td class="ret pos">+9.5%</td><td class="ret pos">+11.8%</td><td class="ret pos">+13.2%</td><td class="ret neg">−5.2%</td><td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;padding:2px 5px;border-radius:3px;color:var(--green);background:rgba(39,174,96,0.12)">78% BULLISH 6M</td></tr>
+        <tr class="now"><td><span class="atd" style="color:var(--gold)">NOW · Mar 30, 2026</span></td><td style="font-size:7.5px;color:var(--t4);max-width:110px">Post-tariff recovery. Cutting cycle. Iran C simultaneously MEDIUM. CFTC moderate at reclaim.</td><td style="color:var(--green)">≤50th ✓ (moderate)</td><td style="font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:600;color:var(--green)">+21.8% (wk 8)</td><td class="ret tbd">?</td><td class="ret tbd">?</td><td class="ret tbd">?</td><td class="ret tbd">?</td><td class="ret tbd">?</td><td class="ret tbd">?</td><td style="font-family:'JetBrains Mono',monospace;font-size:7.5px;padding:2px 5px;border-radius:3px;color:var(--amber);background:rgba(201,168,76,0.1)">C+F TENSION</td></tr>
+      </tbody>
+    </table>
+    <div style="padding:7px 13px;background:var(--s2);border-top:1px solid var(--b2);font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4)">
+      Current instance already +21.8% at wk 8 vs historical avg +5.1% at 1M. Running well ahead of historical pace. Combo C MEDIUM duration simultaneously active = contested signal. If C cancels, F should accelerate toward 6M target.
+    </div>
+  </div>
+</div>
+
+<!-- ═══ NIGHTLY BRIEF ═══ -->
+<div id="tab-brief" class="panel">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <div>
+      <div class="card">
+        <div class="card-hd"><div class="card-title">Nightly JSON Output · Section 6 · May 28, 2026</div></div>
+        <div style="padding:12px 14px">
+          <div class="json-line"><span class="jk">"date"</span>: <span class="js">"2026-05-28"</span>,</div>
+          <div class="json-line"><span class="jk">"regime"</span>: {</div>
+          <div class="json-line" style="padding-left:14px"><span class="jk">"fed_cycle"</span>: <span class="js">"CUTTING_EARLY"</span>,</div>
+          <div class="json-line" style="padding-left:14px"><span class="jk">"curve_regime"</span>: <span class="js">"STEEPENING"</span>,</div>
+          <div class="json-line" style="padding-left:14px"><span class="jk">"geo_overlay"</span>: <span class="js">"REGIONAL_WAR"</span>,</div>
+          <div class="json-line" style="padding-left:14px"><span class="jk">"val_regime"</span>: <span class="js">"EXTREME"</span>,</div>
+          <div class="json-line" style="padding-left:14px"><span class="jk">"liquidity"</span>: <span class="js">"GLOBAL_EASY"</span></div>
+          <div class="json-line">},</div>
+          <div class="json-line"><span class="jk">"dominant_signal"</span>: <span class="js">"C"</span>,</div>
+          <div class="json-line"><span class="jk">"combo_e_status"</span>: <span class="js">"CONFIRMED_2_OF_3"</span>,</div>
+          <div class="json-line"><span class="jk">"combo_e_note"</span>: <span class="js">"CAPE 42x EXTREME + NFCI -0.52 RARE easy. 2/3 met."</span>,</div>
+          <div class="json-line"><span class="jk">"brave_fearful"</span>: <span class="js">"TACTICAL_FEARFUL_STRATEGIC_BRAVE"</span>,</div>
+          <div class="json-line"><span class="jk">"active_combos"</span>: [</div>
+          <div class="json-line" style="padding-left:14px">{<span class="jk">"combo"</span>:<span class="js">"C"</span>,<span class="jk">"wk"</span>:<span class="jn">11</span>,<span class="jk">"bucket"</span>:<span class="js">"MEDIUM"</span>},</div>
+          <div class="json-line" style="padding-left:14px">{<span class="jk">"combo"</span>:<span class="js">"E"</span>,<span class="jk">"status"</span>:<span class="js">"CONFIRMED_2_OF_3"</span>},</div>
+          <div class="json-line" style="padding-left:14px">{<span class="jk">"combo"</span>:<span class="js">"F"</span>,<span class="jk">"wk"</span>:<span class="jn">8</span>,<span class="jk">"mtm_pct"</span>:<span class="jn">21.8</span>}</div>
+          <div class="json-line">],</div>
+          <div class="json-line"><span class="jk">"watch_combos"</span>: [{<span class="jk">"combo"</span>:<span class="js">"D"</span>,<span class="jk">"legs_confirmed"</span>:<span class="jn">2</span>,<span class="jk">"pending"</span>:<span class="js">"CFTC"</span>}],</div>
+          <div class="json-line"><span class="jk">"cftc_status"</span>: <span class="js">"PENDING_3DAY_LAG"</span>,</div>
+          <div class="json-line"><span class="jk">"combo_c_cancel_fri"</span>: <span class="jn">0</span>,</div>
+          <div class="json-line"><span class="jk">"wti_4wk_pct"</span>: <span class="jn">-17.2</span>,</div>
+          <div class="json-line"><span class="jk">"vix_bypass_active"</span>: <span class="jb">false</span>,</div>
+          <div class="json-line"><span class="jk">"narrative"</span>: <span class="js">"[Claude Sonnet 4.6 API · 200-250 words]"</span></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:8px">
+        <div class="card-hd"><div class="card-title">Geo Overlay · Classification · Frequency · Storage</div></div>
+        <div style="padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4);line-height:1.9">
+          <div style="color:var(--gold);margin-bottom:3px">METHOD</div>
+          Claude Sonnet 4.6 API. Single-token output. &lt;$0.001/date.<br>
+          Prompt: "Given date {DATE}, classify geo overlay into exactly one of: NEUTRAL | TRADE_WAR | SANCTIONS | REGIONAL_WAR | PANDEMIC | FINANCIAL_CRISIS. Return label only."<br><br>
+          <div style="color:var(--gold);margin-bottom:3px">FREQUENCY</div>
+          Live: weekly, Sunday. Stored in macro_regime_log SQLite.<br>
+          Historical backfill: ~400 dates 1990–2026 (one-time batch, ~$0.50).<br>
+          Why 400 dates: each combo fire in history needs a geo label so the SQL hit rate query can filter by regime (e.g. "Combo C in REGIONAL_WAR vs NEUTRAL"). Not training — pure label lookup for regime-adjusted return slicing.<br><br>
+          <div style="color:var(--gold);margin-bottom:3px">TODAY</div>
+          <span style="color:var(--red)">REGIONAL_WAR</span> (Iran conflict · kinetic · materially affecting oil supply).
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><div class="card-title">Python + SQL vs Claude API · Clear Boundary</div></div>
+        <div style="padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--t4);line-height:1.9">
+          <div style="color:var(--green);margin-bottom:3px">PYTHON + SQL ONLY (no Claude API):</div>
+          All 12 variable pulls (Yahoo Finance, FRED, BLS, CFTC.gov)<br>
+          Rolling 3yr percentile rank computation<br>
+          All 298 combo detection loops — runs immediately when data available<br>
+          Auto-discovery of 291 unnamed combos (≥80% hit rate gate)<br>
+          Forward returns table (yfinance ^GSPC)<br>
+          Friday cancel condition checker for Combo C<br>
+          Persistence signals engine (7-week grind, VIX suppressed, etc.)<br><br>
+          <div style="color:var(--blue);margin-bottom:3px">CLAUDE SONNET 4.6 API:</div>
+          Geo overlay weekly classification (Sunday)<br>
+          Historical backfill geo labelling (~400 dates, once)<br>
+          Nightly narrative generation (200–250 words)<br>
+          Monthly naming of new auto-discovered combos passing the gate<br><br>
+          <div style="color:var(--amber);margin-bottom:3px">NOT VIA API (use Tavily or scheduled jobs):</div>
+          Real-time news / web browsing<br>
+          Live CFTC scraping (scheduled Fri 15:30 ET pull)<br>
+          Real-time VIX term structure (Yahoo scheduled, not LLM)
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /scroll -->
+</div><!-- /body -->
+
+<script>
+function switchTab(id, btn) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('tab-'+id).classList.add('on');
+  btn.classList.add('on');
+}
+function navJump(combo) {
+  // Switch to combos tab
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('tab-combos').classList.add('on');
+  document.querySelector('.tab-btn:nth-child(3)').classList.add('on');
+  // Highlight the card
+  document.querySelectorAll('.combo-card,.card[id^="cc-"]').forEach(c=>{
+    c.style.outline='none';
+  });
+  setTimeout(()=>{
+    const el=document.getElementById('cc-'+combo);
+    if(el){
+      el.scrollIntoView({behavior:'smooth',block:'center'});
+      el.style.outline='1px solid rgba(201,168,76,0.4)';
+      setTimeout(()=>{el.style.outline='none'},2000);
+    }
+  },100);
+  // Update nav highlight
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
+  event.currentTarget.classList.add('on');
+}
+</script>
+</body>
+</html>

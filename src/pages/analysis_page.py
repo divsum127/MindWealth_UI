@@ -7,6 +7,7 @@ import pandas as pd
 import os
 
 from ..components.cards import create_summary_cards, create_strategy_cards
+from ..components.quality_bubble_chart import render_quality_bubble_chart
 from ..utils.data_loader import load_data_from_file
 from ..utils.file_discovery import extract_date_from_filename
 from .performance_page import create_performance_summary_page
@@ -254,7 +255,21 @@ def create_analysis_page(data_file, page_title, show_page_header=True):
             # Summary cards
             st.markdown(f"### 🎯 Key Performance Metrics - {position_name} {tab_name}")
             create_summary_cards(filtered_df)
-            
+
+            # Signal Quality bubble chart (MasterSpec composite vs lifecycle)
+            bubble_pages = {"New Signals", "Outstanding Signals", "All Signal Report"}
+            if page_title in bubble_pages:
+                from ..utils.signal_quality import quality_rows_from_parsed_df
+
+                quality_rows = quality_rows_from_parsed_df(filtered_df)
+                if quality_rows:
+                    st.markdown(f"### 📊 Signal Quality Composite — {position_name} {tab_name}")
+                    render_quality_bubble_chart(
+                        quality_rows,
+                        title=f"{page_title}: Quality vs Lifecycle ({position_name} {tab_name})",
+                        x_axis_mode="window_remaining" if page_title == "Outstanding Signals" else "auto",
+                    )
+
             st.markdown("---")
             
             # Strategy cards (with search) - pass tab context to ensure unique keys across tabs

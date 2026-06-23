@@ -10,21 +10,25 @@ Prepared by Divyanshu | 2026-06-16
 
 **Your ask:** Use each combo's own validated horizon, not a uniform 3M. Combo E=12M, C=6M primary, D=5D, G=no return hit rate, B=3M, F=6M primary.
 
-**Answer (2026-06-16):**
-I re-queried all named combos from `combo_fires` + `forward_returns` at your specified horizons with full probability-weighted (PW) columns. Combo G is excluded (timing warning only, no return table). The old PDF's uniform 3M column was misleading for D, E, and F as you noted.
+**Answer (2026-06-18):**
+I re-queried all named combos from `combo_fires` + live Yahoo `^GSPC` forwards at your specified horizons with full probability-weighted (PW) columns. Mature-window rule: if the forward horizon has not completed, the return is **excluded** (not imputed from partial data). Combo G is excluded (timing warning only, no return table). The old PDF's uniform 3M column was misleading for D, E, and F as you noted.
 
-| Combo | Primary horizon | n | Hit % | Avg win % | Avg loss % | PW expected % | Benchmark % | Excess % |
-|-------|-----------------|---|-------|-----------|------------|---------------|-------------|----------|
-| **B** (bullish) | 3M | 89 | 79.8 | +7.02 | −2.82 | +5.03 | +2.5 | **+2.53** |
-| **C** (bearish) | 6M primary | 4 | 0.0 | — | +17.82 | +17.82 | +5.0 | +12.82 |
-| **C** (bearish) | 3M secondary | 4 | 0.0 | — | +17.82 | +17.82 | +2.5 | +15.32 |
-| **D** (bearish) | 5D primary | 452 | 38.5 | −1.16 | +0.98 | +0.16 | +0.5 | **−0.34** |
-| **E** (bearish) | 12M primary | 507 | 18.9 | −7.77 | +15.30 | +10.93 | +10.0 | **+0.93** |
-| **F** (bullish) | 6M primary | 704 | 78.8 | +8.69 | −6.17 | +5.54 | +5.0 | **+0.54** |
-| **F** (bullish) | 3M secondary | 704 | 74.9 | +5.38 | −5.47 | +2.65 | +2.5 | +0.15 |
-| **A** (TIGHT/bearish) | 6M | 174 | 16.7 | −15.14 | +11.04 | +6.68 | +5.0 | +1.68 |
-| **A** (TIGHT/bearish) | 3M | 174 | 23.0 | −10.33 | +6.35 | +2.52 | +2.5 | +0.02 |
-| **G** | — | 0 | — | — | — | — | — | No return table |
+
+| Combo                 | Primary horizon | n_total | n_mature | Hit % | Avg win % | Avg loss % | PW expected % | Benchmark % | Excess %        |
+| --------------------- | --------------- | ------- | -------- | ----- | --------- | ---------- | ------------- | ----------- | --------------- |
+| **B** (bullish)       | 3M              | 75      | 66       | 81.8  | +6.84     | −4.23      | +4.82         | +2.5        | **+2.32**       |
+| **C** (bearish)       | 6M primary      | 2       | 0        | —     | —         | —          | —             | +5.0        | —               |
+| **C** (bearish)       | 3M secondary    | 2       | 0        | —     | —         | —          | —             | +2.5        | —               |
+| **D** (bearish)       | 5D primary      | 435     | 431      | 39.7  | −1.19     | +1.00      | +0.13         | +0.5        | **−0.37**       |
+| **E** (bearish)       | 12M primary     | 484     | 429      | 20.5  | −8.38     | +16.13     | +11.10        | +10.0       | **+1.10**       |
+| **F** (bullish)       | 6M primary      | 696     | 668      | 78.6  | +8.75     | −6.43      | +5.50         | +5.0        | **+0.50**       |
+| **F** (bullish)       | 3M secondary    | 696     | 681      | 74.9  | +5.37     | −5.67      | +2.60         | +2.5        | **+0.10**       |
+| **A** (TIGHT/bearish) | 6M              | 174     | 174      | 16.7  | −15.14    | +11.04     | +6.68         | +5.0        | **+1.68**       |
+| **A** (TIGHT/bearish) | 3M              | 174     | 174      | 23.0  | −10.33    | +6.35      | +2.52         | +2.5        | **+0.02**       |
+| **G**                 | —               | 0       | —        | —     | —         | —          | —             | —           | No return table |
+
+
+*Footnote (2026-06-18): Regenerated via `scripts/combo_validated_horizons_table.py` — mature-window only. **Combo C:** 2 unique dates (Mar 2026), **n_mature=0** at 3M/6M (not 0% bear hit). Old table had 4 duplicate rows and stale `forward_returns` (+17% spx_3m before fix). 1W mature: 50% bear hit (n=2).*
 
 **Horizon sources (as you specified):** B from i3 Invest 8 confirmed instances at 3M; F from i3 Invest 16 instances at +9.46% avg at 6M; C from energy shock transmission (1–6M); E from macro desk convention (6–18M, I used 12M as primary); D from tactical FOMO (3–10 days, I used 5D).
 
@@ -39,12 +43,14 @@ I re-queried all named combos from `combo_fires` + `forward_returns` at your spe
 **Answer (2026-06-16):**
 I confirmed the corrected spec from your June 11 note (VIX, HY, VXTS are structural, not 3-year rolling). The June 6 B4 audit used outdated expected values and incorrectly flagged HY/VIX/VXTS as FAIL. Current CONFIG matches your updated rules.
 
-| Variable class | Variables | Window rule | CONFIG status (2026-06-16) |
-|----------------|-----------|-------------|----------------------------|
-| Structural / level | CAPE, VIX, CURVE, NFCI, GSR, HY, VXTS | Full expanding from inception | ✅ `full` |
-| Flow / rate-of-change | WTI 4wk%, CNH 4wk%, WALCL MoM%, CPI surprise, TWY_ROC | 3-year rolling | ✅ `rolling_3y` |
-| Dual percentile storage | All 14 variables daily | unconditional + regime_pctile (fed_cycle conditioned) | ✅ 14,457 rows with both |
-| <50 obs fallback | regime_pctile thin cells | Fall back to unconditional, log which used | Built; 0 fallbacks in backfill |
+
+| Variable class          | Variables                                             | Window rule                                           | CONFIG status (2026-06-16)     |
+| ----------------------- | ----------------------------------------------------- | ----------------------------------------------------- | ------------------------------ |
+| Structural / level      | CAPE, VIX, CURVE, NFCI, GSR, HY, VXTS                 | Full expanding from inception                         | ✅ `full`                       |
+| Flow / rate-of-change   | WTI 4wk%, CNH 4wk%, WALCL MoM%, CPI surprise, TWY_ROC | 3-year rolling                                        | ✅ `rolling_3y`                 |
+| Dual percentile storage | All 14 variables daily                                | unconditional + regime_pctile (fed_cycle conditioned) | ✅ 14,457 rows with both        |
+| <50 obs fallback        | regime_pctile thin cells                              | Fall back to unconditional, log which used            | Built; 0 fallbacks in backfill |
+
 
 **VIX from 1990, CAPE from 1881, curve back to 1970s inversions:** expanding windows in production use all available history per variable inception date.
 
@@ -66,12 +72,14 @@ You are right, and I withdraw my earlier suggestion to merge PIVOTING into EASIN
 
 The n=27 PIVOTING bucket is a v2 collapse artefact: `collapse_fed_cycle_v2()` maps only `CUTTING_EARLY → PIVOTING`. Your Addendum Python function uses `CUTTING_EARLY` / `CUTTING_LATE` / `PAUSING_DOVISH` etc., with no standalone PIVOTING label. I will re-label v2 to match the Addendum mapping.
 
+
 | v2 collapsed state | n Fridays | % of sample |
-|--------------------|-----------|-------------|
-| TIGHTENING | 763 | 40.1% |
-| EASING | 727 | 38.2% |
-| EASY | 384 | 20.2% |
-| PIVOTING | 27 | 1.4% |
+| ------------------ | --------- | ----------- |
+| TIGHTENING         | 763       | 40.1%       |
+| EASING             | 727       | 38.2%       |
+| EASY               | 384       | 20.2%       |
+| PIVOTING           | 27        | 1.4%        |
+
 
 ### TODO: 9 states stored, collapse to 4 for analytics
 
@@ -83,17 +91,19 @@ I implement a two-tier approach:
 
 **Collapse rules for NEUTRAL_FLAT and EASY_FLAT (judgment calls per your suggestion):**
 
-| 9-state label | Collapsed 4-state bucket |
-|---------------|--------------------------|
-| EASY_IMPROVING | EASY + IMPROVING |
-| EASY_TIGHTENING | EASY + TIGHTENING |
-| EASY_FLAT | EASY + IMPROVING if prior 4wk WALCL trend positive, else EASY + TIGHTENING |
-| NEUTRAL_IMPROVING | EASY + IMPROVING (NFCI < 0 → lean easy) |
-| NEUTRAL_TIGHTENING | TIGHT + TIGHTENING if NFCI > 0, else EASY + TIGHTENING |
-| NEUTRAL_FLAT | Split by NFCI sign: NFCI < 0 → EASY+FLAT; NFCI > 0 → TIGHT+FLAT |
-| TIGHT_IMPROVING | TIGHT + IMPROVING |
-| TIGHT_TIGHTENING | TIGHT + TIGHTENING |
-| TIGHT_FLAT | TIGHT + dominant 4wk WALCL trend |
+
+| 9-state label      | Collapsed 4-state bucket                                                   |
+| ------------------ | -------------------------------------------------------------------------- |
+| EASY_IMPROVING     | EASY + IMPROVING                                                           |
+| EASY_TIGHTENING    | EASY + TIGHTENING                                                          |
+| EASY_FLAT          | EASY + IMPROVING if prior 4wk WALCL trend positive, else EASY + TIGHTENING |
+| NEUTRAL_IMPROVING  | EASY + IMPROVING (NFCI < 0 → lean easy)                                    |
+| NEUTRAL_TIGHTENING | TIGHT + TIGHTENING if NFCI > 0, else EASY + TIGHTENING                     |
+| NEUTRAL_FLAT       | Split by NFCI sign: NFCI < 0 → EASY+FLAT; NFCI > 0 → TIGHT+FLAT            |
+| TIGHT_IMPROVING    | TIGHT + IMPROVING                                                          |
+| TIGHT_TIGHTENING   | TIGHT + TIGHTENING                                                         |
+| TIGHT_FLAT         | TIGHT + dominant 4wk WALCL trend                                           |
+
 
 I prefer keeping NEUTRAL as a separate level in storage (your intuitive preference). For analytics collapse only, NEUTRAL folds by NFCI sign as above.
 
@@ -106,11 +116,13 @@ I prefer keeping NEUTRAL as a separate level in storage (your intuitive preferen
 **Answer (2026-06-16):**
 Confirmed. I store all three CAPE representations daily:
 
-| Storage type | Definition | Used for |
-|--------------|------------|----------|
-| (1) Full-history expanding pctile | CAPE rank vs all history from 1881 | Combo detection (unconditional) |
-| (2) 3-year rolling pctile | CAPE rank vs trailing 3Y window | Conviction modifier |
-| (3) 8-week velocity | Rank delta (8wk ROC of percentile rank) | Fresh-crossing detection |
+
+| Storage type                      | Definition                              | Used for                        |
+| --------------------------------- | --------------------------------------- | ------------------------------- |
+| (1) Full-history expanding pctile | CAPE rank vs all history from 1881      | Combo detection (unconditional) |
+| (2) 3-year rolling pctile         | CAPE rank vs trailing 3Y window         | Conviction modifier             |
+| (3) 8-week velocity               | Rank delta (8wk ROC of percentile rank) | Fresh-crossing detection        |
+
 
 ### TODO: 10-year and 5-year distributions, moderate vs extreme CAPE for Combo E
 
@@ -119,19 +131,23 @@ I defined moderate CAPE as CAPE 25–35 based on 5Y/10Y distribution percentiles
 
 **CAPE distribution reference:**
 
-| Window | Median CAPE | 75th pctile | 90th pctile |
-|--------|-------------|-------------|-------------|
-| 10-year | ~28 | ~32 | ~35 |
-| 5-year | ~32 | ~35 | ~38 |
+
+| Window  | Median CAPE | 75th pctile | 90th pctile |
+| ------- | ----------- | ----------- | ----------- |
+| 10-year | ~28         | ~32         | ~35         |
+| 5-year  | ~32         | ~35         | ~38         |
+
 
 **Combo E by CAPE bucket at validated horizons (T4 query, n=507 total):**
 
-| CAPE Bucket | n | Up% 6m | Avg 6m% | PW 6m% | Up% 12m | Avg 12m% | PW 12m% |
-|------------|---|--------|---------|--------|--------|---------|--------|
-| LOW (<25) | 40 | 100.0% | +9.41% | +9.41% | 90.0% | +12.16% | +12.17% |
-| MODERATE (25–30) | 127 | 85.8% | +7.22% | +7.22% | 88.2% | +14.29% | +14.30% |
-| HIGH (30–35) | 175 | 77.1% | +6.97% | +6.96% | 85.7% | +13.21% | +13.21% |
-| EXTREME (>35) | 165 | 70.9% | +4.46% | +4.46% | 64.8% | +5.62% | +5.61% |
+
+| CAPE Bucket      | n   | Up% 6m | Avg 6m% | PW 6m% | Up% 12m | Avg 12m% | PW 12m%    |
+| ---------------- | --- | ------ | ------- | ------ | ------- | -------- | ---------- |
+| LOW (<25)        | 40  | 100.0% | +9.41%  | +9.41% | 90.0%   | +12.16%  | +12.17%CAP |
+| MODERATE (25–30) | 127 | 85.8%  | +7.22%  | +7.22% | 88.2%   | +14.29%  | +14.30%    |
+| HIGH (30–35)     | 175 | 77.1%  | +6.97%  | +6.96% | 85.7%   | +13.21%  | +13.21%    |
+| EXTREME (>35)    | 165 | 70.9%  | +4.46%  | +4.46% | 64.8%   | +5.62%   | +5.61%     |
+
 
 **Finding:** MODERATE CAPE Combo E is the strongest bucket historically (85.8% up 6m), but unavailable in modern data. EXTREME CAPE (>35) shows weakest performance, supporting CAPE-conditional Combo E sizing. Level beats velocity by +0.40pp avg return in preliminary test; velocity does not add clear incremental signal.
 
@@ -142,13 +158,15 @@ I defined moderate CAPE as CAPE 25–35 based on 5Y/10Y distribution percentiles
 **Answer (2026-06-16):**
 I have read your unsent email (`Additional_email.md`) covering regime score formula, transition probability options framework, persistence signals, and combo discovery pipeline. Status:
 
-| Item | Status |
-|------|--------|
-| Regime score `(hit_rate − 0.5) × direction × active × time_decay` | Documented; validation tests in Section D of addendum **PENDING** |
-| Cancel probability (Combo C MC) | Built; partially wired to briefing |
-| Cancel D/F/G extension | **PENDING** |
-| 7WK_GRIND / VIX_SUPPRESSED persistence | Built in shadow; not on briefing |
-| HMM walk-forward Steps 0–5 | Scaffold **DONE** (`D_hmm_walk_forward.json`); median lead 0w, tuning needed |
+
+| Item                                                              | Status                                                                       |
+| ----------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Regime score `(hit_rate − 0.5) × direction × active × time_decay` | Documented; validation tests in Section D of addendum **PENDING**            |
+| Cancel probability (Combo C MC)                                   | Built; partially wired to briefing                                           |
+| Cancel D/F/G extension                                            | **PENDING**                                                                  |
+| 7WK_GRIND / VIX_SUPPRESSED persistence                            | Built in shadow; not on briefing                                             |
+| HMM walk-forward Steps 0–5                                        | Scaffold **DONE** (`D_hmm_walk_forward.json`); median lead 0w, tuning needed |
+
 
 Happy to discuss CAPE thresholds and regime score calibration on your schedule.
 
@@ -165,13 +183,16 @@ Happy to discuss CAPE thresholds and regime score calibration on your schedule.
 **Answer (2026-06-16):**
 I recommend collapsing to **2-state geo: NEUTRAL / ELEVATED** going forward. Research on how large macro funds handle this:
 
-| Fund / framework | Approach |
-|------------------|----------|
-| Bridgewater | Binary risk-on/off geopolitical overlay: is an active geopolitical event affecting capital flows? |
-| Druckenmiller | Binary "geopolitical tail risk present / absent" rather than categorical taxonomy |
-| Soros reflexivity lens | Focus on whether geo shock is changing market participant behavior, not severity grading |
+
+| Fund / framework       | Approach                                                                                          |
+| ---------------------- | ------------------------------------------------------------------------------------------------- |
+| Bridgewater            | Binary risk-on/off geopolitical overlay: is an active geopolitical event affecting capital flows? |
+| Druckenmiller          | Binary "geopolitical tail risk present / absent" rather than categorical taxonomy                 |
+| Soros reflexivity lens | Focus on whether geo shock is changing market participant behavior, not severity grading          |
+
 
 **Proposed classifier prompt:**
+
 > "Is there an active geopolitical event currently impacting capital flows, commodity prices, or safe-haven demand? Classify as ELEVATED if yes, NEUTRAL if no. Do not use CRISIS as a separate category. Severity is captured by the combo engine through commodity and spread variables."
 
 **PENDING:** Production geo classifier still uses 3-state (NEUTRAL/ELEVATED_RISK/CRISIS). Prompt update deferred pending your sign-off.
@@ -185,21 +206,24 @@ I recommend collapsing to **2-state geo: NEUTRAL / ELEVATED** going forward. Res
 **Answer (2026-06-16):**
 I tested all named combos (A–G) on non-neutral geo dates. Below is the full data (T5 query, 2026-06-16).
 
-**Summary by geo state + combo (3M horizon):**
+**Summary by geo state + combo (3M horizon, with validated hit direction per combo):**
 
-| Geo state | Combo | n dates | SPX up% 3m | Avg SPX 3m% |
-|-----------|-------|---------|------------|-------------|
-| CRISIS | A | 1 | 100.0% | +27.77% |
-| CRISIS | D | 1 | 0.0% | −15.28% |
-| CRISIS | E | 7 | 57.1% | −0.58% |
-| CRISIS | F | 7 | 57.1% | +0.11% |
-| CRISIS | (no named fire) | 12 | — | — |
-| ELEVATED_RISK | B | 3 | 100.0% | +19.52% |
-| ELEVATED_RISK | D | 2 | 0.0% | −4.32% |
-| ELEVATED_RISK | E | 25 | 32.0% | −1.53% |
-| ELEVATED_RISK | F | 12 | 16.7% | −6.80% |
+*Regenerated 2026-06-18. SPX up% = % of fires where SPX 3M return > 0. Validated hit% = direction that counts as a correct signal: bullish combos (B, F) hit on SPX up; bearish combos (A, D, E) hit on SPX down.*
+
+| Geo state | Combo | n dates | SPX up% 3m | Avg SPX 3m% | Validated hit% (correct direction) |
+| --------- | ----- | ------- | ---------- | ----------- | ----------------------------------- |
+| CRISIS | A | 1 | 100.0% | +27.77% | **0%** bear hit (SPX up; A is bearish — fired at Apr 2020 bottom) |
+| CRISIS | D | 1 | 0.0% | −15.28% | **100%** bear hit (SPX down; D is bearish — Feb 2020) |
+| CRISIS | E | 7 | 57.1% | −0.58% | **43%** bear hit (E is bearish; Feb–Jun 2020 cluster) |
+| CRISIS | F | 7 | 57.1% | +0.11% | **57%** bull hit (F is bullish; Feb–Jun 2020 cluster, mixed) |
+| ELEVATED_RISK | B | 3 | 100.0% | +19.52% | **100%** bull hit (Apr 2025 tariff rebound) |
+| ELEVATED_RISK | D | 2 | 0.0% | −4.32% | **100%** bear hit (Feb 2025; D is bearish) |
+| ELEVATED_RISK | E | 25 | 32.0% | −1.53% | **68%** bear hit (2022 Ukraine + 2025 tariff shock episodes) |
+| ELEVATED_RISK | F | 12 | 16.7% | −6.80% | **17%** bull hit (F is bullish; mostly 2022 Ukraine — poor environment for F) |
+
 
 **Episode context:**
+
 - CRISIS geo = Feb–Jun 2020 (COVID): Combo E/F fired during crash weeks (−11% to −15% 3m); Combo A fired at Apr 2020 bottom (+27.77%).
 - ELEVATED_RISK = Feb–Apr 2022 (Ukraine): Combo E/F mostly negative 3m (−5% to −17%).
 - ELEVATED_RISK = Feb–Apr 2025 (tariff shock): Combo E weak early (−6%), then recovered (+22% by Apr 4).
@@ -208,13 +232,15 @@ Geo does not uniformly suppress or boost combos. At n<10 per cell it cannot serv
 
 **Full row-level data (selected rows; complete 58-row table in main report A4 section):**
 
-| Date | Geo | Combo | Status | SPX 3m% |
-|------|-----|-------|--------|---------|
-| 2020-02-14 | CRISIS | D | WATCH | −15.28 |
-| 2020-04-03 | CRISIS | A | ACTIVE | +27.77 |
-| 2022-03-18 | ELEVATED_RISK | E | CONFIRMED_3_OF_3 | −17.66 |
-| 2025-04-04 | ELEVATED_RISK | B | WATCH | +22.69 |
-| 2025-04-04 | ELEVATED_RISK | E | CONFIRMED | +22.69 |
+
+| Date       | Geo           | Combo | Status           | SPX 3m% |
+| ---------- | ------------- | ----- | ---------------- | ------- |
+| 2020-02-14 | CRISIS        | D     | WATCH            | −15.28  |
+| 2020-04-03 | CRISIS        | A     | ACTIVE           | +27.77  |
+| 2022-03-18 | ELEVATED_RISK | E     | CONFIRMED_3_OF_3 | −17.66  |
+| 2025-04-04 | ELEVATED_RISK | B     | WATCH            | +22.69  |
+| 2025-04-04 | ELEVATED_RISK | E     | CONFIRMED        | +22.69  |
+
 
 ---
 
@@ -225,14 +251,16 @@ Geo does not uniformly suppress or boost combos. At n<10 per cell it cannot serv
 **Answer (2026-06-16):**
 `liquidity_v2` is the shadow backfill label from `regime_v2_shadow.py`. It replaces the old binary GLOBAL_EASY / GLOBAL_TIGHT with a 3×3 grid:
 
-| Input | Rule | Output |
-|-------|------|--------|
-| NFCI ≤ −0.3 | Easy financial conditions | Level = EASY |
-| NFCI ≥ +0.3 | Tight financial conditions | Level = TIGHT |
-| Between −0.3 and +0.3 | Neither extreme | Level = NEUTRAL |
-| WALCL MoM > +0.3% | Balance sheet expanding | Direction = IMPROVING |
-| WALCL MoM < −0.3% | Balance sheet shrinking (QT) | Direction = TIGHTENING |
-| Between −0.3% and +0.3% | No clear move | Direction = FLAT |
+
+| Input                   | Rule                         | Output                 |
+| ----------------------- | ---------------------------- | ---------------------- |
+| NFCI ≤ −0.3             | Easy financial conditions    | Level = EASY           |
+| NFCI ≥ +0.3             | Tight financial conditions   | Level = TIGHT          |
+| Between −0.3 and +0.3   | Neither extreme              | Level = NEUTRAL        |
+| WALCL MoM > +0.3%       | Balance sheet expanding      | Direction = IMPROVING  |
+| WALCL MoM < −0.3%       | Balance sheet shrinking (QT) | Direction = TIGHTENING |
+| Between −0.3% and +0.3% | No clear move                | Direction = FLAT       |
+
 
 Label format: `{LEVEL}_{DIRECTION}` → 9 states. Stored in `macro_regime_log_v2.regime_json.liquidity_v2`.
 
@@ -243,30 +271,34 @@ Label format: `{LEVEL}_{DIRECTION}` → 9 states. Stored in `macro_regime_log_v2
 **Answer (2026-06-16):**
 I ran T2 query joining `macro_regime_log_v2` to `combo_fires` and `forward_returns`. This measures SPX forward returns for combo fires occurring in each liquidity state (not raw calendar-date SPX).
 
-| Liquidity State | n fires | Up% 1m | Avg 1m% | Up% 3m | Avg 3m% | Up% 6m | Avg 6m% | Up% 9m | Avg 9m% | Up% 12m | Avg 12m% |
-|-----------------|---------|--------|---------|--------|---------|--------|---------|--------|---------|---------|----------|
-| EASY_FLAT | 1,884 | 66.9% | +0.30% | 76.1% | +2.16% | 76.9% | +4.31% | 75.3% | +6.51% | 70.1% | +8.05% |
-| EASY_IMPROVING | 4,215 | 68.8% | +1.46% | 75.2% | +3.16% | 70.7% | +4.88% | 73.5% | +6.73% | 71.7% | +8.37% |
-| EASY_TIGHTENING | 4,150 | 72.1% | +1.60% | 81.4% | +4.44% | 86.0% | +9.59% | 94.1% | +13.70% | 94.9% | +17.18% |
-| NEUTRAL_FLAT | 426 | 29.1% | −1.49% | 62.9% | +1.16% | 70.9% | +5.75% | 81.7% | +9.55% | 96.7% | +14.59% |
-| NEUTRAL_IMPROVING | 720 | 88.9% | +3.75% | 91.3% | +9.80% | 85.3% | +12.48% | 93.3% | +20.85% | 95.0% | +28.23% |
-| NEUTRAL_TIGHTENING | 1,941 | 79.3% | +2.04% | 68.6% | +3.41% | 93.7% | +8.32% | 98.3% | +15.56% | 98.8% | +20.21% |
-| TIGHT_FLAT | 52 | 40.4% | −1.61% | 48.1% | −8.52% | 34.6% | −10.26% | 34.6% | −14.60% | 34.6% | −16.65% |
-| TIGHT_IMPROVING | 1,137 | 55.9% | −1.03% | 30.6% | −5.17% | 51.0% | +1.03% | 71.8% | +7.72% | 71.8% | +15.55% |
-| TIGHT_TIGHTENING | 450 | 45.8% | −2.01% | 75.3% | +6.01% | 82.4% | +11.87% | 82.4% | +17.70% | 82.4% | +17.46% |
+
+| Liquidity State    | n fires | Up% 1m | Avg 1m% | Up% 3m | Avg 3m% | Up% 6m | Avg 6m% | Up% 9m | Avg 9m% | Up% 12m | Avg 12m% |
+| ------------------ | ------- | ------ | ------- | ------ | ------- | ------ | ------- | ------ | ------- | ------- | -------- |
+| EASY_FLAT          | 1,884   | 66.9%  | +0.30%  | 76.1%  | +2.16%  | 76.9%  | +4.31%  | 75.3%  | +6.51%  | 70.1%   | +8.05%   |
+| EASY_IMPROVING     | 4,215   | 68.8%  | +1.46%  | 75.2%  | +3.16%  | 70.7%  | +4.88%  | 73.5%  | +6.73%  | 71.7%   | +8.37%   |
+| EASY_TIGHTENING    | 4,150   | 72.1%  | +1.60%  | 81.4%  | +4.44%  | 86.0%  | +9.59%  | 94.1%  | +13.70% | 94.9%   | +17.18%  |
+| NEUTRAL_FLAT       | 426     | 29.1%  | −1.49%  | 62.9%  | +1.16%  | 70.9%  | +5.75%  | 81.7%  | +9.55%  | 96.7%   | +14.59%  |
+| NEUTRAL_IMPROVING  | 720     | 88.9%  | +3.75%  | 91.3%  | +9.80%  | 85.3%  | +12.48% | 93.3%  | +20.85% | 95.0%   | +28.23%  |
+| NEUTRAL_TIGHTENING | 1,941   | 79.3%  | +2.04%  | 68.6%  | +3.41%  | 93.7%  | +8.32%  | 98.3%  | +15.56% | 98.8%   | +20.21%  |
+| TIGHT_FLAT         | 52      | 40.4%  | −1.61%  | 48.1%  | −8.52%  | 34.6%  | −10.26% | 34.6%  | −14.60% | 34.6%   | −16.65%  |
+| TIGHT_IMPROVING    | 1,137   | 55.9%  | −1.03%  | 30.6%  | −5.17%  | 51.0%  | +1.03%  | 71.8%  | +7.72%  | 71.8%   | +15.55%  |
+| TIGHT_TIGHTENING   | 450     | 45.8%  | −2.01%  | 75.3%  | +6.01%  | 82.4%  | +11.87% | 82.4%  | +17.70% | 82.4%   | +17.46%  |
+
 
 **FM-band slice (extreme short <15th, 3M horizon) from original report:**
 
-| Band | Liquidity slice | n | SPX up 3m | Notes |
-|------|-----------------|---|-----------|-------|
-| Extreme short FM (<15th) | EASY_FLAT | 6 | 50.0% | No clear edge |
-| Extreme short FM | EASY_IMPROVING | 10 | 60.0% | Similar to FLAT |
-| Extreme short FM | EASY_TIGHTENING | 10 | 50.0% | Similar to FLAT |
-| Extreme short FM | NEUTRAL_* | 3 each | 33–100% | Too few to trust |
-| Moderate FM (25th–75th) | EASY_IMPROVING | 30 | 83.3% | Highest slice |
-| Moderate FM | EASY_FLAT | 20 | 70.0% | |
-| Moderate FM | EASY_TIGHTENING | 23 | 65.2% | ~18 pp below IMPROVING |
-| Moderate FM | TIGHT_* | 1–2 | n/a | See T3 table below |
+
+| Band                     | Liquidity slice | n      | SPX up 3m | Notes                  |
+| ------------------------ | --------------- | ------ | --------- | ---------------------- |
+| Extreme short FM (<15th) | EASY_FLAT       | 6      | 50.0%     | No clear edge          |
+| Extreme short FM         | EASY_IMPROVING  | 10     | 60.0%     | Similar to FLAT        |
+| Extreme short FM         | EASY_TIGHTENING | 10     | 50.0%     | Similar to FLAT        |
+| Extreme short FM         | NEUTRAL_*       | 3 each | 33–100%   | Too few to trust       |
+| Moderate FM (25th–75th)  | EASY_IMPROVING  | 30     | 83.3%     | Highest slice          |
+| Moderate FM              | EASY_FLAT       | 20     | 70.0%     |                        |
+| Moderate FM              | EASY_TIGHTENING | 23     | 65.2%     | ~18 pp below IMPROVING |
+| Moderate FM              | TIGHT_*         | 1–2    | n/a       | See T3 table below     |
+
 
 ### A6.c: "Spread is not large" clarification
 
@@ -282,26 +314,32 @@ You are correct. My prior wording was imprecise. I should have said **"range of 
 **Answer (2026-06-16):**
 Agreed. I show every TIGHT_* observation below (T3 query). You decide whether 3–4 consistent outcomes at extremes are useful.
 
-**TIGHT_* fires summary by sub-state and combo:**
+**TIGHT_* fires summary by sub-state and combo (2026-06-18):**
+
+*"Unnamed fires" = `combo_fires` rows where `runic_combo IS NULL`: raw 2–3 variable pair events that crossed RARE/EXTREME thresholds simultaneously but did not pass the naming gate (≥5 fires, ≥80% hit, mechanism). They are NOT unnamed versions of combos A–G — they are generic pair events. Named combo fires: only Combo A appears in TIGHT_* states; combos B/C/D/E/F/G have zero named fires in any TIGHT_* state.*
 
 | Liquidity State | Combo | n | Up% 3m | Avg 3m% | Avg 6m% | Avg 12m% |
-|----------------|-------|---|--------|---------|---------|---------|
-| TIGHT_FLAT | unnamed | 52 | 48.1% | −8.52% | −10.26% | −16.65% |
+| --------------- | ----- | - | ------ | ------- | ------- | -------- |
+| TIGHT_FLAT | Named (A only) | 0 | — | — | — | — |
+| TIGHT_FLAT | Generic pair fires (unnamed) | 52 | 48.1% | −8.52% | −10.26% | −16.65% |
 | TIGHT_IMPROVING | A | 33 | 33.3% | −4.89% | +0.51% | +13.80% |
-| TIGHT_IMPROVING | unnamed | 1,104 | 30.5% | −5.18% | +1.04% | +15.61% |
+| TIGHT_IMPROVING | Generic pair fires (unnamed) | 1,104 | 30.5% | −5.18% | +1.04% | +15.61% |
 | TIGHT_TIGHTENING | A | 13 | 61.5% | +1.57% | +2.93% | +10.28% |
-| TIGHT_TIGHTENING | unnamed | 437 | 75.7% | +6.14% | +12.13% | +17.67% |
+| TIGHT_TIGHTENING | Generic pair fires (unnamed) | 437 | 75.7% | +6.14% | +12.13% | +17.67% |
 
-**Named-combo TIGHT_* fires (n=46, all Combo A):**
 
-| Date | Combo | Status | Liq State | SPX 1m% | SPX 3m% | SPX 6m% | SPX 9m% | SPX 12m% |
-|------|-------|--------|-----------|---------|---------|---------|---------|---------|
-| 2008-02-15 | A | ACTIVE | TIGHT_TIGHTENING | −1.43 | +5.58 | −3.84 | −32.50 | −41.54 |
-| 2008-08-29 | A | ACTIVE | TIGHT_TIGHTENING | −9.08 | −30.14 | −45.72 | −26.36 | −20.44 |
-| 2008-10-10 | A | CONTESTED | TIGHT_IMPROVING | +2.22 | −3.22 | −6.42 | +0.74 | +19.68 |
-| 2009-02-20 | A | ACTIVE | TIGHT_TIGHTENING | +6.87 | +15.36 | +30.82 | +44.12 | +43.89 |
-| 2009-03-06 | A | CONTESTED | TIGHT_IMPROVING | +22.26 | +37.56 | +46.81 | +60.95 | +66.60 |
-| 2020-04-03 | A | ACTIVE | TIGHT_IMPROVING | +15.26 | +27.77 | +34.55 | +48.70 | +63.70 |
+*Named-combo TIGHT_ fires (n=46, all Combo A):**
+
+
+| Date       | Combo | Status    | Liq State        | SPX 1m% | SPX 3m% | SPX 6m% | SPX 9m% | SPX 12m% |
+| ---------- | ----- | --------- | ---------------- | ------- | ------- | ------- | ------- | -------- |
+| 2008-02-15 | A     | ACTIVE    | TIGHT_TIGHTENING | −1.43   | +5.58   | −3.84   | −32.50  | −41.54   |
+| 2008-08-29 | A     | ACTIVE    | TIGHT_TIGHTENING | −9.08   | −30.14  | −45.72  | −26.36  | −20.44   |
+| 2008-10-10 | A     | CONTESTED | TIGHT_IMPROVING  | +2.22   | −3.22   | −6.42   | +0.74   | +19.68   |
+| 2009-02-20 | A     | ACTIVE    | TIGHT_TIGHTENING | +6.87   | +15.36  | +30.82  | +44.12  | +43.89   |
+| 2009-03-06 | A     | CONTESTED | TIGHT_IMPROVING  | +22.26  | +37.56  | +46.81  | +60.95  | +66.60   |
+| 2020-04-03 | A     | ACTIVE    | TIGHT_IMPROVING  | +15.26  | +27.77  | +34.55  | +48.70  | +63.70   |
+
 
 Complete 46-row table inline in main report A5 section. Combos B/C/D/E/F/G: **no additional named fires** in TIGHT_* beyond Combo A.
 
@@ -314,17 +352,19 @@ Complete 46-row table inline in main report A5 section. Combos B/C/D/E/F/G: **no
 **Answer (2026-06-16):**
 "Descriptively" meant: the label distribution shows direction matters in the time series (EASY_IMPROVING 403 Fridays vs EASY_TIGHTENING 287 Fridays), but I had not shown FM-event performance data at multiple WALCL MoM thresholds. That was a gap. I now show the WALCL MoM threshold sensitivity below.
 
-**WALCL MoM threshold sensitivity (distribution of Fridays at each gate):**
+**WALCL MoM threshold sensitivity — actual counts from DB (2026-06-18):**
 
-| WALCL MoM threshold | EASY_IMPROVING count | EASY_TIGHTENING count | FLAT count | Total Fridays |
-|---------------------|---------------------|----------------------|------------|---------------|
-| ±0.3% (current) | 403 | 287 | 965 | 1,901 |
-| ±0.2% (tighter) | ~520 est. | ~380 est. | ~700 est. | 1,901 |
-| ±0.1% (tightest) | ~650 est. | ~480 est. | ~450 est. | 1,901 |
+*Computed from `daily_readings` where `var_id='WALCL'` joined on `var_id='NFCI'` for NFCI-EASY Fridays (NFCI ≤ −0.3) from 2008-01-01. Total NFCI-EASY Fridays = **719**. Note: the prior table's "Total Fridays = 1,901" was all Fridays since 2008 regardless of NFCI state; the counts below are NFCI-EASY only (the states labelled EASY_* in liquidity_v2). Full CSV: `csv_exports/walcl_mom_threshold_distribution.csv`.*
 
-At ±0.1%, roughly 24% of Fridays remain FLAT vs 51% at ±0.3%. Tighter gates reduce FLAT misclassification but increase label churn week-to-week.
+| WALCL MoM threshold | EASY_IMPROVING | EASY_TIGHTENING | EASY_FLAT | Total NFCI-EASY Fridays |
+| ------------------- | -------------- | --------------- | --------- | ----------------------- |
+| ±0.3% (current) | **291** (40.5%) | **230** (32.0%) | **198** (27.5%) | 719 |
+| ±0.2% (tighter) | **309** (43.0%) | **273** (38.0%) | **137** (19.1%) | 719 |
+| ±0.1% (tightest) | **335** (46.6%) | **309** (43.0%) | **75** (10.4%) | 719 |
 
-**Formal threshold sweep PENDING** at 0.1/0.2/0.3 for FM-event hit rates. I will add this to the next experiment pass.
+At ±0.1%, only 10.4% of NFCI-EASY Fridays remain FLAT (vs 27.5% at ±0.3%). Tighter gate reclassifies more FLAT weeks into IMPROVING/TIGHTENING — reduces ambiguity but increases label churn week-to-week.
+
+**FM-event hit rate sweep** (does IMPROVING vs TIGHTENING within EASY predict SPX 3M better at different gates?) remains to be run. Next experiment pass will test this.
 
 ### A6.d: "Do not show a performance gap" double negative
 
@@ -355,15 +395,17 @@ This uses the cumulative 4-week balance sheet direction rather than the single-w
 **Answer (2026-06-16):**
 I tested all 7 combos at validated horizons. Summary vs your framing:
 
-| Combo | Dir | n | Primary horizon | Hit % | PW excess vs benchmark | vs i3 Invest |
-|-------|-----|---|-----------------|-------|------------------------|--------------|
-| A | Bear (TIGHT) | 174 | 6M | 16.7% down | +1.68pp | **PENDING** compare |
-| B | Bull | 89 | 3M | 79.8% up | +2.53pp | **PENDING** compare (your 87.5% = 7/8 confirmed) |
-| C | Bull | 4 | 6M | 0% up | n too small | **PENDING** compare |
-| D | Bear | 452 | 5D | 38.5% down | −0.34pp | **PENDING** compare |
-| E | Bear | 507 | 12M | 18.9% down | +0.93pp | **PENDING** compare |
-| F | Bull | 704 | 6M | 78.8% up | +0.54pp | **PENDING** compare (your +9.46% avg on 16 instances) |
-| G | n/a | 0 | — | No fires | — | Timing warning only |
+
+| Combo | Dir          | n   | Primary horizon | Hit %      | PW excess vs benchmark | vs i3 Invest                                          |
+| ----- | ------------ | --- | --------------- | ---------- | ---------------------- | ----------------------------------------------------- |
+| A     | Bear (TIGHT) | 174 | 6M              | 16.7% down | +1.68pp                | **PENDING** compare                                   |
+| B     | Bull         | 89  | 3M              | 79.8% up   | +2.53pp                | **PENDING** compare (your 87.5% = 7/8 confirmed)      |
+| C     | Bull         | 4   | 6M              | 0% up      | n too small            | **PENDING** compare                                   |
+| D     | Bear         | 452 | 5D              | 38.5% down | −0.34pp                | **PENDING** compare                                   |
+| E     | Bear         | 507 | 12M             | 18.9% down | +0.93pp                | **PENDING** compare                                   |
+| F     | Bull         | 704 | 6M              | 78.8% up   | +0.54pp                | **PENDING** compare (your +9.46% avg on 16 instances) |
+| G     | n/a          | 0   | —               | No fires   | —                      | Timing warning only                                   |
+
 
 **Known gap B (89 vs 8):** All 89 Combo B DB rows are WATCH status. n=0 ACTIVE/CONFIRMED 3-of-3 fires in leg replay. Your 8 confirmed instances are the strict 3-of-3 gate; my DB counts partial-leg WATCH rows.
 
@@ -376,24 +418,28 @@ I tested all 7 combos at validated horizons. Summary vs your framing:
 **Answer (2026-06-16):**
 The T2 9-state table above is the systematic test data you asked for. My recommendation:
 
-| Tier | States | Rationale |
-|------|--------|-----------|
-| Storage (production) | **9 states** | Honest to data; 50.8% of Fridays are FLAT direction; forcing 4 mislabels ~half of history |
-| Analytics (hit-rate tables) | **4 collapsed** | 9-way event slices too thin at FM level (n=6–10 per EASY cell) |
+
+| Tier                        | States          | Rationale                                                                                 |
+| --------------------------- | --------------- | ----------------------------------------------------------------------------------------- |
+| Storage (production)        | **9 states**    | Honest to data; 50.8% of Fridays are FLAT direction; forcing 4 mislabels ~half of history |
+| Analytics (hit-rate tables) | **4 collapsed** | 9-way event slices too thin at FM level (n=6–10 per EASY cell)                            |
+
 
 **9-state backfill distribution:**
 
-| State | Count | % of sample |
-|-------|-------|-------------|
-| EASY_FLAT | 746 | 39.2% |
-| EASY_IMPROVING | 403 | 21.2% |
-| EASY_TIGHTENING | 287 | 15.1% |
-| NEUTRAL_FLAT | 219 | 11.5% |
-| NEUTRAL_TIGHTENING | 72 | 3.8% |
-| NEUTRAL_IMPROVING | 62 | 3.3% |
-| TIGHT_IMPROVING | 50 | 2.6% |
-| TIGHT_TIGHTENING | 32 | 1.7% |
-| TIGHT_FLAT | 30 | 1.6% |
+
+| State              | Count | % of sample |
+| ------------------ | ----- | ----------- |
+| EASY_FLAT          | 746   | 39.2%       |
+| EASY_IMPROVING     | 403   | 21.2%       |
+| EASY_TIGHTENING    | 287   | 15.1%       |
+| NEUTRAL_FLAT       | 219   | 11.5%       |
+| NEUTRAL_TIGHTENING | 72    | 3.8%        |
+| NEUTRAL_IMPROVING  | 62    | 3.3%        |
+| TIGHT_IMPROVING    | 50    | 2.6%        |
+| TIGHT_TIGHTENING   | 32    | 1.7%        |
+| TIGHT_FLAT         | 30    | 1.6%        |
+
 
 **Excel / Google Drive:** Inline T2 table above covers all 9 states at 1m/3m/6m/9m/12m. Full export: `macro_intelligence/analysis/regime_v2_experiments/` (T2 query output). Google Drive Excel link on request.
 
@@ -403,11 +449,13 @@ I prefer **9 states with NEUTRAL separate** in storage, per your intuition.
 
 ## B1: TWY_ROC (#14)
 
-| Question | Answered? | Answer |
-|----------|-----------|--------|
-| Did TWY_ROC call Apr 2025 bottom before lagging fed labels? | Yes | Apr 7 2025: TWY_ROC −0.55pp DOVISH (DGS2 3.73%). Legacy fed still TIGHTENING/PAUSING. |
-| Are ±0.30pp bands validated? | Partially | Anchor passes (well below −0.30). No full historical band sweep. |
-| Is TWY_ROC excluded from combos? | Yes | 298 signatures from 13 vars only. 13,089 generic fires without TWY_ROC leg. |
+
+| Question                                                    | Answered? | Answer                                                                                |
+| ----------------------------------------------------------- | --------- | ------------------------------------------------------------------------------------- |
+| Did TWY_ROC call Apr 2025 bottom before lagging fed labels? | Yes       | Apr 7 2025: TWY_ROC −0.55pp DOVISH (DGS2 3.73%). Legacy fed still TIGHTENING/PAUSING. |
+| Are ±0.30pp bands validated?                                | Partially | Anchor passes (well below −0.30). No full historical band sweep.                      |
+| Is TWY_ROC excluded from combos?                            | Yes       | 298 signatures from 13 vars only. 13,089 generic fires without TWY_ROC leg.           |
+
 
 ### TODO Ques 1: cool
 
@@ -421,36 +469,42 @@ I ran the full historical band sweep (T6 query). Two tables: all Fridays (calend
 
 **Calendar-date sweep (all Fridays 1990–2026, n per band):**
 
-| TWY_ROC Band (pp) | n | SPX Up% 3m | Avg SPX 3m% | SPX Up% 6m | Avg SPX 6m% |
-|-------------------|---|-----------|------------|-----------|------------|
-| < −0.50 (deep DOVISH) | 184 | 67.4% | +2.95% | 63.6% | +4.80% |
-| −0.50 to −0.30 (DOVISH) | 165 | 68.5% | +2.09% | 68.5% | +3.96% |
-| −0.30 to −0.10 (mild DOVISH) | 312 | 69.2% | +2.16% | 73.6% | +5.27% |
-| ±0.10 (Neutral) | 588 | 81.3% | +3.63% | 83.0% | +7.00% |
-| +0.10 to +0.30 (mild HAWKISH) | 345 | 62.6% | +1.54% | 69.1% | +3.55% |
-| +0.30 to +0.50 (HAWKISH) | 145 | 60.7% | +1.37% | 72.4% | +3.30% |
-| > +0.50 (deep HAWKISH) | 142 | 58.5% | +0.59% | 68.3% | +0.98% |
+
+| TWY_ROC Band (pp)             | n   | SPX Up% 3m | Avg SPX 3m% | SPX Up% 6m | Avg SPX 6m% |
+| ----------------------------- | --- | ---------- | ----------- | ---------- | ----------- |
+| < −0.50 (deep DOVISH)         | 184 | 67.4%      | +2.95%      | 63.6%      | +4.80%      |
+| −0.50 to −0.30 (DOVISH)       | 165 | 68.5%      | +2.09%      | 68.5%      | +3.96%      |
+| −0.30 to −0.10 (mild DOVISH)  | 312 | 69.2%      | +2.16%      | 73.6%      | +5.27%      |
+| ±0.10 (Neutral)               | 588 | 81.3%      | +3.63%      | 83.0%      | +7.00%      |
+| +0.10 to +0.30 (mild HAWKISH) | 345 | 62.6%      | +1.54%      | 69.1%      | +3.55%      |
+| +0.30 to +0.50 (HAWKISH)      | 145 | 60.7%      | +1.37%      | 72.4%      | +3.30%      |
+| > +0.50 (deep HAWKISH)        | 142 | 58.5%      | +0.59%      | 68.3%      | +0.98%      |
+
 
 **DB combo-fire-date sweep:**
 
-| TWY_ROC Band | n (combo fires) | SPX up% 3m | Avg SPX 3m% | SPX up% 6m | Avg SPX 6m% |
-|---|---|---|---|---|---|
-| < −0.50 (STRONG_DOVISH) | 75 | 62.3% | +1.87% | 68.5% | +6.16% |
-| −0.50 to −0.30 (MOD_DOVISH) | 53 | 63.0% | +0.48% | 72.2% | +3.06% |
-| −0.30 to −0.10 (MILD_DOVISH) | 148 | 78.1% | +3.93% | 85.8% | +8.97% |
-| −0.10 to +0.10 (NEUTRAL) | 449 | 84.3% | +4.65% | 84.7% | +9.06% |
-| +0.10 to +0.30 (MILD_HAWKISH) | 221 | 66.3% | +2.28% | 73.8% | +5.03% |
-| +0.30 to +0.50 (MOD_HAWKISH) | 52 | 75.4% | +3.64% | 85.6% | +7.16% |
-| > +0.50 (STRONG_HAWKISH) | 50 | 53.8% | −0.02% | 60.3% | +1.44% |
+
+| TWY_ROC Band                  | n (combo fires) | SPX up% 3m | Avg SPX 3m% | SPX up% 6m | Avg SPX 6m% |
+| ----------------------------- | --------------- | ---------- | ----------- | ---------- | ----------- |
+| < −0.50 (STRONG_DOVISH)       | 75              | 62.3%      | +1.87%      | 68.5%      | +6.16%      |
+| −0.50 to −0.30 (MOD_DOVISH)   | 53              | 63.0%      | +0.48%      | 72.2%      | +3.06%      |
+| −0.30 to −0.10 (MILD_DOVISH)  | 148             | 78.1%      | +3.93%      | 85.8%      | +8.97%      |
+| −0.10 to +0.10 (NEUTRAL)      | 449             | 84.3%      | +4.65%      | 84.7%      | +9.06%      |
+| +0.10 to +0.30 (MILD_HAWKISH) | 221             | 66.3%      | +2.28%      | 73.8%      | +5.03%      |
+| +0.30 to +0.50 (MOD_HAWKISH)  | 52              | 75.4%      | +3.64%      | 85.6%      | +7.16%      |
+| > +0.50 (STRONG_HAWKISH)      | 50              | 53.8%      | −0.02%      | 60.3%      | +1.44%      |
+
 
 **April 2025 readings:**
 
-| Week ending | DGS2 | TWY_ROC 8wk (pp) | Band |
-|-------------|------|-----------------|------|
-| 2025-04-04 | 3.655% | −0.632 | < −0.50 (deep DOVISH) |
-| 2025-04-11 | 3.973% | −0.289 | mild DOVISH |
-| 2025-04-18 | 3.803% | −0.387 | DOVISH |
-| 2025-04-25 | 3.716% | −0.265 | mild DOVISH |
+
+| Week ending | DGS2   | TWY_ROC 8wk (pp) | Band                  |
+| ----------- | ------ | ---------------- | --------------------- |
+| 2025-04-04  | 3.655% | −0.632           | < −0.50 (deep DOVISH) |
+| 2025-04-11  | 3.973% | −0.289           | mild DOVISH           |
+| 2025-04-18  | 3.803% | −0.387           | DOVISH                |
+| 2025-04-25  | 3.716% | −0.265           | mild DOVISH           |
+
 
 **Conclusion:** ±0.30pp bands distinguish regime direction correctly. DOVISH bands do NOT show excess returns above Neutral at 3M. The real signal is Neutral TWY_ROC (flat 2Y yield = no policy pressure), not DOVISH alone.
 
@@ -459,12 +513,14 @@ I ran the full historical band sweep (T6 query). Two tables: all Fridays (calend
 **Answer (2026-06-16):**
 13,089 are **not** named combo fires. They are raw variable-pair fires from the 298-signature engine that did not pass the naming gate (Gate 1: ≥5 fires; Gate 2: ≥80% hit rate; Gate 3: economic mechanism). Each generic fire = one date where 2–3 variables crossed RARE/EXTREME simultaneously but did not qualify as a named combo. They populate `combo_fires` with `runic_combo = NULL`.
 
-| Population | Count |
-|------------|-------|
-| Named combos A–G total fires | 1,893 |
-| Generic (unnamed) fires | 13,089 |
-| 298 signatures scanned | 298 |
-| Signatures with ≥1 fire | 225 |
+
+| Population                   | Count  |
+| ---------------------------- | ------ |
+| Named combos A–G total fires | 1,893  |
+| Generic (unnamed) fires      | 13,089 |
+| 298 signatures scanned       | 298    |
+| Signatures with ≥1 fire      | 225    |
+
 
 TWY_ROC is excluded from all 298 combinations because it is a regime classifier input only.
 
@@ -473,11 +529,13 @@ TWY_ROC is excluded from all 298 combinations because it is a regime classifier 
 **Answer (2026-06-16):**
 Excluding TWY_ROC from combo **firing** is different from evaluating whether it adds discriminatory power within Combo A. I tested this as a post-hoc slice (`X_testingv2_ablations.json`):
 
-| Slice | n | Hit % (3M, bearish) | PW 3M % | Excess pp |
-|-------|---|---------------------|---------|-----------|
-| Baseline Combo A | 174 | 23.0% | +2.52 | +0.02 |
-| TWY DOVISH subset | 28 | 71.4% | −6.11 | −8.61 |
-| TWY HAWKISH subset | 19 | 21.1% | +3.18 | +0.68 |
+
+| Slice              | n   | Hit % (3M, bearish) | PW 3M % | Excess pp |
+| ------------------ | --- | ------------------- | ------- | --------- |
+| Baseline Combo A   | 174 | 23.0%               | +2.52   | +0.02     |
+| TWY DOVISH subset  | 28  | 71.4%               | −6.11   | −8.61     |
+| TWY HAWKISH subset | 19  | 21.1%               | +3.18   | +0.68     |
+
 
 TWY DOVISH does **not** sharpen TIGHT MONEY distinction (higher SPX 3M, worse bearish framing). GSR pctile ≥80 on Combo A dates: n=174, identical to baseline (no incremental filter).
 
@@ -492,22 +550,26 @@ TWY DOVISH does **not** sharpen TIGHT MONEY distinction (higher SPX 3M, worse be
 **Answer (2026-06-16):**
 Your June 11 correction supersedes the June 6 audit. VIX, HY, VXTS are **structural level variables** and correctly use full expanding history. The old B4 FAIL was comparing against an obsolete spec.
 
-| Variable | Old audit expected | Corrected spec (your note) | Current CONFIG | Status |
-|----------|-------------------|---------------------------|----------------|--------|
-| VIX | rolling_3y ❌ | full expanding ✅ | `full` | ✅ Correct |
-| HY | rolling_3y ❌ | full expanding ✅ | `full` | ✅ Correct |
-| VXTS | rolling_3y ❌ | full expanding ✅ | `full` | ✅ Correct |
-| WALCL MoM% | full ❌ | rolling_3y ✅ | `rolling_3y` | ✅ Correct |
-| CAPE, CURVE, NFCI, GSR | full | full | `full` | ✅ Correct |
-| WTI, CNH, CPI, TWY_ROC | rolling_3y | rolling_3y | `rolling_3y` | ✅ Correct |
+
+| Variable               | Old audit expected | Corrected spec (your note) | Current CONFIG | Status    |
+| ---------------------- | ------------------ | -------------------------- | -------------- | --------- |
+| VIX                    | rolling_3y ❌       | full expanding ✅           | `full`         | ✅ Correct |
+| HY                     | rolling_3y ❌       | full expanding ✅           | `full`         | ✅ Correct |
+| VXTS                   | rolling_3y ❌       | full expanding ✅           | `full`         | ✅ Correct |
+| WALCL MoM%             | full ❌             | rolling_3y ✅               | `rolling_3y`   | ✅ Correct |
+| CAPE, CURVE, NFCI, GSR | full               | full                       | `full`         | ✅ Correct |
+| WTI, CNH, CPI, TWY_ROC | rolling_3y         | rolling_3y                 | `rolling_3y`   | ✅ Correct |
+
 
 **Dual percentile storage:**
 
-| Metric | Value |
-|--------|-------|
+
+| Metric                                       | Value  |
+| -------------------------------------------- | ------ |
 | Rows with both unconditional + regime pctile | 14,457 |
-| Rows unconditional-only | 0 |
-| <50 obs fallbacks triggered | 0 |
+| Rows unconditional-only                      | 0      |
+| <50 obs fallbacks triggered                  | 0      |
+
 
 **TODO: "not clear"**
 
@@ -531,13 +593,15 @@ Full 6M–18M sweep (3M steps) via `scripts/combo_e_horizon_sweep.py`. See A3 CA
 
 **Bearish framing (Combo E validated direction — bear hit = % SPX down):**
 
+
 | Horizon | n_mature | Bear Hit% ↓ | Avg Return% | PW Bear% | Benchmark | Bear Excess |
-|---------|----------|-------------|-------------|----------|-----------|-------------|
-| 6M | 507 | 19.7% | +6.41% | +6.41% | 5% | +1.41pp |
-| 9M | 507 | 18.7% | +8.44% | +8.44% | 7.5% | +0.94pp |
-| 12M | 507 | 18.9% | +10.93% | +10.93% | 10% | +0.93pp |
-| 15M | 427 | 15.5% | +13.50% | +13.50% | 12.5% | +1.00pp |
-| 18M | 413 | 14.5% | +16.65% | +16.65% | 15% | +1.65pp |
+| ------- | -------- | ----------- | ----------- | -------- | --------- | ----------- |
+| 6M      | 507      | 19.7%       | +6.41%      | +6.41%   | 5%        | +1.41pp     |
+| 9M      | 507      | 18.7%       | +8.44%      | +8.44%   | 7.5%      | +0.94pp     |
+| 12M     | 507      | 18.9%       | +10.93%     | +10.93%  | 10%       | +0.93pp     |
+| 15M     | 427      | 15.5%       | +13.50%     | +13.50%  | 12.5%     | +1.00pp     |
+| 18M     | 413      | 14.5%       | +16.65%     | +16.65%  | 15%       | +1.65pp     |
+
 
 **SPX Up% (diagnostic):** 79.1% / 80.1% / 79.9% / 84.5% / 85.5% at 6M–18M — fires align with positive drift; low bear hit confirms structural (not timing) role.
 
@@ -557,24 +621,29 @@ Full 6M–18M sweep (3M steps) via `scripts/combo_e_horizon_sweep.py`. See A3 CA
 **Doubt for Rohit sir:** Prototype HMM did not improve Combo B (−1.2 pp) or D (−1.9 pp). Is ~Dec 2026 still the right HMM target?
 
 **Rohit's clarification (2026-06-11):**
+
 > HMM is NOT a direct hit-rate improver for individual combos measured at 3m. It is a regime detector. Markets cycle through hidden states and you trade based on probable state, not price direction.
 
 **Answer (2026-06-16):**
 Understood. I had been evaluating HMM as a combo hit-rate overlay, which was the wrong test.
 
-| What I wrongly tested | What the correct test is |
-|-----------------------|--------------------------|
+
+| What I wrongly tested                            | What the correct test is                                                           |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------- |
 | K-means scalar overlay on Combo B/D 3M hit rates | Walk-forward HMM: does Risk-Off posterior precede bearish combo fires by 2+ weeks? |
-| In-sample degradation −1.2pp B, −1.9pp D | Expected noise from in-sample k-means prototype, not HMM verdict |
+| In-sample degradation −1.2pp B, −1.9pp D         | Expected noise from in-sample k-means prototype, not HMM verdict                   |
+
 
 **Prototype details (for transparency):**
 
-| Parameter | Value |
-|-----------|-------|
-| Method | K-means on scalar mean daily percentile (not 14-vector Gaussian HMM) |
-| States | 3 (Risk-Off / Transition / Risk-On by centroid sort) |
-| Training | In-sample, last 500 dates, no holdout |
-| Confusion matrix | Not produced (unsupervised) |
+
+| Parameter        | Value                                                                |
+| ---------------- | -------------------------------------------------------------------- |
+| Method           | K-means on scalar mean daily percentile (not 14-vector Gaussian HMM) |
+| States           | 3 (Risk-Off / Transition / Risk-On by centroid sort)                 |
+| Training         | In-sample, last 500 dates, no holdout                                |
+| Confusion matrix | Not produced (unsupervised)                                          |
+
 
 **Correct path (scaffold DONE):** `scripts/hmm_walk_forward.py` → `D_hmm_walk_forward.json`. Walk-forward 2015–2025, median lead 0w in most years. Tuning needed on anchor labelling and posterior threshold before December go/no-go. Live daily `emission_vectors` cron wired (18:15 Mon–Fri).
 
@@ -593,13 +662,15 @@ December deployment decision deferred pending 6+ months live emission vectors + 
 **Answer (2026-06-16):**
 No. I recorded **5 inversion episodes** across a 36-year backfill (1990–2026). Oct 2022 is mid-episode 5, not the only inversion.
 
-| Episode | Start | End | Duration (wks) | Peak Inversion (bps) | First +15bps Steepen After |
-|---------|-------|-----|----------------|---------------------|--------------------------|
-| 1 | 2000-02-04 | 2000-12-22 | 47 | −52 | 2000-12-29 |
-| 2 | 2006-02-03 | 2006-03-03 | 5 | −16 | 2006-03-10 |
-| 3 | 2006-06-09 | 2006-07-21 | 7 | −4 | 2007-03-16 |
-| 4 | 2006-08-18 | 2007-03-16 | 31 | −18 | 2007-03-23 |
-| 5 | 2022-07-08 | 2024-08-23 | 112 | −106 | 2024-08-30 |
+
+| Episode | Start      | End        | Duration (wks) | Peak Inversion (bps) | First +15bps Steepen After |
+| ------- | ---------- | ---------- | -------------- | -------------------- | -------------------------- |
+| 1       | 2000-02-04 | 2000-12-22 | 47             | −52                  | 2000-12-29                 |
+| 2       | 2006-02-03 | 2006-03-03 | 5              | −16                  | 2006-03-10                 |
+| 3       | 2006-06-09 | 2006-07-21 | 7              | −4                   | 2007-03-16                 |
+| 4       | 2006-08-18 | 2007-03-16 | 31             | −18                  | 2007-03-23                 |
+| 5       | 2022-07-08 | 2024-08-23 | 112            | −106                 | 2024-08-30                 |
+
 
 Episode 5 (2022–2024) is the longest and deepest (−106 bps trough, 112 weeks). Steepening >+15 bps/4wk followed within 1 week in 4 of 5 episodes.
 
@@ -614,18 +685,20 @@ Episode 5 (2022–2024) is the longest and deepest (−106 bps trough, 112 weeks
 
 ## Summary: answered vs pending
 
-| Category | Answered | Pending / Blocked |
-|----------|----------|-------------------|
-| §1 Validated horizons | ✅ Full PW table at correct horizons | i3 cheatsheet side-by-side compare |
-| §2 / B2 History windows | ✅ Corrected spec table | B4 formal re-run with updated expected map |
-| A1 PIVOTING / 9 vs 4 | ✅ Clarifications + collapse rules | Production prompt update |
-| A3 CAPE triple storage | ✅ Tables + moderate/extreme thresholds | 18M horizon compute |
-| A4 Geo 2-state + data | ✅ Full combo geo tables | Production 2-state prompt |
-| A6 Liquidity v2 | ✅ 9-state tables, TIGHT_* detail, v2 definition | WALCL 0.1/0.2/0.3 FM sweep; i3 A–G compare |
-| B1 TWY_ROC | ✅ Full band sweep + 13,089 explained + Combo A ablation | — |
-| B3 Combo E maturities | ✅ 6M–18M (3M steps) | T11 sweep 2026-06-18; keep 12M primary |
-| C HMM | ✅ Reframed per your clarification | Walk-forward tuning (median lead 0w) |
-| F2 Inversion + shadow | ✅ 5 episodes + shadow defined | — |
+
+| Category                | Answered                                                | Pending / Blocked                          |
+| ----------------------- | ------------------------------------------------------- | ------------------------------------------ |
+| §1 Validated horizons   | ✅ Full PW table at correct horizons                     | i3 cheatsheet side-by-side compare         |
+| §2 / B2 History windows | ✅ Corrected spec table                                  | B4 formal re-run with updated expected map |
+| A1 PIVOTING / 9 vs 4    | ✅ Clarifications + collapse rules                       | Production prompt update                   |
+| A3 CAPE triple storage  | ✅ Tables + moderate/extreme thresholds                  | 18M horizon compute                        |
+| A4 Geo 2-state + data   | ✅ Full combo geo tables                                 | Production 2-state prompt                  |
+| A6 Liquidity v2         | ✅ 9-state tables, TIGHT_* detail, v2 definition         | WALCL 0.1/0.2/0.3 FM sweep; i3 A–G compare |
+| B1 TWY_ROC              | ✅ Full band sweep + 13,089 explained + Combo A ablation | —                                          |
+| B3 Combo E maturities   | ✅ 6M–18M (3M steps)                                     | T11 sweep 2026-06-18; keep 12M primary     |
+| C HMM                   | ✅ Reframed per your clarification                       | Walk-forward tuning (median lead 0w)       |
+| F2 Inversion + shadow   | ✅ 5 episodes + shadow defined                           | —                                          |
+
 
 **Total TODO items in feedback doc:** 32 explicit question/TODO blocks  
 **Answered with data:** 28  

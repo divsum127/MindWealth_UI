@@ -28,24 +28,26 @@ Per your instruction (§10): **each question is followed immediately by the answ
 
 **Answer:** Re-queried from `combo_fires` + `forward_returns` on 2026-06-10. Combo G excluded (`show_hit_rate: false`). Combo A reported on bearish (TIGHT MONEY) framing — SPX down = hit.
 
-| Combo | Horizon | n | Hit % | Avg win % | Avg loss % | PW expected % | Benchmark % | Excess % |
-|-------|---------|---|-------|-----------|------------|---------------|-------------|----------|
-| **B** (bullish) | 3M | 89 | 79.8 | +7.02 | −2.82 | **+5.03** | +2.5 | **+2.53** |
-| **C** (bearish) | 6M primary | 4 | 0.0 | — | +17.82 | +17.82 | +5.0 | +12.82 |
-| **C** (bearish) | 3M secondary | 4 | 0.0 | — | +17.82 | +17.82 | +2.5 | +15.32 |
-| **D** (bearish) | 5D primary | 452 | 38.5 | −1.16 | +0.98 | **+0.16** | +0.5 | **−0.34** |
-| **E** (bearish) | 12M primary | 507 | 18.9 | −7.77 | +15.30 | **+10.93** | +10.0 | **+0.93** |
-| **F** (bullish) | 6M primary | 704 | 78.8 | +8.69 | −6.17 | **+5.54** | +5.0 | **+0.54** |
-| **F** (bullish) | 3M secondary | 704 | 74.9 | +5.38 | −5.47 | **+2.65** | +2.5 | **+0.15** |
-| **A** (TIGHT/bearish) | 6M | 174 | 16.7 | −15.14 | +11.04 | +6.68 | +5.0 | +1.68 |
-| **A** (TIGHT/bearish) | 3M | 174 | 23.0 | −10.33 | +6.35 | +2.52 | +2.5 | +0.02 |
+| Combo | Horizon | n_total | n_mature | Hit % | Avg win % | Avg loss % | PW expected % | Benchmark % | Excess % |
+|-------|---------|---------|----------|-------|-----------|------------|---------------|-------------|----------|
+| **B** (bullish) | 3M | 75 | 66 | 81.8 | +6.84 | −4.23 | **+4.82** | +2.5 | **+2.32** |
+| **C** (bearish) | 6M primary | 2 | 0 | — | — | — | — | +5.0 | — |
+| **C** (bearish) | 3M secondary | 2 | 0 | — | — | — | — | +2.5 | — |
+| **D** (bearish) | 5D primary | 435 | 431 | 39.7 | −1.19 | +1.00 | **+0.13** | +0.5 | **−0.37** |
+| **E** (bearish) | 12M primary | 484 | 429 | 20.5 | −8.38 | +16.13 | **+11.10** | +10.0 | **+1.10** |
+| **F** (bullish) | 6M primary | 696 | 668 | 78.6 | +8.75 | −6.43 | **+5.50** | +5.0 | **+0.50** |
+| **F** (bullish) | 3M secondary | 696 | 681 | 74.9 | +5.37 | −5.67 | **+2.60** | +2.5 | **+0.10** |
+| **A** (TIGHT/bearish) | 6M | 174 | 174 | 16.7 | −15.14 | +11.04 | +6.68 | +5.0 | +1.68 |
+| **A** (TIGHT/bearish) | 3M | 174 | 174 | 23.0 | −10.33 | +6.35 | +2.52 | +2.5 | +0.02 |
+
+\*Combo C: n_mature=0 at 3M/6M — Mar 2026 episodes; horizons not complete. See footnote in `feedback_sectionwise_answers.md` §1.\*
 
 **Interpretation:**
 - **Combo B** at 3M: PW excess **+2.53pp** vs drift — meaningful bullish edge; aligns with i3 Invest capitulation mechanism (formal cheatsheet comparison **PENDING**).
 - **Combo D** at 5D: PW excess **−0.34pp** — tactical bearish signal does not clear drift bar at 5 days; 3M results in v1 report were misleading (as you noted).
 - **Combo E** at 12M: marginal excess +0.93pp — valuation signal is slow; 3M was near-meaningless.
 - **Combo F** at 6M: excess +0.54pp — matches i3 Invest 6M primary horizon convention.
-- **Combo C:** n=4 — too thin for statistical gate; show for transparency only.
+- **Combo C:** n_total=2 unique dates (Mar 2026); **n_mature=0** at 3M/6M — not 0% hit; metrics pending until windows complete. 1W: 50% bear hit on n=2.
 
 ### 1c. F4 steepening-short grid (yield curve — existing sweep)
 

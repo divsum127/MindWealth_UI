@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.032521,
   "dividend_yield_5y_std": 0.017698,
-  "dividend_yield_current": 0.012972,
-  "dividend_yield_zscore": -1.1046,
-  "enterprise_value": 8162269564.399399,
+  "dividend_yield_current": 0.013931,
+  "dividend_yield_zscore": -1.0504,
+  "enterprise_value": 7747597067.5,
   "eps_fwd": 6.8135347,
   "eps_ttm": -1.0,
-  "ev_fwd_rev": 2.2262,
+  "ev_fwd_rev": 2.1131,
   "fcf_ttm": 916567000.0,
   "fd_direction": "stable",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 3666468096.0,
   "industry": "Chemicals",
-  "last_daily_update": "2026-06-18T08:14:31+00:00",
+  "last_daily_update": "2026-06-23T14:15:02+00:00",
   "last_full_calc": "2026-05-18T20:49:39+00:00",
   "manual_overrides": {},
-  "market_cap": 6023581564.399399,
+  "market_cap": 5608909067.5,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -225,7 +225,7 @@
     "valuation:pe_ttm"
   ],
   "net_debt_stored": 2138688000.0,
-  "owner_earnings_yield": 0.152163,
+  "owner_earnings_yield": 0.163413,
   "pe_20y_array": [
     28.8042,
     34.3757,
@@ -244,12 +244,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 77.86000061035156,
+  "price": 72.5,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.00625,
   "sector": "Basic Materials",
   "ticker": "MX.TO",
-  "updated_at": "2026-06-18T08:14:31+00:00",
+  "updated_at": "2026-06-23T14:15:02+00:00",
   "valuation_tax": -1.0,
   "valuation_tax_breakdown": {
     "components": {

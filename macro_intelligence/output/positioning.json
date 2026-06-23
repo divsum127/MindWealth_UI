@@ -1,7 +1,7 @@
 {
-  "date": "2026-06-18",
-  "ssi_level": 0.2955,
-  "ssi_percentile_5y": 24.1,
+  "date": "2026-06-23",
+  "ssi_level": 0.2502,
+  "ssi_percentile_5y": 20.29,
   "layer2_status": "CONFIRMED",
   "layer2_confirmed_count": 3,
   "ssi_multiplier": 1.2,
@@ -19,44 +19,44 @@
   },
   "inputs": {
     "hyg_lqd": {
-      "raw": 0.7330146714867626,
-      "norm": 1.2925381994726148
+      "raw": 0.7348777655678786,
+      "norm": 1.334223064113625
     },
     "dbmf_beta": {
-      "raw": 0.26287501733808416,
-      "norm": -0.16851546820653077
+      "raw": 0.3404239208628571,
+      "norm": -0.35358326791744504
     },
     "cnn_fg": {
-      "raw": 32.0285714285714,
-      "norm": 0.3594285714285721
+      "raw": 34.3428571428571,
+      "norm": 0.313142857142858
     },
     "vix_ratio": {
-      "raw": 1.1600678662249557,
+      "raw": 1.1932926920749547,
       "norm": -0.7
     },
     "layer2_votes": [
       {
         "input": "hyg_lqd",
-        "raw": 0.7330146714867626,
-        "pctile": 99.03358299106064,
+        "raw": 0.7348777655678786,
+        "pctile": 99.66191741125331,
         "vote": true,
         "signal": "risk_on"
       },
       {
         "input": "dbmf_beta",
-        "raw": 0.2628750173380812,
+        "raw": 0.3404239208628653,
         "vote": true,
         "signal": "low_beta"
       },
       {
         "input": "cnn_fg",
-        "raw": 32.0285714285714,
+        "raw": 34.3428571428571,
         "vote": false,
         "signal": "neutral"
       },
       {
         "input": "vix_ratio",
-        "raw": 1.1600678662249557,
+        "raw": 1.1932926920749547,
         "vote": true,
         "signal": "stress"
       }
@@ -70,13 +70,13 @@
       "gross_net_divergence": 527148.0
     },
     "layer1": {
-      "aaii_spread": -17.2898,
-      "naaim_exposure": 79.27,
-      "cnn_fg_raw": 32.0285714285714,
-      "pct_above_200dma": 61.354581673306775,
-      "mcclellan": 82.97532317227888,
-      "nh_nl_ratio": 0.7307692307692307,
-      "skew": 142.6199951171875
+      "aaii_spread": -2.7778000000000027,
+      "naaim_exposure": 92.83,
+      "cnn_fg_raw": 34.3428571428571,
+      "pct_above_200dma": 59.880239520958085,
+      "mcclellan": 78.28041236203353,
+      "nh_nl_ratio": 1.2777777777777777,
+      "skew": 141.85000610351562
     }
   },
   "validation": {

@@ -1,0 +1,122 @@
+{
+  "rows": [
+    {
+      "combo": "B",
+      "horizon_label": "3M",
+      "n_total": 75,
+      "n_mature": 66,
+      "hit_pct": 81.8,
+      "avg_win": 6.84,
+      "avg_loss": -4.23,
+      "pw_expected": 4.82,
+      "benchmark": 2.5,
+      "excess": 2.32,
+      "direction": "bullish"
+    },
+    {
+      "combo": "C",
+      "horizon_label": "6M",
+      "n_total": 2,
+      "n_mature": 0,
+      "hit_pct": null,
+      "avg_win": null,
+      "avg_loss": null,
+      "pw_expected": null,
+      "benchmark": 5.0,
+      "excess": null,
+      "direction": "bearish"
+    },
+    {
+      "combo": "C",
+      "horizon_label": "3M",
+      "n_total": 2,
+      "n_mature": 0,
+      "hit_pct": null,
+      "avg_win": null,
+      "avg_loss": null,
+      "pw_expected": null,
+      "benchmark": 2.5,
+      "excess": null,
+      "direction": "bearish"
+    },
+    {
+      "combo": "D",
+      "horizon_label": "5D",
+      "n_total": 435,
+      "n_mature": 431,
+      "hit_pct": 39.7,
+      "avg_win": -1.19,
+      "avg_loss": 1.0,
+      "pw_expected": 0.13,
+      "benchmark": 0.5,
+      "excess": -0.37,
+      "direction": "bearish"
+    },
+    {
+      "combo": "E",
+      "horizon_label": "12M",
+      "n_total": 484,
+      "n_mature": 429,
+      "hit_pct": 20.5,
+      "avg_win": -8.38,
+      "avg_loss": 16.13,
+      "pw_expected": 11.1,
+      "benchmark": 10.0,
+      "excess": 1.1,
+      "direction": "bearish"
+    },
+    {
+      "combo": "F",
+      "horizon_label": "6M",
+      "n_total": 696,
+      "n_mature": 668,
+      "hit_pct": 78.6,
+      "avg_win": 8.75,
+      "avg_loss": -6.43,
+      "pw_expected": 5.5,
+      "benchmark": 5.0,
+      "excess": 0.5,
+      "direction": "bullish"
+    },
+    {
+      "combo": "F",
+      "horizon_label": "3M",
+      "n_total": 696,
+      "n_mature": 681,
+      "hit_pct": 74.9,
+      "avg_win": 5.37,
+      "avg_loss": -5.67,
+      "pw_expected": 2.6,
+      "benchmark": 2.5,
+      "excess": 0.1,
+      "direction": "bullish"
+    },
+    {
+      "combo": "A",
+      "horizon_label": "6M",
+      "n_total": 174,
+      "n_mature": 174,
+      "hit_pct": 16.7,
+      "avg_win": -15.14,
+      "avg_loss": 11.04,
+      "pw_expected": 6.68,
+      "benchmark": 5.0,
+      "excess": 1.68,
+      "direction": "bearish"
+    },
+    {
+      "combo": "A",
+      "horizon_label": "3M",
+      "n_total": 174,
+      "n_mature": 174,
+      "hit_pct": 23.0,
+      "avg_win": -10.33,
+      "avg_loss": 6.35,
+      "pw_expected": 2.52,
+      "benchmark": 2.5,
+      "excess": 0.02,
+      "direction": "bearish"
+    }
+  ],
+  "markdown_table": "| Combo | Primary horizon | n_total | n_mature | Hit % | Avg win % | Avg loss % | PW expected % | Benchmark % | Excess % |\n|-------|-----------------|---------|----------|-------|-----------|------------|---------------|-------------|----------|\n| **B** (bullish) | 3M | 75 | 66 | 81.8 | +6.84 | -4.23 | +4.82 | +2.5 | **+2.32** |\n| **C** (bearish) | 6M primary | 2 | 0 | \u2014 | \u2014 | \u2014 | \u2014 | +5.0 | \u2014 |\n| **C** (bearish) | 3M secondary | 2 | 0 | \u2014 | \u2014 | \u2014 | \u2014 | +2.5 | \u2014 |\n| **D** (bearish) | 5D primary | 435 | 431 | 39.7 | -1.19 | +1.00 | +0.13 | +0.5 | **-0.37** |\n| **E** (bearish) | 12M primary | 484 | 429 | 20.5 | -8.38 | +16.13 | +11.10 | +10.0 | **+1.10** |\n| **F** (bullish) | 6M primary | 696 | 668 | 78.6 | +8.75 | -6.43 | +5.50 | +5.0 | **+0.50** |\n| **F** (bullish) | 3M secondary | 696 | 681 | 74.9 | +5.37 | -5.67 | +2.60 | +2.5 | **+0.10** |\n| **A** (TIGHT/bearish) | 6M | 174 | 174 | 16.7 | -15.14 | +11.04 | +6.68 | +5.0 | **+1.68** |\n| **A** (TIGHT/bearish) | 3M | 174 | 174 | 23.0 | -10.33 | +6.35 | +2.52 | +2.5 | **+0.02** |\n| **G** | \u2014 | 0 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | \u2014 | No return table |"
+}

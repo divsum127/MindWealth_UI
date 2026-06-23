@@ -545,6 +545,16 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
      - `testing/macro_th_exp/testingv1_feedback/testingv4_status.md`
      - `testing/macro_th_exp/testingv1_feedback/understanding_and_research/Rohit_Feedback_Sectionwise_Answers_Understanding.md`
 
+13. **Fix Combo C §1 horizon table — immature forward returns** — SUCCESSFUL
+   - Date: 2026-06-18
+   - Summary: Root cause: stale spx_3m/spx_6m on Mar 2026 C fires (+17% immature) caused false 0% bear hit and blank avg win. Added `combo_validated_horizons_table.py` (dedupe dates, mature-window only); nulled C forward_returns in DB; updated feedback_sectionwise_answers §1 and testingv2_report §1b.
+   - Files changed:
+     - `scripts/combo_validated_horizons_table.py`
+     - `macro_intelligence/analysis/regime_v2_experiments/COMBO_validated_horizons_pw.json`
+     - `testing/macro_th_exp/testingv1_feedback/feedback_sectionwise_answers.md`
+     - `testing/macro_th_exp/testingv1_feedback/testingv2_report.md`
+     - `macro_intelligence/data/runic.db` (Combo C forward_returns corrected)
+
 3. **Generate nightly macro briefing for 2026-06-10** — SUCCESSFUL
    - Date: 2026-06-11
    - Summary: Ran full nightly pipeline (`run_nightly(as_of=2026-06-10, use_claude=True)`) with live DB data (12 variables). Dominant Combo F week 10 (MEDIUM), posture TACTICAL EASY MONEY; Combo E CONFIRMED (CAPE+NFCI, 19% 12M); Combo B WATCH. Briefing PDF/HTML/JSON written to `macro_intelligence/output/` and `testing/macro_report_updates/`.
@@ -572,6 +582,43 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
      - `tests/test_source_freshness.py`
 
 ### 2026-06-18
+
+3. **Fix geo table, TIGHT_* unnamed clarification, CSV exports, WALCL actual counts** — SUCCESSFUL
+   - Date: 2026-06-18
+   - Summary: (1) Geo table: added validated hit% column — prior table only showed "SPX up%" which is meaningless for bearish combos (D/E). Now shows % of fires where signal was correct per combo direction. (2) TIGHT_* unnamed: clarified that "unnamed" = generic pair-threshold events where runic_combo IS NULL (did not pass naming gate), NOT unnamed versions of A–G. Only Combo A has named fires in TIGHT_*. (3) Created CSV export directory with 3 files: 46-row TIGHT_* Combo A table, 58-row geo overlay table, WALCL threshold distribution. (4) WALCL "~est." replaced with actual DB counts (NFCI-EASY Fridays n=719): ±0.3% → 291/230/198; ±0.2% → 309/273/137; ±0.1% → 335/309/75.
+   - Files changed:
+     - `testing/macro_th_exp/testingv1_feedback/feedback_sectionwise_answers.md`
+     - `testing/macro_th_exp/testingv1_feedback/csv_exports/tight_liquidity_named_combo_46rows.csv` (new)
+     - `testing/macro_th_exp/testingv1_feedback/csv_exports/geo_overlay_combo_fires_non_neutral.csv` (new)
+     - `testing/macro_th_exp/testingv1_feedback/csv_exports/walcl_mom_threshold_distribution.csv` (new)
+
+3. **Add SSI API endpoints (v1.4.0) — summary, history, multiplier — and push docs** — SUCCESSFUL
+   - Date: 2026-06-19
+   - Summary: Added 3 new SSI endpoints backed by `ssi.db`. `GET /macro/ssi/summary` returns the latest snapshot with full per-input vote breakdown. `GET /macro/ssi/history` returns a daily time series (configurable `?days=N`, max 90, chronological). `GET /macro/ssi/multiplier` is a lightweight sizing endpoint. Added service functions in `macro_service.py`, 10 new unit tests (32/32 pass total), 3 endpoint doc pages, updated README/changelog/services catalog to v1.4.0. Committed and pushed to `divsum127/mindwealth-api-docs` (`4863c2c → 1627656`).
+   - Files changed:
+     - `api/services/macro_service.py` (3 new functions: `get_ssi_summary`, `get_ssi_history`, `get_ssi_multiplier`)
+     - `api/routers/macro.py` (3 new SSI routes)
+     - `tests/test_api_macro.py` (10 new tests — TestSSIEndpoints class)
+     - `docs/mindwealth-api-docs/README.md` (v1.4.0)
+     - `docs/mindwealth-api-docs/changelog.md` (v1.4.0 entry)
+     - `docs/mindwealth-api-docs/services/README.md` (71 ops)
+     - `docs/mindwealth-api-docs/services/macro/README.md` (20 endpoints)
+     - `docs/mindwealth-api-docs/services/macro/endpoints/get-ssi-summary.md` (new)
+     - `docs/mindwealth-api-docs/services/macro/endpoints/get-ssi-history.md` (new)
+     - `docs/mindwealth-api-docs/services/macro/endpoints/get-ssi-multiplier.md` (new)
+
+2. **Create Macro Intelligence API endpoints for full frontend view (v1.3.0)** — SUCCESSFUL
+   - Date: 2026-06-18
+   - Summary: Implemented 13 new macro API endpoints covering all 6 tabs of the `MindWealth_Macro_Runic_Latest.html` frontend view. Created `api/services/macro_service.py` as dedicated macro service layer with DB + JSON helpers. Expanded `api/routers/macro.py` to 17 total endpoints. Added 22 unit tests (all pass). Live curl suite: 22/23 pass (run-nightly excluded due to sync duration). Committed v1.3.0 docs to `docs/mindwealth-api-docs/` with 13 new endpoint pages.
+   - Files changed:
+     - `api/services/macro_service.py` (new)
+     - `api/routers/macro.py` (expanded: 4 → 17 endpoints)
+     - `tests/test_api_macro.py` (new — 22 tests)
+     - `docs/mindwealth-api-docs/README.md` (version 1.3.0)
+     - `docs/mindwealth-api-docs/changelog.md` (v1.3.0 entry)
+     - `docs/mindwealth-api-docs/services/README.md` (68 ops)
+     - `docs/mindwealth-api-docs/services/macro/README.md` (17 endpoints)
+     - `docs/mindwealth-api-docs/services/macro/endpoints/` (13 new .md files)
 
 1. **Upgrade Claude prompt + template briefing — analytical narrative, full combo coverage** — SUCCESSFUL
    - Date: 2026-06-18

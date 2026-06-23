@@ -29,6 +29,15 @@ from src.utils.monitored_trades import (
 
 from api.utils import dataframe_to_records
 
+_SYMBOL_SIGNAL_KEY = "Symbol, Signal, Signal Date/Price[$]"
+_INTERVAL_KEY = "Interval, Confirmation Status"
+_FWD_WR_KEY = (
+    "Forward Testing Win Rate[%]/No. of Analysed Trades/Avg Holding Period "
+    "(days) (Across ALL Assets)"
+)
+_WIN_RATE_KEY = "Win Rate [%], History Tested, Number of Trades"
+_OUTSTANDING_SLUGS = frozenset({"outstanding_signals", "outstanding_signal"})
+
 # API slug -> trade_store base filename
 REPORT_SLUGS: dict[str, str] = {
     "all-signal": "all_signal.csv",
@@ -52,6 +61,117 @@ REPORT_SLUGS: dict[str, str] = {
     "claude_signals_report": "claude_signals_report.csv",
     "f-stack": "F-Stack-Analyzer.csv",
 }
+
+
+def _parse_signal_date_from_record(record: dict[str, Any]) -> str | None:
+    import re
+
+    field = record.get(_SYMBOL_SIGNAL_KEY, "")
+    match = re.search(r"(\d{4}-\d{2}-\d{2})", str(field))
+    return match.group(1) if match else None
+
+
+def _sort_outstanding_records(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Supplementary §2: freshest signal_date first."""
+    return sorted(
+        records,
+        key=lambda row: _parse_signal_date_from_record(row) or "",
+        reverse=True,
+    )
+
+
+def _parse_forward_test_field(record: dict[str, Any]) -> tuple[float | None, int | None]:
+    raw = record.get(_FWD_WR_KEY, "")
+    if not raw or str(raw).strip() in ("N/A", ""):
+        return None, None
+    parts = str(raw).split("/")
+    try:
+        fwd_wr = float(parts[0].strip().rstrip("%").strip())
+    except (ValueError, IndexError):
+        fwd_wr = None
+    trades: int | None = None
+    if len(parts) >= 2:
+        try:
+            trades = int(float(parts[1].strip()))
+        except ValueError:
+            trades = None
+    return fwd_wr, trades
+
+
+def _parse_win_rate_from_record(record: dict[str, Any]) -> float | None:
+    raw = record.get(_WIN_RATE_KEY, "")
+    if not raw or str(raw).strip() in ("N/A", ""):
+        return None
+    try:
+        return float(str(raw).split(",")[0].strip().rstrip("%").strip())
+    except (ValueError, IndexError):
+        return None
+
+
+def _gate_a2b_label(fwd_wr: float | None) -> str | None:
+    if fwd_wr is None:
+        return None
+    if fwd_wr >= 63:
+        return "PASS"
+    if fwd_wr >= 60:
+        return "PASS (cusp)"
+    return "FAIL"
+
+
+def _strategy_health_status(fwd_wr: float | None) -> str | None:
+    if fwd_wr is None:
+        return None
+    return "healthy" if fwd_wr >= 62 else "monitor"
+
+
+def build_strategy_health(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Aggregate forward-test stats per function/interval (Supplementary §6)."""
+    from collections import defaultdict
+
+    groups: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
+    for record in records:
+        function = str(record.get("Function", "")).strip()
+        interval_field = record.get(_INTERVAL_KEY, "")
+        interval = str(interval_field).split(",")[0].strip() if interval_field else ""
+        if function and interval:
+            groups[(function, interval)].append(record)
+
+    rows: list[dict[str, Any]] = []
+    for (function, interval), group_rows in sorted(groups.items()):
+        fwd_wr, trades = _parse_forward_test_field(group_rows[0])
+        win_rates = [
+            wr
+            for wr in (_parse_win_rate_from_record(row) for row in group_rows)
+            if wr is not None
+        ]
+        bt_wr = round(sum(win_rates) / len(win_rates), 2) if win_rates else None
+        delta_vs_bt = (
+            round(fwd_wr - bt_wr, 2) if fwd_wr is not None and bt_wr is not None else None
+        )
+        rows.append(
+            {
+                "strategy": function,
+                "interval": interval,
+                "fwd_wr": fwd_wr,
+                "bt_wr": bt_wr,
+                "delta_vs_bt": delta_vs_bt,
+                "trades": trades,
+                "gate_a2b": _gate_a2b_label(fwd_wr),
+                "status": _strategy_health_status(fwd_wr),
+            }
+        )
+    return rows
+
+
+def strategy_health_report(report_date: str | None = None) -> dict[str, Any]:
+    """Latest all-signal report aggregated to strategy_health[]."""
+    payload = load_report_records("all-signal", report_date=report_date)
+    records = payload.get("records", [])
+    return {
+        "report_date": payload.get("report_date"),
+        "source_file": payload.get("source_file"),
+        "strategy_health": build_strategy_health(records),
+    }
 
 
 def _read_csv(path: Path | str) -> pd.DataFrame:
@@ -140,7 +260,9 @@ def load_report_records(report_name: str, report_date: str | None = None) -> dic
         "report_date": _report_date_from_path(path),
         "format": "csv",
         "row_count": int(len(df)),
-        "records": dataframe_to_records(df),
+        "records": _sort_outstanding_records(dataframe_to_records(df))
+        if report_name.lower().replace("-", "_").replace(".csv", "") in _OUTSTANDING_SLUGS
+        else dataframe_to_records(df),
     }
 
 

@@ -1235,3 +1235,128 @@ This file captures minute-level implementation context for each completed task:
 **Caveats for next developer:**
 - Re-run: `python3 scripts/combo_e_horizon_sweep.py`
 - Artifact: `macro_intelligence/analysis/regime_v2_experiments/COMBO_E_horizon_sweep_6_18m.json`
+
+---
+
+### Task — Fix Combo C §1 horizon table immature forward returns (2026-06-18)
+
+**Root cause:**
+- Only 2 unique Combo C dates (Mar 2026) but 4 `combo_fires` rows (duplicate combo_ids).
+- `forward_returns` had **stale immature** spx_3m/spx_6m (+16–19%) from pre-fix `forward_return_pct` bug; live compute returns NULL until windows mature.
+- Bearish hit 0% and blank avg win were artifacts of counting immature positive returns as mature 3M/6M.
+
+**Fix:**
+- `scripts/combo_validated_horizons_table.py` — dedupe by date, Yahoo recompute, mature-only PW stats.
+- Recomputed Combo C `forward_returns` in DB (spx_3m/6m/12m → NULL).
+- Updated `feedback_sectionwise_answers.md` §1 and `testingv2_report.md` §1b with n_total/n_mature columns.
+
+**Caveats:**
+- Combo C 3M/6M metrics stay — until ~late Jun / Sep 2026 when windows mature.
+- Re-run full table: `python3 scripts/combo_validated_horizons_table.py`
+
+---
+
+## 2026-06-18 — Task 2: Macro Intelligence API v1.3.0 (13 new endpoints)
+
+**Task:** Create API endpoints for all macro intelligence functions relevant to the Runic frontend view.
+
+**Assumptions:**
+- Frontend view is `MindWealth_Macro_Runic_Latest.html` — 6 tabs: Overview, 12 Variables, 7 Named Combos, Combo Tracker, Analog Tables, Nightly Brief.
+- All data is read from `runic_output.json` (primary) and `runic.db` (analog details, cancel state, CPI data).
+- `use_claude=False` by default for run-nightly trigger to avoid LLM cost on API calls.
+- `combo_status_rows` from the nightly payload may be null for combos not surfaced in that run.
+
+**Architecture decisions:**
+- Created `api/services/macro_service.py` as a dedicated service layer (separate from `reports_service.py`) since macro data access patterns are more complex (DB + JSON hybrid).
+- Static metadata (COMBO_STATIC, VARIABLE_META) lives in the service file, not a YAML, since it's structural documentation-level data that rarely changes.
+- `/macro/analogs/{combo_id}` reads from SQLite `combo_fires + forward_returns` tables rather than the nightly JSON because the JSON only contains analog_details for the dominant combo.
+- DB helpers wrapped in try/except returning empty defaults — service remains available even when DB is missing.
+
+**Things deferred/left for future:**
+- Pagination for `/macro/analogs/{combo_id}` (currently hardcoded limit=10 from DB).
+- Async version of `POST /macro/run-nightly` (currently synchronous — can hang for 2–3 min with Claude enabled).
+- `/macro/combo-c/cancel` `friday_log` requires `combo_c_cancel_log` table — returns `[]` if table doesn't exist yet (schema may not have it).
+- `progress_pct` in combo-f window computed from `duration_weeks / 26` — if `fire_date` is available in DB it uses that, else falls back to nightly JSON `combo_f_weeks_elapsed`.
+- Variable metadata (sources, gates) is hardcoded in `_VARIABLE_META` dict — should ideally be driven from `CONFIG.yaml` variables list.
+
+**Edge cases not handled:**
+- Multiple simultaneous fires of the same combo (DB query takes only the latest row).
+- Combo IDs passed in lowercase are normalized to uppercase — but path params like `/macro/combos/c` work.
+- `analog_details` regime field may be empty `{}` when `macro_regime_json` column doesn't exist in older DB versions.
+- `mtm_pct` for active combos (like F) comes from the nightly payload active combo dict — may be null if nightly run didn't compute it.
+
+**Known gaps:**
+- `GET /macro/combo-c/cancel` friday_log will be empty until `combo_c_cancel_log` table is populated by the nightly cancel checker (requires at least one Friday run with C active).
+- `POST /macro/run-nightly` returns 502 on any nightly run error — the error message is propagated but may be cryptic for external callers.
+
+**Test results:** 22/22 pytest pass. 22/23 curl pass (run-nightly excluded from batch curl).
+
+---
+
+## 2026-06-18 — Fix geo table, TIGHT_* unnamed, CSV exports, WALCL actual counts
+
+**Task:** Four fixes to `feedback_sectionwise_answers.md` + create `csv_exports/` directory.
+
+**1. Geo table (lines ~212-222) — root issue:**
+- Prior table only showed "SPX up% 3m" for all combos. This is meaningless for **bearish combos** (A, D, E) because their signal correctness is SPX *down*, not SPX up.
+- Re-queried 58-row geo dataset and added "Validated hit%" column: bullish combos (B, F) use SPX>0 as hit; bearish (A, D, E) use SPX<0.
+- Key findings: Combo A in CRISIS = 0% bear hit (fired at Apr 2020 bottom, SPX recovered → correct miss). Combo E in ELEVATED_RISK = 68% bear hit. Combo F in ELEVATED_RISK = only 17% bull hit (Ukraine 2022 was poor for F).
+- **Assumption:** `geo_overlay_v2` is the column in `macro_regime_log_v2.regime_json`; validated via DB query.
+
+**2. TIGHT_* "unnamed" combo:**
+- "unnamed" = `combo_fires` rows where `runic_combo IS NULL`. These are raw 2–3 variable pair events that triggered simultaneously at RARE/EXTREME bands but **did not meet the naming gate** (≥5 fires, ≥80% validated hit rate, clear mechanism). They are NOT unnamed versions of A–G.
+- Only Combo A has named fires in any TIGHT_* state. B/C/D/E/F/G = zero TIGHT_* named fires.
+- Updated table label from "unnamed" → "Generic pair fires (unnamed)" with explanatory note.
+- **Deferred:** Consider whether to run naming-gate evaluation on the TIGHT_FLAT 52-event cluster (potentially worth naming if hit rate justifies).
+
+**3. CSV exports directory:**
+- Created `testing/macro_th_exp/testingv1_feedback/csv_exports/`
+- `tight_liquidity_named_combo_46rows.csv` — all 46 Combo A TIGHT_* fires with 1m/3m/6m/9m/12m SPX.
+- `geo_overlay_combo_fires_non_neutral.csv` — 58 named combo fires on CRISIS/ELEVATED_RISK days.
+- `walcl_mom_threshold_distribution.csv` — actual WALCL threshold counts at ±0.1/0.2/0.3.
+
+**4. WALCL "~est." → actual counts:**
+- Prior table showed "~520 est." etc. — these were never computed; marked as estimates.
+- Queried `daily_readings` (var_id='WALCL' joined NFCI) for NFCI-EASY Fridays (NFCI ≤ −0.3) from 2008-01-01. Total = 719 Fridays (prior table said 1,901 which was ALL Fridays, regardless of NFCI state).
+- **Important:** The prior total of 1,901 was misleading — it mixed all NFCI states. The 1,901 covered all Fridays since 2008; the EASY_* states only apply to NFCI-EASY weeks (719).
+- Actual counts: ±0.3% → IMPROVING=291, TIGHTENING=230, FLAT=198; ±0.2% → 309/273/137; ±0.1% → 335/309/75.
+- **Deferred:** FM-event hit rate sweep at each threshold (does ±0.1% gate improve IMPROVING vs TIGHTENING signal discrimination?) — not yet run, flagged for next pass.
+
+---
+
+## 2026-06-19 — SSI API v1.4.0 (summary, history, multiplier)
+
+### Task
+Add dedicated SSI (Super Sentiment Index) API endpoints, update docs, commit and push.
+
+### Assumptions
+- `ssi.db` lives at path returned by `config_paths.SSI_DB`; table `ssi_daily` has columns: `date, ssi_level, ssi_percentile_5y, hyg_lqd, dbmf_beta, cnn_fg, vix_ratio, layer2_status, layer2_confirmed_count, ssi_multiplier, payload_json, created_at`
+- `payload_json` column stores the full SSI payload dict; `inputs.layer2_votes` is a list of `{input, vote, signal, pctile}` dicts used for the per-input breakdown in `/ssi/summary`
+- Posture thresholds: RISK_ON < -0.6, RISK_OFF > 0.85, NEUTRAL otherwise — matches existing `run_ssi_daily.py` logic
+- `positioning.json` exists for signal thresholds; falls back gracefully if missing (multiplier endpoint still returns from DB)
+
+### Architecture Decisions
+- All three functions in `macro_service.py` open their own `sqlite3` connection (not shared) and close in `finally` — avoids holding a connection open during request lifecycle
+- History endpoint clamps `days` server-side (1–90) rather than relying on query validation — prevents large accidental queries
+- History series returned chronological (oldest → newest) for direct use in Recharts/Plotly without client-side reversal
+- Multiplier endpoint intentionally lightweight — only reads 1 row from ssi_daily + positioning.json signals; avoids loading full payload_json for high-frequency polling
+
+### Tests
+- 10 new tests in `TestSSIEndpoints` class using mock patches (no real DB required)
+- Tests cover: 200 OK, field presence, field values, 404 on missing DB, `days` clamping to 90, `days` param forwarding, series structure
+- All 32 macro tests pass (pytest 5.08s)
+
+### Deferred / Future
+- `ssi_percentile_5y` in history only returns raw float; vote/signal breakdown per historical row not included (only in summary)
+- No pagination for history — max 90 rows is sufficient given daily frequency and DB size (~13 rows at time of writing)
+- `posture` field in summary computed server-side; could be stored in DB if thresholds change frequently
+- Consider a `GET /macro/ssi/compare` endpoint for side-by-side comparison of two date ranges (deferred)
+
+### Edge Cases Not Handled
+- `payload_json` column could be NULL for older rows (falls back to empty inputs dict gracefully)
+- If `positioning.json` is stale or has schema changes, `long_size_mult`/`short_size_mult` fall back to 1.0 without error
+- History `days_available` < `days_requested` when DB has fewer rows than requested — handled and surfaced in response
+
+### Push
+- Committed to `docs/mindwealth-api-docs` as `1627656` (parent `4863c2c`)
+- Pushed to `divsum127/mindwealth-api-docs` main branch using PAT (PAT removed from remote URL after push)

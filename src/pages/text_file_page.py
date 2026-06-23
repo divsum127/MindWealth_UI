@@ -13,7 +13,10 @@ from constant import (
     GPT_SIGNALS_REPORT_CSV_PATH_US,
 )
 from ..components.cards import create_summary_cards, create_strategy_cards
+from ..components.quality_bubble_chart import render_quality_bubble_chart
 from ..utils.file_discovery import extract_date_from_filename
+from ..utils.surface_json_parser import parse_surface_json
+from ..utils.signal_quality import quality_rows_from_parsed_df
 
 
 def find_latest_gpt_file(base_path, extension='txt'):
@@ -171,6 +174,23 @@ def create_text_file_page():
         
         if has_summary_cols:
             create_summary_cards(parsed_df)
+            st.markdown("---")
+
+        # Bubble chart: prefer surface_json from Claude text; fallback to computed fields
+        bubble_rows = []
+        try:
+            with open(txt_path, "r", encoding="utf-8") as _tf:
+                bubble_rows = parse_surface_json(_tf.read())
+        except Exception:
+            bubble_rows = []
+        if not bubble_rows:
+            bubble_rows = quality_rows_from_parsed_df(parsed_df)
+        if bubble_rows:
+            st.markdown("### 📊 Signal Quality Composite vs Lifecycle")
+            render_quality_bubble_chart(
+                bubble_rows,
+                title="Claude Signals: Quality Composite vs Lifecycle",
+            )
             st.markdown("---")
         
         # Strategy cards with function-specific column logic (with search)
