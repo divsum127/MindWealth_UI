@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.008836,
   "dividend_yield_5y_std": 0.003365,
-  "dividend_yield_current": 0.00898,
-  "dividend_yield_zscore": 0.0428,
-  "enterprise_value": 96059088828.39728,
+  "dividend_yield_current": 0.008926,
+  "dividend_yield_zscore": 0.0267,
+  "enterprise_value": 96583950001.66263,
   "eps_fwd": 4.4488525,
   "eps_ttm": 3.96,
-  "ev_fwd_rev": 1.3107,
+  "ev_fwd_rev": 1.3178,
   "fcf_ttm": 2900700000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 73289203712.0,
   "industry": "Specialty Retail",
-  "last_daily_update": "2026-06-23T14:15:01+00:00",
+  "last_daily_update": "2026-06-24T12:55:07+00:00",
   "last_full_calc": "2026-05-18T20:47:25+00:00",
   "manual_overrides": {},
-  "market_cap": 83843588828.39728,
+  "market_cap": 84368450001.66263,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 12215500000.0,
-  "owner_earnings_yield": 0.034597,
+  "owner_earnings_yield": 0.034381,
   "pe_20y_array": [
     23.4474,
     25.1086,
@@ -235,7 +235,7 @@
     25.2283
   ],
   "pe_percentile_20y": 0.0,
-  "pe_ttm": 23.0581,
+  "pe_ttm": 23.1995,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -244,12 +244,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 91.30999755859375,
+  "price": 91.87000274658203,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.1816,
   "sector": "Consumer Cyclical",
   "ticker": "ATD.TO",
-  "updated_at": "2026-06-23T14:15:01+00:00",
+  "updated_at": "2026-06-24T12:55:07+00:00",
   "valuation_tax": 0.0,
   "valuation_tax_breakdown": {
     "components": {

@@ -87,6 +87,38 @@ def combo_hit_rate_stats(letter: str) -> dict[str, Any]:
     }
 
 
+def hit_rate_reason_clause(stats: dict[str, Any]) -> str:
+    """Full hit-rate phrase for dominant_reason (neutral, numeric)."""
+    if not stats.get("show_hit_rate"):
+        return "Timing signal only (no validated hit rate)."
+    hr = stats.get("hit_rate_primary")
+    n_obs = stats.get("n_obs_primary") or 0
+    label = stats.get("primary_label", "3M")
+    if hr is None or n_obs == 0:
+        return f"No mature hit-rate data at {label} horizon."
+    return f"{hr * 100:.0f}% {label} hit rate."
+
+
+def hit_rate_reason_short(stats: dict[str, Any]) -> str | None:
+    """Compact hit-rate for outrank parens; None when not displayable."""
+    if not stats.get("show_hit_rate"):
+        return None
+    hr = stats.get("hit_rate_primary")
+    n_obs = stats.get("n_obs_primary") or 0
+    if hr is None or n_obs == 0:
+        return None
+    label = stats.get("primary_label", "3M")
+    return f"{hr * 100:.0f}% {label}"
+
+
+def format_reason_hit_rate(letter: str) -> str:
+    return hit_rate_reason_clause(combo_hit_rate_stats(letter))
+
+
+def format_reason_hit_rate_short(letter: str) -> str | None:
+    return hit_rate_reason_short(combo_hit_rate_stats(letter))
+
+
 def format_hit_rate_display(stats: dict[str, Any]) -> tuple[str, str]:
     """Return (hit_rate_cell, avg_return_cell) for briefing table."""
     if not stats.get("show_hit_rate"):

@@ -23,6 +23,34 @@ def _safe(d: dict[str, Any], key: str, default: Any = None) -> Any:
     return d.get(key, default)
 
 
+def _watch_combo_map(watch_list: list[Any]) -> dict[str, dict[str, Any]]:
+    out: dict[str, dict[str, Any]] = {}
+    for w in watch_list:
+        if isinstance(w, dict) and w.get("combo"):
+            out[w["combo"]] = w
+        elif isinstance(w, str):
+            out[w] = {"combo": w}
+    return out
+
+
+def _combo_confirmed_legs(
+    letter: str,
+    active_map: dict[str, dict[str, Any]],
+    watch_map: dict[str, dict[str, Any]],
+    status_row: dict[str, Any] | None,
+) -> list[str]:
+    live = active_map.get(letter, {})
+    legs = live.get("confirmed_legs")
+    if legs:
+        return list(legs)
+    watch = watch_map.get(letter, {})
+    if watch.get("confirmed_legs"):
+        return list(watch["confirmed_legs"])
+    if status_row and status_row.get("confirmed_legs"):
+        return list(status_row["confirmed_legs"])
+    return []
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # DB helpers
 # ─────────────────────────────────────────────────────────────────────────────
@@ -424,19 +452,25 @@ def get_all_combos() -> dict[str, Any]:
     data = _load_runic()
     active = _safe(data, "active_combos", [])
     watch_list = _safe(data, "watch_combos", [])
-    if isinstance(watch_list, list) and watch_list and isinstance(watch_list[0], dict):
-        watch_ids = [w.get("combo") for w in watch_list]
-    else:
-        watch_ids = list(watch_list)
+    watch_map = _watch_combo_map(watch_list if isinstance(watch_list, list) else [])
+    watch_ids = list(watch_map.keys())
 
     active_map = {c.get("combo"): c for c in active if c.get("combo")}
+    status_rows = {
+        row.get("combo"): row
+        for row in (_safe(data, "combo_status_rows", []) or [])
+        if isinstance(row, dict) and row.get("combo")
+    }
 
     combos = []
     for letter in "ABCDEFG":
         static = _COMBO_STATIC.get(letter, {})
         live = active_map.get(letter, {})
+        status_row = status_rows.get(letter)
         is_active = letter in active_map
         is_watch = letter in watch_ids
+        confirmed_legs = _combo_confirmed_legs(letter, active_map, watch_map, status_row)
+        watch_entry = watch_map.get(letter, {})
         combos.append({
             "combo": letter,
             "name": static.get("name"),
@@ -446,20 +480,18 @@ def get_all_combos() -> dict[str, Any]:
             "total_legs": static.get("total_legs"),
             "variables": static.get("variables", []),
             "description": static.get("description"),
-            "status": live.get("status", "WATCH" if is_watch else "INACTIVE"),
+            "status": live.get("status") or (status_row or {}).get("status") or ("WATCH" if is_watch else "INACTIVE"),
             "is_active": is_active,
             "is_watch": is_watch,
             "duration_weeks": live.get("duration_weeks"),
             "duration_bucket": live.get("duration_bucket"),
-            "confirmed_legs": live.get("confirmed_legs"),
+            "confirmed_legs": confirmed_legs,
+            "legs_confirmed": watch_entry.get("legs_confirmed", len(confirmed_legs)),
+            "pending": watch_entry.get("pending") or (status_row or {}).get("pending"),
             "episode_start": live.get("episode_start"),
             "hit_rate_primary": live.get("hit_rate_primary") or live.get("hit_rate_3m"),
             "avg_return_primary": live.get("avg_return_primary") or live.get("avg_return_3m"),
-            "combo_status_row": next(
-                (row for row in (_safe(data, "combo_status_rows", []) or [])
-                 if isinstance(row, dict) and row.get("combo") == letter),
-                None,
-            ),
+            "combo_status_row": status_row,
         })
     return {
         "date": _safe(data, "date"),
@@ -478,12 +510,22 @@ def get_combo_detail(combo_id: str) -> dict[str, Any]:
     data = _load_runic()
     active = _safe(data, "active_combos", [])
     watch_list = _safe(data, "watch_combos", [])
-    watch_ids = [w.get("combo") if isinstance(w, dict) else w for w in watch_list]
+    watch_map = _watch_combo_map(watch_list if isinstance(watch_list, list) else [])
+    watch_ids = list(watch_map.keys())
     active_map = {c.get("combo"): c for c in active if c.get("combo")}
+    status_row = next(
+        (row for row in (_safe(data, "combo_status_rows", []) or [])
+         if isinstance(row, dict) and row.get("combo") == combo_id),
+        None,
+    )
 
     static = _COMBO_STATIC.get(combo_id, {})
     live = active_map.get(combo_id, {})
+    watch_entry = watch_map.get(combo_id, {})
     fire_detail = _db_combo_fire_detail(combo_id)
+    confirmed_legs = _combo_confirmed_legs(combo_id, active_map, watch_map, status_row)
+    if not confirmed_legs:
+        confirmed_legs = (fire_detail or {}).get("confirmed_legs", [])
 
     try:
         from src.macro_intelligence.engine.combo_metadata import combo_hit_rate_stats
@@ -504,12 +546,14 @@ def get_combo_detail(combo_id: str) -> dict[str, Any]:
         "total_legs": static.get("total_legs"),
         "variables": static.get("variables", []),
         "description": static.get("description"),
-        "status": live.get("status", "WATCH" if combo_id in watch_ids else "INACTIVE"),
+        "status": live.get("status") or (status_row or {}).get("status") or ("WATCH" if combo_id in watch_ids else "INACTIVE"),
         "is_active": combo_id in active_map,
         "is_watch": combo_id in watch_ids,
         "duration_weeks": live.get("duration_weeks") or (fire_detail or {}).get("duration_weeks"),
         "duration_bucket": live.get("duration_bucket") or (fire_detail or {}).get("duration_bucket"),
-        "confirmed_legs": live.get("confirmed_legs") or (fire_detail or {}).get("confirmed_legs", []),
+        "confirmed_legs": confirmed_legs,
+        "legs_confirmed": watch_entry.get("legs_confirmed", len(confirmed_legs)),
+        "pending": watch_entry.get("pending") or (status_row or {}).get("pending"),
         "episode_start": live.get("episode_start") or (fire_detail or {}).get("episode_start"),
         "hit_rate_stats": hr_stats,
         "hit_rate_primary": hr_stats.get("hit_rate_primary"),

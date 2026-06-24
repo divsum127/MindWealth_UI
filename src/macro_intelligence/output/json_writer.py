@@ -111,7 +111,7 @@ def build_payload(
     dominant_reason: str,
     brave_fearful: str,
     active_combos: list[dict[str, Any]],
-    watch_combos: list[str],
+    watch_combos: list[dict[str, Any]] | list[str],
     persistence_signals: list[dict[str, Any]],
     analog_dates: list[str],
     analog_details: list[dict[str, Any]] | None = None,

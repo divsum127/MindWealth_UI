@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.012627,
   "dividend_yield_5y_std": 0.008107,
-  "dividend_yield_current": 0.038206,
-  "dividend_yield_zscore": 3.1552,
-  "enterprise_value": 66877074761.69786,
+  "dividend_yield_current": 0.038697,
+  "dividend_yield_zscore": 3.2157,
+  "enterprise_value": 66069994040.298004,
   "eps_fwd": 1.82486,
   "eps_ttm": 1.52,
-  "ev_fwd_rev": 1.4375,
+  "ev_fwd_rev": 1.4202,
   "fcf_ttm": 2475000000.0,
   "fd_direction": "positive",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 46522998784.0,
   "industry": "Footwear & Accessories",
-  "last_daily_update": "2026-06-23T14:15:02+00:00",
+  "last_daily_update": "2026-06-24T12:55:07+00:00",
   "last_full_calc": "2026-05-18T20:49:47+00:00",
   "manual_overrides": {},
-  "market_cap": 63567074761.69786,
+  "market_cap": 62759994040.298004,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 3310000000.0,
-  "owner_earnings_yield": 0.038935,
+  "owner_earnings_yield": 0.039436,
   "pe_20y_array": [
     37.4765,
     36.3588,
@@ -232,8 +232,8 @@
     29.3775,
     28.1921
   ],
-  "pe_percentile_20y": 16.67,
-  "pe_ttm": 28.2401,
+  "pe_percentile_20y": 0.0,
+  "pe_ttm": 27.8816,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -242,12 +242,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 42.92499923706055,
+  "price": 42.380001068115234,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.16016,
   "sector": "Consumer Cyclical",
   "ticker": "NKE",
-  "updated_at": "2026-06-23T14:15:02+00:00",
+  "updated_at": "2026-06-24T12:55:07+00:00",
   "valuation_tax": 0.0,
   "valuation_tax_breakdown": {
     "components": {

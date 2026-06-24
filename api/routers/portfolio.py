@@ -74,15 +74,23 @@ def get_sizer(
     operation_id="getPortfolioRisk",
     summary="Portfolio Risk — cluster correlation matrix + breaches",
 )
-def get_risk() -> dict[str, Any]:
+def get_risk(
+    scenario: str = Query(
+        default="normal",
+        description="Sizer scenario for cluster weights: normal | stress | lowvol",
+        pattern="^(normal|stress|lowvol)$",
+    ),
+) -> dict[str, Any]:
     """Return cluster-level correlation matrix, breach list, and cluster weight bars.
 
     Breaches: ρ > 0.75 = watch, ρ > 0.85 = action required.
     """
     try:
-        return svc.get_portfolio_risk()
+        return svc.get_portfolio_risk(scenario=scenario)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,

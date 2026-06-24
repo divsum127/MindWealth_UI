@@ -40,21 +40,34 @@ from src.macro_intelligence.db.connection import get_connection
 from src.macro_intelligence.output.json_writer import _combo_c_cancel_state
 
 
-def _active_combo_dicts(fires) -> tuple[list[dict[str, Any]], list[str]]:
+def _active_combo_dicts(fires) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     active: list[dict[str, Any]] = []
-    watch: list[str] = []
+    watch: list[dict[str, Any]] = []
+    total_legs = {"A": 4, "B": 3, "C": 3, "D": 3, "E": 3, "F": 2, "G": 3}
     for f in fires:
         meta = f.macro_regime or {}
+        legs = meta.get("confirmed_legs") or []
+        pending_list = meta.get("pending_legs") or []
+        pending = pending_list[0] if len(pending_list) == 1 else (", ".join(pending_list) if pending_list else None)
         d: dict[str, Any] = {
             "combo": f.runic_combo,
             "status": f.status,
             "duration_weeks": f.duration_weeks,
             "duration_bucket": f.duration_bucket.value if f.duration_bucket else None,
             "episode_start": meta.get("episode_start"),
-            "confirmed_legs": meta.get("confirmed_legs"),
+            "confirmed_legs": legs,
         }
         if f.status in ("WATCH", "CONTESTED"):
-            watch.append(f.runic_combo or "?")
+            watch.append(
+                {
+                    "combo": f.runic_combo,
+                    "status": f.status,
+                    "legs_confirmed": len(legs),
+                    "total_legs": total_legs.get(f.runic_combo or "", 3),
+                    "confirmed_legs": legs,
+                    "pending": pending,
+                }
+            )
         elif f.status in ("ACTIVE", "PARTIAL", "CONFIRMED", "CONFIRMED_3_OF_3"):
             stats = combo_hit_rate_stats(f.runic_combo or "C")
             d.update(stats)

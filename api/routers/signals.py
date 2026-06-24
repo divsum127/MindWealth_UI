@@ -92,6 +92,26 @@ def get_strategy_health(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
 
 
+@router.get(
+    "/gate-a2b",
+    operation_id="get_gate_a2b_gating",
+    summary="Gate A2b forward WR gating per function/interval/direction",
+)
+def get_gate_a2b_gating(
+    report_date: str | None = Query(default=None, description="YYYY-MM-DD trade_store date"),
+) -> dict[str, Any]:
+    """
+    Return approve/disapprove for every function/interval/direction combo using
+    Gate A2b: forward testing win rate must be >= 60% (Across ALL Assets).
+
+    Missing forward WR does not disapprove (field absence is not a failure).
+    """
+    try:
+        return svc.gate_a2b_gating_report(report_date=report_date)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+
 @router.get("/surface", operation_id="get_signal_surface")
 def get_signal_surface(
     report: str = Query(

@@ -1,0 +1,355 @@
+{
+  "job_id": "c4b58314-7524-48d5-8ca6-298194f98bb6",
+  "session_id": "7001fa93-0d91-4118-8f3c-ac191f0d1e4a",
+  "status": "completed",
+  "created_at": "2026-06-24T07:37:41.309969+00:00",
+  "started_at": "2026-06-24T07:37:41.310833+00:00",
+  "completed_at": "2026-06-24T07:38:16.438633+00:00",
+  "request": {
+    "message": "What's the current macro regime?",
+    "preset": "freeform",
+    "asset": null,
+    "from_date": null,
+    "to_date": null,
+    "assets": null,
+    "functions": null,
+    "selected_signal_types": [],
+    "auto_extract_tickers": true,
+    "deep_research_enabled": false,
+    "query_kind": null,
+    "additional_context": null
+  },
+  "flow_steps": [
+    {
+      "stage": "Router",
+      "detail": "Analyzing user query intent and selecting route",
+      "timestamp": "2026-06-24T07:37:41.750364+00:00"
+    },
+    {
+      "stage": "Route Selected",
+      "detail": "WEB_RAG (intent=WEB_QUERY, conf=0.88)",
+      "timestamp": "2026-06-24T07:37:46.251622+00:00"
+    },
+    {
+      "stage": "Web Search",
+      "detail": "Executing web-only retrieval (Tavily)",
+      "timestamp": "2026-06-24T07:37:46.252391+00:00"
+    },
+    {
+      "stage": "Web Search Fallback",
+      "detail": "Web unavailable; switching to internal path (Tavily returned no usable results for these queries.)",
+      "timestamp": "2026-06-24T07:37:46.253417+00:00"
+    },
+    {
+      "stage": "Context Handling",
+      "detail": "No prior context found; running fresh internal smart query",
+      "timestamp": "2026-06-24T07:37:46.254479+00:00"
+    },
+    {
+      "stage": "Internal Data Query",
+      "detail": "Fetched internal signal data (selector + columns + date filters)",
+      "timestamp": "2026-06-24T07:38:16.433084+00:00"
+    },
+    {
+      "stage": "Response Generation",
+      "detail": "Generated final response from internal analysis",
+      "timestamp": "2026-06-24T07:38:16.433803+00:00"
+    }
+  ],
+  "result": {
+    "content": "# Current Macro Regime Analysis\n\nBased on the **Signal Breadth Indicator (SBI)** data through **June 22, 2026**, here's the current market regime assessment:\n\n---\n\n## \ud83d\udcca Overall Market Regime: **Moderately Bullish with Strengthening Momentum**\n\n### Key Findings (Combined Function - All Signals)\n\n**Latest Reading (June 22, 2026):**\n- **21 New Long Signals** vs. 1 New Short Signal (21:1 ratio)\n- **Long Signal Percentile: 12.71%** from top (indicating **top ~13% busiest long-signal day** in last 6 months)\n- **Short Signal Percentile: 41.99%** from top (relatively quiet short activity)\n\n---\n\n## \ud83d\udd0d Regime Characteristics\n\n### **1. Strong Bullish Breadth Expansion**\nThe market is experiencing **elevated long signal generation**:\n- 21 new long signals places today in the **87th percentile** of activity (100 - 12.71)\n- This is approaching the top 10% threshold of 29 signals\n- **Significantly above average** breadth participation\n\n### **2. Minimal Bearish Pressure**\nShort signal activity remains **subdued**:\n- Only 1 new short signal (well below the 4-signal top-10% threshold)\n- Short percentile of 41.99% indicates **below-median** bearish activity\n- **No defensive positioning** evident in the signal data\n\n### **3. Trend Evolution (Last 2 Weeks)**\n\n| Date | Long Signals | Long Percentile | Short Signals | Regime |\n|------|--------------|-----------------|---------------|---------|\n| **June 10** | 13 | 34.25% | 1 | Moderate Bullish |\n| **June 17** | 12 | 41.99% | 0 | Steady Bullish |\n| **June 22** | 21 | **12.71%** | 1 | **Strong Bullish** |\n\n**Trajectory:** Clear **acceleration** in bullish breadth - long signals increased 75% while percentile ranking improved dramatically (from 34th to 13th percentile from top).\n\n---\n\n## \ud83d\udcc8 Function-Level Breakdown (June 22)\n\n### **TRENDPULSE** (Momentum/Trend Following)\n- **8 Long** vs. 1 Short\n- Long percentile: **24.31%** (top quartile activity)\n- Indicates strong directional momentum\n\n### **DELTADRIFT** (Mean Reversion/Volatility)\n- **6 Long** vs. 0 Short  \n- Long percentile: **16.57%** (top ~17% busiest)\n- Even mean-reversion strategies are finding long opportunities\n\n### **BAND MATRIX** (Range/Breakout)\n- **0 Long**, 0 Short\n- Currently dormant (no breakout activity)\n\n---\n\n## \ud83d\udca1 Regime Implications\n\n### **What This Means:**\n1. **Broad-based rally** - Multiple signal types firing long simultaneously\n2. **Momentum-driven** - TrendPulse leading with 8 signals\n3. **Low fear** - Virtually no defensive short signals\n4. **Participation expanding** - Moving from moderate (June 10-17) to strong breadth (June 22)\n\n### **Risk Considerations:**\n- \u26a0\ufe0f **Approaching extreme levels** - At 12.71 percentile, we're nearing the top 10% threshold (historically can mark short-term exhaustion)\n- \u26a0\ufe0f **One-sided positioning** - 21:1 long/short ratio suggests potential for crowding\n- \u26a0\ufe0f **Band Matrix silence** - No breakout signals may indicate consolidation within existing trends\n\n---\n\n## \ud83c\udfaf Bottom Line\n\n**Current Regime: Risk-On / Bullish Expansion Phase**\n\nThe market is in a **healthy bullish regime** with:\n- \u2705 Strong breadth (21 new longs)\n- \u2705 Minimal bearish pressure (1 short)\n- \u2705 Accelerating momentum (improving percentile rank)\n- \u26a0\ufe0f Approaching overbought territory (watch for >29 signals or percentile <10%)\n\n**Tactical Stance:** Favor long exposure while monitoring for breadth exhaustion signals. A reversal to >90th percentile (quiet day) or spike in short signals (>4) would indicate regime shift.",
+    "metadata": {
+      "input_type": "smart_followup",
+      "selected_signal_types": [
+        "breadth"
+      ],
+      "position_side": null,
+      "assets": null,
+      "functions": null,
+      "from_date": "2026-06-09",
+      "to_date": "2026-06-24",
+      "columns_by_signal_type": {
+        "breadth": [
+          "Date",
+          "Function",
+          "Total New Long Signal",
+          "Total New Short Signal",
+          "Last 6 Month Top 10 Percentile No of Long Signal",
+          "Last 6 Month Top 10 Percentile No of Short Signal",
+          "Today Long Signal Percentile From Top (Last 6 Month)",
+          "Today Short Signal Percentile From Top (Last 6 Month)"
+        ]
+      },
+      "reasoning_by_signal_type": {
+        "breadth": "To characterize the current macro regime, we need today\u2019s market-wide long/short signal counts and how extreme they are versus the last 6 months (top-10% thresholds and percentile-from-top), keyed by Date and Function (use the Combined function row if present).Guardrail: mandatory SBI trade-arrival columns included."
+      },
+      "rows_fetched": 12,
+      "signal_types_with_data": [
+        "breadth"
+      ],
+      "signal_type_reasoning": "\u201cCurrent macro regime\u201d is best inferred from market-wide sentiment/participation metrics rather than single-asset entries/exits/targets, so breadth data is required.",
+      "claude_report_loaded": false,
+      "query_kind": null,
+      "deep_dive_date_fallback_used": false,
+      "missing_signal_keys": [],
+      "model": "claude-sonnet-4-5-20250929",
+      "tokens_used": {
+        "prompt": 5948,
+        "completion": 1079,
+        "total": 7027
+      },
+      "finish_reason": "end_turn",
+      "batch_processing_used": true,
+      "batch_count": 1,
+      "batch_mode": "single",
+      "input_truncated": false,
+      "history_trimmed_count": 0,
+      "full_signal_tables": {
+        "breadth": [
+          {
+            "Date": "2026-06-10 00:00:00",
+            "Function": "TRENDPULSE",
+            "Total New Long Signal": "13",
+            "Total New Short Signal": "0",
+            "Last 6 Month Top 10 Percentile No of Long Signal": "14",
+            "Last 6 Month Top 10 Percentile No of Short Signal": "1",
+            "Today Long Signal Percentile From Top (Last 6 Month)": 8.84,
+            "Today Short Signal Percentile From Top (Last 6 Month)": 100.0,
+            "Total New Long Signal [numeric]": 13,
+            "Last 6 Month Top 10 Percentile No of Long Signal [numeric]": 14,
+            "Today Long Signal Percentile From Top (Last 6 Month) [numeric]": 8.84,
+            "Total New Short Signal [numeric]": 0,
+            "Last 6 Month Top 10 Percentile No of Short Signal [numeric]": 1,
+            "Today Short Signal Percentile From Top (Last 6 Month) [numeric]": 100.0
+          },
+          {
+            "Date": "2026-06-10 00:00:00",
+            "Function": "DELTADRIFT",
+            "Total New Long Signal": "1",
+            "Total New Short Signal": "1",
+            "Last 6 Month Top 10 Percentile No of Long Signal": "9",
+            "Last 6 Month Top 10 Percentile No of Short Signal": "4",
+            "Today Long Signal Percentile From Top (Last 6 Month)": 56.91,
+            "Today Short Signal Percentile From Top (Last 6 Month)": 35.36,
+            "Total New Long Signal [numeric]": 1,
+            "Last 6 Month Top 10 Percentile No of Long Signal [numeric]": 9,
+            "Today Long Signal Percentile From Top (Last 6 Month) [numeric]": 56.91,
+            "Total New Short Signal [numeric]": 1,
+            "Last 6 Month Top 10 Percentile No of Short Signal [numeric]": 4,
+            "Today Short Signal Percentile From Top (Last 6 Month) [numeric]": 35.36
+          },
+          {
+            "Date": "2026-06-10 00:00:00",
+            "Function": "BAND MATRIX",
+            "Total New Long Signal": "0",
+            "Total New Short Signal": "0",
+            "Last 6 Month Top 10 Percentile No of Long Signal": "2",
+            "Last 6 Month Top 10 Percentile No of Short Signal": "0",
+            "Today Long Signal Percentile From Top (Last 6 Month)": 100.0,
+            "Today Short Signal Percentile From Top (Last 6 Month)": 100.0,
+            "Total New Long Signal [numeric]": 0,
+            "Last 6 Month Top 10 Percentile No of Long Signal [numeric]": 2,
+            "Today Long Signal Percentile From Top (Last 6 Month) [numeric]": 100.0,
+            "Total New Short Signal [numeric]": 0,
+            "Last 6 Month Top 10 Percentile No of Short Signal [numeric]": 0,
+            "Today Short Signal Percentile From Top (Last 6 Month) [numeric]": 100.0
+          },
+          {
+            "Date": "2026-06-10 00:00:00",
+            "Function": "Combined (TrendPulse + DeltaDrift + BandMatrix)",
+            "Total New Long Signal": "13",
+            "Total New Short Signal": "1",
+            "Last 6 Month Top 10 Percentile No of Long Signal": "28",
+            "Last 6 Month Top 10 Percentile No of Short Signal": "4",
+            "Today Long Signal Percentile From Top (Last 6 Month)": 34.25,
+            "Today Short Signal Percentile From Top (Last 6 Month)": 40.88,
+            "Total New Long Signal [numeric]": 13,
+            "Last 6 Month Top 10 Percentile No of Long Signal [numeric]": 28,
+            "Today Long Signal Percentile From Top (Last 6 Month) [numeric]": 34.25,
+            "Total New Short Signal [numeric]": 1,
+            "Last 6 Month Top 10 Percentile No of Short Signal [numeric]": 4,
+            "Today Short Signal Percentile From Top (Last 6 Month) [numeric]": 40.88
+          },
+          {
+            "Date": "2026-06-17 00:00:00",
+            "Function": "TRENDPULSE",
+            "Total New Long Signal": "4",
+            "Total New Short Signal": "0",
+            "Last 6 Month Top 10 Percentile No of Long Signal": "15",
+            "Last 6 Month Top 10 Percentile No of Short Signal": "1",
+            "Today Long Signal Percentile From Top (Last 6 Month)": 44.75,
+            "Today Short Signal Percentile From Top (Last 6 Month)": 100.0,
+            "Total New Long Signal [numeric]": 4,
+            "Last 6 Month Top 10 Percentile No of Long Signal [numeric]": 15,
+            "Today Long Signal Percentile From Top (Last 6 Month) [numeric]": 44.75,
+            "Total New Short Signal [numeric]": 0,
+            "Last 6 Month Top 10 Percentile No of Short Signal [numeric]": 1,
+            "Today Short Signal Percentile From Top (Last 6 Month) [numeric]": 100.0
+          },
+          {
+            "Date": "2026-06-17 00:00:00",
+            "Function": "DELTADRIFT",
+            "Total New Long Signal": "1",
+            "Total New Short Signal": "0",
+            "Last 6 Month Top 10 Percentile No of Long Signal": "9",
+            "Last 6 Month Top 10 Percentile No of Short Signal": "4",
+            "Today Long Signal Percentile From Top (Last 6 Month)": 58.01,
+            "Today Short Signal Percentile From Top (Last 6 Month)": 100.0,
+            "Total New Long Signal [numeric]": 1,
+            "Last 6 Month Top 10 Percentile No of Long Signal [numeric]": 9,
+            "Today Long Signal Percentile From Top (Last 6 Month) [numeric]": 58.01,
+            "Total New Short Signal [numeric]": 0,
+            "Last 6 Month Top 10 Percentile No of Short Signal [numeric]": 4,
+            "Today Short Signal Percentile From Top (Last 6 Month) [numeric]": 100.0
+          },
+          {
+            "Date": "2026-06-17 00:00:00",
+            "Function": "BAND MATRIX",
+            "Total New Long Signal": "0",
+            "Total New Short Signal": "0",
+            "Last 6 Month Top 10 Percentile No of Long Signal": "2",
+            "Last 6 Month Top 10 Percentile No of Short Signal": "0",
+            "Today Long Signal Percentile From Top (Last 6 Month)": 100.0,
+            "Today Short Signal Percentile From Top (Last 6 Month)": 100.0,
+            "Total New Long Signal [numeric]": 0,
+            "Last 6 Month Top 10 Percentile No of Long Signal [numeric]": 2,
+            "Today Long Signal Percentile From Top (Last 6 Month) [numeric]": 100.0,
+            "Total New Short Signal [numeric]": 0,
+            "Last 6 Month Top 10 Percentile No of Short Signal [numeric]": 0,
+            "Today Short Signal Percentile From Top (Last 6 Month) [numeric]": 100.0
+          },
+          {
+            "Date": "2026-06-17 00:00:00",
+            "Function": "Combined (TrendPulse + DeltaDrift + BandMatrix)",
+            "Total New Long Signal": "12",
+            "Total New Short Signal": "0",
+            "Last 6 Month Top 10 Percentile No of Long Signal": "28",
+            "Last 6 Month Top 10 Percentile No of Short Signal": "4",
+            "Today Long Signal Percentile From Top (Last 6 Month)": 41.99,
+            "Today Short Signal Percentile From Top (Last 6 Month)": 100.0,
+            "Total New Long Signal [numeric]": 12,
+            "Last 6 Month Top 10 Percentile No of Long Signal [numeric]": 28,
+            "Today Long Signal Percentile From Top (Last 6 Month) [numeric]": 41.99,
+            "Total New Short Signal [numeric]": 0,
+            "Last 6 Month Top 10 Percentile No of Short Signal [numeric]": 4,
+            "Today Short Signal Percentile From Top (Last 6 Month) [numeric]": 100.0
+          },
+          {
+            "Date": "2026-06-22 00:00:00",
+            "Function": "TRENDPULSE",
+            "Total New Long Signal": "8",
+            "Total New Short Signal": "1",
+            "Last 6 Month Top 10 Percentile No of Long Signal": "14",
+            "Last 6 Month Top 10 Percentile No of Short Signal": "1",
+            "Today Long Signal Percentile From Top (Last 6 Month)": 24.31,
+            "Today Short Signal Percentile From Top (Last 6 Month)": 11.05,
+            "Total New Long Signal [numeric]": 8,
+            "Last 6 Month Top 10 Percentile No of Long Signal [numeric]": 14,
+            "Today Long Signal Percentile From Top (Last 6 Month) [numeric]": 24.31,
+            "Total New Short Signal [numeric]": 1,
+            "Last 6 Month Top 10 Percentile No of Short Signal [numeric]": 1,
+            "Today Short Signal Percentile From Top (Last 6 Month) [numeric]": 11.05
+          },
+          {
+            "Date": "2026-06-22 00:00:00",
+            "Function": "DELTADRIFT",
+            "Total New Long Signal": "6",
+            "Total New Short Signal": "0",
+            "Last 6 Month Top 10 Percentile No of Long Signal": "10",
+            "Last 6 Month Top 10 Percentile No of Short Signal": "4",
+            "Today Long Signal Percentile From Top (Last 6 Month)": 16.57,
+            "Today Short Signal Percentile From Top (Last 6 Month)": 100.0,
+            "Total New Long Signal [numeric]": 6,
+            "Last 6 Month Top 10 Percentile No of Long Signal [numeric]": 10,
+            "Today Long Signal Percentile From Top (Last 6 Month) [numeric]": 16.57,
+            "Total New Short Signal [numeric]": 0,
+            "Last 6 Month Top 10 Percentile No of Short Signal [numeric]": 4,
+            "Today Short Signal Percentile From Top (Last 6 Month) [numeric]": 100.0
+          },
+          {
+            "Date": "2026-06-22 00:00:00",
+            "Function": "BAND MATRIX",
+            "Total New Long Signal": "0",
+            "Total New Short Signal": "0",
+            "Last 6 Month Top 10 Percentile No of Long Signal": "2",
+            "Last 6 Month Top 10 Percentile No of Short Signal": "0",
+            "Today Long Signal Percentile From Top (Last 6 Month)": 100.0,
+            "Today Short Signal Percentile From Top (Last 6 Month)": 100.0,
+            "Total New Long Signal [numeric]": 0,
+            "Last 6 Month Top 10 Percentile No of Long Signal [numeric]": 2,
+            "Today Long Signal Percentile From Top (Last 6 Month) [numeric]": 100.0,
+            "Total New Short Signal [numeric]": 0,
+            "Last 6 Month Top 10 Percentile No of Short Signal [numeric]": 0,
+            "Today Short Signal Percentile From Top (Last 6 Month) [numeric]": 100.0
+          },
+          {
+            "Date": "2026-06-22 00:00:00",
+            "Function": "Combined (TrendPulse + DeltaDrift + BandMatrix)",
+            "Total New Long Signal": "21",
+            "Total New Short Signal": "1",
+            "Last 6 Month Top 10 Percentile No of Long Signal": "29",
+            "Last 6 Month Top 10 Percentile No of Short Signal": "4",
+            "Today Long Signal Percentile From Top (Last 6 Month)": 12.71,
+            "Today Short Signal Percentile From Top (Last 6 Month)": 41.99,
+            "Total New Long Signal [numeric]": 21,
+            "Last 6 Month Top 10 Percentile No of Long Signal [numeric]": 29,
+            "Today Long Signal Percentile From Top (Last 6 Month) [numeric]": 12.71,
+            "Total New Short Signal [numeric]": 1,
+            "Last 6 Month Top 10 Percentile No of Short Signal [numeric]": 4,
+            "Today Short Signal Percentile From Top (Last 6 Month) [numeric]": 41.99
+          }
+        ]
+      },
+      "signals_table": [],
+      "intent": "WEB_QUERY",
+      "intent_label": "Web Search",
+      "intent_confidence": 0.88,
+      "intent_classified_by": "llm_router",
+      "route": "WEB_RAG",
+      "web_search_used": false,
+      "web_sources": [],
+      "llm_router_reasoning": "The user is asking for current macroeconomic conditions, which requires real-time information and analysis not available in internal data.",
+      "followup_mode": "dynamic_fresh",
+      "conversation_context_used": false,
+      "history_exchanges_used": 0,
+      "flow_trace": [
+        {
+          "stage": "Router",
+          "detail": "Analyzing user query intent and selecting route",
+          "timestamp": "07:37:41"
+        },
+        {
+          "stage": "Route Selected",
+          "detail": "WEB_RAG (intent=WEB_QUERY, conf=0.88)",
+          "timestamp": "07:37:46"
+        },
+        {
+          "stage": "Web Search",
+          "detail": "Executing web-only retrieval (Tavily)",
+          "timestamp": "07:37:46"
+        },
+        {
+          "stage": "Web Search Fallback",
+          "detail": "Web unavailable; switching to internal path (Tavily returned no usable results for these queries.)",
+          "timestamp": "07:37:46"
+        },
+        {
+          "stage": "Context Handling",
+          "detail": "No prior context found; running fresh internal smart query",
+          "timestamp": "07:37:46"
+        },
+        {
+          "stage": "Internal Data Query",
+          "detail": "Fetched internal signal data (selector + columns + date filters)",
+          "timestamp": "07:38:16"
+        },
+        {
+          "stage": "Response Generation",
+          "detail": "Generated final response from internal analysis",
+          "timestamp": "07:38:16"
+        }
+      ]
+    }
+  },
+  "error": null
+}

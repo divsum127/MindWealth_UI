@@ -1,0 +1,213 @@
+"""Tests for Signals Page API endpoints."""
+import pytest
+from fastapi.testclient import TestClient
+from api.main import app
+
+client = TestClient(app)
+BASE = "/api/v1"
+
+
+def test_outstanding_signals_enriched():
+    r = client.get(f"{BASE}/signals/reports/outstanding-signals/latest")
+    assert r.status_code == 200
+    d = r.json()
+    assert d["row_count"] > 0
+    rec = d["records"][0]
+    assert "composite_score" in rec
+    assert "window_remaining_pct" in rec
+    assert "tier" in rec
+    assert "exit_fired" in rec
+    assert "er_annualized" in rec
+    assert "signal_alpha_annualized" in rec
+    assert "mtm_pct" in rec
+    assert "days_elapsed" in rec
+    assert "avg_hold_days" in rec
+    assert "direction" in rec
+    assert rec["tier"] in ("tA", "best", "tierc", "exit")
+
+
+def test_outstanding_not_enriched():
+    r = client.get(f"{BASE}/signals/reports/outstanding-signals/latest?enrich=false")
+    assert r.status_code == 200
+    d = r.json()
+    # raw records don't have window_remaining_pct
+    rec = d["records"][0]
+    assert "window_remaining_pct" not in rec
+
+
+def test_new_signals_enriched():
+    r = client.get(f"{BASE}/signals/reports/new-signals/latest")
+    assert r.status_code == 200
+    d = r.json()
+    assert d["row_count"] > 0
+    rec = d["records"][0]
+    assert "tier" in rec
+    assert "composite_score" in rec
+
+
+def test_surface_endpoint_outstanding():
+    r = client.get(f"{BASE}/signals/surface?report=outstanding-signals")
+    assert r.status_code == 200
+    d = r.json()
+    assert d["row_count"] > 0
+    rec = d["records"][0]
+    assert rec.get("composite_score") is not None
+    assert rec.get("window_remaining_pct") is not None
+    assert rec.get("tier") in ("tA", "best", "tierc", "exit")
+
+
+def test_surface_endpoint_new():
+    r = client.get(f"{BASE}/signals/surface?report=new-signals")
+    assert r.status_code == 200
+    d = r.json()
+    assert d["row_count"] > 0
+
+
+def test_summary_outstanding():
+    r = client.get(f"{BASE}/signals/summary?report=outstanding-signals")
+    assert r.status_code == 200
+    d = r.json()
+    assert "total" in d
+    assert "long" in d
+    assert "short" in d
+    assert "tier_counts" in d
+    assert "function_counts" in d
+    assert d["total"] == d["long"] + d["short"]
+    assert d["total"] > 0
+
+
+def test_counts_endpoint():
+    r = client.get(f"{BASE}/signals/counts")
+    assert r.status_code == 200
+    d = r.json()
+    assert "outstanding" in d
+    assert "new" in d
+    assert "shortlist" in d
+    assert d["outstanding"]["total"] > 0
+    assert "tier_counts" in d["outstanding"]
+
+
+def test_shortlist_structured_records():
+    r = client.get(f"{BASE}/signals/shortlist")
+    assert r.status_code == 200
+    d = r.json()
+    assert d["row_count"] > 0
+    assert len(d["records"]) > 0
+    rec = d["records"][0]
+    assert "symbol" in rec
+    assert "function" in rec
+    assert "direction" in rec
+
+
+def test_strategy_health():
+    r = client.get(f"{BASE}/signals/strategy-health")
+    assert r.status_code == 200
+    d = r.json()
+    assert "strategy_health" in d
+    assert len(d["strategy_health"]) > 0
+    sh = d["strategy_health"][0]
+    assert "strategy" in sh
+    assert "fwd_wr" in sh
+    assert "gate_a2b" in sh
+
+
+def test_gate_a2b_gating():
+    r = client.get(f"{BASE}/signals/gate-a2b")
+    assert r.status_code == 200
+    d = r.json()
+    assert d["floor_pct"] == 60.0
+    assert "gates" in d
+    assert len(d["gates"]) > 0
+    assert d["row_count"] == len(d["gates"])
+    assert d["approved_count"] + d["disapproved_count"] == d["row_count"]
+    gate = d["gates"][0]
+    assert "function" in gate
+    assert "interval" in gate
+    assert "direction" in gate
+    assert gate["verdict"] in ("approve", "disapprove")
+    assert gate["approved"] == (gate["verdict"] == "approve")
+    if gate["fwd_wr"] is not None:
+        if gate["fwd_wr"] >= 60.0:
+            assert gate["verdict"] == "approve"
+        else:
+            assert gate["verdict"] == "disapprove"
+
+
+def test_horizontal_new_high():
+    r = client.get(f"{BASE}/signals/reports/horizontal-new-high/latest")
+    assert r.status_code in (200, 404)
+
+
+def test_combined_performance():
+    r = client.get(f"{BASE}/signals/reports/combined-performance/latest")
+    assert r.status_code in (200, 404)
+
+
+def test_breadth_report():
+    r = client.get(f"{BASE}/signals/reports/breadth/latest")
+    assert r.status_code == 200
+    d = r.json()
+    assert d["row_count"] > 0
+
+
+def test_surface_404():
+    r = client.get(f"{BASE}/signals/surface?report=nonexistent-report")
+    assert r.status_code == 404
+
+
+def test_er_annualized_math():
+    """er_annualized = er * 252 / avg_hold_days — verify math is consistent."""
+    r = client.get(f"{BASE}/signals/surface?report=outstanding-signals")
+    d = r.json()
+    for rec in d["records"][:10]:
+        er = rec.get("er")
+        hold = rec.get("avg_hold_days")
+        er_ann = rec.get("er_annualized")
+        if er is not None and hold and er_ann is not None:
+            expected = round(er * 252 / hold, 4)
+            assert abs(er_ann - expected) < 0.01, f"er_annualized mismatch: {er_ann} vs {expected} (er={er}, hold={hold})"
+
+
+def test_all_signal_composite_scores_with_enrich():
+    """all_signal CSV lacks MasterSpec columns — enrich must compute composite_score."""
+    r = client.get(f"{BASE}/signals/reports/all-signal/latest?enrich=true&limit=20")
+    assert r.status_code == 200
+    d = r.json()
+    recs = d.get("records", [])
+    assert len(recs) > 0
+    with_score = [x for x in recs if x.get("composite_score") is not None]
+    assert len(with_score) > 0, "expected composite_score computed from raw backtest fields"
+    assert all(isinstance(x.get("composite_score"), (int, float)) for x in with_score)
+
+
+def test_all_signal_no_enrich_by_default():
+    """all-signal defaults enrich=false to avoid per-request latency on large datasets."""
+    r = client.get(f"{BASE}/signals/reports/all-signal/latest")
+    assert r.status_code == 200
+    d = r.json()
+    assert d["row_count"] >= 0
+    # Without enrich the records must NOT contain window_remaining_pct
+    if d["records"]:
+        assert "window_remaining_pct" not in d["records"][0]
+
+
+def test_all_signal_enrich_true_explicit():
+    """Caller can opt-in to enrichment for all-signal via ?enrich=true."""
+    r = client.get(f"{BASE}/signals/reports/all-signal/latest?enrich=true")
+    assert r.status_code == 200
+    d = r.json()
+    if d["records"]:
+        rec = d["records"][0]
+        assert "tier" in rec
+        assert "window_remaining_pct" in rec
+
+
+def test_report_limit_param():
+    """?limit=5 returns at most 5 records and adds returned_count field."""
+    r = client.get(f"{BASE}/signals/reports/outstanding-signals/latest?limit=5")
+    assert r.status_code == 200
+    d = r.json()
+    assert len(d["records"]) <= 5
+    assert "returned_count" in d
+    assert d["returned_count"] == len(d["records"])
+

@@ -1,0 +1,184 @@
+{
+  "output_dir": "/home/ubuntu/uiv2/git/MindWealth_UI/testing/macro_th_exp/testingv1_feedback/csv_exports/combo_de_per_fire_returns",
+  "column_definitions": {
+    "trigger_date": "Combo fire / trigger date (NYSE calendar day).",
+    "spx_change_pct_{horizon}": "SPX (^GSPC) percent change from trigger close to horizon close. Positive = SPX up; negative = SPX down. 4 decimal places. Empty = forward window not yet mature in price history.",
+    "bear_hit_{horizon}": "Binary bearish hit flag for Combo D/E (bearish combos). 1 = SPX fell (spx_change_pct < 0). 0 = SPX rose or was flat (spx_change_pct >= 0). NOT a percent return \u2014 do not read 0 as 0% SPX change."
+  },
+  "combos": {
+    "D": {
+      "csv": "/home/ubuntu/uiv2/git/MindWealth_UI/testing/macro_th_exp/testingv1_feedback/csv_exports/combo_de_per_fire_returns/combo_d_per_fire_returns.csv",
+      "summary": {
+        "combo": "D",
+        "direction": "bearish",
+        "backtest_period": {
+          "first_fire": "2010-12-10",
+          "last_fire": "2026-07-03",
+          "n_trigger_dates": 435,
+          "spx_price_history_start": "1990-01-01",
+          "spx_price_history_end": "2026-06-23",
+          "note": "Fires from combo_fires backfill (named combo detector replay). Returns mature only when full forward window exists in ^GSPC history."
+        },
+        "horizons": [
+          {
+            "horizon": "1W",
+            "trading_days": 5,
+            "n_mature": 432,
+            "hit_rate_pct": 39.6,
+            "avg_spx_return_pct": 0.13
+          },
+          {
+            "horizon": "2W",
+            "trading_days": 10,
+            "n_mature": 431,
+            "hit_rate_pct": 37.8,
+            "avg_spx_return_pct": 0.23
+          },
+          {
+            "horizon": "3W",
+            "trading_days": 15,
+            "n_mature": 430,
+            "hit_rate_pct": 35.6,
+            "avg_spx_return_pct": 0.39
+          },
+          {
+            "horizon": "4W",
+            "trading_days": 20,
+            "n_mature": 429,
+            "hit_rate_pct": 35.2,
+            "avg_spx_return_pct": 0.51
+          },
+          {
+            "horizon": "1M",
+            "trading_days": 21,
+            "n_mature": 428,
+            "hit_rate_pct": 35.3,
+            "avg_spx_return_pct": 0.55
+          },
+          {
+            "horizon": "2M",
+            "trading_days": 42,
+            "n_mature": 426,
+            "hit_rate_pct": 31.7,
+            "avg_spx_return_pct": 1.12
+          }
+        ],
+        "max_hit_rate_horizon": "1W",
+        "max_hit_rate_pct": 39.6,
+        "generated_at": "2026-06-24T08:56:59Z"
+      },
+      "spx_change_columns": [
+        "spx_change_pct_1W",
+        "spx_change_pct_2W",
+        "spx_change_pct_3W",
+        "spx_change_pct_4W",
+        "spx_change_pct_1M",
+        "spx_change_pct_2M"
+      ],
+      "bear_hit_columns": [
+        "bear_hit_1W",
+        "bear_hit_2W",
+        "bear_hit_3W",
+        "bear_hit_4W",
+        "bear_hit_1M",
+        "bear_hit_2M"
+      ]
+    },
+    "E": {
+      "csv": "/home/ubuntu/uiv2/git/MindWealth_UI/testing/macro_th_exp/testingv1_feedback/csv_exports/combo_de_per_fire_returns/combo_e_per_fire_returns.csv",
+      "summary": {
+        "combo": "E",
+        "direction": "bearish",
+        "backtest_period": {
+          "first_fire": "2010-09-24",
+          "last_fire": "2026-07-03",
+          "n_trigger_dates": 484,
+          "spx_price_history_start": "1990-01-01",
+          "spx_price_history_end": "2026-06-23",
+          "note": "Fires from combo_fires backfill (named combo detector replay). Returns mature only when full forward window exists in ^GSPC history."
+        },
+        "horizons": [
+          {
+            "horizon": "1M",
+            "trading_days": 21,
+            "n_mature": 477,
+            "hit_rate_pct": 30.4,
+            "avg_spx_return_pct": 1.09
+          },
+          {
+            "horizon": "2M",
+            "trading_days": 42,
+            "n_mature": 473,
+            "hit_rate_pct": 26.0,
+            "avg_spx_return_pct": 2.12
+          },
+          {
+            "horizon": "3M",
+            "trading_days": 63,
+            "n_mature": 469,
+            "hit_rate_pct": 21.5,
+            "avg_spx_return_pct": 3.19
+          },
+          {
+            "horizon": "6M",
+            "trading_days": 126,
+            "n_mature": 455,
+            "hit_rate_pct": 22.0,
+            "avg_spx_return_pct": 6.17
+          },
+          {
+            "horizon": "9M",
+            "trading_days": 189,
+            "n_mature": 443,
+            "hit_rate_pct": 19.6,
+            "avg_spx_return_pct": 8.45
+          },
+          {
+            "horizon": "12M",
+            "trading_days": 252,
+            "n_mature": 430,
+            "hit_rate_pct": 20.5,
+            "avg_spx_return_pct": 11.13
+          },
+          {
+            "horizon": "15M",
+            "trading_days": 315,
+            "n_mature": 416,
+            "hit_rate_pct": 15.9,
+            "avg_spx_return_pct": 13.47
+          },
+          {
+            "horizon": "18M",
+            "trading_days": 378,
+            "n_mature": 403,
+            "hit_rate_pct": 14.9,
+            "avg_spx_return_pct": 16.32
+          }
+        ],
+        "max_hit_rate_horizon": "1M",
+        "max_hit_rate_pct": 30.4,
+        "generated_at": "2026-06-24T08:57:35Z"
+      },
+      "spx_change_columns": [
+        "spx_change_pct_1M",
+        "spx_change_pct_2M",
+        "spx_change_pct_3M",
+        "spx_change_pct_6M",
+        "spx_change_pct_9M",
+        "spx_change_pct_12M",
+        "spx_change_pct_15M",
+        "spx_change_pct_18M"
+      ],
+      "bear_hit_columns": [
+        "bear_hit_1M",
+        "bear_hit_2M",
+        "bear_hit_3M",
+        "bear_hit_6M",
+        "bear_hit_9M",
+        "bear_hit_12M",
+        "bear_hit_15M",
+        "bear_hit_18M"
+      ]
+    }
+  }
+}

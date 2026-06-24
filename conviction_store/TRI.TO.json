@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.0481,
   "dividend_yield_5y_std": 0.036319,
-  "dividend_yield_current": 0.031929,
-  "dividend_yield_zscore": -0.4452,
-  "enterprise_value": 50499406299.201355,
+  "dividend_yield_current": 0.031087,
+  "dividend_yield_zscore": -0.4684,
+  "enterprise_value": 51822118442.42703,
   "eps_fwd": 6.890971,
   "eps_ttm": 4.76,
-  "ev_fwd_rev": 6.59,
+  "ev_fwd_rev": 6.7626,
   "fcf_ttm": 2017000000.0,
   "fd_direction": "stable",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 7663000064.0,
   "industry": "Specialty Business Services",
-  "last_daily_update": "2026-06-23T14:15:02+00:00",
+  "last_daily_update": "2026-06-24T12:55:08+00:00",
   "last_full_calc": "2026-05-18T20:50:52+00:00",
   "manual_overrides": {},
-  "market_cap": 48809406299.201355,
+  "market_cap": 50132118442.42703,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 1690000000.0,
-  "owner_earnings_yield": 0.041324,
+  "owner_earnings_yield": 0.040234,
   "pe_20y_array": [
     53.5536,
     44.4826,
@@ -233,7 +233,7 @@
     33.0291
   ],
   "pe_percentile_20y": 0.0,
-  "pe_ttm": 23.4895,
+  "pe_ttm": 24.126,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -242,12 +242,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 111.80999755859375,
+  "price": 114.83999633789062,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.12734,
   "sector": "Industrials",
   "ticker": "TRI.TO",
-  "updated_at": "2026-06-23T14:15:02+00:00",
+  "updated_at": "2026-06-24T12:55:08+00:00",
   "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {

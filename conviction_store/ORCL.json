@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.016973,
   "dividend_yield_5y_std": 0.005638,
-  "dividend_yield_current": 0.011556,
-  "dividend_yield_zscore": -0.9608,
-  "enterprise_value": 576641652673.0042,
+  "dividend_yield_current": 0.012109,
+  "dividend_yield_zscore": -0.8627,
+  "enterprise_value": 554608600908.5999,
   "eps_fwd": 8.03251,
   "eps_ttm": 5.58,
-  "ev_fwd_rev": 8.9993,
+  "ev_fwd_rev": 8.6555,
   "fcf_ttm": -13181000000.0,
   "fd_direction": "stable",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 64076001280.0,
   "industry": "Software - Infrastructure",
-  "last_daily_update": "2026-06-23T14:15:02+00:00",
+  "last_daily_update": "2026-06-24T12:55:07+00:00",
   "last_full_calc": "2026-05-18T20:49:58+00:00",
   "manual_overrides": {},
-  "market_cap": 497771652673.00415,
+  "market_cap": 475738600908.59985,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 78870000000.0,
-  "owner_earnings_yield": -0.02648,
+  "owner_earnings_yield": -0.027706,
   "pe_20y_array": [
     37.2677,
     31.4685,
@@ -232,8 +232,8 @@
     29.887,
     34.5574
   ],
-  "pe_percentile_20y": 50.0,
-  "pe_ttm": 31.017,
+  "pe_percentile_20y": 33.33,
+  "pe_ttm": 29.5986,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -242,12 +242,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 173.0749969482422,
+  "price": 165.16000366210938,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.57572,
   "sector": "Technology",
   "ticker": "ORCL",
-  "updated_at": "2026-06-23T14:15:02+00:00",
+  "updated_at": "2026-06-24T12:55:07+00:00",
   "valuation_tax": -7.0,
   "valuation_tax_breakdown": {
     "components": {

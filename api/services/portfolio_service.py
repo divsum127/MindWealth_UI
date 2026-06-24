@@ -9,6 +9,7 @@ Implements:
 
 from __future__ import annotations
 
+import json
 import math
 from datetime import datetime, timezone
 from pathlib import Path
@@ -19,11 +20,17 @@ import pandas as pd
 from api.utils import dataframe_to_records
 from src.config_paths import (
     CONVICTION_OUTPUT_DIR,
+    CONVICTION_UNIVERSE_FILE,
+    MACRO_INTEL_OUTPUT_DIR,
     TRADE_STORE_US_DIR,
     VIRTUAL_TRADING_LONG_CSV,
     VIRTUAL_TRADING_SHORT_CSV,
 )
 from src.utils.file_discovery import get_latest_csv_file
+
+_TICKER_NAMES_CACHE_PATH = MACRO_INTEL_OUTPUT_DIR / "portfolio_ticker_names.json"
+_CORRELATIONS_CACHE_PATH = MACRO_INTEL_OUTPUT_DIR / "portfolio_cluster_correlations.json"
+_CORRELATIONS_MAX_AGE_DAYS = 7
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Constants
@@ -67,51 +74,91 @@ _SCENARIO_BUDGET_SCALE: dict[str, float] = {
     "lowvol": 1.05,
 }
 
-# Simple keyword-based cluster assignment (extend as Ahil provides mapping)
+# Ticker → cluster (explicit map). Extended from VT book + conviction universe.
 _TICKER_CLUSTER_MAP: dict[str, str] = {
-    # Global risk-on ETFs
+    # Global risk-on ETFs / indices
     "SPY": "global_risk_on", "IWM": "global_risk_on", "QQQ": "global_risk_on",
     "VGK": "global_risk_on", "EEM": "global_risk_on", "ACWX": "global_risk_on",
+    "DIA": "global_risk_on", "EFA": "global_risk_on", "EWJ": "global_risk_on",
+    "FXI": "global_risk_on", "ASHR": "global_risk_on", "KWEB": "global_risk_on",
+    "MCHI": "global_risk_on", "ENZL": "global_risk_on", "3033.HK": "global_risk_on",
+    "XLU": "global_risk_on", "XLV": "global_risk_on", "XLY": "global_risk_on",
+    "^GSPC": "global_risk_on", "^DJI": "global_risk_on", "^NDX": "global_risk_on",
+    "^BVSP": "global_risk_on",
     # Semis
     "NVDA": "semiconductors", "AMD": "semiconductors", "INTC": "semiconductors",
     "AVGO": "semiconductors", "TSM": "semiconductors", "MRVL": "semiconductors",
     "AMAT": "semiconductors", "KLAC": "semiconductors", "LRCX": "semiconductors",
-    "SOXX": "semiconductors", "SMH": "semiconductors",
+    "SOXX": "semiconductors", "SMH": "semiconductors", "ASML": "semiconductors",
+    "MU": "semiconductors", "005930.KS": "semiconductors", "000660.KS": "semiconductors",
     # Financials
     "JPM": "financials", "BAC": "financials", "GS": "financials",
     "MS": "financials", "C": "financials", "WFC": "financials",
-    "XLF": "financials", "KBE": "financials",
+    "XLF": "financials", "KBE": "financials", "BRK-B": "financials", "MA": "financials",
     # Commodities
     "GLD": "commodities", "SLV": "commodities", "GC=F": "commodities",
     "CL=F": "commodities", "USO": "commodities", "USCI": "commodities",
-    "XLE": "commodities", "XOP": "commodities",
+    "XLE": "commodities", "XOP": "commodities", "GDX": "commodities", "DBC": "commodities",
+    "WPM": "commodities", "BTC-USD": "commodities", "ETH-USD": "commodities", "IBIT": "commodities",
     # US Tech
     "AAPL": "us_tech", "MSFT": "us_tech", "AMZN": "us_tech",
-    "GOOGL": "us_tech", "META": "us_tech", "NFLX": "us_tech",
-    "ARM": "us_tech", "CRM": "us_tech",
+    "GOOGL": "us_tech", "GOOG": "us_tech", "META": "us_tech", "NFLX": "us_tech",
+    "ARM": "us_tech", "CRM": "us_tech", "ADBE": "us_tech", "ORCL": "us_tech",
+    "PLTR": "us_tech", "ZM": "us_tech", "UBER": "us_tech", "LYFT": "us_tech",
+    "TSLA": "us_tech", "COIN": "us_tech", "VGT": "us_tech", "PPH": "us_tech", "JETS": "us_tech",
     # Bonds
     "TLT": "bonds", "IEF": "bonds", "BND": "bonds", "AGG": "bonds", "LQD": "bonds",
+    "IEI": "bonds", "IHI": "bonds", "RINF": "bonds", "^TNX": "bonds",
     # India
-    "INDY": "india", "EPI": "india", "INDA": "india",
+    "INDY": "india", "EPI": "india", "INDA": "india", "HDB": "india", "INFY": "india",
+    "^NSEI": "india",
+}
+
+# Conviction business_type → cluster when ticker not in explicit map.
+_BUSINESS_TYPE_CLUSTER: dict[str, str] = {
+    "compounder": "global_risk_on",
+    "saas": "us_tech",
+    "income": "financials",
+    "cyclical": "commodities",
+}
+
+# asset_type fallback when business_type is unknown.
+_ASSET_TYPE_CLUSTER: dict[str, str] = {
+    "ETF": "global_risk_on",
+    "INDEX": "global_risk_on",
+    "EQUITY": "global_risk_on",
+    "CRYPTOCURRENCY": "commodities",
+    "CURRENCY": "other",
+}
+
+# Cluster ETF proxies for rolling correlation (1y daily returns).
+_CLUSTER_ETF_PROXIES: dict[str, str] = {
+    "global_risk_on": "SPY",
+    "semiconductors": "SOXX",
+    "financials": "XLF",
+    "commodities": "GLD",
+    "canada_def": "EWC",
+    "us_tech": "QQQ",
+    "india": "INDA",
+    "bonds": "TLT",
 }
 
 # Suffix-based Canada assignment
 _CANADA_SUFFIXES = (".TO", ".V", ".TSX")
 
-# Cluster correlation matrix (cluster-to-cluster, 8×8 excluding "other").
-# Rows/cols follow _CLUSTERS order (excl. "other").
-# Source: representative values; Ahil to calibrate.
+# Cluster correlation labels (8×8 excluding "other").
 _CORRELATION_LABELS = [c["id"] for c in _CLUSTERS if c["id"] != "other"]
-_CORRELATION_MATRIX: list[list[float]] = [
-    # gro    semi   fin    cmdty  ca_def us_tech india  bonds
-    [1.00,  0.87,  0.61,  0.22,  0.38,  0.83,   0.41, -0.31],
-    [0.87,  1.00,  0.48,  0.19,  0.27,  0.79,   0.35, -0.22],
-    [0.61,  0.48,  1.00,  0.35,  0.42,  0.55,   0.38, -0.18],
-    [0.22,  0.19,  0.35,  1.00,  0.18,  0.24,   0.29,  0.12],
-    [0.38,  0.27,  0.42,  0.18,  1.00,  0.31,   0.33,  0.05],
-    [0.83,  0.79,  0.55,  0.24,  0.31,  1.00,   0.39, -0.28],
-    [0.41,  0.35,  0.38,  0.29,  0.33,  0.39,   1.00, -0.08],
-    [-0.31,-0.22, -0.18,  0.12,  0.05, -0.28,  -0.08,  1.00],
+
+# Static fallback if live/cache correlation unavailable.
+_CORRELATION_MATRIX_FALLBACK: list[list[float]] = [
+    [1.00,  0.75,  0.59,  0.29,  0.70,  0.94,  0.53,  0.19],
+    [0.75,  1.00,  0.19,  0.31,  0.48,  0.86,  0.37,  0.11],
+    [0.59,  0.19,  1.00,  0.04,  0.51,  0.38,  0.34,  0.10],
+    [0.29,  0.31,  0.04,  1.00,  0.59,  0.30,  0.19,  0.13],
+    [0.70,  0.48,  0.51,  0.59,  1.00,  0.60,  0.42,  0.21],
+    [0.94,  0.86,  0.38,  0.30,  0.60,  1.00,  0.47,  0.15],
+    [0.53,  0.37,  0.34,  0.19,  0.42,  0.47,  1.00,  0.28],
+    [0.19,  0.11,  0.10,  0.13,  0.21,  0.15,  0.28,  1.00],
 ]
 
 _BREACH_RHO_WARN = 0.75
@@ -173,31 +220,177 @@ def _load_ssi_safe() -> dict[str, Any]:
         return {"ssi_multiplier": 1.0}
 
 
+def _load_json_cache(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        return {}
+    try:
+        return json.loads(path.read_text())
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
+def _save_json_cache(path: Path, payload: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2))
+
+
+def _load_ticker_names_cache() -> dict[str, str]:
+    payload = _load_json_cache(_TICKER_NAMES_CACHE_PATH)
+    names = payload.get("names", {})
+    return {str(k).upper(): str(v) for k, v in names.items() if v}
+
+
+def _refresh_ticker_names_cache(symbols: set[str], *, max_fetch: int = 15) -> dict[str, str]:
+    """Return name map; fetch up to max_fetch missing symbols per call."""
+    cache = _load_ticker_names_cache()
+    missing = sorted(s for s in symbols if s not in cache)
+    if missing:
+        try:
+            import yfinance as yf  # type: ignore
+
+            for i in range(0, min(len(missing), max_fetch), 15):
+                chunk = missing[i : i + 15]
+                tickers = yf.Tickers(" ".join(chunk))
+                for sym in chunk:
+                    try:
+                        ti = tickers.tickers.get(sym)
+                        info = ti.info if ti else {}
+                        cache[sym] = str(
+                            info.get("longName") or info.get("shortName") or sym
+                        )
+                    except Exception:
+                        cache[sym] = sym
+            _save_json_cache(
+                _TICKER_NAMES_CACHE_PATH,
+                {"as_of": datetime.now(timezone.utc).isoformat(), "names": cache},
+            )
+        except Exception:
+            for sym in missing[:max_fetch]:
+                cache.setdefault(sym, sym)
+    return {s: cache.get(s, s) for s in symbols}
+
+
+def _compute_spx_trend_mult() -> tuple[float, dict[str, Any]]:
+    """SPX vs 200-day MA multiplier. Below MA → 0.90 haircut."""
+    meta: dict[str, Any] = {"source": "yfinance", "symbol": "^GSPC"}
+    try:
+        import yfinance as yf  # type: ignore
+
+        hist = yf.Ticker("^GSPC").history(period="1y")
+        if hist.empty or len(hist) < 200:
+            meta["note"] = "Insufficient history for 200d MA"
+            return 1.0, meta
+        close = hist["Close"]
+        ma200 = float(close.rolling(200).mean().iloc[-1])
+        current = float(close.iloc[-1])
+        above = current >= ma200
+        meta.update({
+            "spx_price": round(current, 2),
+            "spx_ma200": round(ma200, 2),
+            "above_ma200": above,
+        })
+        return (1.0 if above else 0.90), meta
+    except Exception as exc:
+        meta["error"] = str(exc)
+        return 1.0, meta
+
+
+def _compute_correlation_matrix_live() -> tuple[list[str], list[list[float]], dict[str, Any]]:
+    """Compute cluster correlation from ETF proxy returns."""
+    labels = _CORRELATION_LABELS
+    meta: dict[str, Any] = {"source": "computed", "proxies": _CLUSTER_ETF_PROXIES}
+    try:
+        import yfinance as yf  # type: ignore
+
+        tickers = [_CLUSTER_ETF_PROXIES[cid] for cid in labels]
+        data = yf.download(tickers, period="1y", progress=False)["Close"]
+        rets = data.pct_change().dropna()
+        corr = rets.corr()
+        matrix: list[list[float]] = []
+        for li in labels:
+            row: list[float] = []
+            for lj in labels:
+                if li == lj:
+                    row.append(1.0)
+                else:
+                    row.append(round(float(corr.loc[_CLUSTER_ETF_PROXIES[li], _CLUSTER_ETF_PROXIES[lj]]), 4))
+            matrix.append(row)
+        meta["window_days"] = len(rets)
+        meta["as_of"] = datetime.now(timezone.utc).isoformat()
+        _save_json_cache(
+            _CORRELATIONS_CACHE_PATH,
+            {"labels": labels, "matrix": matrix, **meta},
+        )
+        return labels, matrix, meta
+    except Exception as exc:
+        meta["error"] = str(exc)
+        return labels, _CORRELATION_MATRIX_FALLBACK, meta
+
+
+def _load_correlation_matrix() -> tuple[list[str], list[list[float]], dict[str, Any]]:
+    """Load cached cluster correlations; refresh if stale."""
+    payload = _load_json_cache(_CORRELATIONS_CACHE_PATH)
+    labels = payload.get("labels") or _CORRELATION_LABELS
+    matrix = payload.get("matrix")
+    meta: dict[str, Any] = {
+        "source": payload.get("source", "cache"),
+        "as_of": payload.get("as_of"),
+        "proxies": payload.get("proxies", _CLUSTER_ETF_PROXIES),
+        "window_days": payload.get("window_days"),
+    }
+    if matrix and len(matrix) == len(labels):
+        stale = True
+        if payload.get("as_of"):
+            try:
+                as_of = datetime.fromisoformat(str(payload["as_of"]).replace("Z", "+00:00"))
+                age_days = (datetime.now(timezone.utc) - as_of).days
+                stale = age_days >= _CORRELATIONS_MAX_AGE_DAYS
+                meta["age_days"] = age_days
+            except ValueError:
+                stale = True
+        if not stale:
+            meta["source"] = "cache"
+            return labels, matrix, meta
+    return _compute_correlation_matrix_live()
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Cluster assignment
 # ─────────────────────────────────────────────────────────────────────────────
 
-def _assign_cluster(symbol: str, business_type: str = "") -> str:
+def _assign_cluster(
+    symbol: str,
+    business_type: str = "",
+    asset_type: str = "",
+) -> str:
     sym = str(symbol).upper().strip()
-    # Exact match first
     if sym in _TICKER_CLUSTER_MAP:
         return _TICKER_CLUSTER_MAP[sym]
-    # Canada suffix
     for sfx in _CANADA_SUFFIXES:
         if sym.endswith(sfx.upper()):
             return "canada_def"
-    # India suffix
     if sym.endswith(".NS") or sym.endswith(".BO"):
         return "india"
-    # Business type hints
-    bt = str(business_type).lower()
-    if "commodity" in bt or "energy" in bt or "material" in bt:
+    if sym.endswith(".NZ"):
+        return "other"
+
+    bt = str(business_type).strip().lower()
+    if bt and bt != "nan" and bt in _BUSINESS_TYPE_CLUSTER:
+        return _BUSINESS_TYPE_CLUSTER[bt]
+
+    at = str(asset_type).strip().upper()
+    if at and at in _ASSET_TYPE_CLUSTER:
+        return _ASSET_TYPE_CLUSTER[at]
+
+    # Legacy keyword hints from business_type text
+    bt_lower = bt.lower()
+    if "commodity" in bt_lower or "energy" in bt_lower or "material" in bt_lower:
         return "commodities"
-    if "financial" in bt or "bank" in bt or "insur" in bt:
+    if "financial" in bt_lower or "bank" in bt_lower or "insur" in bt_lower:
         return "financials"
-    if "tech" in bt or "semi" in bt or "software" in bt:
+    if "tech" in bt_lower or "semi" in bt_lower or "software" in bt_lower:
         return "us_tech"
-    if "bond" in bt or "fixed" in bt or "treasur" in bt:
+    if "bond" in bt_lower or "fixed" in bt_lower or "treasur" in bt_lower:
         return "bonds"
     return "other"
 
@@ -249,7 +442,14 @@ def _adjusted_share(base_share: float, flags: list[str], combo_c_active: bool, d
 # Ceiling computation
 # ─────────────────────────────────────────────────────────────────────────────
 
-def _compute_ceiling(scenario: str, runic: dict[str, Any], ssi: dict[str, Any]) -> dict[str, Any]:
+def _compute_ceiling(
+    scenario: str,
+    runic: dict[str, Any],
+    ssi: dict[str, Any],
+    *,
+    spx_trend_mult: float | None = None,
+    spx_trend_meta: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     regime_max = _SCENARIO_REGIME_MAX.get(scenario, 80.0)
 
     # VIX from runic — actual field is 'pctile_3yr' in variables_dashboard
@@ -286,8 +486,11 @@ def _compute_ceiling(scenario: str, runic: dict[str, Any], ssi: dict[str, Any]) 
     else:
         vix_level_mult = 1.00
 
-    # SPX trend multiplier (1.0 until SPX 200d data available)
-    spx_trend_mult = 1.00
+    # SPX trend multiplier from ^GSPC 200d MA (yfinance) unless precomputed.
+    if spx_trend_mult is None:
+        spx_trend_mult, spx_meta = _compute_spx_trend_mult()
+    else:
+        spx_meta = spx_trend_meta or {}
 
     # HY credit multiplier from runic HY variable.
     # runic stores HY as PERCENTAGE (e.g. 2.66 = 266bps).
@@ -346,6 +549,7 @@ def _compute_ceiling(scenario: str, runic: dict[str, Any], ssi: dict[str, Any]) 
         "ssi_multiplier_raw": ssi_multiplier_raw,
         "vix_level_mult": vix_level_mult,
         "spx_trend_mult": spx_trend_mult,
+        "spx_trend_meta": spx_meta,
         "hy_credit_mult": hy_credit_mult,
         "hy_bps": hy_bps,
         "final_ceiling_pct": final_ceiling_pct,
@@ -424,7 +628,12 @@ def get_portfolio_sizer(scenario: str = "normal") -> dict[str, Any]:
     ssi = _load_ssi_safe()
     combo_c = _combo_c_active(runic)
 
-    ceiling = _compute_ceiling(scenario, runic, ssi)
+    spx_trend_mult, spx_meta = _compute_spx_trend_mult()
+    ceiling = _compute_ceiling(
+        scenario, runic, ssi,
+        spx_trend_mult=spx_trend_mult,
+        spx_trend_meta=spx_meta,
+    )
     final_pct = ceiling["final_ceiling_pct"]
     notional = PORTFOLIO_NOTIONAL
     deployed_cap_usd = round(notional * final_pct / 100)
@@ -450,6 +659,13 @@ def get_portfolio_sizer(scenario: str = "normal") -> dict[str, Any]:
     )
     multi_sig_tickers: set[str] = {t for t, n in ticker_counts.items() if n >= 2 and t}
 
+    # Resolve company names from cache (never null — fallback to ticker symbol).
+    unique_tickers = {
+        str(r.get("ticker") or r.get("Symbol") or "").upper()
+        for r in all_rows
+    } - {""}
+    name_map = _refresh_ticker_names_cache(unique_tickers, max_fetch=0)
+
     # Assign clusters and compute sizing
     budget_scale = _SCENARIO_BUDGET_SCALE.get(scenario, 1.0)
     cluster_map: dict[str, dict[str, Any]] = {}
@@ -470,7 +686,8 @@ def get_portfolio_sizer(scenario: str = "normal") -> dict[str, Any]:
     for row in all_rows:
         ticker = str(row.get("ticker") or row.get("Symbol") or "").upper()
         business_type = str(row.get("business_type") or "")
-        cluster_id = _assign_cluster(ticker, business_type)
+        asset_type = str(row.get("asset_type") or "")
+        cluster_id = _assign_cluster(ticker, business_type, asset_type)
         cluster = cluster_map[cluster_id]
 
         bq = row.get("bq_raw")
@@ -482,6 +699,7 @@ def get_portfolio_sizer(scenario: str = "normal") -> dict[str, Any]:
 
         verdict = str(row.get("verdict") or "")
         not_applicable = verdict.upper() == "NOT_APPLICABLE"
+        unscored = bq is None and not not_applicable and not verdict
         tier_label, base_share = _bq_tier(bq)
 
         # For NOT_APPLICABLE (ETFs/Indexes): use conviction_score as guidance if available
@@ -505,6 +723,8 @@ def get_portfolio_sizer(scenario: str = "normal") -> dict[str, Any]:
         allocation_usd = 0 if blocked else round(cluster["budget_usd"] * adj_share)
         allocation_pct = round(allocation_usd / notional * 100, 4) if notional else 0.0
 
+        win_rate_val = _safe_float(row.get("Backtested Win Rate [%]"))
+
         # P&L enrichment
         entry_price = _safe_float(row.get("Entry Price"))
         today_price = _safe_float(row.get("Today price"))
@@ -523,7 +743,7 @@ def get_portfolio_sizer(scenario: str = "normal") -> dict[str, Any]:
 
         sized_row: dict[str, Any] = {
             "ticker": ticker,
-            "name": row.get("name"),
+            "name": name_map.get(ticker, ticker),
             "investment_type": cluster["label"],
             "cluster_id": cluster_id,
             "function": row.get("Function") or row.get("function"),
@@ -540,6 +760,7 @@ def get_portfolio_sizer(scenario: str = "normal") -> dict[str, Any]:
             "conviction_score": _safe_float(row.get("conviction_score")),
             "verdict": verdict or None,
             "not_applicable": not_applicable,
+            "unscored": unscored,
             "size_tier": f"{tier_label} {int(adj_share*100)}%" if not blocked else "BLOCKED",
             "allocation_usd": allocation_usd,
             "allocation_pct": allocation_pct,
@@ -547,11 +768,15 @@ def get_portfolio_sizer(scenario: str = "normal") -> dict[str, Any]:
             "blocked": blocked,
             "blocked_reason": (
                 "YIELD TRAP" if "YIELD TRAP" in flags
+                else "No conviction score — run conviction engine" if unscored and blocked
+                else "No conviction score — conservative REDUCED tier" if unscored
                 else "conviction_score < 0" if not_applicable and blocked
                 else "BQ < 2" if tier_label == "BLOCKED" and not not_applicable
                 else None
             ),
-            "win_rate": _safe_float(row.get("Backtested Win Rate [%]")),
+            "win_rate": win_rate_val,
+            "backtested_win_rate_pct": win_rate_val,
+            "win_rate_label": "Backtested Win Rate",
         }
 
         if not blocked:
@@ -698,11 +923,17 @@ def _build_constraints(
 # Portfolio Risk service
 # ─────────────────────────────────────────────────────────────────────────────
 
-def get_portfolio_risk() -> dict[str, Any]:
+def get_portfolio_risk(scenario: str = "normal") -> dict[str, Any]:
     """Cluster correlation matrix + breach list + cluster weight bars."""
-    # Attempt to load current cluster weights from sizer
+    scenario = scenario.lower()
+    if scenario not in _SCENARIO_REGIME_MAX:
+        raise ValueError(f"Invalid scenario '{scenario}'. Use: normal, stress, lowvol")
+
+    labels, matrix, corr_meta = _load_correlation_matrix()
+
+    # Cluster weights from sizer for requested scenario
     try:
-        sizer = get_portfolio_sizer("normal")
+        sizer = get_portfolio_sizer(scenario)
         clusters = sizer.get("clusters", [])
         notional = PORTFOLIO_NOTIONAL
     except Exception:
@@ -713,18 +944,18 @@ def get_portfolio_risk() -> dict[str, Any]:
     weight_map: dict[str, float] = {}
     for c in clusters:
         cid = c.get("id", "")
-        if cid in _CORRELATION_LABELS:
+        if cid in labels:
             weight_map[cid] = c.get("deployed_pct", 0.0)
 
     # Breaches
     breaches: list[dict[str, Any]] = []
-    n = len(_CORRELATION_LABELS)
+    n = len(labels)
     for i in range(n):
         for j in range(i + 1, n):
-            rho = _CORRELATION_MATRIX[i][j]
+            rho = matrix[i][j]
             if rho > _BREACH_RHO_WARN:
-                ci = _CORRELATION_LABELS[i]
-                cj = _CORRELATION_LABELS[j]
+                ci = labels[i]
+                cj = labels[j]
                 wi = weight_map.get(ci, 0.0)
                 wj = weight_map.get(cj, 0.0)
                 combined_pct = round(wi + wj, 2)
@@ -732,7 +963,6 @@ def get_portfolio_risk() -> dict[str, Any]:
                 cap_pct = 20.0  # max combined for correlated pair
                 level = "action" if rho > _BREACH_RHO_ACTION else "watch"
 
-                # Find labels
                 ci_label = next((c["label"] for c in _CLUSTERS if c["id"] == ci), ci)
                 cj_label = next((c["label"] for c in _CLUSTERS if c["id"] == cj), cj)
 
@@ -752,7 +982,6 @@ def get_portfolio_risk() -> dict[str, Any]:
                     "recommendation": rec or None,
                 })
 
-    # Cluster weight bars
     weight_bars = [
         {
             "cluster_id": cid,
@@ -760,13 +989,15 @@ def get_portfolio_risk() -> dict[str, Any]:
             "deployed_pct": weight_map.get(cid, 0.0),
             "max_pct": next((c["budget_pct"] for c in _CLUSTERS if c["id"] == cid), 0.0),
         }
-        for cid in _CORRELATION_LABELS
+        for cid in labels
     ]
 
     return {
         "date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
-        "labels": _CORRELATION_LABELS,
-        "matrix": _CORRELATION_MATRIX,
+        "scenario": scenario,
+        "labels": labels,
+        "matrix": matrix,
+        "correlation_meta": corr_meta,
         "breaches": breaches,
         "breach_threshold_watch": _BREACH_RHO_WARN,
         "breach_threshold_action": _BREACH_RHO_ACTION,
@@ -792,10 +1023,12 @@ def analyze_user_holdings(holdings: list[dict[str, Any]], cash_usd: float = 0.0)
         price: float | None = _fetch_price_safe(symbol)
         notional_val = round(qty * price, 2) if price else 0.0
         total_notional += notional_val
-        cluster_id = _assign_cluster(symbol)
+        cluster_id = _assign_cluster(symbol, asset_type=str(h.get("asset_type") or ""))
         cluster_label = next((c["label"] for c in _CLUSTERS if c["id"] == cluster_id), cluster_id)
+        name = _refresh_ticker_names_cache({symbol}, max_fetch=1).get(symbol, symbol)
         enriched.append({
             "symbol": symbol,
+            "name": name,
             "quantity": qty,
             "live_price": price,
             "notional_usd": notional_val,
@@ -828,14 +1061,15 @@ def analyze_user_holdings(holdings: list[dict[str, Any]], cash_usd: float = 0.0)
 
     # Correlation breaches involving user clusters
     user_cluster_ids = set(user_weights.keys())
+    labels, matrix, _ = _load_correlation_matrix()
     breaches: list[dict[str, Any]] = []
-    n = len(_CORRELATION_LABELS)
+    n = len(labels)
     for i in range(n):
         for j in range(i + 1, n):
-            ci, cj = _CORRELATION_LABELS[i], _CORRELATION_LABELS[j]
+            ci, cj = labels[i], labels[j]
             if ci not in user_cluster_ids and cj not in user_cluster_ids:
                 continue
-            rho = _CORRELATION_MATRIX[i][j]
+            rho = matrix[i][j]
             if rho > _BREACH_RHO_WARN:
                 wi = user_weights.get(ci, 0.0)
                 wj = user_weights.get(cj, 0.0)
@@ -889,28 +1123,43 @@ def _fetch_price_safe(symbol: str) -> float | None:
 
 
 def search_tickers(q: str, limit: int = 20) -> list[dict[str, Any]]:
-    """Ticker autocomplete from open VT book + conviction universe."""
+    """Ticker autocomplete from VT book, conviction universe, and conviction store."""
     q_upper = q.upper().strip()
     results: dict[str, dict[str, Any]] = {}
+    name_cache = _load_ticker_names_cache()
 
-    # From VT book
+    def _add(sym: str, source: str) -> None:
+        sym = sym.upper().strip()
+        if not sym or sym in results:
+            return
+        if q_upper not in sym:
+            return
+        results[sym] = {
+            "symbol": sym,
+            "name": name_cache.get(sym, sym),
+            "source": source,
+        }
+
     for side in ("long", "short"):
         df = _load_vt(side)
         if not df.empty and "Symbol" in df.columns:
             for sym in df["Symbol"].astype(str).str.upper().unique():
-                if q_upper in sym and sym not in results:
-                    results[sym] = {"symbol": sym, "source": "vt_book"}
+                _add(sym, "vt_book")
 
-    # From conviction universe file
+    if CONVICTION_UNIVERSE_FILE.exists():
+        for line in CONVICTION_UNIVERSE_FILE.read_text().splitlines():
+            _add(line.strip(), "conviction_universe")
+
     try:
-        from src.config_paths import CONVICTION_UNIVERSE_FILE
-        if CONVICTION_UNIVERSE_FILE.exists():
-            for line in CONVICTION_UNIVERSE_FILE.read_text().splitlines():
-                sym = line.strip().upper()
-                if sym and q_upper in sym and sym not in results:
-                    results[sym] = {"symbol": sym, "source": "conviction_universe"}
+        from src.conviction_engine.store import list_records
+
+        for rec in list_records():
+            _add(str(rec.get("ticker") or ""), "conviction_store")
     except Exception:
         pass
 
-    sorted_results = sorted(results.values(), key=lambda x: (not x["symbol"].startswith(q_upper), x["symbol"]))
+    sorted_results = sorted(
+        results.values(),
+        key=lambda x: (not x["symbol"].startswith(q_upper), x["symbol"]),
+    )
     return sorted_results[:limit]

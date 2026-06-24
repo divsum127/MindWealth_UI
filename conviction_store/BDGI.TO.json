@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.055192,
   "dividend_yield_5y_std": 0.043463,
-  "dividend_yield_current": 0.008505,
-  "dividend_yield_zscore": -1.0742,
-  "enterprise_value": 3252860106.7716675,
+  "dividend_yield_current": 0.008579,
+  "dividend_yield_zscore": -1.0725,
+  "enterprise_value": 3226605689.5,
   "eps_fwd": 3.9145,
   "eps_ttm": 2.3,
-  "ev_fwd_rev": 3.7722,
+  "ev_fwd_rev": 3.7418,
   "fcf_ttm": 72175000.0,
   "fd_direction": "stable",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 862313024.0,
   "industry": "Engineering & Construction",
-  "last_daily_update": "2026-06-23T14:15:01+00:00",
+  "last_daily_update": "2026-06-24T12:55:07+00:00",
   "last_full_calc": "2026-05-18T20:47:41+00:00",
   "manual_overrides": {},
-  "market_cap": 3047200106.7716675,
+  "market_cap": 3020945689.5,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 205660000.0,
-  "owner_earnings_yield": 0.023686,
+  "owner_earnings_yield": 0.023892,
   "pe_20y_array": [
     28.8364,
     31.6909,
@@ -239,7 +239,7 @@
     83.47
   ],
   "pe_percentile_20y": 33.33,
-  "pe_ttm": 39.3609,
+  "pe_ttm": 39.0217,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -248,12 +248,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 90.52999877929688,
+  "price": 89.75,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.20846,
   "sector": "Industrials",
   "ticker": "BDGI.TO",
-  "updated_at": "2026-06-23T14:15:01+00:00",
+  "updated_at": "2026-06-24T12:55:07+00:00",
   "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {

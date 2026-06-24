@@ -10,7 +10,11 @@ _ROOT = Path(__file__).resolve().parent.parent
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-from src.macro_intelligence.engine.combo_detector import evaluate_combo_b_at_date, _hy_oas_bps
+from src.macro_intelligence.engine.combo_detector import (
+    evaluate_combo_b_at_date,
+    evaluate_combo_b_legs,
+    _hy_oas_bps,
+)
 
 
 class TestComboBHyDual(unittest.TestCase):
@@ -28,6 +32,16 @@ class TestComboBHyDual(unittest.TestCase):
         self.assertFalse(
             evaluate_combo_b_at_date("2022-10-13", 33.6, 350.0, 8.0, vix_pctile=85, hy_pctile=85)
         )
+
+    def test_watch_legs_exposed_for_partial_b(self) -> None:
+        readings = {
+            "VIX": {"raw_value": 18.7, "unconditional_pctile": 56.0},
+            "HY": {"raw_value": 2.65, "unconditional_pctile": 3.0},
+            "CFTC": {"raw_value": -500000, "unconditional_pctile": 0.6},
+        }
+        passed, pending = evaluate_combo_b_legs(readings)
+        self.assertEqual(passed, ["CFTC"])
+        self.assertEqual(pending, ["VIX", "HY"])
 
 
 if __name__ == "__main__":

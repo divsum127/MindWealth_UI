@@ -49,12 +49,52 @@ _MOCK_SSI: dict = {
     "layer2_confirmed_count": 1,
 }
 
+_MOCK_CORR_LABELS = [
+    "global_risk_on", "semiconductors", "financials", "commodities",
+    "canada_def", "us_tech", "india", "bonds",
+]
+_MOCK_CORR_MATRIX = [
+    [1.0, 0.75, 0.59, 0.29, 0.70, 0.94, 0.53, 0.19],
+    [0.75, 1.0, 0.19, 0.31, 0.48, 0.86, 0.37, 0.11],
+    [0.59, 0.19, 1.0, 0.04, 0.51, 0.38, 0.34, 0.10],
+    [0.29, 0.31, 0.04, 1.0, 0.59, 0.30, 0.19, 0.13],
+    [0.70, 0.48, 0.51, 0.59, 1.0, 0.60, 0.42, 0.21],
+    [0.94, 0.86, 0.38, 0.30, 0.60, 1.0, 0.47, 0.15],
+    [0.53, 0.37, 0.34, 0.19, 0.42, 0.47, 1.0, 0.28],
+    [0.19, 0.11, 0.10, 0.13, 0.21, 0.15, 0.28, 1.0],
+]
+
+
+def _mock_names(symbols: set[str], **_: object) -> dict[str, str]:
+    return {s: f"{s} Inc." for s in symbols}
+
+
+def _mock_corr() -> tuple[list[str], list[list[float]], dict]:
+    return _MOCK_CORR_LABELS, _MOCK_CORR_MATRIX, {"source": "test"}
+
+
+class _PortfolioTestMixin:
+    """Patch slow external lookups for unit tests."""
+
+    def setUp(self) -> None:
+        self._patches = [
+            patch("api.services.portfolio_service._compute_spx_trend_mult", return_value=(1.0, {})),
+            patch("api.services.portfolio_service._refresh_ticker_names_cache", side_effect=_mock_names),
+            patch("api.services.portfolio_service._load_correlation_matrix", side_effect=_mock_corr),
+        ]
+        for p in self._patches:
+            p.start()
+
+    def tearDown(self) -> None:
+        for p in reversed(self._patches):
+            p.stop()
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Portfolio Sizer tests
 # ─────────────────────────────────────────────────────────────────────────────
 
-class TestPortfolioSizer(unittest.TestCase):
+class TestPortfolioSizer(_PortfolioTestMixin, unittest.TestCase):
 
     @patch("api.services.portfolio_service._load_runic_safe", return_value=_MOCK_RUNIC)
     @patch("api.services.portfolio_service._load_ssi_safe", return_value=_MOCK_SSI)
@@ -143,11 +183,23 @@ class TestPortfolioSizer(unittest.TestCase):
                 self.assertIn(key, row)
 
 
+    @patch("api.services.portfolio_service._load_runic_safe", return_value=_MOCK_RUNIC)
+    @patch("api.services.portfolio_service._load_ssi_safe", return_value=_MOCK_SSI)
+    def test_sizer_pnl_rows_have_names(self, *_mocks) -> None:
+        r = client.get("/api/v1/portfolio/sizer")
+        pnl_rows = r.json()["pnl_rows"]
+        if pnl_rows:
+            for row in pnl_rows[:5]:
+                self.assertIsNotNone(row.get("name"))
+                self.assertNotEqual(row.get("name"), "")
+                self.assertEqual(row.get("win_rate_label"), "Backtested Win Rate")
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Portfolio Risk tests
 # ─────────────────────────────────────────────────────────────────────────────
 
-class TestPortfolioRisk(unittest.TestCase):
+class TestPortfolioRisk(_PortfolioTestMixin, unittest.TestCase):
 
     @patch("api.services.portfolio_service._load_runic_safe", return_value=_MOCK_RUNIC)
     @patch("api.services.portfolio_service._load_ssi_safe", return_value=_MOCK_SSI)
@@ -198,11 +250,20 @@ class TestPortfolioRisk(unittest.TestCase):
             self.assertGreater(breach["rho"], 0.75)
 
 
+    @patch("api.services.portfolio_service._load_runic_safe", return_value=_MOCK_RUNIC)
+    @patch("api.services.portfolio_service._load_ssi_safe", return_value=_MOCK_SSI)
+    def test_risk_scenario_param(self, *_mocks) -> None:
+        r = client.get("/api/v1/portfolio/risk?scenario=stress")
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.json()["scenario"], "stress")
+        self.assertIn("correlation_meta", r.json())
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Holdings analysis tests
 # ─────────────────────────────────────────────────────────────────────────────
 
-class TestAnalyzeHoldings(unittest.TestCase):
+class TestAnalyzeHoldings(_PortfolioTestMixin, unittest.TestCase):
 
     @patch("api.services.portfolio_service._fetch_price_safe", return_value=100.0)
     @patch("api.services.portfolio_service._load_runic_safe", return_value=_MOCK_RUNIC)
@@ -242,7 +303,7 @@ class TestAnalyzeHoldings(unittest.TestCase):
 # Ticker search tests
 # ─────────────────────────────────────────────────────────────────────────────
 
-class TestTickerSearch(unittest.TestCase):
+class TestTickerSearch(_PortfolioTestMixin, unittest.TestCase):
 
     def test_search_returns_200(self) -> None:
         r = client.get("/api/v1/portfolio/risk/search?q=SP")
@@ -261,6 +322,7 @@ class TestTickerSearch(unittest.TestCase):
         r = client.get("/api/v1/portfolio/risk/search?q=A")
         for item in r.json():
             self.assertIn("symbol", item)
+            self.assertIn("name", item)
 
 
 if __name__ == "__main__":

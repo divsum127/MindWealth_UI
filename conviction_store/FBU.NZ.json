@@ -187,10 +187,10 @@
   },
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 6120157312.0,
+  "enterprise_value": 6173902208.0,
   "eps_fwd": 0.18336,
   "eps_ttm": -0.23,
-  "ev_fwd_rev": 0.8733,
+  "ev_fwd_rev": 0.881,
   "fcf_ttm": -47625000.0,
   "fd_direction": "stable",
   "fd_votes": {},
@@ -201,10 +201,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 7008000000.0,
   "industry": "Building Materials",
-  "last_daily_update": "2026-06-23T14:15:02+00:00",
+  "last_daily_update": "2026-06-24T12:55:07+00:00",
   "last_full_calc": "2026-05-15T16:30:09+00:00",
   "manual_overrides": {},
-  "market_cap": 3590157312.0,
+  "market_cap": 3643902208.0,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -226,7 +226,7 @@
     "valuation:pe_ttm"
   ],
   "net_debt_stored": 2530000000.0,
-  "owner_earnings_yield": -0.013265,
+  "owner_earnings_yield": -0.01307,
   "pe_percentile_20y": null,
   "pe_ttm": null,
   "position_layers": {
@@ -237,12 +237,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 3.3399999141693115,
+  "price": 3.390000104904175,
   "quote_type": "EQUITY",
   "roic_5y_avg": -0.06039,
   "sector": "Basic Materials",
   "ticker": "FBU.NZ",
-  "updated_at": "2026-06-23T14:15:02+00:00",
+  "updated_at": "2026-06-24T12:55:07+00:00",
   "valuation_tax": -2.0,
   "valuation_tax_breakdown": {
     "components": {

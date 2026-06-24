@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.055092,
   "dividend_yield_5y_std": 0.048609,
-  "dividend_yield_current": 0.064819,
-  "dividend_yield_zscore": 0.2001,
-  "enterprise_value": 1901544910717.123,
+  "dividend_yield_current": 0.063351,
+  "dividend_yield_zscore": 0.1699,
+  "enterprise_value": 1932093996877.377,
   "eps_fwd": 42.15474,
   "eps_ttm": 57.6,
-  "ev_fwd_rev": 0.4247,
+  "ev_fwd_rev": 0.4315,
   "fd_direction": "negative",
   "fd_votes": {},
   "flags": [],
@@ -204,10 +204,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 4477573660672.0,
   "industry": "Oil & Gas Refining & Marketing",
-  "last_daily_update": "2026-06-23T14:15:01+00:00",
+  "last_daily_update": "2026-06-24T12:55:07+00:00",
   "last_full_calc": "2026-05-18T20:47:53+00:00",
   "manual_overrides": {},
-  "market_cap": 1318306010717.123,
+  "market_cap": 1348855096877.377,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -234,7 +234,7 @@
     6.0367
   ],
   "pe_percentile_20y": 0.0,
-  "pe_ttm": 5.3568,
+  "pe_ttm": 5.4809,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -243,12 +243,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 308.54998779296875,
+  "price": 315.70001220703125,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.2248017780770405,
   "sector": "Energy",
   "ticker": "BPCL.NS",
-  "updated_at": "2026-06-23T14:15:01+00:00",
+  "updated_at": "2026-06-24T12:55:07+00:00",
   "valuation_tax": 0.0,
   "valuation_tax_breakdown": {
     "components": {

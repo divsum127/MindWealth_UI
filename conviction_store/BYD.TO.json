@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.119755,
   "dividend_yield_5y_std": 0.29094,
-  "dividend_yield_current": 0.004886,
-  "dividend_yield_zscore": -0.3948,
-  "enterprise_value": 4784250164.065308,
+  "dividend_yield_current": 0.004838,
+  "dividend_yield_zscore": -0.395,
+  "enterprise_value": 4819316104.156738,
   "eps_fwd": 7.359056,
   "eps_ttm": 0.91,
-  "ev_fwd_rev": 1.4234,
+  "ev_fwd_rev": 1.4338,
   "fcf_ttm": 290589000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 3361146880.0,
   "industry": "Auto & Truck Dealerships",
-  "last_daily_update": "2026-06-23T14:15:01+00:00",
+  "last_daily_update": "2026-06-24T12:55:07+00:00",
   "last_full_calc": "2026-05-18T20:47:58+00:00",
   "manual_overrides": {},
-  "market_cap": 3531635164.0653076,
+  "market_cap": 3566701104.1567383,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 1252615000.0,
-  "owner_earnings_yield": 0.082282,
+  "owner_earnings_yield": 0.081473,
   "pe_20y_array": [
     292.3117,
     288.5974,
@@ -307,7 +307,7 @@
     188.2208
   ],
   "pe_percentile_20y": 0.0,
-  "pe_ttm": 139.4506,
+  "pe_ttm": 140.8352,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -316,12 +316,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 126.9000015258789,
+  "price": 128.16000366210938,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.010290001,
   "sector": "Consumer Cyclical",
   "ticker": "BYD.TO",
-  "updated_at": "2026-06-23T14:15:01+00:00",
+  "updated_at": "2026-06-24T12:55:07+00:00",
   "valuation_tax": 0.0,
   "valuation_tax_breakdown": {
     "components": {

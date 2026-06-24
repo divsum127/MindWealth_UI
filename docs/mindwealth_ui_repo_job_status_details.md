@@ -1360,3 +1360,77 @@ Add dedicated SSI (Super Sentiment Index) API endpoints, update docs, commit and
 ### Push
 - Committed to `docs/mindwealth-api-docs` as `1627656` (parent `4863c2c`)
 - Pushed to `divsum127/mindwealth-api-docs` main branch using PAT (PAT removed from remote URL after push)
+
+---
+
+## 2026-06-23 — Fix dominant_reason for all combos
+
+### Task
+Refactor `dominant_reason` sentence generation so all 7 named combos produce accurate, status-aware text; backfill Combo C historical hit-rate data; comprehensive tests.
+
+### Implementation assumptions
+- Runner-up remains 2nd-highest `PRIORITY` active combo (unchanged rule).
+- Hit-rate display uses `combo_hit_rate_stats()` as single source of truth (same as briefing table).
+- Combo C historical analog dates (`2008-06-16`, `2022-06-09`, `2025-04-14`) seeded when `daily_readings` lacks WTI/CPI for old dates — flagged in `macro_regime.seed`.
+
+### Key decisions
+- Removed `"horizon fit"` claim; replaced with `"on configured priority rank"`.
+- Missing HR (`n_obs=0`) → `"No mature hit-rate data at {label} horizon."` not `0%`.
+- Duration clause only when `duration_weeks` is positive int; uses middle-dot before `started`.
+- Combo G → `"Timing signal only (no validated hit rate)."`
+- Deterministic sort: `(-priority, combo_letter)`.
+
+### Things deferred
+- Full 1068-Friday named backfill may still be running or incomplete on slow Yahoo pulls; script continues per-date on errors.
+- PDF nightly step still requires `reportlab` in venv (JSON write succeeds without it).
+- Historical Combo C detection via `detect_named_combos` for pre-2026 dates blocked until WTI/CPI backfill in `daily_readings` — seed dates are interim fix.
+
+---
+
+## 2026-06-24 — Combo D/E per-fire forward-return CSV export
+
+### Task
+User requested per-trigger SPX return tables for Combo D (1W–2M) and Combo E (monthly 1M–6M). Prior threshold-sweep batch (`threshold_sweep_v2/*.json`, `export_threshold_raw_returns.py`) held aggregate band stats, not per `combo_fires` date rows at these horizons.
+
+### Implementation assumptions
+- One row per distinct `trigger_date` in `combo_fires`; if multiple rows same date, keep highest-status row (ACTIVE > CONFIRMED > WATCH).
+- Horizons use NYSE trading-day offsets via `forward_return_pct` (same as nightly engine).
+- Combo D/E direction = bearish; `hit_*` columns = 1 when SPX return < 0.
+- Mature returns only: `None` when forward window exceeds available ^GSPC history (last price 2026-06-23).
+
+### Backtest period
+- **Combo D:** 435 fires, 2010-12-10 → 2026-07-03; max bear hit **39.6% at 1W**.
+- **Combo E:** 484 fires, 2010-09-24 → 2026-07-03; max bear hit **30.4% at 1M** (within 1M–6M band).
+
+### Key decisions
+- Output under existing `csv_exports/` tree for consistency with geo/tight-liquidity exports.
+- Separate CSV per combo plus `combo_de_per_fire_meta.json` for period + horizon summaries.
+- Re-run: `python3 scripts/export_combo_de_per_fire_returns.py`
+
+### Things deferred
+- E horizons beyond 6M (12M–18M) remain in `combo_e_horizon_sweep.py` artifact only.
+- i3 cheatsheet side-by-side diff still blocked (no reference file in repo).
+
+### Edge cases not handled
+- `PARTIAL` status rarely seen in production — mapped to `"partial"` verb but not heavily tested live.
+- Priority tie if CONFIG collides — tie-break by combo letter only.
+
+### Verification
+- `.venv/bin/python -m pytest tests/test_dominant_reason.py tests/test_dominant_priority.py tests/test_api_macro.py` → 52 passed.
+- `raw_hit_rate("C", spx_6m, bearish)` → n_obs=3 after seed + forward backfill.
+- `runic_output.json` dominant_reason: `Combo F active (week 12, MEDIUM · started 2026-04-03). 79% 6M hit rate. Outranks Combo E (19% 12M) on configured priority rank.`
+
+---
+
+### 2026-06-24 — Combo B WATCH legs 0/3 API fix
+
+**Assumptions:** `confirmed_legs` on WATCH combos should list variables passing their gate today (same rules as ACTIVE fire). UI derives `legs_confirmed/total_legs` from `len(confirmed_legs)`.
+
+**Decisions:** `watch_combos` changed from `["B"]` strings to dicts matching test fixture shape (`legs_confirmed`, `pending`, `confirmed_legs`). `combo_status_row.status` now `WATCH n/3` for readability.
+
+**Edge cases:** If readings missing for a leg variable, leg list empty and combo may not enter WATCH at all (unchanged). Legacy string-only `watch_combos` still parsed via `_watch_combo_map`.
+
+**Deferred:** Production `51.20.53.218:8506` still serves pre-fix JSON until API host reruns nightly / copies updated `runic_output.json`.
+
+**Caveat:** As of 2026-06-23 data, B is **1/3** (CFTC only), not 2/3 — VIX 18.7 (<25, <80th pctile) and HY 265bps (<400, <80th pctile) fail. User expectation of 2/3 does not match current variable readings.
+

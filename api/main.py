@@ -15,7 +15,7 @@ from api.schemas.conviction import HealthResponse
 from api.services import conviction_service as svc
 from src.config_paths import CONVICTION_STORE_DIR
 
-API_VERSION = "1.5.1"
+API_VERSION = "1.7.3"
 API_PREFIX = "/api/v1"
 
 _default_origins = "http://localhost:8504,http://localhost:8509,http://127.0.0.1:8504,http://127.0.0.1:8509"

@@ -30,7 +30,11 @@ _RUNIC_FIXTURE: dict = {
         "liquidity": "GLOBAL_EASY",
     },
     "dominant_signal": "C",
-    "dominant_reason": "Combo C active (week 11, MEDIUM). 83% 3M hit rate.",
+    "dominant_reason": (
+        "Combo C active (week 11, MEDIUM). 83% 6M hit rate. "
+        "Outranks Combo F on configured priority rank. "
+        "Bearish medium-duration energy shock dominates tactical bullish recovery signals."
+    ),
     "brave_fearful": "TACTICAL_TIGHT_MONEY_STRATEGIC_EASY_MONEY",
     "brave_fearful_display": "TACTICAL TIGHT MONEY / STRATEGIC EASY MONEY",
     "active_combos": [

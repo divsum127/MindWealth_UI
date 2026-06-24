@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.012396,
   "dividend_yield_5y_std": 0.007079,
-  "dividend_yield_current": 0.0145,
-  "dividend_yield_zscore": 0.2972,
-  "enterprise_value": 219464101513.3877,
+  "dividend_yield_current": 0.014489,
+  "dividend_yield_zscore": 0.2957,
+  "enterprise_value": 219603025606.95508,
   "eps_fwd": 7.47839,
   "eps_ttm": 6.25,
-  "ev_fwd_rev": 2.2564,
+  "ev_fwd_rev": 2.2578,
   "fcf_ttm": 10077000000.0,
   "fd_direction": "stable",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 97263001600.0,
   "industry": "Entertainment",
-  "last_daily_update": "2026-06-23T14:15:02+00:00",
+  "last_daily_update": "2026-06-24T12:55:07+00:00",
   "last_full_calc": "2026-05-18T20:48:30+00:00",
   "manual_overrides": {},
-  "market_cap": 179642101513.3877,
+  "market_cap": 179781025606.95508,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 39822000000.0,
-  "owner_earnings_yield": 0.056095,
+  "owner_earnings_yield": 0.056052,
   "pe_20y_array": [
     16.7309,
     16.5882,
@@ -233,7 +233,7 @@
     16.599
   ],
   "pe_percentile_20y": 33.33,
-  "pe_ttm": 16.552,
+  "pe_ttm": 16.5648,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -242,12 +242,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 103.44999694824219,
+  "price": 103.52999877929688,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.1101,
   "sector": "Communication Services",
   "ticker": "DIS",
-  "updated_at": "2026-06-23T14:15:02+00:00",
+  "updated_at": "2026-06-24T12:55:07+00:00",
   "valuation_tax": -1.0,
   "valuation_tax_breakdown": {
     "components": {

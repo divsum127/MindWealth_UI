@@ -190,12 +190,12 @@
   "debt_purpose": null,
   "dividend_yield_5y_mean": 0.075796,
   "dividend_yield_5y_std": 0.086489,
-  "dividend_yield_current": 0.01233,
-  "dividend_yield_zscore": -0.7338,
-  "enterprise_value": 19934944539.00653,
+  "dividend_yield_current": 0.012426,
+  "dividend_yield_zscore": -0.7327,
+  "enterprise_value": 19803858973.296097,
   "eps_fwd": 9.886713,
   "eps_ttm": 5.01,
-  "ev_fwd_rev": 2.5283,
+  "ev_fwd_rev": 2.5117,
   "fcf_ttm": 694865000.0,
   "fd_direction": "stable",
   "fd_sizing_adj": 0.0,
@@ -228,10 +228,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 7884671000.0,
   "industry": "Trucking",
-  "last_daily_update": "2026-06-23T14:15:02+00:00",
+  "last_daily_update": "2026-06-24T12:55:08+00:00",
   "last_full_calc": "2026-06-11T18:39:08+00:00",
   "manual_overrides": {},
-  "market_cap": 16996481539.00653,
+  "market_cap": 16865395973.296097,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -245,7 +245,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 2938463000.0,
-  "owner_earnings_yield": 0.040883,
+  "owner_earnings_yield": 0.041201,
   "pe_20y_array": [
     39.4323,
     50.6146,
@@ -254,7 +254,7 @@
   ],
   "pe_history_insufficient": false,
   "pe_percentile_20y": 25.0,
-  "pe_ttm": 41.2784,
+  "pe_ttm": 40.9601,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -263,13 +263,13 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 206.80499267578125,
+  "price": 205.2100067138672,
   "quote_type": "EQUITY",
   "revenue_accelerating": false,
   "roic_5y_avg": 0.11257,
   "sector": "Industrials",
   "ticker": "TFII.TO",
-  "updated_at": "2026-06-23T14:15:02+00:00",
+  "updated_at": "2026-06-24T12:55:08+00:00",
   "valuation_tax": -1.0,
   "valuation_tax_breakdown": {
     "components": {

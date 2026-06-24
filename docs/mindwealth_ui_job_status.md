@@ -627,3 +627,47 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
      - `src/macro_intelligence/claude/nightly_briefing.py`
      - `src/macro_intelligence/jobs/nightly_run.py`
      - `macro_intelligence/CONFIG.yaml`
+
+### 2026-06-23
+
+1. **Fix dominant_reason generation for all combos + Combo C backfill + tests** — SUCCESSFUL
+   - Summary: Refactored `_build_reason()` to use status-aware verbs, conditional duration clauses, honest outrank wording (`configured priority rank`), and shared `format_reason_hit_rate*` helpers (no fake `0%` or `week None`). Added `scripts/backfill_named_combo_fires.py` with documented Combo C analog seeding + forward-return backfill (C mature 6M n=3). Expanded tests: `tests/test_dominant_reason.py` (20 cases), `tests/test_dominant_priority.py` (7 cases). 52/52 pytest pass (venv). Nightly JSON updated with new reason string.
+   - Files changed:
+     - `src/macro_intelligence/engine/combo_metadata.py`
+     - `src/macro_intelligence/engine/dominant.py`
+     - `src/macro_intelligence/data/yahoo_pull.py`
+     - `scripts/backfill_named_combo_fires.py` (new)
+     - `tests/test_dominant_reason.py` (new)
+     - `tests/test_dominant_priority.py`
+     - `tests/test_api_macro.py`
+     - `macro_intelligence/output/runic_output.json`
+
+### 2026-06-24
+
+1. **Export Combo D/E per-trigger forward-return CSVs** — SUCCESSFUL
+   - Summary: Threshold-sweep artifacts had aggregate gate stats only, not per-fire tables at requested horizons. Added `scripts/export_combo_de_per_fire_returns.py` and generated CSVs: Combo D (1W–2M, 435 trigger dates, 2010-12-10→2026-07-03) and Combo E (1M–6M monthly, 484 dates, 2010-09-24→2026-07-03). Each row = trigger date; columns = SPX % return post-trigger; `hit_*` = bearish hit (SPX down). Meta JSON includes backtest period and per-horizon hit-rate summary.
+   - Files changed:
+     - `scripts/export_combo_de_per_fire_returns.py` (new)
+     - `testing/macro_th_exp/testingv1_feedback/csv_exports/combo_de_per_fire_returns/combo_d_per_fire_returns.csv`
+     - `testing/macro_th_exp/testingv1_feedback/csv_exports/combo_de_per_fire_returns/combo_e_per_fire_returns.csv`
+     - `testing/macro_th_exp/testingv1_feedback/csv_exports/combo_de_per_fire_returns/combo_de_per_fire_meta.json`
+
+2. **Combo D threshold sweep (VXTS/CFTC/VIX) — all horizons CSV export** — SUCCESSFUL
+   - Summary: Ran 504-experiment factorial + univariate sweep on Combo D gates (VXTS≥, CFTC pctile≥, VIX≤, 2–3 legs) across horizons 1W–2M. Outputs: `combo_d_threshold_sweep_all_horizons.csv` (3024 rows), `combo_d_threshold_sweep_experiment_summary.csv` (min/max/mean hit & SPX stats), `combo_d_threshold_sweep_top_candidates.csv` (top 25 by 1W bear hit, n≥10). Best candidate: vxts 1.18, cftc 75, vix 16, 2-of-3 → 78 events, 58.4% bear hit 1W, avg SPX −0.29% at 1W. CONFIG 3-of-3 baseline: 31 events, 41.9% 1W. No variant clears 60% at all horizons.
+   - Files changed:
+     - `scripts/combo_d_threshold_sweep_export.py` (new)
+     - `testing/macro_th_exp/testingv1_feedback/csv_exports/combo_d_threshold_sweep/*.csv`
+     - `testing/macro_th_exp/testingv1_feedback/csv_exports/combo_d_threshold_sweep/combo_d_threshold_sweep_meta.json`
+
+3. **Fix Combo B WATCH showing 0/3 legs in API — expose confirmed_legs on watch combos** — SUCCESSFUL
+   - Date: 2026-06-24
+   - Summary: WATCH combos (e.g. B) were emitted as bare strings with no `confirmed_legs`, so `/macro/combos/B` returned `confirmed_legs: []` and UI showed 0/3. Added `evaluate_combo_b_legs` / `evaluate_combo_d_legs`, populated `macro_regime.confirmed_legs` on WATCH fires, enriched `watch_combos` to dicts (`legs_confirmed`, `pending`), updated `combo_status_rows`, `macro_service.get_combo_detail`, and briefing renderer. Verified locally: B → WATCH 1/3, `confirmed_legs: ["CFTC"]`, pending VIX+HY (as of 2026-06-23 readings). Production API still on prior JSON until nightly redeploy.
+   - Files changed:
+     - `src/macro_intelligence/engine/combo_detector.py`
+     - `src/macro_intelligence/jobs/nightly_run.py`
+     - `src/macro_intelligence/output/briefing_renderer.py`
+     - `src/macro_intelligence/output/json_writer.py`
+     - `api/services/macro_service.py`
+     - `src/pages/runic_page.py`
+     - `tests/test_combo_b_hy_dual.py`
+     - `macro_intelligence/output/runic_output.json`

@@ -189,10 +189,10 @@
   },
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 19197903561.57492,
+  "enterprise_value": 18702822432.125397,
   "eps_fwd": 5.66271,
   "eps_ttm": 3.2,
-  "ev_fwd_rev": 5.1856,
+  "ev_fwd_rev": 5.0519,
   "fcf_ttm": 267786000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -203,10 +203,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 3702148096.0,
   "industry": "Apparel Retail",
-  "last_daily_update": "2026-06-23T14:15:01+00:00",
+  "last_daily_update": "2026-06-24T12:55:07+00:00",
   "last_full_calc": "2026-05-15T16:28:31+00:00",
   "manual_overrides": {},
-  "market_cap": 18418820561.57492,
+  "market_cap": 17923739432.125397,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -225,7 +225,7 @@
     "valuation:dividend_yield_zscore"
   ],
   "net_debt_stored": 779083000.0,
-  "owner_earnings_yield": 0.014539,
+  "owner_earnings_yield": 0.01494,
   "pe_20y_array": [
     40.6455,
     39.9933,
@@ -308,8 +308,8 @@
     48.1538,
     47.1839
   ],
-  "pe_percentile_20y": 100.0,
-  "pe_ttm": 50.225,
+  "pe_percentile_20y": 95.0,
+  "pe_ttm": 48.875,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -318,12 +318,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 160.72000122070312,
+  "price": 156.39999389648438,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.311,
   "sector": "Consumer Cyclical",
   "ticker": "ATZ.TO",
-  "updated_at": "2026-06-23T14:15:01+00:00",
+  "updated_at": "2026-06-24T12:55:07+00:00",
   "valuation_tax": -8.0,
   "valuation_tax_breakdown": {
     "components": {

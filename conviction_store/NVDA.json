@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.007146,
   "dividend_yield_5y_std": 0.00842,
-  "dividend_yield_current": 0.000197,
-  "dividend_yield_zscore": -0.8253,
-  "enterprise_value": 4920678247833.252,
+  "dividend_yield_current": 0.0002,
+  "dividend_yield_zscore": -0.8249,
+  "enterprise_value": 4846561677383.423,
   "eps_fwd": 11.42982,
   "eps_ttm": 4.89,
-  "ev_fwd_rev": 22.7875,
+  "ev_fwd_rev": 22.4442,
   "fcf_ttm": 77324000000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 215938007040.0,
   "industry": "Semiconductors",
-  "last_daily_update": "2026-06-23T14:15:02+00:00",
+  "last_daily_update": "2026-06-24T12:55:07+00:00",
   "last_full_calc": "2026-05-18T20:49:52+00:00",
   "manual_overrides": {},
-  "market_cap": 4919285247833.252,
+  "market_cap": 4845168677383.423,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 1393000000.0,
-  "owner_earnings_yield": 0.015719,
+  "owner_earnings_yield": 0.015959,
   "pe_20y_array": [
     50.2457,
     43.9206,
@@ -235,7 +235,7 @@
     45.3714
   ],
   "pe_percentile_20y": 37.5,
-  "pe_ttm": 41.5337,
+  "pe_ttm": 40.908,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -244,12 +244,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 203.10000610351562,
+  "price": 200.0399932861328,
   "quote_type": "EQUITY",
   "roic_5y_avg": 1.01485,
   "sector": "Technology",
   "ticker": "NVDA",
-  "updated_at": "2026-06-23T14:15:02+00:00",
+  "updated_at": "2026-06-24T12:55:07+00:00",
   "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {

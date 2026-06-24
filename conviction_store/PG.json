@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.037444,
   "dividend_yield_5y_std": 0.012846,
-  "dividend_yield_current": 0.02825,
-  "dividend_yield_zscore": -0.7157,
-  "enterprise_value": 376166078623.7179,
+  "dividend_yield_current": 0.028238,
+  "dividend_yield_zscore": -0.7166,
+  "enterprise_value": 376317443242.344,
   "eps_fwd": 7.09023,
   "eps_ttm": 6.84,
-  "ev_fwd_rev": 4.3379,
+  "ev_fwd_rev": 4.3396,
   "fcf_ttm": 14848000000.0,
   "fd_direction": "stable",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 86716997632.0,
   "industry": "Household & Personal Products",
-  "last_daily_update": "2026-06-23T14:15:02+00:00",
+  "last_daily_update": "2026-06-24T12:55:07+00:00",
   "last_full_calc": "2026-05-18T20:50:08+00:00",
   "manual_overrides": {},
-  "market_cap": 351141078623.7179,
+  "market_cap": 351292443242.344,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 25025000000.0,
-  "owner_earnings_yield": 0.042285,
+  "owner_earnings_yield": 0.042267,
   "pe_20y_array": [
     21.2311,
     22.4844,
@@ -233,7 +233,7 @@
     20.8173
   ],
   "pe_percentile_20y": 66.67,
-  "pe_ttm": 22.0461,
+  "pe_ttm": 22.0556,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -242,12 +242,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 150.7949981689453,
+  "price": 150.86000061035156,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.31112,
   "sector": "Consumer Defensive",
   "ticker": "PG",
-  "updated_at": "2026-06-23T14:15:02+00:00",
+  "updated_at": "2026-06-24T12:55:07+00:00",
   "valuation_tax": -2.0,
   "valuation_tax_breakdown": {
     "components": {

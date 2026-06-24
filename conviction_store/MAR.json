@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.012521,
   "dividend_yield_5y_std": 0.005702,
-  "dividend_yield_current": 0.007506,
-  "dividend_yield_zscore": -0.8795,
-  "enterprise_value": 117904194077.6571,
+  "dividend_yield_current": 0.007549,
+  "dividend_yield_zscore": -0.872,
+  "enterprise_value": 117330666494.34921,
   "eps_fwd": 13.08608,
   "eps_ttm": 9.54,
-  "ev_fwd_rev": 16.4121,
+  "ev_fwd_rev": 16.3322,
   "fcf_ttm": 2608000000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 7184000000.0,
   "industry": "Lodging",
-  "last_daily_update": "2026-06-23T14:15:02+00:00",
+  "last_daily_update": "2026-06-24T12:55:07+00:00",
   "last_full_calc": "2026-05-18T20:49:16+00:00",
   "manual_overrides": {},
-  "market_cap": 102576194077.6571,
+  "market_cap": 102002666494.34921,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 15328000000.0,
-  "owner_earnings_yield": 0.025425,
+  "owner_earnings_yield": 0.025568,
   "pe_20y_array": [
     32.6913,
     33.2244,
@@ -233,7 +233,7 @@
     37.6894
   ],
   "pe_percentile_20y": 100.0,
-  "pe_ttm": 40.7762,
+  "pe_ttm": 40.5482,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -242,12 +242,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 389.0050048828125,
+  "price": 386.8299865722656,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.09765001,
   "sector": "Consumer Cyclical",
   "ticker": "MAR",
-  "updated_at": "2026-06-23T14:15:02+00:00",
+  "updated_at": "2026-06-24T12:55:07+00:00",
   "valuation_tax": -8.0,
   "valuation_tax_breakdown": {
     "components": {

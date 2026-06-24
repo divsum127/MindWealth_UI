@@ -14,6 +14,29 @@ from src.macro_intelligence.engine.combo_metadata import format_hit_rate_display
 logger = logging.getLogger(__name__)
 
 _COMBO_ORDER = "ABCDEFG"
+_COMBO_TOTAL_LEGS = {"A": 4, "B": 3, "C": 3, "D": 3, "E": 3, "F": 2, "G": 3}
+
+
+def _watch_combo_ids(watch_list: list[Any]) -> set[str]:
+    ids: set[str] = set()
+    for w in watch_list:
+        if isinstance(w, dict):
+            cid = w.get("combo")
+            if cid:
+                ids.add(cid)
+        elif isinstance(w, str):
+            ids.add(w)
+    return ids
+
+
+def _watch_combo_map(watch_list: list[Any]) -> dict[str, dict[str, Any]]:
+    out: dict[str, dict[str, Any]] = {}
+    for w in watch_list:
+        if isinstance(w, dict) and w.get("combo"):
+            out[w["combo"]] = w
+        elif isinstance(w, str):
+            out[w] = {"combo": w}
+    return out
 
 
 def _all_time_combo_stats() -> dict[str, dict]:
@@ -128,7 +151,8 @@ def build_combo_status_rows(payload: dict[str, Any]) -> list[dict[str, Any]]:
     directions = cfg.get("combo_direction", {})
     max_weeks = cfg.get("combo_max_weeks", {})
     active = {c["combo"]: c for c in payload.get("active_combos", []) if c.get("combo")}
-    watch = set(payload.get("watch_combos", []))
+    watch = _watch_combo_ids(payload.get("watch_combos", []))
+    watch_map = _watch_combo_map(payload.get("watch_combos", []))
     db_stats = _all_time_combo_stats()
     c_cancel = _combo_c_cancelled_row(payload)
     rows: list[dict[str, Any]] = []
@@ -181,15 +205,29 @@ def build_combo_status_rows(payload: dict[str, Any]) -> list[dict[str, Any]]:
                 }
             )
         elif letter in watch:
+            w = watch_map.get(letter, {})
+            legs = w.get("confirmed_legs") or []
+            n = w.get("legs_confirmed", len(legs))
+            total = w.get("total_legs", _COMBO_TOTAL_LEGS.get(letter, 3))
+            pending = w.get("pending")
+            duration = f"{n}/{total} legs"
+            if legs:
+                duration += f" ({', '.join(legs)})"
+            if pending:
+                duration += f" · pending {pending}"
             rows.append(
                 {
                     "combo": letter,
                     "name": label,
-                    "status": "WATCH",
-                    "duration": "—",
+                    "status": f"WATCH {n}/{total}",
+                    "duration": duration,
                     "direction": directions.get(letter, "—"),
                     "hit_rate_3m": hr_disp,
                     "avg_return_3m": avg_disp,
+                    "confirmed_legs": legs,
+                    "legs_confirmed": n,
+                    "total_legs": total,
+                    "pending": pending,
                 }
             )
         else:

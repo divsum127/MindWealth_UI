@@ -78,7 +78,8 @@ def create_runic_page() -> None:
     if combos:
         st.dataframe(pd.DataFrame(combos), use_container_width=True, hide_index=True)
     if watch:
-        st.info(f"Watch combos: {', '.join(watch)}")
+        st.info("Watch combos")
+        st.dataframe(pd.DataFrame(watch), use_container_width=True, hide_index=True)
 
     st.subheader("Live Variable Dashboard")
     dash = data.get("variables_dashboard", [])

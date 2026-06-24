@@ -65,6 +65,10 @@ def spx_weekly_returns(start: str = "1950-01-01") -> pd.Series:
 
 def spx_with_50wma(start: str = "1990-01-01") -> pd.DataFrame:
     spx = fetch_yahoo_close("^GSPC", start=start)
+    if spx.empty:
+        return pd.DataFrame(columns=["close", "wma50", "weekly_ret_pct", "above_50wma"])
+    if not isinstance(spx.index, pd.DatetimeIndex):
+        spx.index = pd.to_datetime(spx.index)
     weekly = spx.resample("W-FRI").last().dropna()
     wma50 = weekly.rolling(50).mean()
     weekly_ret = weekly.pct_change() * 100

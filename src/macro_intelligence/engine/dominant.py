@@ -6,12 +6,10 @@ from typing import Any
 
 from src.macro_intelligence.config import load_config
 from src.macro_intelligence.engine.combo_metadata import (
-    combo_bullish,
-    combo_hit_rate_stats,
     combo_primary_horizon,
-    horizon_display_label,
+    format_reason_hit_rate,
+    format_reason_hit_rate_short,
 )
-from src.macro_intelligence.engine.hit_rates import raw_hit_rate
 
 
 def determine_dominant_combo(
@@ -31,6 +29,11 @@ def resolve_dominant(
 
     cfg = load_config()
     priority = cfg.get("dominant", {}).get("PRIORITY", {})
+
+    def _rank_key(c: dict[str, Any]) -> tuple[int, str]:
+        letter = c.get("combo", "")
+        return (-int(priority.get(letter, 0)), letter)
+
     actives = [
         c
         for c in active_combos
@@ -41,10 +44,7 @@ def resolve_dominant(
     if not actives:
         return None, "No active named combos.", "NEUTRAL"
 
-    def _score(c: dict[str, Any]) -> int:
-        return int(priority.get(c.get("combo", ""), 0))
-
-    ranked = sorted(actives, key=_score, reverse=True)
+    ranked = sorted(actives, key=_rank_key)
     top = ranked[0]
     dominant = top.get("combo")
     reason = _build_reason(dominant, top, ranked[1:3])
@@ -52,35 +52,47 @@ def resolve_dominant(
     return dominant, reason, brave
 
 
-def _build_reason(dominant: str, top: dict[str, Any], others: list[dict[str, Any]]) -> str:
-    bullish = combo_bullish(dominant)
-    if bullish is None:
-        bullish = dominant in ("B", "F")
-    primary = combo_primary_horizon(dominant) or "spx_3m"
-    hr = raw_hit_rate(dominant, horizon=primary, bullish=bool(bullish))
-    hr_pct = f"{(hr.get('hit_rate') or 0) * 100:.0f}%"
-    h_label = horizon_display_label(primary)
-    weeks = top.get("duration_weeks", "?")
-    bucket = top.get("duration_bucket", "")
-    ep = top.get("episode_start")
-    dur = f"week {weeks}"
+def _status_verb(status: str | None) -> str:
+    mapping = {
+        "ACTIVE": "active",
+        "PARTIAL": "partial",
+        "CONFIRMED": "confirmed (2/3)",
+        "CONFIRMED_3_OF_3": "confirmed (3/3)",
+    }
+    return mapping.get(status or "", "active")
+
+
+def _duration_clause(combo: dict[str, Any]) -> str:
+    weeks = combo.get("duration_weeks")
+    if not isinstance(weeks, int) or weeks < 1:
+        return ""
+    bucket = combo.get("duration_bucket") or ""
+    ep = combo.get("episode_start")
+    inner = f"week {weeks}"
     if bucket:
-        dur += f", {bucket}"
+        inner += f", {bucket}"
     if ep:
-        dur += f" (started {ep})"
+        inner += f" · started {ep}"
+    return f" ({inner})"
+
+
+def _build_reason(dominant: str, top: dict[str, Any], others: list[dict[str, Any]]) -> str:
+    status = _status_verb(top.get("status"))
+    duration = _duration_clause(top)
+    hr_clause = format_reason_hit_rate(dominant)
     legs = top.get("confirmed_legs")
     leg_txt = f" Legs: {', '.join(legs)}." if legs else ""
-    base = f"Combo {dominant} active ({dur}). {hr_pct} {h_label} hit rate.{leg_txt}"
+    base = f"Combo {dominant} {status}{duration}. {hr_clause}{leg_txt}"
+
     if others:
         alt = others[0].get("combo")
-        alt_bull = combo_bullish(alt)
-        if alt_bull is None:
-            alt_bull = alt in ("B", "F")
-        alt_primary = combo_primary_horizon(alt) or "spx_3m"
-        alt_hr = raw_hit_rate(alt, horizon=alt_primary, bullish=bool(alt_bull))
-        alt_pct = f"{(alt_hr.get('hit_rate') or 0) * 100:.0f}%"
-        alt_label = horizon_display_label(alt_primary)
-        base += f" Outranks Combo {alt} ({alt_pct} {alt_label}) on PRIORITY and horizon fit."
+        if alt:
+            alt_short = format_reason_hit_rate_short(alt)
+            if alt_short:
+                base += f" Outranks Combo {alt} ({alt_short}) on configured priority rank."
+            else:
+                base += f" Outranks Combo {alt} on configured priority rank."
+
     if dominant == "C":
         base += " Bearish medium-duration energy shock dominates tactical bullish recovery signals."
     return base

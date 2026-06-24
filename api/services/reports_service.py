@@ -108,14 +108,24 @@ def _parse_win_rate_from_record(record: dict[str, Any]) -> float | None:
         return None
 
 
+_GATE_A2B_FLOOR = 60.0  # Gate A2b: fwd WR below this → disapprove
+
+
 def _gate_a2b_label(fwd_wr: float | None) -> str | None:
     if fwd_wr is None:
         return None
     if fwd_wr >= 63:
         return "PASS"
-    if fwd_wr >= 60:
+    if fwd_wr >= _GATE_A2B_FLOOR:
         return "PASS (cusp)"
     return "FAIL"
+
+
+def _gate_a2b_verdict(fwd_wr: float | None) -> str:
+    """Return approve/disapprove per Gate A2b (missing fwd_wr does not exclude)."""
+    if fwd_wr is None or fwd_wr >= _GATE_A2B_FLOOR:
+        return "approve"
+    return "disapprove"
 
 
 def _strategy_health_status(fwd_wr: float | None) -> str | None:
@@ -171,6 +181,56 @@ def strategy_health_report(report_date: str | None = None) -> dict[str, Any]:
         "report_date": payload.get("report_date"),
         "source_file": payload.get("source_file"),
         "strategy_health": build_strategy_health(records),
+    }
+
+
+def build_gate_a2b_gating(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Gate A2b verdict per function/interval/direction from all-signal rows."""
+    from collections import defaultdict
+
+    from api.services.signal_enrichment_service import _get_direction
+
+    groups: dict[tuple[str, str, str], list[dict[str, Any]]] = defaultdict(list)
+    for record in records:
+        function = str(record.get("Function", "")).strip()
+        interval_field = record.get(_INTERVAL_KEY, "")
+        interval = str(interval_field).split(",")[0].strip() if interval_field else ""
+        direction = _get_direction(record)
+        if function and interval:
+            groups[(function, interval, direction)].append(record)
+
+    rows: list[dict[str, Any]] = []
+    for (function, interval, direction), group_rows in sorted(groups.items()):
+        fwd_wr, trades = _parse_forward_test_field(group_rows[0])
+        verdict = _gate_a2b_verdict(fwd_wr)
+        rows.append(
+            {
+                "function": function,
+                "interval": interval,
+                "direction": direction,
+                "fwd_wr": fwd_wr,
+                "trades": trades,
+                "verdict": verdict,
+                "approved": verdict == "approve",
+            }
+        )
+    return rows
+
+
+def gate_a2b_gating_report(report_date: str | None = None) -> dict[str, Any]:
+    """Gate A2b approve/disapprove for every function/interval/direction combo."""
+    payload = load_report_records("all-signal", report_date=report_date)
+    records = payload.get("records", [])
+    gates = build_gate_a2b_gating(records)
+    approved_count = sum(1 for row in gates if row["approved"])
+    return {
+        "report_date": payload.get("report_date"),
+        "source_file": payload.get("source_file"),
+        "floor_pct": _GATE_A2B_FLOOR,
+        "gates": gates,
+        "row_count": len(gates),
+        "approved_count": approved_count,
+        "disapproved_count": len(gates) - approved_count,
     }
 
 
@@ -236,12 +296,24 @@ def resolve_report_path(report_name: str, report_date: str | None = None) -> Pat
     return Path(latest) if latest else None
 
 
-def load_report_records(report_name: str, report_date: str | None = None) -> dict[str, Any]:
+_ENRICH_SLUGS = frozenset({
+    "outstanding_signals", "outstanding_signal",
+    "new_signals", "new_signal",
+    "all_signal", "all-signal",
+})
+
+
+def load_report_records(
+    report_name: str,
+    report_date: str | None = None,
+    enrich: bool = True,
+) -> dict[str, Any]:
     path = resolve_report_path(report_name, report_date)
     if path is None:
         raise FileNotFoundError(f"Report not found: {report_name!r} date={report_date!r}")
     df = _read_csv(path)
-    if report_name.lower().replace("-", "_") in ("claude_shortlist", "claude_signals_report", "claude-shortlist"):
+    slug = report_name.lower().replace("-", "_").replace(".csv", "")
+    if slug in ("claude_shortlist", "claude_signals_report", "claude-shortlist"):
         if df.empty:
             txt_path = _find_latest_claude_txt()
             return {
@@ -254,15 +326,21 @@ def load_report_records(report_name: str, report_date: str | None = None) -> dic
                 "records": [],
                 "csv_empty": True,
             }
+    raw_records = (
+        _sort_outstanding_records(dataframe_to_records(df))
+        if slug in _OUTSTANDING_SLUGS
+        else dataframe_to_records(df)
+    )
+    if enrich and slug in _ENRICH_SLUGS:
+        from api.services.signal_enrichment_service import enrich_records
+        raw_records = enrich_records(raw_records)
     return {
         "report_name": report_name,
         "source_file": str(path),
         "report_date": _report_date_from_path(path),
         "format": "csv",
         "row_count": int(len(df)),
-        "records": _sort_outstanding_records(dataframe_to_records(df))
-        if report_name.lower().replace("-", "_").replace(".csv", "") in _OUTSTANDING_SLUGS
-        else dataframe_to_records(df),
+        "records": raw_records,
     }
 
 
@@ -281,17 +359,99 @@ def _find_latest_claude_txt() -> Path | None:
     return Path(max(files, key=key))
 
 
+def _extract_surface_json_records(text: str) -> list[dict[str, Any]]:
+    """Extract structured rows from <surface_json> block embedded in Claude txt report."""
+    import re as _re
+    import json as _json
+
+    pattern = r"<surface_json>(.*?)</surface_json>"
+    m = _re.search(pattern, text, _re.DOTALL)
+    if not m:
+        return []
+    try:
+        blob = _json.loads(m.group(1).strip())
+        return blob.get("surface_data", [])
+    except Exception:
+        return []
+
+
+def _parse_shortlist_structured_records(markdown: str) -> list[dict[str, Any]]:
+    """
+    Extract structured signal rows from Claude shortlist markdown text.
+    Prefers <surface_json> embedded block; falls back to regex parsing.
+    """
+    # Prefer the authoritative surface_json block
+    surface_rows = _extract_surface_json_records(markdown)
+    if surface_rows:
+        return surface_rows
+
+    import re as _re
+
+    records: list[dict[str, Any]] = []
+    seen: set[str] = set()
+
+    # Table row pattern: | SYMBOL | FUNCTION | DIRECTION | INTERVAL |
+    table_row_pat = _re.compile(
+        r"\|\s*([A-Z0-9.\-/]{1,12})\s*\|\s*([A-Z_\s]+?)\s*\|\s*(Long|Short|LONG|SHORT)\s*\|\s*([A-Za-z]+)\s*\|",
+        _re.IGNORECASE,
+    )
+    symbol_line_pat = _re.compile(
+        r"\*\*([A-Z0-9.\-/]{1,12})\*\*.*?(Long|Short|LONG|SHORT)",
+        _re.IGNORECASE,
+    )
+
+    for line in markdown.splitlines():
+        m = table_row_pat.search(line)
+        if m:
+            sym, fn, direction, interval = m.group(1), m.group(2).strip(), m.group(3).strip(), m.group(4).strip()
+            key = f"{sym}|{fn}|{direction}|{interval}".upper()
+            if key not in seen:
+                seen.add(key)
+                records.append({"symbol": sym, "function": fn, "direction": direction.title(), "interval": interval.title()})
+            continue
+        m = symbol_line_pat.search(line)
+        if m:
+            sym, direction = m.group(1), m.group(2)
+            fn_match = _re.search(
+                r"(TRENDPULSE|DELTADRIFT|OSCILLATOR[_\s]DELTA|SIGMASHELL|BASELINE[_\s]DIVERGENCE|FRACTAL[_\s]TRACK|PULSEGAUGE|BAND[_\s]MATRIX)",
+                line, _re.IGNORECASE,
+            )
+            fn = fn_match.group(1).replace(" ", "_").upper() if fn_match else "UNKNOWN"
+            interval_match = _re.search(r"\b(Daily|Weekly|Monthly|Yearly)\b", line, _re.IGNORECASE)
+            interval = interval_match.group(1).title() if interval_match else "Daily"
+            key = f"{sym}|{fn}|{direction}|{interval}".upper()
+            if key not in seen:
+                seen.add(key)
+                records.append({"symbol": sym, "function": fn, "direction": direction.title(), "interval": interval})
+    return records
+
+
 def get_shortlist_report() -> dict[str, Any]:
     txt_path = _find_latest_claude_txt()
     csv_path = resolve_report_path("claude-shortlist")
     csv_df = _read_csv(csv_path) if csv_path else pd.DataFrame()
+
+    markdown_text = ""
+    if txt_path and txt_path.exists():
+        try:
+            markdown_text = txt_path.read_text(encoding="utf-8")
+        except Exception:
+            markdown_text = ""
+
+    # Build structured records: prefer csv rows; fall back to txt parsing
+    if not csv_df.empty:
+        from api.services.signal_enrichment_service import enrich_records
+        structured_records = enrich_records(dataframe_to_records(csv_df))
+    else:
+        structured_records = _parse_shortlist_structured_records(markdown_text)
+
     return {
         "report_date": _report_date_from_path(txt_path) if txt_path else None,
         "text_file": str(txt_path) if txt_path else None,
         "csv_file": str(csv_path) if csv_path else None,
-        "markdown": txt_path.read_text(encoding="utf-8") if txt_path and txt_path.exists() else "",
-        "row_count": int(len(csv_df)),
-        "records": dataframe_to_records(csv_df),
+        "markdown": markdown_text,
+        "row_count": len(structured_records),
+        "records": structured_records,
     }
 
 

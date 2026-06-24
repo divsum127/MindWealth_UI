@@ -37,6 +37,47 @@ def _is_rare_or_extreme(reading: dict[str, Any] | None) -> bool:
     return tier in (SignalTier.RARE.value, SignalTier.EXTREME.value, "RARE", "EXTREME")
 
 
+def evaluate_combo_b_legs(
+    readings: dict[str, dict[str, Any]],
+    b_cfg: dict[str, Any] | None = None,
+) -> tuple[list[str], list[str]]:
+    """Return (passed_legs, pending_legs) for Combo B gate."""
+    b_cfg = b_cfg or load_config().get("named_combos", {}).get("B", {})
+    order = ["VIX", "HY", "CFTC"]
+    vix_r, hy_r, cftc_r = readings.get("VIX"), readings.get("HY"), readings.get("CFTC")
+    if not (vix_r and hy_r and cftc_r):
+        return [], order[:]
+    vix_pct = combo_pctile_from_reading(vix_r) or 0
+    vix_ok = (vix_r.get("raw_value") or 0) >= b_cfg.get("vix_min", 25) and vix_pct >= 80
+    hy_bps = _hy_oas_bps(hy_r.get("raw_value"))
+    hy_pct = combo_pctile_from_reading(hy_r) or 0
+    hy_ok = hy_bps >= b_cfg.get("hy_bps_min", 400) and hy_pct >= 80
+    cftc_ok = (combo_pctile_from_reading(cftc_r) or 100) <= b_cfg.get("cftc_max_pctile", 15)
+    flags = {"VIX": vix_ok, "HY": hy_ok, "CFTC": cftc_ok}
+    passed = [v for v in order if flags[v]]
+    pending = [v for v in order if not flags[v]]
+    return passed, pending
+
+
+def evaluate_combo_d_legs(
+    readings: dict[str, dict[str, Any]],
+    d_cfg: dict[str, Any] | None = None,
+) -> tuple[list[str], list[str]]:
+    """Return (passed_legs, pending_legs) for Combo D gate."""
+    d_cfg = d_cfg or load_config().get("named_combos", {}).get("D", {})
+    order = ["VXTS", "VIX", "CFTC"]
+    vxts_r, vix_r, cftc_r = readings.get("VXTS"), readings.get("VIX"), readings.get("CFTC")
+    if not (vxts_r and vix_r and cftc_r):
+        return [], order[:]
+    vxts_ok = (vxts_r.get("raw_value") or 0) >= d_cfg.get("vxts_min", 1.10)
+    vix_ok = (vix_r.get("raw_value") or 99) < d_cfg.get("vix_max", 18)
+    cftc_ok = (combo_pctile_from_reading(cftc_r) or 0) >= d_cfg.get("cftc_min_pctile", 85)
+    flags = {"VXTS": vxts_ok, "VIX": vix_ok, "CFTC": cftc_ok}
+    passed = [v for v in order if flags[v]]
+    pending = [v for v in order if not flags[v]]
+    return passed, pending
+
+
 def _attach_macro_regime(fires: list[ComboFire], macro_regime: dict[str, Any] | None) -> list[ComboFire]:
     if not macro_regime:
         return fires
@@ -63,21 +104,10 @@ def detect_named_combos(
     vix_r = readings.get("VIX")
     hy_r = readings.get("HY")
     cftc_r = readings.get("CFTC")
-    b_watch = False
-    b_fire = False
-    if vix_r and hy_r and cftc_r:
-        vix_pct = combo_pctile_from_reading(vix_r) or 0
-        vix_ok = (vix_r.get("raw_value") or 0) >= b_cfg.get("vix_min", 25) and vix_pct >= 80
-        hy_bps = _hy_oas_bps(hy_r.get("raw_value"))
-        hy_pct = combo_pctile_from_reading(hy_r) or 0
-        hy_ok = hy_bps >= b_cfg.get("hy_bps_min", 400) and hy_pct >= 80
-        cftc_ok = (combo_pctile_from_reading(cftc_r) or 100) <= b_cfg.get("cftc_max_pctile", 15)
-        count = sum([vix_ok, hy_ok, cftc_ok])
-        if count == 3:
-            b_fire = True
-        elif count >= 1:
-            # 1 or 2 of 3 legs met → WATCH (per architecture doc §4.6 and implementation status §P1)
-            b_watch = True
+    b_passed, b_pending = evaluate_combo_b_legs(readings, b_cfg)
+    b_count = len(b_passed)
+    b_fire = b_count == 3
+    b_watch = not b_fire and b_count >= 1
 
     if b_fire:
         fires.append(
@@ -91,6 +121,7 @@ def detect_named_combos(
                     cftc_r.get("direction"),
                 ],
                 status="ACTIVE",
+                macro_regime={"confirmed_legs": b_passed},
             )
         )
     elif b_watch:
@@ -101,6 +132,7 @@ def detect_named_combos(
                 var_ids=["VIX", "HY", "CFTC"],
                 directions=[None, None, None],
                 status="WATCH",
+                macro_regime={"confirmed_legs": b_passed, "pending_legs": b_pending},
             )
         )
 
@@ -188,6 +220,7 @@ def detect_named_combos(
     cftc_r = readings.get("CFTC")
     if vxts_r and vix_r and cftc_r:
         vxts_val = vxts_r.get("raw_value") or 0
+        d_passed, d_pending = evaluate_combo_d_legs(readings, d_cfg)
         if vxts_val >= d_cfg.get("vxts_min", 1.10) and (vix_r.get("raw_value") or 99) < d_cfg.get("vix_max", 18):
             status = "ACTIVE" if (combo_pctile_from_reading(cftc_r) or 0) >= d_cfg.get("cftc_min_pctile", 85) else "WATCH"
             fires.append(
@@ -197,6 +230,7 @@ def detect_named_combos(
                     var_ids=["VXTS", "CFTC", "VIX"],
                     directions=[vxts_r.get("direction"), cftc_r.get("direction"), vix_r.get("direction")],
                     status=status,
+                    macro_regime={"confirmed_legs": d_passed, "pending_legs": d_pending},
                 )
             )
 
