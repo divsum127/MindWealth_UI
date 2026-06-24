@@ -3,7 +3,7 @@
   "info": {
     "title": "MindWealth API",
     "description": "REST API for MindWealth trading analysis services.",
-    "version": "1.5.0"
+    "version": "1.5.1"
   },
   "paths": {
     "/api/v1/conviction/tickers": {
@@ -2279,6 +2279,43 @@
             }
           },
           {
+            "name": "enrich",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Inject supplementary surface fields. Defaults to false for all-signal (large dataset), true for outstanding/new.",
+              "title": "Enrich"
+            },
+            "description": "Inject supplementary surface fields. Defaults to false for all-signal (large dataset), true for outstanding/new."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Maximum number of records to return (applied after enrichment).",
+              "title": "Limit"
+            },
+            "description": "Maximum number of records to return (applied after enrichment)."
+          },
+          {
             "name": "X-API-Key",
             "in": "header",
             "required": false,
@@ -2346,6 +2383,43 @@
               "type": "string",
               "title": "Report Date"
             }
+          },
+          {
+            "name": "enrich",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Inject supplementary surface fields. Defaults to false for all-signal (large dataset), true for outstanding/new.",
+              "title": "Enrich"
+            },
+            "description": "Inject supplementary surface fields. Defaults to false for all-signal (large dataset), true for outstanding/new."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Maximum number of records to return (applied after enrichment).",
+              "title": "Limit"
+            },
+            "description": "Maximum number of records to return (applied after enrichment)."
           },
           {
             "name": "X-API-Key",
@@ -2493,6 +2567,292 @@
                   "type": "object",
                   "additionalProperties": true,
                   "title": "Response Get Strategy Health"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/signals/surface": {
+      "get": {
+        "tags": [
+          "signals"
+        ],
+        "summary": "Get Signal Surface",
+        "description": "Return enriched per-signal surface fields for bubble chart + ranked cards.\n\nAdds to each row: composite_score, window_remaining_pct, tier, exit_fired,\nalpha_interpretation, er_annualized, signal_alpha_annualized, mtm_pct,\ndays_elapsed, avg_hold_days, conviction_bq_score, conviction_fs_class.\n\nAll values are Python-computed from CSV columns \u2014 no mock data.",
+        "operationId": "get_signal_surface",
+        "parameters": [
+          {
+            "name": "report",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Signal report to enrich: outstanding-signals | new-signals | all-signal",
+              "default": "outstanding-signals",
+              "title": "Report"
+            },
+            "description": "Signal report to enrich: outstanding-signals | new-signals | all-signal"
+          },
+          {
+            "name": "report_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "YYYY-MM-DD (defaults to latest)",
+              "title": "Report Date"
+            },
+            "description": "YYYY-MM-DD (defaults to latest)"
+          },
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Signal Surface"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/signals/summary": {
+      "get": {
+        "tags": [
+          "signals"
+        ],
+        "summary": "Get Signal Summary",
+        "description": "Return sidebar KPI counts derived from enriched signal records.\n\nFields: total, long, short, exited, tier_counts, function_counts.",
+        "operationId": "get_signal_summary",
+        "parameters": [
+          {
+            "name": "report",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "outstanding-signals | new-signals | all-signal",
+              "default": "outstanding-signals",
+              "title": "Report"
+            },
+            "description": "outstanding-signals | new-signals | all-signal"
+          },
+          {
+            "name": "report_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "YYYY-MM-DD (defaults to latest)",
+              "title": "Report Date"
+            },
+            "description": "YYYY-MM-DD (defaults to latest)"
+          },
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Signal Summary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/signals/check-degradation": {
+      "post": {
+        "tags": [
+          "signals"
+        ],
+        "summary": "Layer 1 degradation alert check",
+        "description": "Run Layer 1 degradation analysis across all (asset/function/interval/direction) combos.\n\nTriggers fire when **any** of these conditions are met:\n\n- Live forward win rate for a combo drops below 61% **and** >=2 consecutive months of\n  successively lower FWD win rate are observed in the per-asset forward testing records.\n- A booked loss exists on any virtual trading portfolio position (realised P&L < 0).\n- A live position's MTM exceeds -10%.\n\nOn trigger, loss pattern is classified as asset-specific, function degradation,\nor a combo issue, and a recommendation is generated.",
+        "operationId": "check_signal_degradation",
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Check Signal Degradation"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/signals/counts": {
+      "get": {
+        "tags": [
+          "signals"
+        ],
+        "summary": "Get Signal Counts",
+        "description": "Return sidebar navigation badge counts: outstanding, new, shortlist.\nAlso includes tier breakdown for outstanding signals.",
+        "operationId": "get_signal_counts",
+        "parameters": [
+          {
+            "name": "report_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "YYYY-MM-DD (defaults to latest)",
+              "title": "Report Date"
+            },
+            "description": "YYYY-MM-DD (defaults to latest)"
+          },
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Signal Counts"
                 }
               }
             }
@@ -4250,6 +4610,19 @@
         "description": "Return cluster-level correlation matrix, breach list, and cluster weight bars.\n\nBreaches: \u03c1 > 0.75 = watch, \u03c1 > 0.85 = action required.",
         "operationId": "getPortfolioRisk",
         "parameters": [
+          {
+            "name": "scenario",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^(normal|stress|lowvol)$",
+              "description": "Sizer scenario for cluster weights: normal | stress | lowvol",
+              "default": "normal",
+              "title": "Scenario"
+            },
+            "description": "Sizer scenario for cluster weights: normal | stress | lowvol"
+          },
           {
             "name": "X-API-Key",
             "in": "header",
