@@ -205,7 +205,7 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 198534397952.0,
   "industry": "Packaged Foods",
-  "last_daily_update": "2026-06-26T09:14:20+00:00",
+  "last_daily_update": "2026-06-26T16:10:44+00:00",
   "last_full_calc": "2026-05-18T20:47:38+00:00",
   "manual_overrides": {},
   "market_cap": 108006901200.0,
@@ -250,7 +250,7 @@
   "roic_5y_avg": 0.28709,
   "sector": "Consumer Defensive",
   "ticker": "BBTC.NS",
-  "updated_at": "2026-06-26T09:14:20+00:00",
+  "updated_at": "2026-06-26T16:10:44+00:00",
   "valuation_tax": 0.0,
   "valuation_tax_breakdown": {
     "components": {

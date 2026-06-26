@@ -195,7 +195,7 @@
   "fs_quality_base": 50.0,
   "fs_score": null,
   "full_recalc_trigger": "daily_fundamentals_script",
-  "last_daily_update": "2026-06-26T09:14:20+00:00",
+  "last_daily_update": "2026-06-26T16:10:44+00:00",
   "last_full_calc": "2026-05-15T16:34:16+00:00",
   "manual_overrides": {},
   "market_cap": null,
@@ -243,7 +243,7 @@
   "price": 24056.0,
   "quote_type": "INDEX",
   "ticker": "^NSEI",
-  "updated_at": "2026-06-26T09:14:20+00:00",
+  "updated_at": "2026-06-26T16:10:44+00:00",
   "valuation_tax": null,
   "yield_trap_warning": false
 }

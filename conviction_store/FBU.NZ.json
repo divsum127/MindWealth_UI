@@ -201,7 +201,7 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 7008000000.0,
   "industry": "Building Materials",
-  "last_daily_update": "2026-06-26T09:14:20+00:00",
+  "last_daily_update": "2026-06-26T16:10:44+00:00",
   "last_full_calc": "2026-05-15T16:30:09+00:00",
   "manual_overrides": {},
   "market_cap": 3622404096.0,
@@ -242,7 +242,7 @@
   "roic_5y_avg": -0.06039,
   "sector": "Basic Materials",
   "ticker": "FBU.NZ",
-  "updated_at": "2026-06-26T09:14:20+00:00",
+  "updated_at": "2026-06-26T16:10:44+00:00",
   "valuation_tax": -2.0,
   "valuation_tax_breakdown": {
     "components": {

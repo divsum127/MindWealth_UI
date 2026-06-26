@@ -202,7 +202,7 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 2833153523712.0,
   "industry": "Banks - Regional",
-  "last_daily_update": "2026-06-26T09:14:20+00:00",
+  "last_daily_update": "2026-06-26T16:10:44+00:00",
   "last_full_calc": "2026-05-18T20:48:59+00:00",
   "manual_overrides": {},
   "market_cap": 12259371061096.0,
@@ -240,7 +240,7 @@
   "roic_5y_avg": 0.13818,
   "sector": "Financial Services",
   "ticker": "HDFCBANK.NS",
-  "updated_at": "2026-06-26T09:14:20+00:00",
+  "updated_at": "2026-06-26T16:10:44+00:00",
   "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {

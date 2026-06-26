@@ -203,7 +203,7 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 3407000064.0,
   "industry": "Utilities - Renewable",
-  "last_daily_update": "2026-06-26T09:14:20+00:00",
+  "last_daily_update": "2026-06-26T16:10:44+00:00",
   "last_full_calc": "2026-05-18T20:49:23+00:00",
   "manual_overrides": {},
   "market_cap": 9496532990.453735,
@@ -239,7 +239,7 @@
   "roic_5y_avg": 0.01854,
   "sector": "Utilities",
   "ticker": "MCY.NZ",
-  "updated_at": "2026-06-26T09:14:20+00:00",
+  "updated_at": "2026-06-26T16:10:44+00:00",
   "valuation_tax": 0.0,
   "valuation_tax_breakdown": {
     "components": {

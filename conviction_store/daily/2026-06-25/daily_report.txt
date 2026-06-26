@@ -11,6 +11,7 @@ Alerts:
 - 2807.HK: low_conviction
 - 3033.HK: low_conviction
 - 3690.HK: low_conviction
+- AAPL: low_conviction
 - ABNB: low_conviction
 - AEM.TO: low_conviction
 - AIA.NZ: fs_moderate_low, low_conviction
@@ -140,7 +141,6 @@ Alerts:
 - TSLA: fs_moderate_low, low_conviction
 - TSM: low_conviction
 - UBER: low_conviction
-- UPS: low_conviction
 - URNM: low_conviction
 - USCI: low_conviction
 - USDCHF=X: low_conviction

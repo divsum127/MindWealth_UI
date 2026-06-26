@@ -204,7 +204,7 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 31653519360.0,
   "industry": "Internet Content & Information",
-  "last_daily_update": "2026-06-26T09:14:20+00:00",
+  "last_daily_update": "2026-06-26T16:10:44+00:00",
   "last_full_calc": "2026-05-18T20:49:44+00:00",
   "manual_overrides": {},
   "market_cap": 634782689240.0,
@@ -251,7 +251,7 @@
   "roic_5y_avg": 0.03154658581675154,
   "sector": "Communication Services",
   "ticker": "NAUKRI.NS",
-  "updated_at": "2026-06-26T09:14:20+00:00",
+  "updated_at": "2026-06-26T16:10:44+00:00",
   "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {

@@ -204,7 +204,7 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 388405938618368.0,
   "industry": "Consumer Electronics",
-  "last_daily_update": "2026-06-26T09:14:20+00:00",
+  "last_daily_update": "2026-06-26T16:10:44+00:00",
   "last_full_calc": "2026-05-18T20:47:10+00:00",
   "manual_overrides": {},
   "market_cap": 2229348174487000.0,
@@ -250,7 +250,7 @@
   "roic_5y_avg": 0.18854,
   "sector": "Technology",
   "ticker": "005930.KS",
-  "updated_at": "2026-06-26T09:14:20+00:00",
+  "updated_at": "2026-06-26T16:10:44+00:00",
   "valuation_tax": -8.0,
   "valuation_tax_breakdown": {
     "components": {

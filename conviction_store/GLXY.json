@@ -188,7 +188,7 @@
   "debt_purpose": null,
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 8368939961.809,
+  "enterprise_value": 8365110037.691,
   "eps_fwd": 0.09357,
   "eps_ttm": -0.24,
   "ev_fwd_rev": 0.1385,
@@ -224,10 +224,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 60406728000.0,
   "industry": "Capital Markets",
-  "last_daily_update": "2026-06-26T09:14:20+00:00",
+  "last_daily_update": "2026-06-26T16:10:44+00:00",
   "last_full_calc": "2026-06-23T14:09:18+00:00",
   "manual_overrides": {},
-  "market_cap": 5411558961.809,
+  "market_cap": 5407729037.691,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -248,7 +248,7 @@
     "valuation:pe_ttm"
   ],
   "net_debt_stored": 2957381000.0,
-  "owner_earnings_yield": -0.278879,
+  "owner_earnings_yield": -0.279076,
   "pe_history_insufficient": false,
   "pe_percentile_20y": null,
   "pe_ttm": null,
@@ -260,13 +260,13 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 28.260000228881836,
+  "price": 28.239999771118164,
   "quote_type": "EQUITY",
   "revenue_accelerating": false,
   "roic_5y_avg": -0.06524,
   "sector": "Financial Services",
   "ticker": "GLXY",
-  "updated_at": "2026-06-26T09:14:20+00:00",
+  "updated_at": "2026-06-26T16:10:44+00:00",
   "valuation_tax": -2.0,
   "valuation_tax_breakdown": {
     "components": {

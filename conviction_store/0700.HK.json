@@ -192,7 +192,7 @@
   "dividend_yield_5y_std": 0.003571,
   "dividend_yield_current": 0.01287,
   "dividend_yield_zscore": 2.1266,
-  "enterprise_value": 3940674906964.9824,
+  "enterprise_value": 3940675016948.2,
   "eps_fwd": 38.30135,
   "eps_ttm": 27.97,
   "ev_fwd_rev": 5.1297,
@@ -228,10 +228,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 768201981952.0,
   "industry": "Internet Content & Information",
-  "last_daily_update": "2026-06-26T09:14:20+00:00",
+  "last_daily_update": "2026-06-26T16:10:44+00:00",
   "last_full_calc": "2026-06-23T14:05:49+00:00",
   "manual_overrides": {},
-  "market_cap": 3710245906964.9824,
+  "market_cap": 3710246016948.2,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -267,13 +267,13 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 411.79998779296875,
+  "price": 411.8,
   "quote_type": "EQUITY",
   "revenue_accelerating": null,
   "roic_5y_avg": 0.20515,
   "sector": "Communication Services",
   "ticker": "0700.HK",
-  "updated_at": "2026-06-26T09:14:20+00:00",
+  "updated_at": "2026-06-26T16:10:44+00:00",
   "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {

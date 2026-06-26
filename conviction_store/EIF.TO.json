@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.102253,
   "dividend_yield_5y_std": 0.042481,
-  "dividend_yield_current": 0.021046,
-  "dividend_yield_zscore": -1.9116,
-  "enterprise_value": 9615430768.281235,
+  "dividend_yield_current": 0.021022,
+  "dividend_yield_zscore": -1.9122,
+  "enterprise_value": 9623879349.843582,
   "eps_fwd": 5.08516,
   "eps_ttm": 3.47,
-  "ev_fwd_rev": 2.7664,
+  "ev_fwd_rev": 2.7688,
   "fcf_ttm": -82222000.0,
   "fd_direction": "stable",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 3475802112.0,
   "industry": "Airlines",
-  "last_daily_update": "2026-06-26T09:14:20+00:00",
+  "last_daily_update": "2026-06-26T16:10:44+00:00",
   "last_full_calc": "2026-05-21T21:06:25+00:00",
   "manual_overrides": {},
-  "market_cap": 7386613768.281235,
+  "market_cap": 7395062349.843582,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 2228817000.0,
-  "owner_earnings_yield": -0.011131,
+  "owner_earnings_yield": -0.011118,
   "pe_20y_array": [
     26.797,
     28.3542,
@@ -236,7 +236,7 @@
     41.9427
   ],
   "pe_percentile_20y": 55.56,
-  "pe_ttm": 37.7925,
+  "pe_ttm": 37.8357,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -245,12 +245,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 131.13999938964844,
+  "price": 131.2899932861328,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.11579,
   "sector": "Industrials",
   "ticker": "EIF.TO",
-  "updated_at": "2026-06-26T09:14:20+00:00",
+  "updated_at": "2026-06-26T16:10:44+00:00",
   "valuation_tax": -2.0,
   "valuation_tax_breakdown": {
     "components": {

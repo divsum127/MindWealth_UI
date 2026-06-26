@@ -187,12 +187,12 @@
   },
   "dividend_yield_5y_mean": 0.01698,
   "dividend_yield_5y_std": 0.006843,
-  "dividend_yield_current": 0.017947,
-  "dividend_yield_zscore": 0.1413,
-  "enterprise_value": 7600173089.85643,
+  "dividend_yield_current": 0.017925,
+  "dividend_yield_zscore": 0.1381,
+  "enterprise_value": 7609569763.564301,
   "eps_fwd": 3.235354,
   "eps_ttm": -20.47,
-  "ev_fwd_rev": 1.3912,
+  "ev_fwd_rev": 1.3929,
   "fcf_ttm": -314000000.0,
   "fd_direction": "positive",
   "fd_votes": {},
@@ -203,10 +203,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 5463000000.0,
   "industry": "Lumber & Wood Production",
-  "last_daily_update": "2026-06-26T09:14:20+00:00",
+  "last_daily_update": "2026-06-26T16:10:44+00:00",
   "last_full_calc": "2026-05-18T20:51:03+00:00",
   "manual_overrides": {},
-  "market_cap": 7766173089.85643,
+  "market_cap": 7775569763.564301,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -224,7 +224,7 @@
     "valuation:pe_ttm"
   ],
   "net_debt_stored": -166000000.0,
-  "owner_earnings_yield": -0.040432,
+  "owner_earnings_yield": -0.040383,
   "pe_percentile_20y": null,
   "pe_ttm": null,
   "position_layers": {
@@ -235,12 +235,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 99.18000030517578,
+  "price": 99.30000305175781,
   "quote_type": "EQUITY",
   "roic_5y_avg": -0.18558,
   "sector": "Basic Materials",
   "ticker": "WFG.TO",
-  "updated_at": "2026-06-26T09:14:20+00:00",
+  "updated_at": "2026-06-26T16:10:44+00:00",
   "valuation_tax": -3.0,
   "valuation_tax_breakdown": {
     "components": {

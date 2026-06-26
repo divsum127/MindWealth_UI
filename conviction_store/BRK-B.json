@@ -189,10 +189,10 @@
   },
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 1129167845448.8137,
+  "enterprise_value": 1148628501155.7788,
   "eps_fwd": 21.30699,
   "eps_ttm": 33.59,
-  "ev_fwd_rev": 2.8581,
+  "ev_fwd_rev": 2.9073,
   "fcf_ttm": 16113000000.0,
   "fd_direction": "positive",
   "fd_votes": {},
@@ -203,10 +203,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 395079000000.0,
   "industry": "Insurance - Diversified",
-  "last_daily_update": "2026-06-26T09:14:20+00:00",
+  "last_daily_update": "2026-06-26T16:10:44+00:00",
   "last_full_calc": "2026-05-15T16:29:02+00:00",
   "manual_overrides": {},
-  "market_cap": 1052134845448.8137,
+  "market_cap": 1071595501155.7788,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -225,7 +225,7 @@
     "valuation:dividend_yield_zscore"
   ],
   "net_debt_stored": 77033000000.0,
-  "owner_earnings_yield": 0.015315,
+  "owner_earnings_yield": 0.015036,
   "pe_20y_array": [
     19.3747,
     19.3464,
@@ -262,7 +262,7 @@
     19.5908
   ],
   "pe_percentile_20y": 0.0,
-  "pe_ttm": 14.5225,
+  "pe_ttm": 14.7911,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -271,12 +271,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 487.80999755859375,
+  "price": 496.83270263671875,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.10499,
   "sector": "Financial Services",
   "ticker": "BRK-B",
-  "updated_at": "2026-06-26T09:14:20+00:00",
+  "updated_at": "2026-06-26T16:10:44+00:00",
   "valuation_tax": -1.0,
   "valuation_tax_breakdown": {
     "components": {

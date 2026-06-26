@@ -189,10 +189,10 @@
   },
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 47517976172.92071,
+  "enterprise_value": 51334442313.11287,
   "eps_fwd": 1.17918,
   "eps_ttm": 0.58,
-  "ev_fwd_rev": 4.95,
+  "ev_fwd_rev": 5.3476,
   "fcf_ttm": 3665755000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -203,10 +203,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 9599604000.0,
   "industry": "Banks - Regional",
-  "last_daily_update": "2026-06-26T09:14:20+00:00",
+  "last_daily_update": "2026-06-26T16:10:44+00:00",
   "last_full_calc": "2026-05-15T16:32:04+00:00",
   "manual_overrides": {},
-  "market_cap": 60577296172.92071,
+  "market_cap": 64393762313.11287,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -225,7 +225,7 @@
     "valuation:dividend_yield_zscore"
   ],
   "net_debt_stored": -13059320000.0,
-  "owner_earnings_yield": 0.060514,
+  "owner_earnings_yield": 0.056927,
   "pe_20y_array": [
     34.8432,
     34.9206,
@@ -309,7 +309,7 @@
     23.4446
   ],
   "pe_percentile_20y": 0.0,
-  "pe_ttm": 21.4828,
+  "pe_ttm": 22.8362,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -318,12 +318,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 12.460000038146973,
+  "price": 13.244999885559082,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.30278,
   "sector": "Financial Services",
   "ticker": "NU",
-  "updated_at": "2026-06-26T09:14:20+00:00",
+  "updated_at": "2026-06-26T16:10:44+00:00",
   "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {
