@@ -1,0 +1,8 @@
+horizon,slice,pairs_with_sync_n_ge_3,pairs_sync_beats_d_alone,mean_sync_bear_hit_pct,mean_d_alone_bear_hit_pct,mean_lift_pct,median_lift_pct,pairs_sync_bear_lt_30pct,mean_e_alone_bear_hit_pct,mean_sync_avg_spx_pct,note
+1W,tactical_on_sync,618,283,51.15,53.91,-2.77,-4.0,,,,
+2W,tactical_on_sync,618,189,37.68,40.18,-2.5,-5.61,,,,
+3W,tactical_on_sync,618,247,36.57,36.84,-0.26,-0.96,,,,
+4W,tactical_on_sync,618,129,32.87,39.59,-6.72,-7.7,,,,
+6M,structural_on_sync_dates,618,,36.83,,,,275,36.33,3.71,structural_on_sync = E 12M/6M returns on dates BOTH D+E fire (typically bullish)
+9M,structural_on_sync_dates,618,,33.83,,,,171,49.21,2.34,structural_on_sync = E 12M/6M returns on dates BOTH D+E fire (typically bullish)
+12M,structural_on_sync_dates,618,,25.77,,,,303,42.29,3.47,structural_on_sync = E 12M/6M returns on dates BOTH D+E fire (typically bullish)

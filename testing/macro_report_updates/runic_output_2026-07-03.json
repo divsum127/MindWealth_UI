@@ -59,9 +59,7 @@
       "avg_return_3m": 10.93078368383251
     }
   ],
-  "watch_combos": [
-    "B"
-  ],
+  "watch_combos": [],
   "persistence_signals": [],
   "ssi_multiplier": 1.0,
   "ssi_layer2_status": "CONFIRMED",
@@ -184,7 +182,7 @@
       "regime_pctile": 0.6535947712418301,
       "direction": "DOWN",
       "cftc_rm_pctile": 80.76923076923077,
-      "source_note": "CFTC.gov TFF \u00b7 S&P 500 Consolidated \u00b7 Lev Money net (Fri report = Tue positions)"
+      "source_note": "CFTC.gov TFF · S&P 500 Consolidated · Lev Money net (Fri report = Tue positions)"
     },
     {
       "num": 9,
@@ -237,7 +235,7 @@
   },
   "cftc_status": "PENDING_CFTC_CONFIRM",
   "pending_cpi_release": false,
-  "system_recommendation": "TACTICAL EASY MONEY \u2014 Combo F recovery window active; hold/add tactically per conviction. Respect Combo C if also active.",
+  "system_recommendation": "TACTICAL EASY MONEY — Combo F recovery window active; hold/add tactically per conviction. Respect Combo C if also active.",
   "generic_combo_watch": [
     {
       "vars": [
@@ -300,7 +298,7 @@
       "combo": "A",
       "name": "Liquidity",
       "status": "INACTIVE",
-      "duration": "\u2014",
+      "duration": "—",
       "direction": "BEARISH",
       "hit_rate_3m": "83.3% (6M)",
       "avg_return_3m": "+6.7% (6M)"
@@ -308,8 +306,8 @@
     {
       "combo": "B",
       "name": "Capitulation",
-      "status": "WATCH",
-      "duration": "\u2014",
+      "status": "INACTIVE",
+      "duration": "—",
       "direction": "BULLISH",
       "hit_rate_3m": "79.8% (3M)",
       "avg_return_3m": "+5.0% (3M)"
@@ -327,7 +325,7 @@
       "combo": "D",
       "name": "FOMO Top",
       "status": "INACTIVE",
-      "duration": "\u2014",
+      "duration": "—",
       "direction": "BEARISH",
       "hit_rate_3m": "38.5% (5D)",
       "avg_return_3m": "+0.2% (5D)"
@@ -336,7 +334,7 @@
       "combo": "E",
       "name": "Valuation Extreme",
       "status": "CONFIRMED",
-      "duration": "\u2014 \u00b7 legs CAPE, NFCI",
+      "duration": "— · legs CAPE, NFCI",
       "direction": "BEARISH",
       "hit_rate_3m": "18.9% (12M)",
       "avg_return_3m": "+10.9% (12M)"
@@ -345,7 +343,7 @@
       "combo": "F",
       "name": "Recovery",
       "status": "ACTIVE",
-      "duration": "Week 14 of 26 (MEDIUM) \u00b7 started 2026-04-03",
+      "duration": "Week 14 of 26 (MEDIUM) · started 2026-04-03",
       "direction": "BULLISH",
       "hit_rate_3m": "78.8% (6M)",
       "avg_return_3m": "+5.5% (6M)"
@@ -354,7 +352,7 @@
       "combo": "G",
       "name": "Hidden Stress",
       "status": "INACTIVE",
-      "duration": "\u2014",
+      "duration": "—",
       "direction": "BEARISH",
       "hit_rate_3m": "N/A",
       "avg_return_3m": "N/A"
@@ -383,7 +381,7 @@
     ],
     [
       "SSI",
-      "1.00\u00d7 (CONFIRMED)"
+      "1.00× (CONFIRMED)"
     ]
   ],
   "output_path": "macro_intelligence/output/runic_output.json",

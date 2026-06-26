@@ -441,7 +441,10 @@ The T2 9-state table above is the systematic test data you asked for. My recomme
 | TIGHT_FLAT         | 30    | 1.6%        |
 
 
-**Excel / Google Drive:** Inline T2 table above covers all 9 states at 1m/3m/6m/9m/12m. Full export: `macro_intelligence/analysis/regime_v2_experiments/` (T2 query output). Google Drive Excel link on request.
+**Exports (2026-06-25):**
+- Summary CSV (1 row per state): `testing/macro_th_exp/testingv1_feedback/csv_exports/liquidity_v2_9state_spx_returns.csv`
+- Per-fire CSV (15,161 rows, one per combo_fires event): `testing/macro_th_exp/testingv1_feedback/csv_exports/liquidity_v2_9state_perfire_rows.csv`
+- JSON experiment output: `macro_intelligence/analysis/regime_v2_experiments/liquidity_v2_9state_spx_returns.json`
 
 I prefer **9 states with NEUTRAL separate** in storage, per your intuition.
 
@@ -707,3 +710,187 @@ Episode 5 (2022–2024) is the longest and deepest (−106 bps trough, 112 weeks
 ---
 
 *Sources: `Macro_Regime_Threshold_Experiments_Report_2026-06-09.md` (v4 inline edits), `threshold_validation_report.md`, `testingv2_report.md`, `testingv4_status.md`, `macro_intelligence/analysis/regime_v2_experiments/*.json`, `macro_intelligence/data/runic.db`. Prepared 2026-06-16.*
+---
+
+## New Questions (2026-06-25)
+
+### Q: Fed Cycle Matrix — Formalise
+
+**Question:** fed_cycle has 7 states: HIKING_EARLY / HIKING_LATE / CUTTING_EARLY / CUTTING_LATE / PAUSING / QE / QT. curve_regime has 4 states: INVERTED / FLAT / STEEPENING / NORMAL. 7×4 = 28-cell matrix. We discussed a 3×3 simplification (tightening/easing/pausing × 3 curve states). (a) Is this formalised in codebase or only conceptual? (b) Are regime-adjusted hit rates grouped by 7 raw states or the 3 buckets? Also confirm Claude classifier has `temperature: 0`.
+
+---
+
+#### (a) Fed cycle states — confirmed
+
+**fed_cycle (7 states, raw, in `fed_cycle.py`):**
+
+| Label | When assigned |
+|-------|--------------|
+| `HIKING_EARLY` | Active hike cycle, < `cycle_early_months` (default 6m) since cycle start |
+| `HIKING_LATE` | Active hike cycle, ≥ 6m since cycle start |
+| `CUTTING_EARLY` | Active cut cycle, < 6m since cut start |
+| `CUTTING_LATE` | Active cut cycle, ≥ 6m since cut start |
+| `PAUSING` | DFF neither rising ≥ 0.25pp nor falling ≤ −0.25pp over 13w/4w windows |
+| `QE` | WALCL MoM > 1.0% (balance sheet expanding), OR hardcoded COVID QE window Mar 2020–Jun 2021 |
+| `QT` | WALCL MoM < −0.5% AND label would otherwise be PAUSING |
+
+**curve_regime (4 states, raw, in `regime_rules.py` / `regime_v2_shadow.py`):**
+
+| Label | Rule |
+|-------|------|
+| `INVERTED` | T10Y2Y spread < −10 bps (v1) or < 0 for ≥ 4 consecutive weeks (v2/F2a) |
+| `FLAT` | Spread < 30 bps (not inverted) |
+| `STEEPENING` | Spread ≥ 30 bps AND 4-week steepening ≥ 15 bps (v1) or ≥ 40 bps (v2) |
+| `NORMAL` | Spread ≥ 30 bps, no significant steepening momentum |
+
+Curve_regime confirmed as 4 states — **Divyanshu is correct.**
+
+---
+
+#### (b) Is the 3×3 simplification formalised? — **No, it is NOT formalised. A 4-state collapse exists.**
+
+The codebase has **`collapse_fed_cycle_v2()`** in `regime_v2_shadow.py` which maps 7 raw states → **4 v2 states** (not 3):
+
+| Raw fed_cycle | → fed_cycle_v2 |
+|---------------|----------------|
+| `HIKING_EARLY`, `HIKING_LATE`, `TIGHTENING` | **TIGHTENING** |
+| `CUTTING_EARLY` | **PIVOTING** |
+| `CUTTING_LATE` | **EASING** |
+| `PAUSING`, `QE`, `QT` | **EASY** |
+
+**What is stored in DB (macro_regime_log_v2, n=1,901 Fridays):**
+- `fed_cycle_v2`: TIGHTENING=763, EASING=727, EASY=384, PIVOTING=27
+- `curve_regime_v2`: STEEPENING=1,471, FLAT=316, INVERTED=85, NORMAL=29
+
+The **7×4 = 28-cell matrix** (or 3×3 simplification) discussed conceptually is **not implemented as a cross-product or as any analytics structure**. No code currently groups hit rates by `(fed_cycle_bucket × curve_regime_bucket)` cells. The `fed_cycle_v2` collapse is a linearisation only — no 28-cell or 9-cell matrix is built or queried.
+
+**What the `fed_cycle_v2` collapse maps to in practice:**
+- PIVOTING has only n=27 Fridays — effectively tiny; for hit-rate purposes it behaves as a rounding error.
+- The 3×3 presentation simplification (tightening/easing/pausing) could be achieved by merging PIVOTING → EASING and renaming EASY → PAUSING, but **this rename is not done anywhere in code**.
+
+**Verdict:** The 3×3 simplification is **conceptual only**. The codebase has a 4-state `fed_cycle_v2`, not 3. No matrix cross with curve_regime exists in any analytics table.
+
+---
+
+#### (c) How are regime-adjusted hit rates actually grouped?
+
+**Two separate systems:**
+
+**1. Hostile regime filter (binary — used in threshold_sweep_v2.py and combo_discovery_pipeline.py):**
+```
+HOSTILE_FED = {"HIKING_EARLY", "HIKING_LATE", "TIGHTENING"}
+hostile_curve_regimes: [INVERTED]  # from CONFIG.yaml
+```
+A fire is classified as HOSTILE (True/False) if: `fed_cycle ∈ {HIKING_EARLY, HIKING_LATE, TIGHTENING}` OR `curve_regime == "INVERTED"`. Hit rates are then reported as: overall hit rate vs hostile-subset hit rate. **This is a binary split, not a 7-state or 3-state split.**
+
+**Important gap:** `combo_fires.macro_regime` stores only 3 distinct raw fed_cycle values in practice: `HIKING_LATE`, `CUTTING_LATE`, `QE`. `HIKING_EARLY`, `CUTTING_EARLY`, `PAUSING`, `QT` do not appear in the combo_fires table because they were recorded under the legacy label at time of fire. The hostile filter catches `HIKING_LATE` correctly; `HIKING_EARLY` fires are not in the DB (no combo named during that window historically).
+
+**2. fm_events analytics (used in testingv2 experiments):**
+Uses `fed_cycle_v2` (4-state collapsed) for slicing, applied via `slice_by_regime()` in `metrics.py`. Hit rates in the A-regime_dimensions.json and T2/T3 tables are grouped by the **4-state** `fed_cycle_v2` labels.
+
+**Summary:**
+
+| Context | Grouping used |
+|---------|--------------|
+| Hostile filter (threshold sweep, combo discovery) | Binary: HOSTILE yes/no |
+| fm_events / regime slice analytics | 4-state fed_cycle_v2 (TIGHTENING/PIVOTING/EASING/EASY) |
+| Production nightly regime display | 7-state raw fed_cycle |
+| Presentation / 3×3 matrix | Conceptual only — not implemented |
+
+---
+
+#### (d) Claude classifier temperature — **BUG FOUND AND FIXED**
+
+`temperature` was **NOT set** in `call_claude()` (`src/macro_intelligence/claude/_client.py`). The Anthropic API defaults to `temperature=1.0` when omitted, meaning historical replays on identical inputs could produce different narrative text each time.
+
+**Fix applied 2026-06-25:** `temperature=0.0` added as default parameter to `call_claude()`:
+
+```python
+def call_claude(system: str, user: str, max_tokens: int = 400, temperature: float = 0.0) -> str:
+    ...
+    response = client.messages.create(
+        model=_model(),
+        max_tokens=max_tokens,
+        temperature=temperature,   # ← was missing; now defaults to 0.0
+        ...
+    )
+```
+
+All callers (`nightly_briefing.py`, geo classifier, etc.) inherit `temperature=0.0` by default. Any caller that explicitly wants non-deterministic generation can pass `temperature=1.0`.
+
+**Note:** Even at `temperature=0.0`, identical outputs are guaranteed only if the model version is pinned (which it is via `MACRO_CLAUDE_MODEL` env var or `CONFIG.yaml` `claude.model`). Model upgrades will still change outputs.
+
+
+---
+
+### Q9: Combo B Regime-Adjusted Hit Rate — Run and Validated (2026-06-25)
+
+**Question:** Spec claims Combo B hits 91% in cutting cycles and 68% in hiking cycles. Have you run this against the actual DB? Validate numbers. Flag if n too small.
+
+---
+
+#### Fix to user-provided SQL before running
+
+The SQL in the question uses `cf.combo_id = fr.return_id` — **this join key is wrong**. The correct join is `cf.combo_id = fr.combo_id` (the `return_id` column is a separate auto-increment PK in `forward_returns`, not the combo link). All numbers below use the correct join.
+
+---
+
+#### Actual DB results — Combo B (bullish, hit = SPX 3M > 0)
+
+**n=276 total fires. n=274 with mature spx_3m. Zero fires with insufficient data.**
+
+**By raw `fed_cycle` label (from `combo_fires.macro_regime`):**
+
+| Fed Cycle | n_total | n_mature (3M) | Hit rate 3M | Avg SPX 3M | Verdict |
+|-----------|---------|---------------|-------------|------------|---------|
+| CUTTING_LATE | 120 | 118 | **65.3%** | +3.38% | USE |
+| HIKING_LATE | 108 | 108 | **77.8%** | +4.08% | USE |
+| QE | 48 | 48 | **91.7%** | +8.92% | USE |
+| **ALL combined** | **276** | **274** | **74.8%** | +4.63% | USE |
+
+**Full multi-horizon breakdown:**
+
+| Fed Cycle | n | Hit 1M | Avg 1M | Hit 3M | Avg 3M | Hit 6M | Avg 6M | Hit 9M | Avg 9M | Hit 12M | Avg 12M |
+|-----------|---|--------|--------|--------|--------|--------|--------|--------|--------|---------|---------|
+| CUTTING_LATE | 118 | 64.4% | +1.37% | 65.3% | +3.38% | 74.6% | +6.32% | 82.2% | +9.74% | 86.4% | +11.95% |
+| HIKING_LATE | 108 | 67.6% | +1.13% | 77.8% | +4.08% | 88.0% | +8.69% | 92.6% | +13.93% | 94.4% | +18.66% |
+| QE | 48 | 81.2% | +3.71% | 91.7% | +8.92% | 81.2% | +14.49% | 93.8% | +23.70% | 93.8% | +30.55% |
+
+*Note: QE fires span 2014-06-27 → 2023-03-31. HIKING_LATE: 2015-12-18 → 2024-04-05. CUTTING_LATE: 2010-06-25 → 2026-07-03.*
+
+---
+
+#### Spec claim validation
+
+**Spec said: "91% cutting cycles, 68% hiking cycles."**
+
+| Claim | Spec | Actual | Match? |
+|-------|------|--------|--------|
+| Cutting cycle hit rate | 91% | 65.3% (CUTTING_LATE) | **NO** |
+| Hiking cycle hit rate | 68% | 77.8% (HIKING_LATE) | **NO** |
+
+**Root cause of discrepancy:**
+
+The spec's "91% cutting" almost certainly refers to the **QE** label (91.7%), not `CUTTING_LATE` (65.3%). QE (balance sheet expansion) overlaps temporally with Fed cuts but is a separate label in the codebase. If someone grouped QE + CUTTING_LATE together as "easing environment," the combined hit rate is **72.9%** at 3M — still not 91%.
+
+The spec's "68% hiking" is close to HIKING_LATE (77.8%) but not exact. The discrepancy could be from: an older DB snapshot, different deduplication logic, or a different horizon (1M HIKING_LATE hit = 67.6% ≈ the spec's 68%).
+
+**CANNOT USE the spec numbers as stated.** The database supports only three labels (CUTTING_LATE, HIKING_LATE, QE) for Combo B fires — no HIKING_EARLY, CUTTING_EARLY, PAUSING, or QT fires exist in Combo B history. This means we cannot disaggregate "early" vs "late" within hiking or cutting cycles for this combo.
+
+---
+
+#### Recommended presentation to fund
+
+| Cycle bucket | n | Hit rate 3M | Avg SPX 3M | Note |
+|---|---|---|---|---|
+| QE / balance-sheet expansion | 48 | **91.7%** | +8.92% | Best environment for B |
+| Hiking (HIKING_LATE) | 108 | **77.8%** | +4.08% | Counter-intuitively strong |
+| Cutting (CUTTING_LATE) | 118 | **65.3%** | +3.38% | Weakest — but still majority positive |
+| **Overall** | **274** | **74.8%** | +4.63% | USE |
+
+Key insight: Combo B is **strongest in QE and hiking** environments — not in cutting cycles as the spec stated. Cutting (CUTTING_LATE) is actually the weakest bucket. At longer horizons all three converge upward (6M–12M), but the 3M hierarchy is QE > HIKING > CUTTING.
+
+**Exports:**
+- `csv_exports/combo_b_fed_cycle_hit_rates.csv` — summary (4 rows, all horizons)
+- `csv_exports/combo_b_per_fire_regime.csv` — per-fire rows (276 rows, with hit flag)
+

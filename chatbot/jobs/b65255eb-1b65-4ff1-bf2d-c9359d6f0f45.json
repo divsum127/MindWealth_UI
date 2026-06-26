@@ -1,0 +1,107 @@
+{
+  "job_id": "b65255eb-1b65-4ff1-bf2d-c9359d6f0f45",
+  "session_id": "5be0b6cc-f915-4538-abd8-684bf83e4820",
+  "status": "completed",
+  "created_at": "2026-06-24T18:08:34.706885+00:00",
+  "started_at": "2026-06-24T18:08:34.707904+00:00",
+  "completed_at": "2026-06-24T18:08:47.559897+00:00",
+  "request": {
+    "message": "so did i not get short signals in these asset classes?",
+    "preset": "freeform",
+    "asset": null,
+    "from_date": null,
+    "to_date": null,
+    "assets": null,
+    "functions": null,
+    "selected_signal_types": [],
+    "auto_extract_tickers": true,
+    "deep_research_enabled": false,
+    "query_kind": null,
+    "additional_context": null
+  },
+  "flow_steps": [
+    {
+      "stage": "Router",
+      "detail": "Analyzing user query intent and selecting route",
+      "timestamp": "2026-06-24T18:08:35.144109+00:00"
+    },
+    {
+      "stage": "Route Selected",
+      "detail": "INTERNAL (intent=SIGNAL_LOOKUP, conf=0.85)",
+      "timestamp": "2026-06-24T18:08:38.177981+00:00"
+    },
+    {
+      "stage": "Internal Search",
+      "detail": "Using internal signal data pipeline",
+      "timestamp": "2026-06-24T18:08:38.178775+00:00"
+    },
+    {
+      "stage": "Context Handling",
+      "detail": "Loaded prior conversation context for follow-up reasoning",
+      "timestamp": "2026-06-24T18:08:38.181445+00:00"
+    },
+    {
+      "stage": "Internal Data Query",
+      "detail": "Fetched internal signal data (selector + columns + date filters)",
+      "timestamp": "2026-06-24T18:08:47.550732+00:00"
+    },
+    {
+      "stage": "Response Generation",
+      "detail": "Generated final response from internal analysis",
+      "timestamp": "2026-06-24T18:08:47.551498+00:00"
+    }
+  ],
+  "result": {
+    "content": "No Signal in the Specified date duration choosen, Please choose different date duration.",
+    "metadata": {
+      "warning": "no_data",
+      "from_date": "2026-06-09",
+      "to_date": "2026-06-24",
+      "input_type": "smart_followup",
+      "followup_mode": "dynamic_fresh",
+      "conversation_context_used": true,
+      "history_exchanges_used": 15,
+      "intent": "SIGNAL_LOOKUP",
+      "intent_label": "Signal Lookup",
+      "intent_confidence": 0.85,
+      "intent_classified_by": "llm_router",
+      "route": "INTERNAL",
+      "web_search_used": false,
+      "web_sources": [],
+      "llm_router_reasoning": "The user is inquiring about short signals in bond yields, GLD, or SLV, which requires analysis of their internal signal data.",
+      "flow_trace": [
+        {
+          "stage": "Router",
+          "detail": "Analyzing user query intent and selecting route",
+          "timestamp": "18:08:35"
+        },
+        {
+          "stage": "Route Selected",
+          "detail": "INTERNAL (intent=SIGNAL_LOOKUP, conf=0.85)",
+          "timestamp": "18:08:38"
+        },
+        {
+          "stage": "Internal Search",
+          "detail": "Using internal signal data pipeline",
+          "timestamp": "18:08:38"
+        },
+        {
+          "stage": "Context Handling",
+          "detail": "Loaded prior conversation context for follow-up reasoning",
+          "timestamp": "18:08:38"
+        },
+        {
+          "stage": "Internal Data Query",
+          "detail": "Fetched internal signal data (selector + columns + date filters)",
+          "timestamp": "18:08:47"
+        },
+        {
+          "stage": "Response Generation",
+          "detail": "Generated final response from internal analysis",
+          "timestamp": "18:08:47"
+        }
+      ]
+    }
+  },
+  "error": null
+}

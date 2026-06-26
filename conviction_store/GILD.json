@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.045783,
   "dividend_yield_5y_std": 0.015303,
-  "dividend_yield_current": 0.02623,
-  "dividend_yield_zscore": -1.2777,
-  "enterprise_value": 172284316532.67056,
+  "dividend_yield_current": 0.026486,
+  "dividend_yield_zscore": -1.261,
+  "enterprise_value": 170782008649.39532,
   "eps_fwd": 9.60891,
   "eps_ttm": 7.35,
-  "ev_fwd_rev": 5.7938,
+  "ev_fwd_rev": 5.7433,
   "fcf_ttm": 9456000000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 29735999488.0,
   "industry": "Drug Manufacturers - General",
-  "last_daily_update": "2026-06-24T12:55:07+00:00",
+  "last_daily_update": "2026-06-26T09:14:20+00:00",
   "last_full_calc": "2026-05-18T20:48:44+00:00",
   "manual_overrides": {},
-  "market_cap": 155258316532.67056,
+  "market_cap": 153756008649.39532,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 17026000000.0,
-  "owner_earnings_yield": 0.060905,
+  "owner_earnings_yield": 0.0615,
   "pe_20y_array": [
     18.13,
     20.9675,
@@ -233,7 +233,7 @@
     17.6662
   ],
   "pe_percentile_20y": 0.0,
-  "pe_ttm": 17.0136,
+  "pe_ttm": 16.849,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -242,12 +242,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 125.05000305175781,
+  "price": 123.83999633789062,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.4336,
   "sector": "Healthcare",
   "ticker": "GILD",
-  "updated_at": "2026-06-24T12:55:07+00:00",
+  "updated_at": "2026-06-26T09:14:20+00:00",
   "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {

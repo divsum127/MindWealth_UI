@@ -189,10 +189,10 @@
   },
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 279017432399.88446,
+  "enterprise_value": 256410779725.17288,
   "eps_fwd": 2.06464,
   "eps_ttm": 0.9,
-  "ev_fwd_rev": 53.4089,
+  "ev_fwd_rev": 49.0816,
   "fcf_ttm": 2100591000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -203,10 +203,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 5224174080.0,
   "industry": "Software - Infrastructure",
-  "last_daily_update": "2026-06-24T12:55:07+00:00",
+  "last_daily_update": "2026-06-26T09:14:20+00:00",
   "last_full_calc": "2026-05-15T16:32:25+00:00",
   "manual_overrides": {},
-  "market_cap": 279766300399.88446,
+  "market_cap": 257159647725.17288,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -225,7 +225,7 @@
     "valuation:dividend_yield_zscore"
   ],
   "net_debt_stored": -748868000.0,
-  "owner_earnings_yield": 0.007508,
+  "owner_earnings_yield": 0.008168,
   "pe_20y_array": [
     263.1441,
     269.0129,
@@ -309,7 +309,7 @@
     151.2769
   ],
   "pe_percentile_20y": 0.0,
-  "pe_ttm": 129.6667,
+  "pe_ttm": 119.1889,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -318,12 +318,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 116.69999694824219,
+  "price": 107.2699966430664,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.32587,
   "sector": "Technology",
   "ticker": "PLTR",
-  "updated_at": "2026-06-24T12:55:07+00:00",
+  "updated_at": "2026-06-26T09:14:20+00:00",
   "valuation_tax": -7.0,
   "valuation_tax_breakdown": {
     "components": {

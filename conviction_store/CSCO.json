@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.037845,
   "dividend_yield_5y_std": 0.010853,
-  "dividend_yield_current": 0.013867,
-  "dividend_yield_zscore": -2.2093,
-  "enterprise_value": 499985815678.90204,
+  "dividend_yield_current": 0.014121,
+  "dividend_yield_zscore": -2.1859,
+  "enterprise_value": 491393486906.3716,
   "eps_fwd": 4.74713,
   "eps_ttm": 3.0,
-  "ev_fwd_rev": 8.2308,
+  "ev_fwd_rev": 8.0893,
   "fcf_ttm": 12733000000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 60745998336.0,
   "industry": "Communication Equipment",
-  "last_daily_update": "2026-06-24T12:55:07+00:00",
+  "last_daily_update": "2026-06-26T09:14:20+00:00",
   "last_full_calc": "2026-05-18T20:48:19+00:00",
   "manual_overrides": {},
-  "market_cap": 477504815678.90204,
+  "market_cap": 468912486906.3716,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 22481000000.0,
-  "owner_earnings_yield": 0.026666,
+  "owner_earnings_yield": 0.027154,
   "pe_20y_array": [
     27.485,
     28.9248,
@@ -235,7 +235,7 @@
     41.7123
   ],
   "pe_percentile_20y": 87.5,
-  "pe_ttm": 40.3833,
+  "pe_ttm": 39.6567,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -244,12 +244,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 121.1500015258789,
+  "price": 118.97000122070312,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.25229,
   "sector": "Technology",
   "ticker": "CSCO",
-  "updated_at": "2026-06-24T12:55:07+00:00",
+  "updated_at": "2026-06-26T09:14:20+00:00",
   "valuation_tax": -8.0,
   "valuation_tax_breakdown": {
     "components": {

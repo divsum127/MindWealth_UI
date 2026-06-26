@@ -1,0 +1,13 @@
+{
+  "run_date": "2026-06-06",
+  "total_signatures": 298,
+  "promotion_candidates": 62,
+  "unique_fire_date_clusters": 52,
+  "all_bullish": true,
+  "story_skipped": 62,
+  "tiers": {
+    "T1_shortlist": 5,
+    "T2_shortlist": 3,
+    "T3_defer": 54
+  }
+}

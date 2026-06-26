@@ -107,7 +107,7 @@ def detect_named_combos(
     b_passed, b_pending = evaluate_combo_b_legs(readings, b_cfg)
     b_count = len(b_passed)
     b_fire = b_count == 3
-    b_watch = not b_fire and b_count >= 1
+    b_watch = not b_fire and b_count >= 2
 
     if b_fire:
         fires.append(

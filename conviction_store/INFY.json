@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.02328,
   "dividend_yield_5y_std": 0.014766,
-  "dividend_yield_current": 0.048193,
-  "dividend_yield_zscore": 1.6872,
-  "enterprise_value": 41788932091.55566,
+  "dividend_yield_current": 0.049196,
+  "dividend_yield_zscore": 1.7551,
+  "enterprise_value": 40898166868.19526,
   "eps_fwd": 0.87192,
   "eps_ttm": 0.8,
-  "ev_fwd_rev": 2.0731,
+  "ev_fwd_rev": 2.0289,
   "fcf_ttm": 3741000000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 20157999104.0,
   "industry": "Information Technology Services",
-  "last_daily_update": "2026-06-24T12:55:07+00:00",
+  "last_daily_update": "2026-06-26T09:14:20+00:00",
   "last_full_calc": "2026-05-18T20:49:04+00:00",
   "manual_overrides": {},
-  "market_cap": 43687932091.55566,
+  "market_cap": 42797166868.19526,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": -1899000000.0,
-  "owner_earnings_yield": 0.08563,
+  "owner_earnings_yield": 0.087412,
   "pe_20y_array": [
     23.1429,
     22.8312,
@@ -233,7 +233,7 @@
     15.7375
   ],
   "pe_percentile_20y": 0.0,
-  "pe_ttm": 13.4875,
+  "pe_ttm": 13.2125,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -242,12 +242,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 10.789999961853027,
+  "price": 10.569999694824219,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.31439,
   "sector": "Technology",
   "ticker": "INFY",
-  "updated_at": "2026-06-24T12:55:07+00:00",
+  "updated_at": "2026-06-26T09:14:20+00:00",
   "valuation_tax": 0.0,
   "valuation_tax_breakdown": {
     "components": {

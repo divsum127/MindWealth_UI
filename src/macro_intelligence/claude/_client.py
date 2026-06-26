@@ -19,7 +19,7 @@ def parse_json_text(text: str) -> dict[str, Any]:
     return json.loads(cleaned)
 
 
-def call_claude(system: str, user: str, max_tokens: int = 400) -> str:
+def call_claude(system: str, user: str, max_tokens: int = 400, temperature: float = 0.0) -> str:
     api_key = os.environ.get("ANTHROPIC_API_KEY")
     if not api_key:
         raise RuntimeError("ANTHROPIC_API_KEY not set")
@@ -30,6 +30,7 @@ def call_claude(system: str, user: str, max_tokens: int = 400) -> str:
     response = client.messages.create(
         model=_model(),
         max_tokens=max_tokens,
+        temperature=temperature,
         system=system,
         messages=[{"role": "user", "content": user}],
     )

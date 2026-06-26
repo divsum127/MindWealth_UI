@@ -1,0 +1,81 @@
+{
+  "job_id": "18042389-762b-4ac9-b850-6f85282edfcb",
+  "session_id": "05e8bffa-6bce-4fcd-bd85-f8ef9598cedd",
+  "status": "completed",
+  "created_at": "2026-06-24T13:38:30.990822+00:00",
+  "started_at": "2026-06-24T13:38:30.992063+00:00",
+  "completed_at": "2026-06-24T13:38:39.858573+00:00",
+  "request": {
+    "message": "hello",
+    "preset": "freeform",
+    "asset": null,
+    "from_date": null,
+    "to_date": null,
+    "assets": null,
+    "functions": null,
+    "selected_signal_types": [],
+    "auto_extract_tickers": true,
+    "deep_research_enabled": false,
+    "query_kind": null,
+    "additional_context": null
+  },
+  "flow_steps": [
+    {
+      "stage": "Router",
+      "detail": "Analyzing user query intent and selecting route",
+      "timestamp": "2026-06-24T13:38:31.437684+00:00"
+    },
+    {
+      "stage": "Route Selected",
+      "detail": "CONVERSATIONAL (intent=CONVERSATIONAL, conf=0.92)",
+      "timestamp": "2026-06-24T13:38:33.012330+00:00"
+    },
+    {
+      "stage": "Conversation Mode",
+      "detail": "Using conversation history only (no web/internal data fetch)",
+      "timestamp": "2026-06-24T13:38:33.013455+00:00"
+    }
+  ],
+  "result": {
+    "content": "# Hello! \ud83d\udc4b Welcome to MindWealth Financial Analysis\n\nI'm your **MindWealth trading analyst assistant**, ready to help you analyze stock market signals and trading data!\n\n## What I Can Help You With:\n\n- \ud83d\udcca **Signal Analysis** - Analyze trading signals and technical indicators\n- \ud83d\udcc8 **Stock Performance** - Review price movements and trends\n- \ud83d\udd0d **Pattern Recognition** - Identify trading opportunities and patterns\n- \ud83d\udcc9 **Market Insights** - Provide data-driven market analysis\n- \ud83c\udfaf **Multi-Ticker Comparison** - Compare performance across different stocks\n\n## How to Get Started:\n\nYou can ask me questions like:\n- *\"Analyze the latest signals for AAPL\"*\n- *\"Show me the performance of recent trading signals\"*\n- *\"What are the current market trends?\"*\n- *\"Compare signals for TSLA and NVDA\"*\n\n**What would you like to analyze today?** Feel free to ask about specific tickers, trading signals, or market insights!",
+    "metadata": {
+      "intent": "CONVERSATIONAL",
+      "intent_label": "Conversational",
+      "intent_confidence": 0.92,
+      "intent_classified_by": "llm_router",
+      "route": "CONVERSATIONAL",
+      "web_search_used": false,
+      "web_sources": [],
+      "llm_router_reasoning": "The user is simply greeting, which does not require any data or information retrieval.",
+      "input_type": "conversational",
+      "model": "claude-sonnet-4-5-20250929",
+      "tokens_used": {
+        "prompt": 1561,
+        "completion": 244,
+        "total": 1805
+      },
+      "finish_reason": "end_turn",
+      "batch_processing_used": true,
+      "batch_count": 1,
+      "batch_mode": "single",
+      "flow_trace": [
+        {
+          "stage": "Router",
+          "detail": "Analyzing user query intent and selecting route",
+          "timestamp": "13:38:31"
+        },
+        {
+          "stage": "Route Selected",
+          "detail": "CONVERSATIONAL (intent=CONVERSATIONAL, conf=0.92)",
+          "timestamp": "13:38:33"
+        },
+        {
+          "stage": "Conversation Mode",
+          "detail": "Using conversation history only (no web/internal data fetch)",
+          "timestamp": "13:38:33"
+        }
+      ]
+    }
+  },
+  "error": null
+}

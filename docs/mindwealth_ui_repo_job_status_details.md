@@ -1434,3 +1434,79 @@ User requested per-trigger SPX return tables for Combo D (1W–2M) and Combo E (
 
 **Caveat:** As of 2026-06-23 data, B is **1/3** (CFTC only), not 2/3 — VIX 18.7 (<25, <80th pctile) and HY 265bps (<400, <80th pctile) fail. User expectation of 2/3 does not match current variable readings.
 
+---
+
+### 2026-06-25 — 298-combo promotion analysis (Item 15)
+
+**Assumptions:** Primary horizon `spx_3m` per Part H CONFIG; promotion gate ≥5 fires and ≥80% hit; Step 7 stories treated as pending (all SKIPPED in JSON). Economic rationale drafted manually from variable semantics and fire-date eras, not Claude.
+
+**Key decisions:** Collapse 62 signatures to thematic clusters; recommend 8 canonical signatures for Rohit review rather than promoting all 62. Tier 1 = multi-cycle mechanism + adequate unique dates; Tier 3 = defer 2024 CPI-only (3 unique Fridays) and 2026-forward clusters.
+
+**Edge cases not handled:** v2 shadow regime re-tag not applied; hostile beta HR mostly null (no hostile fires in sample for many combos); duplicate fire dates in raw n_fires (direction permutations).
+
+**Deferred:** Run `run_combo_discovery_pipeline.py --use-claude` on 8-signature shortlist; re-tag with v2 regimes before final promotion; Rohit 55% vs 60% hostile bar.
+
+**Caveats:** `CFTC+VIX+VXTS` is same variable set as Combo D but generic engine infers bullish (post-washout) vs D's bearish framing. `291_combo_tests` was empty at start — populated from `combo_discovery_20260606.json` export.
+
+---
+
+### 2026-06-24 — Combo D & E threshold study
+
+**Assumptions:** Episode = first Friday when gate crosses in-band, 5-day cooldown (matches rarity goal vs 435/484 weekly `combo_fires` rows). D primary horizon = 1W tactical; E primary = 12M structural. Target n band = 15–50 (plan asked 20–40; script used 15–50 for slightly wider search). Sweeps on Friday-aligned readings panel from 2007.
+
+**Key decisions:** Separate D/E date calendars aligned by calendar date for sync/regime overlay. Regime from `regime_json.curve_regime_v2` in DB. Recommendations tiered: CONFIG_BASELINE, BEST_IN_TARGET_N, BEST_ANY_N.
+
+**Findings:**
+- No D variant reaches 80% bear @1W with n≥10; max ~57% (VXTS 1.18, CFTC 90, VIX 16, 2-of-3, n=78).
+- E reaches 80%+ @12M only with n≤9 (e.g. CAPE 32, NFCI −0.20, CFTC 95, 3-of-3 → n=4, 100% bear @12M).
+- CONFIG E @12M = 9% bear (bullish structural bias under current gates).
+- D+E sync improves tactical 1W (CONFIG: 60% on 5 sync dates) but 12M stays bullish on sync subset.
+- Regime: almost all events in STEEPENING; insufficient n in NORMAL for comparison.
+
+**Deferred:** Apply winning thresholds to `CONFIG.yaml` and regenerate production `combo_fires` (user did not request CONFIG change). E horizons 1M–18M full band in separate prior sweep artifact.
+
+**Caveat:** 80% bear hit + n=20–40 jointly infeasible for D from this data; recommend trade-off between hit rate and sample size explicitly when choosing production gates.
+
+---
+
+### 2026-06-24 — Combo D/E follow-up (production + sync overlay)
+
+**Assumptions:** Case 1 drops 80% target; ranks n≥10 configs by `production_score` = primary bear hit − 0.15×|n−30| + 0.5 if avg SPX negative. Case 2 pairs top-40 D × top-40 E (1600 pairs); sync = same Friday for both episodes.
+
+**Findings:** Max D @1W with n≥10 ≈ 57% (plateau). E @12M with n≥10 peaks at 66.7% (n=10 only); n=20–40 E best ≈ 37% @12M. Sync tactical: CONFIG +18pp @1W on 5 overlap dates; aggregate mean lift −2.8pp (45.8% pairs positive). Sync structural @12M mean 25.8% bear — 49% of pairs bullish (<30% bear); top tactical sync pairs often 0% bear @12M.
+
+**Deferred:** Per-fire export for all 618 sync_n≥3 pairs (only top-5 pairs in CSV).
+
+**Caveat:** Negative mean sync lift means D+E sync is not a universal amplifier — use as conditional tactical filter when both combos share tight gates, not as structural bear confirmation.
+
+
+---
+
+## 2026-06-25 — Fed cycle matrix formalisation + Claude temperature fix
+
+**Fed cycle states (confirmed from code):**
+- 7 raw states in `fed_cycle.py`: HIKING_EARLY, HIKING_LATE, CUTTING_EARLY, CUTTING_LATE, PAUSING, QE, QT
+- QE gate: WALCL MoM > 1.0% OR hardcoded COVID window 2020-03-01 to 2021-06-30
+- QT gate: WALCL MoM < −0.5% AND label would otherwise be PAUSING (cannot override hike/cut)
+- HIKING_EARLY/LATE boundary: 6 months since cycle start (`cycle_early_months` config)
+
+**What's actually in combo_fires.macro_regime (historical data gap):**
+- Only 3 distinct labels: HIKING_LATE (807), CUTTING_LATE (717), QE (599)
+- HIKING_EARLY, CUTTING_EARLY, PAUSING, QT do not appear — they were recorded under legacy labels at the time combo fires were computed. This means the hostile filter hits HIKING_LATE but misses any potential HIKING_EARLY fires in historical combos.
+
+**4-state fed_cycle_v2 (formalised, not 3-state):**
+- `collapse_fed_cycle_v2()` in `regime_v2_shadow.py` maps 7 → 4: TIGHTENING / PIVOTING / EASING / EASY
+- PIVOTING only has n=27 Fridays in DB — practically a rounding error in analytics
+- The 3×3 simplification discussed in planning (tightening/easing/pausing) would require merging PIVOTING→EASING and renaming EASY→PAUSING — neither is done
+
+**Hit rate grouping (two systems):**
+1. Binary HOSTILE: used in `threshold_sweep_v2.py` and `combo_discovery_pipeline.py`; defined in CONFIG.yaml as `hostile_fed_cycles: [HIKING_EARLY, HIKING_LATE, TIGHTENING]` and `hostile_curve_regimes: [INVERTED]`
+2. 4-state slice: `fed_cycle_v2` used in `fm_events.py` for fm_events analytics (testingv2)
+
+**No 28-cell or 9-cell matrix exists anywhere in the codebase.** Deferred: consider building a cross-product (fed_cycle_v2 × curve_regime_v2) analytics query if Rohit requests it.
+
+**Claude temperature fix:**
+- `call_claude()` in `_client.py` was missing `temperature` parameter — Anthropic API defaults to 1.0
+- Fixed to `temperature=0.0` as default argument
+- Determinism also requires pinned model version (handled via MACRO_CLAUDE_MODEL env var / CONFIG.yaml)
+- All existing callers get temperature=0.0 without code changes; opt-in for non-deterministic via `temperature=1.0` kwarg

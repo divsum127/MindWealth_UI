@@ -1,0 +1,81 @@
+{
+  "job_id": "ccd99512-a373-43c7-8111-de604e5e6d4d",
+  "session_id": "5291001e-0ea0-4703-87f4-f11e98753a8e",
+  "status": "completed",
+  "created_at": "2026-06-24T16:26:47.491299+00:00",
+  "started_at": "2026-06-24T16:26:47.520610+00:00",
+  "completed_at": "2026-06-24T16:27:05.017582+00:00",
+  "request": {
+    "message": "hi",
+    "preset": "freeform",
+    "asset": null,
+    "from_date": null,
+    "to_date": null,
+    "assets": null,
+    "functions": null,
+    "selected_signal_types": [],
+    "auto_extract_tickers": true,
+    "deep_research_enabled": false,
+    "query_kind": null,
+    "additional_context": null
+  },
+  "flow_steps": [
+    {
+      "stage": "Router",
+      "detail": "Analyzing user query intent and selecting route",
+      "timestamp": "2026-06-24T16:26:54.991815+00:00"
+    },
+    {
+      "stage": "Route Selected",
+      "detail": "CONVERSATIONAL (intent=CONVERSATIONAL, conf=0.92)",
+      "timestamp": "2026-06-24T16:26:59.128438+00:00"
+    },
+    {
+      "stage": "Conversation Mode",
+      "detail": "Using conversation history only (no web/internal data fetch)",
+      "timestamp": "2026-06-24T16:26:59.378880+00:00"
+    }
+  ],
+  "result": {
+    "content": "# Hello! \ud83d\udc4b\n\nWelcome to **MindWealth Financial Trading Analysis**!\n\nI'm here to help you analyze stock market signals, trading data, and market trends. I can assist you with:\n\n- **Signal Analysis** - Interpreting trading signals and technical indicators\n- **Stock Performance** - Analyzing price movements and trends\n- **Market Insights** - Identifying patterns and opportunities\n- **Multi-Ticker Comparisons** - Comparing performance across different stocks\n- **Technical Analysis** - Evaluating support/resistance levels, momentum, and more\n\n## How Can I Help You Today?\n\nFeel free to ask me about:\n- Specific stock tickers or trading signals\n- Market trends and analysis\n- Technical indicator interpretations\n- Portfolio performance reviews\n- Trading strategy insights\n\nWhat would you like to explore? \ud83d\udcca",
+    "metadata": {
+      "intent": "CONVERSATIONAL",
+      "intent_label": "Conversational",
+      "intent_confidence": 0.92,
+      "intent_classified_by": "llm_router",
+      "route": "CONVERSATIONAL",
+      "web_search_used": false,
+      "web_sources": [],
+      "llm_router_reasoning": "The user simply greeted, which does not require any data or specific information.",
+      "input_type": "conversational",
+      "model": "claude-sonnet-4-5-20250929",
+      "tokens_used": {
+        "prompt": 1561,
+        "completion": 185,
+        "total": 1746
+      },
+      "finish_reason": "end_turn",
+      "batch_processing_used": true,
+      "batch_count": 1,
+      "batch_mode": "single",
+      "flow_trace": [
+        {
+          "stage": "Router",
+          "detail": "Analyzing user query intent and selecting route",
+          "timestamp": "16:26:54"
+        },
+        {
+          "stage": "Route Selected",
+          "detail": "CONVERSATIONAL (intent=CONVERSATIONAL, conf=0.92)",
+          "timestamp": "16:26:59"
+        },
+        {
+          "stage": "Conversation Mode",
+          "detail": "Using conversation history only (no web/internal data fetch)",
+          "timestamp": "16:26:59"
+        }
+      ]
+    }
+  },
+  "error": null
+}

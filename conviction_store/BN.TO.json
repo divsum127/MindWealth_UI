@@ -189,11 +189,11 @@
   },
   "dividend_yield_5y_mean": 0.030908,
   "dividend_yield_5y_std": 0.020213,
-  "dividend_yield_current": 0.006086,
-  "dividend_yield_zscore": -1.228,
-  "enterprise_value": 359206709943.02313,
+  "dividend_yield_current": 0.006225,
+  "dividend_yield_zscore": -1.2211,
+  "enterprise_value": 356079681131.3179,
   "eps_ttm": 0.7,
-  "ev_fwd_rev": 4.5404,
+  "ev_fwd_rev": 4.5009,
   "fcf_ttm": -2792000000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -204,10 +204,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 79113003008.0,
   "industry": "Asset Management",
-  "last_daily_update": "2026-06-24T12:55:07+00:00",
+  "last_daily_update": "2026-06-26T09:14:20+00:00",
   "last_full_calc": "2026-05-18T20:47:50+00:00",
   "manual_overrides": {},
-  "market_cap": 139465709943.02313,
+  "market_cap": 136338681131.3179,
   "missing_fields": [
     "distribution_coverage_ratio",
     "eps_fwd",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 219741000000.0,
-  "owner_earnings_yield": -0.020019,
+  "owner_earnings_yield": -0.020478,
   "pe_20y_array": [
     127.32,
     129.18,
@@ -236,7 +236,7 @@
     113.9636
   ],
   "pe_percentile_20y": 0.0,
-  "pe_ttm": 89.2,
+  "pe_ttm": 87.2,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -245,12 +245,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 62.439998626708984,
+  "price": 61.040000915527344,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.02503,
   "sector": "Financial Services",
   "ticker": "BN.TO",
-  "updated_at": "2026-06-24T12:55:07+00:00",
+  "updated_at": "2026-06-26T09:14:20+00:00",
   "valuation_tax": -7.0,
   "valuation_tax_breakdown": {
     "components": {

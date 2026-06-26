@@ -21,7 +21,7 @@
   "bq_raw": 2.5,
   "business_type": "income",
   "business_type_source": "auto",
-  "conviction_score": 2.5,
+  "conviction_score": 0.5,
   "created_at": "2026-05-12T20:20:02+00:00",
   "data_coverage": {
     "bq_auto_dimensions": {
@@ -189,26 +189,26 @@
   },
   "dividend_yield_5y_mean": 0.039185,
   "dividend_yield_5y_std": 0.018642,
-  "dividend_yield_current": 0.061986,
-  "dividend_yield_zscore": 1.2231,
-  "enterprise_value": 110748166062.97798,
+  "dividend_yield_current": 0.060013,
+  "dividend_yield_zscore": 1.1173,
+  "enterprise_value": 113706184282.27936,
   "eps_fwd": 8.00236,
   "eps_ttm": 6.18,
-  "ev_fwd_rev": 1.2491,
+  "ev_fwd_rev": 1.2825,
   "fcf_ttm": 4765000000.0,
   "fd_direction": "positive",
   "fd_votes": {},
   "flags": [],
   "fs_class": "moderate_high",
   "fs_quality_base": 56.25,
-  "fs_score": 64.25,
+  "fs_score": 58.25,
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 88661000000.0,
   "industry": "Integrated Freight & Logistics",
-  "last_daily_update": "2026-06-24T12:55:08+00:00",
+  "last_daily_update": "2026-06-26T09:14:20+00:00",
   "last_full_calc": "2026-05-18T20:50:57+00:00",
   "manual_overrides": {},
-  "market_cap": 89956166062.97798,
+  "market_cap": 92914184282.27936,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 20792000000.0,
-  "owner_earnings_yield": 0.05297,
+  "owner_earnings_yield": 0.051284,
   "pe_20y_array": [
     15.1204,
     16.1921,
@@ -232,8 +232,8 @@
     17.6052,
     15.4579
   ],
-  "pe_percentile_20y": 66.67,
-  "pe_ttm": 17.1246,
+  "pe_percentile_20y": 100.0,
+  "pe_ttm": 17.6877,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -242,13 +242,13 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 105.83000183105469,
+  "price": 109.30999755859375,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.33353,
   "sector": "Industrials",
   "ticker": "UPS",
-  "updated_at": "2026-06-24T12:55:08+00:00",
-  "valuation_tax": 0.0,
+  "updated_at": "2026-06-26T09:14:20+00:00",
+  "valuation_tax": -2.0,
   "valuation_tax_breakdown": {
     "components": {
       "business_type_relief": 1.0,
@@ -257,9 +257,9 @@
       "growth_multiple_fragility": 0.0,
       "market_regime_beta": 0.0,
       "oey_penalty": 0.0,
-      "pe_hist_percentile": -1.0
+      "pe_hist_percentile": -3.0
     },
-    "total": 0.0
+    "total": -2.0
   },
   "yield_trap_mkt_threshold": 0.06,
   "yield_trap_warning": false

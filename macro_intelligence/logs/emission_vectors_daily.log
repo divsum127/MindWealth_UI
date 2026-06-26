@@ -61,3 +61,17 @@
   "min_date": "2010-01-01",
   "max_date": "2026-07-03"
 }
+{
+  "as_of": "2026-06-24",
+  "rows_upserted": 12,
+  "total_emission_rows": 12875,
+  "min_date": "2010-01-01",
+  "max_date": "2026-07-03"
+}
+{
+  "as_of": "2026-06-25",
+  "rows_upserted": 12,
+  "total_emission_rows": 12887,
+  "min_date": "2010-01-01",
+  "max_date": "2026-07-03"
+}

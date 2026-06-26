@@ -69,6 +69,19 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
 
 ---
 
+### 2026-06-25
+
+1. **298-combo promotion analysis + economic rationale shortlist (Item 15)** — SUCCESSFUL
+   - Summary: Analyzed Part H `combo_discovery_20260606.json` (298 signatures → 62 promotion candidates at ≥80% 3m hit). All 62 are bullish; 52 unique fire-date clusters (heavy redundancy). Drafted economic rationale by theme; recommended 8-signature shortlist (5 Tier-1, 3 Tier-2) for Step 7 Claude review. Flagged overlap with named combos D/F/G and 2024/2026 overfit clusters. Outputs in `testing/291_combo_tests/`.
+   - Files changed:
+     - `testing/291_combo_tests/ANALYSIS_REPORT.md` (new)
+     - `testing/291_combo_tests/shortlist_tiered.csv` (new)
+     - `testing/291_combo_tests/promotion_candidates_62.csv` (new)
+     - `testing/291_combo_tests/cluster_redundancy.csv` (new)
+     - `testing/291_combo_tests/funnel_summary.json` (new)
+
+---
+
 ### 2026-06-06
 
 1. **Create report-creation Cursor skill + add PDF export rule** — SUCCESSFUL
@@ -583,6 +596,30 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
 
 ### 2026-06-18
 
+6. **Combo B regime-adjusted hit rate — run, validated, spec discrepancy found** — SUCCESSFUL
+   - Date: 2026-06-25
+   - Summary: Ran Q9 Combo B regime analysis against live DB (n=274 mature fires). Found spec claim (91% cutting, 68% hiking) is WRONG. Actual: CUTTING_LATE=65.3%, HIKING_LATE=77.8%, QE=91.7%. The spec's "91% cutting" matches QE label, not CUTTING_LATE. Join key bug in user-provided SQL fixed (return_id → combo_id). Generated summary CSV (4 rows) + per-fire CSV (276 rows). Recommended presentation table added to feedback_sectionwise_answers.md.
+   - Files changed:
+     - `testing/macro_th_exp/testingv1_feedback/feedback_sectionwise_answers.md`
+     - `testing/macro_th_exp/testingv1_feedback/csv_exports/combo_b_fed_cycle_hit_rates.csv` (new)
+     - `testing/macro_th_exp/testingv1_feedback/csv_exports/combo_b_per_fire_regime.csv` (new)
+
+5. **Fed cycle matrix formalisation + Claude temperature=0 fix** — SUCCESSFUL
+   - Date: 2026-06-25
+   - Summary: Answered fed_cycle matrix questions. Confirmed: (a) 7 raw fed_cycle states exist in code; curve_regime has 4 states (INVERTED/FLAT/STEEPENING/NORMAL) — Divyanshu correct. (b) A 4-state `fed_cycle_v2` collapse exists in `regime_v2_shadow.py` (TIGHTENING/PIVOTING/EASING/EASY), NOT the 3-state simplification discussed — the 3×3 matrix is conceptual only, not formalised. (c) Hit rates grouped as: binary HOSTILE filter in threshold sweep; 4-state fed_cycle_v2 in fm_events analytics. (d) BUG FIXED: `call_claude()` was missing `temperature` — API defaulted to 1.0. Fixed to `temperature=0.0` default so historical replays are deterministic.
+   - Files changed:
+     - `src/macro_intelligence/claude/_client.py` (temperature=0.0 added)
+     - `testing/macro_th_exp/testingv1_feedback/feedback_sectionwise_answers.md`
+
+4. **Add T2 9-state liquidity_v2 CSVs to csv_exports + JSON to regime_v2_experiments** — SUCCESSFUL
+   - Date: 2026-06-25
+   - Summary: Re-ran T2 query (combo_fires × macro_regime_log_v2 × forward_returns) for all 9 liquidity_v2 states. Generated: (1) summary CSV (9 rows, up%/avg% at 1m/3m/6m/9m/12m), (2) per-fire CSV (15,161 rows), (3) JSON experiment artifact. Updated feedback_sectionwise_answers.md A6.g reference to point to all three files.
+   - Files changed:
+     - `testing/macro_th_exp/testingv1_feedback/csv_exports/liquidity_v2_9state_spx_returns.csv` (new)
+     - `testing/macro_th_exp/testingv1_feedback/csv_exports/liquidity_v2_9state_perfire_rows.csv` (new)
+     - `macro_intelligence/analysis/regime_v2_experiments/liquidity_v2_9state_spx_returns.json` (new)
+     - `testing/macro_th_exp/testingv1_feedback/feedback_sectionwise_answers.md`
+
 3. **Fix geo table, TIGHT_* unnamed clarification, CSV exports, WALCL actual counts** — SUCCESSFUL
    - Date: 2026-06-18
    - Summary: (1) Geo table: added validated hit% column — prior table only showed "SPX up%" which is meaningless for bearish combos (D/E). Now shows % of fires where signal was correct per combo direction. (2) TIGHT_* unnamed: clarified that "unnamed" = generic pair-threshold events where runic_combo IS NULL (did not pass naming gate), NOT unnamed versions of A–G. Only Combo A has named fires in TIGHT_*. (3) Created CSV export directory with 3 files: 46-row TIGHT_* Combo A table, 58-row geo overlay table, WALCL threshold distribution. (4) WALCL "~est." replaced with actual DB counts (NFCI-EASY Fridays n=719): ±0.3% → 291/230/198; ±0.2% → 309/273/137; ±0.1% → 335/309/75.
@@ -671,3 +708,18 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
      - `src/pages/runic_page.py`
      - `tests/test_combo_b_hy_dual.py`
      - `macro_intelligence/output/runic_output.json`
+
+4. **Combo D & E full threshold study (sweep + sync + regime overlay)** — SUCCESSFUL
+   - Date: 2026-06-24
+   - Summary: Ran 350 D + 377 E gate experiments on Friday first-crossing episodes (5d cooldown), not weekly WATCH backfill. Outputs in `testing/combo_de_thresholds/output_files/`: sweep detail/summary CSVs, sync analysis, yield-curve regime overlay, recommended thresholds, master analysis CSV, `study_meta.json`. **80% bear-hit target not met for D at any n≥10; met for E only at n≤4.** Best practical D (n 15–50): VXTS≥1.25, CFTC≥95, VIX≤16, 2-of-3 → 42 events, 54.8% bear @1W. Best practical E: CAPE≥30, NFCI≤−0.20, CFTC≥92, 3-of-3 → 16 events, 46.7% bear @12M. CONFIG baseline D: 31 events, 41.9% @1W; E: 22 events, 9.1% @12M. D+E sync (best pair): 3 dates, 66.7% bear @1W / 0% @12M.
+   - Files changed:
+     - `testing/combo_de_thresholds/run_combo_de_study.py` (new)
+     - `testing/combo_de_thresholds/output_files/*.csv`
+     - `testing/combo_de_thresholds/output_files/study_meta.json`
+
+5. **Combo D/E follow-up experiments — production-viable (no 80%) + sync overlay** — SUCCESSFUL
+   - Date: 2026-06-24
+   - Summary: Extended finer-grid sweeps (1131 D, 382 E with n≥10). Best production-scored D: VXTS 1.18/CFTC 95/VIX 13/2-of-3 (n=46, 56.5% bear @1W). Best E n≥10: CAPE 32/NFCI −0.15/CFTC 85/3-of-3 (n=10, 66.7% @12M). 1600 D×E sync pair matrix: CONFIG sync 60% @1W (+18pp lift) but 0% bear @12M on overlap; mean sync lift @1W negative (−2.8pp) across pairs — tactical overlay works for selected gates, not structural confirmation.
+   - Files changed:
+     - `testing/combo_de_thresholds/run_combo_de_followup.py` (new)
+     - `testing/combo_de_thresholds/output_files/case1_*.csv`, `case2_*.csv`, `followup_meta.json`

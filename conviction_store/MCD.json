@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.022429,
   "dividend_yield_5y_std": 0.014151,
-  "dividend_yield_current": 0.027387,
-  "dividend_yield_zscore": 0.3504,
-  "enterprise_value": 244541024257.89017,
+  "dividend_yield_current": 0.028124,
+  "dividend_yield_zscore": 0.4024,
+  "enterprise_value": 239482226011.07706,
   "eps_fwd": 14.22179,
   "eps_ttm": 12.13,
-  "ev_fwd_rev": 8.9099,
+  "ev_fwd_rev": 8.7256,
   "fcf_ttm": 7186000000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 27445999616.0,
   "industry": "Restaurants",
-  "last_daily_update": "2026-06-24T12:55:07+00:00",
+  "last_daily_update": "2026-06-26T09:14:20+00:00",
   "last_full_calc": "2026-05-18T20:49:21+00:00",
   "manual_overrides": {},
-  "market_cap": 193016024257.89017,
+  "market_cap": 187957226011.07706,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 51525000000.0,
-  "owner_earnings_yield": 0.03723,
+  "owner_earnings_yield": 0.038232,
   "pe_20y_array": [
     25.5757,
     26.3598,
@@ -233,7 +233,7 @@
     23.2869
   ],
   "pe_percentile_20y": 0.0,
-  "pe_ttm": 22.3957,
+  "pe_ttm": 21.8087,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -242,12 +242,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 271.6600036621094,
+  "price": 264.5400085449219,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.13561,
   "sector": "Consumer Cyclical",
   "ticker": "MCD",
-  "updated_at": "2026-06-24T12:55:07+00:00",
+  "updated_at": "2026-06-26T09:14:20+00:00",
   "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {

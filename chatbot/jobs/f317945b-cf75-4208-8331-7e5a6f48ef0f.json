@@ -1,0 +1,81 @@
+{
+  "job_id": "f317945b-cf75-4208-8331-7e5a6f48ef0f",
+  "session_id": "aab19c0a-b800-48a1-a874-bb4d3690bfbb",
+  "status": "completed",
+  "created_at": "2026-06-25T12:56:22.338698+00:00",
+  "started_at": "2026-06-25T12:56:22.339743+00:00",
+  "completed_at": "2026-06-25T12:56:29.150322+00:00",
+  "request": {
+    "message": "hi",
+    "preset": "freeform",
+    "asset": null,
+    "from_date": null,
+    "to_date": null,
+    "assets": null,
+    "functions": null,
+    "selected_signal_types": [],
+    "auto_extract_tickers": true,
+    "deep_research_enabled": false,
+    "query_kind": null,
+    "additional_context": null
+  },
+  "flow_steps": [
+    {
+      "stage": "Router",
+      "detail": "Analyzing user query intent and selecting route",
+      "timestamp": "2026-06-25T12:56:22.822422+00:00"
+    },
+    {
+      "stage": "Route Selected",
+      "detail": "CONVERSATIONAL (intent=CONVERSATIONAL, conf=0.92)",
+      "timestamp": "2026-06-25T12:56:24.386974+00:00"
+    },
+    {
+      "stage": "Conversation Mode",
+      "detail": "Using conversation history only (no web/internal data fetch)",
+      "timestamp": "2026-06-25T12:56:24.387638+00:00"
+    }
+  ],
+  "result": {
+    "content": "Hello! \ud83d\udc4b\n\nHow can I assist you with your trading analysis today? I can help you with:\n\n- **Reviewing open positions** across your portfolio\n- **Analyzing specific tickers** and their signal performance\n- **Examining trading signals** from various functions (FRACTAL TRACK, OSCILLATOR DELTA, TRENDPULSE, etc.)\n- **Evaluating market trends** and technical indicators\n- **Assessing risk management** on current holdings\n- **Comparing performance** across different strategies or timeframes\n\nWhat would you like to explore?",
+    "metadata": {
+      "intent": "CONVERSATIONAL",
+      "intent_label": "Conversational",
+      "intent_confidence": 0.92,
+      "intent_classified_by": "llm_router",
+      "route": "CONVERSATIONAL",
+      "web_search_used": false,
+      "web_sources": [],
+      "llm_router_reasoning": "The user simply greeted, indicating no specific request for information or data.",
+      "input_type": "conversational",
+      "model": "claude-sonnet-4-5-20250929",
+      "tokens_used": {
+        "prompt": 8478,
+        "completion": 128,
+        "total": 8606
+      },
+      "finish_reason": "end_turn",
+      "batch_processing_used": true,
+      "batch_count": 1,
+      "batch_mode": "single",
+      "flow_trace": [
+        {
+          "stage": "Router",
+          "detail": "Analyzing user query intent and selecting route",
+          "timestamp": "12:56:22"
+        },
+        {
+          "stage": "Route Selected",
+          "detail": "CONVERSATIONAL (intent=CONVERSATIONAL, conf=0.92)",
+          "timestamp": "12:56:24"
+        },
+        {
+          "stage": "Conversation Mode",
+          "detail": "Using conversation history only (no web/internal data fetch)",
+          "timestamp": "12:56:24"
+        }
+      ]
+    }
+  },
+  "error": null
+}

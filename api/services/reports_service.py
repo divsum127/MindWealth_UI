@@ -536,13 +536,42 @@ def latest_sentiment_signals() -> dict[str, Any]:
     }
 
 
+def _mean_win_pct(df: pd.DataFrame) -> float | None:
+    """Parse 'Win Percentage' column (e.g. '80.18%') and return mean."""
+    if df.empty or "Win Percentage" not in df.columns:
+        return None
+    pct = pd.to_numeric(
+        df["Win Percentage"].astype(str).str.rstrip("%").str.strip(),
+        errors="coerce",
+    )
+    valid = pct.dropna()
+    return round(float(valid.mean()), 2) if not valid.empty else None
+
+
 def performance_summary() -> dict[str, Any]:
     path = resolve_report_path("combined-performance")
     df = _read_csv(path) if path else pd.DataFrame()
     summary: dict[str, Any] = {"source_file": str(path) if path else None, "row_count": int(len(df))}
-    if not df.empty and "Win_Percentage" in df.columns:
-        summary["avg_win_rate"] = float(df["Win_Percentage"].mean())
-        summary["total_trades"] = int(df["Total_Trades"].sum()) if "Total_Trades" in df.columns else None
+    if not df.empty and "Win Percentage" in df.columns and "Function" in df.columns:
+        # Dashboard KPI "Avg Fwd win rate" — Latest Performance section (~6mo rolling).
+        latest_df = df[df["Function"] == "Latest Performance"]
+        fwd_df = df[df["Function"] == "Forward Testing"]
+        avg_latest = _mean_win_pct(latest_df)
+        if avg_latest is not None:
+            summary["avg_win_rate"] = avg_latest
+        avg_fwd = _mean_win_pct(fwd_df)
+        if avg_fwd is not None:
+            summary["avg_fwd_testing_win_rate"] = avg_fwd
+        bt_col = "Avg Backtested Win Rate [%]"
+        if not latest_df.empty and bt_col in latest_df.columns:
+            bt = pd.to_numeric(
+                latest_df[bt_col].astype(str).str.rstrip("%").str.strip(),
+                errors="coerce",
+            ).dropna()
+            if not bt.empty:
+                summary["avg_backtest_win_rate"] = round(float(bt.mean()), 2)
+        if "Total Analysed Trades" in df.columns and not latest_df.empty:
+            summary["total_trades"] = int(latest_df["Total Analysed Trades"].sum())
     summary["records"] = dataframe_to_records(df)
     return summary
 

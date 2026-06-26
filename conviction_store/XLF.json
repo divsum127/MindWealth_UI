@@ -196,7 +196,7 @@
   "fs_quality_base": 50.0,
   "fs_score": null,
   "full_recalc_trigger": "daily_fundamentals_script",
-  "last_daily_update": "2026-06-24T12:55:08+00:00",
+  "last_daily_update": "2026-06-26T09:14:20+00:00",
   "last_full_calc": "2026-05-15T16:33:59+00:00",
   "manual_overrides": {},
   "market_cap": null,
@@ -240,10 +240,10 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 53.880001068115234,
+  "price": 53.45000076293945,
   "quote_type": "ETF",
   "ticker": "XLF",
-  "updated_at": "2026-06-24T12:55:08+00:00",
+  "updated_at": "2026-06-26T09:14:20+00:00",
   "valuation_tax": null,
   "yield_trap_warning": false
 }
