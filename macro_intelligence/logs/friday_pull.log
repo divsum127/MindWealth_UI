@@ -45,3 +45,29 @@ forward_returns: 61 combo fires to fill
     "cancel_date": "2026-07-03"
   }
 }
+/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/cftc_pull.py:261: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  sub[date_col] = pd.to_datetime(sub[date_col], errors="coerce")
+/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/cftc_pull.py:261: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  sub[date_col] = pd.to_datetime(sub[date_col], errors="coerce")
+CFTC freshness: CFTC source 2026-06-16 older than expected 2026-06-23 (report lag 10d, expected max 3d) (ZIP refresh did not reach expected Tuesday)
+/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/cftc_pull.py:261: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  sub[date_col] = pd.to_datetime(sub[date_col], errors="coerce")
+/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/cftc_pull.py:261: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  sub[date_col] = pd.to_datetime(sub[date_col], errors="coerce")
+/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/cftc_pull.py:261: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  sub[date_col] = pd.to_datetime(sub[date_col], errors="coerce")
+forward_returns: 75 combo fires to fill
+forward_returns: 75 combo fires to fill
+{
+  "date": "2026-06-26",
+  "readings_count": 12,
+  "persistence_count": 1,
+  "combo_fires": 16,
+  "returns_updated": 150,
+  "combo_c_cancel": {
+    "wti_potential_week": 4,
+    "cancelled": true,
+    "active": false,
+    "cancel_date": "2026-07-03"
+  }
+}

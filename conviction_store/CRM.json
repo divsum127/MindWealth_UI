@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.00681,
   "dividend_yield_5y_std": 0.003775,
-  "dividend_yield_current": 0.011182,
-  "dividend_yield_zscore": 1.1581,
-  "enterprise_value": 131454595001.2207,
+  "dividend_yield_current": 0.011113,
+  "dividend_yield_zscore": 1.1399,
+  "enterprise_value": 132249030000.0,
   "eps_fwd": 14.92773,
   "eps_ttm": 7.81,
-  "ev_fwd_rev": 3.1657,
+  "ev_fwd_rev": 3.1848,
   "fcf_ttm": 12895000000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -206,10 +206,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 41524998144.0,
   "industry": "Software - Application",
-  "last_daily_update": "2026-06-26T16:10:44+00:00",
+  "last_daily_update": "2026-06-27T16:34:19+00:00",
   "last_full_calc": "2026-05-18T20:48:17+00:00",
   "manual_overrides": {},
-  "market_cap": 128910595001.2207,
+  "market_cap": 129705030000.0,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -224,7 +224,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 2544000000.0,
-  "owner_earnings_yield": 0.100031,
+  "owner_earnings_yield": 0.099418,
   "pe_20y_array": [
     34.7677,
     30.7797,
@@ -236,7 +236,7 @@
     22.9808
   ],
   "pe_percentile_20y": 0.0,
-  "pe_ttm": 20.1536,
+  "pe_ttm": 20.2778,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -245,12 +245,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 157.39999389648438,
+  "price": 158.37,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.123959996,
   "sector": "Technology",
   "ticker": "CRM",
-  "updated_at": "2026-06-26T16:10:44+00:00",
+  "updated_at": "2026-06-27T16:34:19+00:00",
   "valuation_tax": -1.0,
   "valuation_tax_breakdown": {
     "components": {

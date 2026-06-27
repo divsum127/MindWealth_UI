@@ -204,7 +204,7 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 568090886144.0,
   "industry": "Drug Manufacturers - Specialty & Generic",
-  "last_daily_update": "2026-06-26T16:10:44+00:00",
+  "last_daily_update": "2026-06-27T16:34:19+00:00",
   "last_full_calc": "2026-05-18T20:50:34+00:00",
   "manual_overrides": {},
   "market_cap": 4466362046655.0,
@@ -248,7 +248,7 @@
   "roic_5y_avg": 0.15006966659866397,
   "sector": "Healthcare",
   "ticker": "SUNPHARMA.NS",
-  "updated_at": "2026-06-26T16:10:44+00:00",
+  "updated_at": "2026-06-27T16:34:19+00:00",
   "valuation_tax": -8.0,
   "valuation_tax_breakdown": {
     "components": {

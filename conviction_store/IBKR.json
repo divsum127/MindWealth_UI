@@ -190,12 +190,12 @@
   "debt_purpose": null,
   "dividend_yield_5y_mean": 0.024577,
   "dividend_yield_5y_std": 0.033812,
-  "dividend_yield_current": 0.00385,
-  "dividend_yield_zscore": -0.613,
-  "enterprise_value": 37015473927.173035,
+  "dividend_yield_current": 0.003897,
+  "dividend_yield_zscore": -0.6116,
+  "enterprise_value": 36525441502.479996,
   "eps_fwd": 2.87692,
   "eps_ttm": 2.33,
-  "ev_fwd_rev": 3.6212,
+  "ev_fwd_rev": 3.5732,
   "fcf_ttm": 15744000000.0,
   "fd_direction": "stable",
   "fd_sizing_adj": 0.0,
@@ -228,10 +228,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 10222000000.0,
   "industry": "Capital Markets",
-  "last_daily_update": "2026-06-26T16:10:44+00:00",
+  "last_daily_update": "2026-06-27T16:34:19+00:00",
   "last_full_calc": "2026-06-18T08:09:26+00:00",
   "manual_overrides": {},
-  "market_cap": 40503473927.173035,
+  "market_cap": 40013441502.479996,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -245,7 +245,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": -3488000000.0,
-  "owner_earnings_yield": 0.388707,
+  "owner_earnings_yield": 0.393468,
   "pe_20y_array": [
     29.0339,
     33.8059,
@@ -257,7 +257,7 @@
   ],
   "pe_history_insufficient": false,
   "pe_percentile_20y": 85.71,
-  "pe_ttm": 39.0215,
+  "pe_ttm": 38.5494,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -266,13 +266,13 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 90.91999816894531,
+  "price": 89.82,
   "quote_type": "EQUITY",
   "revenue_accelerating": false,
   "roic_5y_avg": 0.2356,
   "sector": "Financial Services",
   "ticker": "IBKR",
-  "updated_at": "2026-06-26T16:10:44+00:00",
+  "updated_at": "2026-06-27T16:34:19+00:00",
   "valuation_tax": -8.0,
   "valuation_tax_breakdown": {
     "components": {

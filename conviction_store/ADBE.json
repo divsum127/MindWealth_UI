@@ -192,10 +192,10 @@
   "dividend_yield_5y_std": 0.003594,
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": -1.3848,
-  "enterprise_value": 79674672088.62305,
+  "enterprise_value": 80390175000.0,
   "eps_fwd": 26.48722,
   "eps_ttm": 17.15,
-  "ev_fwd_rev": 3.2583,
+  "ev_fwd_rev": 3.2875,
   "fcf_ttm": 9852000000.0,
   "fd_direction": "stable",
   "fd_sizing_adj": 0.0,
@@ -228,10 +228,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 24452999168.0,
   "industry": "Software - Application",
-  "last_daily_update": "2026-06-26T16:10:44+00:00",
+  "last_daily_update": "2026-06-27T16:34:19+00:00",
   "last_full_calc": "2026-06-11T18:32:38+00:00",
   "manual_overrides": {},
-  "market_cap": 79869672088.62305,
+  "market_cap": 80585175000.0,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -245,7 +245,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": -195000000.0,
-  "owner_earnings_yield": 0.123351,
+  "owner_earnings_yield": 0.122256,
   "pe_20y_array": [
     20.9449,
     17.5494,
@@ -257,7 +257,7 @@
   ],
   "pe_history_insufficient": false,
   "pe_percentile_20y": 0.0,
-  "pe_ttm": 11.716,
+  "pe_ttm": 11.821,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -266,13 +266,13 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 200.92999267578125,
+  "price": 202.73,
   "quote_type": "EQUITY",
   "revenue_accelerating": false,
   "roic_5y_avg": 0.58774,
   "sector": "Technology",
   "ticker": "ADBE",
-  "updated_at": "2026-06-26T16:10:44+00:00",
+  "updated_at": "2026-06-27T16:34:19+00:00",
   "valuation_tax": -1.0,
   "valuation_tax_breakdown": {
     "components": {

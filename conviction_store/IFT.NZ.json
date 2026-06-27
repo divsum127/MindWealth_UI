@@ -225,7 +225,7 @@
   "fs_score": 43.75,
   "full_recalc_trigger": "daily_fundamentals_script",
   "industry": "Conglomerates",
-  "last_daily_update": "2026-06-26T16:10:44+00:00",
+  "last_daily_update": "2026-06-27T16:34:19+00:00",
   "last_full_calc": "2026-06-23T14:09:49+00:00",
   "manual_overrides": {},
   "market_cap": 15189549353.396273,
@@ -265,7 +265,7 @@
   "roic_5y_avg": 0.03541,
   "sector": "Industrials",
   "ticker": "IFT.NZ",
-  "updated_at": "2026-06-26T16:10:44+00:00",
+  "updated_at": "2026-06-27T16:34:19+00:00",
   "valuation_tax": 0.0,
   "valuation_tax_breakdown": {
     "components": {

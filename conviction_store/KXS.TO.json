@@ -189,10 +189,10 @@
   },
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 4071189475.5003357,
+  "enterprise_value": 4104246763.3,
   "eps_fwd": 7.1175027,
   "eps_ttm": 4.02,
-  "ev_fwd_rev": 7.0095,
+  "ev_fwd_rev": 7.0664,
   "fcf_ttm": 101062000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -203,10 +203,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 580809984.0,
   "industry": "Software - Application",
-  "last_daily_update": "2026-06-26T16:10:44+00:00",
+  "last_daily_update": "2026-06-27T16:34:19+00:00",
   "last_full_calc": "2026-05-15T16:31:13+00:00",
   "manual_overrides": {},
-  "market_cap": 4194446475.5003357,
+  "market_cap": 4227503763.3,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -225,7 +225,7 @@
     "valuation:dividend_yield_zscore"
   ],
   "net_debt_stored": -123257000.0,
-  "owner_earnings_yield": 0.024094,
+  "owner_earnings_yield": 0.023906,
   "pe_20y_array": [
     70.8048,
     70.9952,
@@ -309,7 +309,7 @@
     47.677
   ],
   "pe_percentile_20y": 0.0,
-  "pe_ttm": 38.1915,
+  "pe_ttm": 38.4925,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -318,12 +318,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 153.52999877929688,
+  "price": 154.74,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.20973,
   "sector": "Technology",
   "ticker": "KXS.TO",
-  "updated_at": "2026-06-26T16:10:44+00:00",
+  "updated_at": "2026-06-27T16:34:19+00:00",
   "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {

@@ -189,10 +189,10 @@
   },
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 92823432505.849,
+  "enterprise_value": 93552844075.33,
   "eps_fwd": 2.70502,
   "eps_ttm": 2.06,
-  "ev_fwd_rev": 20.1221,
+  "ev_fwd_rev": 20.2803,
   "fcf_ttm": 1584000000.0,
   "fd_direction": "stable",
   "fd_votes": {},
@@ -203,10 +203,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 4613000192.0,
   "industry": "Capital Markets",
-  "last_daily_update": "2026-06-26T16:10:44+00:00",
+  "last_daily_update": "2026-06-27T16:34:19+00:00",
   "last_full_calc": "2026-05-15T16:30:41+00:00",
   "manual_overrides": {},
-  "market_cap": 88141432505.849,
+  "market_cap": 88870844075.33,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -225,7 +225,7 @@
     "valuation:dividend_yield_zscore"
   ],
   "net_debt_stored": 4682000000.0,
-  "owner_earnings_yield": 0.017971,
+  "owner_earnings_yield": 0.017824,
   "pe_20y_array": [
     51.5777,
     51.9369,
@@ -309,7 +309,7 @@
     37.099
   ],
   "pe_percentile_20y": 91.25,
-  "pe_ttm": 47.5146,
+  "pe_ttm": 47.9078,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -318,12 +318,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 97.87999725341797,
+  "price": 98.69,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.21461001,
   "sector": "Financial Services",
   "ticker": "HOOD",
-  "updated_at": "2026-06-26T16:10:44+00:00",
+  "updated_at": "2026-06-27T16:34:19+00:00",
   "valuation_tax": -8.0,
   "valuation_tax_breakdown": {
     "components": {

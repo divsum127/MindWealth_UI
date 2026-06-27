@@ -21,7 +21,7 @@
   "bq_raw": 1.0,
   "business_type": "saas",
   "business_type_source": "auto",
-  "conviction_score": -1.0,
+  "conviction_score": -3.0,
   "created_at": "2026-05-12T20:20:00+00:00",
   "data_coverage": {
     "bq_auto_dimensions": {
@@ -189,24 +189,24 @@
   },
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 159618659995.97208,
+  "enterprise_value": 161104644790.6,
   "eps_fwd": 4.33405,
   "eps_ttm": 4.03,
-  "ev_fwd_rev": 2.9731,
+  "ev_fwd_rev": 3.0008,
   "fcf_ttm": 9763000000.0,
   "fd_direction": "negative",
   "fd_votes": {},
   "flags": [],
   "fs_class": "moderate",
   "fs_quality_base": 52.5,
-  "fs_score": 54.5,
+  "fs_score": 51.5,
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 53687001088.0,
   "industry": "Software - Application",
-  "last_daily_update": "2026-06-26T16:10:44+00:00",
+  "last_daily_update": "2026-06-27T16:34:19+00:00",
   "last_full_calc": "2026-05-15T16:33:25+00:00",
   "manual_overrides": {},
-  "market_cap": 153626659995.97208,
+  "market_cap": 155112644790.6,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -225,7 +225,7 @@
     "valuation:dividend_yield_zscore"
   ],
   "net_debt_stored": 5992000000.0,
-  "owner_earnings_yield": 0.06355,
+  "owner_earnings_yield": 0.062941,
   "pe_20y_array": [
     17.5287,
     17.4756,
@@ -308,8 +308,8 @@
     18.6259,
     18.7805
   ],
-  "pe_percentile_20y": 82.5,
-  "pe_ttm": 18.727,
+  "pe_percentile_20y": 87.5,
+  "pe_ttm": 18.9082,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -318,24 +318,24 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 75.47000122070312,
+  "price": 76.2,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.3531,
   "sector": "Technology",
   "ticker": "UBER",
-  "updated_at": "2026-06-26T16:10:44+00:00",
-  "valuation_tax": -2.0,
+  "updated_at": "2026-06-27T16:34:19+00:00",
+  "valuation_tax": -4.0,
   "valuation_tax_breakdown": {
     "components": {
       "business_type_relief": 0.0,
       "deal_delay_signal": 0.0,
-      "entry_multiple": 0.0,
+      "entry_multiple": -1.0,
       "growth_multiple_fragility": 0.0,
       "market_regime_beta": 0.0,
       "oey_penalty": 0.0,
-      "pe_hist_percentile": -2.0
+      "pe_hist_percentile": -3.0
     },
-    "total": -2.0
+    "total": -4.0
   },
   "yield_trap_mkt_threshold": 0.06,
   "yield_trap_warning": false

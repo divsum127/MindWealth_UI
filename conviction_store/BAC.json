@@ -21,7 +21,7 @@
   "bq_raw": 0.0,
   "business_type": "compounder",
   "business_type_source": "auto",
-  "conviction_score": -8.0,
+  "conviction_score": -7.0,
   "created_at": "2026-05-12T20:17:22+00:00",
   "data_coverage": {
     "bq_auto_dimensions": {
@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.043634,
   "dividend_yield_5y_std": 0.051342,
-  "dividend_yield_current": 0.019229,
-  "dividend_yield_zscore": -0.4753,
-  "enterprise_value": 478095914887.51843,
+  "dividend_yield_current": 0.01935,
+  "dividend_yield_zscore": -0.473,
+  "enterprise_value": 475505666879.88,
   "eps_fwd": 5.04212,
   "eps_ttm": 4.03,
-  "ev_fwd_rev": 4.1946,
+  "ev_fwd_rev": 4.1719,
   "fd_direction": "negative",
   "fd_votes": {},
   "flags": [],
@@ -204,10 +204,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 113978000000.0,
   "industry": "Banks - Diversified",
-  "last_daily_update": "2026-06-26T16:10:44+00:00",
+  "last_daily_update": "2026-06-27T16:34:19+00:00",
   "last_full_calc": "2026-05-18T20:47:35+00:00",
   "manual_overrides": {},
-  "market_cap": 413340914887.51843,
+  "market_cap": 410750666879.88,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -233,8 +233,8 @@
     13.2327,
     12.547
   ],
-  "pe_percentile_20y": 100.0,
-  "pe_ttm": 14.4529,
+  "pe_percentile_20y": 83.33,
+  "pe_ttm": 14.3623,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -243,13 +243,13 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 58.244998931884766,
+  "price": 57.88,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.10644,
   "sector": "Financial Services",
   "ticker": "BAC",
-  "updated_at": "2026-06-26T16:10:44+00:00",
-  "valuation_tax": -8.0,
+  "updated_at": "2026-06-27T16:34:19+00:00",
+  "valuation_tax": -7.0,
   "valuation_tax_breakdown": {
     "components": {
       "business_type_relief": 0.0,
@@ -258,9 +258,9 @@
       "growth_multiple_fragility": 0.0,
       "market_regime_beta": 0.0,
       "oey_penalty": 0.0,
-      "pe_hist_percentile": -3.0
+      "pe_hist_percentile": -2.0
     },
-    "total": -8.0
+    "total": -7.0
   },
   "yield_trap_mkt_threshold": 0.06,
   "yield_trap_warning": false

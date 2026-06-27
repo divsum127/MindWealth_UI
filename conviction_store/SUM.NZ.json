@@ -203,7 +203,7 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 360860992.0,
   "industry": "Medical Care Facilities",
-  "last_daily_update": "2026-06-26T16:10:44+00:00",
+  "last_daily_update": "2026-06-27T16:34:19+00:00",
   "last_full_calc": "2026-05-18T20:50:31+00:00",
   "manual_overrides": {},
   "market_cap": 2067135495.5433197,
@@ -239,7 +239,7 @@
   "roic_5y_avg": 0.08281,
   "sector": "Healthcare",
   "ticker": "SUM.NZ",
-  "updated_at": "2026-06-26T16:10:44+00:00",
+  "updated_at": "2026-06-27T16:34:19+00:00",
   "valuation_tax": -7.0,
   "valuation_tax_breakdown": {
     "components": {

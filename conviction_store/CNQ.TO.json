@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.031777,
   "dividend_yield_5y_std": 0.026318,
-  "dividend_yield_current": 0.044381,
-  "dividend_yield_zscore": 0.4789,
-  "enterprise_value": 136176048119.04907,
+  "dividend_yield_current": 0.044627,
+  "dividend_yield_zscore": 0.4883,
+  "enterprise_value": 135529474200.0,
   "eps_fwd": 5.07987,
   "eps_ttm": 5.59,
-  "ev_fwd_rev": 3.0587,
+  "ev_fwd_rev": 3.0442,
   "fcf_ttm": 8379000000.0,
   "fd_direction": "positive",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 44521000000.0,
   "industry": "Oil & Gas E&P",
-  "last_daily_update": "2026-06-26T16:10:44+00:00",
+  "last_daily_update": "2026-06-27T16:34:19+00:00",
   "last_full_calc": "2026-05-18T20:48:08+00:00",
   "manual_overrides": {},
-  "market_cap": 117488048119.04907,
+  "market_cap": 116841474200.0,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 18688000000.0,
-  "owner_earnings_yield": 0.071318,
+  "owner_earnings_yield": 0.071713,
   "pe_20y_array": [
     10.8629,
     11.132,
@@ -239,7 +239,7 @@
     12.1919
   ],
   "pe_percentile_20y": 16.67,
-  "pe_ttm": 10.0769,
+  "pe_ttm": 10.0215,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -248,12 +248,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 56.33000183105469,
+  "price": 56.02,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.22825001,
   "sector": "Energy",
   "ticker": "CNQ.TO",
-  "updated_at": "2026-06-26T16:10:44+00:00",
+  "updated_at": "2026-06-27T16:34:19+00:00",
   "valuation_tax": -2.0,
   "valuation_tax_breakdown": {
     "components": {

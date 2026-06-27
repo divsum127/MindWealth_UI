@@ -226,7 +226,7 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 2308400128.0,
   "industry": "Medical Instruments & Supplies",
-  "last_daily_update": "2026-06-26T16:10:44+00:00",
+  "last_daily_update": "2026-06-27T16:34:19+00:00",
   "last_full_calc": "2026-06-23T14:08:48+00:00",
   "manual_overrides": {},
   "market_cap": 22581262844.115955,
@@ -264,7 +264,7 @@
   "roic_5y_avg": 0.23391001,
   "sector": "Healthcare",
   "ticker": "FPH.NZ",
-  "updated_at": "2026-06-26T16:10:44+00:00",
+  "updated_at": "2026-06-27T16:34:19+00:00",
   "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {

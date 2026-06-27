@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.013751,
   "dividend_yield_5y_std": 0.021212,
-  "dividend_yield_current": 0.008073,
-  "dividend_yield_zscore": -0.2677,
-  "enterprise_value": 2002880569133.3315,
+  "dividend_yield_current": 0.008118,
+  "dividend_yield_zscore": -0.2656,
+  "enterprise_value": 2002233269779.34,
   "eps_fwd": 1.19,
   "eps_ttm": 1.09,
-  "ev_fwd_rev": 0.1605,
+  "ev_fwd_rev": 0.1604,
   "fcf_ttm": 1720735000000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 12479619923968.0,
   "industry": "Consumer Electronics",
-  "last_daily_update": "2026-06-26T16:10:44+00:00",
+  "last_daily_update": "2026-06-27T16:34:19+00:00",
   "last_full_calc": "2026-05-18T20:50:29+00:00",
   "manual_overrides": {},
-  "market_cap": 116736569133.33157,
+  "market_cap": 116089269779.34001,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 1886144000000.0,
-  "owner_earnings_yield": 14.740325,
+  "owner_earnings_yield": 14.822515,
   "pe_20y_array": [
     0.1486,
     0.144,
@@ -231,7 +231,7 @@
     0.1328
   ],
   "pe_percentile_20y": 100.0,
-  "pe_ttm": 18.1834,
+  "pe_ttm": 18.0826,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -240,12 +240,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 19.819900512695312,
+  "price": 19.71,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.12367,
   "sector": "Technology",
   "ticker": "SONY",
-  "updated_at": "2026-06-26T16:10:44+00:00",
+  "updated_at": "2026-06-27T16:34:19+00:00",
   "valuation_tax": -3.0,
   "valuation_tax_breakdown": {
     "components": {

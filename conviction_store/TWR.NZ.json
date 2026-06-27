@@ -225,7 +225,7 @@
   "fs_score": 70.0,
   "full_recalc_trigger": "daily_fundamentals_script",
   "industry": "Insurance - Property & Casualty",
-  "last_daily_update": "2026-06-26T16:10:44+00:00",
+  "last_daily_update": "2026-06-27T16:34:19+00:00",
   "last_full_calc": "2026-05-27T04:47:30+00:00",
   "manual_overrides": {},
   "market_cap": 647330432.0,
@@ -265,7 +265,7 @@
   "roic_5y_avg": 0.1717,
   "sector": "Financial Services",
   "ticker": "TWR.NZ",
-  "updated_at": "2026-06-26T16:10:44+00:00",
+  "updated_at": "2026-06-27T16:34:19+00:00",
   "valuation_tax": 0.0,
   "valuation_tax_breakdown": {
     "components": {
