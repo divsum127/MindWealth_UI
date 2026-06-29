@@ -3,9 +3,9 @@
 set -euo pipefail
 ROOT="/home/ubuntu/uiv2/prod/MindWealth_UI"
 cd "$ROOT"
-git fetch upstream
+git fetch origin
 git checkout chatbot-prod
-git pull upstream chatbot-prod
+git pull origin chatbot-prod
 "$ROOT/.venv/bin/pip" install -r requirements.txt
 sudo cp "$ROOT/scripts/mindwealth-api.service" /etc/systemd/system/mindwealth-api.service
 sudo systemctl daemon-reload
