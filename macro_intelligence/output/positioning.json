@@ -1,15 +1,15 @@
 {
-  "date": "2026-06-26",
-  "ssi_level": 0.2234,
-  "ssi_percentile_5y": 18.9,
+  "date": "2026-06-29",
+  "ssi_level": 0.3907,
+  "ssi_percentile_5y": 32.61,
   "layer2_status": "CONFIRMED",
-  "layer2_confirmed_count": 3,
+  "layer2_confirmed_count": 4,
   "ssi_multiplier": 1.2,
   "signals": {
     "long": {
-      "size_mult": 1.2,
+      "size_mult": 1.0,
       "entry_threshold": -0.6,
-      "active": true
+      "active": false
     },
     "short": {
       "size_mult": 1.0,
@@ -19,44 +19,44 @@
   },
   "inputs": {
     "hyg_lqd": {
-      "raw": 0.7294976918120363,
-      "norm": 1.1991300558526856
+      "raw": 0.7290411126123716,
+      "norm": 1.186577900193611
     },
     "dbmf_beta": {
-      "raw": 0.39011475345087765,
-      "norm": -0.47327122792506193
+      "raw": 0.4059582240765439,
+      "norm": -0.5115440157859614
     },
     "cnn_fg": {
-      "raw": 25.6,
-      "norm": 0.488
+      "raw": 24.7714285714286,
+      "norm": 0.8
     },
     "vix_ratio": {
-      "raw": 1.1932926920749547,
-      "norm": -0.7
+      "raw": 1.093427448539402,
+      "norm": -0.18685489707880398
     },
     "layer2_votes": [
       {
         "input": "hyg_lqd",
-        "raw": 0.7294976918120363,
-        "pctile": 97.46621621621621,
+        "raw": 0.7290411126123716,
+        "pctile": 97.22557297949336,
         "vote": true,
         "signal": "risk_on"
       },
       {
         "input": "dbmf_beta",
-        "raw": 0.3901147534508783,
+        "raw": 0.40595822407654597,
         "vote": true,
         "signal": "low_beta"
       },
       {
         "input": "cnn_fg",
-        "raw": 25.6,
-        "vote": false,
-        "signal": "neutral"
+        "raw": 24.7714285714286,
+        "vote": true,
+        "signal": "fear"
       },
       {
         "input": "vix_ratio",
-        "raw": 1.1932926920749547,
+        "raw": 1.093427448539402,
         "vote": true,
         "signal": "stress"
       }
@@ -66,17 +66,17 @@
       "rm_net": 986577.0,
       "fm_pctile": 0.6451612903225806,
       "rm_pctile": 81.29032258064515,
-      "status": "CONFIRMED",
+      "status": "PENDING_CFTC_CONFIRM",
       "gross_net_divergence": 462695.0
     },
     "layer1": {
       "aaii_spread": 8.810599999999996,
       "naaim_exposure": 98.59,
-      "cnn_fg_raw": 25.6,
-      "pct_above_200dma": 62.35059760956175,
-      "mcclellan": 101.9233639878621,
-      "nh_nl_ratio": 2.8421052631578947,
-      "skew": 139.88999938964844
+      "cnn_fg_raw": 24.7714285714286,
+      "pct_above_200dma": 64.54183266932272,
+      "mcclellan": 119.16187714167245,
+      "nh_nl_ratio": 17.666666666666668,
+      "skew": 139.39999389648438
     }
   },
   "validation": {

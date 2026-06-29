@@ -189,7 +189,7 @@
   },
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 848913681289.6201,
+  "enterprise_value": 848913709156.3301,
   "eps_fwd": 12.95421,
   "eps_ttm": 3.01,
   "ev_fwd_rev": 22.6655,
@@ -203,10 +203,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 37454000128.0,
   "industry": "Semiconductors",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-15T16:28:15+00:00",
   "manual_overrides": {},
-  "market_cap": 850488681289.6201,
+  "market_cap": 850488709156.3301,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -318,12 +318,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 521.58,
+  "price": 521.5800170898438,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.08063,
   "sector": "Technology",
   "ticker": "AMD",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -10.0,
   "valuation_tax_breakdown": {
     "components": {

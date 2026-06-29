@@ -189,7 +189,7 @@
   },
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 50969812275.67,
+  "enterprise_value": 50969812646.59142,
   "eps_fwd": 1.17918,
   "eps_ttm": 0.58,
   "ev_fwd_rev": 5.3096,
@@ -203,10 +203,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 9599604000.0,
   "industry": "Banks - Regional",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-15T16:32:04+00:00",
   "manual_overrides": {},
-  "market_cap": 64029132275.67,
+  "market_cap": 64029132646.59142,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -318,12 +318,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 13.17,
+  "price": 13.170000076293945,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.30278,
   "sector": "Financial Services",
   "ticker": "NU",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {

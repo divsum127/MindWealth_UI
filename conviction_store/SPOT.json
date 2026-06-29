@@ -189,7 +189,7 @@
   },
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 91672340461.22,
+  "enterprise_value": 91672338202.21054,
   "eps_fwd": 18.58335,
   "eps_ttm": 15.14,
   "ev_fwd_rev": 5.2298,
@@ -203,10 +203,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 17528999936.0,
   "industry": "Internet Content & Information",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-15T16:32:59+00:00",
   "manual_overrides": {},
-  "market_cap": 94589340461.22,
+  "market_cap": 94589338202.21054,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -318,12 +318,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 460.02,
+  "price": 460.0199890136719,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.37987998,
   "sector": "Communication Services",
   "ticker": "SPOT",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {

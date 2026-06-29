@@ -189,7 +189,7 @@
   "dividend_yield_5y_std": 0.019855,
   "dividend_yield_current": 0.029957,
   "dividend_yield_zscore": -0.6342,
-  "enterprise_value": 362630554640.16003,
+  "enterprise_value": 362630565450.9769,
   "eps_fwd": 3.22815,
   "eps_ttm": 2.56,
   "ev_fwd_rev": 5.7237,
@@ -203,10 +203,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 63355998208.0,
   "industry": "Drug Manufacturers - General",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-18T20:50:18+00:00",
   "manual_overrides": {},
-  "market_cap": 333251554640.16003,
+  "market_cap": 333251565450.9769,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -234,12 +234,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 51.74,
+  "price": 51.7400016784668,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.37273997,
   "sector": "Healthcare",
   "ticker": "RHHBY",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -1.0,
   "valuation_tax_breakdown": {
     "components": {

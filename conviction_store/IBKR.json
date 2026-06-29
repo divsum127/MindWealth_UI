@@ -192,7 +192,7 @@
   "dividend_yield_5y_std": 0.033812,
   "dividend_yield_current": 0.003897,
   "dividend_yield_zscore": -0.6116,
-  "enterprise_value": 36525441502.479996,
+  "enterprise_value": 36525441366.52884,
   "eps_fwd": 2.87692,
   "eps_ttm": 2.33,
   "ev_fwd_rev": 3.5732,
@@ -228,10 +228,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 10222000000.0,
   "industry": "Capital Markets",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-06-18T08:09:26+00:00",
   "manual_overrides": {},
-  "market_cap": 40013441502.479996,
+  "market_cap": 40013441366.52884,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -266,13 +266,13 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 89.82,
+  "price": 89.81999969482422,
   "quote_type": "EQUITY",
   "revenue_accelerating": false,
   "roic_5y_avg": 0.2356,
   "sector": "Financial Services",
   "ticker": "IBKR",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -8.0,
   "valuation_tax_breakdown": {
     "components": {

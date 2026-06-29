@@ -191,7 +191,7 @@
   "dividend_yield_5y_std": 0.027926,
   "dividend_yield_current": 0.009759,
   "dividend_yield_zscore": -0.6933,
-  "enterprise_value": 2802322291550.8804,
+  "enterprise_value": 2802322300618.7935,
   "eps_fwd": 19.37103,
   "eps_ttm": 16.79,
   "ev_fwd_rev": 8.8048,
@@ -206,10 +206,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 318272995328.0,
   "industry": "Software - Infrastructure",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-18T20:49:33+00:00",
   "manual_overrides": {},
-  "market_cap": 2770583291550.8804,
+  "market_cap": 2770583300618.7935,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -243,12 +243,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 372.97,
+  "price": 372.9700012207031,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.34013999,
   "sector": "Technology",
   "ticker": "MSFT",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {

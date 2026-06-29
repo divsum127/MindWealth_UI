@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.015968,
   "dividend_yield_5y_std": 0.007732,
-  "dividend_yield_current": 0.009079,
-  "dividend_yield_zscore": -0.891,
-  "enterprise_value": 756939944746.0,
+  "dividend_yield_current": 0.010236,
+  "dividend_yield_zscore": -0.7413,
+  "enterprise_value": 671325332634.0,
   "eps_fwd": 174.72768,
   "eps_ttm": 118.96,
-  "ev_fwd_rev": 5.1323,
+  "ev_fwd_rev": 4.5518,
   "fcf_ttm": 14561128448.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 147484491776.0,
   "industry": "Information Technology Services",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-18T20:50:01+00:00",
   "manual_overrides": {},
-  "market_cap": 757173754746.0,
+  "market_cap": 671559142634.0,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": -233810000.0,
-  "owner_earnings_yield": 0.019231,
+  "owner_earnings_yield": 0.021683,
   "pe_20y_array": [
     60.0364,
     57.7678,
@@ -233,7 +233,7 @@
     41.214
   ],
   "pe_percentile_20y": 0.0,
-  "pe_ttm": 40.7406,
+  "pe_ttm": 36.134,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -242,12 +242,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 4846.5,
+  "price": 4298.5,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.26349002,
   "sector": "Technology",
   "ticker": "PERSISTENT.NS",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {

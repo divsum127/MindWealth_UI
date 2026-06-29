@@ -191,7 +191,7 @@
   "dividend_yield_5y_std": 0.021698,
   "dividend_yield_current": 0.070811,
   "dividend_yield_zscore": 1.219,
-  "enterprise_value": 198300498865.01,
+  "enterprise_value": 198300504083.007,
   "eps_fwd": 2.83504,
   "eps_ttm": 1.31,
   "ev_fwd_rev": 3.132,
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 63315001344.0,
   "industry": "Drug Manufacturers - General",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-18T20:50:04+00:00",
   "manual_overrides": {},
-  "market_cap": 138439498865.01,
+  "market_cap": 138439504083.007,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -242,12 +242,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 24.29,
+  "price": 24.290000915527344,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.083100006,
   "sector": "Healthcare",
   "ticker": "PFE",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": 0.0,
   "valuation_tax_breakdown": {
     "components": {

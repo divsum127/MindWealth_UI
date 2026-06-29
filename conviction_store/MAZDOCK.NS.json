@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.019636,
   "dividend_yield_5y_std": 0.014217,
-  "dividend_yield_current": 0.007798,
-  "dividend_yield_zscore": -0.8327,
-  "enterprise_value": 959521430000.0,
+  "dividend_yield_current": 0.007851,
+  "dividend_yield_zscore": -0.8289,
+  "enterprise_value": 952785003696.2891,
   "eps_fwd": 81.61338,
   "eps_ttm": 64.03,
-  "ev_fwd_rev": 7.3774,
+  "ev_fwd_rev": 7.3256,
   "fcf_ttm": -39999111168.0,
   "fd_direction": "stable",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 130063097856.0,
   "industry": "Aerospace & Defense",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-18T20:49:18+00:00",
   "manual_overrides": {},
-  "market_cap": 993726630000.0,
+  "market_cap": 986990203696.2891,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": -34205200000.0,
-  "owner_earnings_yield": -0.040252,
+  "owner_earnings_yield": -0.040526,
   "pe_20y_array": [
     40.7628,
     42.1165,
@@ -233,7 +233,7 @@
     42.8488
   ],
   "pe_percentile_20y": 33.33,
-  "pe_ttm": 38.4742,
+  "pe_ttm": 38.2133,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -242,12 +242,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 2463.5,
+  "price": 2446.800048828125,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.2877,
   "sector": "Industrials",
   "ticker": "MAZDOCK.NS",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -7.0,
   "valuation_tax_breakdown": {
     "components": {

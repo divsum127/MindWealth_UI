@@ -191,7 +191,7 @@
   "dividend_yield_5y_std": 0.003775,
   "dividend_yield_current": 0.011113,
   "dividend_yield_zscore": 1.1399,
-  "enterprise_value": 132249030000.0,
+  "enterprise_value": 132249026000.97656,
   "eps_fwd": 14.92773,
   "eps_ttm": 7.81,
   "ev_fwd_rev": 3.1848,
@@ -206,10 +206,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 41524998144.0,
   "industry": "Software - Application",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-18T20:48:17+00:00",
   "manual_overrides": {},
-  "market_cap": 129705030000.0,
+  "market_cap": 129705026000.97656,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -245,12 +245,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 158.37,
+  "price": 158.3699951171875,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.123959996,
   "sector": "Technology",
   "ticker": "CRM",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -1.0,
   "valuation_tax_breakdown": {
     "components": {

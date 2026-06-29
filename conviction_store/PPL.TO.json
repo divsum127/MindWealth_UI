@@ -191,7 +191,7 @@
   "dividend_yield_5y_std": 0.047424,
   "dividend_yield_current": 0.042874,
   "dividend_yield_zscore": -1.1863,
-  "enterprise_value": 52101258900.0,
+  "enterprise_value": 52101260319.51904,
   "eps_fwd": 3.10495,
   "eps_ttm": 2.66,
   "ev_fwd_rev": 6.4803,
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 8040000000.0,
   "industry": "Oil & Gas Midstream",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-18T20:50:11+00:00",
   "manual_overrides": {},
-  "market_cap": 38921258900.0,
+  "market_cap": 38921260319.51904,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -242,12 +242,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 66.94,
+  "price": 66.94000244140625,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.09806,
   "sector": "Energy",
   "ticker": "PPL.TO",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -7.0,
   "valuation_tax_breakdown": {
     "components": {

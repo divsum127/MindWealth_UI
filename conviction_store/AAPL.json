@@ -192,7 +192,7 @@
   "dividend_yield_5y_std": 0.0077,
   "dividend_yield_current": 0.003806,
   "dividend_yield_zscore": -1.4971,
-  "enterprise_value": 4238001885679.9995,
+  "enterprise_value": 4238001867751.0986,
   "eps_fwd": 9.60792,
   "eps_ttm": 8.25,
   "ev_fwd_rev": 9.3877,
@@ -229,12 +229,12 @@
   "full_recalc_trigger": "manual",
   "fwd_revenue_stored": 451442016256.0,
   "industry": "Consumer Electronics",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-06-05T00:34:08+00:00",
   "manual_overrides": {
     "bq_raw": 7
   },
-  "market_cap": 4167977885679.9995,
+  "market_cap": 4167977867751.0986,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -268,13 +268,13 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 283.78,
+  "price": 283.7799987792969,
   "quote_type": "EQUITY",
   "revenue_accelerating": null,
   "roic_5y_avg": 1.4147099,
   "sector": "Technology",
   "ticker": "AAPL",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -7.0,
   "valuation_tax_breakdown": {
     "components": {

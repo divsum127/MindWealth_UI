@@ -195,10 +195,10 @@
   "fs_quality_base": 50.0,
   "fs_score": null,
   "full_recalc_trigger": "daily_fundamentals_script",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-15T16:30:03+00:00",
   "manual_overrides": {},
-  "market_cap": 193118027776.0,
+  "market_cap": 192267386880.0,
   "missing_fields": [
     "annual_div_per_share_stored",
     "distribution_coverage_ratio",
@@ -239,10 +239,10 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 1599.800048828125,
+  "price": 1590.449951171875,
   "quote_type": "CRYPTOCURRENCY",
   "ticker": "ETH-USD",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": null,
   "yield_trap_warning": false
 }

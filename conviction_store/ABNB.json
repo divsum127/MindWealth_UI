@@ -189,7 +189,7 @@
   },
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 81070576591.88,
+  "enterprise_value": 81070575142.89337,
   "eps_fwd": 6.04492,
   "eps_ttm": 4.05,
   "ev_fwd_rev": 6.4103,
@@ -203,10 +203,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 12647000064.0,
   "industry": "Travel Services",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-15T16:28:08+00:00",
   "manual_overrides": {},
-  "market_cap": 86390576591.88,
+  "market_cap": 86390575142.89337,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -318,12 +318,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 145.56,
+  "price": 145.55999755859375,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.32325,
   "sector": "Consumer Cyclical",
   "ticker": "ABNB",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -8.0,
   "valuation_tax_breakdown": {
     "components": {

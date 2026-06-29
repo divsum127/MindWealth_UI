@@ -191,7 +191,7 @@
   "dividend_yield_5y_std": 0.005702,
   "dividend_yield_current": 0.007739,
   "dividend_yield_zscore": -0.8387,
-  "enterprise_value": 114820354344.13,
+  "enterprise_value": 114820353700.35895,
   "eps_fwd": 13.08608,
   "eps_ttm": 9.54,
   "ev_fwd_rev": 15.9828,
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 7184000000.0,
   "industry": "Lodging",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-18T20:49:16+00:00",
   "manual_overrides": {},
-  "market_cap": 99492354344.13,
+  "market_cap": 99492353700.35895,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -242,12 +242,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 377.31,
+  "price": 377.30999755859375,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.09765001,
   "sector": "Consumer Cyclical",
   "ticker": "MAR",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -8.0,
   "valuation_tax_breakdown": {
     "components": {

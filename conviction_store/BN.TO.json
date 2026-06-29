@@ -191,7 +191,7 @@
   "dividend_yield_5y_std": 0.020213,
   "dividend_yield_current": 0.006244,
   "dividend_yield_zscore": -1.2202,
-  "enterprise_value": 355677631867.6,
+  "enterprise_value": 355677633230.8786,
   "eps_ttm": 0.7,
   "ev_fwd_rev": 4.4958,
   "fcf_ttm": -2792000000.0,
@@ -204,10 +204,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 79113003008.0,
   "industry": "Asset Management",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-18T20:47:50+00:00",
   "manual_overrides": {},
-  "market_cap": 135936631867.6,
+  "market_cap": 135936633230.8786,
   "missing_fields": [
     "distribution_coverage_ratio",
     "eps_fwd",
@@ -245,12 +245,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 60.86,
+  "price": 60.86000061035156,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.02503,
   "sector": "Financial Services",
   "ticker": "BN.TO",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -7.0,
   "valuation_tax_breakdown": {
     "components": {

@@ -191,7 +191,7 @@
   "dividend_yield_5y_std": 0.009711,
   "dividend_yield_current": 0.016575,
   "dividend_yield_zscore": -0.1158,
-  "enterprise_value": 6129351061.05,
+  "enterprise_value": 6129351227.542862,
   "eps_fwd": 6.37744,
   "eps_ttm": 5.52,
   "ev_fwd_rev": 1.7463,
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 3510000128.0,
   "industry": "Lumber & Wood Production",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-18T20:50:26+00:00",
   "manual_overrides": {},
-  "market_cap": 4476351061.05,
+  "market_cap": 4476351227.542862,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -242,12 +242,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 82.05,
+  "price": 82.05000305175781,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.14840001,
   "sector": "Basic Materials",
   "ticker": "SJ.TO",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -1.0,
   "valuation_tax_breakdown": {
     "components": {

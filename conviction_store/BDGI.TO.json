@@ -191,7 +191,7 @@
   "dividend_yield_5y_std": 0.043463,
   "dividend_yield_current": 0.008115,
   "dividend_yield_zscore": -1.0832,
-  "enterprise_value": 3399615838.18,
+  "enterprise_value": 3399615817.6358337,
   "eps_fwd": 3.9145,
   "eps_ttm": 2.3,
   "ev_fwd_rev": 3.9424,
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 862313024.0,
   "industry": "Engineering & Construction",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-18T20:47:41+00:00",
   "manual_overrides": {},
-  "market_cap": 3193955838.18,
+  "market_cap": 3193955817.6358337,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -248,12 +248,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 94.89,
+  "price": 94.88999938964844,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.20846,
   "sector": "Industrials",
   "ticker": "BDGI.TO",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {

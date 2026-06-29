@@ -189,7 +189,7 @@
   "dividend_yield_5y_std": 0.015029,
   "dividend_yield_current": 0.044693,
   "dividend_yield_zscore": -0.1946,
-  "enterprise_value": 18708752167.32,
+  "enterprise_value": 18708752373.755753,
   "eps_ttm": -8.48,
   "ev_fwd_rev": 5.1005,
   "fcf_ttm": 526000000.0,
@@ -202,10 +202,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 3668000000.0,
   "industry": "Utilities - Regulated Gas",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-18T20:47:48+00:00",
   "manual_overrides": {},
-  "market_cap": 6824752167.320001,
+  "market_cap": 6824752373.755753,
   "missing_fields": [
     "distribution_coverage_ratio",
     "eps_fwd",
@@ -235,12 +235,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 55.49,
+  "price": 55.4900016784668,
   "quote_type": "EQUITY",
   "roic_5y_avg": -0.010989999,
   "sector": "Utilities",
   "ticker": "BIPC.TO",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -1.0,
   "valuation_tax_breakdown": {
     "components": {

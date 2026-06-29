@@ -192,7 +192,7 @@
   "dividend_yield_5y_std": 0.086489,
   "dividend_yield_current": 0.012445,
   "dividend_yield_zscore": -0.7325,
-  "enterprise_value": 19778380751.9,
+  "enterprise_value": 19778380250.276276,
   "eps_fwd": 9.886713,
   "eps_ttm": 5.01,
   "ev_fwd_rev": 2.5085,
@@ -228,10 +228,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 7884671000.0,
   "industry": "Trucking",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-06-11T18:39:08+00:00",
   "manual_overrides": {},
-  "market_cap": 16839917751.9,
+  "market_cap": 16839917250.276276,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -263,13 +263,13 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 204.9,
+  "price": 204.89999389648438,
   "quote_type": "EQUITY",
   "revenue_accelerating": false,
   "roic_5y_avg": 0.11257,
   "sector": "Industrials",
   "ticker": "TFII.TO",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -1.0,
   "valuation_tax_breakdown": {
     "components": {

@@ -191,7 +191,7 @@
   "dividend_yield_5y_std": 0.007079,
   "dividend_yield_current": 0.015184,
   "dividend_yield_zscore": 0.3938,
-  "enterprise_value": 211371963576.96002,
+  "enterprise_value": 211371965166.7837,
   "eps_fwd": 7.47839,
   "eps_ttm": 6.25,
   "ev_fwd_rev": 2.1732,
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 97263001600.0,
   "industry": "Entertainment",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-18T20:48:30+00:00",
   "manual_overrides": {},
-  "market_cap": 171549963576.96002,
+  "market_cap": 171549965166.7837,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -242,12 +242,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 98.79,
+  "price": 98.79000091552734,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.1101,
   "sector": "Communication Services",
   "ticker": "DIS",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -1.0,
   "valuation_tax_breakdown": {
     "components": {

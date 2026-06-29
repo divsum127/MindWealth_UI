@@ -189,7 +189,7 @@
   "dividend_yield_5y_std": 0.006017,
   "dividend_yield_current": 0.01921,
   "dividend_yield_zscore": 2.0396,
-  "enterprise_value": 23149007184.049988,
+  "enterprise_value": 23149006140.66954,
   "eps_fwd": 0.68334,
   "eps_ttm": 0.29,
   "ev_fwd_rev": 0.0262,
@@ -203,10 +203,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 883831503000.0,
   "industry": "Auto Manufacturers",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-18T20:48:00+00:00",
   "manual_overrides": {},
-  "market_cap": 85428141184.04999,
+  "market_cap": 85428140140.66954,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -234,12 +234,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 9.37,
+  "price": 9.369999885559082,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.11147001,
   "sector": "Consumer Cyclical",
   "ticker": "BYDDY",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -2.0,
   "valuation_tax_breakdown": {
     "components": {

@@ -191,7 +191,7 @@
   "dividend_yield_5y_std": 0.009128,
   "dividend_yield_current": 0.017654,
   "dividend_yield_zscore": -0.0529,
-  "enterprise_value": 494124516525.81,
+  "enterprise_value": 494124512204.41223,
   "eps_fwd": 65.38839,
   "eps_ttm": 54.73,
   "ev_fwd_rev": 8.0302,
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 61532999680.0,
   "industry": "Capital Markets",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-18T20:48:54+00:00",
   "manual_overrides": {},
-  "market_cap": 300792516525.81,
+  "market_cap": 300792512204.41223,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -242,12 +242,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 1019.61,
+  "price": 1019.6099853515625,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.14548,
   "sector": "Financial Services",
   "ticker": "GS",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -10.0,
   "valuation_tax_breakdown": {
     "components": {

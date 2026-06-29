@@ -189,7 +189,7 @@
   },
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 4104246763.3,
+  "enterprise_value": 4104246913.3734894,
   "eps_fwd": 7.1175027,
   "eps_ttm": 4.02,
   "ev_fwd_rev": 7.0664,
@@ -203,10 +203,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 580809984.0,
   "industry": "Software - Application",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-15T16:31:13+00:00",
   "manual_overrides": {},
-  "market_cap": 4227503763.3,
+  "market_cap": 4227503913.3734894,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -318,12 +318,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 154.74,
+  "price": 154.74000549316406,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.20973,
   "sector": "Technology",
   "ticker": "KXS.TO",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {

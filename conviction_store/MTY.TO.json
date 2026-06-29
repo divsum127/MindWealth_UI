@@ -192,7 +192,7 @@
   "dividend_yield_5y_std": 0.011144,
   "dividend_yield_current": 0.035696,
   "dividend_yield_zscore": 1.5245,
-  "enterprise_value": 2041589854.1,
+  "enterprise_value": 2041589819.246849,
   "eps_fwd": 4.52667,
   "eps_ttm": 6.73,
   "ev_fwd_rev": 1.7336,
@@ -228,10 +228,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 1177648000.0,
   "industry": "Restaurants",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-06-18T08:10:38+00:00",
   "manual_overrides": {},
-  "market_cap": 870255854.1,
+  "market_cap": 870255819.2468491,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -263,13 +263,13 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 38.1,
+  "price": 38.099998474121094,
   "quote_type": "EQUITY",
   "revenue_accelerating": false,
   "roic_5y_avg": 0.18469,
   "sector": "Consumer Cyclical",
   "ticker": "MTY.TO",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -1.0,
   "valuation_tax_breakdown": {
     "components": {

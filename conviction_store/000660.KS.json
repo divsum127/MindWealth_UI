@@ -189,11 +189,11 @@
   },
   "dividend_yield_5y_mean": 0.264708,
   "dividend_yield_5y_std": 0.895306,
-  "dividend_yield_current": 0.001122,
+  "dividend_yield_current": 0.001142,
   "dividend_yield_zscore": -0.2944,
-  "enterprise_value": 1911689115643000.0,
+  "enterprise_value": 1879745645548000.0,
   "eps_ttm": 50291.93917324153,
-  "ev_fwd_rev": 14.4733,
+  "ev_fwd_rev": 14.2315,
   "fcf_ttm": 19734395000000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -204,10 +204,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 132083674513408.0,
   "industry": "Semiconductors",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-18T20:47:07+00:00",
   "manual_overrides": {},
-  "market_cap": 1897442123643000.0,
+  "market_cap": 1865498653548000.0,
   "missing_fields": [
     "distribution_coverage_ratio",
     "eps_fwd",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 14246992000000.0,
-  "owner_earnings_yield": 0.010401,
+  "owner_earnings_yield": 0.010579,
   "pe_20y_array": [
     7.4308,
     11.9534,
@@ -236,7 +236,7 @@
     39.3457
   ],
   "pe_percentile_20y": 100.0,
-  "pe_ttm": 53.1497,
+  "pe_ttm": 52.2549,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -245,12 +245,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 2673000.0,
+  "price": 2628000.0,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.61172,
   "sector": "Technology",
   "ticker": "000660.KS",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -8.0,
   "valuation_tax_breakdown": {
     "components": {

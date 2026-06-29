@@ -192,7 +192,7 @@
   "dividend_yield_5y_std": 0.004799,
   "dividend_yield_current": 0.027862,
   "dividend_yield_zscore": 3.6608,
-  "enterprise_value": 36929067498.62,
+  "enterprise_value": 36929065963.36078,
   "eps_fwd": 7.42429,
   "eps_ttm": 6.1,
   "ev_fwd_rev": 3.8746,
@@ -228,10 +228,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 9530999808.0,
   "industry": "Drug Manufacturers - Specialty & Generic",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-06-11T18:40:55+00:00",
   "manual_overrides": {},
-  "market_cap": 31899067498.620003,
+  "market_cap": 31899065963.36078,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -266,13 +266,13 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 76.09,
+  "price": 76.08999633789062,
   "quote_type": "EQUITY",
   "revenue_accelerating": false,
   "roic_5y_avg": 0.67748,
   "sector": "Healthcare",
   "ticker": "ZTS",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {

@@ -191,7 +191,7 @@
   "dividend_yield_5y_std": 0.042481,
   "dividend_yield_current": 0.021104,
   "dividend_yield_zscore": -1.9102,
-  "enterprise_value": 9595153381.82,
+  "enterprise_value": 9595153313.06247,
   "eps_fwd": 5.08516,
   "eps_ttm": 3.47,
   "ev_fwd_rev": 2.7606,
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 3475802112.0,
   "industry": "Airlines",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-21T21:06:25+00:00",
   "manual_overrides": {},
-  "market_cap": 7366336381.82,
+  "market_cap": 7366336313.0624695,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -245,12 +245,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 130.78,
+  "price": 130.77999877929688,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.11579,
   "sector": "Industrials",
   "ticker": "EIF.TO",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -2.0,
   "valuation_tax_breakdown": {
     "components": {

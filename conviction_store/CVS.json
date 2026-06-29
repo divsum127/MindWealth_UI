@@ -191,7 +191,7 @@
   "dividend_yield_5y_std": 0.025805,
   "dividend_yield_current": 0.025494,
   "dividend_yield_zscore": -0.2602,
-  "enterprise_value": 204267255212.38,
+  "enterprise_value": 204267250539.79465,
   "eps_fwd": 8.36284,
   "eps_ttm": 2.28,
   "ev_fwd_rev": 0.5036,
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 405617999872.0,
   "industry": "Healthcare Plans",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-18T20:48:25+00:00",
   "manual_overrides": {},
-  "market_cap": 133130255212.38,
+  "market_cap": 133130250539.79465,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -242,12 +242,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 104.34,
+  "price": 104.33999633789062,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.037520003,
   "sector": "Healthcare",
   "ticker": "CVS",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": 0.0,
   "valuation_tax_breakdown": {
     "components": {

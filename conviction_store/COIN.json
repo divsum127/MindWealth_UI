@@ -189,7 +189,7 @@
   },
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 35542432779.96,
+  "enterprise_value": 35542432136.74524,
   "eps_fwd": 4.77561,
   "eps_ttm": 2.71,
   "ev_fwd_rev": 4.9493,
@@ -203,10 +203,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 7181325000.0,
   "industry": "Financial Data & Stock Exchanges",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-15T16:29:27+00:00",
   "manual_overrides": {},
-  "market_cap": 39271461779.96,
+  "market_cap": 39271461136.74524,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -318,12 +318,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 149.06,
+  "price": 149.05999755859375,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.06686,
   "sector": "Financial Services",
   "ticker": "COIN",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -6.0,
   "valuation_tax_breakdown": {
     "components": {

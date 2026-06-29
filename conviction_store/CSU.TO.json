@@ -191,7 +191,7 @@
   "dividend_yield_5y_std": 0.010808,
   "dividend_yield_current": 0.001941,
   "dividend_yield_zscore": -1.0616,
-  "enterprise_value": 62271155370.6,
+  "enterprise_value": 62271155784.49707,
   "eps_fwd": 185.22021,
   "eps_ttm": 48.07,
   "ev_fwd_rev": 5.1252,
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 12149999616.0,
   "industry": "Software - Application",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-18T20:48:22+00:00",
   "manual_overrides": {},
-  "market_cap": 59718155370.6,
+  "market_cap": 59718155784.49707,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -245,12 +245,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 2818.02,
+  "price": 2818.02001953125,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.19685,
   "sector": "Technology",
   "ticker": "CSU.TO",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {

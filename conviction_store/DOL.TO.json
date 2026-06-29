@@ -191,7 +191,7 @@
   "dividend_yield_5y_std": 0.001943,
   "dividend_yield_current": 0.002475,
   "dividend_yield_zscore": -1.5142,
-  "enterprise_value": 57099169426.270004,
+  "enterprise_value": 57099167443.02435,
   "eps_fwd": 5.82883,
   "eps_ttm": 4.73,
   "ev_fwd_rev": 7.8695,
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 7255754240.0,
   "industry": "Discount Stores",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-18T20:48:32+00:00",
   "manual_overrides": {},
-  "market_cap": 52512198426.270004,
+  "market_cap": 52512196443.02435,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -244,12 +244,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 193.93,
+  "price": 193.92999267578125,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.99044,
   "sector": "Consumer Defensive",
   "ticker": "DOL.TO",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {

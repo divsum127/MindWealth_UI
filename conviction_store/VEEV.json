@@ -190,7 +190,7 @@
   "debt_purpose": null,
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 25948531345.760002,
+  "enterprise_value": 25948531444.907516,
   "eps_fwd": 10.03491,
   "eps_ttm": 5.64,
   "ev_fwd_rev": 7.8177,
@@ -226,10 +226,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 3319216128.0,
   "industry": "Health Information Services",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-06-23T14:13:54+00:00",
   "manual_overrides": {},
-  "market_cap": 27836282345.760002,
+  "market_cap": 27836282444.907516,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -266,13 +266,13 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 171.36,
+  "price": 171.36000061035156,
   "quote_type": "EQUITY",
   "revenue_accelerating": false,
   "roic_5y_avg": 0.13934,
   "sector": "Healthcare",
   "ticker": "VEEV",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {

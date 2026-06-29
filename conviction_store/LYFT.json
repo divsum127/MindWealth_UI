@@ -189,7 +189,7 @@
   },
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 5615378731.639999,
+  "enterprise_value": 5615378905.44487,
   "eps_fwd": 2.03026,
   "eps_ttm": 6.84,
   "ev_fwd_rev": 0.8617,
@@ -203,10 +203,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 6516577792.0,
   "industry": "Software - Application",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-15T16:31:17+00:00",
   "manual_overrides": {},
-  "market_cap": 5418069731.639999,
+  "market_cap": 5418069905.44487,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -318,12 +318,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 14.27,
+  "price": 14.270000457763672,
   "quote_type": "EQUITY",
   "roic_5y_avg": 1.47808,
   "sector": "Technology",
   "ticker": "LYFT",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": 0.0,
   "valuation_tax_breakdown": {
     "components": {

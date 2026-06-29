@@ -189,7 +189,7 @@
   },
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 318616109351.68,
+  "enterprise_value": 318616099071.41016,
   "eps_fwd": 3.84127,
   "eps_ttm": 3.1,
   "ev_fwd_rev": 6.795,
@@ -203,10 +203,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 46889992192.0,
   "industry": "Entertainment",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-15T16:31:52+00:00",
   "manual_overrides": {},
-  "market_cap": 310799039351.68,
+  "market_cap": 310799029071.41016,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -318,12 +318,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 73.81,
+  "price": 73.80999755859375,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.48494998,
   "sector": "Communication Services",
   "ticker": "NFLX",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {

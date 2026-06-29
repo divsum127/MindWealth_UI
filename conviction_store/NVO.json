@@ -191,7 +191,7 @@
   "dividend_yield_5y_std": 0.010831,
   "dividend_yield_current": 0.037445,
   "dividend_yield_zscore": 1.7418,
-  "enterprise_value": 292583944846.4,
+  "enterprise_value": 292583943495.4309,
   "eps_fwd": 3.3674765,
   "eps_ttm": 4.3,
   "ev_fwd_rev": 0.8926,
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 327799996416.0,
   "industry": "Drug Manufacturers - General",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-18T20:49:55+00:00",
   "manual_overrides": {},
-  "market_cap": 212798944846.4,
+  "market_cap": 212798943495.4309,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -242,12 +242,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 48.07,
+  "price": 48.06999969482422,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.71402,
   "sector": "Healthcare",
   "ticker": "NVO",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -3.0,
   "valuation_tax_breakdown": {
     "components": {

@@ -191,7 +191,7 @@
   "dividend_yield_5y_std": 0.011536,
   "dividend_yield_current": 0.022777,
   "dividend_yield_zscore": -2.1393,
-  "enterprise_value": 773775649103.35,
+  "enterprise_value": 773775662674.2712,
   "eps_fwd": 17.43703,
   "eps_ttm": 14.57,
   "ev_fwd_rev": 11.6301,
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 66532000000.0,
   "industry": "Banks - Diversified",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-18T20:50:21+00:00",
   "manual_overrides": {},
-  "market_cap": 400236649103.35,
+  "market_cap": 400236662674.27124,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -240,12 +240,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 288.01,
+  "price": 288.010009765625,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.15395,
   "sector": "Financial Services",
   "ticker": "RY.TO",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -8.0,
   "valuation_tax_breakdown": {
     "components": {

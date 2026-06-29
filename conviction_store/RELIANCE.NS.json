@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.019494,
   "dividend_yield_5y_std": 0.01735,
-  "dividend_yield_current": 0.004178,
-  "dividend_yield_zscore": -0.8828,
-  "enterprise_value": 20487220223977.5,
+  "dividend_yield_current": 0.004228,
+  "dividend_yield_zscore": -0.8799,
+  "enterprise_value": 20277466898135.0,
   "eps_fwd": 71.87436,
   "eps_ttm": 59.74,
-  "ev_fwd_rev": 1.9378,
+  "ev_fwd_rev": 1.918,
   "fcf_ttm": 47739998208.0,
   "fd_direction": "stable",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 10572189925376.0,
   "industry": "Oil & Gas Refining & Marketing",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-18T20:50:16+00:00",
   "manual_overrides": {},
-  "market_cap": 17815500223977.5,
+  "market_cap": 17605746898135.0,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 2671720000000.0,
-  "owner_earnings_yield": 0.00268,
+  "owner_earnings_yield": 0.002712,
   "pe_20y_array": [
     25.4233,
     22.5903,
@@ -233,7 +233,7 @@
     22.0492
   ],
   "pe_percentile_20y": 16.67,
-  "pe_ttm": 22.0372,
+  "pe_ttm": 21.7777,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -242,12 +242,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 1316.5,
+  "price": 1301.0,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.09139,
   "sector": "Energy",
   "ticker": "RELIANCE.NS",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -3.0,
   "valuation_tax_breakdown": {
     "components": {

@@ -191,7 +191,7 @@
   "dividend_yield_5y_std": 0.04872,
   "dividend_yield_current": 0.007991,
   "dividend_yield_zscore": -0.8324,
-  "enterprise_value": 69006686255.36,
+  "enterprise_value": 69006685945.20264,
   "eps_fwd": 8.497006,
   "eps_ttm": 5.62,
   "ev_fwd_rev": 7.1812,
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 9609369600.0,
   "industry": "Waste Management",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-18T20:51:00+00:00",
   "manual_overrides": {},
-  "market_cap": 60415359255.36,
+  "market_cap": 60415358945.20264,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -242,12 +242,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 237.78,
+  "price": 237.77999877929688,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.13121,
   "sector": "Industrials",
   "ticker": "WCN.TO",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {

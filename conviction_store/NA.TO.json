@@ -191,7 +191,7 @@
   "dividend_yield_5y_std": 0.014708,
   "dividend_yield_current": 0.022339,
   "dividend_yield_zscore": -2.2571,
-  "enterprise_value": 135155209035.67,
+  "enterprise_value": 135155208565.52524,
   "eps_fwd": 14.12061,
   "eps_ttm": 10.37,
   "ev_fwd_rev": 9.6429,
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 14016000000.0,
   "industry": "Banks - Diversified",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-18T20:49:41+00:00",
   "manual_overrides": {},
-  "market_cap": 85513209035.67,
+  "market_cap": 85513208565.52524,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -240,12 +240,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 222.03,
+  "price": 222.02999877929688,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.14339,
   "sector": "Financial Services",
   "ticker": "NA.TO",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -8.0,
   "valuation_tax_breakdown": {
     "components": {

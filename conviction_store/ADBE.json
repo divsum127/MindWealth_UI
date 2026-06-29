@@ -192,7 +192,7 @@
   "dividend_yield_5y_std": 0.003594,
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": -1.3848,
-  "enterprise_value": 80390175000.0,
+  "enterprise_value": 80390173301.69678,
   "eps_fwd": 26.48722,
   "eps_ttm": 17.15,
   "ev_fwd_rev": 3.2875,
@@ -228,10 +228,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 24452999168.0,
   "industry": "Software - Application",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-06-11T18:32:38+00:00",
   "manual_overrides": {},
-  "market_cap": 80585175000.0,
+  "market_cap": 80585173301.69678,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -266,13 +266,13 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 202.73,
+  "price": 202.72999572753906,
   "quote_type": "EQUITY",
   "revenue_accelerating": false,
   "roic_5y_avg": 0.58774,
   "sector": "Technology",
   "ticker": "ADBE",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -1.0,
   "valuation_tax_breakdown": {
     "components": {

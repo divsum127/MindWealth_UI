@@ -189,7 +189,7 @@
   },
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 1422861911057.41,
+  "enterprise_value": 1422861878965.043,
   "eps_fwd": 2.51402,
   "eps_ttm": 1.11,
   "ev_fwd_rev": 14.5369,
@@ -203,10 +203,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 97878999040.0,
   "industry": "Auto Manufacturers",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-15T16:33:21+00:00",
   "manual_overrides": {},
-  "market_cap": 1426085911057.41,
+  "market_cap": 1426085878965.043,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -318,12 +318,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 379.71,
+  "price": 379.7099914550781,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.04901,
   "sector": "Consumer Cyclical",
   "ticker": "TSLA",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -7.0,
   "valuation_tax_breakdown": {
     "components": {

@@ -189,7 +189,7 @@
   "dividend_yield_5y_std": 0.032633,
   "dividend_yield_current": 0.053219,
   "dividend_yield_zscore": -0.5082,
-  "enterprise_value": 169611656045.96,
+  "enterprise_value": 169611652420.84464,
   "eps_fwd": 5.3206,
   "eps_ttm": 4.72,
   "ev_fwd_rev": 6.6229,
@@ -203,10 +203,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 25610000384.0,
   "industry": "Tobacco",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-18T20:47:56+00:00",
   "manual_overrides": {},
-  "market_cap": 135547656045.95999,
+  "market_cap": 135547652420.84464,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -234,12 +234,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 62.76,
+  "price": 62.7599983215332,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.15824,
   "sector": "Consumer Defensive",
   "ticker": "BTI",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {

@@ -189,7 +189,7 @@
   "dividend_yield_5y_std": 0.006843,
   "dividend_yield_current": 0.018123,
   "dividend_yield_zscore": 0.167,
-  "enterprise_value": 7525001396.84,
+  "enterprise_value": 7525001492.42572,
   "eps_fwd": 3.235354,
   "eps_ttm": -20.47,
   "ev_fwd_rev": 1.3774,
@@ -203,10 +203,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 5463000000.0,
   "industry": "Lumber & Wood Production",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-18T20:51:03+00:00",
   "manual_overrides": {},
-  "market_cap": 7691001396.84,
+  "market_cap": 7691001492.42572,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -235,12 +235,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 98.22,
+  "price": 98.22000122070312,
   "quote_type": "EQUITY",
   "roic_5y_avg": -0.18558,
   "sector": "Basic Materials",
   "ticker": "WFG.TO",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -3.0,
   "valuation_tax_breakdown": {
     "components": {

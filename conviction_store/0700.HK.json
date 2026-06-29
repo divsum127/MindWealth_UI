@@ -190,12 +190,12 @@
   "debt_purpose": null,
   "dividend_yield_5y_mean": 0.005276,
   "dividend_yield_5y_std": 0.003571,
-  "dividend_yield_current": 0.01287,
-  "dividend_yield_zscore": 2.1266,
-  "enterprise_value": 3940186512179.46,
+  "dividend_yield_current": 0.012613,
+  "dividend_yield_zscore": 2.0546,
+  "enterprise_value": 4015859301388.54,
   "eps_fwd": 38.30135,
   "eps_ttm": 27.97,
-  "ev_fwd_rev": 5.1291,
+  "ev_fwd_rev": 5.2276,
   "fcf_ttm": 130086625280.0,
   "fd_direction": "stable",
   "fd_sizing_adj": 0.0,
@@ -228,10 +228,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 768201981952.0,
   "industry": "Internet Content & Information",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-06-23T14:05:49+00:00",
   "manual_overrides": {},
-  "market_cap": 3709757512179.46,
+  "market_cap": 3785430301388.54,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -246,7 +246,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 230429000000.0,
-  "owner_earnings_yield": 0.035066,
+  "owner_earnings_yield": 0.034365,
   "pe_20y_array": [
     24.7725,
     25.062,
@@ -258,7 +258,7 @@
   ],
   "pe_history_insufficient": false,
   "pe_percentile_20y": 0.0,
-  "pe_ttm": 14.7229,
+  "pe_ttm": 15.0232,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -267,13 +267,13 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 411.79998779296875,
+  "price": 420.20001220703125,
   "quote_type": "EQUITY",
   "revenue_accelerating": null,
   "roic_5y_avg": 0.20515,
   "sector": "Communication Services",
   "ticker": "0700.HK",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {

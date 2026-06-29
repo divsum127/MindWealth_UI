@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.014286,
   "dividend_yield_5y_std": 0.011869,
-  "dividend_yield_current": 0.002288,
-  "dividend_yield_zscore": -1.0109,
-  "enterprise_value": 198447994565.0,
+  "dividend_yield_current": 0.002202,
+  "dividend_yield_zscore": -1.0181,
+  "enterprise_value": 205832339785.93524,
   "eps_fwd": 38.64286,
   "eps_ttm": 24.44,
-  "ev_fwd_rev": 3.6985,
+  "ev_fwd_rev": 3.8361,
   "fcf_ttm": 689960000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 53656420352.0,
   "industry": "Drug Manufacturers - Specialty & Generic",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-18T20:48:51+00:00",
   "manual_overrides": {},
-  "market_cap": 189564644565.0,
+  "market_cap": 196948989785.93524,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 8883350000.0,
-  "owner_earnings_yield": 0.00364,
+  "owner_earnings_yield": 0.003503,
   "pe_20y_array": [
     27.3835,
     29.9576,
@@ -236,7 +236,7 @@
     34.9573
   ],
   "pe_percentile_20y": 77.78,
-  "pe_ttm": 31.3011,
+  "pe_ttm": 32.5205,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -245,12 +245,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 765.0,
+  "price": 794.7999877929688,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.13522,
   "sector": "Healthcare",
   "ticker": "GRANULES.NS",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -9.0,
   "valuation_tax_breakdown": {
     "components": {

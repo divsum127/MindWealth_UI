@@ -189,7 +189,7 @@
   },
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 2570109794662.84,
+  "enterprise_value": 2570109820925.3145,
   "eps_fwd": 9.87073,
   "eps_ttm": 8.36,
   "ev_fwd_rev": 3.4601,
@@ -203,10 +203,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 742775980032.0,
   "industry": "Internet Retail",
-  "last_daily_update": "2026-06-27T16:34:19+00:00",
+  "last_daily_update": "2026-06-29T12:24:00+00:00",
   "last_full_calc": "2026-05-15T16:28:17+00:00",
   "manual_overrides": {},
-  "market_cap": 2503071794662.84,
+  "market_cap": 2503071820925.3145,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -318,12 +318,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 232.69,
+  "price": 232.69000244140625,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.24285,
   "sector": "Consumer Cyclical",
   "ticker": "AMZN",
-  "updated_at": "2026-06-27T16:34:19+00:00",
+  "updated_at": "2026-06-29T12:24:00+00:00",
   "valuation_tax": -7.0,
   "valuation_tax_breakdown": {
     "components": {
