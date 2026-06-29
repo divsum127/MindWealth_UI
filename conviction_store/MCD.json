@@ -205,7 +205,7 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 27445999616.0,
   "industry": "Restaurants",
-  "last_daily_update": "2026-06-29T12:24:00+00:00",
+  "last_daily_update": "2026-06-29T14:43:27+00:00",
   "last_full_calc": "2026-05-18T20:49:21+00:00",
   "manual_overrides": {},
   "market_cap": 191666067462.37378,
@@ -247,7 +247,7 @@
   "roic_5y_avg": 0.13561,
   "sector": "Consumer Cyclical",
   "ticker": "MCD",
-  "updated_at": "2026-06-29T12:24:00+00:00",
+  "updated_at": "2026-06-29T14:43:27+00:00",
   "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {

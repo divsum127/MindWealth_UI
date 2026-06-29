@@ -203,7 +203,7 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 5463000000.0,
   "industry": "Lumber & Wood Production",
-  "last_daily_update": "2026-06-29T12:24:00+00:00",
+  "last_daily_update": "2026-06-29T14:43:28+00:00",
   "last_full_calc": "2026-05-18T20:51:03+00:00",
   "manual_overrides": {},
   "market_cap": 7691001492.42572,
@@ -240,7 +240,7 @@
   "roic_5y_avg": -0.18558,
   "sector": "Basic Materials",
   "ticker": "WFG.TO",
-  "updated_at": "2026-06-29T12:24:00+00:00",
+  "updated_at": "2026-06-29T14:43:28+00:00",
   "valuation_tax": -3.0,
   "valuation_tax_breakdown": {
     "components": {

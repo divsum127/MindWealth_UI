@@ -205,7 +205,7 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 3475802112.0,
   "industry": "Airlines",
-  "last_daily_update": "2026-06-29T12:24:00+00:00",
+  "last_daily_update": "2026-06-29T14:43:27+00:00",
   "last_full_calc": "2026-05-21T21:06:25+00:00",
   "manual_overrides": {},
   "market_cap": 7366336313.0624695,
@@ -250,7 +250,7 @@
   "roic_5y_avg": 0.11579,
   "sector": "Industrials",
   "ticker": "EIF.TO",
-  "updated_at": "2026-06-29T12:24:00+00:00",
+  "updated_at": "2026-06-29T14:43:27+00:00",
   "valuation_tax": -2.0,
   "valuation_tax_breakdown": {
     "components": {

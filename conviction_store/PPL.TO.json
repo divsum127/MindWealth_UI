@@ -205,7 +205,7 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 8040000000.0,
   "industry": "Oil & Gas Midstream",
-  "last_daily_update": "2026-06-29T12:24:00+00:00",
+  "last_daily_update": "2026-06-29T14:43:28+00:00",
   "last_full_calc": "2026-05-18T20:50:11+00:00",
   "manual_overrides": {},
   "market_cap": 38921260319.51904,
@@ -247,7 +247,7 @@
   "roic_5y_avg": 0.09806,
   "sector": "Energy",
   "ticker": "PPL.TO",
-  "updated_at": "2026-06-29T12:24:00+00:00",
+  "updated_at": "2026-06-29T14:43:28+00:00",
   "valuation_tax": -7.0,
   "valuation_tax_breakdown": {
     "components": {

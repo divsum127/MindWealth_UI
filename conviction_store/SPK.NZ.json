@@ -225,7 +225,7 @@
   "fs_score": 56.25,
   "full_recalc_trigger": "daily_fundamentals_script",
   "industry": "Telecom Services",
-  "last_daily_update": "2026-06-29T12:24:00+00:00",
+  "last_daily_update": "2026-06-29T14:43:28+00:00",
   "last_full_calc": "2026-06-23T14:12:51+00:00",
   "manual_overrides": {},
   "market_cap": 3534504364.4827433,
@@ -265,7 +265,7 @@
   "roic_5y_avg": 0.1972,
   "sector": "Communication Services",
   "ticker": "SPK.NZ",
-  "updated_at": "2026-06-29T12:24:00+00:00",
+  "updated_at": "2026-06-29T14:43:28+00:00",
   "valuation_tax": 0.0,
   "valuation_tax_breakdown": {
     "components": {

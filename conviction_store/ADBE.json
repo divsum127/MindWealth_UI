@@ -228,7 +228,7 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 24452999168.0,
   "industry": "Software - Application",
-  "last_daily_update": "2026-06-29T12:24:00+00:00",
+  "last_daily_update": "2026-06-29T14:43:27+00:00",
   "last_full_calc": "2026-06-11T18:32:38+00:00",
   "manual_overrides": {},
   "market_cap": 80585173301.69678,
@@ -272,7 +272,7 @@
   "roic_5y_avg": 0.58774,
   "sector": "Technology",
   "ticker": "ADBE",
-  "updated_at": "2026-06-29T12:24:00+00:00",
+  "updated_at": "2026-06-29T14:43:27+00:00",
   "valuation_tax": -1.0,
   "valuation_tax_breakdown": {
     "components": {

@@ -205,7 +205,7 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 65979998208.0,
   "industry": "Banks - Diversified",
-  "last_daily_update": "2026-06-29T12:24:00+00:00",
+  "last_daily_update": "2026-06-29T14:43:28+00:00",
   "last_full_calc": "2026-05-18T20:50:49+00:00",
   "manual_overrides": {},
   "market_cap": 280898229513.3362,
@@ -245,7 +245,7 @@
   "roic_5y_avg": 0.17815,
   "sector": "Financial Services",
   "ticker": "TD.TO",
-  "updated_at": "2026-06-29T12:24:00+00:00",
+  "updated_at": "2026-06-29T14:43:28+00:00",
   "valuation_tax": -10.0,
   "valuation_tax_breakdown": {
     "components": {

@@ -203,7 +203,7 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 97878999040.0,
   "industry": "Auto Manufacturers",
-  "last_daily_update": "2026-06-29T12:24:00+00:00",
+  "last_daily_update": "2026-06-29T14:43:28+00:00",
   "last_full_calc": "2026-05-15T16:33:21+00:00",
   "manual_overrides": {},
   "market_cap": 1426085878965.043,
@@ -323,7 +323,7 @@
   "roic_5y_avg": 0.04901,
   "sector": "Consumer Cyclical",
   "ticker": "TSLA",
-  "updated_at": "2026-06-29T12:24:00+00:00",
+  "updated_at": "2026-06-29T14:43:28+00:00",
   "valuation_tax": -7.0,
   "valuation_tax_breakdown": {
     "components": {

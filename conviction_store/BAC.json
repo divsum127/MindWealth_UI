@@ -204,7 +204,7 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 113978000000.0,
   "industry": "Banks - Diversified",
-  "last_daily_update": "2026-06-29T12:24:00+00:00",
+  "last_daily_update": "2026-06-29T14:43:27+00:00",
   "last_full_calc": "2026-05-18T20:47:35+00:00",
   "manual_overrides": {},
   "market_cap": 410750674459.85657,
@@ -248,7 +248,7 @@
   "roic_5y_avg": 0.10644,
   "sector": "Financial Services",
   "ticker": "BAC",
-  "updated_at": "2026-06-29T12:24:00+00:00",
+  "updated_at": "2026-06-29T14:43:27+00:00",
   "valuation_tax": -7.0,
   "valuation_tax_breakdown": {
     "components": {

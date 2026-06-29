@@ -227,7 +227,7 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 22846898000.0,
   "industry": "Capital Markets",
-  "last_daily_update": "2026-06-29T12:24:00+00:00",
+  "last_daily_update": "2026-06-29T14:43:27+00:00",
   "last_full_calc": "2026-06-23T14:08:57+00:00",
   "manual_overrides": {},
   "market_cap": 13514748857.119812,
@@ -273,7 +273,7 @@
   "roic_5y_avg": 0.27836,
   "sector": "Financial Services",
   "ticker": "FUTU",
-  "updated_at": "2026-06-29T12:24:00+00:00",
+  "updated_at": "2026-06-29T14:43:27+00:00",
   "valuation_tax": -3.0,
   "valuation_tax_breakdown": {
     "components": {

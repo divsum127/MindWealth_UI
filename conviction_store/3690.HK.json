@@ -225,7 +225,7 @@
   "fs_score": 42.0,
   "full_recalc_trigger": "daily_fundamentals_script",
   "industry": "Internet Retail",
-  "last_daily_update": "2026-06-29T12:24:00+00:00",
+  "last_daily_update": "2026-06-29T14:43:27+00:00",
   "last_full_calc": "2026-06-23T14:05:56+00:00",
   "manual_overrides": {},
   "market_cap": 417697041019.36127,
@@ -278,7 +278,7 @@
   "roic_5y_avg": -0.24094,
   "sector": "Consumer Cyclical",
   "ticker": "3690.HK",
-  "updated_at": "2026-06-29T12:24:00+00:00",
+  "updated_at": "2026-06-29T14:43:27+00:00",
   "valuation_tax": -2.0,
   "valuation_tax_breakdown": {
     "components": {

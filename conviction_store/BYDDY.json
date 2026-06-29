@@ -203,7 +203,7 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 883831503000.0,
   "industry": "Auto Manufacturers",
-  "last_daily_update": "2026-06-29T12:24:00+00:00",
+  "last_daily_update": "2026-06-29T14:43:27+00:00",
   "last_full_calc": "2026-05-18T20:48:00+00:00",
   "manual_overrides": {},
   "market_cap": 85428140140.66954,
@@ -239,7 +239,7 @@
   "roic_5y_avg": 0.11147001,
   "sector": "Consumer Cyclical",
   "ticker": "BYDDY",
-  "updated_at": "2026-06-29T12:24:00+00:00",
+  "updated_at": "2026-06-29T14:43:27+00:00",
   "valuation_tax": -2.0,
   "valuation_tax_breakdown": {
     "components": {

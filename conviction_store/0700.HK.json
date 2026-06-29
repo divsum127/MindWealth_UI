@@ -228,7 +228,7 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 768201981952.0,
   "industry": "Internet Content & Information",
-  "last_daily_update": "2026-06-29T12:24:00+00:00",
+  "last_daily_update": "2026-06-29T14:43:27+00:00",
   "last_full_calc": "2026-06-23T14:05:49+00:00",
   "manual_overrides": {},
   "market_cap": 3785430301388.54,
@@ -273,7 +273,7 @@
   "roic_5y_avg": 0.20515,
   "sector": "Communication Services",
   "ticker": "0700.HK",
-  "updated_at": "2026-06-29T12:24:00+00:00",
+  "updated_at": "2026-06-29T14:43:27+00:00",
   "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {

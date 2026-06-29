@@ -205,7 +205,7 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 10572189925376.0,
   "industry": "Oil & Gas Refining & Marketing",
-  "last_daily_update": "2026-06-29T12:24:00+00:00",
+  "last_daily_update": "2026-06-29T14:43:28+00:00",
   "last_full_calc": "2026-05-18T20:50:16+00:00",
   "manual_overrides": {},
   "market_cap": 17605746898135.0,
@@ -247,7 +247,7 @@
   "roic_5y_avg": 0.09139,
   "sector": "Energy",
   "ticker": "RELIANCE.NS",
-  "updated_at": "2026-06-29T12:24:00+00:00",
+  "updated_at": "2026-06-29T14:43:28+00:00",
   "valuation_tax": -3.0,
   "valuation_tax_breakdown": {
     "components": {

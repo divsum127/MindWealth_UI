@@ -224,7 +224,7 @@
   "fs_score": 53.75,
   "full_recalc_trigger": "daily_fundamentals_script",
   "industry": "Asset Management",
-  "last_daily_update": "2026-06-29T12:24:00+00:00",
+  "last_daily_update": "2026-06-29T14:43:27+00:00",
   "last_full_calc": "2026-06-23T14:08:53+00:00",
   "manual_overrides": {},
   "market_cap": 763692110.5809135,
@@ -267,7 +267,7 @@
   "roic_5y_avg": 0.0,
   "sector": "Financial Services",
   "ticker": "FSF.NZ",
-  "updated_at": "2026-06-29T12:24:00+00:00",
+  "updated_at": "2026-06-29T14:43:27+00:00",
   "valuation_tax": 0.0,
   "valuation_tax_breakdown": {
     "components": {
