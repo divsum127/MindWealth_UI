@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-ALTITUDE ALPHA,BAC,Long,Quarterly,2024-06-30,39.77,2025-11-03,53.45,34.39778727684184,350,75.0,8,769,
-ALTITUDE ALPHA,BAC,Long,Quarterly,2021-03-31,38.69,2022-09-30,30.2,-21.943654691134657,392,75.0,8,769,
-ALTITUDE ALPHA,BAC,Long,Quarterly,2019-12-31,35.22,2020-03-31,21.23,-39.72174900624645,65,75.0,8,769,

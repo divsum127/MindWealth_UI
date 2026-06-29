@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,RHHBY,Long,Daily,2024-09-11,37.33,2025-10-31,40.41,8.25073667291722,297,85.71,7,150,
-BAND MATRIX,RHHBY,Long,Daily,2024-02-05,33.16,2024-03-14,32.89,-0.8142340168878047,28,85.71,7,150,

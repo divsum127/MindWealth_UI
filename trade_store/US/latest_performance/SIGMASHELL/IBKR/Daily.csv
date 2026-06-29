@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,IBKR,Long,Daily,2025-04-01,43.27,2025-08-04,64.9,49.988444649872896,89,85.71,7,68,
-SIGMASHELL,IBKR,Long,Daily,2025-03-10,41.79,2025-05-21,51.3175,22.798516391481225,52,85.71,7,68,

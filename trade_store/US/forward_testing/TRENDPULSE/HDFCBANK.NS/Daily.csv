@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,HDFCBANK.NS,Long,Daily,2025-10-29,1007.85,2025-11-03,992.65,-1.508160936647323,3,100.0,12,22,
-TRENDPULSE,HDFCBANK.NS,Long,Daily,2025-10-20,1002.95,2025-11-03,992.65,-1.0269704372102366,10,100.0,12,22,
-TRENDPULSE,HDFCBANK.NS,Long,Daily,2025-04-21,963.55,2025-06-10,982.65,1.9822531264594494,36,100.0,12,22,

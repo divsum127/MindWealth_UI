@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,TFII.TO,Long,Daily,2025-02-03,184.96,2025-05-21,121.38,-34.375,77,77.78,9,71,
-SIGMASHELL,TFII.TO,Long,Daily,2024-11-01,184.3,2024-12-16,217.0,17.742810634834502,31,77.78,9,71,
-SIGMASHELL,TFII.TO,Long,Daily,2024-06-03,179.25,2024-07-31,214.91,19.894002789400275,42,77.78,9,71,
-SIGMASHELL,TFII.TO,Long,Daily,2024-05-02,181.14,2024-07-31,214.91,18.643038533730824,64,77.78,9,71,

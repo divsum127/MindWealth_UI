@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,SOXX,Long,Daily,2025-03-04,202.27,2025-04-03,170.36,-15.775943046423095,22,90.91,11,7,
-DELTADRIFT,SOXX,Long,Daily,2024-11-19,214.35,2024-12-02,221.06,3.1303942150688164,9,90.91,11,7,
-DELTADRIFT,SOXX,Long,Daily,2024-07-26,229.37,2024-10-14,239.8,4.547238086933778,56,90.91,11,7,
-DELTADRIFT,SOXX,Long,Daily,2024-04-23,205.87,2024-04-25,212.41,3.1767620342934824,2,90.91,11,7,

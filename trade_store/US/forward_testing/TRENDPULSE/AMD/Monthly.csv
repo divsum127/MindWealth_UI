@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,AMD,Long,Monthly,2025-07-31,176.31,2025-10-31,256.12,45.26685950881969,66,90.91,11,217,
-TRENDPULSE,AMD,Long,Monthly,2024-01-31,167.69,2025-10-31,256.12,52.734211938696404,457,90.91,11,217,

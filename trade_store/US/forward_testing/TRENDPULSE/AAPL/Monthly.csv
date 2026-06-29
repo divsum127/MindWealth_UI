@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,AAPL,Long,Monthly,2024-09-30,233.0,2025-10-31,270.37,16.038626609442062,284,92.86,14,196,
-TRENDPULSE,AAPL,Long,Monthly,2024-07-31,222.08,2025-10-31,270.37,21.744416426512963,327,92.86,14,196,
-TRENDPULSE,AAPL,Long,Monthly,2023-06-30,193.97,2024-10-31,225.91,16.466463886167965,349,92.86,14,196,

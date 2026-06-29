@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-PULSEGAUGE,XLE,Long,Weekly,2025-07-06,87.03,2025-11-02,88.13,1.2639319774790236,84,75.0,8,88,
-PULSEGAUGE,XLE,Long,Weekly,2023-06-11,81.33,2024-04-07,98.08,20.595106356817904,214,75.0,8,88,

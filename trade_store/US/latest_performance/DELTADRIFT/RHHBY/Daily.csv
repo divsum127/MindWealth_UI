@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,RHHBY,Long,Daily,2025-08-12,38.12,2025-08-15,39.58,3.8300104931794356,3,72.73,11,11,
-DELTADRIFT,RHHBY,Long,Daily,2025-04-03,40.02,2025-06-10,41.07,2.6236881559220318,48,72.73,11,11,

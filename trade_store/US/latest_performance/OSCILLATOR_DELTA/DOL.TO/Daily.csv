@@ -1,2 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,DOL.TO,Long,Daily,2025-10-15,176.2,2025-10-23,186.14,5.641316685584562,6,90.0,10,31,

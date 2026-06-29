@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,MA,Long,Daily,2025-04-04,489.77,2025-06-16,568.67,16.109602466463848,51,84.62,13,159,
-SIGMASHELL,MA,Long,Daily,2024-05-01,442.07,2024-08-05,442.0,-0.01583459633089628,68,84.62,13,159,

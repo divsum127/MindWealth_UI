@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-ALTITUDE ALPHA,^NDX,Long,Quarterly,2025-06-30,22679.0098,2025-11-03,25858.127,14.0178836202981,90,70.0,10,663,
-ALTITUDE ALPHA,^NDX,Long,Quarterly,2021-03-31,13091.4404,2024-12-31,21012.1699,60.50311698321601,979,70.0,10,663,
-ALTITUDE ALPHA,^NDX,Long,Quarterly,2019-06-30,7671.0801,2020-12-31,12888.2803,68.01128565975996,393,70.0,10,663,

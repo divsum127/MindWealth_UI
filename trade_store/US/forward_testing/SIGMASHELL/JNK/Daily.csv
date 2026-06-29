@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,JNK,Long,Daily,2025-05-01,94.3,2025-07-03,96.91,2.7677624602332975,45,71.43,21,78,
-SIGMASHELL,JNK,Long,Daily,2025-04-01,95.02,2025-06-16,95.92,0.9471690170490483,54,71.43,21,78,
-SIGMASHELL,JNK,Long,Daily,2024-11-01,95.74,2025-03-05,96.31,0.595362439941516,88,71.43,21,78,

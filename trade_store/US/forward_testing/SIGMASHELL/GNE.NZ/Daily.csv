@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,GNE.NZ,Long,Daily,2025-04-01,2.165,2025-07-11,2.36,9.006928406466505,73,77.78,9,85,
-SIGMASHELL,GNE.NZ,Long,Daily,2024-06-05,2.07,2024-08-29,2.24,8.212560386473447,61,77.78,9,85,
-SIGMASHELL,GNE.NZ,Long,Daily,2024-05-03,2.29,2024-08-23,2.29,0.0,80,77.78,9,85,

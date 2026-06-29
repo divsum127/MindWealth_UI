@@ -1,2 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,EURUSD=X,Long,Daily,2025-10-14,1.1567,2025-10-16,1.1646,0.6829774358087678,2,75.0,12,11,

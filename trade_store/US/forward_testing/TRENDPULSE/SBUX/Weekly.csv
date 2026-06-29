@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,SBUX,Long,Weekly,2024-11-24,102.5,2025-03-02,115.81,12.98536585365854,69,100.0,4,61,
-TRENDPULSE,SBUX,Long,Weekly,2023-11-12,104.33,2024-10-13,95.55,-8.415604332406787,239,100.0,4,61,

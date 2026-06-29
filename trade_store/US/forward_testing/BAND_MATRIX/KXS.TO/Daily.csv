@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,KXS.TO,Long,Daily,2025-09-23,180.55,2025-10-31,169.84,-5.931874826917756,28,81.82,11,62,
-BAND MATRIX,KXS.TO,Long,Daily,2024-12-31,173.14,2025-08-06,194.1,12.105810326903091,156,81.82,11,62,
-BAND MATRIX,KXS.TO,Long,Daily,2024-02-22,148.72,2024-11-15,165.15,11.047606239913938,191,81.82,11,62,
-BAND MATRIX,KXS.TO,Long,Daily,2024-01-03,139.02,2024-02-06,158.05,13.688677888073657,24,81.82,11,62,

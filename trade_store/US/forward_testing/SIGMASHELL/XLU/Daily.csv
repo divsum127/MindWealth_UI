@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,XLU,Long,Daily,2025-04-04,74.53,2025-05-23,81.06,8.76157252113243,35,87.5,16,85,
-SIGMASHELL,XLU,Long,Daily,2025-01-02,76.27,2025-02-26,79.8,4.628294217910058,39,87.5,16,85,
-SIGMASHELL,XLU,Long,Daily,2024-07-03,68.43,2024-08-29,75.72,10.653222270933789,41,87.5,16,85,

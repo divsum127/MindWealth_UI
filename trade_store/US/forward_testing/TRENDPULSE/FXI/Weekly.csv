@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,FXI,Long,Weekly,2025-08-17,38.34,2025-10-05,41.42,8.033385498174225,34,71.43,14,115,
-TRENDPULSE,FXI,Long,Weekly,2025-07-27,38.65,2025-10-05,41.42,7.166882276843476,49,71.43,14,115,
-TRENDPULSE,FXI,Long,Weekly,2024-09-22,27.15,2024-10-20,32.17,18.48987108655618,19,71.43,14,115,
-TRENDPULSE,FXI,Long,Weekly,2024-05-05,27.33,2024-10-20,32.17,17.709476765459215,119,71.43,14,115,

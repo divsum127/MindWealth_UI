@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,ORCL,Long,Daily,2025-03-07,155.16,2025-04-04,128.27,-17.330497550915176,20,71.43,7,8,
-DELTADRIFT,ORCL,Long,Daily,2025-01-14,156.31,2025-01-17,161.03,3.0196404580641025,3,71.43,7,8,
-DELTADRIFT,ORCL,Long,Daily,2024-12-17,169.71,2025-01-13,153.92,-9.304107006069188,19,71.43,7,8,
-DELTADRIFT,ORCL,Long,Daily,2024-08-08,128.96,2024-08-13,134.26,4.1098014888337335,3,71.43,7,8,

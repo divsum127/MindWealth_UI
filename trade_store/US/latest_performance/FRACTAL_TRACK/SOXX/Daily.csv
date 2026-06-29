@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-FRACTAL TRACK,SOXX,Long,Daily,2025-06-25,237.21,2025-10-15,287.64,21.25964335399013,80,95.12,41,238,
-FRACTAL TRACK,SOXX,Long,Daily,2024-07-23,242.57,2025-10-15,287.64,18.580203652553898,321,95.12,41,238,
-FRACTAL TRACK,SOXX,Long,Daily,2022-12-30,115.9933,2025-10-23,291.06,150.9282863751613,734,95.12,41,238,

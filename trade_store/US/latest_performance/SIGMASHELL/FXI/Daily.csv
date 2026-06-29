@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,FXI,Long,Daily,2025-05-01,33.79,2025-08-28,38.56,14.116602545131705,85,77.78,18,88,
-SIGMASHELL,FXI,Long,Daily,2025-04-04,32.74,2025-05-27,35.6,8.735491753207084,37,77.78,18,88,

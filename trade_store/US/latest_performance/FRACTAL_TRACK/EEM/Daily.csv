@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-FRACTAL TRACK,EEM,Long,Daily,2024-10-28,45.32,2025-07-09,48.29,6.553398058252425,182,100.0,22,194,
-FRACTAL TRACK,EEM,Long,Daily,2024-07-29,42.22,2025-07-29,49.2,16.532449076267184,261,100.0,22,194,
-FRACTAL TRACK,EEM,Long,Daily,2023-08-10,40.15,2025-09-22,53.27,32.677459526774605,552,100.0,22,194,

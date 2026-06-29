@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-ALTITUDE ALPHA,NFLX,Long,Monthly,2025-05-31,1207.23,2025-10-31,1118.86,-7.320063285372307,109,76.92,13,292,
-ALTITUDE ALPHA,NFLX,Long,Monthly,2024-06-30,674.88,2025-04-30,1131.72,67.69203413940257,217,76.92,13,292,
-ALTITUDE ALPHA,NFLX,Long,Monthly,2023-05-31,395.23,2024-05-31,641.62,62.34091541633985,262,76.92,13,292,
-ALTITUDE ALPHA,NFLX,Long,Monthly,2020-12-31,540.73,2022-01-31,427.14,-21.006787121114055,282,76.92,13,292,

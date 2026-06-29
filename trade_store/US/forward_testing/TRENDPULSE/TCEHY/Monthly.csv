@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,TCEHY,Long,Monthly,2025-01-31,53.02,2025-08-31,77.59,46.341003394945304,150,100.0,4,114,
-TRENDPULSE,TCEHY,Long,Monthly,2024-05-31,46.53,2024-12-31,53.18,14.291854717386629,152,100.0,4,114,
-TRENDPULSE,TCEHY,Long,Monthly,2022-12-31,42.36,2024-08-31,48.51,14.518413597733709,434,100.0,4,114,

@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-ALTITUDE ALPHA,INFY,Long,Quarterly,2024-06-30,18.62,2025-11-03,16.57,-11.00966702470462,350,75.0,4,1336,
-ALTITUDE ALPHA,INFY,Long,Quarterly,2021-12-31,25.31,2022-06-30,18.51,-26.866851047016983,129,75.0,4,1336,
-ALTITUDE ALPHA,INFY,Long,Quarterly,2020-09-30,13.81,2021-09-30,22.25,61.1151339608979,261,75.0,4,1336,
-ALTITUDE ALPHA,INFY,Long,Quarterly,2019-03-31,10.93,2020-03-31,8.21,-24.885635864592853,261,75.0,4,1336,

@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,BDGI.TO,Long,Monthly,2025-07-31,52.29,2025-10-31,73.59,40.734366035570865,66,100.0,10,184,
-TRENDPULSE,BDGI.TO,Long,Monthly,2025-02-28,38.8,2025-09-30,61.38,58.19587628865981,152,100.0,10,184,

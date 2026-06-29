@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,IHI,Long,Daily,2025-09-08,62.53,2025-10-31,60.19,-3.7422037422037477,39,88.89,9,19,
-TRENDPULSE,IHI,Long,Daily,2025-08-13,61.79,2025-08-25,62.02,0.37222851594109724,8,88.89,9,19,
-TRENDPULSE,IHI,Long,Daily,2025-01-22,63.25,2025-01-30,64.55,2.0553359683794423,6,88.89,9,19,
-TRENDPULSE,IHI,Long,Daily,2024-05-16,56.75,2024-08-21,57.64,1.5682819383259923,69,88.89,9,19,

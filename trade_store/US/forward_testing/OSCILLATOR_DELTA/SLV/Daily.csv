@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,SLV,Long,Daily,2024-12-03,28.28,2025-03-13,30.74,8.698727015558688,72,70.0,20,53,
-OSCILLATOR DELTA,SLV,Long,Daily,2024-06-17,26.92,2024-07-05,28.48,5.794947994056459,14,70.0,20,53,
-OSCILLATOR DELTA,SLV,Long,Daily,2024-02-09,20.68,2024-04-02,23.84,15.28046421663443,37,70.0,20,53,

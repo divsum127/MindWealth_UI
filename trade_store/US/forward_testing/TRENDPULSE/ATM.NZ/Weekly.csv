@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,ATM.NZ,Long,Weekly,2025-03-02,8.84,2025-09-21,9.6,8.5972850678733,144,81.82,11,62,
-TRENDPULSE,ATM.NZ,Long,Weekly,2025-01-26,6.51,2025-03-16,9.45,45.16129032258064,34,81.82,11,62,
-TRENDPULSE,ATM.NZ,Long,Weekly,2024-02-04,5.35,2024-03-17,6.2,15.88785046728973,29,81.82,11,62,

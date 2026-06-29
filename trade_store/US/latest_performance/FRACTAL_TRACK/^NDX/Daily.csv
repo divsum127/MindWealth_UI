@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-FRACTAL TRACK,^NDX,Long,Daily,2025-04-02,19581.7793,2025-08-19,23384.7695,19.421065582125117,99,100.0,31,160,
-FRACTAL TRACK,^NDX,Long,Daily,2025-01-15,21237.8496,2025-07-14,22855.6309,7.617443999603419,128,100.0,31,160,
-FRACTAL TRACK,^NDX,Long,Daily,2025-01-06,21559.5,2025-08-18,23713.7598,9.992160300563556,160,100.0,31,160,

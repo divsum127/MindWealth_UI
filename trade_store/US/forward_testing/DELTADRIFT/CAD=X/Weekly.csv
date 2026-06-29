@@ -1,2 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,CAD=X,Long,Weekly,2025-05-04,1.3846,2025-10-12,1.4019,1.2494583273147386,114,75.0,8,24,

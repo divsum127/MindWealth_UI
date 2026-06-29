@@ -1,6 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,^VIX,Long,Daily,2025-06-10,16.95,2025-06-13,20.82,22.831858407079654,3,85.71,7,26,
-DELTADRIFT,^VIX,Long,Daily,2025-05-14,18.62,2025-05-21,20.87,12.08378088077336,5,85.71,7,26,
-DELTADRIFT,^VIX,Long,Daily,2024-12-03,13.3,2024-12-16,14.69,10.451127819548864,9,85.71,7,26,
-DELTADRIFT,^VIX,Long,Daily,2024-11-12,14.71,2024-11-20,17.16,16.655336505778376,6,85.71,7,26,
-DELTADRIFT,^VIX,Long,Daily,2023-11-07,14.81,2023-12-08,12.35,-16.610398379473335,23,85.71,7,26,

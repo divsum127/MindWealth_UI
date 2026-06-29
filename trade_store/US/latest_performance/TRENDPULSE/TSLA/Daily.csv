@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,TSLA,Long,Daily,2025-09-12,395.94,2025-09-18,416.85,5.281103197454167,4,82.76,29,14,
-TRENDPULSE,TSLA,Long,Daily,2025-08-11,339.03,2025-09-10,347.79,2.58384213786392,22,82.76,29,14,
-TRENDPULSE,TSLA,Long,Daily,2025-08-07,322.27,2025-08-14,335.58,4.130077264405624,5,82.76,29,14,
-TRENDPULSE,TSLA,Long,Daily,2025-07-23,332.56,2025-08-28,345.98,4.035362039932648,26,82.76,29,14,

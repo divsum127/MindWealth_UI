@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,NVO,Long,Daily,2025-10-02,58.74,2025-10-28,52.05,-11.389172625127689,18,71.43,21,24,
-OSCILLATOR DELTA,NVO,Long,Daily,2025-08-08,51.08,2025-08-18,53.75,5.2270947533281165,6,71.43,21,24,
-OSCILLATOR DELTA,NVO,Long,Daily,2025-04-08,61.6,2025-04-09,65.09,5.665584415584419,1,71.43,21,24,

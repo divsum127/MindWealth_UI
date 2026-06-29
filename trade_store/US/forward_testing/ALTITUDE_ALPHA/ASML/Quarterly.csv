@@ -1,6 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-ALTITUDE ALPHA,ASML,Long,Quarterly,2025-11-03,1059.23,2025-11-03,1059.23,0.0,0,85.71,7,534,
-ALTITUDE ALPHA,ASML,Long,Quarterly,2024-03-31,970.47,2024-12-31,693.08,-28.58305769369481,196,85.71,7,534,
-ALTITUDE ALPHA,ASML,Long,Quarterly,2021-06-30,690.84,2022-06-30,475.88,-31.1157431532627,261,85.71,7,534,
-ALTITUDE ALPHA,ASML,Long,Quarterly,2020-09-30,369.27,2021-03-31,617.36,67.18390337693288,130,85.71,7,534,
-ALTITUDE ALPHA,ASML,Long,Quarterly,2019-06-30,207.93,2020-06-30,368.03,76.99706632039627,261,85.71,7,534,

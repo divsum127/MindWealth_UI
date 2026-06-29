@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-ALTITUDE ALPHA,META,Long,Weekly,2024-07-07,539.91,2025-11-02,648.35,20.084828952973655,344,80.0,5,366,
-ALTITUDE ALPHA,META,Long,Weekly,2023-11-12,328.77,2024-04-07,527.34,60.397846518842975,104,80.0,5,366,
-ALTITUDE ALPHA,META,Long,Weekly,2023-02-05,186.53,2023-07-16,308.87,65.58730499115424,114,80.0,5,366,

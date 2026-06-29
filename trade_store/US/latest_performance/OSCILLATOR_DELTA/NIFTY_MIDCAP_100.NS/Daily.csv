@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,NIFTY_MIDCAP_100.NS,Long,Daily,2025-08-05,57206.8516,2025-10-29,60149.0508,5.143088839379505,61,82.61,23,65,
-OSCILLATOR DELTA,NIFTY_MIDCAP_100.NS,Long,Daily,2025-01-30,52714.25,2025-06-06,59010.3008,11.943735896840034,91,82.61,23,65,

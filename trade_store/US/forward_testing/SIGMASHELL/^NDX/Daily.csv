@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,^NDX,Long,Daily,2025-04-01,19436.4199,2025-08-18,23713.7598,22.006830074709377,99,100.0,11,74,
-SIGMASHELL,^NDX,Long,Daily,2024-08-02,18440.8496,2024-10-01,19773.3008,7.225541278748889,42,100.0,11,74,

@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,UBER,Long,Daily,2025-02-07,74.6,2025-02-19,81.16,8.793565683646117,8,75.0,8,7,
-TRENDPULSE,UBER,Long,Daily,2024-10-07,74.59,2024-10-11,86.34,15.752781874245876,4,75.0,8,7,
-TRENDPULSE,UBER,Long,Daily,2024-02-15,81.39,2024-07-22,67.73,-16.783388622680913,112,75.0,8,7,

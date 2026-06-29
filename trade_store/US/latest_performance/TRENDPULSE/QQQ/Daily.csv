@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,QQQ,Long,Daily,2025-05-13,515.59,2025-06-05,524.79,1.7843635446769586,17,96.67,30,14,
-TRENDPULSE,QQQ,Long,Daily,2025-02-14,538.15,2025-06-17,529.08,-1.6854036978537466,87,96.67,30,14,

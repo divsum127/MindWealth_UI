@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-PULSEGAUGE,NFLX,Long,Weekly,2025-07-06,1297.1801,2025-10-26,1094.6899,-15.610029786920101,79,85.71,7,83,
-PULSEGAUGE,NFLX,Long,Weekly,2023-06-11,420.02,2023-10-15,355.68,-15.318318175324979,89,85.71,7,83,

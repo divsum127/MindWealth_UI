@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-ALTITUDE ALPHA,NIFTY_MIDCAP_100.NS,Long,Weekly,2025-06-08,59010.3008,2025-11-02,59825.8984,1.3821275081519344,104,71.43,7,466,
-ALTITUDE ALPHA,NIFTY_MIDCAP_100.NS,Long,Weekly,2022-12-04,32566.8496,2024-05-26,52424.4492,60.9748865607191,384,71.43,7,466,

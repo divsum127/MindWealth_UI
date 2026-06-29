@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,NZDCAD=X,Long,Weekly,2025-01-05,0.8055,2025-11-02,0.8017,-0.4717566728739945,214,75.0,8,408,
-BAND MATRIX,NZDCAD=X,Long,Weekly,2023-04-30,0.8357,2023-12-31,0.838,0.2752183798013604,174,75.0,8,408,

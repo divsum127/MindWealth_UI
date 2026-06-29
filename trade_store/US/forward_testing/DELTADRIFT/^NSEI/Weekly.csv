@@ -1,2 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,^NSEI,Long,Weekly,2025-03-09,22552.5,2025-03-23,23350.4004,3.5379687396075763,9,100.0,5,46,

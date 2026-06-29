@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,ETH-USD,Long,Daily,2025-10-24,3934.5674,2025-10-26,4157.9893,5.678436211310048,0,71.43,56,5,
-OSCILLATOR DELTA,ETH-USD,Long,Daily,2025-04-05,1805.9733,2025-04-06,1576.728,-12.69372587069809,0,71.43,56,5,

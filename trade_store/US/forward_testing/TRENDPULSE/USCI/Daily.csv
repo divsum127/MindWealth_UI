@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,USCI,Long,Daily,2025-06-13,74.83,2025-07-23,75.74,1.2160898035547194,28,100.0,9,14,
-TRENDPULSE,USCI,Long,Daily,2024-12-12,66.35,2025-01-08,67.23,1.3262999246420644,19,100.0,9,14,
-TRENDPULSE,USCI,Long,Daily,2024-12-10,66.3,2025-01-08,67.23,1.4027149321267072,21,100.0,9,14,
-TRENDPULSE,USCI,Long,Daily,2024-09-25,62.61,2024-10-07,64.36,2.7950806580418464,8,100.0,9,14,

@@ -1,2 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,C6L.SI,Long,Daily,2025-04-04,6.55,2025-10-13,6.6,0.7633587786259515,136,100.0,7,151,

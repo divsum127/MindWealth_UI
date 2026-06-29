@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,NZDCAD=X,Long,Weekly,2025-01-12,0.8051,2025-01-26,0.8158,1.3290274500062018,9,75.0,8,44,
-DELTADRIFT,NZDCAD=X,Long,Weekly,2023-09-24,0.7994,2023-10-08,0.8177,2.289216912684511,9,75.0,8,44,

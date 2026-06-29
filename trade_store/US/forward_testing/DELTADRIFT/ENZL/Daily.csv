@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,ENZL,Long,Daily,2025-02-28,42.37,2025-04-24,43.81,3.398631106915282,39,80.0,10,17,
-DELTADRIFT,ENZL,Long,Daily,2024-12-13,45.78,2025-02-24,43.55,-4.871122761031026,51,80.0,10,17,
-DELTADRIFT,ENZL,Long,Daily,2024-02-15,45.15,2024-03-07,46.09,2.0819490586932554,15,80.0,10,17,

@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-PULSEGAUGE,EFN.TO,Long,Weekly,2025-07-06,34.69,2025-11-02,37.83,9.051599884692997,84,100.0,4,64,
-PULSEGAUGE,EFN.TO,Long,Weekly,2023-06-11,19.96,2024-05-19,24.38,22.1442885771543,244,100.0,4,64,

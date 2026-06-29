@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-ALTITUDE ALPHA,^BVSP,Long,Quarterly,2025-11-03,149540.4375,2025-11-03,149540.4375,0.0,0,83.33,6,945,
-ALTITUDE ALPHA,^BVSP,Long,Quarterly,2018-12-31,87887.0,2025-09-30,146237.0,66.39207163744354,1761,83.33,6,945,

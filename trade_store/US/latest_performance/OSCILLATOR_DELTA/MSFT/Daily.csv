@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,MSFT,Long,Daily,2025-04-02,382.14,2025-05-02,435.28,13.905898361856908,22,81.48,27,11,
-OSCILLATOR DELTA,MSFT,Long,Daily,2024-11-06,420.18,2025-03-31,375.39,-10.659717264029705,103,81.48,27,11,

@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-PULSEGAUGE,MSE.PA,Long,Weekly,2025-07-06,58.64,2025-11-02,62.93,7.31582537517053,84,80.0,5,202,
-PULSEGAUGE,MSE.PA,Short,Weekly,2025-01-19,55.85,2025-02-16,59.72,-6.929274843330345,19,75.0,8,28,
-PULSEGAUGE,MSE.PA,Long,Weekly,2023-06-11,44.895,2024-05-12,54.39,21.149348479786163,239,80.0,5,202,
-PULSEGAUGE,MSE.PA,Short,Weekly,2022-11-13,39.45,2023-01-15,42.425,-7.541191381495549,44,75.0,8,28,

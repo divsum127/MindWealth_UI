@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-FRACTAL TRACK,NZDCAD=X,Long,Daily,2025-07-21,0.8167,2025-10-31,0.8017,-1.836659728174362,74,96.0,25,59,
-FRACTAL TRACK,NZDCAD=X,Long,Daily,2025-04-02,0.8164,2025-10-31,0.8017,-1.800587947084768,152,96.0,25,59,
-FRACTAL TRACK,NZDCAD=X,Long,Daily,2024-10-11,0.8378,2025-10-31,0.8017,-4.308904273096207,275,96.0,25,59,
-FRACTAL TRACK,NZDCAD=X,Long,Daily,2024-07-05,0.8322,2025-10-31,0.8017,-3.6649843787551166,345,96.0,25,59,

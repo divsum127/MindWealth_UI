@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,JNK,Long,Daily,2025-10-10,96.34,2025-10-31,97.39,1.0898899730122453,15,75.0,4,153,
-BAND MATRIX,JNK,Long,Daily,2024-12-20,95.38,2025-07-08,96.41,1.079890962465927,142,75.0,4,153,

@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-ALTITUDE ALPHA,TSM,Long,Quarterly,2025-09-30,279.29,2025-11-03,300.43,7.569193311611581,24,80.0,5,1043,
-ALTITUDE ALPHA,TSM,Long,Quarterly,2024-03-31,136.05,2025-06-30,226.49,66.4755604557148,325,80.0,5,1043,
-ALTITUDE ALPHA,TSM,Long,Quarterly,2020-12-31,109.04,2022-06-30,81.75,-25.02751283932502,390,80.0,5,1043,
-ALTITUDE ALPHA,TSM,Long,Quarterly,2019-09-30,46.48,2020-09-30,81.07,74.41910499139415,262,80.0,5,1043,

@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,XLE,Long,Weekly,2025-10-26,88.07,2025-11-02,88.13,0.06812762575224512,4,80.0,5,84,
-TRENDPULSE,XLE,Long,Weekly,2024-02-25,85.96,2024-03-31,94.41,9.830153559795257,24,80.0,5,84,

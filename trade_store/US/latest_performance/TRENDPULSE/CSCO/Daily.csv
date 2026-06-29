@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,CSCO,Long,Daily,2025-08-07,69.9,2025-08-13,70.4,0.7153075822603719,4,88.0,25,14,
-TRENDPULSE,CSCO,Long,Daily,2025-05-05,59.32,2025-05-13,61.78,4.146999325691168,6,88.0,25,14,

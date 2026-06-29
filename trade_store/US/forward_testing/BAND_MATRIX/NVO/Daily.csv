@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,NVO,Long,Daily,2025-07-21,64.92,2025-09-25,56.04,-13.678373382624772,48,100.0,6,111,
-BAND MATRIX,NVO,Long,Daily,2024-07-19,131.54,2025-06-20,73.77,-43.918199787137,240,100.0,6,111,

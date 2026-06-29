@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,RELIANCE.NS,Long,Weekly,2025-05-04,1419.8,2025-07-13,1495.2,5.310607127764481,49,100.0,30,105,
-TRENDPULSE,RELIANCE.NS,Long,Weekly,2025-04-20,1274.5,2025-05-25,1426.8,11.949784229109452,24,100.0,30,105,
-TRENDPULSE,RELIANCE.NS,Long,Weekly,2025-03-23,1276.35,2025-05-25,1426.8,11.787519097426259,44,100.0,30,105,

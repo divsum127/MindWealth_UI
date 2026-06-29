@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,QQQ,Long,Daily,2025-04-02,476.15,2025-04-04,422.67,-11.231754699149421,2,81.25,32,27,
-OSCILLATOR DELTA,QQQ,Long,Daily,2025-03-05,502.01,2025-04-03,450.66,-10.228879902790775,21,81.25,32,27,
-OSCILLATOR DELTA,QQQ,Long,Daily,2025-01-15,516.7,2025-04-03,450.66,-12.781110896071224,56,81.25,32,27,

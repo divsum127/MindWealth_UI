@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,RINF,Long,Daily,2025-02-25,32.73,2025-10-31,32.3908,-1.0363580812709996,178,75.0,4,278,
-BAND MATRIX,RINF,Long,Daily,2023-12-22,31.72,2025-01-16,33.1,4.350567465321572,279,75.0,4,278,

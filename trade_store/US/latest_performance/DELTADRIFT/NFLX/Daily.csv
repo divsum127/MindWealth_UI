@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,NFLX,Long,Daily,2025-10-06,1163.3101,2025-10-07,1191.0601,2.38543445982288,1,72.73,11,3,
-DELTADRIFT,NFLX,Long,Daily,2025-07-24,1180.76,2025-08-11,1218.3101,3.180163623428972,12,72.73,11,3,
-DELTADRIFT,NFLX,Long,Daily,2025-04-08,870.4,2025-04-09,945.47,8.624770220588243,1,72.73,11,3,

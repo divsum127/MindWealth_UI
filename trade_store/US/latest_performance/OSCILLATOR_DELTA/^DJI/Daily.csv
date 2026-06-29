@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,^DJI,Long,Daily,2025-03-24,42583.3203,2025-04-04,38314.8594,-10.023786003366203,9,85.71,21,31,
-OSCILLATOR DELTA,^DJI,Long,Daily,2024-12-23,42906.9492,2025-04-04,38314.8594,-10.702438382638496,74,85.71,21,31,

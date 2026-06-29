@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-ALTITUDE ALPHA,ORCL,Long,Monthly,2025-07-31,253.77,2025-10-31,262.61,3.4834692832092062,66,73.68,19,342,
-ALTITUDE ALPHA,ORCL,Long,Monthly,2023-06-30,119.09,2025-06-30,218.63,83.58384415148207,521,73.68,19,342,
-ALTITUDE ALPHA,ORCL,Long,Monthly,2020-12-31,64.69,2023-05-31,105.94,63.765651569021486,629,73.68,19,342,

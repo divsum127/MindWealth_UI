@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,BPCL.NS,Long,Daily,2025-03-28,278.47,2025-04-16,298.75,7.282651632132715,13,92.59,27,25,
-TRENDPULSE,BPCL.NS,Long,Daily,2025-01-21,280.2,2025-04-17,298.35,6.4775160599571855,62,92.59,27,25,
-TRENDPULSE,BPCL.NS,Long,Daily,2025-01-02,296.9,2025-04-24,302.0,1.7177500842034432,80,92.59,27,25,

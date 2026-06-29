@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-PULSEGAUGE,BDGI.TO,Long,Weekly,2025-07-06,49.59,2025-09-21,59.66,20.30651340996167,54,87.5,8,42,
-PULSEGAUGE,BDGI.TO,Long,Weekly,2023-06-11,26.91,2023-08-06,33.86,25.82683017465626,39,87.5,8,42,

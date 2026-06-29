@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,PFE,Long,Weekly,2023-11-05,31.26,2023-12-17,26.63,-14.811260396673072,29,100.0,5,34,
-DELTADRIFT,PFE,Long,Weekly,2023-05-28,37.6,2023-06-18,40.06,6.542553191489364,14,100.0,5,34,
-DELTADRIFT,PFE,Long,Weekly,2023-02-12,43.88,2023-04-30,38.89,-11.37192342752963,54,100.0,5,34,

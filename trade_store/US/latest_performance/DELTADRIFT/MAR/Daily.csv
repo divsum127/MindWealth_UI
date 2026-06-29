@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,MAR,Long,Daily,2025-08-05,259.72,2025-08-13,269.7,3.8425997227783615,6,83.33,12,10,
-DELTADRIFT,MAR,Long,Daily,2025-03-14,243.11,2025-04-08,211.12,-13.158652461848549,17,83.33,12,10,

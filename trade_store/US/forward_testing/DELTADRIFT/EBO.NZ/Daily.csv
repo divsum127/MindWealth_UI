@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,EBO.NZ,Long,Daily,2025-09-26,30.0,2025-10-22,28.17,-6.099999999999994,18,87.5,8,12,
-DELTADRIFT,EBO.NZ,Long,Daily,2025-09-01,33.28,2025-09-25,29.2,-12.259615384615389,18,87.5,8,12,
-DELTADRIFT,EBO.NZ,Long,Daily,2024-06-11,32.8,2024-07-12,33.98,3.5975609756097557,23,87.5,8,12,
-DELTADRIFT,EBO.NZ,Long,Daily,2024-03-28,34.25,2024-04-15,35.5,3.6496350364963503,12,87.5,8,12,

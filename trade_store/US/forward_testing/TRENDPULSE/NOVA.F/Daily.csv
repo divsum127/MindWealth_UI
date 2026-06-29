@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,NOVA.F,Long,Daily,2025-07-24,59.6,2025-10-31,42.8,-28.187919463087255,71,100.0,8,24,
-TRENDPULSE,NOVA.F,Long,Daily,2024-06-06,130.5,2024-06-13,132.5,1.5325670498084292,5,100.0,8,24,

@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-ALTITUDE ALPHA,NIFTY_MIDCAP_100.NS,Long,Monthly,2024-07-31,58990.8984,2025-10-31,59825.8984,1.4154725943282125,327,75.0,4,760,
-ALTITUDE ALPHA,NIFTY_MIDCAP_100.NS,Long,Monthly,2023-05-31,33761.3008,2024-06-30,55736.8984,65.09108677471339,282,75.0,4,760,
-ALTITUDE ALPHA,NIFTY_MIDCAP_100.NS,Long,Monthly,2020-11-30,19715.0996,2022-11-30,32037.9004,62.50438014525676,522,75.0,4,760,

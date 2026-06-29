@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,JNK,Long,Weekly,2025-04-20,93.72,2025-05-18,95.74,2.155356380708489,19,77.78,9,64,
-DELTADRIFT,JNK,Long,Weekly,2023-10-29,88.61,2023-11-05,91.24,2.9680622954519755,4,77.78,9,64,

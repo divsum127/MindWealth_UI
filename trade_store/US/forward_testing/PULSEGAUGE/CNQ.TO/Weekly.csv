@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-PULSEGAUGE,CNQ.TO,Long,Weekly,2025-07-06,43.77,2025-11-02,44.87,2.5131368517249126,84,75.0,8,50,
-PULSEGAUGE,CNQ.TO,Long,Weekly,2023-06-11,37.635,2023-10-15,45.595,21.150524777467787,89,75.0,8,50,

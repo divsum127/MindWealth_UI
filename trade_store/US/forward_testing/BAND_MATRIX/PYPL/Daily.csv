@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,PYPL,Long,Daily,2025-07-31,68.76,2025-10-13,68.86,0.14543339150668166,52,75.0,8,65,
-BAND MATRIX,PYPL,Long,Daily,2025-02-06,78.57,2025-06-13,70.83,-9.85108820160366,91,75.0,8,65,
-BAND MATRIX,PYPL,Long,Daily,2024-04-18,62.1,2024-10-18,80.94,30.338164251207722,131,75.0,8,65,

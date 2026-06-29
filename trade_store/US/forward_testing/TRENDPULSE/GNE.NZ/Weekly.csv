@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,GNE.NZ,Long,Weekly,2025-07-20,2.38,2025-11-02,2.51,5.4621848739495755,74,85.71,7,110,
-TRENDPULSE,GNE.NZ,Long,Weekly,2024-12-29,2.31,2025-08-10,2.365,2.380952380952388,159,85.71,7,110,
-TRENDPULSE,GNE.NZ,Long,Weekly,2023-12-24,2.535,2024-12-29,2.31,-8.875739644970416,264,85.71,7,110,

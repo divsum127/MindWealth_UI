@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,BABA,Long,Daily,2025-07-11,106.72,2025-07-15,116.97,9.60457271364318,2,76.19,42,11,
-OSCILLATOR DELTA,BABA,Long,Daily,2025-06-16,115.96,2025-07-09,103.83,-10.460503621938596,17,76.19,42,11,
-OSCILLATOR DELTA,BABA,Long,Daily,2025-04-22,115.88,2025-05-02,125.76,8.526061442871944,8,76.19,42,11,

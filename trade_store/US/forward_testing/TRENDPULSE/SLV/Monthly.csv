@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,SLV,Long,Monthly,2025-07-31,33.32,2025-10-31,44.01,32.082833133253295,66,75.0,8,230,
-TRENDPULSE,SLV,Long,Monthly,2024-05-31,27.76,2025-08-31,36.19,30.367435158501426,325,75.0,8,230,
-TRENDPULSE,SLV,Long,Monthly,2023-04-30,23.0,2024-08-31,26.35,14.565217391304353,349,75.0,8,230,

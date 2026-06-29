@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,PFE,Long,Daily,2025-04-10,21.59,2025-04-25,22.92,6.160259379342296,11,71.43,42,17,
-OSCILLATOR DELTA,PFE,Long,Daily,2025-02-06,25.83,2025-04-04,22.97,-11.072396438250095,41,71.43,42,17,

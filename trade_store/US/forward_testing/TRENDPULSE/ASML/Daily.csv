@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,ASML,Long,Daily,2025-05-13,763.9,2025-06-27,795.95,4.195575337086015,33,88.89,9,28,
-TRENDPULSE,ASML,Long,Daily,2024-11-29,686.61,2024-12-06,708.98,3.2580358573280326,5,88.89,9,28,

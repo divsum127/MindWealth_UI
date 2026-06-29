@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,IFT.NZ,Long,Daily,2025-08-06,12.05,2025-09-12,12.48,3.568464730290454,27,96.67,30,19,
-TRENDPULSE,IFT.NZ,Long,Daily,2025-07-30,12.0,2025-09-12,12.48,4.0000000000000036,32,96.67,30,19,
-TRENDPULSE,IFT.NZ,Long,Daily,2025-07-07,11.08,2025-07-21,11.47,3.519855595667875,10,96.67,30,19,
-TRENDPULSE,IFT.NZ,Long,Daily,2024-10-24,13.02,2025-05-13,11.6,-10.906298003072196,143,96.67,30,19,

@@ -1,2 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,HDFCBANK.NS,Long,Weekly,2023-09-03,787.35,2025-01-12,828.375,5.210516288816915,354,100.0,6,501,

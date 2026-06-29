@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,SFTBY,Long,Daily,2025-02-27,28.21,2025-08-01,37.89,34.31407302375044,111,83.33,6,142,
-BAND MATRIX,SFTBY,Long,Daily,2024-08-05,24.2,2025-01-28,30.27,25.082644628099175,126,83.33,6,142,
-BAND MATRIX,SFTBY,Long,Daily,2024-04-11,27.98,2024-07-18,33.3,19.013581129378114,70,83.33,6,142,

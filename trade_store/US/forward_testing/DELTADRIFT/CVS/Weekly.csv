@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,CVS,Long,Weekly,2024-05-19,57.68,2024-09-29,61.38,6.414701803051322,94,85.71,7,74,
-DELTADRIFT,CVS,Long,Weekly,2023-04-02,74.31,2024-01-07,81.42,9.568025837706903,199,85.71,7,74,

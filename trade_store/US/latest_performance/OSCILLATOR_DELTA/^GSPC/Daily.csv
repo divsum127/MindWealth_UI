@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,^GSPC,Long,Daily,2025-03-05,5842.6299,2025-04-04,5074.0801,-13.154175656411162,22,82.14,28,23,
-OSCILLATOR DELTA,^GSPC,Long,Daily,2025-01-06,5975.3799,2025-04-04,5074.0801,-15.08355644467057,64,82.14,28,23,

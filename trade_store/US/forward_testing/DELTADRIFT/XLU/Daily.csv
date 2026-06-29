@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,XLU,Long,Daily,2025-09-04,83.73,2025-09-11,85.07,1.600382180819287,5,90.91,11,10,
-DELTADRIFT,XLU,Long,Daily,2024-12-12,77.59,2025-01-21,80.05,3.1705116638742026,28,90.91,11,10,
-DELTADRIFT,XLU,Long,Daily,2024-07-02,68.02,2024-07-09,68.82,1.1761246692149327,5,90.91,11,10,
-DELTADRIFT,XLU,Long,Daily,2024-01-22,60.67,2024-02-01,62.62,3.2141091148837906,8,90.91,11,10,

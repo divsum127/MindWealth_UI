@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,ORCL,Long,Weekly,2025-09-21,308.66,2025-11-02,262.61,-14.919328711203267,29,86.67,15,107,
-TRENDPULSE,ORCL,Long,Weekly,2025-06-15,215.22,2025-07-27,245.12,13.892760895827527,29,86.67,15,107,
-TRENDPULSE,ORCL,Long,Weekly,2024-03-24,127.79,2024-07-14,144.77,13.28742468111746,79,86.67,15,107,
-TRENDPULSE,ORCL,Long,Weekly,2024-02-04,115.79,2024-04-14,121.11,4.594524570342856,49,86.67,15,107,

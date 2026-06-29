@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,CSCO,Long,Daily,2025-03-12,60.46,2025-07-14,67.82,12.173337743962938,88,80.0,5,169,
-BAND MATRIX,CSCO,Long,Daily,2024-04-05,48.55,2024-10-31,54.77,12.811534500514945,149,80.0,5,169,

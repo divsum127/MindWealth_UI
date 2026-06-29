@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,RELIANCE.NS,Long,Daily,2025-08-18,1381.7,2025-10-20,1466.8,6.159079394948245,45,86.67,30,47,
-OSCILLATOR DELTA,RELIANCE.NS,Long,Daily,2025-08-04,1411.5,2025-10-27,1484.1,5.143464399574913,60,86.67,30,47,
-OSCILLATOR DELTA,RELIANCE.NS,Long,Daily,2024-11-25,1287.0,2025-04-28,1368.8,6.355866355866352,110,86.67,30,47,

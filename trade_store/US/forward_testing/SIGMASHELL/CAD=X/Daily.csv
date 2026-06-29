@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,CAD=X,Long,Daily,2025-05-01,1.379,2025-10-31,1.401,1.5953589557650485,131,94.74,19,62,
-SIGMASHELL,CAD=X,Long,Daily,2024-01-01,1.3239,2024-08-01,1.3808,4.297907696955959,153,94.74,19,62,
-SIGMASHELL,CAD=X,Long,Daily,2023-12-01,1.3556,2024-02-08,1.3464,-0.6786662732369338,49,94.74,19,62,

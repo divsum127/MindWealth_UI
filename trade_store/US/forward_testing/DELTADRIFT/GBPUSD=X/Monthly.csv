@@ -1,2 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,GBPUSD=X,Long,Monthly,2022-10-31,1.1596,2023-01-31,1.2354,6.53673680579511,66,75.0,4,107,

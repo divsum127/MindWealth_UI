@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-FRACTAL TRACK,IEI,Long,Monthly,2025-03-31,118.14,2025-10-31,119.75,1.3627899102759433,154,88.89,9,271,
-FRACTAL TRACK,IEI,Short,Monthly,2024-07-31,117.67,2025-10-31,119.75,-1.7676553072150916,327,100.0,4,180,
-FRACTAL TRACK,IEI,Short,Monthly,2023-10-31,112.29,2023-12-31,117.13,-4.310268055926609,43,100.0,4,180,

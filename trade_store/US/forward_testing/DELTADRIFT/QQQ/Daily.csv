@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,QQQ,Long,Daily,2025-02-28,508.17,2025-03-13,468.34,-7.837928252356503,9,100.0,8,17,
-DELTADRIFT,QQQ,Long,Daily,2024-07-26,462.97,2024-08-19,481.27,3.952739918353231,16,100.0,8,17,
-DELTADRIFT,QQQ,Long,Daily,2024-04-22,418.82,2024-04-24,426.51,1.8361109784633012,2,100.0,8,17,

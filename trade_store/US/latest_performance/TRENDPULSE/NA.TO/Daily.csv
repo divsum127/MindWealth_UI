@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,NA.TO,Long,Daily,2025-08-12,148.09,2025-08-18,150.63,1.7151732054831468,4,93.1,29,17,
-TRENDPULSE,NA.TO,Long,Daily,2025-04-25,118.73,2025-05-02,122.0,2.754148067042867,5,93.1,29,17,
-TRENDPULSE,NA.TO,Long,Daily,2024-12-03,140.76,2025-06-03,134.26,-4.617789144643365,130,93.1,29,17,
-TRENDPULSE,NA.TO,Long,Daily,2024-12-02,139.97,2025-06-03,134.26,-4.079445595484753,131,93.1,29,17,

@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,QQQ,Long,Daily,2025-03-03,497.05,2025-08-19,569.28,14.531737249773657,121,85.71,7,153,
-BAND MATRIX,QQQ,Long,Daily,2024-04-17,425.84,2024-11-15,496.57,16.609524704114225,152,85.71,7,153,

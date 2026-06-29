@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,HDB,Long,Daily,2025-10-14,35.11,2025-10-20,36.63,4.329250925662214,4,100.0,8,12,
-TRENDPULSE,HDB,Long,Daily,2025-03-18,31.2,2025-03-24,32.9,5.448717948717947,4,100.0,8,12,
-TRENDPULSE,HDB,Long,Daily,2024-09-13,31.3,2024-09-20,32.865,5.0000000000000036,5,100.0,8,12,
-TRENDPULSE,HDB,Long,Daily,2024-06-03,30.615,2024-06-24,32.11,4.883227176220811,15,100.0,8,12,

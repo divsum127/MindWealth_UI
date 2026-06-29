@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,HDFCBANK.NS,Long,Daily,2025-09-29,950.3,2025-10-01,965.25,1.5731874145006888,2,77.78,9,19,
-DELTADRIFT,HDFCBANK.NS,Long,Daily,2025-09-02,944.5,2025-09-04,961.25,1.7734250926416093,2,77.78,9,19,

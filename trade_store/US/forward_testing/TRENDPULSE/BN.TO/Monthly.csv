@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,BN.TO,Long,Monthly,2023-12-31,35.4333,2024-08-31,45.2,27.563619533038132,174,100.0,9,214,
-TRENDPULSE,BN.TO,Long,Monthly,2023-07-31,30.6867,2024-03-31,37.7867,23.137059377515357,174,100.0,9,214,

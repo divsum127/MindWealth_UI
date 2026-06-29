@@ -28,3 +28,13 @@ macro_intelligence/data_cache/cftc/*.zip
 # Flagged exports (kept on server disk, e.g. EC2; do not commit)
 chatbot/flagged_pairs/*.json
 chatbot/deep_research_logs/*.json
+
+# Runtime data (per-environment; cron / update_trade_data.sh)
+trade_store/
+conviction_store/
+chatbot/data/
+chatbot/history/
+chatbot/jobs/
+macro_intelligence/logs/
+macro_intelligence/output/
+macro_intelligence/data/ssi/ssi.db

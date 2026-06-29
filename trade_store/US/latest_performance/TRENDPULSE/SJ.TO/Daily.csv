@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,SJ.TO,Long,Daily,2025-06-26,78.16,2025-07-09,80.31,2.750767656090079,9,80.56,36,21,
-TRENDPULSE,SJ.TO,Long,Daily,2025-04-30,67.6,2025-05-12,74.92,10.828402366863916,8,80.56,36,21,
-TRENDPULSE,SJ.TO,Long,Daily,2024-12-04,73.99,2025-05-20,75.19,1.6218407892958548,119,80.56,36,21,
-TRENDPULSE,SJ.TO,Long,Daily,2024-07-23,96.19,2025-05-20,75.19,-21.83179124649132,215,80.56,36,21,

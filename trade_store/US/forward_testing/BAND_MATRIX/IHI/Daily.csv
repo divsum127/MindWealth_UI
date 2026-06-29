@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,IHI,Long,Daily,2025-03-06,61.99,2025-10-31,60.19,-2.903694144216816,171,83.33,6,108,
-BAND MATRIX,IHI,Long,Daily,2024-04-16,55.56,2025-02-12,63.86,14.938804895608346,216,83.33,6,108,

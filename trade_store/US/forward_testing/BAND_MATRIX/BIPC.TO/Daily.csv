@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,BIPC.TO,Long,Daily,2025-08-05,54.45,2025-10-23,62.44,14.674012855831029,57,85.71,7,87,
-BAND MATRIX,BIPC.TO,Long,Daily,2024-12-16,56.87,2025-05-27,54.44,-4.272903112361526,116,85.71,7,87,
-BAND MATRIX,BIPC.TO,Long,Daily,2024-06-11,45.43,2024-08-06,50.95,12.150561303103684,40,85.71,7,87,
-BAND MATRIX,BIPC.TO,Long,Daily,2024-01-19,46.57,2024-05-29,46.96,0.8374490015031149,93,85.71,7,87,

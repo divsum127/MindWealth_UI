@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,ASML,Long,Daily,2025-07-18,734.58,2025-10-10,936.19,27.445615181464238,60,83.33,6,86,
-BAND MATRIX,ASML,Long,Daily,2024-04-19,859.54,2025-06-18,761.64,-11.389813155874071,303,83.33,6,86,

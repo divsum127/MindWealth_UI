@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,GOOG,Long,Daily,2025-05-07,152.8,2025-06-13,175.88,15.104712041884804,27,81.82,11,74,
-SIGMASHELL,GOOG,Long,Daily,2025-03-04,172.61,2025-05-28,173.38,0.44609234690920674,61,81.82,11,74,
-SIGMASHELL,GOOG,Long,Daily,2024-08-05,160.64,2024-10-04,168.56,4.930278884462162,44,81.82,11,74,
-SIGMASHELL,GOOG,Long,Daily,2024-03-04,134.2,2024-05-01,165.57,23.37555886736215,42,81.82,11,74,

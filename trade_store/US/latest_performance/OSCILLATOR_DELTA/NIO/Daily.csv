@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,NIO,Long,Daily,2025-07-01,3.51,2025-07-10,3.69,5.128205128205132,7,81.67,60,5,
-OSCILLATOR DELTA,NIO,Long,Daily,2025-06-16,3.52,2025-07-11,3.9,10.795454545454541,19,81.67,60,5,
-OSCILLATOR DELTA,NIO,Long,Daily,2025-04-10,3.28,2025-04-11,3.52,7.317073170731714,1,81.67,60,5,

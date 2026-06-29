@@ -1,2 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,^NZ50,Long,Daily,2025-02-26,12484.6504,2025-05-26,12547.2197,0.501169820502136,63,83.33,6,123,

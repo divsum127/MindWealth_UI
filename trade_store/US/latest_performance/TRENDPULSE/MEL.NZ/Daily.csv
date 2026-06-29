@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,MEL.NZ,Long,Daily,2025-06-11,5.89,2025-10-15,5.89,0.0,90,91.3,46,31,
-TRENDPULSE,MEL.NZ,Long,Daily,2025-02-12,5.95,2025-06-24,5.74,-3.529411764705882,94,91.3,46,31,
-TRENDPULSE,MEL.NZ,Long,Daily,2025-01-17,6.04,2025-06-24,5.74,-4.96688741721854,112,91.3,46,31,
-TRENDPULSE,MEL.NZ,Long,Daily,2024-11-26,6.14,2025-06-24,5.74,-6.514657980456017,150,91.3,46,31,

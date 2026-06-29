@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-ALTITUDE ALPHA,SJ.TO,Long,Weekly,2025-06-29,78.51,2025-11-02,79.61,1.4010954018596284,89,80.0,5,374,
-ALTITUDE ALPHA,SJ.TO,Long,Weekly,2024-01-21,85.23,2024-11-17,68.16,-20.02815909890884,214,80.0,5,374,
-ALTITUDE ALPHA,SJ.TO,Long,Weekly,2023-01-08,50.17,2023-11-12,83.03,65.49730914889376,219,80.0,5,374,

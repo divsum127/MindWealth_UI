@@ -1,6 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,MTY.TO,Long,Daily,2025-10-16,34.86,2025-10-31,33.84,-2.9259896729776136,11,90.0,10,7,
-DELTADRIFT,MTY.TO,Long,Daily,2025-02-24,42.86,2025-04-07,38.2,-10.87260849276714,30,90.0,10,7,
-DELTADRIFT,MTY.TO,Long,Daily,2024-04-16,46.98,2024-04-26,49.13,4.576415495955739,8,90.0,10,7,
-DELTADRIFT,MTY.TO,Long,Daily,2024-04-05,48.78,2024-04-11,50.14,2.7880278802788014,4,90.0,10,7,
-DELTADRIFT,MTY.TO,Long,Daily,2024-02-22,48.98,2024-03-06,52.02,6.206614944875472,9,90.0,10,7,

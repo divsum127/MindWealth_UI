@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,CNU.NZ,Long,Weekly,2025-03-30,8.11,2025-06-08,8.465,4.377311960542546,49,75.0,4,74,
-DELTADRIFT,CNU.NZ,Long,Weekly,2023-09-24,7.61,2024-01-07,7.89,3.6793692509855367,74,75.0,4,74,

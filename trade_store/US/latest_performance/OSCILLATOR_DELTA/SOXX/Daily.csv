@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,SOXX,Long,Daily,2025-08-07,240.84,2025-08-13,253.88,5.414382992858325,4,78.38,37,10,
-OSCILLATOR DELTA,SOXX,Long,Daily,2025-03-12,196.08,2025-04-03,170.36,-13.117095063239493,16,78.38,37,10,

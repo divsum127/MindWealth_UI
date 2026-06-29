@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,IEI,Long,Daily,2025-08-04,119.08,2025-08-29,119.69,0.5122606650990926,19,70.0,10,15,
-TRENDPULSE,IEI,Long,Daily,2025-04-16,118.23,2025-04-30,119.39,0.9811384589359693,10,70.0,10,15,

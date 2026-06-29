@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,BRK-B,Long,Daily,2025-10-31,477.54,2025-10-31,477.54,0.0,0,75.0,8,7,
-DELTADRIFT,BRK-B,Long,Daily,2025-06-06,493.53,2025-07-15,470.13,-4.741353109233477,27,75.0,8,7,
-DELTADRIFT,BRK-B,Long,Daily,2024-12-19,449.34,2024-12-24,458.66,2.074153202474752,3,75.0,8,7,
-DELTADRIFT,BRK-B,Long,Daily,2024-04-17,397.74,2024-04-19,405.08,1.8454266606325678,2,75.0,8,7,

@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,EFN.TO,Long,Daily,2024-11-15,27.11,2025-06-02,32.47,19.771302102545185,141,81.82,11,92,
-BAND MATRIX,EFN.TO,Long,Daily,2024-08-08,25.44,2024-09-17,28.19,10.809748427672956,28,81.82,11,92,
-BAND MATRIX,EFN.TO,Long,Daily,2024-02-13,21.73,2024-05-30,23.96,10.262310170271517,77,81.82,11,92,

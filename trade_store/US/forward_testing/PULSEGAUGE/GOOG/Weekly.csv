@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-PULSEGAUGE,GOOG,Long,Weekly,2025-07-06,180.55,2025-09-07,235.17,30.252007754084723,44,100.0,7,70,
-PULSEGAUGE,GOOG,Long,Weekly,2023-06-11,122.87,2024-01-21,147.97,20.42809473427199,159,100.0,7,70,

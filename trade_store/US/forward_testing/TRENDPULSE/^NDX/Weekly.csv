@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,^NDX,Long,Weekly,2025-10-26,25358.1602,2025-11-02,25858.127,1.9716209537945975,4,100.0,14,70,
-TRENDPULSE,^NDX,Long,Weekly,2025-09-21,24626.25,2025-11-02,25858.127,5.00229226942795,29,100.0,14,70,
-TRENDPULSE,^NDX,Long,Weekly,2024-06-23,19700.4297,2024-11-03,20033.1406,1.6888509797326816,94,100.0,14,70,
-TRENDPULSE,^NDX,Long,Weekly,2024-02-04,17642.7305,2024-03-24,18339.4395,3.9489862411036594,34,100.0,14,70,

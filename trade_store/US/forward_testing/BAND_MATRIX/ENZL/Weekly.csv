@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,ENZL,Long,Weekly,2024-12-29,45.97,2025-11-02,45.89,-0.174026539047201,219,100.0,5,285,
-BAND MATRIX,ENZL,Long,Weekly,2023-08-27,44.91,2024-11-03,47.13,4.943219772879105,309,100.0,5,285,

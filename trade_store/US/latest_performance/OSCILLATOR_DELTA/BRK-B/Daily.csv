@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,BRK-B,Short,Daily,2025-10-09,496.74,2025-10-14,495.97,0.15501066956556384,3,89.8,49,4,
-OSCILLATOR DELTA,BRK-B,Short,Daily,2025-09-09,492.72,2025-09-17,492.33,0.07915245981491378,6,89.8,49,4,
-OSCILLATOR DELTA,BRK-B,Short,Daily,2025-07-31,471.88,2025-08-05,464.19,1.6296516063405946,3,89.8,49,4,
-OSCILLATOR DELTA,BRK-B,Short,Daily,2025-05-14,503.4,2025-06-06,493.53,1.9606674612634098,17,89.8,49,4,

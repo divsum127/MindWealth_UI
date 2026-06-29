@@ -1,7 +1,0 @@
-Signal,Diver-Dur,Divergence Duration,Entry Date,Entry Price,Exit Date,Exit Price,Holding Period,Return,Actual Rise/Fall wrt Entry,Cum-Profit,Signal Open Price
-Sell,2020-01-15 - 2020-01-16,1 days,2020-01-28,27.25,2020-01-30,28.0,2 days,-2.8%,Fall by 10.83%,-2.8%,
-Buy,2020-01-20 - 2020-01-24,4 days,2020-01-29,27.5,2020-02-06,29.5,6 days,7.3%,Rise by 7.27%,4.5%,
-Buy,2020-03-16 - 2020-03-23,5 days,2020-03-25,24.5,2020-03-26,26.0,1 days,6.1%,Rise by 22.45%,10.6%,
-Sell,2020-04-21 - 2020-04-28,5 days,2020-05-26,29.25,2020-05-28,29.0,2 days,0.9%,Fall by 3.42%,11.5%,
-Buy,2020-07-31 - 2020-08-06,4 days,2020-08-10,27.25,2020-09-17,29.5,28 days,8.3%,Rise by 8.26%,19.8%,
-Sell,2020-10-01 - 2020-10-06,3 days,2020-10-29,28.5,2020-11-02,27.75,2 days,2.6%,Fall by 3.51%,22.4%,

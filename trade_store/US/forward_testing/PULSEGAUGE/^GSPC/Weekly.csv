@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-PULSEGAUGE,^GSPC,Long,Weekly,2025-07-06,6279.3501,2025-11-02,6840.2002,8.931658389297334,84,75.0,8,238,
-PULSEGAUGE,^GSPC,Long,Weekly,2023-06-11,4298.8599,2024-03-24,5234.1802,21.757403631600074,204,75.0,8,238,

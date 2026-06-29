@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,USCI,Long,Daily,2025-08-01,73.08,2025-10-28,77.57,6.143951833606999,62,100.0,8,107,
-SIGMASHELL,USCI,Long,Daily,2025-05-01,68.64,2025-08-28,76.19,10.999417249417245,85,100.0,8,107,

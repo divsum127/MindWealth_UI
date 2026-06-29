@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,NKE,Long,Daily,2024-11-21,75.1,2025-10-31,64.59,-13.99467376830891,246,75.0,8,107,
-BAND MATRIX,NKE,Long,Daily,2024-09-12,78.4,2024-10-02,83.1,5.994897959183659,14,75.0,8,107,
-BAND MATRIX,NKE,Long,Daily,2024-07-02,76.04,2024-09-04,81.02,6.549184639663321,46,75.0,8,107,
-BAND MATRIX,NKE,Long,Daily,2024-03-06,97.63,2024-06-14,93.39,-4.342927378879438,72,75.0,8,107,

@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,SJ.TO,Long,Daily,2024-11-12,70.72,2024-12-05,73.7,4.213800904977381,17,88.89,9,6,
-DELTADRIFT,SJ.TO,Long,Daily,2024-10-23,86.2,2024-11-08,72.37,-16.044083526682133,12,88.89,9,6,
-DELTADRIFT,SJ.TO,Long,Daily,2024-09-27,87.34,2024-10-01,89.13,2.0494618731394456,2,88.89,9,6,

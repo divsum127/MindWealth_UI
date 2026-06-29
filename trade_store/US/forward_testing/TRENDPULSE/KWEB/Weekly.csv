@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,KWEB,Long,Weekly,2025-09-14,40.63,2025-11-02,39.95,-1.673640167364016,34,100.0,6,53,
-TRENDPULSE,KWEB,Long,Weekly,2025-07-20,36.22,2025-09-14,40.63,12.175593594699071,39,100.0,6,53,
-TRENDPULSE,KWEB,Long,Weekly,2025-02-23,36.65,2025-09-14,40.63,10.859481582537528,144,100.0,6,53,
-TRENDPULSE,KWEB,Long,Weekly,2024-05-05,30.67,2024-10-27,32.11,4.695141832409513,124,100.0,6,53,

@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,RELIANCE.NS,Long,Daily,2025-07-23,1424.6,2025-11-03,1484.7,4.21872806401798,73,77.78,9,104,
-BAND MATRIX,RELIANCE.NS,Long,Daily,2025-03-05,1175.6,2025-05-22,1409.4,19.8877169105138,56,77.78,9,104,
-BAND MATRIX,RELIANCE.NS,Long,Daily,2024-03-15,1418.225,2025-01-24,1246.3,-12.122547550635476,225,77.78,9,104,

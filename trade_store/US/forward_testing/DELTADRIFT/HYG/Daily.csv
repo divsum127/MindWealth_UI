@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,HYG,Long,Daily,2025-03-14,78.88,2025-03-19,79.45,0.72261663286005,3,81.82,11,8,
-DELTADRIFT,HYG,Long,Daily,2024-12-20,78.58,2025-01-15,79.3,0.9162636803257812,18,81.82,11,8,
-DELTADRIFT,HYG,Long,Daily,2024-04-05,76.82,2024-05-15,77.45,0.8200989325696559,28,81.82,11,8,

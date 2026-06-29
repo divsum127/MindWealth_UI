@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,EFA,Long,Weekly,2024-03-10,79.25,2024-06-09,81.27,2.5488958990536226,64,90.0,10,36,
-TRENDPULSE,EFA,Long,Weekly,2024-02-25,77.4,2024-03-31,79.86,3.1782945736434027,24,90.0,10,36,

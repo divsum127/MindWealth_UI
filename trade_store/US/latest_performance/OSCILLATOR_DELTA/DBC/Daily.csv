@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,DBC,Long,Daily,2025-03-11,21.93,2025-06-17,23.08,5.243958048335607,70,78.12,32,29,
-OSCILLATOR DELTA,DBC,Long,Daily,2024-10-31,22.59,2025-04-08,20.16,-10.756972111553784,113,78.12,32,29,

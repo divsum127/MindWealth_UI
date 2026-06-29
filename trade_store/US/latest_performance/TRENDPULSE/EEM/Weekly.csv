@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,EEM,Long,Weekly,2025-05-25,46.23,2025-07-27,49.51,7.094959982695222,44,91.43,35,69,
-TRENDPULSE,EEM,Long,Weekly,2025-02-16,44.41,2025-06-01,45.52,2.499437063724401,74,91.43,35,69,
-TRENDPULSE,EEM,Long,Weekly,2024-10-06,46.97,2025-07-27,49.51,5.407707047051308,209,91.43,35,69,

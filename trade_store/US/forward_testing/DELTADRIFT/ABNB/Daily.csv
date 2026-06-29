@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,ABNB,Long,Daily,2025-08-12,121.61,2025-08-21,126.43,3.963489844585155,7,100.0,6,7,
-DELTADRIFT,ABNB,Long,Daily,2025-03-14,122.86,2025-03-21,128.8,4.8347712843887445,5,100.0,6,7,
-DELTADRIFT,ABNB,Long,Daily,2024-08-06,130.47,2024-09-06,114.28,-12.408982907948186,23,100.0,6,7,
-DELTADRIFT,ABNB,Long,Daily,2024-05-14,146.7,2024-06-12,149.32,1.7859577368779855,21,100.0,6,7,

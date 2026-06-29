@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,EWJ,Long,Daily,2025-01-06,67.43,2025-03-17,71.09,5.427851104849468,50,70.59,17,78,
-OSCILLATOR DELTA,EWJ,Long,Daily,2024-05-31,68.97,2024-09-26,72.99,5.828621139625919,84,70.59,17,78,
-OSCILLATOR DELTA,EWJ,Long,Daily,2024-04-29,67.74,2024-07-10,71.28,5.225863596102755,52,70.59,17,78,

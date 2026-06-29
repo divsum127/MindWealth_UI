@@ -1,2 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,NZDCAD=X,Long,Daily,2025-04-08,0.7882,2025-04-22,0.8299,5.290535397107329,10,81.82,33,80,

@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-FRACTAL TRACK,BYDDY,Short,Monthly,2025-07-31,14.65,2025-08-31,13.65,6.8259385665529,21,88.89,18,35,
-FRACTAL TRACK,BYDDY,Short,Monthly,2025-06-30,15.6333,2025-07-31,14.65,6.28977886946454,23,88.89,18,35,
-FRACTAL TRACK,BYDDY,Long,Monthly,2024-04-30,9.0783,2025-10-31,12.94,42.537699789608176,393,83.33,6,663,
-FRACTAL TRACK,BYDDY,Long,Monthly,2022-05-31,11.835,2025-08-31,13.65,15.335868187579209,848,83.33,6,663,

@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,NZDUSD=X,Short,Daily,2025-09-22,0.5851,2025-09-29,0.5778,1.2476499743633522,5,87.5,24,4,
-OSCILLATOR DELTA,NZDUSD=X,Short,Daily,2025-06-19,0.603,2025-06-20,0.6001,0.48092868988391607,1,87.5,24,4,
-OSCILLATOR DELTA,NZDUSD=X,Long,Daily,2025-01-15,0.5603,2025-04-16,0.5895,5.21149384258433,65,72.41,29,64,

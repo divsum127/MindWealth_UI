@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,ATZ.TO,Long,Weekly,2025-04-20,42.08,2025-04-27,47.39,12.61882129277567,4,100.0,4,32,
-DELTADRIFT,ATZ.TO,Long,Weekly,2023-06-04,36.47,2023-08-27,24.65,-32.410200164518784,59,100.0,4,32,

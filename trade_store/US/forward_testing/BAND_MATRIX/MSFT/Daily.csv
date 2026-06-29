@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,MSFT,Long,Daily,2025-01-02,418.58,2025-08-15,520.17,24.270151464475127,161,100.0,6,134,
-BAND MATRIX,MSFT,Long,Daily,2024-04-17,411.84,2024-10-31,406.35,-1.3330419580419466,141,100.0,6,134,

@@ -1,2 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,CAD=X,Long,Daily,2025-04-10,1.4101,2025-05-21,1.3909,-1.3616055598893615,29,80.0,10,87,

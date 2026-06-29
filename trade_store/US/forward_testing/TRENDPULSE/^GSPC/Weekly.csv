@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,^GSPC,Long,Weekly,2025-07-20,6296.79,2025-09-07,6481.5,2.933399398741264,34,100.0,16,48,
-TRENDPULSE,^GSPC,Long,Weekly,2024-12-08,6090.27,2025-07-27,6388.6401,4.899127624883612,164,100.0,16,48,

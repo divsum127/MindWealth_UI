@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,META,Long,Daily,2025-10-02,727.05,2025-10-31,648.35,-10.824565023038296,21,83.33,6,95,
-BAND MATRIX,META,Long,Daily,2025-04-07,516.25,2025-08-19,751.48,45.565133171912834,96,83.33,6,95,
-BAND MATRIX,META,Long,Daily,2024-09-10,504.79,2025-02-20,694.84,37.6493195190079,117,83.33,6,95,
-BAND MATRIX,META,Long,Daily,2024-04-29,432.62,2024-07-01,504.68,16.6566501779853,45,83.33,6,95,

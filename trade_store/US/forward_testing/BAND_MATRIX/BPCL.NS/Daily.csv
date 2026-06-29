@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,BPCL.NS,Long,Daily,2025-08-01,317.85,2025-11-03,367.3,15.55765298096586,66,71.43,7,143,
-BAND MATRIX,BPCL.NS,Long,Daily,2024-09-19,324.45,2025-07-21,342.6,5.5940822931114305,217,71.43,7,143,
-BAND MATRIX,BPCL.NS,Long,Daily,2024-03-15,293.225,2024-05-08,310.15,5.772018074857176,38,71.43,7,143,

@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,^NSEI,Long,Daily,2025-07-29,24821.0996,2025-11-03,25763.3496,3.796165420487656,69,100.0,5,203,
-BAND MATRIX,^NSEI,Long,Daily,2024-11-18,23453.8008,2025-04-04,22904.4492,-2.34227110857018,99,100.0,5,203,

@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,NVDA,Long,Weekly,2025-09-21,176.67,2025-10-26,186.26,5.4281994679345695,24,78.12,32,67,
-TRENDPULSE,NVDA,Long,Weekly,2025-07-27,173.5,2025-10-26,186.26,7.35446685878962,64,78.12,32,67,
-TRENDPULSE,NVDA,Long,Weekly,2025-07-20,172.41,2025-10-19,183.22,6.269937938634651,64,78.12,32,67,

@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,JETS,Long,Daily,2025-04-02,20.94,2025-09-08,26.13,24.785100286532938,113,80.0,10,68,
-SIGMASHELL,JETS,Long,Daily,2025-03-10,21.95,2025-05-19,22.77,3.7357630979498877,50,80.0,10,68,
-SIGMASHELL,JETS,Long,Daily,2024-08-01,18.18,2024-10-02,20.22,11.221122112211217,44,80.0,10,68,

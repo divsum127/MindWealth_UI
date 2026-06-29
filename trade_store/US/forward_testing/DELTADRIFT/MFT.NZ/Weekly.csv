@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,MFT.NZ,Long,Weekly,2025-08-31,59.35,2025-09-07,63.88,7.632687447346253,4,83.33,6,12,
-DELTADRIFT,MFT.NZ,Long,Weekly,2025-04-27,57.71,2025-05-04,62.01,7.451048345174142,4,83.33,6,12,
-DELTADRIFT,MFT.NZ,Long,Weekly,2023-11-05,61.0,2023-11-19,65.05,6.639344262295078,9,83.33,6,12,

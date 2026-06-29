@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,HYG,Long,Daily,2025-10-10,79.95,2025-10-31,80.8,1.063164477798617,15,75.0,4,203,
-BAND MATRIX,HYG,Long,Daily,2024-12-20,78.58,2025-07-11,80.03,1.8452532451005381,145,75.0,4,203,

@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,AMD,Long,Daily,2024-12-11,130.15,2025-05-30,110.73,-14.9212447176335,122,87.5,8,79,
-BAND MATRIX,AMD,Long,Daily,2024-04-19,146.64,2024-07-17,159.43,8.722040370976556,63,87.5,8,79,

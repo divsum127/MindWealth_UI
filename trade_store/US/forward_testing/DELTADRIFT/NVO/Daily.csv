@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,NVO,Long,Daily,2025-08-04,48.81,2025-08-18,53.75,10.120876869493951,10,85.71,7,4,
-DELTADRIFT,NVO,Long,Daily,2024-12-26,87.65,2025-03-25,73.6,-16.029663434112962,63,85.71,7,4,
-DELTADRIFT,NVO,Long,Daily,2024-10-02,116.48,2024-11-04,109.72,-5.803571428571432,23,85.71,7,4,
-DELTADRIFT,NVO,Long,Daily,2024-07-22,133.18,2024-09-13,137.0,2.8682985433248183,39,85.71,7,4,

@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,NKE,Long,Weekly,2025-04-27,57.62,2025-05-18,63.11,9.52794168691427,14,75.0,4,51,
-DELTADRIFT,NKE,Long,Weekly,2024-07-28,72.56,2024-08-18,83.23,14.70507166482911,14,75.0,4,51,
-DELTADRIFT,NKE,Long,Weekly,2023-10-01,95.62,2023-10-22,102.67,7.372934532524574,14,75.0,4,51,

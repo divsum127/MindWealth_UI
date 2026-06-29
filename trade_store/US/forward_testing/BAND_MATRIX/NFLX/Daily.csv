@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,NFLX,Long,Daily,2025-07-22,1190.08,2025-10-31,1118.86,-5.9844716321591855,73,71.43,7,127,
-BAND MATRIX,NFLX,Long,Daily,2025-01-14,828.4,2025-07-10,1250.59,50.9645098985997,127,71.43,7,127,
-BAND MATRIX,NFLX,Long,Daily,2024-07-15,656.45,2024-09-05,683.62,4.138929088277852,38,71.43,7,127,
-BAND MATRIX,NFLX,Long,Daily,2024-04-23,577.75,2024-07-10,677.65,17.29121592384249,56,71.43,7,127,

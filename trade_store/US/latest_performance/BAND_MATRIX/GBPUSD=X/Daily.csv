@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,GBPUSD=X,Long,Daily,2025-07-31,1.3258,2025-09-19,1.3556,2.2476995021873454,36,91.67,12,58,
-BAND MATRIX,GBPUSD=X,Long,Daily,2025-04-09,1.2791,2025-05-09,1.3235,3.471190680947541,22,91.67,12,58,

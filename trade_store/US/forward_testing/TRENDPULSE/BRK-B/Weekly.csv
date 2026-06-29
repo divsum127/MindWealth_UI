@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,BRK-B,Long,Weekly,2025-05-04,539.8,2025-11-02,477.54,-11.53390144497961,129,100.0,10,79,
-TRENDPULSE,BRK-B,Long,Weekly,2025-03-30,526.31,2025-11-02,477.54,-9.266401930421221,154,100.0,10,79,
-TRENDPULSE,BRK-B,Long,Weekly,2024-07-21,434.47,2024-09-15,447.61,3.0243745252836756,39,100.0,10,79,
-TRENDPULSE,BRK-B,Long,Weekly,2024-02-04,390.75,2024-03-10,403.15,3.173384516954569,24,100.0,10,79,

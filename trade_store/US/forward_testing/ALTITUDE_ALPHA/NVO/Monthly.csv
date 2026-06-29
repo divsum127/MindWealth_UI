@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-ALTITUDE ALPHA,NVO,Long,Monthly,2023-10-31,96.57,2025-03-31,69.44,-28.09361085223154,369,78.57,14,658,
-ALTITUDE ALPHA,NVO,Long,Monthly,2022-04-30,57.0,2023-08-31,92.81,62.824561403508774,348,78.57,14,658,
-ALTITUDE ALPHA,NVO,Long,Monthly,2020-12-31,34.925,2021-12-31,56.0,60.343593414459576,261,78.57,14,658,

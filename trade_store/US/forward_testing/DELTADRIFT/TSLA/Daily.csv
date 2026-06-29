@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,TSLA,Long,Daily,2025-03-12,248.09,2025-03-24,278.39,12.21330968600104,8,88.89,9,17,
-DELTADRIFT,TSLA,Long,Daily,2025-02-28,292.98,2025-03-10,222.15,-24.17571165267254,6,88.89,9,17,
-DELTADRIFT,TSLA,Long,Daily,2024-01-29,190.93,2024-02-26,199.4,4.436180799245796,20,88.89,9,17,

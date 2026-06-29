@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,MSE.PA,Long,Daily,2025-04-10,52.54,2025-04-23,55.69,5.995432051770078,9,87.5,8,10,
-DELTADRIFT,MSE.PA,Long,Daily,2024-08-07,50.38,2024-08-15,52.01,3.2354108773322654,6,87.5,8,10,

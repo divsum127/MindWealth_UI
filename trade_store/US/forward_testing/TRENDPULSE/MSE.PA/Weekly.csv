@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,MSE.PA,Long,Weekly,2025-10-26,63.0002,2025-11-02,62.93,-0.11142821768819752,4,100.0,7,64,
-TRENDPULSE,MSE.PA,Long,Weekly,2024-03-03,51.63,2024-04-07,52.92,2.498547356188261,24,100.0,7,64,

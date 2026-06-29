@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,AMZN,Long,Daily,2025-10-24,224.21,2025-10-31,244.22,8.924668837250787,5,75.0,36,9,
-OSCILLATOR DELTA,AMZN,Long,Daily,2025-04-02,196.01,2025-04-04,171.0,-12.75955308402632,2,75.0,36,9,
-OSCILLATOR DELTA,AMZN,Long,Daily,2025-03-05,208.36,2025-04-03,178.41,-14.374160107506247,21,75.0,36,9,

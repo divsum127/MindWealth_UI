@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,TWR.NZ,Long,Daily,2025-05-01,1.34,2025-09-17,1.76,31.343283582089544,99,73.68,19,68,
-SIGMASHELL,TWR.NZ,Long,Daily,2025-04-01,1.385,2025-09-17,1.76,27.075812274368232,121,73.68,19,68,
-SIGMASHELL,TWR.NZ,Long,Daily,2023-12-01,0.6556,2024-04-22,0.9056,38.13300793166565,101,73.68,19,68,

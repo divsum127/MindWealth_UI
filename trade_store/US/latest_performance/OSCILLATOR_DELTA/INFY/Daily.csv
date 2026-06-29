@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,INFY,Long,Daily,2025-08-13,16.38,2025-08-22,17.34,5.860805860805867,7,82.05,39,27,
-OSCILLATOR DELTA,INFY,Long,Daily,2025-04-21,16.58,2025-04-29,17.57,5.971049457177335,6,82.05,39,27,
-OSCILLATOR DELTA,INFY,Long,Daily,2025-03-24,18.59,2025-04-04,16.58,-10.812264658418513,9,82.05,39,27,
-OSCILLATOR DELTA,INFY,Long,Daily,2025-03-05,20.06,2025-04-03,17.35,-13.509471585244254,21,82.05,39,27,

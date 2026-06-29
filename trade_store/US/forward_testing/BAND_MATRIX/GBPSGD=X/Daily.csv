@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,GBPSGD=X,Long,Daily,2024-08-02,1.7014,2025-10-31,1.7098,0.49371106147878,325,70.0,10,52,
-BAND MATRIX,GBPSGD=X,Long,Daily,2023-12-25,1.6757,2024-07-25,1.7332,3.4314018022319095,153,70.0,10,52,

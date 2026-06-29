@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,IWM,Long,Daily,2025-04-01,199.51,2025-08-18,227.96,14.259936845270923,99,75.0,8,61,
-SIGMASHELL,IWM,Long,Daily,2025-03-03,208.78,2025-05-15,208.13,-0.3113325031133278,53,75.0,8,61,

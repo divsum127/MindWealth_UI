@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-ALTITUDE ALPHA,NVDA,Long,Quarterly,2024-06-30,123.54,2025-11-03,202.49,63.90642706815606,350,75.0,8,273,
-ALTITUDE ALPHA,NVDA,Long,Quarterly,2023-06-30,42.302,2024-03-31,90.356,113.59746584085858,195,75.0,8,273,
-ALTITUDE ALPHA,NVDA,Long,Quarterly,2021-09-30,20.716,2022-06-30,15.159,-26.824676578490056,195,75.0,8,273,
-ALTITUDE ALPHA,NVDA,Long,Quarterly,2020-06-30,9.4978,2021-06-30,20.0025,110.60140243003646,261,75.0,8,273,

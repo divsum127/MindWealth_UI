@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,DBC,Long,Daily,2025-08-05,21.82,2025-10-31,22.88,4.8579285059578305,63,80.0,5,207,
-BAND MATRIX,DBC,Long,Daily,2025-04-08,20.16,2025-06-24,21.86,8.43253968253968,55,80.0,5,207,
-BAND MATRIX,DBC,Long,Daily,2024-12-26,20.98,2025-02-25,22.33,6.434699714013335,43,80.0,5,207,
-BAND MATRIX,DBC,Long,Daily,2023-12-06,22.86,2024-10-15,22.48,-1.6622922134733116,224,80.0,5,207,

@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,JPM,Long,Weekly,2025-06-29,287.11,2025-09-07,294.38,2.532130542300854,49,100.0,9,75,
-TRENDPULSE,JPM,Long,Weekly,2025-01-26,264.84,2025-07-13,286.86,8.314454009968298,119,100.0,9,75,
-TRENDPULSE,JPM,Long,Weekly,2024-11-17,245.31,2025-02-16,276.59,12.75121275121274,64,100.0,9,75,

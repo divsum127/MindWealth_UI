@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,MAR,Long,Daily,2025-10-03,267.57,2025-10-31,260.58,-2.612400493328852,20,76.19,21,10,
-OSCILLATOR DELTA,MAR,Long,Daily,2025-09-19,268.52,2025-10-31,260.58,-2.9569492030388793,30,76.19,21,10,
-OSCILLATOR DELTA,MAR,Long,Daily,2024-08-07,214.77,2024-08-29,231.37,7.729198677655163,16,76.19,21,10,
-OSCILLATOR DELTA,MAR,Long,Daily,2024-05-03,234.59,2024-07-16,255.11,8.747175923952431,52,76.19,21,10,

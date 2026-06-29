@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,^NDX,Long,Daily,2025-02-28,20884.4102,2025-03-13,19225.4805,-7.943387838647207,9,100.0,7,17,
-DELTADRIFT,^NDX,Long,Daily,2024-07-26,19023.6602,2024-08-19,19766.4902,3.9047690727781283,16,100.0,7,17,
-DELTADRIFT,^NDX,Long,Daily,2024-04-22,17210.8906,2024-04-24,17526.8008,1.835525001826472,2,100.0,7,17,

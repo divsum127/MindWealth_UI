@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-FRACTAL TRACK,BPCL.NS,Long,Quarterly,2025-09-30,339.65,2025-11-03,367.3,8.140733107610787,24,100.0,6,716,
-FRACTAL TRACK,BPCL.NS,Short,Quarterly,2025-03-31,278.47,2025-06-30,331.95,-19.20494128631449,65,88.89,9,92,
-FRACTAL TRACK,BPCL.NS,Short,Quarterly,2024-12-31,292.45,2025-03-31,278.47,4.780304325525718,64,88.89,9,92,

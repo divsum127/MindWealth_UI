@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-PULSEGAUGE,FRW.NZ,Long,Weekly,2025-07-06,11.31,2025-10-05,13.95,23.342175066312986,64,85.71,7,264,
-PULSEGAUGE,FRW.NZ,Long,Weekly,2023-06-11,8.75,2024-11-03,10.5,20.0,364,85.71,7,264,

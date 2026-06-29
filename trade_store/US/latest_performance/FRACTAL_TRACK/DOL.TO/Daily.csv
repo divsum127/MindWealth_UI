@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-FRACTAL TRACK,DOL.TO,Long,Daily,2025-07-25,186.59,2025-09-02,185.75,-0.45018489736856393,27,88.89,27,173,
-FRACTAL TRACK,DOL.TO,Long,Daily,2024-06-14,123.85,2025-06-09,175.34,41.57448526443279,256,88.89,27,173,
-FRACTAL TRACK,DOL.TO,Long,Daily,2024-01-09,96.43,2025-06-19,189.29,96.29783262470183,377,88.89,27,173,

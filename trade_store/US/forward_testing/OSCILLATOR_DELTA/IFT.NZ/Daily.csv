@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,IFT.NZ,Long,Daily,2025-03-06,10.5,2025-04-07,9.35,-10.952380952380954,22,90.0,10,59,
-OSCILLATOR DELTA,IFT.NZ,Long,Daily,2024-11-22,12.73,2025-01-28,11.2,-12.018853102906528,47,90.0,10,59,
-OSCILLATOR DELTA,IFT.NZ,Long,Daily,2024-08-07,10.54,2024-09-09,12.04,14.231499051233397,23,90.0,10,59,
-OSCILLATOR DELTA,IFT.NZ,Long,Daily,2024-07-03,11.18,2024-09-05,11.895,6.395348837209301,46,90.0,10,59,

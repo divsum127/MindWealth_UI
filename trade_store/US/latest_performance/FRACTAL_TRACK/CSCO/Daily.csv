@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-FRACTAL TRACK,CSCO,Long,Daily,2025-04-09,58.13,2025-07-15,67.18,15.568553242731815,69,96.97,33,356,
-FRACTAL TRACK,CSCO,Long,Daily,2025-03-17,60.89,2025-08-19,66.76,9.640335030382664,111,96.97,33,356,
-FRACTAL TRACK,CSCO,Long,Daily,2025-03-06,63.41,2025-05-20,63.42,0.015770383220320323,53,96.97,33,356,

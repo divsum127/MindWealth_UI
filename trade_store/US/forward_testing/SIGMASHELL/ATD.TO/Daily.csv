@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,ATD.TO,Long,Daily,2025-09-02,69.24,2025-10-31,71.28,2.9462738301559885,43,80.0,10,63,
-SIGMASHELL,ATD.TO,Long,Daily,2025-03-03,70.81,2025-04-28,72.9,2.9515605140516925,40,80.0,10,63,
-SIGMASHELL,ATD.TO,Long,Daily,2024-05-01,75.76,2024-07-19,82.05,8.302534318901785,57,80.0,10,63,
-SIGMASHELL,ATD.TO,Long,Daily,2024-04-01,75.64,2024-07-19,82.05,8.474352194606023,79,80.0,10,63,

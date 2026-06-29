@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,MFT.NZ,Short,Daily,2025-09-11,60.11,2025-09-12,62.0,-3.144235568125105,1,85.0,20,5,
-OSCILLATOR DELTA,MFT.NZ,Short,Daily,2025-06-11,68.76,2025-06-17,68.35,0.5962769051774444,4,85.0,20,5,
-OSCILLATOR DELTA,MFT.NZ,Short,Daily,2025-05-16,67.64,2025-05-23,67.0,0.9461856889414556,5,85.0,20,5,

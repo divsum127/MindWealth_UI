@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,IBKR,Long,Daily,2025-08-28,62.78,2025-09-26,66.12,5.320165657852825,21,76.47,17,21,
-OSCILLATOR DELTA,IBKR,Long,Daily,2025-06-25,52.26,2025-06-30,55.41,6.027554535017219,3,76.47,17,21,

@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,BTC-USD,Long,Daily,2025-10-02,120681.2578,2025-10-07,121451.3828,0.6381479726340737,3,95.74,47,12,
-TRENDPULSE,BTC-USD,Long,Daily,2025-07-03,109647.9766,2025-07-13,119116.1172,8.635034492738646,6,95.74,47,12,
-TRENDPULSE,BTC-USD,Long,Daily,2025-06-16,106796.7578,2025-07-06,109232.0703,2.2803243751656286,14,95.74,47,12,

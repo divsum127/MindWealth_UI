@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,CNQ.TO,Long,Weekly,2025-04-20,39.88,2025-11-02,44.87,12.512537612838502,139,80.0,5,572,
-BAND MATRIX,CNQ.TO,Long,Weekly,2024-02-18,42.58,2024-06-09,48.37,13.597933302019726,79,80.0,5,572,

@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,^NZ50,Long,Daily,2025-08-06,12880.1602,2025-08-25,13079.5,1.547650005160648,13,90.0,20,12,
-TRENDPULSE,^NZ50,Long,Daily,2025-05-05,12421.25,2025-05-13,12786.7402,2.942459092281374,6,90.0,20,12,
-TRENDPULSE,^NZ50,Long,Daily,2025-02-14,12989.1797,2025-07-25,12853.46,-1.044867367567495,115,90.0,20,12,

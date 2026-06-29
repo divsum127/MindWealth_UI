@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-FRACTAL TRACK,INDA,Long,Quarterly,2023-09-30,44.22,2025-09-30,52.06,17.729534147444603,521,100.0,8,880,
-FRACTAL TRACK,INDA,Long,Quarterly,2022-12-31,41.74,2025-09-30,52.06,24.724484906564445,716,100.0,8,880,
-FRACTAL TRACK,INDA,Long,Quarterly,2019-06-30,35.3,2025-09-30,52.06,47.47875354107651,1631,100.0,8,880,

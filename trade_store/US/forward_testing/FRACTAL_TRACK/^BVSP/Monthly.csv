@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-FRACTAL TRACK,^BVSP,Long,Monthly,2025-03-31,130260.0,2025-10-31,149540.4375,14.801502763703363,154,95.0,20,1197,
-FRACTAL TRACK,^BVSP,Long,Monthly,2024-08-31,136004.0,2025-10-31,149540.4375,9.952970133231375,304,95.0,20,1197,

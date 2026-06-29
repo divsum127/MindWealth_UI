@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,HDB,Long,Daily,2025-09-29,34.14,2025-10-06,34.83,2.021089630931452,5,100.0,14,16,
-DELTADRIFT,HDB,Long,Daily,2025-09-03,35.31,2025-09-17,35.97,1.8691588785046631,10,100.0,14,16,
-DELTADRIFT,HDB,Long,Daily,2025-08-13,37.0,2025-08-20,37.495,1.3378378378378308,5,100.0,14,16,

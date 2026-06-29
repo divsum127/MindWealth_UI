@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,AIA.NZ,Long,Daily,2025-08-01,7.5,2025-10-07,7.91,5.466666666666669,47,85.71,7,87,
-SIGMASHELL,AIA.NZ,Long,Daily,2025-05-01,7.59,2025-06-23,7.8,2.7667984189723316,37,85.71,7,87,
-SIGMASHELL,AIA.NZ,Long,Daily,2025-04-02,7.925,2025-06-23,7.8,-1.5772870662460567,58,85.71,7,87,

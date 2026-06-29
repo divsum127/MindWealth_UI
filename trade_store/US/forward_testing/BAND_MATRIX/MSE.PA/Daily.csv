@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,MSE.PA,Long,Daily,2025-03-13,57.93,2025-10-31,62.93,8.631106507854307,166,75.0,4,343,
-BAND MATRIX,MSE.PA,Long,Daily,2024-06-17,52.54,2024-12-19,52.95,0.7803578226113508,133,75.0,4,343,
-BAND MATRIX,MSE.PA,Long,Daily,2024-01-05,47.03,2024-05-24,54.18,15.20306187539868,100,75.0,4,343,

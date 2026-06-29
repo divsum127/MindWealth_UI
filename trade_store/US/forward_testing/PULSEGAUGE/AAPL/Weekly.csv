@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-PULSEGAUGE,AAPL,Long,Weekly,2025-07-06,213.55,2025-10-05,258.02,20.82416295949425,64,75.0,8,91,
-PULSEGAUGE,AAPL,Long,Weekly,2023-06-11,180.96,2024-07-07,226.34,25.077365163572058,279,75.0,8,91,

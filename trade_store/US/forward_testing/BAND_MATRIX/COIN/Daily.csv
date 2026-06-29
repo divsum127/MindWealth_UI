@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,COIN,Long,Daily,2025-08-05,297.99,2025-10-31,343.78,15.366287459310703,63,75.0,4,66,
-BAND MATRIX,COIN,Long,Daily,2024-12-20,278.71,2025-06-02,246.72,-11.47788023393491,116,75.0,4,66,
-BAND MATRIX,COIN,Long,Daily,2024-08-07,178.91,2024-10-31,179.25,0.1900396847577013,61,75.0,4,66,
-BAND MATRIX,COIN,Long,Daily,2024-04-17,213.78,2024-07-25,231.52,8.2982505379362,71,75.0,4,66,

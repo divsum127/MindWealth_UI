@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,MAR,Long,Daily,2025-10-06,271.94,2025-10-31,260.58,-4.177392071780545,19,100.0,13,15,
-TRENDPULSE,MAR,Long,Daily,2025-06-27,273.47,2025-07-08,279.96,2.3732036420813807,7,100.0,13,15,
-TRENDPULSE,MAR,Long,Daily,2024-11-12,286.02,2024-12-16,290.4,1.531361443255715,24,100.0,13,15,

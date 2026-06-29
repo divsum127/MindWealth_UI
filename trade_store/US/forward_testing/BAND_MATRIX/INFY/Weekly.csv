@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,INFY,Long,Weekly,2025-03-16,18.4,2025-11-02,16.57,-9.945652173913034,164,100.0,4,657,
-BAND MATRIX,INFY,Long,Weekly,2023-04-30,15.54,2024-03-24,17.72,14.028314028314027,234,100.0,4,657,

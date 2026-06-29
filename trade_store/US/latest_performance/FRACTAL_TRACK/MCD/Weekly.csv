@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-FRACTAL TRACK,MCD,Long,Weekly,2025-07-13,299.91,2025-10-05,300.98,0.3567736987762973,59,90.57,53,446,
-FRACTAL TRACK,MCD,Long,Weekly,2025-04-27,316.74,2025-07-13,299.91,-5.31350634589884,54,90.57,53,446,
-FRACTAL TRACK,MCD,Long,Weekly,2023-10-22,258.11,2025-04-06,300.11,16.272132036728525,379,90.57,53,446,
-FRACTAL TRACK,MCD,Long,Weekly,2022-06-05,248.36,2025-04-06,300.11,20.83668867772588,739,90.57,53,446,

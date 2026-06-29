@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,WPM,Long,Daily,2025-05-14,76.5,2025-08-14,94.28,23.241830065359476,66,77.78,9,89,
-BAND MATRIX,WPM,Long,Daily,2024-08-07,53.4,2025-02-28,68.92,29.063670411985022,147,77.78,9,89,
-BAND MATRIX,WPM,Long,Daily,2024-01-19,46.19,2024-07-29,58.64,26.95388612253735,136,77.78,9,89,

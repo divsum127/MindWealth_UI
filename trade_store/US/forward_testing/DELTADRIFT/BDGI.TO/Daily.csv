@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,BDGI.TO,Long,Daily,2024-11-05,36.46,2024-11-06,39.16,7.405375754251222,1,75.0,12,9,
-DELTADRIFT,BDGI.TO,Long,Daily,2024-07-12,37.38,2024-07-23,39.04,4.4408774745853306,7,75.0,12,9,
-DELTADRIFT,BDGI.TO,Long,Daily,2024-05-15,43.29,2024-07-05,38.48,-11.111111111111116,37,75.0,12,9,
-DELTADRIFT,BDGI.TO,Long,Daily,2024-04-19,46.58,2024-05-03,43.3,-7.041648776298843,10,75.0,12,9,

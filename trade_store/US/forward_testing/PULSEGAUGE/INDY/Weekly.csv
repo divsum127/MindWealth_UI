@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-PULSEGAUGE,INDY,Long,Weekly,2025-07-06,54.46,2025-11-02,52.98,-2.7175908923980976,84,75.0,4,162,
-PULSEGAUGE,INDY,Short,Weekly,2025-01-19,49.71,2025-03-02,47.57,4.304968819151077,29,85.71,7,34,
-PULSEGAUGE,INDY,Long,Weekly,2023-06-11,43.38,2024-06-09,52.1,20.10142923005993,259,75.0,4,162,
-PULSEGAUGE,INDY,Short,Weekly,2022-11-13,45.89,2022-12-18,42.86,6.602745696230118,24,85.71,7,34,

@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,NVDA,Long,Daily,2025-04-01,110.15,2025-07-02,157.25,42.759872900590096,66,80.0,5,65,
-SIGMASHELL,NVDA,Long,Daily,2025-03-06,110.57,2025-05-27,135.5,22.546802930270427,58,80.0,5,65,

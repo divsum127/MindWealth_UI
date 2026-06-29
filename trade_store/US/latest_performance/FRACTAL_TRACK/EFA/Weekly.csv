@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-FRACTAL TRACK,EFA,Short,Weekly,2025-04-27,84.12,2025-08-24,93.23,-10.829766999524487,84,85.11,47,25,
-FRACTAL TRACK,EFA,Short,Weekly,2025-04-06,75.02,2025-04-27,84.12,-12.130098640362583,14,85.11,47,25,
-FRACTAL TRACK,EFA,Long,Weekly,2022-02-13,75.68,2025-04-13,78.97,4.347251585623668,824,96.77,31,124,

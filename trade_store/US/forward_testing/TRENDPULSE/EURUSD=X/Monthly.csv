@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,EURUSD=X,Long,Monthly,2025-05-31,1.1378,2025-10-31,1.1543,1.4501669889260136,109,70.0,10,163,
-TRENDPULSE,EURUSD=X,Long,Monthly,2024-09-30,1.117,2025-09-30,1.1731,5.0223813786929306,261,70.0,10,163,
-TRENDPULSE,EURUSD=X,Long,Monthly,2023-04-30,1.1032,2025-01-31,1.0397,-5.75598259608411,459,70.0,10,163,

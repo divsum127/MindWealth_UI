@@ -1,2 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,NZDUSD=X,Long,Daily,2024-11-01,0.5972,2025-04-25,0.5988,0.2679169457468262,125,84.21,19,73,

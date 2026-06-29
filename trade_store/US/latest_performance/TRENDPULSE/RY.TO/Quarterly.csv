@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,RY.TO,Long,Quarterly,2024-06-30,145.65,2025-09-30,205.12,40.83075866803982,326,100.0,11,450,
-TRENDPULSE,RY.TO,Long,Quarterly,2024-03-31,136.62,2025-06-30,179.47,31.36436832089005,325,100.0,11,450,

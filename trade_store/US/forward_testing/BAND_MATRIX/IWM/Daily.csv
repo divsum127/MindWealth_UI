@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,IWM,Long,Daily,2024-12-20,221.92,2025-09-25,239.29,7.827144917087241,199,85.71,7,127,
-BAND MATRIX,IWM,Long,Daily,2024-08-07,201.98,2024-10-22,221.26,9.545499554411329,54,85.71,7,127,
-BAND MATRIX,IWM,Long,Daily,2024-04-16,195.06,2024-08-01,216.58,11.032502819645241,77,85.71,7,127,

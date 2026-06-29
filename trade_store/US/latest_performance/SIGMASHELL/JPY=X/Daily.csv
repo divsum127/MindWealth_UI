@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,JPY=X,Long,Daily,2025-05-01,143.009,2025-10-14,152.434,6.590494304554268,118,80.0,10,108,
-SIGMASHELL,JPY=X,Long,Daily,2025-04-03,147.872,2025-05-15,146.65,-0.826390391690116,30,80.0,10,108,
-SIGMASHELL,JPY=X,Long,Daily,2025-03-04,149.305,2025-07-21,148.431,-0.585378922340173,99,80.0,10,108,
-SIGMASHELL,JPY=X,Long,Daily,2024-08-01,149.744,2025-10-14,152.434,1.7963991879474288,313,80.0,10,108,

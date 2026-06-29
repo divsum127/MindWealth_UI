@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,TCS.NS,Long,Daily,2025-08-04,3074.3999,2025-11-03,3016.8,-1.8735331080384081,65,85.71,7,80,
-SIGMASHELL,TCS.NS,Long,Daily,2025-04-01,3550.8,2025-09-23,3062.3999,-13.754649656415463,125,85.71,7,80,
-SIGMASHELL,TCS.NS,Long,Daily,2025-03-03,3493.05,2025-11-03,3016.8,-13.63421651565251,175,85.71,7,80,

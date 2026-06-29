@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,JPM,Long,Daily,2025-04-08,216.87,2025-04-09,234.34,8.055517130077927,1,71.43,7,30,
-DELTADRIFT,JPM,Long,Daily,2025-03-12,227.9,2025-03-18,234.97,3.102237823606842,4,71.43,7,30,
-DELTADRIFT,JPM,Long,Daily,2024-04-17,180.08,2024-04-19,185.8,3.1763660595290975,2,71.43,7,30,

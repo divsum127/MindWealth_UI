@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,COIN,Long,Daily,2025-08-25,306.0,2025-09-18,343.13,12.133986928104573,18,71.43,21,5,
-OSCILLATOR DELTA,COIN,Long,Daily,2025-06-16,261.57,2025-06-18,295.29,12.891386626906765,2,71.43,21,5,
-OSCILLATOR DELTA,COIN,Long,Daily,2025-04-02,182.95,2025-04-04,160.55,-12.243782454222453,2,71.43,21,5,

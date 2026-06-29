@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-ALTITUDE ALPHA,AMZN,Long,Monthly,2025-10-31,244.22,2025-10-31,244.22,0.0,0,71.43,14,306,
-ALTITUDE ALPHA,AMZN,Long,Monthly,2023-08-31,138.01,2025-01-31,237.68,72.21940439098618,371,71.43,14,306,
-ALTITUDE ALPHA,AMZN,Long,Monthly,2021-04-30,173.371,2022-04-30,124.2815,-28.31471237980978,260,71.43,14,306,

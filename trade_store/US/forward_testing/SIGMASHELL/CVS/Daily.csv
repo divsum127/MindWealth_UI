@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,CVS,Long,Daily,2024-11-15,53.19,2025-02-03,55.95,5.188945290468143,56,76.47,17,119,
-SIGMASHELL,CVS,Long,Daily,2024-05-23,55.65,2024-08-02,59.32,6.594788858939806,51,76.47,17,119,
-SIGMASHELL,CVS,Long,Daily,2024-05-01,56.31,2025-03-25,66.48,18.06073521576985,234,76.47,17,119,

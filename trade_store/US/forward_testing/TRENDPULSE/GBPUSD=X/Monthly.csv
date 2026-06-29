@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,GBPUSD=X,Short,Monthly,2025-01-31,1.2424,2025-04-30,1.3411,-7.944301352221508,63,100.0,5,117,
-TRENDPULSE,GBPUSD=X,Short,Monthly,2024-12-31,1.2549,2025-04-30,1.3411,-6.86907323292693,86,100.0,5,117,
-TRENDPULSE,GBPUSD=X,Short,Monthly,2024-11-30,1.2697,2025-04-30,1.3411,-5.623375600535552,107,100.0,5,117,
-TRENDPULSE,GBPUSD=X,Short,Monthly,2023-09-30,1.2205,2024-06-30,1.2646,-3.613273248668581,194,100.0,5,117,

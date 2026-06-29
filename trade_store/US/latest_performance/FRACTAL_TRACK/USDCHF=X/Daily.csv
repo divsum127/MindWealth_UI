@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-FRACTAL TRACK,USDCHF=X,Short,Daily,2025-10-02,0.7969,2025-10-03,0.797,-0.012548625925459779,1,89.19,37,19,
-FRACTAL TRACK,USDCHF=X,Short,Daily,2025-06-05,0.818,2025-06-17,0.8137,0.5256723716381383,8,89.19,37,19,
-FRACTAL TRACK,USDCHF=X,Short,Daily,2025-04-10,0.8554,2025-04-11,0.8208,4.04489127893384,1,89.19,37,19,

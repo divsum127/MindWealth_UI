@@ -1,2 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,TD.TO,Long,Weekly,2023-04-02,80.95,2024-10-13,78.48,-3.0512662137121667,399,100.0,4,735,

@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,BTC-USD,Long,Daily,2025-10-18,107198.2656,2025-10-25,111641.7266,4.145086653342268,4,90.91,11,3,
-DELTADRIFT,BTC-USD,Long,Daily,2025-08-31,108236.7109,2025-09-03,111723.2109,3.2211806613572915,2,90.91,11,3,

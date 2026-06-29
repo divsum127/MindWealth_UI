@@ -1,2 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,NIFTY_MIDCAP_100.NS,Long,Daily,2024-10-08,58535.8984,2025-06-13,58227.4492,-0.5269402339949317,178,83.33,6,150,

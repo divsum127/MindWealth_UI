@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,GOOG,Long,Daily,2025-06-06,174.92,2025-07-16,183.77,5.059455751200562,28,77.78,27,17,
-OSCILLATOR DELTA,GOOG,Long,Daily,2025-03-14,167.62,2025-04-04,147.74,-11.860159885455193,15,77.78,27,17,

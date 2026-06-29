@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,SBUX,Long,Daily,2025-10-17,85.36,2025-10-31,80.87,-5.260074976569816,10,100.0,11,22,
-TRENDPULSE,SBUX,Long,Daily,2025-09-02,89.78,2025-10-31,80.87,-9.92425930051236,43,100.0,11,22,

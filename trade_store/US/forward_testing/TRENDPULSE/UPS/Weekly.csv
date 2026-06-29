@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,UPS,Long,Weekly,2025-10-26,87.22,2025-11-02,96.42,10.548039440495302,4,80.0,10,75,
-TRENDPULSE,UPS,Long,Weekly,2025-07-06,104.13,2025-11-02,96.42,-7.404206280610769,84,80.0,10,75,
-TRENDPULSE,UPS,Long,Weekly,2025-01-26,133.03,2025-11-02,96.42,-27.520108246260243,199,80.0,10,75,
-TRENDPULSE,UPS,Long,Weekly,2024-11-24,134.82,2025-11-02,96.42,-28.482421005785486,244,80.0,10,75,

@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,GBPSGD=X,Long,Daily,2025-08-06,1.7118,2025-08-08,1.7242,0.7243836896833723,2,72.73,11,9,
-DELTADRIFT,GBPSGD=X,Long,Daily,2025-07-17,1.7208,2025-07-23,1.7279,0.41259879125987237,4,72.73,11,9,

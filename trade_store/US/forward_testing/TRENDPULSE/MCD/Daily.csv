@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,MCD,Long,Daily,2025-02-11,310.21,2025-04-25,316.74,2.105025627800532,53,100.0,14,20,
-TRENDPULSE,MCD,Long,Daily,2024-07-30,266.44,2024-08-07,269.37,1.0996847320222214,6,100.0,14,20,
-TRENDPULSE,MCD,Long,Daily,2024-06-24,260.38,2024-08-05,268.45,3.099316383746829,30,100.0,14,20,

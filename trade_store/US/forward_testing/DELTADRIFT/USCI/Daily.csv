@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,USCI,Long,Daily,2025-04-09,67.37,2025-04-22,70.2,4.200682796496954,9,75.0,8,7,
-DELTADRIFT,USCI,Long,Daily,2024-08-07,59.99,2024-08-23,60.88,1.4835805967661286,12,75.0,8,7,
-DELTADRIFT,USCI,Long,Daily,2024-05-03,60.81,2024-05-17,62.53,2.8284821575398764,10,75.0,8,7,
-DELTADRIFT,USCI,Long,Daily,2023-12-08,55.84,2023-12-15,56.93,1.952005730659019,5,75.0,8,7,

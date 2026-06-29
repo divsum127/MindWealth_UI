@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,XIU.TO,Long,Daily,2024-12-19,37.0,2025-10-31,45.14,22.0,226,71.43,7,101,
-BAND MATRIX,XIU.TO,Long,Daily,2024-04-16,32.83,2024-08-02,33.75,2.8023149558330847,78,71.43,7,101,

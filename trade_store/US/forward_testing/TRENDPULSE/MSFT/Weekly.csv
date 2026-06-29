@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,MSFT,Long,Weekly,2025-05-11,438.73,2025-06-08,470.38,7.214004057164994,19,90.91,11,89,
-TRENDPULSE,MSFT,Long,Weekly,2024-12-15,447.27,2025-06-15,474.96,6.190891407874439,129,90.91,11,89,

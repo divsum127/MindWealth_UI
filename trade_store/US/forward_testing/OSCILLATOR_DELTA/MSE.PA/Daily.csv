@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,MSE.PA,Long,Daily,2024-11-22,51.89,2025-01-15,54.58,5.184043168240504,38,83.33,12,43,
-OSCILLATOR DELTA,MSE.PA,Long,Daily,2024-11-11,52.51,2025-01-16,55.38,5.465625595124747,48,83.33,12,43,
-OSCILLATOR DELTA,MSE.PA,Long,Daily,2024-07-30,52.25,2025-01-16,55.38,5.9904306220095735,122,83.33,12,43,

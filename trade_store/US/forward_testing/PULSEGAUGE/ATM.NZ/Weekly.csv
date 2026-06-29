@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-PULSEGAUGE,ATM.NZ,Long,Weekly,2025-07-06,8.77,2025-08-31,10.7,22.006841505131128,39,71.43,7,37,
-PULSEGAUGE,ATM.NZ,Long,Weekly,2023-06-11,5.74,2023-09-10,4.69,-18.292682926829265,64,71.43,7,37,

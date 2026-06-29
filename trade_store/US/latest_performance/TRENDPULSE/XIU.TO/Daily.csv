@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,XIU.TO,Long,Daily,2025-07-17,41.32,2025-08-11,41.86,1.3068731848983521,17,100.0,26,18,
-TRENDPULSE,XIU.TO,Long,Daily,2025-05-28,39.68,2025-06-13,39.88,0.5040322580645233,12,100.0,26,18,
-TRENDPULSE,XIU.TO,Long,Daily,2025-05-08,38.46,2025-05-15,39.5,2.7041081643265708,5,100.0,26,18,

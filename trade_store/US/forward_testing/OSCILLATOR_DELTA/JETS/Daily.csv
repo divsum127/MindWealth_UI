@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,JETS,Long,Daily,2025-10-03,24.97,2025-10-31,24.63,-1.3616339607529029,20,78.95,19,17,
-OSCILLATOR DELTA,JETS,Long,Daily,2025-01-07,25.77,2025-03-04,23.12,-10.283275126115633,40,78.95,19,17,
-OSCILLATOR DELTA,JETS,Long,Daily,2024-07-26,19.09,2024-08-05,16.76,-12.205343111576733,6,78.95,19,17,
-OSCILLATOR DELTA,JETS,Long,Daily,2024-06-12,20.03,2024-08-02,17.4,-13.130304543185233,37,78.95,19,17,

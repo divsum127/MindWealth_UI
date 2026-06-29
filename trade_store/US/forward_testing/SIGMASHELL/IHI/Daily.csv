@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,IHI,Long,Daily,2025-10-01,59.53,2025-10-31,60.19,1.108684696791528,22,76.92,13,69,
-SIGMASHELL,IHI,Long,Daily,2025-04-03,58.75,2025-08-27,62.09,5.685106382978729,104,76.92,13,69,
-SIGMASHELL,IHI,Long,Daily,2024-05-01,55.02,2024-07-22,56.91,3.4351145038167816,58,76.92,13,69,

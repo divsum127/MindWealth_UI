@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,^DJI,Long,Daily,2025-04-01,41989.9609,2025-06-16,42515.0898,1.250605832309797,54,80.0,10,98,
-SIGMASHELL,^DJI,Long,Daily,2025-03-13,40813.5703,2025-05-22,41859.0898,2.561695760294713,50,80.0,10,98,

@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,BAC,Long,Weekly,2025-04-20,37.41,2025-05-04,41.07,9.783480352846842,9,71.43,7,9,
-DELTADRIFT,BAC,Long,Weekly,2023-04-02,28.6,2023-07-23,31.98,11.818181818181813,79,71.43,7,9,

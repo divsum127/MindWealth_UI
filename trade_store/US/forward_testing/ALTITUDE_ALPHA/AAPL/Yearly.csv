@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-ALTITUDE ALPHA,AAPL,Long,Yearly,2025-11-03,270.37,2025-11-03,270.37,0.0,0,85.71,7,465,
-ALTITUDE ALPHA,AAPL,Long,Yearly,2020-12-31,132.69,2024-12-31,250.42,88.72560102494535,1043,85.71,7,465,
-ALTITUDE ALPHA,AAPL,Long,Yearly,2017-12-31,42.3075,2019-12-31,73.4125,73.52124327837853,521,85.71,7,465,

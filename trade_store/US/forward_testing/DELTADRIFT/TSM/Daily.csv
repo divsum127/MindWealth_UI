@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,TSM,Long,Daily,2025-03-04,180.0,2025-04-04,146.8,-18.44444444444444,23,77.78,9,9,
-DELTADRIFT,TSM,Long,Daily,2024-07-25,160.28,2024-08-13,172.34,7.524332418268032,13,77.78,9,9,

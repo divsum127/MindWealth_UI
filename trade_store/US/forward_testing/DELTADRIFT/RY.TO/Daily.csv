@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,RY.TO,Long,Daily,2025-03-14,160.0,2025-03-24,166.0,3.75,6,72.73,11,8,
-DELTADRIFT,RY.TO,Long,Daily,2025-02-07,170.44,2025-03-13,157.05,-7.8561370570288585,24,72.73,11,8,

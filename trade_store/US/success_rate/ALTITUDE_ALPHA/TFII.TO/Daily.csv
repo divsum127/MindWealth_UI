@@ -1,4 +1,0 @@
-Signal,Entry Date,Entry Price,Exit Date,Exit Price,Holding Period,Maxima Broken Date/Price,Offset,Profit,Actual Rise/Fall wrt Entry,CumProfit,Signal Open Price
-Buy,2022-07-08,110.3,2023-08-03,176.6,279 days,2022-05-04/109.85,60.11%,60.11%,Rise by 26.96%,60.11%,
-Buy,2023-12-22,175.29,2025-02-21,134.8,305 days,2023-09-28/174.62,-23.10%,-23.10%,Rise by 4.5%,37.01%,
-Buy,2025-07-29,129.06,2025-07-29,129.06,0 days,2025-05-14/128.28,0.00%,0.00%,Rise by 0%,37.01%,

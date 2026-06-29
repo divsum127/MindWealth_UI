@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-PULSEGAUGE,PYPL,Short,Weekly,2025-01-19,91.81,2025-02-02,88.58,3.5181352793813354,9,75.0,4,12,
-PULSEGAUGE,PYPL,Short,Weekly,2022-11-13,91.03,2022-11-20,84.92,6.712072942985829,4,75.0,4,12,

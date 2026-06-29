@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-ALTITUDE ALPHA,WMT,Long,Monthly,2025-01-31,98.16,2025-10-31,101.18,3.076609616951926,195,72.73,22,434,
-ALTITUDE ALPHA,WMT,Long,Monthly,2023-06-30,52.3933,2024-11-30,92.5,76.54929160789642,370,72.73,22,434,
-ALTITUDE ALPHA,WMT,Long,Monthly,2020-11-30,50.93,2022-06-30,40.5267,-20.42666404869429,413,72.73,22,434,

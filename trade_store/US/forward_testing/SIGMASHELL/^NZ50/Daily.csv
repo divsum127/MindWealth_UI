@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,^NZ50,Long,Daily,2025-04-02,12320.1904,2025-07-24,12805.1299,3.9361364090606945,81,72.73,11,84,
-SIGMASHELL,^NZ50,Long,Daily,2025-03-03,12386.5801,2025-07-24,12805.1299,3.3790585990720774,103,72.73,11,84,

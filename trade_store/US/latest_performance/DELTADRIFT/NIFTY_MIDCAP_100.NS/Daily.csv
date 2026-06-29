@@ -1,2 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,NIFTY_MIDCAP_100.NS,Long,Daily,2025-08-11,56479.0,2025-08-19,57664.6484,2.099273004125424,6,90.91,11,5,

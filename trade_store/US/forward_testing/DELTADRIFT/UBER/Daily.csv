@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,UBER,Long,Daily,2024-12-13,59.93,2025-01-02,63.17,5.406307358585019,14,77.78,9,6,
-DELTADRIFT,UBER,Long,Daily,2024-11-21,69.64,2024-11-25,73.42,5.427914991384264,2,77.78,9,6,
-DELTADRIFT,UBER,Long,Daily,2024-04-23,70.8,2024-06-12,73.15,3.319209039548035,36,77.78,9,6,

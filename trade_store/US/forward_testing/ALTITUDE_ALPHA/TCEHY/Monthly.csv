@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-ALTITUDE ALPHA,TCEHY,Long,Monthly,2025-09-30,85.15,2025-10-31,81.41,-4.392248972401655,23,83.33,6,358,
-ALTITUDE ALPHA,TCEHY,Long,Monthly,2024-05-31,46.53,2025-08-31,77.59,66.75263271007951,325,83.33,6,358,
-ALTITUDE ALPHA,TCEHY,Long,Monthly,2023-03-31,48.89,2023-09-30,38.67,-20.904070362037224,130,83.33,6,358,
-ALTITUDE ALPHA,TCEHY,Long,Monthly,2021-01-31,89.31,2021-07-31,61.2,-31.474638898219684,129,83.33,6,358,

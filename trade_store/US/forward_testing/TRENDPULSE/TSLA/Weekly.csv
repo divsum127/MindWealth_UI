@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,TSLA,Long,Weekly,2024-08-25,220.32,2024-11-24,352.56,60.02178649237473,64,91.67,12,132,
-TRENDPULSE,TSLA,Long,Weekly,2024-07-14,248.23,2024-12-08,389.22,56.79813076582204,104,91.67,12,132,

@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,WMT,Long,Daily,2025-09-03,99.44,2025-09-09,102.29,2.8660498793242244,4,96.88,32,19,
-TRENDPULSE,WMT,Long,Daily,2025-08-04,99.59,2025-08-12,103.62,4.046591023195101,6,96.88,32,19,
-TRENDPULSE,WMT,Long,Daily,2025-07-07,99.35,2025-08-11,103.93,4.6099647710115885,25,96.88,32,19,
-TRENDPULSE,WMT,Long,Daily,2025-04-10,90.61,2025-04-23,94.96,4.800794614280978,9,96.88,32,19,

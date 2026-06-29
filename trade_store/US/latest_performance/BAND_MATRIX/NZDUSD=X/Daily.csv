@@ -1,2 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,NZDUSD=X,Long,Daily,2025-04-08,0.5537,2025-05-09,0.5899,6.53783637348745,23,75.0,12,77,

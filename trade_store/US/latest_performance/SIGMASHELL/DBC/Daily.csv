@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,DBC,Long,Daily,2025-08-01,22.09,2025-09-19,22.26,0.769578995020379,35,87.5,8,69,
-SIGMASHELL,DBC,Long,Daily,2025-05-01,20.67,2025-10-01,22.49,8.805031446540863,109,87.5,8,69,
-SIGMASHELL,DBC,Long,Daily,2025-04-03,21.74,2025-05-16,21.19,-2.5298988040478254,31,87.5,8,69,

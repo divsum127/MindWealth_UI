@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,IBIT,Long,Daily,2025-09-03,63.77,2025-10-02,68.77,7.840677434530332,21,90.0,10,19,
-OSCILLATOR DELTA,IBIT,Long,Daily,2025-08-27,63.65,2025-10-02,68.77,8.043990573448543,26,90.0,10,19,
-OSCILLATOR DELTA,IBIT,Long,Daily,2025-03-14,48.14,2025-04-22,52.08,8.184461985874528,27,90.0,10,19,

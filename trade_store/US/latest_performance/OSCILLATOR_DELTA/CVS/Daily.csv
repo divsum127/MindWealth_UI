@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,CVS,Long,Daily,2025-07-23,61.85,2025-08-08,65.54,5.966046887631373,12,75.68,37,44,
-OSCILLATOR DELTA,CVS,Long,Daily,2025-03-06,65.25,2025-08-29,73.15,12.107279693486598,126,75.68,37,44,

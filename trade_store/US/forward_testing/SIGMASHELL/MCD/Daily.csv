@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,MCD,Long,Daily,2024-12-03,294.5,2025-02-14,308.55,4.770797962648561,53,90.0,10,129,
-SIGMASHELL,MCD,Long,Daily,2024-04-04,270.09,2024-08-08,271.19,0.4072716501906856,90,90.0,10,129,

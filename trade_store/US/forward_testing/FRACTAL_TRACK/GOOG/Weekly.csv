@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-FRACTAL TRACK,GOOG,Long,Weekly,2025-07-13,181.31,2025-08-31,213.53,17.77066901991065,34,86.96,23,639,
-FRACTAL TRACK,GOOG,Long,Weekly,2025-04-27,163.85,2025-07-27,194.08,18.449801647848656,64,86.96,23,639,
-FRACTAL TRACK,GOOG,Long,Weekly,2024-09-29,165.29,2024-12-15,191.38,15.784378970294638,54,86.96,23,639,

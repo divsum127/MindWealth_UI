@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,SPY,Long,Daily,2025-04-01,560.97,2025-08-05,627.97,11.943597696846533,90,100.0,8,58,
-SIGMASHELL,SPY,Long,Daily,2025-03-13,551.42,2025-05-22,583.09,5.7433535236299145,50,100.0,8,58,

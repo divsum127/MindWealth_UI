@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-ALTITUDE ALPHA,^GSPC,Long,Yearly,2023-12-31,4769.8301,2025-11-03,6840.2002,43.40553136263701,480,90.0,10,1988,
-ALTITUDE ALPHA,^GSPC,Long,Yearly,2017-12-31,2673.6101,2021-12-31,4766.1802,78.26758658639119,1044,90.0,10,1988,

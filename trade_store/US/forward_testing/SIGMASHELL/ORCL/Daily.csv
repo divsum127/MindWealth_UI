@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,ORCL,Long,Daily,2025-04-01,141.94,2025-09-15,302.14,112.86459067211497,119,76.92,13,89,
-SIGMASHELL,ORCL,Long,Daily,2025-03-06,150.94,2025-05-07,149.37,-1.0401484033390707,44,76.92,13,89,
-SIGMASHELL,ORCL,Long,Daily,2025-01-02,166.03,2025-05-07,149.37,-10.034331144973796,89,76.92,13,89,
-SIGMASHELL,ORCL,Long,Daily,2024-05-01,114.63,2024-09-19,167.59,46.200820029660655,101,76.92,13,89,

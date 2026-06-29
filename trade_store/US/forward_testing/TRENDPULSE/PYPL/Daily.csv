@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,PYPL,Long,Daily,2025-10-07,74.61,2025-10-31,69.27,-7.157217531162047,18,87.5,16,11,
-TRENDPULSE,PYPL,Long,Daily,2024-03-13,62.45,2024-03-21,66.14,5.908726981585264,6,87.5,16,11,

@@ -1,5 +1,0 @@
-Entry Date,Entry Price,Exit Date,Exit Price,Retracement Upmove Date,Retracement Upmove Price,Signal,Holding Period,Return,Actual Rise/Fall wrt Entry,Cum-Return,Signal Open Price
-2018-03-31,6973.5298,2018-06-30,6404.0,2014-09-30-2017-12-31,372.24-20089.0,Sell,64 days,8.17%,Fall by 35.89%,8.17%,
-2019-09-30,8293.8682,2019-12-31,7193.5991,2018-12-31-2019-06-30,3191.3035-13796.4893,Sell,66 days,13.27%,Fall by -533.04%,21.43%,
-2022-03-31,45538.6758,2022-06-30,19784.7266,2018-12-31-2021-12-31,3191.3035-68789.625,Sell,65 days,56.55%,Fall by -220.09%,77.99%,
-2023-06-30,30477.252,2023-06-30,30477.252,2014-09-30-2017-12-31,372.24-20089.0,Buy,0 days,0.0%,Rise by 0%,77.99%,

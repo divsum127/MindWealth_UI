@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,XLU,Long,Monthly,2025-10-31,89.1,2025-10-31,89.1,0.0,0,83.33,6,213,
-TRENDPULSE,XLU,Long,Monthly,2024-05-31,72.72,2024-12-31,75.69,4.084158415841583,152,83.33,6,213,

@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-ALTITUDE ALPHA,BTC-USD,Long,Weekly,2024-11-10,80474.1875,2025-11-02,109457.3281,36.01544979873205,254,88.89,9,77,
-ALTITUDE ALPHA,BTC-USD,Long,Weekly,2024-01-07,43943.0977,2024-03-31,71333.6484,62.33186127886476,59,88.89,9,77,
-ALTITUDE ALPHA,BTC-USD,Long,Weekly,2023-02-19,24327.6426,2023-12-03,39978.3906,64.33318779518736,204,88.89,9,77,

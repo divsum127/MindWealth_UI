@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-ALTITUDE ALPHA,NKE,Long,Yearly,2020-12-31,141.47,2023-12-31,108.57,-23.255813953488374,781,85.71,7,573,
-ALTITUDE ALPHA,NKE,Long,Yearly,2017-12-31,62.55,2019-12-31,101.31,61.9664268585132,521,85.71,7,573,

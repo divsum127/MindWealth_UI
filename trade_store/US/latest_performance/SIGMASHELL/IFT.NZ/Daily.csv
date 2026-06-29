@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,IFT.NZ,Long,Daily,2025-04-01,10.14,2025-08-04,11.425,12.67258382642998,89,100.0,9,54,
-SIGMASHELL,IFT.NZ,Long,Daily,2025-03-06,10.5,2025-05-12,11.64,10.857142857142863,47,100.0,9,54,
-SIGMASHELL,IFT.NZ,Long,Daily,2025-02-11,11.1,2025-05-12,11.64,4.864864864864873,64,100.0,9,54,

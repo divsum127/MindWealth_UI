@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,COIN,Long,Daily,2025-08-06,303.58,2025-08-13,327.01,7.717899729889983,5,85.71,7,15,
-DELTADRIFT,COIN,Long,Daily,2025-02-27,208.37,2025-04-08,151.47,-27.307193933867644,28,85.71,7,15,

@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-ALTITUDE ALPHA,CSCO,Long,Quarterly,2024-12-31,59.2,2025-11-03,73.11,23.496621621621614,219,81.82,11,497,
-ALTITUDE ALPHA,CSCO,Long,Quarterly,2021-09-30,54.43,2022-06-30,42.64,-21.66084879661951,195,81.82,11,497,
-ALTITUDE ALPHA,CSCO,Long,Quarterly,2019-03-31,53.99,2020-03-31,39.31,-27.190220411187255,261,81.82,11,497,

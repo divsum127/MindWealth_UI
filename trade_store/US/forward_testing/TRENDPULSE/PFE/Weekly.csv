@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,PFE,Long,Weekly,2025-08-17,25.14,2025-11-02,24.65,-1.9490851233094748,54,100.0,15,78,
-TRENDPULSE,PFE,Long,Weekly,2025-07-13,25.65,2025-11-02,24.65,-3.8986354775828462,79,100.0,15,78,
-TRENDPULSE,PFE,Long,Weekly,2024-05-12,28.01,2024-08-11,28.55,1.9278828989646524,64,100.0,15,78,

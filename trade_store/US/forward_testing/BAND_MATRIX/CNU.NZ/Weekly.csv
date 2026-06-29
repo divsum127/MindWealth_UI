@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,CNU.NZ,Long,Weekly,2025-02-02,8.66,2025-10-19,9.2,6.235565819861422,184,75.0,4,537,
-BAND MATRIX,CNU.NZ,Long,Weekly,2023-09-10,7.675,2024-12-22,9.03,17.654723127035822,334,75.0,4,537,

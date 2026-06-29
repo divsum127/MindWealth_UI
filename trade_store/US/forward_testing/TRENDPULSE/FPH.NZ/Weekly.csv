@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,FPH.NZ,Long,Weekly,2024-09-08,37.4,2025-11-02,37.1,-0.8021390374331475,299,100.0,10,84,
-TRENDPULSE,FPH.NZ,Long,Weekly,2024-08-25,35.4,2024-12-01,38.05,7.485875706214687,69,100.0,10,84,
-TRENDPULSE,FPH.NZ,Long,Weekly,2024-08-04,32.75,2024-09-22,36.56,11.633587786259548,34,100.0,10,84,
-TRENDPULSE,FPH.NZ,Long,Weekly,2024-06-09,30.0,2024-08-11,32.5,8.333333333333334,44,100.0,10,84,

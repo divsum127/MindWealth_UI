@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,SOXX,Long,Daily,2025-04-01,188.27,2025-08-19,245.15,30.211929675466084,100,83.33,6,57,
-SIGMASHELL,SOXX,Long,Daily,2025-03-03,201.15,2025-05-19,211.85,5.319413373104642,55,83.33,6,57,

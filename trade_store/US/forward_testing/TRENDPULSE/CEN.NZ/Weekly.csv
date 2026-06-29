@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,CEN.NZ,Long,Weekly,2025-06-01,9.16,2025-11-02,9.32,1.746724890829696,109,100.0,8,113,
-TRENDPULSE,CEN.NZ,Long,Weekly,2024-12-01,9.0,2025-01-26,9.6,6.6666666666666625,39,100.0,8,113,
-TRENDPULSE,CEN.NZ,Long,Weekly,2024-03-24,8.41,2024-05-19,8.85,5.23186682520808,39,100.0,8,113,

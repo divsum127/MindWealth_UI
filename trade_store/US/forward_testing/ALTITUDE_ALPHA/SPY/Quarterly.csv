@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-ALTITUDE ALPHA,SPY,Long,Quarterly,2023-12-31,475.31,2025-11-03,682.06,43.4979276682586,480,100.0,4,1412,
-ALTITUDE ALPHA,SPY,Long,Quarterly,2019-06-30,293.0,2021-12-31,474.96,62.102389078498284,654,100.0,4,1412,

@@ -1,2 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,^GSPC,Long,Daily,2025-04-01,5633.0698,2025-08-20,6395.7798,13.539864178498195,101,87.5,8,60,

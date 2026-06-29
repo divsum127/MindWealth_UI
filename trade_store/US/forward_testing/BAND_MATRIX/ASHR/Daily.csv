@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,ASHR,Long,Daily,2025-04-08,23.67,2025-10-31,33.03,39.543726235741445,148,100.0,4,168,
-BAND MATRIX,ASHR,Long,Daily,2023-12-06,23.97,2024-10-15,26.79,11.764705882352942,224,100.0,4,168,

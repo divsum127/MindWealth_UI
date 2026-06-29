@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-PULSEGAUGE,^NZ50,Long,Weekly,2025-07-06,12766.5996,2025-11-02,13548.3203,6.123170808928634,84,71.43,7,234,
-PULSEGAUGE,^NZ50,Long,Weekly,2023-06-11,11690.3398,2025-11-02,13548.3203,15.89329764392306,624,71.43,7,234,

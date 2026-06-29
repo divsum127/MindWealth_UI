@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,JPY=X,Long,Daily,2025-04-16,143.181,2025-05-09,146.015,1.9793128976609846,17,72.73,11,7,
-DELTADRIFT,JPY=X,Long,Daily,2025-02-25,149.864,2025-04-07,145.433,-2.956680723856304,29,72.73,11,7,

@@ -1,6 +1,0 @@
-Signal,Entry Date,Entry Price,Exit Date,Exit Price,Holding Period,Maxima Broken Date/Price,Offset,Profit,Actual Rise/Fall wrt Entry,CumProfit,Signal Open Price
-Buy,2020-05-31,180.93,2020-11-30,291.37,130 days,2019-07-31/154.94,61.04%,61.04%,Rise by 74.1%,61.04%,
-Buy,2020-12-31,314.66,2021-05-31,241.57,107 days,2020-11-30/291.37,-23.23%,-23.23%,Rise by -23.23%,37.81%,
-Buy,2023-05-31,148.9,2024-02-29,256.41,196 days,2023-03-31/133.62,72.20%,72.20%,Rise by 415.34%,110.01%,
-Buy,2024-03-31,263.9,2024-11-30,476.96,174 days,2024-02-29/256.41,80.74%,80.74%,Rise by 190.77%,190.75%,
-Buy,2025-01-31,548.55,2025-01-31,548.55,0 days,2024-11-30/476.96,0.00%,0.00%,Rise by 0%,190.75%,

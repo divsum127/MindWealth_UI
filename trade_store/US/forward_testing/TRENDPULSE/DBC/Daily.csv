@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,DBC,Long,Daily,2025-07-29,22.69,2025-10-31,22.88,0.8373732921991967,68,100.0,13,25,
-TRENDPULSE,DBC,Long,Daily,2025-06-12,21.97,2025-06-18,23.14,5.325443786982256,4,100.0,13,25,
-TRENDPULSE,DBC,Long,Daily,2024-10-11,23.28,2025-02-26,22.14,-4.8969072164948475,98,100.0,13,25,

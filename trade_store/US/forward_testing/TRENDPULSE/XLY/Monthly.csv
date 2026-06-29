@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,XLY,Long,Monthly,2024-12-31,224.35,2025-10-31,239.93,6.944506351682645,218,75.0,8,192,
-TRENDPULSE,XLY,Long,Monthly,2023-06-30,169.81,2024-12-31,224.35,32.11824980860962,392,75.0,8,192,

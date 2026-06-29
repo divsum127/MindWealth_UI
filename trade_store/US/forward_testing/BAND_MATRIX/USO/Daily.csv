@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,USO,Long,Daily,2025-03-05,71.42,2025-06-24,73.0,2.2122654718566204,79,80.0,5,201,
-BAND MATRIX,USO,Long,Daily,2024-05-02,75.93,2024-10-15,72.76,-4.174897932306073,118,80.0,5,201,
-BAND MATRIX,USO,Long,Daily,2023-12-06,64.76,2024-04-17,78.91,21.849907350216167,95,80.0,5,201,

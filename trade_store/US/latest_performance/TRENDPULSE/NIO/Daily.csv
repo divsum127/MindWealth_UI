@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,NIO,Long,Daily,2025-08-22,6.34,2025-09-18,7.37,16.24605678233439,19,74.29,35,13,
-TRENDPULSE,NIO,Long,Daily,2025-07-14,4.17,2025-07-23,4.92,17.98561151079137,7,74.29,35,13,
-TRENDPULSE,NIO,Long,Daily,2025-07-11,3.9,2025-07-17,4.4,12.820512820512832,4,74.29,35,13,

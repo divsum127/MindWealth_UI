@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,BTC-USD,Long,Daily,2025-08-31,108236.7109,2025-09-10,113955.3594,5.283464780524845,7,84.21,57,8,
-OSCILLATOR DELTA,BTC-USD,Long,Daily,2025-04-05,83504.7969,2025-04-22,93441.8906,11.900027386330901,11,84.21,57,8,
-OSCILLATOR DELTA,BTC-USD,Long,Daily,2025-03-08,86154.5938,2025-04-08,76271.9531,-11.470822696862395,21,84.21,57,8,

@@ -1,2 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,^BVSP,Long,Monthly,2023-12-31,134185.0,2025-10-31,149540.4375,11.443482878116034,479,90.0,10,247,

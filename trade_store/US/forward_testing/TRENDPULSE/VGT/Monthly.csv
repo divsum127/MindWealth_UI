@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,VGT,Long,Monthly,2025-10-31,793.21,2025-10-31,793.21,0.0,0,83.33,6,245,
-TRENDPULSE,VGT,Long,Monthly,2025-08-31,697.02,2025-10-31,793.21,13.800177900203733,44,83.33,6,245,
-TRENDPULSE,VGT,Long,Monthly,2023-03-31,385.47,2023-09-30,414.9,7.6348353957506285,130,83.33,6,245,

@@ -1,2 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-PULSEGAUGE,^BVSP,Long,Weekly,2023-06-11,117019.0,2025-07-06,141478.0,20.901733906459636,539,88.24,17,157,

@@ -1,6 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,EFA,Long,Daily,2024-12-23,75.59,2025-01-17,76.78,1.5742823124751921,19,85.71,14,6,
-DELTADRIFT,EFA,Long,Daily,2024-10-25,79.88,2024-12-18,75.55,-5.420630946419628,38,85.71,14,6,
-DELTADRIFT,EFA,Long,Daily,2024-08-07,75.81,2024-08-09,77.38,2.07096689091148,2,85.71,14,6,
-DELTADRIFT,EFA,Long,Daily,2024-06-17,78.14,2024-07-03,79.56,1.8172510877911463,12,85.71,14,6,
-DELTADRIFT,EFA,Long,Daily,2024-04-18,76.09,2024-04-22,77.01,1.209094493363125,2,85.71,14,6,

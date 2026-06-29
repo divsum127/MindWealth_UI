@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,XIU.TO,Long,Daily,2025-03-12,37.02,2025-03-19,37.98,2.5931928687195938,5,84.62,13,10,
-DELTADRIFT,XIU.TO,Long,Daily,2024-12-20,37.26,2025-01-02,37.7,1.1808910359635127,9,84.62,13,10,
-DELTADRIFT,XIU.TO,Long,Daily,2024-06-18,32.61,2024-06-27,33.14,1.6252683226004327,7,84.62,13,10,

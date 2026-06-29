@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,NZDCAD=X,Long,Weekly,2025-03-16,0.8225,2025-11-02,0.8017,-2.5288753799392145,164,72.0,25,80,
-TRENDPULSE,NZDCAD=X,Long,Weekly,2023-11-26,0.8283,2024-06-16,0.8466,2.2093444404201357,144,72.0,25,80,

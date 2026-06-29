@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,^NSEI,Long,Daily,2025-10-03,24894.25,2025-10-10,25285.3496,1.571043915763686,5,80.0,5,4,
-TRENDPULSE,^NSEI,Long,Daily,2025-04-17,23851.6504,2025-04-24,24246.6992,1.656274485726994,5,80.0,5,4,
-TRENDPULSE,^NSEI,Long,Daily,2024-09-23,25939.0508,2025-05-08,24273.8008,-6.419857121371612,163,80.0,5,4,

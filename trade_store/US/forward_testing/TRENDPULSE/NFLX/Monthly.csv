@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,NFLX,Long,Monthly,2025-01-31,976.76,2025-08-31,1208.25,23.699782955895,150,100.0,7,242,
-TRENDPULSE,NFLX,Long,Monthly,2023-06-30,440.49,2024-03-31,607.33,37.87600172535132,195,100.0,7,242,

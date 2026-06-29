@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,EWJ,Long,Daily,2025-06-02,75.04,2025-08-11,77.79,3.6647121535181233,50,100.0,9,25,
-TRENDPULSE,EWJ,Long,Daily,2025-04-28,71.74,2025-05-08,71.83,0.12545302481182521,8,100.0,9,25,
-TRENDPULSE,EWJ,Long,Daily,2025-03-19,71.7,2025-05-08,71.83,0.18131101813109546,36,100.0,9,25,

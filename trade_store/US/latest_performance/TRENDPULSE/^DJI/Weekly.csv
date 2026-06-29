@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,^DJI,Long,Weekly,2025-01-26,44424.25,2025-09-14,45834.2188,3.1738719280573164,164,93.75,32,101,
-TRENDPULSE,^DJI,Long,Weekly,2024-12-01,44910.6484,2025-09-21,46315.2695,3.127590337796156,209,93.75,32,101,

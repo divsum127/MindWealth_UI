@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,META,Long,Weekly,2025-02-09,714.52,2025-08-31,738.7,3.3840900184739495,144,100.0,7,54,
-TRENDPULSE,META,Long,Weekly,2024-12-08,623.77,2025-02-23,683.55,9.58366064414768,54,100.0,7,54,
-TRENDPULSE,META,Long,Weekly,2024-02-04,474.99,2024-03-24,509.58,7.282258573864707,34,100.0,7,54,

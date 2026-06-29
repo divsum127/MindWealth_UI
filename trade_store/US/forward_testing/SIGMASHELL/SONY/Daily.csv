@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,SONY,Long,Daily,2025-08-01,24.37,2025-10-14,28.83,18.30118998768977,52,100.0,8,65,
-SIGMASHELL,SONY,Long,Daily,2024-04-01,17.234,2024-06-11,17.0,-1.3577811303237886,51,100.0,8,65,

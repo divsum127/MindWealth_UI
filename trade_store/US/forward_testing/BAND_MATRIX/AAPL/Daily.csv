@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,AAPL,Long,Daily,2025-08-01,202.38,2025-09-02,229.72,13.50924004348256,22,100.0,5,212,
-BAND MATRIX,AAPL,Long,Daily,2025-01-14,233.28,2025-07-29,211.27,-9.435013717421121,140,100.0,5,212,
-BAND MATRIX,AAPL,Long,Daily,2024-01-04,181.91,2024-12-31,250.42,37.66148095211918,258,100.0,5,212,

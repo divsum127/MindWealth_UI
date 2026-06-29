@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,PLTR,Long,Monthly,2024-12-31,75.63,2025-08-31,156.71,107.20613513156157,173,100.0,5,156,
-TRENDPULSE,PLTR,Long,Monthly,2024-11-30,67.08,2025-08-31,156.71,133.61657722122843,194,100.0,5,156,
-TRENDPULSE,PLTR,Long,Monthly,2024-10-31,41.56,2025-03-31,84.4,103.07988450433108,107,100.0,5,156,

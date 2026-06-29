@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-ALTITUDE ALPHA,HDFCBANK.NS,Long,Quarterly,2023-12-31,854.625,2025-11-03,992.65,16.150358344303054,480,100.0,6,510,
-ALTITUDE ALPHA,HDFCBANK.NS,Long,Quarterly,2018-12-31,530.425,2023-06-30,850.7,60.38082669557432,1174,100.0,6,510,

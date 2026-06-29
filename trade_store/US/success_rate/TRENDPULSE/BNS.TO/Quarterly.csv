@@ -1,8 +1,0 @@
-Entry Date,Entry Price,Exit Date,Exit Price,Signal,Holding Period,Actual Rise/Fall wrt Entry,Return,Signal Open Price
-2000-09-30,21.88,2003-12-31,32.9,Buy,846 days,Rise by 20.250000%,50.4,
-2003-09-30,31.55,2004-12-31,40.7,Buy,327 days,Rise by 29.000000%,29.0,
-2004-03-31,35.4,2005-09-30,43.41,Buy,391 days,Rise by 14.970000%,22.63,
-2007-03-31,53.19,2012-03-31,55.88,Buy,1304 days,Rise by -12.480000%,5.06,
-2008-03-31,46.55,2009-06-30,43.42,Sell,325 days,Fall by 28.440000%,6.72,
-2009-03-31,31.07,2009-06-30,43.42,Sell,64 days,Fall by -69.680000%,-39.75,
-2014-12-31,66.31,2016-09-30,69.52,Sell,456 days,Fall by 11.280000%,-4.84,

@@ -1,6 +1,0 @@
-Entry Date,Entry Price,Exit Date,Exit Price,Signal,Holding Period,Actual Rise/Fall wrt Entry,Return,Signal Open Price
-2017-09-30,123.51,2020-06-30,133.67,Buy,715 days,Rise by 7.960000%,8.23,
-2018-03-31,120.62,2019-06-30,125.76,Sell,324 days,Fall by -10.750000%,-4.26,
-2019-06-30,125.76,2020-12-31,132.98,Buy,392 days,Rise by 6.290000%,5.74,
-2020-06-30,133.67,2025-09-30,119.51,Buy,1369 days,Rise by -14.050000%,-10.59,
-2025-09-30,119.51,2025-09-30,119.51,Buy,0 days,Rise by 0.200000%,0.0,

@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,SONY,Long,Monthly,2025-01-31,22.01,2025-08-31,27.52,25.034075420263505,150,75.0,20,214,
-TRENDPULSE,SONY,Long,Monthly,2024-12-31,21.16,2025-08-31,27.52,30.056710775047257,173,75.0,20,214,
-TRENDPULSE,SONY,Long,Monthly,2024-09-30,19.314,2025-03-31,25.39,31.4590452521487,130,75.0,20,214,
-TRENDPULSE,SONY,Long,Monthly,2023-12-31,18.938,2025-03-31,25.39,34.06906748336679,325,75.0,20,214,

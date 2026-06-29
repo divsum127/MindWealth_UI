@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,EFA,Long,Daily,2025-04-04,75.02,2025-06-17,86.96,15.915755798453743,52,71.43,14,75,
-SIGMASHELL,EFA,Long,Daily,2024-11-01,79.38,2025-02-21,81.54,2.7210884353741633,80,71.43,14,75,
-SIGMASHELL,EFA,Long,Daily,2024-07-01,78.47,2024-09-04,81.31,3.6192175353638376,47,71.43,14,75,

@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,TSM,Long,Monthly,2025-10-31,300.43,2025-10-31,300.43,0.0,0,90.0,10,247,
-TRENDPULSE,TSM,Long,Monthly,2023-06-30,100.92,2024-05-31,151.04,49.66309948474038,240,90.0,10,247,

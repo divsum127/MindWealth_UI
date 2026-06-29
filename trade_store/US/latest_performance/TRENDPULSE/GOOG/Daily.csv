@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,GOOG,Long,Daily,2025-09-04,232.66,2025-09-11,240.78,3.49007134874925,5,96.43,28,21,
-TRENDPULSE,GOOG,Long,Daily,2025-03-24,169.93,2025-06-11,178.79,5.213911610663206,57,96.43,28,21,
-TRENDPULSE,GOOG,Long,Daily,2025-03-20,165.05,2025-05-28,173.38,5.046955468039978,49,96.43,28,21,

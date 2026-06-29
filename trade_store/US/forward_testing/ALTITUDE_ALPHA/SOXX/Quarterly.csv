@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-ALTITUDE ALPHA,SOXX,Long,Quarterly,2025-09-30,271.12,2025-11-03,306.55,13.068014163470053,24,75.0,4,848,
-ALTITUDE ALPHA,SOXX,Long,Quarterly,2024-06-30,246.63,2025-03-31,188.17,-23.703523496736004,195,75.0,4,848,
-ALTITUDE ALPHA,SOXX,Long,Quarterly,2020-12-31,126.3933,2024-03-31,225.92,78.74365176002208,846,75.0,4,848,
-ALTITUDE ALPHA,SOXX,Long,Quarterly,2019-03-31,63.18,2020-09-30,101.5367,60.710193099081984,392,75.0,4,848,

@@ -1,2 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,^NDX,Long,Weekly,2025-03-23,19753.9707,2025-11-02,25858.127,30.90090793746089,159,100.0,5,484,

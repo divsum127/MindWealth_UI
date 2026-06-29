@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-ALTITUDE ALPHA,VGT,Long,Weekly,2025-06-29,656.54,2025-11-02,793.21,20.81670576050204,89,83.33,6,640,
-ALTITUDE ALPHA,VGT,Long,Weekly,2024-12-08,644.54,2025-04-06,478.6,-25.745492909672006,84,83.33,6,640,
-ALTITUDE ALPHA,VGT,Long,Weekly,2023-05-07,386.18,2024-11-10,624.47,61.70438655549226,394,83.33,6,640,

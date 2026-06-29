@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,SBUX,Long,Daily,2025-07-31,89.16,2025-10-31,80.87,-9.29789143113503,66,100.0,6,173,
-BAND MATRIX,SBUX,Long,Daily,2024-12-18,89.9,2025-05-21,82.98,-7.697441601779757,110,100.0,6,173,
-BAND MATRIX,SBUX,Long,Daily,2024-04-04,87.62,2024-09-05,91.56,4.4966902533668085,110,100.0,6,173,
-BAND MATRIX,SBUX,Long,Daily,2023-12-06,97.02,2024-02-13,93.87,-3.2467532467532383,49,100.0,6,173,

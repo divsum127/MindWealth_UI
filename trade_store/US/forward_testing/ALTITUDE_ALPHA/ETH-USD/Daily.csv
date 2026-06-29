@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-ALTITUDE ALPHA,ETH-USD,Long,Daily,2025-08-22,4831.3486,2025-10-10,3843.0088,-20.456809926735573,35,75.0,4,43,
-ALTITUDE ALPHA,ETH-USD,Long,Daily,2025-05-08,2206.5146,2025-07-18,3549.0164,60.84264296279753,51,75.0,4,43,
-ALTITUDE ALPHA,ETH-USD,Long,Daily,2024-05-21,3789.3127,2024-07-05,2981.5986,-21.315583166308766,33,75.0,4,43,

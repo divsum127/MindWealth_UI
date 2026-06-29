@@ -1,7 +1,0 @@
-Entry Date,Entry Price,Exit Date,Exit Price,Signal,Holding Period,Sigma,Actual Rise/Fall wrt Entry,Return,Cum-Return,Signal Open Price
-2022-03-01,113.83,2022-06-09,98.8,Buy,72 Days,-5.17,Rise by -10.17%,-13.2%,-13.2%,
-2022-05-02,89.84,2022-12-06,70.27,Buy,156 Days,-4.65,Rise by 14.06%,-21.78%,-34.99%,
-2022-10-03,66.11,2023-02-07,85.91,Buy,91 Days,-5.56,Rise by -12.55%,29.95%,-5.04%,
-2024-05-01,144.27,2024-10-14,165.27,Buy,118 Days,-6.29,Rise by 15.29%,14.56%,9.52%,
-2024-08-01,132.54,2024-10-14,165.27,Buy,52 Days,-4.36,Rise by 19.07%,24.69%,34.21%,
-2025-04-01,102.78,2025-05-19,114.74,Buy,34 Days,-3.09,Rise by -23.91%,11.64%,45.85%,

@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,CNR.TO,Long,Daily,2025-05-01,132.38,2025-07-15,141.35,6.775948028403081,53,76.92,13,58,
-SIGMASHELL,CNR.TO,Long,Daily,2025-04-03,138.37,2025-05-22,147.29,6.446484064464832,35,76.92,13,58,
-SIGMASHELL,CNR.TO,Long,Daily,2024-11-01,150.98,2025-05-22,147.29,-2.4440323221618745,144,76.92,13,58,

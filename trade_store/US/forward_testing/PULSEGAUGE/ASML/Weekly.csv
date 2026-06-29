@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-PULSEGAUGE,ASML,Long,Weekly,2025-07-06,794.5,2025-10-05,1032.22,29.92070484581498,64,75.0,8,74,
-PULSEGAUGE,ASML,Long,Weekly,2023-06-11,715.86,2023-09-17,596.66,-16.651300533623896,69,75.0,8,74,

@@ -1,6 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,ASHR,Long,Daily,2025-04-10,25.25,2025-04-16,25.59,1.346534653465346,4,75.0,8,13,
-TRENDPULSE,ASHR,Long,Daily,2025-02-04,26.35,2025-02-12,26.75,1.5180265654648901,6,75.0,8,13,
-TRENDPULSE,ASHR,Long,Daily,2024-09-24,24.94,2024-10-01,29.38,17.802726543704882,5,75.0,8,13,
-TRENDPULSE,ASHR,Long,Daily,2024-08-19,23.7,2024-09-27,27.33,15.316455696202528,29,75.0,8,13,
-TRENDPULSE,ASHR,Long,Daily,2024-04-29,24.93,2024-05-07,25.16,0.9225832330525489,6,75.0,8,13,

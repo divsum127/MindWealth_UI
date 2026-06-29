@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-ALTITUDE ALPHA,WIPRO.NS,Long,Monthly,2023-11-30,206.525,2025-11-03,240.5,16.450792882217648,502,71.43,14,297,
-ALTITUDE ALPHA,WIPRO.NS,Long,Monthly,2021-08-31,320.475,2022-04-30,254.4,-20.61783290428271,173,71.43,14,297,
-ALTITUDE ALPHA,WIPRO.NS,Long,Monthly,2020-11-30,175.25,2021-07-31,293.575,67.51783166904421,174,71.43,14,297,

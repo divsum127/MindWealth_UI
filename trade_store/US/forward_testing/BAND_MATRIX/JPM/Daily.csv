@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,JPM,Long,Daily,2025-10-10,300.89,2025-10-31,311.12,3.3999135896839436,15,70.0,10,77,
-BAND MATRIX,JPM,Long,Daily,2025-03-06,246.54,2025-07-16,285.82,15.932505881398557,94,70.0,10,77,
-BAND MATRIX,JPM,Long,Daily,2024-12-18,230.37,2025-02-20,266.8,15.813691018795854,46,70.0,10,77,
-BAND MATRIX,JPM,Long,Daily,2024-04-16,180.8,2024-11-04,219.78,21.55973451327433,144,70.0,10,77,

@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-ALTITUDE ALPHA,META,Long,Monthly,2024-02-29,490.13,2025-10-31,648.35,32.28123151000756,436,80.0,5,370,
-ALTITUDE ALPHA,META,Long,Monthly,2023-04-30,240.32,2024-01-31,390.14,62.34187749667111,197,80.0,5,370,
-ALTITUDE ALPHA,META,Long,Monthly,2021-03-31,294.53,2022-02-28,211.03,-28.35025294537058,238,80.0,5,370,

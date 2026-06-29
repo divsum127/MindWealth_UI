@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,BTI,Long,Weekly,2025-08-10,57.24,2025-11-02,51.19,-10.569531795946897,59,83.33,12,105,
-TRENDPULSE,BTI,Long,Weekly,2025-02-09,41.76,2025-06-15,48.8,16.858237547892717,89,83.33,12,105,
-TRENDPULSE,BTI,Long,Weekly,2024-09-08,38.61,2025-03-30,40.51,4.921004921004918,144,83.33,12,105,
-TRENDPULSE,BTI,Long,Weekly,2024-08-04,36.45,2024-09-22,37.44,2.7160493827160352,34,83.33,12,105,

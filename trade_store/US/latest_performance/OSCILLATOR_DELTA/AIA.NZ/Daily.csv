@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,AIA.NZ,Long,Daily,2025-07-24,7.625,2025-10-09,8.05,5.573770491803288,55,73.68,19,78,
-OSCILLATOR DELTA,AIA.NZ,Long,Daily,2025-06-05,7.755,2025-10-22,8.16,5.222437137330758,99,73.68,19,78,

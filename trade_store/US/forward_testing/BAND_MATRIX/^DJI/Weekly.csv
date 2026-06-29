@@ -1,2 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,^DJI,Long,Weekly,2025-04-20,39142.2305,2025-11-02,47562.8711,21.51292987761645,139,100.0,4,1017,

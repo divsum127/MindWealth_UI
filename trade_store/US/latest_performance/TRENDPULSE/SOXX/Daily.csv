@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,SOXX,Long,Daily,2025-09-18,267.57,2025-10-02,281.69,5.277123743319507,10,83.33,42,16,
-TRENDPULSE,SOXX,Long,Daily,2025-09-16,258.58,2025-09-23,269.51,4.22693170392142,5,83.33,42,16,
-TRENDPULSE,SOXX,Long,Daily,2025-05-05,188.57,2025-05-13,213.76,13.358434533594952,6,83.33,42,16,

@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,AIA.NZ,Long,Daily,2025-02-25,7.99,2025-02-28,8.18,2.3779724655819714,3,85.71,7,15,
-DELTADRIFT,AIA.NZ,Long,Daily,2024-05-22,7.42,2024-05-23,7.73,4.177897574123996,1,85.71,7,15,
-DELTADRIFT,AIA.NZ,Long,Daily,2024-04-24,7.87,2024-05-21,7.42,-5.717916137229989,19,85.71,7,15,
-DELTADRIFT,AIA.NZ,Long,Daily,2024-02-15,8.16,2024-03-20,8.27,1.3480392156862675,24,85.71,7,15,

@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,IBIT,Long,Daily,2025-07-10,64.5,2025-07-16,67.83,5.162790697674416,4,100.0,8,9,
-TRENDPULSE,IBIT,Long,Daily,2025-05-21,61.79,2025-07-15,66.16,7.072341802880722,39,100.0,8,9,
-TRENDPULSE,IBIT,Long,Daily,2025-05-19,59.99,2025-05-27,62.5,4.184030671778626,6,100.0,8,9,

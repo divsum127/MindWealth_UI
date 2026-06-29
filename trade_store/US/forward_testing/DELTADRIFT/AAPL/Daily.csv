@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,AAPL,Long,Daily,2025-03-14,213.49,2025-03-24,220.73,3.391259543772533,6,100.0,8,18,
-DELTADRIFT,AAPL,Long,Daily,2025-01-14,233.28,2025-02-13,241.53,3.536522633744856,22,100.0,8,18,
-DELTADRIFT,AAPL,Long,Daily,2024-03-08,170.73,2024-03-19,176.08,3.1336027645990883,7,100.0,8,18,

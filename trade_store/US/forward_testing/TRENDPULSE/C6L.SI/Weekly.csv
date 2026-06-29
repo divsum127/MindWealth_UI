@@ -1,6 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,C6L.SI,Long,Weekly,2025-07-13,7.25,2025-11-02,6.63,-8.551724137931036,79,70.0,10,81,
-TRENDPULSE,C6L.SI,Long,Weekly,2025-02-23,6.55,2025-03-30,6.79,3.6641221374045836,24,70.0,10,81,
-TRENDPULSE,C6L.SI,Long,Weekly,2025-02-09,6.35,2025-03-16,6.69,5.354330708661429,24,70.0,10,81,
-TRENDPULSE,C6L.SI,Long,Weekly,2024-07-07,6.98,2025-04-13,6.16,-11.747851002865334,199,70.0,10,81,
-TRENDPULSE,C6L.SI,Long,Weekly,2024-02-04,6.84,2025-04-13,6.16,-9.941520467836254,309,70.0,10,81,

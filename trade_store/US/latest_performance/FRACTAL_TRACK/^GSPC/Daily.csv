@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-FRACTAL TRACK,^GSPC,Long,Daily,2025-06-17,5982.7202,2025-08-05,6299.1899,5.289729243898128,35,100.0,30,222,
-FRACTAL TRACK,^GSPC,Long,Daily,2025-04-02,5670.9702,2025-08-20,6395.7798,12.781051115380585,100,100.0,30,222,
-FRACTAL TRACK,^GSPC,Long,Daily,2023-02-14,4136.1299,2025-09-26,6643.7002,60.62600451692778,683,100.0,30,222,

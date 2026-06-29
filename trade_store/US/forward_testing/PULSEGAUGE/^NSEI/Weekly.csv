@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-PULSEGAUGE,^NSEI,Long,Weekly,2025-07-06,25461.0,2025-11-03,25763.3496,1.1875008837044947,85,83.33,6,134,
-PULSEGAUGE,^NSEI,Long,Weekly,2023-11-19,19731.8008,2024-06-30,24010.5996,21.684786114402698,159,83.33,6,134,

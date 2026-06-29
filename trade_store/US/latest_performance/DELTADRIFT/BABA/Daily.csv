@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,BABA,Long,Daily,2025-07-10,106.64,2025-07-15,116.97,9.686796699174792,3,81.82,11,9,
-DELTADRIFT,BABA,Long,Daily,2025-06-23,113.09,2025-06-24,117.01,3.4662658059952265,1,81.82,11,9,
-DELTADRIFT,BABA,Long,Daily,2025-06-02,114.75,2025-06-05,119.96,4.54030501089324,3,81.82,11,9,
-DELTADRIFT,BABA,Long,Daily,2025-04-09,104.78,2025-04-14,113.97,8.770757778201945,3,81.82,11,9,

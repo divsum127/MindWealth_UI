@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,CSCO,Long,Daily,2025-04-25,56.71,2025-05-15,64.26,13.313348615764424,14,76.47,17,35,
-OSCILLATOR DELTA,CSCO,Long,Daily,2024-08-14,45.44,2024-08-15,48.53,6.800176056338036,1,76.47,17,35,
-OSCILLATOR DELTA,CSCO,Long,Daily,2024-06-07,45.84,2024-08-16,49.46,7.897033158813258,50,76.47,17,35,
-OSCILLATOR DELTA,CSCO,Long,Daily,2024-02-16,48.44,2024-09-19,51.44,6.193228736581338,154,76.47,17,35,

@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-FRACTAL TRACK,JPY=X,Long,Daily,2025-08-18,147.264,2025-10-15,151.731,3.033327900912636,42,93.75,16,596,
-FRACTAL TRACK,JPY=X,Long,Daily,2025-01-23,156.44,2025-10-31,153.94,-1.598056762976221,201,93.75,16,596,
-FRACTAL TRACK,JPY=X,Long,Daily,2024-07-16,158.141,2025-10-31,153.94,-2.656490094282946,338,93.75,16,596,
-FRACTAL TRACK,JPY=X,Long,Daily,2024-05-20,155.754,2025-10-31,153.94,-1.1646570874584237,379,93.75,16,596,

@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-PULSEGAUGE,BRK-B,Long,Weekly,2025-07-06,485.0,2025-11-02,477.54,-1.538144329896903,84,87.5,8,189,
-PULSEGAUGE,BRK-B,Long,Weekly,2023-06-11,335.29,2024-02-18,405.99,21.086223865907122,179,87.5,8,189,

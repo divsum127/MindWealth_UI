@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,USDCHF=X,Long,Weekly,2025-04-20,0.8138,2025-11-02,0.8042,-1.179651019906604,139,85.71,7,371,
-BAND MATRIX,USDCHF=X,Long,Weekly,2023-04-23,0.8923,2025-03-02,0.8999,0.8517314804438026,484,85.71,7,371,

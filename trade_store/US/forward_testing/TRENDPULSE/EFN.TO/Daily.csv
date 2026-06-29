@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,EFN.TO,Long,Daily,2025-04-01,29.2,2025-04-21,29.84,2.1917808219178103,14,88.89,9,17,
-TRENDPULSE,EFN.TO,Long,Daily,2025-03-27,29.25,2025-04-21,29.84,2.0170940170940166,17,88.89,9,17,
-TRENDPULSE,EFN.TO,Long,Daily,2025-01-22,29.26,2025-04-21,29.84,1.9822282980177657,63,88.89,9,17,
-TRENDPULSE,EFN.TO,Long,Daily,2024-04-08,22.06,2024-05-08,23.25,5.394378966455129,22,88.89,9,17,

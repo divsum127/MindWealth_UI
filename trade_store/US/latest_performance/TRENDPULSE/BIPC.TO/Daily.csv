@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,BIPC.TO,Long,Daily,2025-08-27,55.91,2025-10-02,59.12,5.741370059023433,26,89.47,19,22,
-TRENDPULSE,BIPC.TO,Long,Daily,2025-06-23,56.86,2025-07-07,57.68,1.442138586000704,10,89.47,19,22,
-TRENDPULSE,BIPC.TO,Long,Daily,2025-01-22,59.49,2025-06-18,55.46,-6.774247772734915,105,89.47,19,22,

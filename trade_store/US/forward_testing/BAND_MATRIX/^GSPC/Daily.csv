@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,^GSPC,Long,Daily,2024-12-20,5930.8501,2025-10-31,6840.2002,15.332542294400605,225,87.5,8,155,
-BAND MATRIX,^GSPC,Long,Daily,2024-08-06,5240.0298,2024-11-15,5870.6201,12.03409759234575,73,87.5,8,155,
-BAND MATRIX,^GSPC,Long,Daily,2024-04-16,5051.4102,2024-07-18,5544.5898,9.76320632206823,67,87.5,8,155,

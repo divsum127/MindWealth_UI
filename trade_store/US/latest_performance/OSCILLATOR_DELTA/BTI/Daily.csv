@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,BTI,Short,Daily,2025-08-26,57.33,2025-08-27,56.77,0.9768009768009684,1,86.84,38,5,
-OSCILLATOR DELTA,BTI,Short,Daily,2025-07-28,51.78,2025-07-30,53.16,-2.6651216685979056,2,86.84,38,5,
-OSCILLATOR DELTA,BTI,Short,Daily,2025-06-23,48.76,2025-06-24,48.5,0.5332239540607014,1,86.84,38,5,
-OSCILLATOR DELTA,BTI,Short,Daily,2025-05-08,43.3,2025-05-14,40.55,6.351039260969977,4,86.84,38,5,

@@ -1,2 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,NIFTY_MIDCAP_100.NS,Long,Monthly,2023-07-31,37721.3516,2024-02-29,48335.6992,28.138831589481008,153,78.57,14,221,

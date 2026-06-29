@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-OSCILLATOR DELTA,VGT,Long,Daily,2025-04-02,551.44,2025-04-04,478.6,-13.209052662120998,2,78.57,14,13,
-OSCILLATOR DELTA,VGT,Long,Daily,2025-03-05,586.92,2025-04-03,511.5,-12.85013289715804,21,78.57,14,13,
-OSCILLATOR DELTA,VGT,Long,Daily,2024-08-06,520.48,2024-08-13,553.98,6.436366430986781,5,78.57,14,13,
-OSCILLATOR DELTA,VGT,Long,Daily,2024-04-22,486.46,2024-05-06,516.83,6.243062122271115,10,78.57,14,13,

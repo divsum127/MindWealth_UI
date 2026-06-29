@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-FRACTAL TRACK,GDX,Long,Weekly,2025-01-19,36.75,2025-03-16,43.64,18.74829931972789,39,94.44,18,467,
-FRACTAL TRACK,GDX,Long,Weekly,2024-12-01,37.66,2025-03-16,43.64,15.87891662241106,74,94.44,18,467,
-FRACTAL TRACK,GDX,Long,Weekly,2023-07-16,31.96,2024-05-19,36.87,15.362953692115132,219,94.44,18,467,

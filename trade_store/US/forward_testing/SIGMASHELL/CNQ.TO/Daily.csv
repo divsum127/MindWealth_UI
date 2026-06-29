@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,CNQ.TO,Long,Daily,2025-08-01,42.72,2025-09-22,44.4,3.9325842696629207,36,71.43,7,67,
-SIGMASHELL,CNQ.TO,Long,Daily,2025-05-01,40.0,2025-09-22,44.4,10.999999999999996,102,71.43,7,67,
-SIGMASHELL,CNQ.TO,Long,Daily,2025-03-03,38.75,2025-06-23,44.12,13.858064516129026,80,71.43,7,67,

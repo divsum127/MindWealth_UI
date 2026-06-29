@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-ALTITUDE ALPHA,BDGI.TO,Long,Quarterly,2025-11-03,73.59,2025-11-03,73.59,0.0,0,71.43,7,228,
-ALTITUDE ALPHA,BDGI.TO,Long,Quarterly,2023-09-30,34.69,2025-09-30,61.38,76.93859901989048,521,71.43,7,228,
-ALTITUDE ALPHA,BDGI.TO,Long,Quarterly,2019-03-31,40.62,2020-03-31,22.77,-43.94387001477104,261,71.43,7,228,

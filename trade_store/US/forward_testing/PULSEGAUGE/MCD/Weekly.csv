@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-PULSEGAUGE,MCD,Long,Weekly,2025-07-06,294.08,2025-11-02,298.43,1.479189336235046,84,87.5,8,316,
-PULSEGAUGE,MCD,Long,Weekly,2023-06-11,286.79,2025-11-02,298.43,4.058718923253944,624,87.5,8,316,

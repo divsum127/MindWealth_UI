@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-TRENDPULSE,CNQ.TO,Long,Daily,2025-09-10,43.24,2025-09-26,45.57,5.388529139685472,12,93.75,32,15,
-TRENDPULSE,CNQ.TO,Long,Daily,2025-07-23,42.68,2025-07-30,44.12,3.373945641986874,5,93.75,32,15,
-TRENDPULSE,CNQ.TO,Long,Daily,2025-05-27,43.05,2025-06-13,45.9,6.620209059233453,13,93.75,32,15,

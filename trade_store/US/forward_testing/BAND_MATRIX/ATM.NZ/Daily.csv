@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,ATM.NZ,Long,Daily,2025-09-22,9.58,2025-10-31,10.8,12.734864300626311,29,77.78,9,60,
-BAND MATRIX,ATM.NZ,Long,Daily,2025-05-30,8.88,2025-09-16,10.3,15.990990990990989,77,77.78,9,60,
-BAND MATRIX,ATM.NZ,Long,Daily,2024-11-13,5.3,2025-03-21,8.94,68.67924528301886,92,77.78,9,60,
-BAND MATRIX,ATM.NZ,Long,Daily,2024-08-07,7.26,2024-10-17,6.65,-8.402203856749304,51,77.78,9,60,

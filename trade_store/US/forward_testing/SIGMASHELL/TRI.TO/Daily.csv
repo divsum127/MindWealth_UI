@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,TRI.TO,Long,Daily,2025-09-11,239.95,2025-10-29,213.19,-11.152323400708477,34,70.0,10,53,
-SIGMASHELL,TRI.TO,Long,Daily,2025-08-27,241.2,2025-10-31,214.84,-10.928689883913759,47,70.0,10,53,
-SIGMASHELL,TRI.TO,Long,Daily,2025-08-11,241.0,2025-10-31,214.84,-10.854771784232364,59,70.0,10,53,
-SIGMASHELL,TRI.TO,Long,Daily,2025-04-07,231.61,2025-07-17,287.65,24.195846466042035,73,70.0,10,53,

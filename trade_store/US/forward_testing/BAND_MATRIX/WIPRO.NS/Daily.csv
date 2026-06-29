@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-BAND MATRIX,WIPRO.NS,Long,Daily,2025-07-15,257.4,2025-11-03,240.5,-6.565656565656558,79,80.0,10,83,
-BAND MATRIX,WIPRO.NS,Long,Daily,2024-03-27,236.15,2025-07-09,267.8,13.402498412026256,335,80.0,10,83,

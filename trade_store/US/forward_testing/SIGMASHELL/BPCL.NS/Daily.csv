@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,BPCL.NS,Long,Daily,2025-09-01,314.75,2025-11-03,367.3,16.695790309769663,45,75.0,8,95,
-SIGMASHELL,BPCL.NS,Long,Daily,2025-03-03,242.41,2025-04-09,287.95,18.786353698279772,27,75.0,8,95,
-SIGMASHELL,BPCL.NS,Long,Daily,2024-12-02,294.15,2025-03-18,261.42,-11.1269760326364,76,75.0,8,95,

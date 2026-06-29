@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,CEN.NZ,Long,Daily,2025-03-20,8.5,2025-03-25,8.75,2.9411764705882355,3,80.0,10,18,
-DELTADRIFT,CEN.NZ,Long,Daily,2024-09-18,8.21,2024-10-09,8.56,4.263093788063332,15,80.0,10,18,
-DELTADRIFT,CEN.NZ,Long,Daily,2024-07-12,8.55,2024-08-14,8.7,1.754385964912264,23,80.0,10,18,

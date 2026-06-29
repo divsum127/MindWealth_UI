@@ -1,3 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-DELTADRIFT,CNR.TO,Long,Daily,2025-08-08,127.33,2025-08-19,130.7,2.6466661430927436,7,91.67,12,15,
-DELTADRIFT,CNR.TO,Long,Daily,2025-07-22,136.56,2025-08-01,128.04,-6.239015817223206,8,91.67,12,15,

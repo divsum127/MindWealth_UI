@@ -1,5 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-SIGMASHELL,VGT,Long,Daily,2025-04-16,507.75,2025-06-20,628.48,23.777449532250127,47,92.31,13,57,
-SIGMASHELL,VGT,Long,Daily,2025-04-01,546.94,2025-09-25,736.83,34.718616301605294,127,92.31,13,57,
-SIGMASHELL,VGT,Long,Daily,2025-03-13,546.44,2025-05-07,564.51,3.3068589415123224,39,92.31,13,57,
-SIGMASHELL,VGT,Long,Daily,2025-03-03,578.36,2025-05-20,612.92,5.975516979044184,56,92.31,13,57,

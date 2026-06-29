@@ -1,4 +1,0 @@
-Function,Symbol,Signal,Interval,Entry Date,Entry Price,Exit Date,Exit Price,Profit [%],Holding Period (days),Backtested Win Rate [%],Backtested Number of Trades,Avg Backtested Holding Period (days),Signal Open Price
-ALTITUDE ALPHA,MSFT,Long,Yearly,2024-12-31,421.5,2025-11-03,517.81,22.849347568208767,219,71.43,7,522,
-ALTITUDE ALPHA,MSFT,Long,Yearly,2020-12-31,222.42,2023-12-31,376.04,69.06752989839045,781,71.43,7,522,
-ALTITUDE ALPHA,MSFT,Long,Yearly,2017-12-31,85.54,2019-12-31,157.7,84.35819499649284,521,71.43,7,522,
