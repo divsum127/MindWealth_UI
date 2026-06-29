@@ -190,12 +190,12 @@
   "debt_purpose": null,
   "dividend_yield_5y_mean": 0.023785,
   "dividend_yield_5y_std": 0.008494,
-  "dividend_yield_current": 0.023709,
-  "dividend_yield_zscore": -0.0089,
-  "enterprise_value": 142550718260.9558,
+  "dividend_yield_current": 0.023846,
+  "dividend_yield_zscore": 0.0072,
+  "enterprise_value": 141866900000.0,
   "eps_fwd": 3.02665,
   "eps_ttm": 1.31,
-  "ev_fwd_rev": 3.7053,
+  "ev_fwd_rev": 3.6876,
   "fcf_ttm": 2336900000.0,
   "fd_direction": "stable",
   "fd_sizing_adj": 0.0,
@@ -228,10 +228,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 38471598080.0,
   "industry": "Restaurants",
-  "last_daily_update": "2026-06-29T14:43:28+00:00",
+  "last_daily_update": "2026-06-29T16:42:32+00:00",
   "last_full_calc": "2026-05-27T04:46:46+00:00",
   "manual_overrides": {},
-  "market_cap": 119212618260.95581,
+  "market_cap": 118528800000.0,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -245,7 +245,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 23338100000.0,
-  "owner_earnings_yield": 0.019603,
+  "owner_earnings_yield": 0.019716,
   "pe_20y_array": [
     70.0173,
     76.4529,
@@ -256,7 +256,7 @@
   ],
   "pe_history_insufficient": false,
   "pe_percentile_20y": 66.67,
-  "pe_ttm": 79.8473,
+  "pe_ttm": 79.3893,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -265,13 +265,13 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 104.5999984741211,
+  "price": 104.0,
   "quote_type": "EQUITY",
   "revenue_accelerating": false,
   "roic_5y_avg": 0.07377,
   "sector": "Consumer Cyclical",
   "ticker": "SBUX",
-  "updated_at": "2026-06-29T14:43:28+00:00",
+  "updated_at": "2026-06-29T16:42:32+00:00",
   "valuation_tax": -6.0,
   "valuation_tax_breakdown": {
     "components": {

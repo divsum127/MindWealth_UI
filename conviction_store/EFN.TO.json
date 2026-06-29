@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.02771,
   "dividend_yield_5y_std": 0.015905,
-  "dividend_yield_current": 0.018938,
-  "dividend_yield_zscore": -0.5515,
-  "enterprise_value": 20033238964.352722,
+  "dividend_yield_current": 0.01908,
+  "dividend_yield_zscore": -0.5426,
+  "enterprise_value": 19946120917.059097,
   "eps_fwd": 2.1423,
   "eps_ttm": 1.01,
-  "ev_fwd_rev": 8.3156,
+  "ev_fwd_rev": 8.2795,
   "fcf_ttm": -371965000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 2409103872.0,
   "industry": "Rental & Leasing Services",
-  "last_daily_update": "2026-06-29T14:43:27+00:00",
+  "last_daily_update": "2026-06-29T16:42:32+00:00",
   "last_full_calc": "2026-05-18T20:48:37+00:00",
   "manual_overrides": {},
-  "market_cap": 11709493964.352722,
+  "market_cap": 11622375917.059097,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 8323745000.0,
-  "owner_earnings_yield": -0.031766,
+  "owner_earnings_yield": -0.032004,
   "pe_20y_array": [
     33.3704,
     35.0278,
@@ -236,7 +236,7 @@
     25.6667
   ],
   "pe_percentile_20y": 22.22,
-  "pe_ttm": 29.2772,
+  "pe_ttm": 29.0594,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -245,12 +245,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 29.56999969482422,
+  "price": 29.350000381469727,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.109069996,
   "sector": "Industrials",
   "ticker": "EFN.TO",
-  "updated_at": "2026-06-29T14:43:27+00:00",
+  "updated_at": "2026-06-29T16:42:32+00:00",
   "valuation_tax": -7.0,
   "valuation_tax_breakdown": {
     "components": {

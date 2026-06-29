@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.021822,
   "dividend_yield_5y_std": 0.007885,
-  "dividend_yield_current": 0.011075,
-  "dividend_yield_zscore": -1.363,
-  "enterprise_value": 296337196357.718,
+  "dividend_yield_current": 0.011115,
+  "dividend_yield_zscore": -1.3579,
+  "enterprise_value": 295520790615.0604,
   "eps_fwd": 9.213771,
   "eps_ttm": 6.48,
-  "ev_fwd_rev": 0.2895,
+  "ev_fwd_rev": 0.2887,
   "fcf_ttm": -46511001600.0,
   "fd_direction": "positive",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 1023670026240.0,
   "industry": "Internet Retail",
-  "last_daily_update": "2026-06-29T14:43:27+00:00",
+  "last_daily_update": "2026-06-29T16:42:32+00:00",
   "last_full_calc": "2026-05-18T20:47:32+00:00",
   "manual_overrides": {},
-  "market_cap": 227593196357.71802,
+  "market_cap": 226776790615.06046,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 68744000000.0,
-  "owner_earnings_yield": -0.20436,
+  "owner_earnings_yield": -0.205096,
   "pe_20y_array": [
     3.4161,
     3.2575,
@@ -236,7 +236,7 @@
     3.5217
   ],
   "pe_percentile_20y": 100.0,
-  "pe_ttm": 14.6312,
+  "pe_ttm": 14.5787,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -245,12 +245,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 94.80999755859375,
+  "price": 94.46990203857422,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.092159994,
   "sector": "Consumer Cyclical",
   "ticker": "BABA",
-  "updated_at": "2026-06-29T14:43:27+00:00",
+  "updated_at": "2026-06-29T16:42:32+00:00",
   "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {

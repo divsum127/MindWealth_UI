@@ -15,15 +15,27 @@ This file captures minute-level implementation context for each completed task:
 
 ### 2026-06-27 — update_trade_data.sh local-only (no git)
 
-**Assumptions:** Prod checkout at `/home/ubuntu/uiv2/git/MindWealth_UI` runs the script via cron; dev checkout will own code commits separately.
+**Assumptions:** Prod checkout at `/home/ubuntu/uiv2/git/MindWealth_UI` runs the script via cron; prod data checkout at `uiv2/prod` owns separate on-disk sync.
 
 **Key decisions:** Remove entire git block (`git add .`, commit, push to `main`) rather than scoping adds — data dirs should stay out of git long-term via `.gitignore` (deferred).
 
-**Deferred:** Gitignore `trade_store/`, `chatbot/data/`, `conviction_store/`; mirror script change in `uiv2/dev` when that checkout exists; document prod `git pull` deploy step.
+**Deferred:** Gitignore `trade_store/`, `chatbot/data/`, `conviction_store/`; mirror script change in `uiv2/prod` when that checkout exists; document prod `git pull` deploy step.
 
 **Edge cases:** GitHub Actions AAII workflow still pushes to `main`; prod pulls may still update `macro_intelligence/data/aaii_*`. Uncommitted local changes in prod tree are no longer accidentally bundled into a data commit.
 
 **Caveats:** Historical data already on `main` remains until cleaned separately; script header comment updated to reflect local-only behavior.
+
+---
+
+### 2026-06-29 — Rename uiv2/dev to uiv2/prod
+
+**Assumptions:** `uiv2/dev` was the prod data-sync checkout referenced by nightly `emailscript.sh`; renaming aligns directory name with prod role.
+
+**Key decisions:** Filesystem `mv` only — no git remote or branch renames. Updated the single runtime reference in `MindWealth/emailscript.sh`.
+
+**Deferred:** If systemd or other deploy scripts later point at `uiv2/prod`, document explicitly; current API/Streamlit services still use `uiv2/git/MindWealth_UI`.
+
+**Caveats:** Cron runs `emailscript.sh` at 22:00 UTC; change takes effect on next run. No service restart required.
 
 ### 2026-06-09 — Create create-understanding-doc Cursor skill
 

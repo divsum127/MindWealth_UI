@@ -190,10 +190,10 @@
   "debt_purpose": null,
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 24191353197.001083,
+  "enterprise_value": 24126841751.0916,
   "eps_fwd": 6.29862,
   "eps_ttm": 6.79,
-  "ev_fwd_rev": 4.9039,
+  "ev_fwd_rev": 4.8908,
   "fcf_ttm": 1923587000.0,
   "fd_direction": "stable",
   "fd_sizing_adj": 0.0,
@@ -226,10 +226,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 4933060096.0,
   "industry": "Software - Application",
-  "last_daily_update": "2026-06-29T14:43:28+00:00",
+  "last_daily_update": "2026-06-29T16:42:32+00:00",
   "last_full_calc": "2026-06-11T18:40:52+00:00",
   "manual_overrides": {},
-  "market_cap": 25358723197.001083,
+  "market_cap": 25294211751.0916,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -247,7 +247,7 @@
     "valuation:dividend_yield_zscore"
   ],
   "net_debt_stored": -1167370000.0,
-  "owner_earnings_yield": 0.075855,
+  "owner_earnings_yield": 0.076049,
   "pe_20y_array": [
     11.9258,
     12.9661,
@@ -257,7 +257,7 @@
   ],
   "pe_history_insufficient": false,
   "pe_percentile_20y": 20.0,
-  "pe_ttm": 12.7364,
+  "pe_ttm": 12.704,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -266,13 +266,13 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 86.4800033569336,
+  "price": 86.26000213623047,
   "quote_type": "EQUITY",
   "revenue_accelerating": false,
   "roic_5y_avg": 0.21948,
   "sector": "Technology",
   "ticker": "ZM",
-  "updated_at": "2026-06-29T14:43:28+00:00",
+  "updated_at": "2026-06-29T16:42:32+00:00",
   "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {

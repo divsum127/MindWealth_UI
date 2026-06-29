@@ -190,7 +190,7 @@
   "debt_purpose": null,
   "dividend_yield_current": 0.0,
   "dividend_yield_zscore": null,
-  "enterprise_value": 408372511019.36127,
+  "enterprise_value": 408372501598.00006,
   "eps_fwd": 4.761937,
   "eps_ttm": -4.54,
   "ev_fwd_rev": null,
@@ -225,10 +225,10 @@
   "fs_score": 42.0,
   "full_recalc_trigger": "daily_fundamentals_script",
   "industry": "Internet Retail",
-  "last_daily_update": "2026-06-29T14:43:27+00:00",
+  "last_daily_update": "2026-06-29T16:42:32+00:00",
   "last_full_calc": "2026-06-23T14:05:56+00:00",
   "manual_overrides": {},
-  "market_cap": 417697041019.36127,
+  "market_cap": 417697031598.00006,
   "missing_fields": [
     "distribution_coverage_ratio",
     "dividend_yield_5y_mean",
@@ -272,13 +272,13 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 67.6500015258789,
+  "price": 67.65,
   "quote_type": "EQUITY",
   "revenue_accelerating": null,
   "roic_5y_avg": -0.24094,
   "sector": "Consumer Cyclical",
   "ticker": "3690.HK",
-  "updated_at": "2026-06-29T14:43:27+00:00",
+  "updated_at": "2026-06-29T16:42:32+00:00",
   "valuation_tax": -2.0,
   "valuation_tax_breakdown": {
     "components": {

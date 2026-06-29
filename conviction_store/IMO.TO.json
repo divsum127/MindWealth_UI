@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.025633,
   "dividend_yield_5y_std": 0.012439,
-  "dividend_yield_current": 0.021631,
-  "dividend_yield_zscore": -0.3217,
-  "enterprise_value": 80187398350.49255,
+  "dividend_yield_current": 0.021545,
+  "dividend_yield_zscore": -0.3286,
+  "enterprise_value": 80496897392.93098,
   "eps_fwd": 10.23887,
   "eps_ttm": 5.89,
-  "ev_fwd_rev": 1.7109,
+  "ev_fwd_rev": 1.7175,
   "fcf_ttm": 4703000000.0,
   "fd_direction": "positive",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 46868000768.0,
   "industry": "Oil & Gas Integrated",
-  "last_daily_update": "2026-06-29T14:43:27+00:00",
+  "last_daily_update": "2026-06-29T16:42:32+00:00",
   "last_full_calc": "2026-05-18T20:49:02+00:00",
   "manual_overrides": {},
-  "market_cap": 77800398350.49255,
+  "market_cap": 78109897392.93098,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 2387000000.0,
-  "owner_earnings_yield": 0.06045,
+  "owner_earnings_yield": 0.06021,
   "pe_20y_array": [
     15.3006,
     17.751,
@@ -233,7 +233,7 @@
     25.3087
   ],
   "pe_percentile_20y": 100.0,
-  "pe_ttm": 27.3141,
+  "pe_ttm": 27.4228,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -242,12 +242,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 160.8800048828125,
+  "price": 161.52000427246094,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.12384,
   "sector": "Energy",
   "ticker": "IMO.TO",
-  "updated_at": "2026-06-29T14:43:27+00:00",
+  "updated_at": "2026-06-29T16:42:32+00:00",
   "valuation_tax": -4.0,
   "valuation_tax_breakdown": {
     "components": {

@@ -731,3 +731,12 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
    - Summary: Dropped `git add`, `git commit`, and `git push` from the daily trade-data pipeline so prod (`uiv2/git`) updates `trade_store/`, chatbot data, and conviction artifacts on disk only. Supports dev/prod split: code flows dev → git remote → prod pull; data no longer competes on `main`.
    - Files changed:
      - `update_trade_data.sh`
+
+### 2026-06-29
+
+1. **Rename uiv2/dev directory to uiv2/prod** — SUCCESSFUL
+   - Date: 2026-06-29
+   - Summary: Renamed `/home/ubuntu/uiv2/dev` → `/home/ubuntu/uiv2/prod`. Updated nightly `emailscript.sh` cron path and job status details reference.
+   - Files changed:
+     - `/home/ubuntu/MindWealth/emailscript.sh`
+     - `docs/mindwealth_ui_repo_job_status_details.md`

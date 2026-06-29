@@ -1,0 +1,81 @@
+{
+  "job_id": "fdf9ef17-1b36-48aa-bfc5-27b24ccb5d55",
+  "session_id": "16e5e14f-1c56-4a23-959a-a0c386156c2d",
+  "status": "completed",
+  "created_at": "2026-06-29T16:46:10.189865+00:00",
+  "started_at": "2026-06-29T16:46:10.190871+00:00",
+  "completed_at": "2026-06-29T16:46:19.590319+00:00",
+  "request": {
+    "message": "hello test",
+    "preset": "freeform",
+    "asset": null,
+    "from_date": null,
+    "to_date": null,
+    "assets": null,
+    "functions": null,
+    "selected_signal_types": [],
+    "auto_extract_tickers": true,
+    "deep_research_enabled": false,
+    "query_kind": null,
+    "additional_context": null
+  },
+  "flow_steps": [
+    {
+      "stage": "Router",
+      "detail": "Analyzing user query intent and selecting route",
+      "timestamp": "2026-06-29T16:46:10.885533+00:00"
+    },
+    {
+      "stage": "Route Selected",
+      "detail": "CONVERSATIONAL (intent=CONVERSATIONAL, conf=0.92)",
+      "timestamp": "2026-06-29T16:46:12.758698+00:00"
+    },
+    {
+      "stage": "Conversation Mode",
+      "detail": "Using conversation history only (no web/internal data fetch)",
+      "timestamp": "2026-06-29T16:46:12.759593+00:00"
+    }
+  ],
+  "result": {
+    "content": "# Hello! \ud83d\udc4b\n\nWelcome to **MindWealth Financial Analysis**! \n\nI'm here to help you analyze stock market signals, trading data, and market trends. I can assist you with:\n\n## My Capabilities\n\n- **Signal Analysis** - Interpreting trading signals and technical indicators\n- **Stock Performance** - Analyzing price movements and trends\n- **Market Insights** - Providing data-driven market analysis\n- **Multi-Ticker Comparison** - Comparing performance across different stocks\n- **Pattern Recognition** - Identifying trading opportunities and trends\n\n## How to Get Started\n\nYou can ask me questions like:\n- \"Analyze the latest signals for AAPL\"\n- \"What are the current market trends?\"\n- \"Compare performance between TSLA and NVDA\"\n- \"Show me recent trading signals\"\n- \"What patterns do you see in the current data?\"\n\n**Note:** For the most accurate analysis, I work best when provided with specific signal data, ticker symbols, or time periods you'd like me to analyze.\n\nWhat would you like to explore today?",
+    "metadata": {
+      "intent": "CONVERSATIONAL",
+      "intent_label": "Conversational",
+      "intent_confidence": 0.92,
+      "intent_classified_by": "llm_router",
+      "route": "CONVERSATIONAL",
+      "web_search_used": false,
+      "web_sources": [],
+      "llm_router_reasoning": "The user is simply greeting, which does not require any data or information retrieval.",
+      "input_type": "conversational",
+      "model": "claude-sonnet-4-5-20250929",
+      "tokens_used": {
+        "prompt": 1562,
+        "completion": 241,
+        "total": 1803
+      },
+      "finish_reason": "end_turn",
+      "batch_processing_used": true,
+      "batch_count": 1,
+      "batch_mode": "single",
+      "flow_trace": [
+        {
+          "stage": "Router",
+          "detail": "Analyzing user query intent and selecting route",
+          "timestamp": "16:46:10"
+        },
+        {
+          "stage": "Route Selected",
+          "detail": "CONVERSATIONAL (intent=CONVERSATIONAL, conf=0.92)",
+          "timestamp": "16:46:12"
+        },
+        {
+          "stage": "Conversation Mode",
+          "detail": "Using conversation history only (no web/internal data fetch)",
+          "timestamp": "16:46:12"
+        }
+      ]
+    }
+  },
+  "error": null
+}

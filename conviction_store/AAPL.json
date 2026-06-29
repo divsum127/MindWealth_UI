@@ -21,7 +21,7 @@
   "bq_raw": 7.0,
   "business_type": "compounder",
   "business_type_source": "auto",
-  "conviction_score": 0.0,
+  "conviction_score": 1.0,
   "created_at": "2026-05-12T20:17:04+00:00",
   "data_coverage": {
     "bq_auto_dimensions": {
@@ -190,12 +190,12 @@
   "debt_purpose": null,
   "dividend_yield_5y_mean": 0.015334,
   "dividend_yield_5y_std": 0.0077,
-  "dividend_yield_current": 0.003806,
-  "dividend_yield_zscore": -1.4971,
-  "enterprise_value": 4238001867751.0986,
+  "dividend_yield_current": 0.003852,
+  "dividend_yield_zscore": -1.4912,
+  "enterprise_value": 4187991438500.0,
   "eps_fwd": 9.60792,
   "eps_ttm": 8.25,
-  "ev_fwd_rev": 9.3877,
+  "ev_fwd_rev": 9.2769,
   "fcf_ttm": 123324000000.0,
   "fd_direction": "stable",
   "fd_sizing_adj": 0.0,
@@ -223,18 +223,18 @@
   },
   "fetch_errors": [],
   "flags": [],
-  "fs_class": "moderate",
+  "fs_class": "moderate_high",
   "fs_quality_base": 67.5,
-  "fs_score": 53.5,
+  "fs_score": 59.5,
   "full_recalc_trigger": "manual",
   "fwd_revenue_stored": 451442016256.0,
   "industry": "Consumer Electronics",
-  "last_daily_update": "2026-06-29T14:43:27+00:00",
+  "last_daily_update": "2026-06-29T16:42:32+00:00",
   "last_full_calc": "2026-06-05T00:34:08+00:00",
   "manual_overrides": {
     "bq_raw": 7
   },
-  "market_cap": 4167977867751.0986,
+  "market_cap": 4117967438500.0,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -249,7 +249,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 70024000000.0,
-  "owner_earnings_yield": 0.029588,
+  "owner_earnings_yield": 0.029948,
   "pe_20y_array": [
     34.3692,
     32.804,
@@ -258,8 +258,8 @@
     32.8114,
     36.0145
   ],
-  "pe_percentile_20y": 83.33,
-  "pe_ttm": 34.3976,
+  "pe_percentile_20y": 66.67,
+  "pe_ttm": 33.9848,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -268,14 +268,14 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 283.7799987792969,
+  "price": 280.375,
   "quote_type": "EQUITY",
   "revenue_accelerating": null,
   "roic_5y_avg": 1.4147099,
   "sector": "Technology",
   "ticker": "AAPL",
-  "updated_at": "2026-06-29T14:43:27+00:00",
-  "valuation_tax": -7.0,
+  "updated_at": "2026-06-29T16:42:32+00:00",
+  "valuation_tax": -6.0,
   "valuation_tax_breakdown": {
     "components": {
       "business_type_relief": 0.0,
@@ -284,9 +284,9 @@
       "growth_multiple_fragility": 0.0,
       "market_regime_beta": 0.0,
       "oey_penalty": 0.0,
-      "pe_hist_percentile": -2.0
+      "pe_hist_percentile": -1.0
     },
-    "total": -7.0
+    "total": -6.0
   },
   "yield_trap_mkt_threshold": 0.06,
   "yield_trap_warning": false

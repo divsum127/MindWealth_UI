@@ -189,12 +189,12 @@
   },
   "dividend_yield_5y_mean": 0.048547,
   "dividend_yield_5y_std": 0.04872,
-  "dividend_yield_current": 0.007991,
-  "dividend_yield_zscore": -0.8324,
-  "enterprise_value": 69006685945.20264,
+  "dividend_yield_current": 0.008045,
+  "dividend_yield_zscore": -0.8313,
+  "enterprise_value": 68595076108.39209,
   "eps_fwd": 8.497006,
   "eps_ttm": 5.62,
-  "ev_fwd_rev": 7.1812,
+  "ev_fwd_rev": 7.1384,
   "fcf_ttm": 1219703000.0,
   "fd_direction": "negative",
   "fd_votes": {},
@@ -205,10 +205,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 9609369600.0,
   "industry": "Waste Management",
-  "last_daily_update": "2026-06-29T14:43:28+00:00",
+  "last_daily_update": "2026-06-29T16:42:32+00:00",
   "last_full_calc": "2026-05-18T20:51:00+00:00",
   "manual_overrides": {},
-  "market_cap": 60415358945.20264,
+  "market_cap": 60003749108.39209,
   "missing_fields": [
     "distribution_coverage_ratio",
     "fcf_margin",
@@ -223,7 +223,7 @@
     "roic_proxy"
   ],
   "net_debt_stored": 8591327000.0,
-  "owner_earnings_yield": 0.020189,
+  "owner_earnings_yield": 0.020327,
   "pe_20y_array": [
     104.6609,
     99.0435,
@@ -233,7 +233,7 @@
     54.9388
   ],
   "pe_percentile_20y": 0.0,
-  "pe_ttm": 42.3096,
+  "pe_ttm": 42.0214,
   "position_layers": {
     "core_fraction": 0.0,
     "core_model": null,
@@ -242,12 +242,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 237.77999877929688,
+  "price": 236.16000366210938,
   "quote_type": "EQUITY",
   "roic_5y_avg": 0.13121,
   "sector": "Industrials",
   "ticker": "WCN.TO",
-  "updated_at": "2026-06-29T14:43:28+00:00",
+  "updated_at": "2026-06-29T16:42:32+00:00",
   "valuation_tax": -5.0,
   "valuation_tax_breakdown": {
     "components": {

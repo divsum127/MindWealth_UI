@@ -203,7 +203,7 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 1020000000.0,
   "industry": "Telecom Services",
-  "last_daily_update": "2026-06-29T14:43:27+00:00",
+  "last_daily_update": "2026-06-29T16:42:32+00:00",
   "last_full_calc": "2026-05-18T20:48:14+00:00",
   "manual_overrides": {},
   "market_cap": 4291145486.6233807,
@@ -239,7 +239,7 @@
   "roic_5y_avg": 0.043959998,
   "sector": "Communication Services",
   "ticker": "CNU.NZ",
-  "updated_at": "2026-06-29T14:43:27+00:00",
+  "updated_at": "2026-06-29T16:42:32+00:00",
   "valuation_tax": -7.0,
   "valuation_tax_breakdown": {
     "components": {

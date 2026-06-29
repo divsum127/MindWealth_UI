@@ -1,0 +1,105 @@
+{
+  "job_id": "7f371e04-a81b-41b8-99e1-54ef632357a8",
+  "session_id": "01560165-94a2-4ca7-a9ec-c9d7026e19f9",
+  "status": "completed",
+  "created_at": "2026-06-29T16:25:31.989252+00:00",
+  "started_at": "2026-06-29T16:25:31.990478+00:00",
+  "completed_at": "2026-06-29T16:25:33.534392+00:00",
+  "request": {
+    "message": "hello",
+    "preset": "freeform",
+    "asset": null,
+    "from_date": null,
+    "to_date": null,
+    "assets": null,
+    "functions": null,
+    "selected_signal_types": [],
+    "auto_extract_tickers": true,
+    "deep_research_enabled": false,
+    "query_kind": null,
+    "additional_context": null
+  },
+  "flow_steps": [
+    {
+      "stage": "Router",
+      "detail": "Analyzing user query intent and selecting route",
+      "timestamp": "2026-06-29T16:25:32.759878+00:00"
+    },
+    {
+      "stage": "Route Selected",
+      "detail": "INTERNAL (intent=SIGNAL_LOOKUP, conf=0.85)",
+      "timestamp": "2026-06-29T16:25:33.270846+00:00"
+    },
+    {
+      "stage": "Internal Search",
+      "detail": "Using internal signal data pipeline",
+      "timestamp": "2026-06-29T16:25:33.271578+00:00"
+    },
+    {
+      "stage": "Context Handling",
+      "detail": "No prior context found; running fresh internal smart query",
+      "timestamp": "2026-06-29T16:25:33.272699+00:00"
+    },
+    {
+      "stage": "Internal Data Query",
+      "detail": "Fetched internal signal data (selector + columns + date filters)",
+      "timestamp": "2026-06-29T16:25:33.531847+00:00"
+    },
+    {
+      "stage": "Response Generation",
+      "detail": "Generated final response from internal analysis",
+      "timestamp": "2026-06-29T16:25:33.532773+00:00"
+    }
+  ],
+  "result": {
+    "content": "Error extracting query components: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************wfwA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}",
+    "metadata": {
+      "error": "Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************wfwA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}",
+      "intent": "SIGNAL_LOOKUP",
+      "intent_label": "Signal Lookup",
+      "intent_confidence": 0.85,
+      "intent_classified_by": "llm_router",
+      "route": "INTERNAL",
+      "web_search_used": false,
+      "web_sources": [],
+      "llm_router_reasoning": "Router error, default internal: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-proj-********************************************************************************************************************************************************wfwA. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}",
+      "input_type": "smart_followup",
+      "followup_mode": "dynamic_fresh",
+      "conversation_context_used": false,
+      "history_exchanges_used": 0,
+      "flow_trace": [
+        {
+          "stage": "Router",
+          "detail": "Analyzing user query intent and selecting route",
+          "timestamp": "16:25:32"
+        },
+        {
+          "stage": "Route Selected",
+          "detail": "INTERNAL (intent=SIGNAL_LOOKUP, conf=0.85)",
+          "timestamp": "16:25:33"
+        },
+        {
+          "stage": "Internal Search",
+          "detail": "Using internal signal data pipeline",
+          "timestamp": "16:25:33"
+        },
+        {
+          "stage": "Context Handling",
+          "detail": "No prior context found; running fresh internal smart query",
+          "timestamp": "16:25:33"
+        },
+        {
+          "stage": "Internal Data Query",
+          "detail": "Fetched internal signal data (selector + columns + date filters)",
+          "timestamp": "16:25:33"
+        },
+        {
+          "stage": "Response Generation",
+          "detail": "Generated final response from internal analysis",
+          "timestamp": "16:25:33"
+        }
+      ]
+    }
+  },
+  "error": null
+}

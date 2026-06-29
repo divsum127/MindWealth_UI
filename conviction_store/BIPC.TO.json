@@ -187,11 +187,11 @@
   },
   "dividend_yield_5y_mean": 0.047618,
   "dividend_yield_5y_std": 0.015029,
-  "dividend_yield_current": 0.044693,
-  "dividend_yield_zscore": -0.1946,
-  "enterprise_value": 18708752373.755753,
+  "dividend_yield_current": 0.045697,
+  "dividend_yield_zscore": -0.1278,
+  "enterprise_value": 18558703608.66066,
   "eps_ttm": -8.48,
-  "ev_fwd_rev": 5.1005,
+  "ev_fwd_rev": 5.0596,
   "fcf_ttm": 526000000.0,
   "fd_direction": "positive",
   "fd_votes": {},
@@ -202,10 +202,10 @@
   "full_recalc_trigger": "daily_fundamentals_script",
   "fwd_revenue_stored": 3668000000.0,
   "industry": "Utilities - Regulated Gas",
-  "last_daily_update": "2026-06-29T14:43:27+00:00",
+  "last_daily_update": "2026-06-29T16:42:32+00:00",
   "last_full_calc": "2026-05-18T20:47:48+00:00",
   "manual_overrides": {},
-  "market_cap": 6824752373.755753,
+  "market_cap": 6674703608.66066,
   "missing_fields": [
     "distribution_coverage_ratio",
     "eps_fwd",
@@ -224,7 +224,7 @@
     "valuation:pe_ttm"
   ],
   "net_debt_stored": 11884000000.0,
-  "owner_earnings_yield": 0.077072,
+  "owner_earnings_yield": 0.078805,
   "pe_percentile_20y": null,
   "pe_ttm": null,
   "position_layers": {
@@ -235,12 +235,12 @@
     "tactical_model": null,
     "tactical_signal_date": null
   },
-  "price": 55.4900016784668,
+  "price": 54.27000045776367,
   "quote_type": "EQUITY",
   "roic_5y_avg": -0.010989999,
   "sector": "Utilities",
   "ticker": "BIPC.TO",
-  "updated_at": "2026-06-29T14:43:27+00:00",
+  "updated_at": "2026-06-29T16:42:32+00:00",
   "valuation_tax": -1.0,
   "valuation_tax_breakdown": {
     "components": {
