@@ -11,6 +11,20 @@ This file captures minute-level implementation context for each completed task:
 
 ---
 
+---
+
+### 2026-06-27 — update_trade_data.sh local-only (no git)
+
+**Assumptions:** Prod checkout at `/home/ubuntu/uiv2/git/MindWealth_UI` runs the script via cron; dev checkout will own code commits separately.
+
+**Key decisions:** Remove entire git block (`git add .`, commit, push to `main`) rather than scoping adds — data dirs should stay out of git long-term via `.gitignore` (deferred).
+
+**Deferred:** Gitignore `trade_store/`, `chatbot/data/`, `conviction_store/`; mirror script change in `uiv2/dev` when that checkout exists; document prod `git pull` deploy step.
+
+**Edge cases:** GitHub Actions AAII workflow still pushes to `main`; prod pulls may still update `macro_intelligence/data/aaii_*`. Uncommitted local changes in prod tree are no longer accidentally bundled into a data commit.
+
+**Caveats:** Historical data already on `main` remains until cleaned separately; script header comment updated to reflect local-only behavior.
+
 ### 2026-06-09 — Create create-understanding-doc Cursor skill
 
 **Assumptions:**

@@ -723,3 +723,11 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
    - Files changed:
      - `testing/combo_de_thresholds/run_combo_de_followup.py` (new)
      - `testing/combo_de_thresholds/output_files/case1_*.csv`, `case2_*.csv`, `followup_meta.json`
+
+### 2026-06-27
+
+1. **Remove git commit/push from update_trade_data.sh (local-only data sync)** — SUCCESSFUL
+   - Date: 2026-06-27
+   - Summary: Dropped `git add`, `git commit`, and `git push` from the daily trade-data pipeline so prod (`uiv2/git`) updates `trade_store/`, chatbot data, and conviction artifacts on disk only. Supports dev/prod split: code flows dev → git remote → prod pull; data no longer competes on `main`.
+   - Files changed:
+     - `update_trade_data.sh`

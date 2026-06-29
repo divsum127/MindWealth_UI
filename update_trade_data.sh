@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Script to copy trade data files and push to GitHub
-# Copies from the MindWealth engine tree into this repo's trade_store/
+# Script to copy trade data files into this repo's trade_store/ (local only; no git).
+# Copies from the MindWealth engine tree into this checkout.
 
 set -e  # Exit on any error
 
@@ -301,16 +301,4 @@ echo "📈 Running Conviction Engine daily pipeline..."
 python3 scripts/run_conviction_engine_daily.py --fundamentals-mode daily
 echo "✅ Conviction Engine daily pipeline completed (see conviction_store/daily/)"
 
-# Git operations
-echo "🔄 Adding files to git..."
-git add .
-
-# Commit changes
-echo "💾 Committing changes..."
-git commit -m "Update trade data: CSV files from cache and trade_store/US"
-
-# Push to GitHub
-echo "🚀 Pushing to GitHub..."
-git push origin main
-
-echo "✅ All done! Data updated and pushed to GitHub."
+echo "✅ All done! Trade data updated locally (no git commit/push)."
