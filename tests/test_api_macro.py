@@ -15,6 +15,7 @@ if str(_ROOT) not in sys.path:
 
 from fastapi.testclient import TestClient
 from api.main import app
+from tests.api_test_helpers import disable_rate_limits
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Minimal runic_output.json fixture
@@ -101,6 +102,25 @@ _RUNIC_FIXTURE: dict = {
         {"combo": "F", "status": "ACTIVE wk 8/26"},
         {"combo": "D", "status": "WATCH 2/3 CFTC"},
     ],
+    "pre_catalyst": {
+        "active": True,
+        "upcoming_event": {"type": "FOMC", "date": "2026-06-25"},
+        "days_to_event": 7,
+        "near_threshold_count": 5,
+        "near_threshold_vars": ["NFCI", "HY", "VIX", "CURVE", "CFTC"],
+        "fragility_score": "HIGH — REGIME SENSITIVE TO CATALYST",
+    },
+    "post_event_regime": {
+        "active": False,
+        "regime_transition": False,
+        "transition_type": None,
+        "event": None,
+        "hours_since_event": None,
+        "variables_crossed": [],
+        "combos_changed": False,
+        "combo_diff": [],
+        "metrics": {},
+    },
 }
 
 
@@ -115,6 +135,7 @@ def _make_mock_service(tmp_json: Path) -> None:
 class TestMacroAPI(unittest.TestCase):
 
     def setUp(self) -> None:
+        disable_rate_limits()
         self.client = TestClient(app)
         self._tmp = tempfile.NamedTemporaryFile(suffix=".json", delete=False)
         self._tmp_path = Path(self._tmp.name)
@@ -197,6 +218,49 @@ class TestMacroAPI(unittest.TestCase):
         self.assertIn("narrative", body)
         self.assertIn("system_recommendation", body)
         self.assertIn("brave_fearful_display", body)
+        self.assertNotIn("pre_catalyst", body)
+        self.assertNotIn("post_event_regime", body)
+
+    # ── Scheduled macro events (pre-catalyst / post-regime) ─────────────────
+
+    def test_pre_catalyst_intel(self) -> None:
+        r = self.client.get("/api/v1/macro/events/pre-catalyst")
+        self.assertEqual(r.status_code, 200)
+        body = r.json()
+        self.assertEqual(body["date"], "2026-06-18")
+        self.assertTrue(body["active"])
+        self.assertEqual(body["fragility_score"], "HIGH — REGIME SENSITIVE TO CATALYST")
+        self.assertEqual(body["upcoming_event"]["type"], "FOMC")
+        self.assertGreaterEqual(body["near_threshold_count"], 4)
+
+    def test_post_event_regime_intel(self) -> None:
+        r = self.client.get("/api/v1/macro/events/post-regime")
+        self.assertEqual(r.status_code, 200)
+        body = r.json()
+        self.assertEqual(body["date"], "2026-06-18")
+        self.assertFalse(body["active"])
+        self.assertFalse(body["regime_transition"])
+        self.assertIn("metrics", body)
+
+    def test_scheduled_events_calendar(self) -> None:
+        with patch(
+            "src.macro_intelligence.data.macro_calendar.list_scheduled_events",
+            return_value=[{"release_type": "FOMC", "release_date": "2026-06-25"}],
+        ):
+            r = self.client.get("/api/v1/macro/events/calendar?days=14")
+        self.assertEqual(r.status_code, 200)
+        body = r.json()
+        self.assertIn("events", body)
+        self.assertEqual(body["days_forward"], 14)
+        self.assertEqual(body["event_types"], ["CPI", "FOMC", "NFP"])
+        self.assertEqual(len(body["events"]), 1)
+
+    def test_runic_nightly_includes_event_intel_blocks(self) -> None:
+        r = self.client.get("/api/v1/macro/runic/nightly")
+        self.assertEqual(r.status_code, 200)
+        body = r.json()
+        self.assertIn("pre_catalyst", body)
+        self.assertIn("post_event_regime", body)
 
     # ── Variables heatmap ─────────────────────────────────────────────────────
 
@@ -431,6 +495,7 @@ _SSI_MULT_MOCK = {
 
 class TestSSIEndpoints(unittest.TestCase):
     def setUp(self):
+        disable_rate_limits()
         self.client = TestClient(app)
 
     def test_ssi_summary_ok(self):

@@ -18,6 +18,16 @@ from src.macro_intelligence.data.bls_pull import ingest_cpi_release
 class TestComboCCancel(unittest.TestCase):
     def setUp(self) -> None:
         init_db()
+        with get_connection() as conn:
+            conn.execute(
+                """
+                UPDATE combo_c_cancel
+                SET wti_potential_week=0, active=1, cancel_date=NULL,
+                    last_check_date=NULL, cpi_leg_passed=NULL
+                WHERE id=1
+                """
+            )
+            conn.commit()
         ingest_cpi_release("2026-05-20", 0.1, 0.3)
 
     def test_wti_ok_increments_week_on_friday(self) -> None:

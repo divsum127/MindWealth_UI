@@ -27,12 +27,12 @@ if not USING_STREAMLIT_SECRETS:
     # Try loading from project root first
     env_file = project_root / ".env"
     if env_file.exists():
-        load_dotenv(env_file)
+        load_dotenv(env_file, override=False)
     else:
         # Try loading from chatbot directory
         env_file = chatbot_dir / ".env"
         if env_file.exists():
-            load_dotenv(env_file)
+            load_dotenv(env_file, override=False)
 
 # Base directories
 BASE_DIR = project_root

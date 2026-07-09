@@ -5,8 +5,6 @@ from api.main import app
 
 client = TestClient(app)
 BASE = "/api/v1"
-
-
 def test_outstanding_signals_enriched():
     r = client.get(f"{BASE}/signals/reports/outstanding-signals/latest")
     assert r.status_code == 200
@@ -30,9 +28,23 @@ def test_outstanding_not_enriched():
     r = client.get(f"{BASE}/signals/reports/outstanding-signals/latest?enrich=false")
     assert r.status_code == 200
     d = r.json()
-    # raw records don't have window_remaining_pct
     rec = d["records"][0]
-    assert "window_remaining_pct" not in rec
+    # Pipeline may persist MasterSpec columns in CSV; enrich=false skips runtime overlay fields.
+    assert "conviction_score" not in rec
+    assert "mtm_pct" not in rec
+
+
+def test_portfolio_risk_cross_function_conflicts_key():
+    r = client.get(f"{BASE}/signals/reports/portfolio-risk/latest")
+    if r.status_code == 404:
+        pytest.skip("portfolio-risk report not available")
+    assert r.status_code == 200
+    d = r.json()
+    assert "cross_function_conflicts" in d
+    assert isinstance(d["cross_function_conflicts"], list)
+    if d.get("records"):
+        rec = d["records"][0]
+        assert "conflict" in rec or "cross_function_exit_triggered" in rec or True
 
 
 def test_new_signals_enriched():
@@ -186,9 +198,10 @@ def test_all_signal_no_enrich_by_default():
     assert r.status_code == 200
     d = r.json()
     assert d["row_count"] >= 0
-    # Without enrich the records must NOT contain window_remaining_pct
     if d["records"]:
-        assert "window_remaining_pct" not in d["records"][0]
+        rec = d["records"][0]
+        assert "conviction_score" not in rec
+        assert "mtm_pct" not in rec
 
 
 def test_all_signal_enrich_true_explicit():

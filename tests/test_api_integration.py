@@ -15,10 +15,12 @@ if str(_ROOT) not in sys.path:
 from fastapi.testclient import TestClient
 
 from api.main import app
+from tests.api_test_helpers import disable_rate_limits
 
 
 class TestSignalsAPI(unittest.TestCase):
     def setUp(self) -> None:
+        disable_rate_limits()
         self.client = TestClient(app)
 
     def test_list_reports(self) -> None:
@@ -40,6 +42,7 @@ class TestSignalsAPI(unittest.TestCase):
 
 class TestVirtualTradingAPI(unittest.TestCase):
     def setUp(self) -> None:
+        disable_rate_limits()
         self.client = TestClient(app)
 
     def test_long(self) -> None:
@@ -54,6 +57,7 @@ class TestVirtualTradingAPI(unittest.TestCase):
 
 class TestAnalyticsAPI(unittest.TestCase):
     def setUp(self) -> None:
+        disable_rate_limits()
         self.client = TestClient(app)
 
     def test_sigma(self) -> None:
@@ -72,6 +76,7 @@ class TestAnalyticsAPI(unittest.TestCase):
 
 class TestMacroAPI(unittest.TestCase):
     def setUp(self) -> None:
+        disable_rate_limits()
         self.client = TestClient(app)
 
     def test_runic_nightly(self) -> None:
@@ -89,6 +94,7 @@ class TestMacroAPI(unittest.TestCase):
 
 class TestMonitoredTradesAPI(unittest.TestCase):
     def setUp(self) -> None:
+        disable_rate_limits()
         self.tmp = tempfile.TemporaryDirectory()
         self.path = Path(self.tmp.name) / "monitored_trades.json"
         self.path.write_text('{"last_updated":"x","trades":[]}', encoding="utf-8")
@@ -120,25 +126,33 @@ class TestClaudeOverlayFix(unittest.TestCase):
     def test_overlay_claude_empty(self) -> None:
         from api.services.conviction_service import overlay_signal_file
 
-        r = overlay_signal_file(
-            report_date=None,
-            report_name="claude_signals_report.csv",
-            save_output=False,
-            update_layers=False,
-        )
+        with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as f:
+            f.write(b"")
+            empty_path = Path(f.name)
+        with patch("api.services.conviction_service.signal_file_for_report_date", return_value=empty_path):
+            r = overlay_signal_file(
+                report_date=None,
+                report_name="claude_signals_report.csv",
+                save_output=False,
+                update_layers=False,
+            )
         self.assertEqual(r["row_count"], 0)
         self.assertTrue(r.get("csv_empty") or r.get("shortlist"))
 
     def test_overlay_claude_empty_via_api(self) -> None:
         client = TestClient(app)
-        r = client.post(
-            "/api/v1/conviction/signals/overlay-file",
-            json={
-                "report_name": "claude_signals_report.csv",
-                "save_output": False,
-                "update_layers": False,
-            },
-        )
+        with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as f:
+            f.write(b"")
+            empty_path = Path(f.name)
+        with patch("api.services.conviction_service.signal_file_for_report_date", return_value=empty_path):
+            r = client.post(
+                "/api/v1/conviction/signals/overlay-file",
+                json={
+                    "report_name": "claude_signals_report.csv",
+                    "save_output": False,
+                    "update_layers": False,
+                },
+            )
         self.assertEqual(r.status_code, 200)
         body = r.json()
         self.assertEqual(body["row_count"], 0)

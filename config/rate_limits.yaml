@@ -1,0 +1,52 @@
+# MindWealth API rate limits — edit this file, then restart the API service.
+# Env RATE_LIMIT_ENABLED=false disables all limits (tests/local).
+# Env RATE_LIMIT_CONFIG_FILE overrides this path.
+# Per-key env overrides still work, e.g. RATE_LIMIT_USER_READ=25/10seconds;250/minute
+
+enabled: true
+
+# Shared across all roles (brute-force / infra)
+shared:
+  global_ip_per_minute: "600/minute"
+  auth_login_ip: "10/minute"
+  auth_login_email: "5/minute"
+  auth_accept_invite_ip: "5/minute"
+  health: "120/minute"
+
+# API-key-only clients (curl/scripts, no JWT) — higher read for automation by teammates
+apikey:
+  read: "60/10seconds;600/minute"
+
+# Admin — generous limits for ops, testing, and admin UI (normal usage never hits these)
+admin:
+  global_user_per_minute: "5000/minute"
+  read: "200/10seconds;3000/minute"
+  chat_messages: "30/minute;500/hour"
+  chat_presets: "15/minute;200/hour"
+  chat_job_poll: "300/minute"
+  chat_session_create: "60/minute"
+  chat_read: "300/minute"
+  auth_session: "120/minute"
+  auth_admin: "60/minute"
+  auth_change_password: "10/minute"
+  write_expensive: "60/minute"
+  macro_nightly: "10/hour"
+  monitored_trades_write: "120/minute"
+  activity_events: "60/minute"
+
+# Standard user — tuned for normal UI (15–25 parallel page loads) while blocking scraping/automation
+user:
+  global_user_per_minute: "400/minute"
+  read: "30/10seconds;300/minute"
+  chat_messages: "3/minute;30/hour"
+  chat_presets: "3/minute;20/hour"
+  chat_job_poll: "120/minute"
+  chat_session_create: "20/minute"
+  chat_read: "60/minute"
+  auth_session: "60/minute"
+  auth_admin: "20/minute"
+  auth_change_password: "5/minute"
+  write_expensive: "10/minute"
+  macro_nightly: "2/hour"
+  monitored_trades_write: "30/minute"
+  activity_events: "30/minute"

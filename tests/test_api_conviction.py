@@ -14,11 +14,21 @@ if str(_ROOT) not in sys.path:
 from fastapi.testclient import TestClient
 
 from api.main import app
+from tests.api_test_helpers import disable_rate_limits
 
 
 class TestHealthAPI(unittest.TestCase):
     def setUp(self) -> None:
+        disable_rate_limits()
         self.client = TestClient(app)
+        self._api_patch = patch.dict("os.environ", {"API_KEY": ""}, clear=False)
+        self._key_patch = patch("api.dependencies.API_KEY", "")
+        self._api_patch.start()
+        self._key_patch.start()
+
+    def tearDown(self) -> None:
+        self._key_patch.stop()
+        self._api_patch.stop()
 
     def test_health_ok(self) -> None:
         response = self.client.get("/api/v1/health")
@@ -31,6 +41,7 @@ class TestHealthAPI(unittest.TestCase):
 
 class TestConvictionReadAPI(unittest.TestCase):
     def setUp(self) -> None:
+        disable_rate_limits()
         self.client = TestClient(app)
 
     def test_list_overlay_dates(self) -> None:
@@ -50,6 +61,7 @@ class TestConvictionReadAPI(unittest.TestCase):
 
 class TestConvictionEvaluateAPI(unittest.TestCase):
     def setUp(self) -> None:
+        disable_rate_limits()
         self.client = TestClient(app)
 
     def test_evaluate_signal_validation_error(self) -> None:
@@ -90,6 +102,7 @@ class TestConvictionEvaluateAPI(unittest.TestCase):
 
 class TestAPIKey(unittest.TestCase):
     def test_api_key_required_when_set(self) -> None:
+        disable_rate_limits()
         with patch.dict("os.environ", {"API_KEY": "test-secret"}, clear=False):
             from importlib import reload
 
@@ -105,3 +118,4 @@ class TestAPIKey(unittest.TestCase):
             import os
 
             os.environ.pop("API_KEY", None)
+            reload(deps)

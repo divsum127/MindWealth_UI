@@ -137,15 +137,37 @@ def ensure_session_exists(session_id: str) -> None:
         raise FileNotFoundError(f"Session not found: {session_id}")
 
 
-def create_session(title: str | None = None) -> str:
-    return SessionManager.create_new_session(title=title)
+def get_session_owner_email(session_id: str) -> str | None:
+    meta = SessionManager.get_session_metadata(session_id)
+    if meta is None:
+        return None
+    owner = (meta.get("owner_email") or "").strip().lower()
+    return owner or None
 
 
-def list_sessions(*, sort_by: str = "last_updated", search: str | None = None, limit: int | None = None) -> list[dict[str, Any]]:
+def user_can_access_session(session_id: str, user_email: str) -> bool:
+    ensure_session_exists(session_id)
+    owner = get_session_owner_email(session_id)
+    if owner is None:
+        return True
+    return owner == user_email.strip().lower()
+
+
+def create_session(title: str | None = None, *, owner_email: str | None = None) -> str:
+    return SessionManager.create_new_session(title=title, owner_email=owner_email)
+
+
+def list_sessions(
+    *,
+    sort_by: str = "last_updated",
+    search: str | None = None,
+    limit: int | None = None,
+    owner_email: str | None = None,
+) -> list[dict[str, Any]]:
     if search:
-        sessions = SessionManager.search_sessions(search)
+        sessions = SessionManager.search_sessions(search, owner_email=owner_email)
     else:
-        sessions = SessionManager.list_all_sessions(sort_by=sort_by)
+        sessions = SessionManager.list_all_sessions(sort_by=sort_by, owner_email=owner_email)
     if limit is not None:
         sessions = sessions[:limit]
     return sessions
@@ -218,8 +240,9 @@ def launch_preset(
     to_date: str | None = None,
     title: str | None = None,
     deep_research_enabled: bool = False,
+    owner_email: str | None = None,
 ) -> dict[str, Any]:
-    session_id = SessionManager.create_new_session(title=title)
+    session_id = SessionManager.create_new_session(title=title, owner_email=owner_email)
     body = ChatMessageRequest(
         message="",
         preset=preset,
@@ -235,7 +258,11 @@ def get_job(job_id: str) -> dict[str, Any] | None:
     return get_job_store().get(job_id)
 
 
-def list_jobs(session_id: str | None = None, limit: int = 50) -> list[dict[str, Any]]:
+def list_jobs(
+    session_id: str | None = None,
+    limit: int = 50,
+    owner_email: str | None = None,
+) -> list[dict[str, Any]]:
     store = get_job_store()
     if session_id:
         return store.list_by_session(session_id, limit=limit)
@@ -246,6 +273,10 @@ def list_jobs(session_id: str | None = None, limit: int = 50) -> list[dict[str, 
             import json
 
             data = json.loads(path.read_text(encoding="utf-8"))
+            if owner_email:
+                sid = data.get("session_id")
+                if sid and not user_can_access_session(str(sid), owner_email):
+                    continue
             jobs.append(data)
         except (OSError, json.JSONDecodeError):
             continue

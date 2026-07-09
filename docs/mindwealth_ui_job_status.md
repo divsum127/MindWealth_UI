@@ -69,6 +69,19 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
 
 ---
 
+### 2026-07-07
+
+1. **v2 regime retag + Part H beta re-run (Item 15 follow-up)** — SUCCESSFUL
+   - Summary: Retagged 13,160 generic combo_fires with macro_regime_log_v2 shadow labels; re-ran 298-combo funnel with real hostile HR. Funnel: beta pass 132→127 (−5 non-promo survivors failed); all 62 promotion candidates still pass. Eight-theme shortlist validated — hostile HR now real (e.g. CURVE+WALCL 84.1% on n=69 hostile). Added regime_v2_enrich.py, retag script, v2 analysis outputs.
+   - Files changed:
+     - `src/macro_intelligence/analysis/regime_v2_enrich.py` (new)
+     - `src/macro_intelligence/analysis/combo_discovery_pipeline.py`
+     - `scripts/retag_combo_fires_v2_regimes.py` (new)
+     - `testing/291_combo_tests/run_v2_beta_rerun.py` (new)
+     - `testing/291_combo_tests/ANALYSIS_REPORT_v2_beta.md` (new)
+     - `testing/291_combo_tests/v2_beta_rerun_summary.json` (new)
+     - `testing/291_combo_tests/v2_shortlist_beta.csv` (new)
+
 ### 2026-06-25
 
 1. **298-combo promotion analysis + economic rationale shortlist (Item 15)** — SUCCESSFUL
@@ -732,6 +745,94 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
    - Files changed:
      - `update_trade_data.sh`
 
+### 2026-07-03
+
+1. **Macro scheduled-events API endpoints + frontend integration guide (v1.5.0)** — SUCCESSFUL
+   - Date: 2026-07-03
+   - Summary: Added three new macro API routes (`/macro/events/pre-catalyst`, `/macro/events/post-regime`, `/macro/events/calendar`) without changing existing endpoint response shapes. Reverted `pre_catalyst`/`post_event_regime` from `GET /macro/regime`. Documented endpoints, changelog v1.5.0, OpenAPI export, and frontend wiring guide.
+   - Files changed:
+     - `api/services/macro_service.py`
+     - `api/routers/macro.py`
+     - `tests/test_api_macro.py`
+     - `docs/api/services/macro/README.md`
+     - `docs/api/services/macro/endpoints/get-pre-catalyst.md` (new)
+     - `docs/api/services/macro/endpoints/get-post-event-regime.md` (new)
+     - `docs/api/services/macro/endpoints/get-scheduled-events-calendar.md` (new)
+     - `docs/api/frontend/macro-scheduled-events-integration.md` (new)
+     - `docs/api/changelog.md`
+     - `docs/api/openapi/mindwealth-v1.json`
+
+### 2026-06-30
+
+1. **Pre/Post scheduled-event regime intelligence (7a + 7b)** — SUCCESSFUL
+   - Summary: Added pre-catalyst fragility score (60th–79th / 21st–40th percentile near-threshold count before CPI/FOMC/NFP), extended macro calendar (FRED + optional Investing.com) for FOMC/NFP, post-event 48h regime transition classifier (5 types), FRED yield window helpers, nightly JSON fields `pre_catalyst` and `post_event_regime`, API exposure, briefing context. 21 unit tests pass.
+   - Files changed:
+     - `macro_intelligence/CONFIG.yaml`
+     - `src/macro_intelligence/data/macro_calendar.py` (new)
+     - `src/macro_intelligence/data/yield_window.py` (new)
+     - `src/macro_intelligence/data/fred_pull.py`
+     - `src/macro_intelligence/data/pull_all.py`
+     - `src/macro_intelligence/engine/pre_catalyst_fragility.py` (new)
+     - `src/macro_intelligence/engine/post_event_transition.py` (new)
+     - `src/macro_intelligence/jobs/nightly_run.py`
+     - `src/macro_intelligence/output/json_writer.py`
+     - `src/macro_intelligence/claude/nightly_briefing.py`
+     - `api/services/macro_service.py`
+     - `scripts/sync_macro_calendar.py` (new)
+     - `scripts/backfill_event_transitions.py` (new)
+     - `tests/test_pre_catalyst_fragility.py` (new)
+     - `tests/test_macro_calendar.py` (new)
+     - `tests/test_post_event_transition.py` (new)
+     - `tests/test_runic_output_schema.py`
+
+2. **API security hardening — invite-only auth (FastAPI + Nuxt + Streamlit)** — SUCCESSFUL
+   - Date: 2026-06-30
+   - Summary: Implemented mandatory `X-API-Key`, JWT invite-only auth (`/api/v1/auth/*`), chatbot session ownership, Nuxt proxy + login/accept-invite/admin UI, Streamlit gate, bootstrap/invite scripts, `config/users.json` (gitignored). Dev API `:8507` live with API key; Nuxt `:8512` proxies to dev until prod deploy. **93 API tests pass.** Prod `:8506` still on pre-auth code until `chatbot-dev` → `chatbot-prod` merge + pull.
+   - Files changed:
+     - `api/routers/auth.py`, `api/schemas/auth.py`, `api/services/auth_service.py` (new)
+     - `api/dependencies.py`, `api/main.py`, `api/routers/chatbot.py`, `api/services/chatbot_service.py`
+     - `chatbot/session_manager.py`, `src/auth/streamlit_gate.py`, `app.py`
+     - `config/users.json.example`, `scripts/bootstrap_admin.py`, `scripts/invite_user.py`
+     - `scripts/mindwealth-api-dev.service`, `scripts/mindwealth-api.service`, `requirements.txt`, `.gitignore`
+     - `tests/test_api_auth.py` (new), `tests/test_api_chatbot.py`, `tests/test_api_conviction.py`, `tests/test_api_integration.py`
+     - `MindwealthUI_Vue`: `server/routes/api/v1/[...].ts`, `composables/useAuth.ts`, `middleware/auth.global.ts`, `pages/login.vue`, `pages/accept-invite.vue`, `pages/admin/users.vue`, chat server routes
+
+3. **Per-user activity logging (pages, clicks, chat) with admin toggle** — SUCCESSFUL
+   - Date: 2026-06-30
+   - Summary: Added `activity_logging_enabled` per user, admin On/Off toggle on `/admin/users`, JSONL logs under `activity_logs/{email_slug}/` (navigation, clicks, chat). Nuxt client tracks page views + clicks when enabled; FastAPI logs chat messages on enqueue.
+   - Files changed:
+     - `api/services/activity_log_service.py`, `api/routers/activity.py`, `api/schemas/activity.py` (new)
+     - `api/services/auth_service.py`, `api/schemas/auth.py`, `api/routers/auth.py`, `api/routers/chatbot.py`, `api/main.py`
+     - `config/users.json.example`, `.gitignore`, `tests/test_activity_log.py` (new)
+     - `MindwealthUI_Vue`: `composables/useActivityLog.ts`, `plugins/activity-log.client.ts`, `pages/admin/users.vue`, `composables/useAuth.ts`
+
+4. **Dev → prod migration todos doc + Cursor rules** — SUCCESSFUL
+   - Date: 2026-06-30
+   - Summary: Added `docs/dev_to_prod_migration_todos.md` with full auth/activity logging prod checklist (incl. Nuxt → `:8507` dev shortcut to revert). Updated `.cursor/rules/mindwealth-ui-repository-rules.mdc` to require migration doc updates after dev changes with prod impact.
+   - Files changed:
+     - `docs/dev_to_prod_migration_todos.md` (new)
+     - `.cursor/rules/mindwealth-ui-repository-rules.mdc`
+
+5. **API rate limiting (FastAPI tiers + Nuxt BFF auth/rate middleware)** — SUCCESSFUL
+   - Date: 2026-06-30
+   - Summary: Tiered rate limits via middleware (`user` → `apikey` → `ip` keys), env-configurable defaults, 429 + `Retry-After`. Nuxt BFF requires session cookie on `/api/*` (excl. `/api/v1` proxy) + light IP limits. Five new rate-limit tests pass; existing suites disable limits in setUp.
+   - Files changed:
+     - `api/rate_limit.py`, `api/rate_limit_config.py`, `api/main.py`, `requirements.txt`, `.env.example`
+     - `config/rate_limits.yaml` — editable admin vs user limits
+     - `tests/test_rate_limit.py`, `tests/api_test_helpers.py`, test setUp patches
+     - `docs/dev_to_prod_migration_todos.md`
+     - `MindwealthUI_Vue`: `server/utils/require-auth.ts`, `server/middleware/bff-auth.ts`, `server/middleware/bff-rate-limit.ts`
+
+6. **Role-based rate limits (admin vs user) + YAML config** — SUCCESSFUL
+   - Date: 2026-07-07
+   - Summary: Admin JWT gets generous limits (reads 200/10s, chat 30/min); standard users keep anti-abuse caps (reads 30/10s, chat 3/min). Single config file `config/rate_limits.yaml`; dev API restarted on `:8507`.
+   - Files changed: `config/rate_limits.yaml`, `api/rate_limit_config.py`, `api/rate_limit.py`, `tests/test_rate_limit.py`, `.env.example`
+
+7. **Test suite green + prod-merge blockers fixed** — SUCCESSFUL
+   - Date: 2026-07-09
+   - Summary: Root-cause fixes: `tests/conftest.py` + `load_dotenv(override=False)` stops `.env` API_KEY breaking tests; combo_c_cancel DB reset in setUp; smart_data_fetcher respects `date_filter_mode=entry_or_exit`; enrich adds `function`/`interval`; signals surface tests updated for pipeline-persisted CSV columns. **349 pytest passed.**
+   - Files changed: `tests/conftest.py`, `src/config_paths.py`, `chatbot/config.py`, `chatbot/smart_data_fetcher.py`, `api/services/signal_enrichment_service.py`, `tests/test_combo_c_cancel.py`, `tests/test_api_signals_surface.py`, `docs/dev_to_prod_migration_todos.md`
+
 ### 2026-06-29
 
 1. **Rename uiv2/dev directory to uiv2/prod** — SUCCESSFUL
@@ -740,3 +841,27 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
    - Files changed:
      - `/home/ubuntu/MindWealth/emailscript.sh`
      - `docs/mindwealth_ui_repo_job_status_details.md`
+
+2. **Strengthen Cursor rules: never edit uiv2/prod** — SUCCESSFUL
+   - Date: 2026-06-29
+   - Summary: Updated project and global Cursor rules with explicit read-only prod scope, path guard before edits, and mandatory warnings for accidental or user-requested prod changes.
+   - Files changed:
+     - `.cursor/rules/mindwealth-ui-repository-rules.mdc`
+     - `/home/ubuntu/.cursor/rules/mindwealth-repository-rules.mdc`
+
+### 2026-07-03
+
+1. **All combos A–G threshold sweep + CONFIG vs spec analysis** — SUCCESSFUL
+   - Date: 2026-07-03
+   - Summary: Ran full threshold sweeps for combos A–G with combo-specific horizon spreads (tactical 1W–4W for D/G, structural 3M–18M for E, etc.). Outputs: per-combo `combo_*_sweep_summary.csv` / `detail.csv` with min/max/avg hit stats in CSV header, `all_combos_config_vs_spec.csv`, `all_combos_best_thresholds.csv`, `ANALYSIS.md`, `study_meta.json`. CONFIG vs spec: A +0.9pp, F +7.7pp @ primary; D −36pp, E −64pp; C/G too few episodes on first-crossing model.
+   - Files changed:
+     - `testing/combo_all_thresholds/run_all_combos_study.py` (new)
+     - `testing/combo_all_thresholds/output_files/*`
+
+2. **Enhanced ANALYSIS.md — top threshold tables + variable recommendations** — SUCCESSFUL
+   - Date: 2026-07-03
+   - Summary: Extended Combo C (79 exps, max n=6) and G (107 exps, max n=12) sweeps. Regenerated `ANALYSIS.md` section 2 with per-combo top-5 horizon tables; section 3–4 full-gate + master variable table; CSVs `all_combos_recommended_full_config.csv`, `all_combos_best_threshold_per_variable.csv`. Combo C: no config hits spec 83% @6M (best 6M bear = 0%).
+   - Files changed:
+     - `testing/combo_all_thresholds/run_extended_c_g_sweep.py` (new)
+     - `testing/combo_all_thresholds/generate_enhanced_analysis.py` (new)
+     - `testing/combo_all_thresholds/output_files/ANALYSIS.md`, `combo_C_extended_sweep_summary.csv`, `combo_G_extended_sweep_summary.csv`

@@ -1114,7 +1114,7 @@ class SmartDataFetcher:
 
             if assets and len(assets) == 1 and signal_type == "entry":
                 df = self.filter_rows_by_cited_entry_hints(df, user_message)
-                if infer_date_filter_mode(user_message) != "entry_or_exit":
+                if date_filter_mode != "entry_or_exit":
                     before = len(df)
                     df = self.collapse_latest_per_function_interval(df)
                     if len(df) < before:
