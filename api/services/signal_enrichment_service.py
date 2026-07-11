@@ -346,6 +346,32 @@ def _build_exit_lookup(records: list[dict[str, Any]]) -> Any:
     return build_exit_lookup(records)
 
 
+def _maybe_apply_cross_function_exits(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Runtime fallback when nightly CSV lacks cross-function columns."""
+    if not records:
+        return records
+    if any(r.get("cross_function_exit_triggered") is not None for r in records):
+        return records
+    if any(str(r.get("Cross-Function Exit", "")).strip() for r in records):
+        return records
+    try:
+        import sys
+        from datetime import datetime
+
+        from src.config_paths import MINDWEALTH_ROOT
+
+        root = str(MINDWEALTH_ROOT)
+        if root not in sys.path:
+            sys.path.insert(0, root)
+        from helper_functions.cross_function_exit import annotate_cross_function_exits
+
+        copies = [dict(r) for r in records]
+        annotate_cross_function_exits(copies, datetime.now().strftime("%Y-%m-%d"))
+        return copies
+    except Exception:
+        return records
+
+
 def _apply_core_enrichment(
     row: dict[str, Any],
     exit_lookup: Any = None,
@@ -485,6 +511,8 @@ def enrich_record(
             "tier": tier,
             "direction": direction,
             "symbol": symbol,
+            "function": function,
+            "interval": interval,
             "asset_class": asset_class,
             # Normalized names for frontend alias lookup
             "composite_score": composite_score_raw,
@@ -499,6 +527,25 @@ def enrich_record(
             "conviction_fs_class": conviction_fs_class,
         }
     )
+    xf_triggered = row.get("cross_function_exit_triggered")
+    xf_display = row.get("Cross-Function Exit") or row.get("cross_function_exit_display")
+    if xf_triggered is not None:
+        if isinstance(xf_triggered, str):
+            out["cross_function_exit_triggered"] = xf_triggered.strip().lower() in ("true", "1", "yes")
+        else:
+            out["cross_function_exit_triggered"] = bool(xf_triggered)
+    elif xf_display:
+        out["cross_function_exit_triggered"] = True
+    if xf_display:
+        out["cross_function_exit_display"] = str(xf_display).strip()
+    for key in (
+        "cross_function_exit_price",
+        "cross_function_exit_function",
+        "cross_function_exit_date",
+    ):
+        if row.get(key) is not None:
+            out[key] = row.get(key)
+    out["conflict"] = bool(out.get("cross_function_exit_triggered"))
     return out
 
 
@@ -506,6 +553,7 @@ def enrich_records(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Enrich a list of signal CSV-row dicts with supplementary surface fields."""
     if not records:
         return []
+    records = _maybe_apply_cross_function_exits(records)
     exit_lookup = None
     if any(not _masterspec_precomputed(r) for r in records):
         try:

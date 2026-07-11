@@ -7,7 +7,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 # Load environment variables
-load_dotenv()
+load_dotenv(override=False)
 
 # Macro Claude client uses ANTHROPIC_API_KEY; accept CLAUDE_API_KEY alias from Streamlit secrets.
 if not os.getenv("ANTHROPIC_API_KEY") and os.getenv("CLAUDE_API_KEY"):

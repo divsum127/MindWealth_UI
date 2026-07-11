@@ -21,7 +21,7 @@ class SessionManager:
     """Manages multiple chat sessions for the chatbot."""
     
     @staticmethod
-    def create_new_session(title: Optional[str] = None) -> str:
+    def create_new_session(title: Optional[str] = None, owner_email: Optional[str] = None) -> str:
         """
         Create a new chat session.
         
@@ -41,7 +41,8 @@ class SessionManager:
                 "title": title or "New Chat",
                 "created_at": datetime.now().isoformat(),
                 "last_updated": datetime.now().isoformat(),
-                "message_count": 0
+                "message_count": 0,
+                "owner_email": (owner_email or "").strip().lower() or None,
             },
             "conversation": []
         }
@@ -54,7 +55,7 @@ class SessionManager:
         return session_id
     
     @staticmethod
-    def list_all_sessions(sort_by: str = 'last_updated') -> List[Dict]:
+    def list_all_sessions(sort_by: str = 'last_updated', owner_email: Optional[str] = None) -> List[Dict]:
         """
         List all available chat sessions with their metadata.
         
@@ -113,6 +114,10 @@ class SessionManager:
                     user_messages = len([m for m in conversation if m.get("role") == "user"])
                     assistant_messages = len([m for m in conversation if m.get("role") == "assistant"])
                     
+                    owner = (metadata.get("owner_email") or "").strip().lower()
+                    if owner_email and owner != owner_email.strip().lower():
+                        continue
+
                     sessions.append({
                         "session_id": metadata.get("session_id", session_file.stem),
                         "title": metadata.get("title", "Untitled Chat"),
@@ -121,7 +126,8 @@ class SessionManager:
                         "message_count": len(conversation),
                         "user_messages": user_messages,
                         "assistant_messages": assistant_messages,
-                        "preview": summary
+                        "preview": summary,
+                        "owner_email": owner or None,
                     })
                     
                 except Exception as e:
@@ -289,7 +295,7 @@ class SessionManager:
         return all_sessions[:limit]
     
     @staticmethod
-    def search_sessions(query: str) -> List[Dict]:
+    def search_sessions(query: str, owner_email: Optional[str] = None) -> List[Dict]:
         """
         Search sessions by title or content.
         
@@ -299,7 +305,7 @@ class SessionManager:
         Returns:
             List of matching session dictionaries
         """
-        all_sessions = SessionManager.list_all_sessions()
+        all_sessions = SessionManager.list_all_sessions(owner_email=owner_email)
         query_lower = query.lower()
         
         matching_sessions = []

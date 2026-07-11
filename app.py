@@ -6,6 +6,7 @@ Modular version with organized code structure
 import streamlit as st
 
 from constant import *
+from src.auth.streamlit_gate import ensure_streamlit_login
 from src.pages import (
     create_top_signals_dashboard,
     create_analysis_page,
@@ -31,6 +32,8 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+ensure_streamlit_login()
 
 # Custom CSS for better styling
 st.markdown("""

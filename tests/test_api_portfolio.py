@@ -21,6 +21,7 @@ if str(_ROOT) not in sys.path:
 from fastapi.testclient import TestClient
 
 from api.main import app
+from tests.api_test_helpers import disable_rate_limits
 
 client = TestClient(app)
 
@@ -77,6 +78,7 @@ class _PortfolioTestMixin:
     """Patch slow external lookups for unit tests."""
 
     def setUp(self) -> None:
+        disable_rate_limits()
         self._patches = [
             patch("api.services.portfolio_service._compute_spx_trend_mult", return_value=(1.0, {})),
             patch("api.services.portfolio_service._refresh_ticker_names_cache", side_effect=_mock_names),

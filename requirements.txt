@@ -43,6 +43,9 @@ tavily-python
 fastapi==0.115.6
 uvicorn[standard]==0.34.0
 httpx==0.28.1
+bcrypt==4.2.1
+python-jose[cryptography]==3.3.0
+email-validator==2.2.0
 fredapi>=0.5.2
 reportlab>=4.0.0
 pandas-market-calendars>=4.4.0
@@ -54,3 +57,4 @@ openpyxl>=3.1.0
 xlrd>=2.0.1
 PyYAML>=6.0.0
 hmmlearn>=0.3.2
+slowapi>=0.1.9

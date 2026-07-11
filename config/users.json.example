@@ -1,0 +1,22 @@
+[
+  {
+    "email": "admin@example.com",
+    "name": "Admin",
+    "role": "admin",
+    "status": "active",
+    "password_hash": "$2b$12$REPLACE_WITH_bootstrap_admin.py",
+    "invite_token": null,
+    "invite_expires_at": null,
+    "activity_logging_enabled": false
+  },
+  {
+    "email": "analyst@example.com",
+    "name": "Analyst",
+    "role": "user",
+    "status": "invited",
+    "password_hash": null,
+    "invite_token": "example-invite-token",
+    "invite_expires_at": "2099-01-01T00:00:00Z",
+    "activity_logging_enabled": false
+  }
+]

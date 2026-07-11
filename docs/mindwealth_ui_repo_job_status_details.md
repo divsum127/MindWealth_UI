@@ -37,6 +37,16 @@ This file captures minute-level implementation context for each completed task:
 
 **Caveats:** Cron runs `emailscript.sh` at 22:00 UTC; change takes effect on next run. No service restart required.
 
+### 2026-06-29 — Cursor rules: uiv2/prod read-only guard
+
+**Assumptions:** Both project (`.cursor/rules/mindwealth-ui-repository-rules.mdc`) and global (`~/.cursor/rules/mindwealth-repository-rules.mdc`) rules must stay in sync so any Cursor session blocks prod edits.
+
+**Key decisions:** Split Repository Scope into **Editable** vs **Read-only**; added **Path guard** (prefix check before every write/shell/git op); separate warning flows for accidental vs user-requested prod edits; emergency prod edit only after explicit user confirmation.
+
+**Deferred:** None.
+
+**Caveats:** Rules are advisory — agent must self-check paths; deploy skill remains at `.cursor/skills/prod-pull-and-details/SKILL.md`.
+
 ### 2026-06-09 — Create create-understanding-doc Cursor skill
 
 **Assumptions:**
@@ -1505,6 +1515,44 @@ User requested per-trigger SPX return tables for Combo D (1W–2M) and Combo E (
 
 **Caveat:** Negative mean sync lift means D+E sync is not a universal amplifier — use as conditional tactical filter when both combos share tight gates, not as structural bear confirmation.
 
+---
+
+### 2026-07-03 — All combos A–G threshold study
+
+**Assumptions:** First-crossing episodes, 5d cooldown; F on Fridays only; A uses pctile-band proxy for RARE legs (not full tier engine). Hit = SPX in combo direction.
+
+**Key findings:** B CONFIG 77.8% @3M vs spec 87.5% (n=9 strict 3-of-3). F CONFIG 85.7% @6M beats spec. D/E CONFIG far below spec; sweeps find tighter gates (D 57.7% @1W, E 87.5% @12M at n=9). C n=1, G n=0 on CONFIG — sparse.
+
+**Deferred:** Combo A full tier-engine replay; G vol-spike metric (used SPX bear @3W proxy).
+
+**Caveat:** Spec hit rates from cheatsheet (~4–16 instances); episode replay n differs especially for B/C/G.
+
+
+---
+
+## 2026-07-03 — Macro scheduled-events API (v1.5.0)
+
+**Design:** New routes only — `GET /macro/regime` and other existing macro endpoints unchanged. Intelligence blocks remain in nightly JSON and dedicated endpoints.
+
+**Endpoints:** `pre-catalyst`, `post-regime`, `calendar?days=1-90`.
+
+**Frontend:** `docs/api/frontend/macro-scheduled-events-integration.md` — Streamlit/HTML layout, labels, refresh cadence. Streamlit `runic_page.py` not yet updated.
+
+**Tests:** `test_api_macro.py` asserts regime lacks new keys; 3 new endpoint tests + nightly JSON block test.
+
+---
+
+## 2026-06-30 — Pre/Post scheduled-event regime intelligence
+
+**Assumptions:** Near-threshold = unconditional_pctile in [60,79] or [21,40]. Fragility HIGH when ≥4 vars and upcoming CPI/FOMC/NFP within 7 days. Post-event window = 48h from scheduled ET release time (CPI/NFP 08:30, FOMC 14:00). Yield deltas from FRED DGS2/DGS10/DGS30 daily closes; USD strength = USDCNH decline %. LIQUIDITY_SHOCK USD threshold default 0.5% (CONFIG `liquidity_shock.usd_strength_pct`).
+
+**Transition priority:** LIQUIDITY_SHOCK → FISCAL_DOMINANCE_FEAR → CREDIBILITY_RESTORED → BEAR_FLATTEN → BULL_STEEPEN.
+
+**Deferred:** `macro_event_snapshots` persistence table for backtest analogs; Investing.com FOMC/NFP without `INVESTING_HTTP_PROXY` (FRED release dates are primary).
+
+**Edge cases:** HY OAS history short pre-2023; weekend/holiday events use trading-day anchors; regime_transition requires ≥2 variables crossing RARE/80th-20th boundaries.
+
+**Caveat:** FOMC dates use FRED release_id 19 (FOMC Press Release); verify against Fed calendar if statement vs press-conference timing matters.
 
 ---
 
@@ -1536,3 +1584,125 @@ User requested per-trigger SPX return tables for Combo D (1W–2M) and Combo E (
 - Fixed to `temperature=0.0` as default argument
 - Determinism also requires pinned model version (handled via MACRO_CLAUDE_MODEL env var / CONFIG.yaml)
 - All existing callers get temperature=0.0 without code changes; opt-in for non-deterministic via `temperature=1.0` kwarg
+
+---
+
+## 2026-06-30 — API security hardening (invite-only auth)
+
+**Architecture:** Backend-centric auth in FastAPI. Nuxt/Streamlit are thin clients. Two gates: `X-API-Key` on all routes when `API_KEY` env set; JWT (`Bearer` or `mw_access_token` cookie) for human/chatbot routes.
+
+**Assumptions:**
+- `config/users.json` per clone (gitignored); dev admin bootstrapped as `admin@mindwealth.co`.
+- Nuxt on `:8512` proxies `/api/v1/*` → FastAPI; sets httpOnly cookie on login/accept-invite.
+- `INVITE_BASE_URL=http://51.20.53.218:8512` for invite links.
+- Dev API `:8507` bound `0.0.0.0` with API key; Nuxt temporarily points to `:8507` until prod auth code is deployed.
+
+**Deferred / prod rollout:**
+- Commit + merge `chatbot-dev` → `chatbot-prod` + `prod-pull-and-restart.sh` before enabling `API_KEY` on prod `:8506`.
+- Copy `API_KEY`, `JWT_SECRET`, bootstrap prod `users.json`; switch Nuxt `NUXT_API_BASE_URL` back to `:8506`.
+- Streamlit gate defaults to `:8506` — set `MW_AUTH_API_BASE` + `API_KEY` in streamlit service env after prod deploy.
+- Rate limits, LLM cost caps, IP allowlist on AWS SG (plan phase 2).
+- Rotate keys in `MindWealth/constant.py` (called out in security plan).
+
+**Edge cases not handled:**
+- JWT expiry mid-session (1h); no refresh token in v1.
+- Password reset flow — admin must resend invite.
+- `TestClaudeOverlayFix` now mocks empty CSV path (was failing when real `claude_signals_report.csv` had rows).
+
+**Key decisions:**
+- `bcrypt` directly (not passlib) due to compat issues.
+- `_configured_api_key()` reads `os.environ` when `API_KEY` key present, else module constant (test patch friendly).
+- Chatbot sessions scoped by `owner_email`; `CHATBOT_REQUIRE_USER=true` default.
+
+**Caveats:**
+- Initial admin password stored once at `config/.bootstrap_admin_password` (chmod 600) — rotate after first login.
+- Teammates need shared `API_KEY` for curl on `:8507` (and `:8506` after prod deploy).
+- `DOCS_ENABLED=false` in dev `.env` disables Swagger.
+
+---
+
+## 2026-06-30 — Per-user activity logging
+
+**Assumptions:** Opt-in per user via admin toggle (default off). Logs stored on server only (`activity_logs/`, gitignored). Chat logs user message preview (500 chars), not full LLM responses.
+
+**File layout:**
+```
+activity_logs/
+  admin_at_mindwealth_co/
+    profile.json
+    navigation.jsonl
+    clicks.jsonl
+    chat.jsonl
+```
+
+**Deferred:** Admin UI to browse/download logs; Streamlit click tracking; retention/rotation policy.
+
+**Edge cases:** sendBeacon on tab close may drop events if cookie expired; logging disabled users get `written: 0` from ingest API.
+
+**Caveats:** Set `ACTIVITY_LOGS_DIR` env to override default path. Toggle in admin PATCH `activity_logging_enabled`.
+
+---
+
+## 2026-06-30 — Dev → prod migration todos document
+
+**Purpose:** Single living doc for `chatbot-dev` → `chatbot-prod` promotion; complements `prod-pull-and-details` skill.
+
+**Rule change:** `.cursor/rules/mindwealth-ui-repository-rules.mdc` now requires updating `docs/dev_to_prod_migration_todos.md` on any task with prod deployment impact.
+
+**Initial content:** Auth hardening + activity logging; documents Nuxt `NUXT_API_BASE_URL=:8507` as dev-only revert item.
+
+---
+
+## 2026-06-30 — API rate limiting
+
+**Architecture:** FastAPI `RateLimitMiddleware` + slowapi `Limiter` on `app.state`. Identity key priority: JWT email → `X-API-Key` hash → client IP. Route rules in `api/rate_limit.py` (tiers 0–5). Nuxt defense-in-depth: `bff-auth.ts` + `bff-rate-limit.ts` on `/api/*` excluding `/api/v1` proxy.
+
+**Assumptions:**
+- In-memory `limits` storage (single worker); `RATE_LIMIT_ENABLED=false` in unit tests.
+- POST bodies cached in middleware so login email bucket can parse JSON without breaking handlers.
+- Read tier uses `30/10seconds;300/minute` for JWT users, `60/10seconds;600/minute` for API-key-only.
+
+**Deferred:** Redis-backed storage for multi-worker; `CHATBOT_DAILY_MESSAGE_CAP`; nginx/AWS edge limits (documented in migration todos only).
+
+**Edge cases:** Global IP + user ceilings stack with route tiers. Login hits email bucket (5/min) before IP (10/min). Health exempt from global IP cap only.
+
+**Caveats:** Restart clears counters. Tune via `config/rate_limits.yaml` (admin/user roles) or `RATE_LIMIT_*` env overrides. Ship to prod with auth deploy.
+
+---
+
+## 2026-07-07 — Role-based rate limits
+
+**Config file:** `config/rate_limits.yaml` — edit `admin` and `user` blocks; `shared` for login brute-force; `apikey` for key-only scripts.
+
+**Admin:** High ceilings (e.g. read 200/10s + 3000/min, chat 30/min + 500/hr) for ops/testing.
+
+**User:** Plan defaults — read 30/10s + 300/min (supports 15–25 parallel page loads); chat 3/min + 30/hr blocks LLM automation.
+
+**Role detection:** JWT `role` claim (`admin` vs `user`). Identity keys include role prefix `user:admin:{email}` vs `user:user:{email}`.
+
+**Deferred:** Full admin bypass flag (using high limits instead); per-user custom overrides in YAML.
+
+---
+
+## 2026-07-09 — Test suite + prod merge readiness
+
+**Root causes fixed:**
+- `.env` `API_KEY` leaked into pytest via `load_dotenv()` without override guard → `tests/conftest.py` forces empty key; `load_dotenv(override=False)` in `config_paths.py` / `chatbot/config.py` so explicit env (systemd, tests) wins.
+- `combo_c_cancel` tests used shared SQLite without reset → `setUp` zeroes `combo_c_cancel` row.
+- Deep-dive missing TSLA rows → `collapse_latest_per_function_interval` skipped when `date_filter_mode=entry_or_exit` (was inferring from empty user_message).
+- Shortlist missing `function` → `enrich_record` now emits `function` and `interval`.
+- Signals surface `enrich=false` tests obsolete (pipeline persists MasterSpec cols in CSV) → assert runtime-only fields absent (`conviction_score`, `mtm_pct`).
+
+**Result:** 349 pytest passed on full suite (excluding slow integration tests).
+
+**Prod merge:** Curated file list in `docs/dev_to_prod_migration_todos.md` Release A section; Nuxt BFF middleware still separate commit in `MindwealthUI_Vue`.
+
+---
+
+## 2026-07-07 — v2 regime retag + Part H beta re-run
+
+**Assumptions:** Hostile = TIGHTENING/HIKING fed or INVERTED curve from v2 shadow labels on each fire date.
+
+**Results:** Retagged 13,160 fires; beta survivors 132→127 (−5 non-promo combos failed `beats_regime` or hostile HR=0%); all 62 promotion candidates retained. Eight-theme shortlist hostile HR now real (84–92% on T1).
+
+**Deferred:** Step 7 Claude on shortlist; five promos with zero hostile fires still auto-pass hostile gate.

@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from fastapi.responses import JSONResponse
 
-from api.dependencies import optional_api_key
+from api.dependencies import CurrentUser, optional_api_key, require_chatbot_user
 from api.schemas.chatbot import (
     ChatMessageRequest,
     CreateSessionRequest,
@@ -21,13 +21,19 @@ from api.schemas.chatbot import (
     SignalTypesPreviewResponse,
     UpdateSessionRequest,
 )
+from api.services import activity_log_service as activity_svc
 from api.services import chatbot_service as svc
 
 router = APIRouter(
     prefix="/chatbot",
     tags=["chatbot"],
-    dependencies=[Depends(optional_api_key)],
+    dependencies=[Depends(optional_api_key), Depends(require_chatbot_user)],
 )
+
+
+def _ensure_session_access(session_id: str, user: CurrentUser) -> None:
+    if not svc.user_can_access_session(session_id, user.email):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
 
 
 @router.post(
@@ -35,22 +41,35 @@ router = APIRouter(
     operation_id="create_chat_session",
     status_code=status.HTTP_201_CREATED,
 )
-def create_session(body: CreateSessionRequest) -> dict[str, Any]:
-    session_id = svc.create_session(title=body.title)
+def create_session(
+    body: CreateSessionRequest,
+    user: Annotated[CurrentUser, Depends(require_chatbot_user)],
+) -> dict[str, Any]:
+    session_id = svc.create_session(title=body.title, owner_email=user.email)
     return {"session_id": session_id, "title": body.title or "New Chat"}
 
 
 @router.get("/sessions", operation_id="list_chat_sessions")
 def list_sessions(
+    user: Annotated[CurrentUser, Depends(require_chatbot_user)],
     sort_by: str = Query(default="last_updated"),
     search: str | None = Query(default=None),
     limit: int | None = Query(default=None, ge=1, le=500),
 ) -> list[dict[str, Any]]:
-    return svc.list_sessions(sort_by=sort_by, search=search, limit=limit)
+    return svc.list_sessions(
+        sort_by=sort_by,
+        search=search,
+        limit=limit,
+        owner_email=user.email,
+    )
 
 
 @router.get("/sessions/{session_id}", operation_id="get_chat_session")
-def get_session(session_id: str) -> dict[str, Any]:
+def get_session(
+    session_id: str,
+    user: Annotated[CurrentUser, Depends(require_chatbot_user)],
+) -> dict[str, Any]:
+    _ensure_session_access(session_id, user)
     try:
         return svc.get_session(session_id)
     except FileNotFoundError as exc:
@@ -58,7 +77,12 @@ def get_session(session_id: str) -> dict[str, Any]:
 
 
 @router.patch("/sessions/{session_id}", operation_id="update_chat_session")
-def update_session(session_id: str, body: UpdateSessionRequest) -> dict[str, Any]:
+def update_session(
+    session_id: str,
+    body: UpdateSessionRequest,
+    user: Annotated[CurrentUser, Depends(require_chatbot_user)],
+) -> dict[str, Any]:
+    _ensure_session_access(session_id, user)
     try:
         ok = svc.update_session_title(session_id, body.title)
     except FileNotFoundError as exc:
@@ -74,14 +98,22 @@ def update_session(session_id: str, body: UpdateSessionRequest) -> dict[str, Any
     status_code=status.HTTP_204_NO_CONTENT,
     response_class=Response,
 )
-def delete_session(session_id: str) -> Response:
+def delete_session(
+    session_id: str,
+    user: Annotated[CurrentUser, Depends(require_chatbot_user)],
+) -> Response:
+    _ensure_session_access(session_id, user)
     if not svc.delete_session(session_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.post("/sessions/{session_id}/finalize", operation_id="finalize_chat_session")
-def finalize_session(session_id: str) -> dict[str, Any]:
+def finalize_session(
+    session_id: str,
+    user: Annotated[CurrentUser, Depends(require_chatbot_user)],
+) -> dict[str, Any]:
+    _ensure_session_access(session_id, user)
     try:
         saved = svc.finalize_session(session_id)
     except FileNotFoundError as exc:
@@ -92,8 +124,10 @@ def finalize_session(session_id: str) -> dict[str, Any]:
 @router.get("/sessions/{session_id}/history", operation_id="get_chat_history")
 def get_history(
     session_id: str,
+    user: Annotated[CurrentUser, Depends(require_chatbot_user)],
     display: bool = Query(default=False, description="Use display_prompt for user messages"),
 ) -> list[dict[str, Any]]:
+    _ensure_session_access(session_id, user)
     try:
         return svc.get_history(session_id, display=display)
     except FileNotFoundError as exc:
@@ -106,13 +140,26 @@ def get_history(
     response_model=JobAcceptedResponse,
     status_code=status.HTTP_202_ACCEPTED,
 )
-def enqueue_message(session_id: str, body: ChatMessageRequest) -> JSONResponse:
+def enqueue_message(
+    session_id: str,
+    body: ChatMessageRequest,
+    user: Annotated[CurrentUser, Depends(require_chatbot_user)],
+) -> JSONResponse:
+    _ensure_session_access(session_id, user)
     try:
         payload = svc.enqueue_message(session_id, body)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+    activity_svc.log_chat(
+        user.email,
+        action="message_sent",
+        session_id=session_id,
+        message_preview=body.message,
+        preset=str(body.preset or ""),
+        metadata={"async": True},
+    )
     return JSONResponse(status_code=status.HTTP_202_ACCEPTED, content=payload)
 
 
@@ -122,7 +169,10 @@ def enqueue_message(session_id: str, body: ChatMessageRequest) -> JSONResponse:
     response_model=PresetLaunchResponse,
     status_code=status.HTTP_202_ACCEPTED,
 )
-def launch_analyze_asset(body: PresetLaunchRequest) -> JSONResponse:
+def launch_analyze_asset(
+    body: PresetLaunchRequest,
+    user: Annotated[CurrentUser, Depends(require_chatbot_user)],
+) -> JSONResponse:
     if not body.asset:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -136,6 +186,7 @@ def launch_analyze_asset(body: PresetLaunchRequest) -> JSONResponse:
             to_date=body.to_date,
             title=body.title,
             deep_research_enabled=body.deep_research_enabled,
+            owner_email=user.email,
         )
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
@@ -148,13 +199,17 @@ def launch_analyze_asset(body: PresetLaunchRequest) -> JSONResponse:
     response_model=PresetLaunchResponse,
     status_code=status.HTTP_202_ACCEPTED,
 )
-def launch_signal_insights(body: PresetLaunchRequest) -> JSONResponse:
+def launch_signal_insights(
+    body: PresetLaunchRequest,
+    user: Annotated[CurrentUser, Depends(require_chatbot_user)],
+) -> JSONResponse:
     payload = svc.launch_preset(
         "signal_insights",
         from_date=body.from_date,
         to_date=body.to_date,
         title=body.title,
         deep_research_enabled=body.deep_research_enabled,
+        owner_email=user.email,
     )
     return JSONResponse(status_code=status.HTTP_202_ACCEPTED, content=payload)
 
@@ -165,31 +220,44 @@ def launch_signal_insights(body: PresetLaunchRequest) -> JSONResponse:
     response_model=PresetLaunchResponse,
     status_code=status.HTTP_202_ACCEPTED,
 )
-def launch_breadth_analysis(body: PresetLaunchRequest) -> JSONResponse:
+def launch_breadth_analysis(
+    body: PresetLaunchRequest,
+    user: Annotated[CurrentUser, Depends(require_chatbot_user)],
+) -> JSONResponse:
     payload = svc.launch_preset(
         "breadth_analysis",
         from_date=body.from_date,
         to_date=body.to_date,
         title=body.title,
         deep_research_enabled=body.deep_research_enabled,
+        owner_email=user.email,
     )
     return JSONResponse(status_code=status.HTTP_202_ACCEPTED, content=payload)
 
 
 @router.get("/jobs/{job_id}", operation_id="get_chat_job")
-def get_job(job_id: str) -> dict[str, Any]:
+def get_job(
+    job_id: str,
+    user: Annotated[CurrentUser, Depends(require_chatbot_user)],
+) -> dict[str, Any]:
     job = svc.get_job(job_id)
     if job is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Job not found: {job_id}")
+    session_id = job.get("session_id")
+    if session_id and not svc.user_can_access_session(str(session_id), user.email):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Job not found: {job_id}")
     return job
 
 
 @router.get("/jobs", operation_id="list_chat_jobs")
 def list_jobs(
+    user: Annotated[CurrentUser, Depends(require_chatbot_user)],
     session_id: str | None = Query(default=None),
     limit: int = Query(default=50, ge=1, le=200),
 ) -> list[dict[str, Any]]:
-    return svc.list_jobs(session_id=session_id, limit=limit)
+    if session_id:
+        _ensure_session_access(session_id, user)
+    return svc.list_jobs(session_id=session_id, limit=limit, owner_email=user.email)
 
 
 @router.get(
@@ -211,7 +279,12 @@ def get_signal_types() -> dict[str, Any]:
     operation_id="preview_signal_types",
     response_model=SignalTypesPreviewResponse,
 )
-def preview_signal_types(body: SignalTypesPreviewRequest) -> SignalTypesPreviewResponse:
+def preview_signal_types(
+    body: SignalTypesPreviewRequest,
+    user: Annotated[CurrentUser, Depends(require_chatbot_user)],
+) -> SignalTypesPreviewResponse:
+    if body.session_id:
+        _ensure_session_access(body.session_id, user)
     try:
         types, reasoning = svc.preview_signal_types(body.message, body.session_id)
     except FileNotFoundError as exc:
@@ -239,7 +312,12 @@ def get_memory_stats() -> dict[str, Any]:
     operation_id="flag_chat_exchange",
     response_model=FlagExchangeResponse,
 )
-def flag_exchange(session_id: str, body: FlagExchangeRequest) -> FlagExchangeResponse:
+def flag_exchange(
+    session_id: str,
+    body: FlagExchangeRequest,
+    user: Annotated[CurrentUser, Depends(require_chatbot_user)],
+) -> FlagExchangeResponse:
+    _ensure_session_access(session_id, user)
     try:
         path = svc.flag_exchange(
             session_id,
