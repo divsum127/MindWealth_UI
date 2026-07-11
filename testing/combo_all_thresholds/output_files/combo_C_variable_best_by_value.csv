@@ -1,0 +1,22 @@
+combo,variable,threshold_value,n_events,primary_horizon,primary_hit_pct,hit_mean_all_horizons,experiment_id,gate_text
+C,wti_4wk_min_pct,5.0,5,6M,0.0,6.25,C_ext_w5_cpi0.2_wcl1.0_l2,WTI 4wk>=5%; CPI surprise>=0.2; |WALCL MoM|<1.0%; 2-of-3
+C,wti_4wk_min_pct,6.0,5,6M,0.0,6.25,C_ext_w6_cpi0.2_wcl1.0_l2,WTI 4wk>=6%; CPI surprise>=0.2; |WALCL MoM|<1.0%; 2-of-3
+C,wti_4wk_min_pct,7.0,5,6M,0.0,6.25,C_ext_w7_cpi0.2_wcl1.0_l2,WTI 4wk>=7%; CPI surprise>=0.2; |WALCL MoM|<1.0%; 2-of-3
+C,wti_4wk_min_pct,8.0,5,6M,0.0,6.25,C_ext_w8_cpi0.2_wcl1.0_l2,WTI 4wk>=8%; CPI surprise>=0.2; |WALCL MoM|<1.0%; 2-of-3
+C,wti_4wk_min_pct,10.0,4,6M,0.0,8.33,C_ext_w10_cpi0.2_wcl1.0_l2,WTI 4wk>=10%; CPI surprise>=0.2; |WALCL MoM|<1.0%; 2-of-3
+C,wti_4wk_min_pct,12.0,4,6M,0.0,8.33,C_ext_w12_cpi0.2_wcl1.0_l2,WTI 4wk>=12%; CPI surprise>=0.2; |WALCL MoM|<1.0%; 2-of-3
+C,wti_4wk_min_pct,15.0,4,6M,0.0,8.33,C_ext_w15_cpi0.2_wcl1.0_l2,WTI 4wk>=15%; CPI surprise>=0.2; |WALCL MoM|<1.0%; 2-of-3
+C,cpi_surprise_min,0.0,4,6M,0.0,6.25,C_ext_w8_cpi0.0_wcl1.2_l2,WTI 4wk>=8%; CPI surprise>=0.0; |WALCL MoM|<1.2%; 2-of-3
+C,cpi_surprise_min,0.05,6,6M,0.0,6.25,C_ext_w8_cpi0.05_wcl1.2_l2,WTI 4wk>=8%; CPI surprise>=0.05; |WALCL MoM|<1.2%; 2-of-3
+C,cpi_surprise_min,0.1,5,6M,0.0,6.25,C_ext_w8_cpi0.1_wcl1.2_l2,WTI 4wk>=8%; CPI surprise>=0.1; |WALCL MoM|<1.2%; 2-of-3
+C,cpi_surprise_min,0.15,5,6M,0.0,6.25,C_ext_w8_cpi0.15_wcl1.2_l2,WTI 4wk>=8%; CPI surprise>=0.15; |WALCL MoM|<1.2%; 2-of-3
+C,cpi_surprise_min,0.2,5,6M,0.0,6.25,C_ext_w5_cpi0.2_wcl1.0_l2,WTI 4wk>=5%; CPI surprise>=0.2; |WALCL MoM|<1.0%; 2-of-3
+C,cpi_surprise_min,0.25,4,6M,0.0,8.33,C_ext_w8_cpi0.25_wcl1.2_l2,WTI 4wk>=8%; CPI surprise>=0.25; |WALCL MoM|<1.2%; 2-of-3
+C,walcl_flat_max_pct,0.8,5,6M,0.0,6.25,C_ext_w8_cpi0.15_wcl0.8_l2,WTI 4wk>=8%; CPI surprise>=0.15; |WALCL MoM|<0.8%; 2-of-3
+C,walcl_flat_max_pct,1.0,5,6M,0.0,6.25,C_ext_w5_cpi0.2_wcl1.0_l2,WTI 4wk>=5%; CPI surprise>=0.2; |WALCL MoM|<1.0%; 2-of-3
+C,walcl_flat_max_pct,1.2,4,6M,0.0,6.25,C_ext_w8_cpi0.0_wcl1.2_l2,WTI 4wk>=8%; CPI surprise>=0.0; |WALCL MoM|<1.2%; 2-of-3
+C,walcl_flat_max_pct,1.5,3,6M,0.0,0.0,C_ext_w8_cpi0.15_wcl1.5_l2,WTI 4wk>=8%; CPI surprise>=0.15; |WALCL MoM|<1.5%; 2-of-3
+C,walcl_flat_max_pct,2.0,3,6M,0.0,0.0,C_ext_w8_cpi0.15_wcl2.0_l2,WTI 4wk>=8%; CPI surprise>=0.15; |WALCL MoM|<2.0%; 2-of-3
+C,walcl_flat_max_pct,2.5,3,6M,0.0,0.0,C_ext_w8_cpi0.15_wcl2.5_l2,WTI 4wk>=8%; CPI surprise>=0.15; |WALCL MoM|<2.5%; 2-of-3
+C,legs_required,2.0,5,6M,0.0,6.25,C_ext_w5_cpi0.2_wcl1.0_l2,WTI 4wk>=5%; CPI surprise>=0.2; |WALCL MoM|<1.0%; 2-of-3
+C,legs_required,3.0,3,6M,0.0,8.33,C_ext_w5_cpi0.2_wcl1.0_l3,WTI 4wk>=5%; CPI surprise>=0.2; |WALCL MoM|<1.0%; 3-of-3

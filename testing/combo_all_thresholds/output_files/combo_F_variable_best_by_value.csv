@@ -1,0 +1,12 @@
+combo,variable,threshold_value,n_events,primary_horizon,primary_hit_pct,hit_mean_all_horizons,experiment_id,gate_text
+F,spx_50wma_reclaim_pct,1.0,46,6M,80.0,75.85,F_spx1.0_cftc50,SPX above 50WMA AND (reclaim OR close>=1.0% above WMA); CFTC<=50
+F,spx_50wma_reclaim_pct,2.0,44,6M,83.72,79.34,F_spx2.0_cftc40,SPX above 50WMA AND (reclaim OR close>=2.0% above WMA); CFTC<=40
+F,spx_50wma_reclaim_pct,3.0,41,6M,87.5,82.77,F_spx3.0_cftc40,SPX above 50WMA AND (reclaim OR close>=3.0% above WMA); CFTC<=40
+F,spx_50wma_reclaim_pct,4.0,43,6M,92.86,83.58,F_spx4.0_cftc60,SPX above 50WMA AND (reclaim OR close>=4.0% above WMA); CFTC<=60
+F,spx_50wma_reclaim_pct,5.0,44,6M,86.05,82.56,F_spx5.0_cftc60,SPX above 50WMA AND (reclaim OR close>=5.0% above WMA); CFTC<=60
+F,spx_50wma_reclaim_pct,6.0,42,6M,87.8,81.24,F_spx6.0_cftc50,SPX above 50WMA AND (reclaim OR close>=6.0% above WMA); CFTC<=50
+F,cftc_max_pctile,40.0,41,6M,87.5,82.77,F_spx3.0_cftc40,SPX above 50WMA AND (reclaim OR close>=3.0% above WMA); CFTC<=40
+F,cftc_max_pctile,45.0,43,6M,80.95,78.38,F_spx3.0_cftc45,SPX above 50WMA AND (reclaim OR close>=3.0% above WMA); CFTC<=45
+F,cftc_max_pctile,50.0,42,6M,90.24,83.67,F_spx4.0_cftc50,SPX above 50WMA AND (reclaim OR close>=4.0% above WMA); CFTC<=50
+F,cftc_max_pctile,55.0,46,6M,86.67,74.55,F_spx3.0_cftc55,SPX above 50WMA AND (reclaim OR close>=3.0% above WMA); CFTC<=55
+F,cftc_max_pctile,60.0,43,6M,92.86,83.58,F_spx4.0_cftc60,SPX above 50WMA AND (reclaim OR close>=4.0% above WMA); CFTC<=60

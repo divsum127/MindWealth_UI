@@ -1,0 +1,9 @@
+# CONFIG baseline vs product spec at primary horizon
+combo,label,spec_hit_pct,spec_horizon,config_n,config_primary_hit,delta_pp,gate_text
+A,Liquidity,78.0,6M,77,78.95,0.95,≥2 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=400bps or pctile>=80; |WALCL|>=0.8%
+B,Capitulation,87.5,3M,9,77.78,-9.72,VIX>=25 & VIX pctile>=80; HY>=400bps OR HY pctile>=80; CFTC<=15; 3-of-3
+C,Stagflation,83.0,6M,1,,,WTI 4wk>=10.0%; CPI surprise>=0.2; |WALCL MoM|<0.8%; 3-of-3
+D,FOMO Top,78.0,1W,31,41.94,-36.06,VXTS>=1.1; CFTC>=85; VIX<=18; 3-of-3
+E,Valuation Extreme,73.0,12M,22,9.09,-63.91,CAPE>=28; NFCI<=-0.3; CFTC>=80; 2-of-3
+F,Recovery,78.0,6M,43,85.71,7.71,SPX above 50WMA AND (reclaim OR close>=3.0% above WMA); CFTC<=50
+G,Hidden Stress,75.0,3W,0,,,VXTS<1.0; VIX<=20; HY 4wk widen>=30bps; 3-of-3

@@ -1,0 +1,92 @@
+# COMBO A — Liquidity
+# Direction: bullish | Spec target: 78.0% @ 6M
+# Horizons: 1M, 2M, 3M, 6M
+# Experiments: 20 | CONFIG: ≥2 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=400bps or pctile>=80; |WALCL|>=0.8%
+# CONFIG n=77 | primary 6M hit=78.95% (spec 78.0%, delta 1.0pp)
+# Sweep primary hit — min=74.1% max=86.7% avg=80.9%
+#   1M: hit min=61.7% max=83.8% avg=74.6%
+#   2M: hit min=65.8% max=83.8% avg=74.5%
+#   3M: hit min=67.6% max=86.5% avg=77.0%
+#   6M: hit min=74.1% max=86.7% avg=80.9%
+# # Detail: one row per experiment x horizon
+experiment_id,sweep_type,is_config_baseline,min_of_four,rare_pctile_high,rare_pctile_low,hy_bps_rare,walcl_mom_rare_pct,gate_text,n_events,hit_1M,hit_2M,hit_3M,hit_6M,hit_mean_all_horizons,horizon,trading_days,hit_rate_pct,avg_spx_pct,min_spx_pct,max_spx_pct
+A_min2_p80_20_hy400_w0.8,config_baseline,True,2,80,20,400,0.8,≥2 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=400bps or pctile>=80; |WALCL|>=0.8%,77,68.83,68.83,72.73,78.95,72.33,1M,21,68.83,1.1386,-13.387,10.3623
+A_min2_p80_20_hy400_w0.8,config_baseline,True,2,80,20,400,0.8,≥2 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=400bps or pctile>=80; |WALCL|>=0.8%,77,68.83,68.83,72.73,78.95,72.33,2M,42,68.83,1.82,-17.3612,13.607
+A_min2_p80_20_hy400_w0.8,config_baseline,True,2,80,20,400,0.8,≥2 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=400bps or pctile>=80; |WALCL|>=0.8%,77,68.83,68.83,72.73,78.95,72.33,3M,63,72.73,2.7233,-23.0675,18.4272
+A_min2_p80_20_hy400_w0.8,config_baseline,True,2,80,20,400,0.8,≥2 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=400bps or pctile>=80; |WALCL|>=0.8%,77,68.83,68.83,72.73,78.95,72.33,6M,126,78.95,6.2944,-25.2223,24.6456
+A_min3_p80_20_hy400_w0.8,legs,False,3,80,20,400,0.8,≥3 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=400bps or pctile>=80; |WALCL|>=0.8%,50,78.0,78.0,82.0,84.0,80.5,1M,21,78.0,2.2307,-10.3853,18.7269
+A_min3_p80_20_hy400_w0.8,legs,False,3,80,20,400,0.8,≥3 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=400bps or pctile>=80; |WALCL|>=0.8%,50,78.0,78.0,82.0,84.0,80.5,2M,42,78.0,3.5064,-11.6111,28.9247
+A_min3_p80_20_hy400_w0.8,legs,False,3,80,20,400,0.8,≥3 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=400bps or pctile>=80; |WALCL|>=0.8%,50,78.0,78.0,82.0,84.0,80.5,3M,63,82.0,5.0429,-11.5919,34.3969
+A_min3_p80_20_hy400_w0.8,legs,False,3,80,20,400,0.8,≥3 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=400bps or pctile>=80; |WALCL|>=0.8%,50,78.0,78.0,82.0,84.0,80.5,6M,126,84.0,8.6091,-12.9539,44.0167
+A_min2_p75_25_hy400_w0.8,univariate_pctile,False,2,75,25,400,0.8,≥2 of 4 rare: NFCI/CNH pctile>=75 or <=25; HY>=400bps or pctile>=75; |WALCL|>=0.8%,69,71.01,73.91,69.57,77.94,73.11,1M,21,71.01,1.5019,-8.8105,11.2338
+A_min2_p75_25_hy400_w0.8,univariate_pctile,False,2,75,25,400,0.8,≥2 of 4 rare: NFCI/CNH pctile>=75 or <=25; HY>=400bps or pctile>=75; |WALCL|>=0.8%,69,71.01,73.91,69.57,77.94,73.11,2M,42,73.91,2.096,-12.6126,13.607
+A_min2_p75_25_hy400_w0.8,univariate_pctile,False,2,75,25,400,0.8,≥2 of 4 rare: NFCI/CNH pctile>=75 or <=25; HY>=400bps or pctile>=75; |WALCL|>=0.8%,69,71.01,73.91,69.57,77.94,73.11,3M,63,69.57,2.492,-23.0675,18.4272
+A_min2_p75_25_hy400_w0.8,univariate_pctile,False,2,75,25,400,0.8,≥2 of 4 rare: NFCI/CNH pctile>=75 or <=25; HY>=400bps or pctile>=75; |WALCL|>=0.8%,69,71.01,73.91,69.57,77.94,73.11,6M,126,77.94,5.3451,-25.2223,24.6456
+A_min2_p85_15_hy400_w0.8,univariate_pctile,False,2,85,15,400,0.8,≥2 of 4 rare: NFCI/CNH pctile>=85 or <=15; HY>=400bps or pctile>=85; |WALCL|>=0.8%,82,67.07,70.73,76.83,83.95,74.64,1M,21,67.07,0.6037,-13.387,9.214
+A_min2_p85_15_hy400_w0.8,univariate_pctile,False,2,85,15,400,0.8,≥2 of 4 rare: NFCI/CNH pctile>=85 or <=15; HY>=400bps or pctile>=85; |WALCL|>=0.8%,82,67.07,70.73,76.83,83.95,74.64,2M,42,70.73,1.6666,-27.6377,13.607
+A_min2_p85_15_hy400_w0.8,univariate_pctile,False,2,85,15,400,0.8,≥2 of 4 rare: NFCI/CNH pctile>=85 or <=15; HY>=400bps or pctile>=85; |WALCL|>=0.8%,82,67.07,70.73,76.83,83.95,74.64,3M,63,76.83,3.2327,-15.2108,18.4272
+A_min2_p85_15_hy400_w0.8,univariate_pctile,False,2,85,15,400,0.8,≥2 of 4 rare: NFCI/CNH pctile>=85 or <=15; HY>=400bps or pctile>=85; |WALCL|>=0.8%,82,67.07,70.73,76.83,83.95,74.64,6M,126,83.95,7.1803,-25.2223,23.155
+A_min2_p80_20_hy350_w0.8,univariate_hy,False,2,80,20,350,0.8,≥2 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=350bps or pctile>=80; |WALCL|>=0.8%,82,67.07,70.73,71.95,74.07,70.95,1M,21,67.07,1.0545,-13.387,10.3623
+A_min2_p80_20_hy350_w0.8,univariate_hy,False,2,80,20,350,0.8,≥2 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=350bps or pctile>=80; |WALCL|>=0.8%,82,67.07,70.73,71.95,74.07,70.95,2M,42,70.73,1.9309,-17.3612,13.607
+A_min2_p80_20_hy350_w0.8,univariate_hy,False,2,80,20,350,0.8,≥2 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=350bps or pctile>=80; |WALCL|>=0.8%,82,67.07,70.73,71.95,74.07,70.95,3M,63,71.95,2.6385,-20.1846,18.4272
+A_min2_p80_20_hy350_w0.8,univariate_hy,False,2,80,20,350,0.8,≥2 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=350bps or pctile>=80; |WALCL|>=0.8%,82,67.07,70.73,71.95,74.07,70.95,6M,126,74.07,4.9494,-25.2223,24.6456
+A_min2_p80_20_hy450_w0.8,univariate_hy,False,2,80,20,450,0.8,≥2 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=450bps or pctile>=80; |WALCL|>=0.8%,76,75.0,75.0,77.63,81.33,77.24,1M,21,75.0,1.8469,-11.0882,10.443
+A_min2_p80_20_hy450_w0.8,univariate_hy,False,2,80,20,450,0.8,≥2 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=450bps or pctile>=80; |WALCL|>=0.8%,76,75.0,75.0,77.63,81.33,77.24,2M,42,75.0,2.8388,-8.7308,13.607
+A_min2_p80_20_hy450_w0.8,univariate_hy,False,2,80,20,450,0.8,≥2 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=450bps or pctile>=80; |WALCL|>=0.8%,76,75.0,75.0,77.63,81.33,77.24,3M,63,77.63,3.7706,-23.0675,18.4272
+A_min2_p80_20_hy450_w0.8,univariate_hy,False,2,80,20,450,0.8,≥2 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=450bps or pctile>=80; |WALCL|>=0.8%,76,75.0,75.0,77.63,81.33,77.24,6M,126,81.33,7.5305,-13.3593,24.6456
+A_min2_p80_20_hy400_w0.6,univariate_walcl,False,2,80,20,400,0.6,≥2 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=400bps or pctile>=80; |WALCL|>=0.6%,79,70.89,65.82,70.51,74.67,70.47,1M,21,70.89,1.1316,-13.387,12.0893
+A_min2_p80_20_hy400_w0.6,univariate_walcl,False,2,80,20,400,0.6,≥2 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=400bps or pctile>=80; |WALCL|>=0.6%,79,70.89,65.82,70.51,74.67,70.47,2M,42,65.82,1.5926,-17.3612,18.7597
+A_min2_p80_20_hy400_w0.6,univariate_walcl,False,2,80,20,400,0.6,≥2 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=400bps or pctile>=80; |WALCL|>=0.6%,79,70.89,65.82,70.51,74.67,70.47,3M,63,70.51,1.9616,-23.0675,16.8253
+A_min2_p80_20_hy400_w0.6,univariate_walcl,False,2,80,20,400,0.6,≥2 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=400bps or pctile>=80; |WALCL|>=0.6%,79,70.89,65.82,70.51,74.67,70.47,6M,126,74.67,5.555,-25.2223,24.6456
+A_min2_p80_20_hy400_w1.0,univariate_walcl,False,2,80,20,400,1.0,≥2 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=400bps or pctile>=80; |WALCL|>=1.0%,72,73.61,70.83,73.61,80.28,74.58,1M,21,73.61,1.3653,-13.387,10.3623
+A_min2_p80_20_hy400_w1.0,univariate_walcl,False,2,80,20,400,1.0,≥2 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=400bps or pctile>=80; |WALCL|>=1.0%,72,73.61,70.83,73.61,80.28,74.58,2M,42,70.83,2.0113,-17.3612,13.607
+A_min2_p80_20_hy400_w1.0,univariate_walcl,False,2,80,20,400,1.0,≥2 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=400bps or pctile>=80; |WALCL|>=1.0%,72,73.61,70.83,73.61,80.28,74.58,3M,63,73.61,2.987,-23.0675,18.4272
+A_min2_p80_20_hy400_w1.0,univariate_walcl,False,2,80,20,400,1.0,≥2 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=400bps or pctile>=80; |WALCL|>=1.0%,72,73.61,70.83,73.61,80.28,74.58,6M,126,80.28,7.2028,-25.2223,24.6456
+A_min2_p75_25_hy350_w0.8,factorial,False,2,75,25,350,0.8,≥2 of 4 rare: NFCI/CNH pctile>=75 or <=25; HY>=350bps or pctile>=75; |WALCL|>=0.8%,71,69.01,74.65,67.61,77.14,72.1,1M,21,69.01,1.4353,-8.8105,11.2338
+A_min2_p75_25_hy350_w0.8,factorial,False,2,75,25,350,0.8,≥2 of 4 rare: NFCI/CNH pctile>=75 or <=25; HY>=350bps or pctile>=75; |WALCL|>=0.8%,71,69.01,74.65,67.61,77.14,72.1,2M,42,74.65,2.3354,-12.6126,13.607
+A_min2_p75_25_hy350_w0.8,factorial,False,2,75,25,350,0.8,≥2 of 4 rare: NFCI/CNH pctile>=75 or <=25; HY>=350bps or pctile>=75; |WALCL|>=0.8%,71,69.01,74.65,67.61,77.14,72.1,3M,63,67.61,2.3833,-20.1846,18.4272
+A_min2_p75_25_hy350_w0.8,factorial,False,2,75,25,350,0.8,≥2 of 4 rare: NFCI/CNH pctile>=75 or <=25; HY>=350bps or pctile>=75; |WALCL|>=0.8%,71,69.01,74.65,67.61,77.14,72.1,6M,126,77.14,4.8932,-25.2223,24.6456
+A_min2_p75_25_hy450_w0.8,factorial,False,2,75,25,450,0.8,≥2 of 4 rare: NFCI/CNH pctile>=75 or <=25; HY>=450bps or pctile>=75; |WALCL|>=0.8%,72,77.78,76.39,72.22,78.87,76.31,1M,21,77.78,2.0681,-11.3138,11.2338
+A_min2_p75_25_hy450_w0.8,factorial,False,2,75,25,450,0.8,≥2 of 4 rare: NFCI/CNH pctile>=75 or <=25; HY>=450bps or pctile>=75; |WALCL|>=0.8%,72,77.78,76.39,72.22,78.87,76.31,2M,42,76.39,2.8244,-9.9569,15.7033
+A_min2_p75_25_hy450_w0.8,factorial,False,2,75,25,450,0.8,≥2 of 4 rare: NFCI/CNH pctile>=75 or <=25; HY>=450bps or pctile>=75; |WALCL|>=0.8%,72,77.78,76.39,72.22,78.87,76.31,3M,63,72.22,3.4502,-23.0675,18.4272
+A_min2_p75_25_hy450_w0.8,factorial,False,2,75,25,450,0.8,≥2 of 4 rare: NFCI/CNH pctile>=75 or <=25; HY>=450bps or pctile>=75; |WALCL|>=0.8%,72,77.78,76.39,72.22,78.87,76.31,6M,126,78.87,6.5769,-13.3593,24.6456
+A_min2_p85_15_hy350_w0.8,factorial,False,2,85,15,350,0.8,≥2 of 4 rare: NFCI/CNH pctile>=85 or <=15; HY>=350bps or pctile>=85; |WALCL|>=0.8%,81,61.73,70.37,74.07,76.25,70.6,1M,21,61.73,0.4138,-13.387,9.214
+A_min2_p85_15_hy350_w0.8,factorial,False,2,85,15,350,0.8,≥2 of 4 rare: NFCI/CNH pctile>=85 or <=15; HY>=350bps or pctile>=85; |WALCL|>=0.8%,81,61.73,70.37,74.07,76.25,70.6,2M,42,70.37,1.8415,-17.3612,13.607
+A_min2_p85_15_hy350_w0.8,factorial,False,2,85,15,350,0.8,≥2 of 4 rare: NFCI/CNH pctile>=85 or <=15; HY>=350bps or pctile>=85; |WALCL|>=0.8%,81,61.73,70.37,74.07,76.25,70.6,3M,63,74.07,2.9057,-20.1846,18.4272
+A_min2_p85_15_hy350_w0.8,factorial,False,2,85,15,350,0.8,≥2 of 4 rare: NFCI/CNH pctile>=85 or <=15; HY>=350bps or pctile>=85; |WALCL|>=0.8%,81,61.73,70.37,74.07,76.25,70.6,6M,126,76.25,5.5681,-25.2223,23.155
+A_min2_p85_15_hy450_w0.8,factorial,False,2,85,15,450,0.8,≥2 of 4 rare: NFCI/CNH pctile>=85 or <=15; HY>=450bps or pctile>=85; |WALCL|>=0.8%,77,75.32,75.32,80.52,84.21,78.84,1M,21,75.32,1.5331,-10.3853,10.443
+A_min2_p85_15_hy450_w0.8,factorial,False,2,85,15,450,0.8,≥2 of 4 rare: NFCI/CNH pctile>=85 or <=15; HY>=450bps or pctile>=85; |WALCL|>=0.8%,77,75.32,75.32,80.52,84.21,78.84,2M,42,75.32,2.3614,-27.6377,13.607
+A_min2_p85_15_hy450_w0.8,factorial,False,2,85,15,450,0.8,≥2 of 4 rare: NFCI/CNH pctile>=85 or <=15; HY>=450bps or pctile>=85; |WALCL|>=0.8%,77,75.32,75.32,80.52,84.21,78.84,3M,63,80.52,3.9402,-15.2108,18.4272
+A_min2_p85_15_hy450_w0.8,factorial,False,2,85,15,450,0.8,≥2 of 4 rare: NFCI/CNH pctile>=85 or <=15; HY>=450bps or pctile>=85; |WALCL|>=0.8%,77,75.32,75.32,80.52,84.21,78.84,6M,126,84.21,7.8295,-9.7672,23.155
+A_min3_p75_25_hy350_w0.8,factorial,False,3,75,25,350,0.8,≥3 of 4 rare: NFCI/CNH pctile>=75 or <=25; HY>=350bps or pctile>=75; |WALCL|>=0.8%,57,78.95,73.68,77.19,77.19,76.75,1M,21,78.95,2.1965,-11.3138,18.7269
+A_min3_p75_25_hy350_w0.8,factorial,False,3,75,25,350,0.8,≥3 of 4 rare: NFCI/CNH pctile>=75 or <=25; HY>=350bps or pctile>=75; |WALCL|>=0.8%,57,78.95,73.68,77.19,77.19,76.75,2M,42,73.68,3.5194,-11.6111,28.9247
+A_min3_p75_25_hy350_w0.8,factorial,False,3,75,25,350,0.8,≥3 of 4 rare: NFCI/CNH pctile>=75 or <=25; HY>=350bps or pctile>=75; |WALCL|>=0.8%,57,78.95,73.68,77.19,77.19,76.75,3M,63,77.19,4.6809,-23.0675,34.3969
+A_min3_p75_25_hy350_w0.8,factorial,False,3,75,25,350,0.8,≥3 of 4 rare: NFCI/CNH pctile>=75 or <=25; HY>=350bps or pctile>=75; |WALCL|>=0.8%,57,78.95,73.68,77.19,77.19,76.75,6M,126,77.19,7.5344,-13.0036,44.0167
+A_min3_p75_25_hy400_w0.8,factorial,False,3,75,25,400,0.8,≥3 of 4 rare: NFCI/CNH pctile>=75 or <=25; HY>=400bps or pctile>=75; |WALCL|>=0.8%,52,82.69,76.92,82.69,82.69,81.25,1M,21,82.69,2.2966,-11.3138,18.7269
+A_min3_p75_25_hy400_w0.8,factorial,False,3,75,25,400,0.8,≥3 of 4 rare: NFCI/CNH pctile>=75 or <=25; HY>=400bps or pctile>=75; |WALCL|>=0.8%,52,82.69,76.92,82.69,82.69,81.25,2M,42,76.92,3.9604,-11.6111,28.9247
+A_min3_p75_25_hy400_w0.8,factorial,False,3,75,25,400,0.8,≥3 of 4 rare: NFCI/CNH pctile>=75 or <=25; HY>=400bps or pctile>=75; |WALCL|>=0.8%,52,82.69,76.92,82.69,82.69,81.25,3M,63,82.69,5.5706,-11.5919,34.3969
+A_min3_p75_25_hy400_w0.8,factorial,False,3,75,25,400,0.8,≥3 of 4 rare: NFCI/CNH pctile>=75 or <=25; HY>=400bps or pctile>=75; |WALCL|>=0.8%,52,82.69,76.92,82.69,82.69,81.25,6M,126,82.69,8.3351,-13.0036,44.0167
+A_min3_p75_25_hy450_w0.8,factorial,False,3,75,25,450,0.8,≥3 of 4 rare: NFCI/CNH pctile>=75 or <=25; HY>=450bps or pctile>=75; |WALCL|>=0.8%,44,81.82,77.27,79.55,84.09,80.68,1M,21,81.82,2.5132,-10.3853,18.7269
+A_min3_p75_25_hy450_w0.8,factorial,False,3,75,25,450,0.8,≥3 of 4 rare: NFCI/CNH pctile>=75 or <=25; HY>=450bps or pctile>=75; |WALCL|>=0.8%,44,81.82,77.27,79.55,84.09,80.68,2M,42,77.27,3.9296,-11.6111,28.9247
+A_min3_p75_25_hy450_w0.8,factorial,False,3,75,25,450,0.8,≥3 of 4 rare: NFCI/CNH pctile>=75 or <=25; HY>=450bps or pctile>=75; |WALCL|>=0.8%,44,81.82,77.27,79.55,84.09,80.68,3M,63,79.55,5.4219,-11.5919,34.3969
+A_min3_p75_25_hy450_w0.8,factorial,False,3,75,25,450,0.8,≥3 of 4 rare: NFCI/CNH pctile>=75 or <=25; HY>=450bps or pctile>=75; |WALCL|>=0.8%,44,81.82,77.27,79.55,84.09,80.68,6M,126,84.09,8.7607,-13.0036,44.0167
+A_min3_p80_20_hy350_w0.8,factorial,False,3,80,20,350,0.8,≥3 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=350bps or pctile>=80; |WALCL|>=0.8%,56,73.21,73.21,76.79,80.36,75.89,1M,21,73.21,2.0081,-10.3853,18.7269
+A_min3_p80_20_hy350_w0.8,factorial,False,3,80,20,350,0.8,≥3 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=350bps or pctile>=80; |WALCL|>=0.8%,56,73.21,73.21,76.79,80.36,75.89,2M,42,73.21,2.9897,-11.6111,28.9247
+A_min3_p80_20_hy350_w0.8,factorial,False,3,80,20,350,0.8,≥3 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=350bps or pctile>=80; |WALCL|>=0.8%,56,73.21,73.21,76.79,80.36,75.89,3M,63,76.79,4.0479,-23.0675,34.3969
+A_min3_p80_20_hy350_w0.8,factorial,False,3,80,20,350,0.8,≥3 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=350bps or pctile>=80; |WALCL|>=0.8%,56,73.21,73.21,76.79,80.36,75.89,6M,126,80.36,8.1619,-12.9539,44.0167
+A_min3_p80_20_hy450_w0.8,factorial,False,3,80,20,450,0.8,≥3 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=450bps or pctile>=80; |WALCL|>=0.8%,40,75.0,75.0,80.0,82.5,78.12,1M,21,75.0,2.1856,-10.3853,18.7269
+A_min3_p80_20_hy450_w0.8,factorial,False,3,80,20,450,0.8,≥3 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=450bps or pctile>=80; |WALCL|>=0.8%,40,75.0,75.0,80.0,82.5,78.12,2M,42,75.0,3.3878,-11.6111,28.9247
+A_min3_p80_20_hy450_w0.8,factorial,False,3,80,20,450,0.8,≥3 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=450bps or pctile>=80; |WALCL|>=0.8%,40,75.0,75.0,80.0,82.5,78.12,3M,63,80.0,4.805,-11.5919,34.3969
+A_min3_p80_20_hy450_w0.8,factorial,False,3,80,20,450,0.8,≥3 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=450bps or pctile>=80; |WALCL|>=0.8%,40,75.0,75.0,80.0,82.5,78.12,6M,126,82.5,8.691,-12.9539,44.0167
+A_min3_p85_15_hy350_w0.8,factorial,False,3,85,15,350,0.8,≥3 of 4 rare: NFCI/CNH pctile>=85 or <=15; HY>=350bps or pctile>=85; |WALCL|>=0.8%,50,82.0,80.0,84.0,86.0,83.0,1M,21,82.0,2.6287,-4.4001,12.6667
+A_min3_p85_15_hy350_w0.8,factorial,False,3,85,15,350,0.8,≥3 of 4 rare: NFCI/CNH pctile>=85 or <=15; HY>=350bps or pctile>=85; |WALCL|>=0.8%,50,82.0,80.0,84.0,86.0,83.0,2M,42,80.0,3.1864,-27.6377,19.2117
+A_min3_p85_15_hy350_w0.8,factorial,False,3,85,15,350,0.8,≥3 of 4 rare: NFCI/CNH pctile>=85 or <=15; HY>=350bps or pctile>=85; |WALCL|>=0.8%,50,82.0,80.0,84.0,86.0,83.0,3M,63,84.0,4.8324,-15.2108,18.4272
+A_min3_p85_15_hy350_w0.8,factorial,False,3,85,15,350,0.8,≥3 of 4 rare: NFCI/CNH pctile>=85 or <=15; HY>=350bps or pctile>=85; |WALCL|>=0.8%,50,82.0,80.0,84.0,86.0,83.0,6M,126,86.0,8.8362,-8.8355,29.7855
+A_min3_p85_15_hy400_w0.8,factorial,False,3,85,15,400,0.8,≥3 of 4 rare: NFCI/CNH pctile>=85 or <=15; HY>=400bps or pctile>=85; |WALCL|>=0.8%,37,83.78,83.78,86.49,86.49,85.14,1M,21,83.78,3.1721,-4.4001,12.6667
+A_min3_p85_15_hy400_w0.8,factorial,False,3,85,15,400,0.8,≥3 of 4 rare: NFCI/CNH pctile>=85 or <=15; HY>=400bps or pctile>=85; |WALCL|>=0.8%,37,83.78,83.78,86.49,86.49,85.14,2M,42,83.78,4.3875,-4.1214,19.2117
+A_min3_p85_15_hy400_w0.8,factorial,False,3,85,15,400,0.8,≥3 of 4 rare: NFCI/CNH pctile>=85 or <=15; HY>=400bps or pctile>=85; |WALCL|>=0.8%,37,83.78,83.78,86.49,86.49,85.14,3M,63,86.49,5.8913,-6.4828,18.4272
+A_min3_p85_15_hy400_w0.8,factorial,False,3,85,15,400,0.8,≥3 of 4 rare: NFCI/CNH pctile>=85 or <=15; HY>=400bps or pctile>=85; |WALCL|>=0.8%,37,83.78,83.78,86.49,86.49,85.14,6M,126,86.49,8.9482,-8.8355,29.7855
+A_min3_p85_15_hy450_w0.8,factorial,False,3,85,15,450,0.8,≥3 of 4 rare: NFCI/CNH pctile>=85 or <=15; HY>=450bps or pctile>=85; |WALCL|>=0.8%,30,80.0,80.0,83.33,86.67,82.5,1M,21,80.0,3.2284,-4.4001,12.6667
+A_min3_p85_15_hy450_w0.8,factorial,False,3,85,15,450,0.8,≥3 of 4 rare: NFCI/CNH pctile>=85 or <=15; HY>=450bps or pctile>=85; |WALCL|>=0.8%,30,80.0,80.0,83.33,86.67,82.5,2M,42,80.0,4.3372,-4.7349,19.2117
+A_min3_p85_15_hy450_w0.8,factorial,False,3,85,15,450,0.8,≥3 of 4 rare: NFCI/CNH pctile>=85 or <=15; HY>=450bps or pctile>=85; |WALCL|>=0.8%,30,80.0,80.0,83.33,86.67,82.5,3M,63,83.33,5.6991,-6.4828,18.4272
+A_min3_p85_15_hy450_w0.8,factorial,False,3,85,15,450,0.8,≥3 of 4 rare: NFCI/CNH pctile>=85 or <=15; HY>=450bps or pctile>=85; |WALCL|>=0.8%,30,80.0,80.0,83.33,86.67,82.5,6M,126,86.67,9.4147,-8.8355,29.7855

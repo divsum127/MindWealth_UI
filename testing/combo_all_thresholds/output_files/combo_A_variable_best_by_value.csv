@@ -1,0 +1,15 @@
+combo,variable,threshold_value,n_events,primary_horizon,primary_hit_pct,hit_mean_all_horizons,experiment_id,gate_text
+A,min_of_four,2.0,77,6M,84.21,78.84,A_min2_p85_15_hy450_w0.8,≥2 of 4 rare: NFCI/CNH pctile>=85 or <=15; HY>=450bps or pctile>=85; |WALCL|>=0.8%
+A,min_of_four,3.0,30,6M,86.67,82.5,A_min3_p85_15_hy450_w0.8,≥3 of 4 rare: NFCI/CNH pctile>=85 or <=15; HY>=450bps or pctile>=85; |WALCL|>=0.8%
+A,rare_pctile_high,75.0,44,6M,84.09,80.68,A_min3_p75_25_hy450_w0.8,≥3 of 4 rare: NFCI/CNH pctile>=75 or <=25; HY>=450bps or pctile>=75; |WALCL|>=0.8%
+A,rare_pctile_high,80.0,50,6M,84.0,80.5,A_min3_p80_20_hy400_w0.8,≥3 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=400bps or pctile>=80; |WALCL|>=0.8%
+A,rare_pctile_high,85.0,30,6M,86.67,82.5,A_min3_p85_15_hy450_w0.8,≥3 of 4 rare: NFCI/CNH pctile>=85 or <=15; HY>=450bps or pctile>=85; |WALCL|>=0.8%
+A,rare_pctile_low,15.0,30,6M,86.67,82.5,A_min3_p85_15_hy450_w0.8,≥3 of 4 rare: NFCI/CNH pctile>=85 or <=15; HY>=450bps or pctile>=85; |WALCL|>=0.8%
+A,rare_pctile_low,20.0,50,6M,84.0,80.5,A_min3_p80_20_hy400_w0.8,≥3 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=400bps or pctile>=80; |WALCL|>=0.8%
+A,rare_pctile_low,25.0,44,6M,84.09,80.68,A_min3_p75_25_hy450_w0.8,≥3 of 4 rare: NFCI/CNH pctile>=75 or <=25; HY>=450bps or pctile>=75; |WALCL|>=0.8%
+A,hy_bps_rare,350.0,50,6M,86.0,83.0,A_min3_p85_15_hy350_w0.8,≥3 of 4 rare: NFCI/CNH pctile>=85 or <=15; HY>=350bps or pctile>=85; |WALCL|>=0.8%
+A,hy_bps_rare,400.0,37,6M,86.49,85.14,A_min3_p85_15_hy400_w0.8,≥3 of 4 rare: NFCI/CNH pctile>=85 or <=15; HY>=400bps or pctile>=85; |WALCL|>=0.8%
+A,hy_bps_rare,450.0,30,6M,86.67,82.5,A_min3_p85_15_hy450_w0.8,≥3 of 4 rare: NFCI/CNH pctile>=85 or <=15; HY>=450bps or pctile>=85; |WALCL|>=0.8%
+A,walcl_mom_rare_pct,0.6,79,6M,74.67,70.47,A_min2_p80_20_hy400_w0.6,≥2 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=400bps or pctile>=80; |WALCL|>=0.6%
+A,walcl_mom_rare_pct,0.8,30,6M,86.67,82.5,A_min3_p85_15_hy450_w0.8,≥3 of 4 rare: NFCI/CNH pctile>=85 or <=15; HY>=450bps or pctile>=85; |WALCL|>=0.8%
+A,walcl_mom_rare_pct,1.0,72,6M,80.28,74.58,A_min2_p80_20_hy400_w1.0,≥2 of 4 rare: NFCI/CNH pctile>=80 or <=20; HY>=400bps or pctile>=80; |WALCL|>=1.0%

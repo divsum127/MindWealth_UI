@@ -1,0 +1,18 @@
+combo,variable,threshold_value,n_events,primary_horizon,primary_hit_pct,hit_mean_all_horizons,experiment_id,gate_text
+B,vix_min,20,10,3M,70.0,74.0,B_vix20_hy400_cftc15_l3,VIX>=20 & VIX pctile>=80; HY>=400bps OR HY pctile>=80; CFTC<=15; 3-of-3
+B,vix_min,22,36,3M,75.0,67.78,B_vix22_hy375_cftc12_l2,VIX>=22 & VIX pctile>=80; HY>=375bps OR HY pctile>=80; CFTC<=12; 2-of-3
+B,vix_min,25,7,3M,85.71,82.86,B_vix25_hy450_cftc15_l3,VIX>=25 & VIX pctile>=80; HY>=450bps OR HY pctile>=80; CFTC<=15; 3-of-3
+B,vix_min,28,8,3M,87.5,82.5,B_vix28_hy400_cftc15_l3,VIX>=28 & VIX pctile>=80; HY>=400bps OR HY pctile>=80; CFTC<=15; 3-of-3
+B,vix_min,30,7,3M,85.71,82.86,B_vix30_hy400_cftc15_l3,VIX>=30 & VIX pctile>=80; HY>=400bps OR HY pctile>=80; CFTC<=15; 3-of-3
+B,hy_bps_min,350,9,3M,77.78,73.34,B_vix25_hy350_cftc15_l3,VIX>=25 & VIX pctile>=80; HY>=350bps OR HY pctile>=80; CFTC<=15; 3-of-3
+B,hy_bps_min,375,8,3M,87.5,80.0,B_vix28_hy375_cftc18_l3,VIX>=28 & VIX pctile>=80; HY>=375bps OR HY pctile>=80; CFTC<=18; 3-of-3
+B,hy_bps_min,400,8,3M,87.5,82.5,B_vix28_hy400_cftc15_l3,VIX>=28 & VIX pctile>=80; HY>=400bps OR HY pctile>=80; CFTC<=15; 3-of-3
+B,hy_bps_min,425,7,3M,85.71,80.0,B_vix28_hy425_cftc18_l3,VIX>=28 & VIX pctile>=80; HY>=425bps OR HY pctile>=80; CFTC<=18; 3-of-3
+B,hy_bps_min,450,7,3M,85.71,82.86,B_vix25_hy450_cftc15_l3,VIX>=25 & VIX pctile>=80; HY>=450bps OR HY pctile>=80; CFTC<=15; 3-of-3
+B,cftc_max_pctile,10,7,3M,71.43,65.71,B_vix25_hy400_cftc10_l3,VIX>=25 & VIX pctile>=80; HY>=400bps OR HY pctile>=80; CFTC<=10; 3-of-3
+B,cftc_max_pctile,12,7,3M,85.71,80.0,B_vix28_hy375_cftc12_l3,VIX>=28 & VIX pctile>=80; HY>=375bps OR HY pctile>=80; CFTC<=12; 3-of-3
+B,cftc_max_pctile,15,8,3M,87.5,82.5,B_vix28_hy400_cftc15_l3,VIX>=28 & VIX pctile>=80; HY>=400bps OR HY pctile>=80; CFTC<=15; 3-of-3
+B,cftc_max_pctile,18,8,3M,87.5,80.0,B_vix28_hy375_cftc18_l3,VIX>=28 & VIX pctile>=80; HY>=375bps OR HY pctile>=80; CFTC<=18; 3-of-3
+B,cftc_max_pctile,20,10,3M,70.0,70.0,B_vix25_hy400_cftc20_l3,VIX>=25 & VIX pctile>=80; HY>=400bps OR HY pctile>=80; CFTC<=20; 3-of-3
+B,legs_required,2,38,3M,76.32,67.9,B_vix25_hy375_cftc12_l2,VIX>=25 & VIX pctile>=80; HY>=375bps OR HY pctile>=80; CFTC<=12; 2-of-3
+B,legs_required,3,8,3M,87.5,82.5,B_vix28_hy400_cftc15_l3,VIX>=28 & VIX pctile>=80; HY>=400bps OR HY pctile>=80; CFTC<=15; 3-of-3
