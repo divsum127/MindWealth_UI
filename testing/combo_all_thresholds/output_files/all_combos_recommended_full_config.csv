@@ -1,0 +1,8 @@
+combo,label,spec_hit_pct,spec_horizon,recommended_gate,experiment_id,n_events,primary_horizon,primary_hit_pct,hit_mean_all_horizons,is_config_baseline,min_of_four,rare_pctile_high,rare_pctile_low,hy_bps_rare,walcl_mom_rare_pct,vix_min,hy_bps_min,cftc_max_pctile,legs_required,wti_4wk_min_pct,cpi_surprise_min,walcl_flat_max_pct,vxts_min,cftc_min_pctile,vix_max,cape_min,nfci_easy_max,spx_50wma_reclaim_pct,vxts_max,hy_widen_4wk_bps_min
+A,Liquidity,78.0,6M,≥3 of 4 rare: NFCI/CNH pctile>=85 or <=15; HY>=450bps or pctile>=85; |WALCL|>=0.8%,A_min3_p85_15_hy450_w0.8,30,6M,86.67,82.5,False,3.0,85.0,15.0,450.0,0.8,,,,,,,,,,,,,,,
+B,Capitulation,87.5,3M,VIX>=28 & VIX pctile>=80; HY>=400bps OR HY pctile>=80; CFTC<=15; 3-of-3,B_vix28_hy400_cftc15_l3,8,3M,87.5,82.5,False,,,,,,28.0,400.0,15.0,3.0,,,,,,,,,,,
+C,Stagflation,83.0,6M,WTI 4wk>=5%; CPI surprise>=0.2; |WALCL MoM|<1.0%; 2-of-3,C_ext_w5_cpi0.2_wcl1.0_l2,5,6M,0.0,6.25,False,,,,,,,,,2.0,5.0,0.2,1.0,,,,,,,,
+D,FOMO Top,78.0,1W,VXTS>=1.18; CFTC>=90; VIX<=16; 2-of-3,D_v1.18_c90_x16_l2,78,1W,57.69,46.41,False,,,,,,,,,2.0,,,,1.18,90.0,16.0,,,,,
+E,Valuation Extreme,73.0,12M,CAPE>=32; NFCI<=-0.2; CFTC>=92; 3-of-3,E_cape32_nfci-0.20_cftc92_l3,9,12M,87.5,68.75,False,,,,,,,,,3.0,,,,,92.0,,32.0,-0.2,,,
+F,Recovery,78.0,6M,SPX above 50WMA AND (reclaim OR close>=4.0% above WMA); CFTC<=60,F_spx4.0_cftc60,43,6M,92.86,83.58,False,,,,,,,,60.0,,,,,,,,,,4.0,,
+G,Hidden Stress,75.0,3W,VXTS<1.1; VIX<=20; HY 4wk widen>=30bps; 3-of-3,G_ext_vxts1.1_vix20_hy30,3,3W,100.0,73.33,False,,,,,,,,,,,,,,,20.0,,,,1.1,30.0

@@ -123,9 +123,10 @@ def _db_upcoming_releases(days: int = 14) -> list[dict[str, Any]]:
         future = (datetime.now() + timedelta(days=days)).strftime("%Y-%m-%d")
         with get_connection() as conn:
             rows = conn.execute(
-                """SELECT release_date, release_type, expected_actual, consensus
+                """SELECT release_date, release_type, actual, consensus
                    FROM pending_releases
-                   WHERE release_date > ? AND release_date <= ? AND actual IS NULL
+                   WHERE release_date > ? AND release_date <= ?
+                     AND (actual IS NULL OR consensus IS NULL)
                    ORDER BY release_date ASC""",
                 (today, future),
             ).fetchall()
@@ -421,6 +422,36 @@ def get_regime() -> dict[str, Any]:
         "ssi_layer2_status": _safe(data, "ssi_layer2_status"),
         "ssi_multiplier": _safe(data, "ssi_multiplier"),
         "regime_grid": _safe(data, "regime_grid"),
+    }
+
+
+def get_pre_catalyst_intel() -> dict[str, Any]:
+    """Pre-catalyst fragility score before scheduled CPI/FOMC/NFP (nightly JSON)."""
+    data = _load_runic()
+    block = _safe(data, "pre_catalyst", {}) or {}
+    return {"date": _safe(data, "date"), **block}
+
+
+def get_post_event_regime_intel() -> dict[str, Any]:
+    """Post-event regime transition within 48h of CPI/FOMC/NFP (nightly JSON)."""
+    data = _load_runic()
+    block = _safe(data, "post_event_regime", {}) or {}
+    return {"date": _safe(data, "date"), **block}
+
+
+def get_scheduled_events_calendar(*, days: int = 21) -> dict[str, Any]:
+    """Upcoming CPI, FOMC, and NFP release dates from pending_releases."""
+    from src.macro_intelligence.data.macro_calendar import list_scheduled_events
+
+    days = max(1, min(int(days), 90))
+    today = datetime.now().strftime("%Y-%m-%d")
+    end = (datetime.now() + timedelta(days=days)).strftime("%Y-%m-%d")
+    events = list_scheduled_events(today, start=today, end=end)
+    return {
+        "as_of": today,
+        "days_forward": days,
+        "event_types": ["CPI", "FOMC", "NFP"],
+        "events": events,
     }
 
 

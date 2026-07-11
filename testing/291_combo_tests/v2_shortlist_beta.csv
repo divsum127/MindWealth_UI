@@ -1,0 +1,9 @@
+signature,n_fires,hit_rate_3m,avg_3m,beta_pass,hostile_n,hostile_hr,hostile_avg_3m,promotion_candidate,gate_stage,beats_unconditional,beats_single_var,beats_regime_base
+CURVE+WALCL,73,0.8493,5.1113,True,69,0.8406,4.8545,True,survivor,True,True,True
+CNH+VIX,26,0.8846,6.5045,True,17,0.8235,4.2088,True,survivor,True,True,True
+CNH+GSR+WTI,15,0.9333,6.5373,True,12,0.9167,4.7751,True,survivor,True,True,True
+CFTC+VIX+VXTS,13,1.0,11.4571,True,3,1.0,12.0343,True,survivor,True,True,True
+CAPE+VIX+VXTS,23,0.8696,10.1655,True,3,1.0,12.0343,True,survivor,True,True,True
+CURVE+GSR+WALCL,27,0.8519,5.5579,True,25,0.84,5.3398,True,survivor,True,True,True
+CNH+CURVE+WALCL,23,0.8696,4.7769,True,23,0.8696,4.7769,True,survivor,True,True,True
+CAPE+HY,8,0.875,14.1699,True,5,0.8,10.9625,True,survivor,True,True,True

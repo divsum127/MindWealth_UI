@@ -173,6 +173,8 @@ def generate_nightly_briefing(payload: dict[str, Any], use_claude: bool = True) 
         f"12-VARIABLE DASHBOARD (with percentiles and tiers):\n{json.dumps(var_summary, indent=2)}\n\n"
         f"COMBO C CANCEL DETAIL: {json.dumps(payload.get('combo_c_cancel', {}))}\n"
         f"PENDING CPI RELEASE THIS WEEK: {payload.get('pending_cpi_release', False)}\n"
+        f"PRE-CATALYST FRAGILITY: {json.dumps(payload.get('pre_catalyst', {}))}\n"
+        f"POST-EVENT REGIME: {json.dumps(payload.get('post_event_regime', {}))}\n"
         f"SSI LAYER2 STATUS: {payload.get('ssi_layer2_status')} | SSI MULTIPLIER: {payload.get('ssi_multiplier')}\n"
         f"VIX BYPASS ACTIVE: {payload.get('vix_bypass', False)}\n\n"
         f"HISTORICAL ANALOGS (date + realized SPX forward returns):\n"

@@ -23,6 +23,8 @@ REQUIRED = {
     "ppi_cooling",
     "combo_c_cancel",
     "cftc_status",
+    "pre_catalyst",
+    "post_event_regime",
 }
 
 

@@ -24,7 +24,7 @@ Master index of all REST services in MindWealth_UI. **API version 1.2.0** — 55
 | Sentiment / SSI | `/analytics/sentiment/layers`, `/macro/sentiment/positioning` |
 | Performance | `/analytics/performance` |
 | Overwatch YTD | `/analytics/portfolio-ytd` |
-| Runic macro | `/macro/runic/nightly`, `/combo/active` |
+| Runic macro | `/macro/runic/nightly`, `/combo/active`, `/macro/events/pre-catalyst`, `/macro/events/post-regime` |
 | Conviction overlay | `/conviction/overlays/{date}/score-sheet` |
 | Chatbot | `/chatbot/sessions`, `/chatbot/jobs` |
 

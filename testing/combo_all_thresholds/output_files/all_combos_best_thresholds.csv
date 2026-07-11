@@ -1,0 +1,9 @@
+# Best primary hit rate per combo (n>=5 preferred)
+combo,label,spec_hit_pct,primary_horizon,primary_hit,hit_mean_all_horizons,n_events,gate_text,experiment_id,is_config_baseline
+A,Liquidity,78.0,6M,86.67,82.5,30,≥3 of 4 rare: NFCI/CNH pctile>=85 or <=15; HY>=450bps or pctile>=85; |WALCL|>=0.8%,A_min3_p85_15_hy450_w0.8,False
+B,Capitulation,87.5,3M,87.5,82.5,8,VIX>=28 & VIX pctile>=80; HY>=400bps OR HY pctile>=80; CFTC<=15; 3-of-3,B_vix28_hy400_cftc15_l3,False
+C,Stagflation,83.0,6M,0.0,12.5,2,WTI 4wk>=10.0%; CPI surprise>=0.2; |WALCL MoM|<1.0%; 3-of-3,C_wti10.0_cpi0.2_walcl1.0,False
+D,FOMO Top,78.0,1W,57.69,46.66,78,VXTS>=1.18; CFTC>=92; VIX<=16; 2-of-3,D_v1.18_c92_x16_l2,False
+E,Valuation Extreme,73.0,12M,87.5,68.75,9,CAPE>=32; NFCI<=-0.2; CFTC>=92; 3-of-3,E_cape32_nfci-0.20_cftc92_l3,False
+F,Recovery,78.0,6M,92.86,83.58,43,SPX above 50WMA AND (reclaim OR close>=4.0% above WMA); CFTC<=60,F_spx4.0_cftc60,False
+G,Hidden Stress,75.0,3W,40.0,36.0,5,VXTS<1.05; VIX<=22; HY 4wk widen>=30bps; 3-of-3,G_vxts1.05_vix22_hy30,False

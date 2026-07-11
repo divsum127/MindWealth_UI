@@ -114,6 +114,44 @@ def create_analysis_page(data_file, page_title, show_page_header=True):
     
     df['Interval'] = df.apply(extract_interval, axis=1)
     df['Position_Type'] = df.apply(extract_position_type, axis=1)
+
+    from ..utils.cross_function_ui import (
+        filter_cross_function_conflicts,
+        filter_recent_exits,
+        load_cross_function_conflicts,
+        render_cross_function_conflict_banner,
+        render_cross_function_conflict_table,
+    )
+
+    conflicts_blob = load_cross_function_conflicts()
+    conflicts_list = conflicts_blob.get("conflicts", [])
+
+    if page_title == "Portfolio Risk Management" and conflicts_list:
+        render_cross_function_conflict_banner(conflicts_list, page_label="Portfolio Risk Management")
+        render_cross_function_conflict_table(conflicts_list)
+        st.markdown("---")
+
+    if page_title == "Outstanding Signals":
+        view_mode = st.sidebar.radio(
+            "Report view",
+            options=["All Outstanding", "Recent Exits", "Cross-Function Conflicts"],
+            index=0,
+            key=f"outstanding_view_{page_title}",
+            help="Recent Exits: rows with an exit date. Cross-Function Conflicts: open holders flagged by another function's exit.",
+        )
+        if view_mode == "Recent Exits":
+            df = filter_recent_exits(df)
+            if df.empty:
+                st.warning("No recent exit rows in outstanding signals.")
+                return
+        elif view_mode == "Cross-Function Conflicts":
+            df = filter_cross_function_conflicts(df)
+            if df.empty:
+                st.warning("No cross-function exit conflicts in outstanding signals.")
+                return
+            render_cross_function_conflict_banner(conflicts_list, page_label="Outstanding Signals")
+            render_cross_function_conflict_table(conflicts_list)
+            st.markdown("---")
     
     # Create main tabs for position types
     main_tab1, main_tab2, main_tab3 = st.tabs(["📊 ALL Positions", "📈 Long Positions", "📉 Short Positions"])

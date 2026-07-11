@@ -300,7 +300,54 @@ _ENRICH_SLUGS = frozenset({
     "outstanding_signals", "outstanding_signal",
     "new_signals", "new_signal",
     "all_signal", "all-signal",
+    "target_signals", "target_signal", "portfolio_risk", "portfolio-risk",
 })
+
+_CROSS_FUNCTION_REPORT_SLUGS = frozenset({
+    "outstanding_signals", "outstanding_signal",
+    "target_signals", "target_signal", "portfolio_risk", "portfolio-risk",
+})
+
+
+def _load_cross_function_conflicts() -> dict[str, Any]:
+    """Load latest cross_function_conflicts.json from trade_store."""
+    latest = TRADE_STORE_US_DIR / "cross_function_conflicts.json"
+    if latest.exists() and latest.stat().st_size > 0:
+        try:
+            return json.loads(latest.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+    pattern = str(TRADE_STORE_US_DIR / "*_cross_function_conflicts.json")
+    files = glob.glob(pattern)
+    if not files:
+        return {"conflict_count": 0, "conflicts": []}
+
+    def key(p: str) -> datetime:
+        d = extract_date_from_filename(os.path.basename(p))
+        return d if d else datetime.min
+
+    path = max(files, key=key)
+    try:
+        return json.loads(Path(path).read_text(encoding="utf-8"))
+    except Exception:
+        return {"conflict_count": 0, "conflicts": []}
+
+
+def _normalize_cross_function_fields(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    for row in records:
+        triggered = row.get("cross_function_exit_triggered")
+        display = row.get("Cross-Function Exit") or row.get("cross_function_exit_display") or ""
+        if triggered is None:
+            triggered = bool(str(display).strip())
+        elif isinstance(triggered, str):
+            triggered = triggered.strip().lower() in ("true", "1", "yes")
+        else:
+            triggered = bool(triggered)
+        row["cross_function_exit_triggered"] = triggered
+        row["conflict"] = triggered
+        if display:
+            row["cross_function_exit_display"] = str(display).strip()
+    return records
 
 
 def load_report_records(
@@ -334,7 +381,8 @@ def load_report_records(
     if enrich and slug in _ENRICH_SLUGS:
         from api.services.signal_enrichment_service import enrich_records
         raw_records = enrich_records(raw_records)
-    return {
+    raw_records = _normalize_cross_function_fields(raw_records)
+    payload: dict[str, Any] = {
         "report_name": report_name,
         "source_file": str(path),
         "report_date": _report_date_from_path(path),
@@ -342,6 +390,13 @@ def load_report_records(
         "row_count": int(len(df)),
         "records": raw_records,
     }
+    if slug in _CROSS_FUNCTION_REPORT_SLUGS:
+        conflicts_blob = _load_cross_function_conflicts()
+        payload["cross_function_conflicts"] = conflicts_blob.get("conflicts", [])
+        payload["cross_function_conflict_count"] = conflicts_blob.get(
+            "conflict_count", len(payload["cross_function_conflicts"])
+        )
+    return payload
 
 
 def _find_latest_claude_txt() -> Path | None:

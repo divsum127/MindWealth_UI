@@ -1,5 +1,21 @@
 # API Changelog
 
+## v1.5.0 (2026-07-03)
+
+### Added
+
+- **Macro scheduled events** (3 new endpoints; existing macro routes unchanged):
+  - `GET /macro/events/pre-catalyst` — pre-catalyst fragility before CPI/FOMC/NFP
+  - `GET /macro/events/post-regime` — post-event regime transition (48h window)
+  - `GET /macro/events/calendar?days=21` — upcoming CPI, FOMC, NFP dates
+- Frontend integration guide: `docs/api/frontend/macro-scheduled-events-integration.md`
+- Endpoint docs under `docs/api/services/macro/endpoints/`
+
+### Notes
+
+- `GET /macro/regime` response shape unchanged (no new keys).
+- Full nightly JSON (`GET /macro/runic/nightly`) includes `pre_catalyst` and `post_event_regime` blocks from the nightly pipeline.
+
 ## v1.2.0 (2026-06-06)
 
 ### Added

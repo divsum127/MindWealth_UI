@@ -230,9 +230,32 @@ def display_strategy_cards_page(df, page_name="Unknown", tab_context=""):
                         signal_date_display = date_part
             
             # Create expandable card with new title format
-            expander_title = f"🔍 {row['Function']} - {row['Symbol']} | {interval_display} | {signal_type_display} | {signal_date_display}"
+            conflict_flag = False
+            xf_display = ""
+            if isinstance(raw_data, dict):
+                triggered = raw_data.get("cross_function_exit_triggered")
+                xf_display = str(
+                    raw_data.get("Cross-Function Exit")
+                    or raw_data.get("cross_function_exit_display")
+                    or ""
+                ).strip()
+                if triggered is not None:
+                    if isinstance(triggered, str):
+                        conflict_flag = triggered.strip().lower() in ("true", "1", "yes")
+                    else:
+                        conflict_flag = bool(triggered)
+                elif xf_display:
+                    conflict_flag = True
+
+            conflict_prefix = "⚠ " if conflict_flag else ""
+            expander_title = (
+                f"{conflict_prefix}🔍 {row['Function']} - {row['Symbol']} | "
+                f"{interval_display} | {signal_type_display} | {signal_date_display}"
+            )
             
             with st.expander(expander_title, expanded=False):
+                if conflict_flag and xf_display:
+                    st.error(f"**Cross-Function Exit:** {xf_display}")
                 st.markdown("**📋 Key Trade Information**")
 
                 # Add interactive chart button for all strategy pages with functions

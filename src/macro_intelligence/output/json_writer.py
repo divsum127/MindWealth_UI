@@ -124,6 +124,8 @@ def build_payload(
     variables_dashboard: list[dict[str, Any]] | None = None,
     ssi_layer2_status: str | None = None,
     system_recommendation: str | None = None,
+    pre_catalyst: dict[str, Any] | None = None,
+    post_event_regime: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     pos = read_positioning_data()
     return {
@@ -151,5 +153,7 @@ def build_payload(
         "combo_c_cancel": _combo_c_cancel_state(),
         "cftc_status": _cftc_status(),
         "pending_cpi_release": _pending_cpi_release(as_of),
+        "pre_catalyst": pre_catalyst or {},
+        "post_event_regime": post_event_regime or {},
         "system_recommendation": system_recommendation,
     }

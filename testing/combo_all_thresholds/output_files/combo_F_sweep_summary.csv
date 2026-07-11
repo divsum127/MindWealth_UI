@@ -1,0 +1,28 @@
+# COMBO F — Recovery
+# Direction: bullish | Spec target: 78.0% @ 6M
+# Horizons: 1M, 2M, 3M, 6M, 9M
+# Experiments: 16 | CONFIG: SPX above 50WMA AND (reclaim OR close>=3.0% above WMA); CFTC<=50
+# CONFIG n=43 | primary 6M hit=85.71% (spec 78.0%, delta 7.7pp)
+# Sweep primary hit — min=80.0% max=92.9% avg=85.4%
+#   1M: hit min=63.0% max=75.0% avg=71.2%
+#   2M: hit min=63.0% max=76.2% avg=71.7%
+#   3M: hit min=75.6% max=87.8% avg=82.5%
+#   6M: hit min=80.0% max=92.9% avg=85.4%
+#   9M: hit min=79.6% max=95.0% avg=89.8%
+experiment_id,sweep_type,is_config_baseline,spx_50wma_reclaim_pct,cftc_max_pctile,gate_text,n_events,hit_1M,avg_spx_1M,min_spx_1M,max_spx_1M,hit_2M,avg_spx_2M,min_spx_2M,max_spx_2M,hit_3M,avg_spx_3M,min_spx_3M,max_spx_3M,hit_6M,avg_spx_6M,min_spx_6M,max_spx_6M,hit_9M,avg_spx_9M,min_spx_9M,max_spx_9M,hit_mean_all_horizons
+F_spx3.0_cftc50,config_baseline,True,3.0,50,SPX above 50WMA AND (reclaim OR close>=3.0% above WMA); CFTC<=50,43,72.09,1.6134,-9.3594,5.639,72.09,2.3013,-11.8192,14.4035,83.33,3.8976,-13.9716,13.6724,85.71,8.152,-11.5821,19.0293,90.48,11.0298,-17.3486,30.1574,80.74
+F_spx1.0_cftc50,univariate_spx,False,1.0,50,SPX above 50WMA AND (reclaim OR close>=1.0% above WMA); CFTC<=50,46,67.39,1.2975,-9.3594,5.639,67.39,1.5768,-12.4218,14.4035,77.78,3.0095,-14.1524,13.6724,80.0,7.4098,-19.5467,19.0293,86.67,10.1693,-17.3486,30.1574,75.85
+F_spx2.0_cftc50,univariate_spx,False,2.0,50,SPX above 50WMA AND (reclaim OR close>=2.0% above WMA); CFTC<=50,46,69.57,1.3272,-9.3594,5.639,69.57,1.7843,-12.4218,14.4035,80.0,3.3007,-14.1524,13.6724,82.22,7.2682,-19.5467,19.0293,86.67,10.2358,-17.3486,30.1574,77.61
+F_spx4.0_cftc50,univariate_spx,False,4.0,50,SPX above 50WMA AND (reclaim OR close>=4.0% above WMA); CFTC<=50,42,71.43,1.5081,-9.3594,5.639,76.19,2.9172,-10.1519,14.4035,87.8,4.5575,-13.9716,13.6724,90.24,8.8042,-8.3598,19.0293,92.68,11.3409,-24.1678,30.1574,83.67
+F_spx5.0_cftc50,univariate_spx,False,5.0,50,SPX above 50WMA AND (reclaim OR close>=5.0% above WMA); CFTC<=50,42,71.43,1.5128,-9.3594,5.639,76.19,2.9695,-10.1519,14.4035,87.8,4.5888,-13.9716,13.6724,85.37,8.5005,-8.3598,19.0293,92.68,11.8184,-24.1678,30.1574,82.69
+F_spx6.0_cftc50,univariate_spx,False,6.0,50,SPX above 50WMA AND (reclaim OR close>=6.0% above WMA); CFTC<=50,42,73.81,1.6272,-9.3594,5.639,71.43,2.5671,-10.1519,14.4035,80.49,3.9025,-13.9821,13.6724,87.8,9.2998,-7.7936,19.0293,92.68,12.1942,-16.779,30.1574,81.24
+F_spx3.0_cftc40,univariate_cftc,False,3.0,40,SPX above 50WMA AND (reclaim OR close>=3.0% above WMA); CFTC<=40,41,73.17,1.6792,-3.6664,5.639,73.17,2.6439,-10.1519,14.4035,85.0,4.1912,-18.9311,13.6724,87.5,7.9132,-16.3424,19.0293,95.0,11.2844,-24.1678,30.1574,82.77
+F_spx3.0_cftc45,univariate_cftc,False,3.0,45,SPX above 50WMA AND (reclaim OR close>=3.0% above WMA); CFTC<=45,43,69.77,1.4682,-9.3594,5.639,69.77,2.0147,-11.8192,14.4035,78.57,3.2831,-13.9716,13.6724,80.95,7.4394,-11.5821,19.0293,92.86,10.8348,-17.3486,30.1574,78.38
+F_spx3.0_cftc55,univariate_cftc,False,3.0,55,SPX above 50WMA AND (reclaim OR close>=3.0% above WMA); CFTC<=55,46,63.04,0.7353,-9.3594,5.639,63.04,1.7556,-10.1519,14.4035,75.56,2.6641,-15.7312,13.6724,86.67,6.7371,-11.5821,19.0293,84.44,9.2764,-17.3486,30.1574,74.55
+F_spx3.0_cftc60,univariate_cftc,False,3.0,60,SPX above 50WMA AND (reclaim OR close>=3.0% above WMA); CFTC<=60,45,73.33,1.4474,-6.9956,5.639,71.11,2.4957,-10.1519,14.4035,81.82,3.3269,-15.5449,13.6724,84.09,6.9629,-11.5821,19.0293,81.82,9.4532,-17.3486,30.1574,78.43
+F_spx2.0_cftc40,factorial,False,2.0,40,SPX above 50WMA AND (reclaim OR close>=2.0% above WMA); CFTC<=40,44,70.45,1.3755,-8.0972,5.639,70.45,2.08,-12.4218,14.4035,81.4,3.5461,-18.9311,13.6724,83.72,7.0048,-19.5467,19.0293,90.7,10.4357,-24.1678,30.1574,79.34
+F_spx2.0_cftc60,factorial,False,2.0,60,SPX above 50WMA AND (reclaim OR close>=2.0% above WMA); CFTC<=60,50,74.0,1.3007,-8.0972,5.639,72.0,2.2393,-12.4218,14.4035,79.59,3.2609,-14.1524,13.6724,83.67,6.2742,-19.5467,19.0293,79.59,9.0444,-17.3486,30.1574,77.77
+F_spx4.0_cftc40,factorial,False,4.0,40,SPX above 50WMA AND (reclaim OR close>=4.0% above WMA); CFTC<=40,40,70.0,1.4593,-3.6664,5.639,72.5,2.5381,-10.1519,14.4035,84.62,4.1454,-18.9311,13.6724,87.18,7.458,-16.3424,19.0293,94.87,11.5808,-24.1678,30.1574,81.83
+F_spx4.0_cftc60,factorial,False,4.0,60,SPX above 50WMA AND (reclaim OR close>=4.0% above WMA); CFTC<=60,43,74.42,1.4712,-6.9956,5.639,74.42,2.8959,-10.1519,14.4035,85.71,4.0072,-15.5449,13.6724,92.86,8.328,-6.1261,19.0293,90.48,10.2124,-24.1678,30.1574,83.58
+F_spx5.0_cftc40,factorial,False,5.0,40,SPX above 50WMA AND (reclaim OR close>=5.0% above WMA); CFTC<=40,40,70.0,1.4365,-3.6664,5.639,72.5,2.5099,-10.1519,14.4035,84.62,4.0962,-18.9311,13.6724,82.05,7.0409,-16.3424,19.0293,94.87,11.7392,-24.1678,30.1574,80.81
+F_spx5.0_cftc60,factorial,False,5.0,60,SPX above 50WMA AND (reclaim OR close>=5.0% above WMA); CFTC<=60,44,75.0,1.439,-6.9956,5.639,75.0,2.9833,-10.1519,14.4035,86.05,4.1216,-15.5449,13.6724,86.05,7.6589,-7.7936,19.0293,90.7,10.5326,-24.1678,30.1574,82.56

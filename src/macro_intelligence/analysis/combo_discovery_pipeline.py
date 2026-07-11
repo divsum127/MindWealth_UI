@@ -14,6 +14,7 @@ import numpy as np
 
 from src.macro_intelligence.claude._client import call_claude, parse_json_text
 from src.macro_intelligence.claude.geo_news import fetch_geo_headlines
+from src.macro_intelligence.analysis.regime_v2_enrich import enrich_regime_dict, load_v2_regime_index
 from src.macro_intelligence.config import load_config
 from src.macro_intelligence.db.connection import get_connection
 from src.macro_intelligence.engine.combo_detector import VAR_IDS
@@ -109,8 +110,9 @@ def _horizon_metrics(fires: list[FireRecord], bullish: bool) -> dict[str, dict[s
     return out
 
 
-def load_generic_fires() -> list[FireRecord]:
+def load_generic_fires(*, enrich_v2: bool = True) -> list[FireRecord]:
     records: list[FireRecord] = []
+    v2_index = load_v2_regime_index() if enrich_v2 else None
     with get_connection() as conn:
         rows = conn.execute(
             """
@@ -134,6 +136,8 @@ def load_generic_fires() -> list[FireRecord]:
                 regime = json.loads(row["macro_regime"])
             except json.JSONDecodeError:
                 regime = {}
+        if enrich_v2 and v2_index is not None:
+            regime = enrich_regime_dict(regime, str(row["date"]), v2_index)
         records.append(
             FireRecord(
                 combo_id=row["combo_id"],
@@ -162,8 +166,8 @@ def _group_fires_by_signature(fires: list[FireRecord]) -> dict[str, list[FireRec
 
 
 def _is_hostile(regime: dict[str, Any], cfg: dict[str, Any]) -> bool:
-    fed = str(regime.get("fed_cycle", "")).upper()
-    curve = str(regime.get("curve_regime", "")).upper()
+    fed = str(regime.get("fed_cycle_v2") or regime.get("fed_cycle", "")).upper()
+    curve = str(regime.get("curve_regime_v2") or regime.get("curve_regime", "")).upper()
     hostile_fed = [x.upper() for x in cfg.get("hostile_fed_cycles", [])]
     hostile_curve = [x.upper() for x in cfg.get("hostile_curve_regimes", [])]
     return any(h in fed for h in hostile_fed) or curve in hostile_curve

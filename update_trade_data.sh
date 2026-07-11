@@ -120,6 +120,17 @@ else
 fi
 shopt -u nullglob
 
+# Copy cross-function conflict JSON
+echo "📋 Copying cross-function conflict JSON..."
+if [ -f "$SOURCE_TRADE_DIR/cross_function_conflicts.json" ]; then
+    cp "$SOURCE_TRADE_DIR/cross_function_conflicts.json" "$TARGET_TRADE_DIR/cross_function_conflicts.json"
+fi
+for xf_file in "$SOURCE_TRADE_DIR"/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]_cross_function_conflicts.json; do
+    if [ -f "$xf_file" ]; then
+        cp "$xf_file" "$TARGET_TRADE_DIR"/
+    fi
+done
+
 # Copy all TXT files from trade_store/US
 echo "📄 Copying trade signal TXT files..."
 cp "$SOURCE_TRADE_DIR"/*.txt "$TARGET_TRADE_DIR"/ 2>/dev/null || echo "⚠️  No TXT files found in trade_store/US"

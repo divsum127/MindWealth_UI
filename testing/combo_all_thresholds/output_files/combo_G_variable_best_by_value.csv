@@ -1,0 +1,21 @@
+combo,variable,threshold_value,n_events,primary_horizon,primary_hit_pct,hit_mean_all_horizons,experiment_id,gate_text
+G,vxts_max,1.05,3,3W,66.67,60.0,G_ext_vxts1.05_vix22_hy35,VXTS<1.05; VIX<=22; HY 4wk widen>=35bps; 3-of-3
+G,vxts_max,1.08,4,3W,75.0,60.0,G_ext_vxts1.08_vix20_hy15,VXTS<1.08; VIX<=20; HY 4wk widen>=15bps; 3-of-3
+G,vxts_max,1.1,3,3W,100.0,73.33,G_ext_vxts1.1_vix20_hy30,VXTS<1.1; VIX<=20; HY 4wk widen>=30bps; 3-of-3
+G,vxts_max,1.12,3,3W,100.0,73.33,G_ext_vxts1.12_vix20_hy30,VXTS<1.12; VIX<=20; HY 4wk widen>=30bps; 3-of-3
+G,vxts_max,1.15,3,3W,100.0,73.33,G_ext_vxts1.15_vix20_hy30,VXTS<1.15; VIX<=20; HY 4wk widen>=30bps; 3-of-3
+G,vxts_max,1.2,3,3W,100.0,73.33,G_ext_vxts1.2_vix20_hy30,VXTS<1.2; VIX<=20; HY 4wk widen>=30bps; 3-of-3
+G,vix_max,18.0,1,3W,100.0,40.0,G_ext_vxts1.1_vix18_hy30,VXTS<1.1; VIX<=18; HY 4wk widen>=30bps; 3-of-3
+G,vix_max,20.0,3,3W,100.0,73.33,G_ext_vxts1.1_vix20_hy30,VXTS<1.1; VIX<=20; HY 4wk widen>=30bps; 3-of-3
+G,vix_max,22.0,3,3W,66.67,60.0,G_vxts1.05_vix22_hy40,VXTS<1.05; VIX<=22; HY 4wk widen>=40bps; 3-of-3
+G,vix_max,24.0,8,3W,50.0,37.5,G_ext_vxts1.1_vix24_hy30,VXTS<1.1; VIX<=24; HY 4wk widen>=30bps; 3-of-3
+G,vix_max,25.0,8,3W,50.0,37.5,G_ext_vxts1.1_vix25_hy30,VXTS<1.1; VIX<=25; HY 4wk widen>=30bps; 3-of-3
+G,vix_max,28.0,9,3W,55.56,40.0,G_ext_vxts1.1_vix28_hy30,VXTS<1.1; VIX<=28; HY 4wk widen>=30bps; 3-of-3
+G,hy_widen_4wk_bps_min,10.0,12,3W,45.45,40.0,G_ext_vxts1.1_vix22_hy10,VXTS<1.1; VIX<=22; HY 4wk widen>=10bps; 3-of-3
+G,hy_widen_4wk_bps_min,15.0,4,3W,75.0,60.0,G_ext_vxts1.08_vix20_hy15,VXTS<1.08; VIX<=20; HY 4wk widen>=15bps; 3-of-3
+G,hy_widen_4wk_bps_min,20.0,3,3W,66.67,46.67,G_ext_vxts1.08_vix20_hy20,VXTS<1.08; VIX<=20; HY 4wk widen>=20bps; 3-of-3
+G,hy_widen_4wk_bps_min,25.0,3,3W,66.67,46.67,G_ext_vxts1.08_vix20_hy25,VXTS<1.08; VIX<=20; HY 4wk widen>=25bps; 3-of-3
+G,hy_widen_4wk_bps_min,30.0,3,3W,100.0,73.33,G_ext_vxts1.1_vix20_hy30,VXTS<1.1; VIX<=20; HY 4wk widen>=30bps; 3-of-3
+G,hy_widen_4wk_bps_min,35.0,3,3W,66.67,40.0,G_ext_vxts1.1_vix22_hy35,VXTS<1.1; VIX<=22; HY 4wk widen>=35bps; 3-of-3
+G,hy_widen_4wk_bps_min,40.0,3,3W,66.67,60.0,G_vxts1.05_vix22_hy40,VXTS<1.05; VIX<=22; HY 4wk widen>=40bps; 3-of-3
+G,hy_widen_4wk_bps_min,50.0,3,3W,66.67,66.67,G_ext_vxts1.1_vix22_hy50,VXTS<1.1; VIX<=22; HY 4wk widen>=50bps; 3-of-3

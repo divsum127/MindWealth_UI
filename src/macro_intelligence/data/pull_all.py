@@ -61,11 +61,16 @@ def load_all_series(force: bool = False, as_of: str | None = None) -> dict[str, 
     try_bls_cpi_pull()
     try_fred_cpi_fallback_if_stale()
     try:
-        from src.macro_intelligence.data.investing_cpi_consensus import sync_cpi_releases_to_db
+        from src.macro_intelligence.data.macro_calendar import sync_macro_releases_to_db
 
-        sync_cpi_releases_to_db()
+        sync_macro_releases_to_db()
     except Exception:
-        pass
+        try:
+            from src.macro_intelligence.data.investing_cpi_consensus import sync_cpi_releases_to_db
+
+            sync_cpi_releases_to_db()
+        except Exception:
+            pass
     cpi_db = load_cpi_surprise_series()
     cpi_csv = load_cpi_surprises()
     cpi = cpi_db if not cpi_db.empty else cpi_csv

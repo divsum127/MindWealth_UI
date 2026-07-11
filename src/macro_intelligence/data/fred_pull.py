@@ -92,6 +92,26 @@ def steepen_bps_post_inversion_trough(spread_bps: pd.Series) -> pd.Series:
     return steepen_w.reindex(spread_bps.index, method="ffill")
 
 
+def fetch_dgs2(start: str = "1990-01-01") -> pd.Series:
+    """Daily 2Y Treasury yield (FRED DGS2)."""
+    return fetch_fred_series("DGS2", start=start)
+
+
+def fetch_dgs10(start: str = "1990-01-01") -> pd.Series:
+    """Daily 10Y Treasury yield (FRED DGS10)."""
+    return fetch_fred_series("DGS10", start=start)
+
+
+def fetch_dgs30(start: str = "1990-01-01") -> pd.Series:
+    """Daily 30Y Treasury yield (FRED DGS30)."""
+    return fetch_fred_series("DGS30", start=start)
+
+
+def fetch_t10y2y(start: str = "1976-01-01") -> pd.Series:
+    """Daily 10Y-2Y spread in percent (FRED T10Y2Y)."""
+    return fetch_fred_series("T10Y2Y", start=start)
+
+
 def curve_features(t10y2y: pd.Series) -> pd.DataFrame:
     t10y2y = t10y2y.sort_index()
     spread_bps = t10y2y * 100  # FRED T10Y2Y is in percent

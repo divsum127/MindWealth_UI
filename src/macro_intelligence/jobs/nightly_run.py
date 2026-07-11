@@ -21,6 +21,8 @@ from src.macro_intelligence.engine.combo_cancel_probability import (
     combo_cancel_probability_wti,
 )
 from src.macro_intelligence.engine.combo_metadata import combo_bullish, combo_hit_rate_stats, posture_display
+from src.macro_intelligence.engine.post_event_transition import detect_post_event_transition
+from src.macro_intelligence.engine.pre_catalyst_fragility import compute_pre_catalyst_fragility
 from src.macro_intelligence.engine.persistence import run_persistence_scan
 from src.macro_intelligence.engine.vix_bypass import compute_vix_bypass
 from src.macro_intelligence.engine.regime_rules import build_python_regime
@@ -168,6 +170,8 @@ def run_nightly(as_of: str | None = None, use_claude: bool = True) -> dict[str, 
     f_active = any(c.get("combo") == "F" and c.get("status") == "ACTIVE" for c in active)
     f_weeks = next((c.get("duration_weeks") for c in active if c.get("combo") == "F"), None)
     vix_bypass = compute_vix_bypass(active, ssi_confirmed_f=ssi_confirmed_for_combo_f())
+    pre_catalyst = compute_pre_catalyst_fragility(as_of, readings)
+    post_event_regime = detect_post_event_transition(as_of)
 
     payload = build_payload(
         as_of=as_of,
@@ -188,6 +192,8 @@ def run_nightly(as_of: str | None = None, use_claude: bool = True) -> dict[str, 
         vix_bypass=vix_bypass,
         variables_dashboard=_variables_dashboard(readings),
         ssi_layer2_status=read_ssi_layer2_status(),
+        pre_catalyst=pre_catalyst,
+        post_event_regime=post_event_regime,
     )
     payload["generic_combo_watch"] = generic_watch[:10]
     payload["source_freshness"] = get_last_freshness_audit()

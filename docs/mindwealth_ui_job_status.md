@@ -69,6 +69,20 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
 
 ---
 
+### 2026-07-09
+
+1. **Audit: adverse-regime / date-indexed combo classification API for Ahil** — SUCCESSFUL
+   - Summary: No existing API exposes a date-indexed active-combo classification series or an `adverse_regime` boolean. Current macro endpoints only serve latest nightly snapshot (`/macro/combo/active`, `/macro/combos`, `/macro/regime`, `/macro/runic/nightly`) plus per-combo analog fire dates. Building blocks exist in `runic.db.combo_fires` + cheatsheet direction metadata in `CONFIG.yaml` / `_COMBO_STATIC`. Recommend new `GET /api/v1/macro/combos/classification-history` (or CSV handoff) for Ahil’s conditioning flag. Zero prod impact — analysis only.
+   - Files changed: none (read-only audit)
+
+2. **Export Test 3 adverse-regime CSV for Ahil (`combo_classification_history.csv`)** — SUCCESSFUL
+   - Summary: Added `scripts/export_combo_classification_history.py`; generated daily forward-filled series (7,796 rows, 602 adverse days) and Friday-only variant under `testing/5_regime_uplift/`. Dominant = CONFIG PRIORITY; adverse per Test 3 rules (C/D/E, G ACTIVE-class, A FEARFUL).
+   - Files changed:
+     - `scripts/export_combo_classification_history.py` (new)
+     - `testing/5_regime_uplift/combo_classification_history.csv` (new)
+     - `testing/5_regime_uplift/combo_classification_history_fridays.csv` (new)
+     - `testing/5_regime_uplift/README.md` (new)
+
 ### 2026-07-07
 
 1. **v2 regime retag + Part H beta re-run (Item 15 follow-up)** — SUCCESSFUL
@@ -832,6 +846,18 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
    - Date: 2026-07-09
    - Summary: Root-cause fixes: `tests/conftest.py` + `load_dotenv(override=False)` stops `.env` API_KEY breaking tests; combo_c_cancel DB reset in setUp; smart_data_fetcher respects `date_filter_mode=entry_or_exit`; enrich adds `function`/`interval`; signals surface tests updated for pipeline-persisted CSV columns. **349 pytest passed.**
    - Files changed: `tests/conftest.py`, `src/config_paths.py`, `chatbot/config.py`, `chatbot/smart_data_fetcher.py`, `api/services/signal_enrichment_service.py`, `tests/test_combo_c_cancel.py`, `tests/test_api_signals_surface.py`, `docs/dev_to_prod_migration_todos.md`
+
+8. **Release A commit pushed to origin/chatbot-dev** — SUCCESSFUL
+   - Date: 2026-06-30
+   - Summary: Staged only Release A paths (44 files); commit `a1cd39f36` `feat(release-a): auth, activity logs, API rate limits`; pushed to `https://github.com/divsum127/MindWealth_UI.git` `chatbot-dev`. Macro/combo WIP and runtime artifacts left unstaged.
+   - Files changed: see commit `a1cd39f36` (auth, activity, rate limits, tests, migration doc, systemd templates)
+
+### 2026-07-11
+
+1. **Release A prod deploy (merge, pull, bootstrap, Nuxt BFF, smoke tests)** — SUCCESSFUL
+   - Date: 2026-07-11
+   - Summary: `chatbot-prod` merge `1f84f86ad` pushed; prod `prod-pull-and-restart.sh`; `.env` + `RATE_LIMIT_ENABLED=true`; admin bootstrapped on prod; Nuxt `7661255` + build; `mindwealth-ui` → `NUXT_API_BASE_URL=:8506`. Smoke: health 401/200, login 200, BFF 401/200, chatbot 401 without JWT.
+   - Files changed: prod `.env`, `config/users.json`, `config/.bootstrap_admin_password`; `/etc/systemd/system/mindwealth-ui.service`; `MindwealthUI_Vue/server/middleware/*`, `server/utils/require-auth.ts`; `docs/dev_to_prod_migration_todos.md`
 
 ### 2026-06-29
 
