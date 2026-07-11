@@ -13,6 +13,42 @@ This file captures minute-level implementation context for each completed task:
 
 ---
 
+### 2026-07-09 — Adverse-regime / combo classification API audit (Ahil handoff)
+
+**Assumptions:** “Adverse regime” = day where active named combo’s cheatsheet design intent is bearish or cautionary. Ahil needs a date-indexed series as conditioning flag for Sharpe uplift / portfolio overlay work.
+
+**Key findings:**
+- No endpoint returns historical day→active_combo→intent→adverse_flag.
+- Closest: `GET /macro/combo/active` (today only), `GET /macro/combos` (A–G status + direction labels, today), `GET /macro/analogs/{id}` (fire dates for one combo, not daily series).
+- Data exists: `combo_fires` in `runic.db` (named A–F fires; G sparse/missing historically). Direction metadata in `CONFIG.yaml` `briefing.combo_direction` and `api/services/macro_service._COMBO_STATIC`.
+- Direction conflict: `combo_hit_rates.A.direction=bullish` (hit-rate success side) vs `briefing.combo_direction.A=BEARISH` (cheatsheet design intent). Adverse flag must use cheatsheet intent, not hit-rate direction. G is cautionary (`WARNING LEADING` / BEARISH in briefing).
+
+**Deferred:** Implement endpoint or CSV export; confirm with Divyanshu whether “active” = dominant only vs any ACTIVE/CONFIRMED; fill G history if needed; resolve Combo A intent for adverse mapping.
+
+**Edge cases:** Multiple combos active same day (need dominant via PRIORITY); WATCH vs ACTIVE; Combo E CONFIRMED vs ACTIVE; days with no named combo → adverse=false / NEUTRAL.
+
+**Caveats:** Zero prod migration impact (docs/analysis only). `testing/5_regime_uplift/` is empty — Ahil work not started in repo.
+
+**Prod impact:** none — skip `dev_to_prod_migration_todos.md`.
+
+---
+
+### 2026-07-09 — Test 3 adverse-regime CSV export (Ahil)
+
+**Assumptions:** Dominant = `CONFIG.yaml` PRIORITY among ACTIVE-class combos; Friday `combo_fires` forward-filled to `daily_readings` calendar for daily Test 3 conditioning. Combo A FEARFUL from `macro_regime.a_vote` (`FEARFUL` or `TIGHT_MONEY`).
+
+**Output:** `testing/5_regime_uplift/combo_classification_history.csv` — 7,796 daily rows, 602 `adverse_regime=true`, 3,988 with non-empty dominant. Friday-only sibling: `combo_classification_history_fridays.csv`.
+
+**Deferred:** API endpoint; Divyanshu dominant-rule confirmation; regenerate if PRIORITY or adverse map changes.
+
+**Edge cases:** G has no ACTIVE rows in DB (rule present but unused); CONTESTED A excluded; pre-2007-02-02 no combo history → neutral.
+
+**Caveats:** `dominant_rule=CONFIG_PRIORITY_v1` column documents interim tie-break. README in same folder for Ahil.
+
+**Prod impact:** none.
+
+---
+
 ### 2026-06-27 — update_trade_data.sh local-only (no git)
 
 **Assumptions:** Prod checkout at `/home/ubuntu/uiv2/git/MindWealth_UI` runs the script via cron; prod data checkout at `uiv2/prod` owns separate on-disk sync.
@@ -1696,6 +1732,32 @@ activity_logs/
 **Result:** 349 pytest passed on full suite (excluding slow integration tests).
 
 **Prod merge:** Curated file list in `docs/dev_to_prod_migration_todos.md` Release A section; Nuxt BFF middleware still separate commit in `MindwealthUI_Vue`.
+
+---
+
+## 2026-06-30 — Release A git commit
+
+**Commit:** `a1cd39f36` on `chatbot-dev`, pushed to `origin`.
+
+**Staged scope:** 44 files only — auth, activity logging, rate limiting (`config/rate_limits.yaml`), test isolation/fixes, migration doc, bootstrap/invite scripts, systemd templates. Excluded macro/combo cross-function WIP, `monitored_trades.json`, threshold sweep artifacts.
+
+**Security:** `config/.bootstrap_admin_password` added to `.gitignore` before commit.
+
+**Next:** Merge `chatbot-dev` → `chatbot-prod`, prod `.env` (`JWT_SECRET`, `RATE_LIMIT_ENABLED`), bootstrap `config/users.json`, Nuxt BFF commit + deploy per migration doc.
+
+---
+
+## 2026-07-11 — Release A prod deploy
+
+**Git:** `chatbot-prod` `1f84f86ad` (merge from `a1cd39f36`); conflict resolved in `scripts/mindwealth-api.service` (prod paths + `EnvironmentFile`).
+
+**Prod runtime:** `.env` gained `API_KEY` (matches `NUXT_API_KEY`), `JWT_SECRET` (from dev), `RATE_LIMIT_ENABLED=true`, auth vars. `config/users.json` bootstrapped via prod venv; password in `config/.bootstrap_admin_password` (chmod 600, prod-only).
+
+**Nuxt:** `presentation-prod` `7661255` — BFF auth + rate-limit middleware; `npm run build`; systemd `mindwealth-ui` now `After/Wants mindwealth-api`, `NUXT_API_BASE_URL=:8506`, `NUXT_PUBLIC_ADMIN_MODE=false`, `NUXT_AUTH_SESSION_MAX_AGE=28800`.
+
+**Smoke tests (all pass):** health 401 without key / 200 with key; chatbot 401 without JWT; BFF 401 without cookie / 200 after login; `conviction_store` = prod path.
+
+**Caveats:** `prod-pull-and-restart.sh` health curl needs `X-API-Key` now (script still curls bare — cosmetic failure). Rotate GitHub PAT if exposed in chat. Admin must change bootstrap password after first login.
 
 ---
 

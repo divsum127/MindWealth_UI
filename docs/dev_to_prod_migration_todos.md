@@ -29,10 +29,10 @@ These are **not** in git on the server; they live in **`/etc/systemd/system/`** 
 
 | Item | Current (dev testing) | Prod target | Status |
 |------|----------------------|-------------|--------|
-| Nuxt `NUXT_API_BASE_URL` | `http://127.0.0.1:8507` (dev API) | `http://127.0.0.1:8506` (prod API) | `[DEV-ONLY]` `[PENDING]` |
-| Nuxt systemd `After` / `Wants` | `mindwealth-api-dev.service` | `mindwealth-api.service` | `[DEV-ONLY]` `[PENDING]` |
-| Nuxt `NUXT_PUBLIC_ADMIN_MODE` | `true` | `false` (optional; admin comes from JWT role) | `[DEV-ONLY]` `[PENDING]` |
-| Prod API `:8506` | Still **pre-auth** code (no `X-API-Key` / JWT routes) | Auth-enabled code after merge + pull | `[PENDING]` |
+| Nuxt `NUXT_API_BASE_URL` | `http://127.0.0.1:8507` (dev API) | `http://127.0.0.1:8506` (prod API) | `[DONE]` 2026-07-11 |
+| Nuxt systemd `After` / `Wants` | `mindwealth-api-dev.service` | `mindwealth-api.service` | `[DONE]` 2026-07-11 |
+| Nuxt `NUXT_PUBLIC_ADMIN_MODE` | `true` | `false` (optional; admin comes from JWT role) | `[DONE]` 2026-07-11 |
+| Prod API `:8506` | Still **pre-auth** code (no `X-API-Key` / JWT routes) | Auth-enabled code after merge + pull | `[DONE]` 2026-07-11 |
 | Dev API `:8507` | Auth **enabled**, `0.0.0.0`, `.env` with keys | Keep as dev; no change | OK |
 
 **Revert commands (after prod API has auth code):**
@@ -54,7 +54,7 @@ sudo systemctl restart mindwealth-api mindwealth-ui
 
 ### 1. Git merge (MindWealth_UI)
 
-`[PENDING]` Commit on `chatbot-dev` → push → merge to `chatbot-prod` → prod clone pull.
+`[DONE]` 2026-07-11 — merged `1f84f86ad` on `chatbot-prod`, prod pull + restart.
 
 **New files (track in git):**
 
@@ -92,7 +92,7 @@ sudo systemctl restart mindwealth-api mindwealth-ui
 
 ### 2. Runtime files — copy/create on prod (NOT in git)
 
-`[PROD-ACTION]` Do in **prod clone** only after merge; never commit secrets.
+`[DONE]` 2026-07-11 — prod `.env` updated; admin bootstrapped `admin@mindwealth.co`; password in `config/.bootstrap_admin_password` (prod only, chmod 600).
 
 | File / dir | Action |
 |------------|--------|
@@ -118,7 +118,7 @@ ACTIVITY_LOGS_DIR=activity_logs      # optional override
 
 ### 3. systemd — prod API
 
-`[PROD-ACTION]` Installed unit: `/etc/systemd/system/mindwealth-api.service`
+`[DONE]` 2026-07-11 — `prod-pull-and-restart.sh`; health 401 without key, 200 with `X-API-Key`.
 
 - `WorkingDirectory=/home/ubuntu/uiv2/prod/MindWealth_UI`
 - `EnvironmentFile=-/home/ubuntu/uiv2/prod/MindWealth_UI/.env`
@@ -134,7 +134,7 @@ bash scripts/prod-pull-and-restart.sh
 
 ### 4. Bootstrap prod admin
 
-`[PROD-ACTION]` After pull + `.env`:
+`[DONE]` 2026-07-11
 
 ```bash
 cd /home/ubuntu/uiv2/prod/MindWealth_UI
@@ -144,7 +144,7 @@ USERS_FILE=config/users.json JWT_SECRET=... .venv/bin/python scripts/bootstrap_a
 
 ### 5. Nuxt frontend (`/home/ubuntu/MindwealthUI_Vue`)
 
-`[PENDING]` Separate from MindWealth_UI git — deploy by pull/build/restart on server.
+`[DONE]` 2026-07-11 — commit `7661255` on `presentation-prod`; Nuxt rebuilt; `mindwealth-ui` → `:8506`.
 
 **Auth-related files to have in Nuxt tree:**
 
@@ -178,7 +178,7 @@ sudo systemctl restart mindwealth-ui
 
 ### 6. Post-deploy smoke tests
 
-`[PENDING]`
+`[DONE]` 2026-07-11 — all checks pass (401/200 health, login, BFF 401/200, chatbot 401 without JWT).
 
 ```bash
 # Prod API — key required
@@ -226,7 +226,7 @@ Ship **with auth deploy** on prod `:8506`. Limits are identity-aware (`user:{ema
 
 ### Git (MindWealth_UI — `chatbot-dev`)
 
-`[PENDING]` Merge with auth hardening.
+`[DONE]` 2026-07-11 — merged with Release A on prod `:8506`.
 
 | Path | Notes |
 |------|--------|
@@ -293,7 +293,7 @@ sudo systemctl restart mindwealth-api-dev   # or mindwealth-api on prod
 
 v1 uses **in-memory** counters (single uvicorn worker). Document Redis upgrade if multi-worker later.
 
-### Status: `[PENDING]` (dev implemented; prod after auth merge)
+### Status: `[DONE]` 2026-07-11 (prod `:8506` + Nuxt BFF on `:8512`)
 
 ### Curated commit — Release A (auth + rate limits + test fixes)
 
@@ -362,5 +362,5 @@ Copy for each new dev feature:
 
 | Date | Change |
 |------|--------|
-| 2026-06-30 | API rate limiting (FastAPI tiers + Nuxt BFF auth/rate middleware) |
+| 2026-07-11 | Release A prod deploy: merge `chatbot-prod` `1f84f86ad`, prod env/bootstrap, Nuxt BFF `7661255`, smoke tests |
 | 2026-06-30 | Initial auth + activity logging migration checklist; documented Nuxt → `:8507` dev shortcut |
