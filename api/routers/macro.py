@@ -127,6 +127,49 @@ def get_regime() -> dict[str, Any]:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Scheduled macro events (pre-catalyst + post-event regime)
+# ─────────────────────────────────────────────────────────────────────────────
+
+@router.get("/events/pre-catalyst", operation_id="get_macro_pre_catalyst",
+            summary="Pre-catalyst fragility before CPI/FOMC/NFP")
+def get_pre_catalyst() -> dict[str, Any]:
+    """
+    Pre-catalyst fragility intelligence from the latest nightly run:
+    - Whether a CPI, FOMC, or NFP event is within the pre-event window (7 days)
+    - Count of macro variables in the 60th–79th / 21st–40th percentile bands
+    - fragility_score HIGH when 4+ variables are near-threshold
+    """
+    return _runic_or_404(msvc.get_pre_catalyst_intel)
+
+
+@router.get("/events/post-regime", operation_id="get_macro_post_event_regime",
+            summary="Post-event regime transition within 48h of CPI/FOMC/NFP")
+def get_post_event_regime() -> dict[str, Any]:
+    """
+    Post-event regime reclassification from the latest nightly run:
+    - Active when within 48 hours of a scheduled CPI/FOMC/NFP release
+    - regime_transition true when 2+ variables crossed RARE thresholds
+    - transition_type: LIQUIDITY_SHOCK, FISCAL_DOMINANCE_FEAR, CREDIBILITY_RESTORED,
+      BEAR_FLATTEN, or BULL_STEEPEN
+    - Event-window metrics (yields, HY, VIX, USD)
+    """
+    return _runic_or_404(msvc.get_post_event_regime_intel)
+
+
+@router.get("/events/calendar", operation_id="get_macro_scheduled_events_calendar",
+            summary="Upcoming CPI, FOMC, and NFP release dates")
+def get_scheduled_events_calendar(
+    days: int = Query(21, ge=1, le=90, description="Calendar horizon in days"),
+) -> dict[str, Any]:
+    """
+    Scheduled macro event calendar from pending_releases (CPI, FOMC, NFP).
+    FOMC/NFP dates sourced from FRED release calendars; CPI includes consensus
+    when available from Trading Economics / BLS ingest.
+    """
+    return _runic_or_404(msvc.get_scheduled_events_calendar, days=days)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # NEW — 12 Variables
 # ─────────────────────────────────────────────────────────────────────────────
 

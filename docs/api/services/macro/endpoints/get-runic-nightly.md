@@ -18,7 +18,7 @@ Full Runic Macro Intelligence nightly output JSON.
 
 ## Response
 
-200: full nightly JSON (regime, combos, variables dashboard, dominant signal, etc.)
+200: full nightly JSON (regime, combos, variables dashboard, dominant signal, `pre_catalyst`, `post_event_regime`, etc.)
 
 404: runic output file not found on disk
 

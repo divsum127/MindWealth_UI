@@ -384,6 +384,26 @@ briefing:
     F: 26
     D: 10
 
+scheduled_events:
+  types: [CPI, FOMC, NFP]
+  pre_event_window_days: 7
+  post_event_window_hours: 48
+  near_threshold_pctile: [60, 79]
+  near_threshold_low_pctile: [21, 40]
+  fragility_min_vars: 4
+  liquidity_shock:
+    vix_points: 5
+    hy_bps: 30
+    usd_strength_pct: 0.5
+  fred_release_ids:
+    CPI: 10
+    FOMC: 19
+    NFP: 50
+  event_times_et:
+    CPI: "08:30"
+    NFP: "08:30"
+    FOMC: "14:00"
+
 aws:
   host: "51.20.53.218"
   tz: America/New_York
