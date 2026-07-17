@@ -7,6 +7,8 @@ from typing import Any
 from src.macro_intelligence.config import load_config
 from src.macro_intelligence.engine.hit_rates import raw_hit_rate
 
+MIN_EPISODES_HIT_RATE_DEFAULT = 5
+
 _HORIZON_LABELS = {
     "spx_1w": "5D",
     "spx_2w": "2W",
@@ -35,6 +37,16 @@ def combo_bullish(letter: str) -> bool | None:
 
 def combo_show_hit_rate(letter: str) -> bool:
     return bool(_combo_cfg(letter).get("show_hit_rate", True))
+
+
+def min_episodes_for_hit_rate(letter: str) -> int:
+    """Minimum mature episodes before briefing shows an actionable hit rate (D6: Combo C n=4)."""
+    cfg = _combo_cfg(letter)
+    raw = cfg.get("min_episodes_for_hit_rate", MIN_EPISODES_HIT_RATE_DEFAULT)
+    try:
+        return max(1, int(raw))
+    except (TypeError, ValueError):
+        return MIN_EPISODES_HIT_RATE_DEFAULT
 
 
 def combo_primary_horizon(letter: str) -> str | None:
@@ -73,13 +85,33 @@ def combo_hit_rate_stats(letter: str) -> dict[str, Any]:
     secondary_stats = (
         raw_hit_rate(letter, horizon=secondary, bullish=bullish) if secondary else None
     )
+    n_primary = int(primary_stats.get("n_obs") or 0)
+    min_n = min_episodes_for_hit_rate(letter)
+    insufficient = n_primary < min_n
+    if insufficient:
+        return {
+            "show_hit_rate": True,
+            "insufficient_episodes": True,
+            "min_episodes_required": min_n,
+            "primary_horizon": primary,
+            "primary_label": horizon_display_label(primary),
+            "hit_rate_primary": None,
+            "avg_return_primary": None,
+            "n_obs_primary": n_primary,
+            "hit_rate_secondary": None,
+            "avg_return_secondary": None,
+            "secondary_label": horizon_display_label(secondary) if secondary else None,
+            "n_obs_secondary": secondary_stats.get("n_obs") if secondary_stats else None,
+        }
     return {
         "show_hit_rate": True,
+        "insufficient_episodes": False,
+        "min_episodes_required": min_n,
         "primary_horizon": primary,
         "primary_label": horizon_display_label(primary),
         "hit_rate_primary": primary_stats.get("hit_rate"),
         "avg_return_primary": primary_stats.get("avg_return"),
-        "n_obs_primary": primary_stats.get("n_obs"),
+        "n_obs_primary": n_primary,
         "hit_rate_secondary": secondary_stats.get("hit_rate") if secondary_stats else None,
         "avg_return_secondary": secondary_stats.get("avg_return") if secondary_stats else None,
         "secondary_label": horizon_display_label(secondary) if secondary else None,
@@ -91,6 +123,10 @@ def hit_rate_reason_clause(stats: dict[str, Any]) -> str:
     """Full hit-rate phrase for dominant_reason (neutral, numeric)."""
     if not stats.get("show_hit_rate"):
         return "Timing signal only (no validated hit rate)."
+    if stats.get("insufficient_episodes"):
+        n_obs = stats.get("n_obs_primary") or 0
+        min_n = stats.get("min_episodes_required", MIN_EPISODES_HIT_RATE_DEFAULT)
+        return f"Insufficient episodes for validated hit rate (n={n_obs}, need ≥{min_n})."
     hr = stats.get("hit_rate_primary")
     n_obs = stats.get("n_obs_primary") or 0
     label = stats.get("primary_label", "3M")
@@ -103,6 +139,8 @@ def hit_rate_reason_short(stats: dict[str, Any]) -> str | None:
     """Compact hit-rate for outrank parens; None when not displayable."""
     if not stats.get("show_hit_rate"):
         return None
+    if stats.get("insufficient_episodes"):
+        return "insufficient episodes"
     hr = stats.get("hit_rate_primary")
     n_obs = stats.get("n_obs_primary") or 0
     if hr is None or n_obs == 0:
@@ -123,6 +161,8 @@ def format_hit_rate_display(stats: dict[str, Any]) -> tuple[str, str]:
     """Return (hit_rate_cell, avg_return_cell) for briefing table."""
     if not stats.get("show_hit_rate"):
         return "N/A", "N/A"
+    if stats.get("insufficient_episodes"):
+        return "insufficient episodes", "—"
     hr = stats.get("hit_rate_primary")
     avg = stats.get("avg_return_primary")
     label = stats.get("primary_label", "3M")

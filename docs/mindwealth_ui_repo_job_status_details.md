@@ -13,6 +13,22 @@ This file captures minute-level implementation context for each completed task:
 
 ---
 
+### 2026-07-17 — Formal D/E threshold sweep recheck vs live CONFIG
+
+**Assumptions:** Same episode definition as original study (Friday crossing + 5d cooldown); live CONFIG is analysis case #4 for both D and E; followup production_score still valid ranking.
+
+**What ran:** `run_combo_de_followup.py` + `run_combo_de_study.py` against post-promotion CONFIG.
+
+**Result:** PASS — CONFIG_BASELINE == BEST_PRODUCTION_SCORE for D and E; numbers match analysis.md case #4 (D n=46 / 56.52% @1W; E n=10 / 66.67% @12M).
+
+**Fix:** D baseline tagging used hardcoded `legs==3`; changed to `min_of_three` from CONFIG so 2-of-3 live gates are tagged.
+
+**Deferred:** Update stale “1. CONFIG (current production)” section in `de_threshold_test_analysis.md` (still shows pre-promotion gates). Optional: named-combo backfill so live `combo_fires` / hit-rate DB match new gates.
+
+**Prod impact:** none new — validation only; D/E CONFIG promotion migration entries already `[PENDING]`.
+
+---
+
 ### 2026-07-09 — Adverse-regime / combo classification API audit (Ahil handoff)
 
 **Assumptions:** “Adverse regime” = day where active named combo’s cheatsheet design intent is bearish or cautionary. Ahil needs a date-indexed series as conditioning flag for Sharpe uplift / portfolio overlay work.
@@ -1747,6 +1763,51 @@ activity_logs/
 
 ---
 
+## 2026-07-16 — F4 v2 steepening driver split (D3)
+
+**Context:** Rohit reply PDF (`Reply of macro regime and threshold experiments report.pdf`) uses letter+number codes for experiment sections — e.g. **F4** = Part F steepening-of-inversion short grid; **B2** = dual percentile storage (unconditional + regime-conditioned); **D3** in the reply = new F4 v2 test (not the HMM “shift-timing” D3 in the original report).
+
+**Implementation:** `scripts/f4_v2_steepening_driver_split.py` reuses F4 v1 event detection (`−50 bps trough`, `+15 bps/4wk steepen` on T10Y2Y), then classifies each fire’s 4-week DGS2/DGS10 moves: BULL (both fell), BEAR (both rose), TWIST (2Y↓ 10Y↑). HY widening = BAMLH0A0HYM2 4wk Δ>0; claims rising = ICSA 4wk Δ>0.
+
+**Key results (n=17, −50/+15 cell):**
+- Unconditional benchmark: **29.4%** of all weekly 3m windows SPX-down (not the fixed +2.5% drift proxy).
+- Pooled F4 v1: **17.6%** SPX-down 3m — **below** baseline → no short edge.
+- By driver: BEAR n=8 (12.5% down), BULL n=5 (20% down), TWIST n=3 (0% down).
+- Hypothesis bucket BULL+HY widening: **n=0** (2000 classifies BEAR; 2023 BULL episodes lack concurrent HY widening).
+- **Verdict:** split does not rescue F4; steepening-based short gate = NO per spec.
+
+**Assumptions:** Yield driver uses same 4-week Friday window as spread steepening metric. HY series gaps pre-2010 leave some early episodes without HY tag.
+
+**Deferred:** Wire F4 v2 into `run_all.py` Part F; add claims to operational “soft landing” classifier prompt; re-check 2000 yield classification vs economic narrative.
+
+**Prod impact:** None (offline research JSON only).
+
+---
+
+## 2026-07-12 — Release B (macro + cross-function + analysis)
+
+**Commits (chatbot-dev):** `03903169b` macro catalyst/calendar, `55e549085` cross-function exits, `1abfc8876` regime uplift export, `9136c3d8d` combo threshold artifacts, `6cbeaf747` docs/skill, `a577c1775` SSI snapshot.
+
+**Prod merge:** `caff62630` on `chatbot-prod`; prod pull required `git checkout --` on drifted SSI CSVs before fast-forward.
+
+**Excluded:** `monitored_trades.json` (runtime, per-environment).
+
+**API verification:** 21 realistic GET endpoints on `:8506` all 200 (health, auth/me, new macro event routes, signals, portfolio/risk, chatbot with JWT, admin users). OpenAPI sweep: 55/64 GET pass; 9 expected failures (fake UUIDs, missing query params, wrong report dates).
+
+**Deferred:** `94b61f7e6` smoke-script API_KEY fix on `chatbot-dev` only (not yet on prod).
+
+---
+
+## 2026-07-13 — Prod admin password reset
+
+**Cause:** Release A prod bootstrap generated a new random password on prod — different from dev password user had been using.
+
+**Fix:** Reset `admin@mindwealth.co` password hash on prod to match dev/original; synced prod `config/.bootstrap_admin_password`.
+
+**Verified:** Login 200 on `:8506` and Nuxt `:8512`; `/auth/me` 200 with cookie.
+
+---
+
 ## 2026-07-11 — Release A prod deploy
 
 **Git:** `chatbot-prod` `1f84f86ad` (merge from `a1cd39f36`); conflict resolved in `scripts/mindwealth-api.service` (prod paths + `EnvironmentFile`).
@@ -1768,3 +1829,189 @@ activity_logs/
 **Results:** Retagged 13,160 fires; beta survivors 132→127 (−5 non-promo combos failed `beats_regime` or hostile HR=0%); all 62 promotion candidates retained. Eight-theme shortlist hostile HR now real (84–92% on T1).
 
 **Deferred:** Step 7 Claude on shortlist; five promos with zero hostile fires still auto-pass hostile gate.
+
+---
+
+## 2026-07-16 — D4 B4 window audit re-run
+
+**Assumptions:**
+- B4 rule from `run_all.py`: structural set `{CAPE, NFCI, WALCL, CURVE, DXY}` → `full`; all others → `rolling_3y`.
+- WALCL was changed to `full` in production nightly CONFIG on 2026-06-09; prior audit (2026-06-06/11) never re-run.
+
+**Results:**
+- 9/12 variables PASS; B4 `pass=false`.
+- WALCL: configured `full`, expected `full` — **fixed, confirmed**.
+- HY, VIX, VXTS: configured `full`, expected `rolling_3y` — **still FAIL**.
+- Prior audit had 4 failures; current 3 (WALCL resolved).
+
+**Short-gate impact:**
+- VIX → combos B, D, G; VXTS → D, G; HY → B, G.
+- Wrong windows shift unconditional pctile ranks and combo fire dates for B/D/G sweeps.
+
+**Deferred / open:**
+- Rohit 2026-06-11 feedback classifies HY/VIX/VXTS as structural (full) and WALCL MoM as flow (`rolling_3y`) — opposite of coded B4 rule. Needs sign-off before CONFIG patch.
+- No CONFIG change applied in this task (audit-only).
+
+**Artifacts:** `testing/macro_th_exp/D4_window_audit_rerun_2026-07-16.json`, `.md`
+
+---
+
+## 2026-07-16 — D5 Fed-cycle re-slicing (recalibrated D/E)
+
+**Context:** Supersedes legacy named-combo-by-fed-cycle table (D 28% down n=452, E 20% down n=507) computed on production CONFIG @ uniform 3M. Recalibrated configs from combo_de threshold sweep (`case1_production_pareto.csv`).
+
+**Configs:**
+- D: `D_v1.18_c95_x13_l2` — VXTS≥1.18, CFTC≥95, VIX≤13, 2-of-3; horizons 1W (primary) + 2W.
+- E: `E_cape32_nfci-0.15_cftc85_l3` — CAPE≥32, NFCI≤−0.15, CFTC≥85, 3-of-3; horizons 6M/9M/12M.
+
+**Method:** Friday first-cross episodes, 5d cooldown, `fed_cycle_at_date()` legacy labels, bear hit = SPX forward return &lt; 0. Slices with n&lt;10 → CANNOT USE (hit rate not actionable).
+
+**Results (a) — D CUTTING_LATE vs HIKING_LATE spread:**
+| Horizon | CUTTING_LATE | HIKING_LATE | Spread | Legacy 3M spread |
+|---------|--------------|-------------|--------|------------------|
+| 1W | 92.3% (n=13) | 41.7% (n=24) | +50.6 pp | +24.9 pp |
+| 2W | 69.2% (n=13) | 33.3% (n=24) | +35.9 pp | +24.9 pp |
+
+Spread **survives** recalibration; magnitude **wider** than legacy at both horizons.
+
+**Results (b) — per-fed sample sizes:**
+- D: CUTTING_LATE n=13 USE; HIKING_LATE n=24 USE; QE n=9 **CANNOT USE**.
+- E: overall n=10 USE (66.7% bear @ 6M/9M/12M); every fed slice **CANNOT USE** (HIKING_LATE n=5, CUTTING_LATE n=2, QE n=3).
+
+**Caveats:**
+- Recalibrated D n=46 vs legacy n=452 — tighter gate, different episode set.
+- E n=10 overall — fed-conditioned E stats not reportable until more history.
+- CFTC escalation alert is briefing overlay, not an extra detection filter in this run.
+- B4 window mismatch (HY/VIX/VXTS) may shift pctile ranks vs post-B4-fix reruns.
+
+**Artifacts:** `testing/macro_th_exp/D5_fed_cycle_reslice_2026-07-16.{csv,json,md}`, `D5_fed_cycle_per_fire_2026-07-16.csv`, `run_d5_fed_cycle_reslice.py`
+
+---
+
+## 2026-07-16 — D6 Quick answers to open macro regime doubts
+
+**Source:** `Reply of macro regime and threshold experiments report.pdf`; section codes A1, A5, B2, F4, Part D map to PDF Parts A–F.
+
+**Resolutions recorded:**
+1. **A1 PIVOTING (n=27):** Merge into EASING for analytics/hit-rate slices only; keep PIVOTING in `macro_regime_log_v2` storage.
+2. **A5 liquidity:** 9-state `{LEVEL}_{DIRECTION}` storage unchanged; analytics collapse to 2×2 for combo/FM tables (as report A5/A6 recommendation).
+3. **A5 NEUTRAL:** Third level in classifier/nightly labels; fold NEUTRAL_* → EASY side for 4-way analytics slice.
+4. **Combo C (n=4):** Briefing must not show actionable hit rate — display "insufficient episodes" until n≥5 at `spx_6m`; cancel watch (Part E) still allowed.
+5. **HMM (Part D / B2):** Dec 2026 deployment target retained; prototype Risk-Off filter hurt B (−1.2 pp) and D (−1.9 pp) — HMM stays out of short-gating path (B/D/G) until walk-forward shows positive lift.
+
+**Assumptions:**
+- D6 supersedes earlier reply-PDF debate on keeping PIVOTING separate for analytics.
+- Implementation deferred: `fed_cycle_v2_analytics()`, `collapse_liquidity_v2_analytics()`, Combo C `combo_metadata` min-n guard.
+
+**Deferred (not in D6):** moderate FM drift strip; VIX suppressed 8.5% vs plan 50%; v2 rollback plan; SSI gate; B4 window spec (see D4).
+
+**Prod impact:** None this task (documentation only).
+
+**Artifacts:** `testing/macro_th_exp/D6_open_doubts_resolution_2026-07-16.{md,json}`
+
+---
+
+## 2026-07-16 — D6 implementation (analytics collapse + Combo C min-n)
+
+**Changes:**
+- `fed_cycle_v2_analytics()`: PIVOTING → EASING for slice tables only; storage unchanged.
+- `collapse_liquidity_v2_analytics()`: 9→4 with NEUTRAL→EASY; optional `walcl_trend_4wk` / `nfci` for FLAT and NEUTRAL_TIGHTENING edge cases.
+- `regime_value_for_analytics()` + `slice_by_regime(use_analytics_collapse=True)` for `fed_cycle_v2` and `liquidity_v2`.
+- `combo_hit_rate_stats()`: if `n_obs &lt; min_episodes_for_hit_rate` (default 5, Combo C explicit in CONFIG), sets `insufficient_episodes=True`; `format_hit_rate_display` → `"insufficient episodes"`.
+- `fm_events.collapse_from_json()` uses analytics fed collapse for experiment instance labels.
+
+**Tests:** 26 passed (`test_regime_v2_experiments`, `test_combo_metadata`, `test_dominant_reason`).
+
+**Prod impact:** CONFIG `combo_hit_rates.C.min_episodes_for_hit_rate: 5` merges to prod on next deploy; briefing PDF/HTML + API `hit_rate_stats` reflect insufficient-episodes string for thin combos.
+
+---
+
+## 2026-07-17 — D6 smoke tests + regime analytics re-slice
+
+**Smoke (`run_d6_smoke_tests.py`):** 8/8 PASS on dev DB — Combo C n=3 at 6M → insufficient episodes; briefing rows; `macro_service.get_combo_detail('C')`; FM fed slice has no PIVOTING bucket.
+
+**Re-slice (`run_d6_regime_analytics_reslice.py`):** PIVOTING n=27 in storage, merged into EASING in analytics; liquidity 9→4 states; 4 CSVs + JSON/MD report.
+
+**Artifacts:** `D6_smoke_tests_2026-07-17.{md,json}`, `D6_regime_analytics_2026-07-17.{md,json}`, `D6_fm_regime_slices_analytics_2026-07-17.csv`, `D6_combo_fed_cycle_analytics_2026-07-17.csv`, `D6_liquidity_*_2026-07-17.csv`
+
+**Still open:** HMM prompt doc; README analytics vs storage; prod HTTP verify after deploy.
+
+---
+
+## 2026-07-17 — Combo E BEST PRODUCTION SCORE promotion + CFTC escalation
+
+**Decision (Rohit):** Adopt case-1 best production score E gates (n≥10): CAPE≥32, NFCI≤−0.15, CFTC≥85, **3-of-3**. Prefer CFTC crowding over tighter NFCI (−0.4/−0.5) for needle-moving escalation.
+
+**CONFIG before → after:**
+| Field | Old | New |
+|-------|-----|-----|
+| min_of_three | 2 | **3** |
+| cape_min | 28 | **32** |
+| nfci_easy_max | −0.3 | **−0.15** |
+| cftc_min_pctile | 80 | **85** |
+| escalation | (none) | lookback 4wk, min rise +5 pctile → `ESCALATION_ALERT` |
+
+**Behavior:**
+- 3/3 → `CONFIRMED_3_OF_3`; if CFTC FM pctile rose ≥5 pts vs ~4 weeks prior → `ESCALATION_ALERT`
+- 1–2 legs → `WATCH` (was previously CONFIRMED at 2/3)
+- Briefing duration shows `CFTC ESCALATION (+X pctile)`; dominant reason includes escalation clause
+
+**Caveats:**
+- Combo D still on legacy CONFIG (1.10/85/18) — not promoted in this change
+- Historical combo_fires / hit-rate DB still reflect old E fires until backfill replay
+- Escalation uses `daily_readings` CFTC pctile as-of prior date; if history thin, alert stays false
+
+**Tests:** `tests/test_combo_e_thresholds.py` — 5 passed with dominant reason suite
+
+**Prod impact:** CONFIG + detector/briefing merge on next chatbot-dev → chatbot-prod deploy (see `dev_to_prod_migration_todos.md`).
+
+---
+
+## 2026-07-17 — Combo D BEST PRODUCTION SCORE promotion (2-of-3)
+
+**Decision:** Promote D gates from `de_threshold_test_analysis.md` case #4 (confirmed by user after recommendation). E already on case #4 from earlier same day.
+
+**CONFIG D before → after:**
+| Field | Old | New |
+|-------|-----|-----|
+| vxts_min | 1.10 | **1.18** |
+| cftc_min_pctile | 85 | **95** |
+| vix_max | 18 | **13** |
+| min_of_three | (implicit 3 / VXTS+VIX then CFTC) | **2** |
+| primary / secondary | spx_1w | **spx_1w** / **spx_2w** |
+
+**Detector:** True 2-of-3 via `evaluate_combo_d_legs`; ACTIVE when ≥2 legs; WATCH at 1; VIX gate aligned to **≤** (sweep validation).
+
+**Caveats:** Historical `combo_fires` still old D gates until backfill replay. D still regime-dependent (CUTTING_LATE >> HIKING_LATE per D5).
+
+**Tests:** `tests/test_combo_d_thresholds.py` — 6 passed.
+
+---
+
+## 2026-07-14 — Test 5 Regime Sharpe uplift (Ahil / Michele demo)
+
+**Goal:** Show whether 5 Runic regime dimensions improve risk-adjusted returns on EW SPY/TLT/GLD/HYG.
+
+**Not previously run:** `regime_backtest.py` only compared Combo B/D hit rates under HMM Risk-Off filter — not portfolio Sharpe.
+
+**Implementation:**
+- Script: `testing/5_regime_uplift/run_regime_sharpe_uplift.py`
+- Regime source: `macro_regime_log_v2` (Friday v2 shadow), forward-filled daily
+- Dimensions: fed_cycle_v2, curve_regime_v2, val_regime, geo_overlay_v2, liquidity_v2 (level bucket)
+- Multipliers: v1 economic priors in `multiplier_spec.md`; product clipped [0.40, 1.00]; 1-day lag
+- Portfolio: 25% each, monthly rebalance; overlay scales gross exposure (cash 0%)
+
+**Results (2007-04-12 → 2026-07-13):**
+- Baseline: Sharpe 0.885, CAGR 7.72%, vol 8.84%, max DD −22.63%
+- Overlay: Sharpe 0.938, CAGR 6.39%, vol 6.85%, max DD −17.59%
+- Sharpe uplift +0.053; CAGR −1.33pp (de-risking tradeoff)
+
+**Michele narrative:** Regime layer improves Sharpe and drawdown at cost of raw return — risk-adjusted value proposition.
+
+**Deferred:**
+- Empirical multiplier calibration from dimension→SPX stats (overfit risk if done in-sample)
+- Asset-specific tilts (e.g. boost TLT in INVERTED) vs gross scaling only
+- Daily `build_regime_v2()` vs Friday forward-fill sensitivity
+- EUR=X excluded per spec
+
+**Prod impact:** None (testing artifacts only).

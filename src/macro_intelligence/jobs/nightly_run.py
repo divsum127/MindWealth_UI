@@ -59,6 +59,11 @@ def _active_combo_dicts(fires) -> tuple[list[dict[str, Any]], list[dict[str, Any
             "episode_start": meta.get("episode_start"),
             "confirmed_legs": legs,
         }
+        if meta.get("escalation_alert"):
+            d["escalation_alert"] = True
+            d["cftc_pctile_delta"] = meta.get("cftc_pctile_delta")
+            d["cftc_pctile"] = meta.get("cftc_pctile")
+            d["cftc_pctile_prior"] = meta.get("cftc_pctile_prior")
         if f.status in ("WATCH", "CONTESTED"):
             watch.append(
                 {
@@ -70,7 +75,7 @@ def _active_combo_dicts(fires) -> tuple[list[dict[str, Any]], list[dict[str, Any
                     "pending": pending,
                 }
             )
-        elif f.status in ("ACTIVE", "PARTIAL", "CONFIRMED", "CONFIRMED_3_OF_3"):
+        elif f.status in ("ACTIVE", "PARTIAL", "CONFIRMED", "CONFIRMED_3_OF_3", "ESCALATION_ALERT"):
             stats = combo_hit_rate_stats(f.runic_combo or "C")
             d.update(stats)
             d["hit_rate_3m"] = stats.get("hit_rate_primary")

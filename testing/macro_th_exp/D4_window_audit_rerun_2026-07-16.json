@@ -1,0 +1,247 @@
+{
+  "task": "D4_window_audit_rerun",
+  "run_date": "2026-07-15",
+  "b4_audit": {
+    "n_vars": 12,
+    "mismatches": [
+      {
+        "var_id": "HY",
+        "configured": "full",
+        "expected": "rolling_3y"
+      },
+      {
+        "var_id": "VIX",
+        "configured": "full",
+        "expected": "rolling_3y"
+      },
+      {
+        "var_id": "VXTS",
+        "configured": "full",
+        "expected": "rolling_3y"
+      }
+    ],
+    "pass": false
+  },
+  "all_variables": [
+    {
+      "var_id": "NFCI",
+      "configured": "full",
+      "expected": "full",
+      "pass": true,
+      "combos": [
+        "A",
+        "E"
+      ],
+      "short_gate_combos": []
+    },
+    {
+      "var_id": "HY",
+      "configured": "full",
+      "expected": "rolling_3y",
+      "pass": false,
+      "combos": [
+        "A",
+        "B",
+        "F",
+        "G"
+      ],
+      "short_gate_combos": [
+        "B",
+        "G"
+      ]
+    },
+    {
+      "var_id": "WALCL",
+      "configured": "full",
+      "expected": "full",
+      "pass": true,
+      "combos": [
+        "A",
+        "C"
+      ],
+      "short_gate_combos": []
+    },
+    {
+      "var_id": "CNH",
+      "configured": "rolling_3y",
+      "expected": "rolling_3y",
+      "pass": true,
+      "combos": [
+        "A",
+        "C",
+        "G"
+      ],
+      "short_gate_combos": [
+        "G"
+      ]
+    },
+    {
+      "var_id": "WTI",
+      "configured": "rolling_3y",
+      "expected": "rolling_3y",
+      "pass": true,
+      "combos": [
+        "C"
+      ],
+      "short_gate_combos": []
+    },
+    {
+      "var_id": "VIX",
+      "configured": "full",
+      "expected": "rolling_3y",
+      "pass": false,
+      "combos": [
+        "B",
+        "D",
+        "G"
+      ],
+      "short_gate_combos": [
+        "B",
+        "D",
+        "G"
+      ]
+    },
+    {
+      "var_id": "VXTS",
+      "configured": "full",
+      "expected": "rolling_3y",
+      "pass": false,
+      "combos": [
+        "D",
+        "G"
+      ],
+      "short_gate_combos": [
+        "D",
+        "G"
+      ]
+    },
+    {
+      "var_id": "CFTC",
+      "configured": "rolling_3y",
+      "expected": "rolling_3y",
+      "pass": true,
+      "combos": [
+        "B",
+        "D",
+        "E",
+        "F"
+      ],
+      "short_gate_combos": [
+        "B",
+        "D"
+      ]
+    },
+    {
+      "var_id": "CURVE",
+      "configured": "full",
+      "expected": "full",
+      "pass": true,
+      "combos": [
+        "A",
+        "E"
+      ],
+      "short_gate_combos": []
+    },
+    {
+      "var_id": "CPI",
+      "configured": "rolling_3y",
+      "expected": "rolling_3y",
+      "pass": true,
+      "combos": [
+        "C"
+      ],
+      "short_gate_combos": []
+    },
+    {
+      "var_id": "GSR",
+      "configured": "rolling_3y",
+      "expected": "rolling_3y",
+      "pass": true,
+      "combos": [
+        "A"
+      ],
+      "short_gate_combos": []
+    },
+    {
+      "var_id": "CAPE",
+      "configured": "full",
+      "expected": "full",
+      "pass": true,
+      "combos": [
+        "E"
+      ],
+      "short_gate_combos": []
+    }
+  ],
+  "short_gate_impact": {
+    "note": "HY/VIX/VXTS feed combos B/D/G as short gates; wrong pctile_window shifts fire dates and hit rates",
+    "vars": [
+      {
+        "var_id": "HY",
+        "configured": "full",
+        "expected": "rolling_3y",
+        "pass": false,
+        "combos": [
+          "A",
+          "B",
+          "F",
+          "G"
+        ],
+        "short_gate_combos": [
+          "B",
+          "G"
+        ]
+      },
+      {
+        "var_id": "VIX",
+        "configured": "full",
+        "expected": "rolling_3y",
+        "pass": false,
+        "combos": [
+          "B",
+          "D",
+          "G"
+        ],
+        "short_gate_combos": [
+          "B",
+          "D",
+          "G"
+        ]
+      },
+      {
+        "var_id": "VXTS",
+        "configured": "full",
+        "expected": "rolling_3y",
+        "pass": false,
+        "combos": [
+          "D",
+          "G"
+        ],
+        "short_gate_combos": [
+          "D",
+          "G"
+        ]
+      }
+    ]
+  },
+  "walcl_status": {
+    "var_id": "WALCL",
+    "configured": "full",
+    "expected": "full",
+    "pass": true,
+    "combos": [
+      "A",
+      "C"
+    ],
+    "short_gate_combos": []
+  },
+  "summary": {
+    "n_vars": 12,
+    "n_pass": 9,
+    "n_fail": 3,
+    "walcl_fixed_since": "2026-06-09",
+    "prior_fail_count": 4,
+    "current_fail_count": 3,
+    "b4_pass": false
+  }
+}

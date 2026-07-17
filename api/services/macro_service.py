@@ -265,25 +265,26 @@ _COMBO_STATIC: dict[str, dict[str, Any]] = {
     "D": {
         "name": "FOMO Top / Euphoria Tactical",
         "direction": "BEARISH TACTICAL",
-        "horizon": "3–10 days to 4 weeks",
-        "legs_required": 3,
+        "horizon": "1W primary (also 2W)",
+        "legs_required": 2,
         "total_legs": 3,
         "variables": ["VXTS", "CFTC", "VIX"],
         "description": (
-            "VXTS ratio >1.10 (deep contango) AND CFTC >85th pctile AND VIX <18. "
-            "72–85% hit rate. −3 to −5% avg over 5 days."
+            "VXTS≥1.18 AND CFTC≥95th pctile AND VIX≤13. "
+            "2 of 3 required. ~56.5% bear @1W (n=46 production score)."
         ),
     },
     "E": {
         "name": "Valuation Extreme / Slow Burn Top",
         "direction": "BEARISH STRUCTURAL",
         "horizon": "6–18m",
-        "legs_required": 2,
+        "legs_required": 3,
         "total_legs": 3,
         "variables": ["CAPE", "NFCI", "CFTC"],
         "description": (
-            "CAPE >28× AND NFCI easy (<−0.3) AND CFTC >80th pctile. "
-            "2 of 3 required. ~73% neg fwd 12m. Structural multiplier on Combo D."
+            "CAPE≥32 AND NFCI≤−0.15 AND CFTC≥85th pctile. "
+            "3 of 3 required. CFTC escalation alert when FM pctile rises ≥5 pts over ~4 weeks. "
+            "Structural slow-burn bear (12m primary)."
         ),
     },
     "F": {

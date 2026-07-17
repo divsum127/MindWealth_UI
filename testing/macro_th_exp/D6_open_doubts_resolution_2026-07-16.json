@@ -1,0 +1,108 @@
+{
+  "task": "D6_open_doubts_resolution",
+  "date": "2026-07-16",
+  "source_report": "Reply of macro regime and threshold experiments report.pdf",
+  "artifact_dir": "testing/macro_th_exp",
+  "section_code_map": {
+    "A1": "Part A — fed_cycle 7→4 collapse; PIVOTING n=27",
+    "A5": "Part A — liquidity 9-state storage vs 4-state analytics",
+    "B2": "Part B — dual percentile storage; HMM emission vectors",
+    "F4": "Part F — steepening-of-inversion short grid",
+    "Part_D": "HMM layer — posteriors, prototype win-rate filter",
+    "Part_E": "Cancel probability — Combo C MC",
+    "Named_combos": "A–G fed-cycle / FM tables — Combo C n=4"
+  },
+  "resolutions": [
+    {
+      "id": "D6-1",
+      "section": "A1",
+      "open_doubt": "PIVOTING at n=27 — merge into EASING or keep separate?",
+      "decision": "Merge PIVOTING into EASING for analytics only",
+      "storage": "Keep PIVOTING in macro_regime_log_v2 / classifier output",
+      "analytics": "fed_cycle_v2_analytics maps PIVOTING → EASING for hit-rate slices",
+      "evidence": {
+        "pivoting_n": 27,
+        "pivoting_pct": 1.4,
+        "easing_n": 727,
+        "analytics_easing_n_approx": 754,
+        "ge30_obs_gate": "PIVOTING fails alone; passes when merged"
+      }
+    },
+    {
+      "id": "D6-2",
+      "section": "A5",
+      "open_doubt": "4-state 2×2 liquidity vs 9-state with FLAT/NEUTRAL",
+      "decision": "Keep 9-state liquidity storage; collapse to 4-state for analytics",
+      "storage": "liquidity_v2 emits LEVEL_DIRECTION (9 labels)",
+      "analytics": "collapse_liquidity_v2_analytics() for combo/FM hit-rate tables",
+      "rationale": "~50.8% FLAT direction Fridays; 9-way event slices too thin"
+    },
+    {
+      "id": "D6-3",
+      "section": "A5",
+      "open_doubt": "NEUTRAL level — third classifier level or fold into EASY?",
+      "decision": "NEUTRAL kept in classifier storage; folded into EASY for 4-way analytics slice",
+      "storage": "NEUTRAL_* remains in nightly labels and Section 5.2 prompt",
+      "analytics": "NEUTRAL_* maps to EASY side of 2×2 collapse"
+    },
+    {
+      "id": "D6-4",
+      "section": "Named_combos / Part_E",
+      "open_doubt": "Combo C n=4 — show hit rates in briefing?",
+      "decision": "Do not show hit rates; display insufficient episodes",
+      "threshold_n": 5,
+      "primary_horizon": "spx_6m",
+      "sample": {
+        "combo": "C",
+        "n_fires": 4,
+        "legacy_3m_hit_pct_up": 0,
+        "avg_3m_return_pct": 17.8
+      },
+      "still_show": ["status", "cancel_watch", "direction", "narrative"],
+      "suppress": ["hit_rate", "avg_return"]
+    },
+    {
+      "id": "D6-5",
+      "section": "Part_D / B2",
+      "open_doubt": "HMM prototype hurt B (−1.2pp) and D (−1.9pp) — keep Dec 2026 target?",
+      "decision": "December 2026 HMM deployment target stands; HMM excluded from short-gating until walk-forward shows positive lift",
+      "prototype_delta_pp": {
+        "combo_B": -1.2,
+        "combo_D": -1.9
+      },
+      "prototype_filter": "Risk-Off posterior",
+      "gating_excluded_combos": ["B", "D", "G"],
+      "acceptance_test": "walk_forward positive lift (lead time or Sharpe/drawdown on Risk-Off track)",
+      "continue": ["daily emission_vectors", "HMM training on schedule"]
+    }
+  ],
+  "deferred_open_doubts": [
+    "moderate_FM_76.2_vs_buy_and_hold",
+    "VIX_suppressed_8.5_vs_plan_50",
+    "v2_fed_cycle_rollback_plan",
+    "SSI_short_gate_26pct",
+    "B4_HY_VIX_VXTS_window_spec_conflict"
+  ],
+  "implementation_checklist": [
+    "fed_cycle_v2_analytics PIVOTING→EASING",
+    "collapse_liquidity_v2_analytics 9→4 NEUTRAL→EASY",
+    "Combo C briefing insufficient episodes n<5",
+    "Re-run regime-conditional tables with analytics collapse",
+    "HMM walk-forward gate doc — no short-gating until pass"
+  ],
+  "related_artifacts": [
+    "testing/macro_th_exp/D4_window_audit_rerun_2026-07-16.md",
+    "testing/macro_th_exp/D5_fed_cycle_reslice_2026-07-16.md",
+    "macro_intelligence/analysis/regime_v2_experiments/F4_v2_steepening_driver_split.json"
+  ],
+  "code_changes_applied": true,
+  "implementation_files": [
+    "src/macro_intelligence/engine/regime_v2_shadow.py",
+    "src/macro_intelligence/analysis/regime_experiments/metrics.py",
+    "src/macro_intelligence/analysis/regime_experiments/fm_events.py",
+    "src/macro_intelligence/engine/combo_metadata.py",
+    "macro_intelligence/CONFIG.yaml",
+    "tests/test_regime_v2_experiments.py",
+    "tests/test_combo_metadata.py"
+  ]
+}

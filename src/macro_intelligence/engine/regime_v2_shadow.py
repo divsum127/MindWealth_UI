@@ -65,6 +65,73 @@ def collapse_fed_cycle_v2(legacy_label: str) -> str:
     return "EASY"
 
 
+def fed_cycle_v2_analytics(label: str | None) -> str:
+    """Analytics collapse: PIVOTING → EASING (D6). Storage labels unchanged."""
+    if not label:
+        return "UNKNOWN"
+    u = str(label).upper()
+    if u == "PIVOTING":
+        return "EASING"
+    return u
+
+
+def collapse_liquidity_v2_analytics(
+    label: str | None,
+    *,
+    walcl_trend_4wk: float | None = None,
+    nfci: float | None = None,
+) -> str:
+    """Map 9-state liquidity_v2 → 4-state EASY/TIGHT × IMPROVING/TIGHTENING (D6).
+
+    NEUTRAL level folds into EASY for analytics; NEUTRAL_TIGHTENING with NFCI > 0
+    maps to TIGHT_TIGHTENING. FLAT direction uses walcl_trend_4wk when provided,
+    else defaults to TIGHTENING.
+    """
+    raw = str(label or "").upper()
+    if not raw or raw == "UNKNOWN":
+        return "UNKNOWN"
+    if "_" not in raw:
+        return raw
+    level, direction = raw.split("_", 1)
+    if level == "NEUTRAL" and direction == "TIGHTENING" and nfci is not None and nfci > 0:
+        level = "TIGHT"
+    elif level == "NEUTRAL":
+        level = "EASY"
+    if direction == "FLAT":
+        if walcl_trend_4wk is not None:
+            direction = "IMPROVING" if walcl_trend_4wk > 0 else "TIGHTENING"
+        else:
+            direction = "TIGHTENING"
+    return f"{level}_{direction}"
+
+
+def regime_value_for_analytics(
+    regime: dict[str, Any],
+    regime_key: str,
+    *,
+    walcl_trend_4wk: float | None = None,
+    nfci: float | None = None,
+) -> str:
+    """Resolve a regime dimension to its analytics bucket (storage labels may differ)."""
+    if regime_key == "fed_cycle_v2":
+        stored = regime.get("fed_cycle_v2") or collapse_fed_cycle_v2(
+            str(regime.get("fed_cycle_legacy") or regime.get("fed_cycle") or "")
+        )
+        return fed_cycle_v2_analytics(str(stored))
+    if regime_key == "liquidity_v2":
+        liq = regime.get("liquidity_v2") or regime.get("liquidity")
+        nfci_val = nfci
+        if nfci_val is None:
+            nfci_val = regime.get("nfci")
+        return collapse_liquidity_v2_analytics(
+            str(liq) if liq else None,
+            walcl_trend_4wk=walcl_trend_4wk,
+            nfci=float(nfci_val) if nfci_val is not None else None,
+        )
+    val = regime.get(regime_key)
+    return str(val) if val else "UNKNOWN"
+
+
 def liquidity_v2(nfci: float | None, walcl_mom: float | None) -> str:
     """4-state liquidity: easy/tight × improving/tightening."""
     cfg = load_config().get("regime", {})

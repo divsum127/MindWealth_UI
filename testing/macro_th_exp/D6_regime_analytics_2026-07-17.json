@@ -1,0 +1,52 @@
+{
+  "task": "D6_regime_analytics_reslice",
+  "date": "2026-07-17",
+  "fed_cycle_distribution": {
+    "n_fridays": 1901,
+    "storage": {
+      "EASING": 727,
+      "EASY": 384,
+      "PIVOTING": 27,
+      "TIGHTENING": 763
+    },
+    "analytics": {
+      "EASING": 754,
+      "EASY": 384,
+      "TIGHTENING": 763
+    },
+    "pivoting_storage_n": 27,
+    "pivoting_in_analytics_buckets": true
+  },
+  "liquidity_distribution": {
+    "n_fridays": 1901,
+    "storage_states": 9,
+    "analytics_states": 4,
+    "storage": {
+      "EASY_FLAT": 746,
+      "EASY_IMPROVING": 403,
+      "EASY_TIGHTENING": 287,
+      "NEUTRAL_FLAT": 219,
+      "NEUTRAL_IMPROVING": 62,
+      "NEUTRAL_TIGHTENING": 72,
+      "TIGHT_FLAT": 30,
+      "TIGHT_IMPROVING": 50,
+      "TIGHT_TIGHTENING": 32
+    },
+    "analytics": {
+      "EASY_IMPROVING": 465,
+      "EASY_TIGHTENING": 1324,
+      "TIGHT_IMPROVING": 50,
+      "TIGHT_TIGHTENING": 62
+    }
+  },
+  "fm_slice_rows": 34,
+  "combo_slice_rows": 17,
+  "artifacts": [
+    "D6_fm_regime_slices_analytics_2026-07-17.csv",
+    "D6_combo_fed_cycle_analytics_2026-07-17.csv",
+    "D6_liquidity_9state_combo_fires_2026-07-17.csv",
+    "D6_liquidity_4state_analytics_combo_fires_2026-07-17.csv",
+    "D6_regime_analytics_2026-07-17.json",
+    "D6_regime_analytics_2026-07-17.md"
+  ]
+}

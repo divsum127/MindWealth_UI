@@ -328,6 +328,101 @@ Stage **only** these paths for the prod-bound release (exclude macro combo sweep
 
 ---
 
+## 2026-07-16 — D6 analytics collapse + Combo C insufficient episodes
+
+### Git (chatbot-dev → chatbot-prod)
+
+**Modified files:**
+- `src/macro_intelligence/engine/regime_v2_shadow.py` — `fed_cycle_v2_analytics`, `collapse_liquidity_v2_analytics`, `regime_value_for_analytics`
+- `src/macro_intelligence/analysis/regime_experiments/metrics.py` — analytics collapse in `slice_by_regime`
+- `src/macro_intelligence/analysis/regime_experiments/fm_events.py` — analytics fed labels
+- `src/macro_intelligence/engine/combo_metadata.py` — min-n guard, `insufficient episodes` display
+- `macro_intelligence/CONFIG.yaml` — `combo_hit_rates.C.min_episodes_for_hit_rate: 5`
+- `tests/test_regime_v2_experiments.py`, `tests/test_combo_metadata.py`
+
+**Research / verification (new):**
+- `testing/macro_th_exp/run_d6_regime_analytics_reslice.py`
+- `testing/macro_th_exp/run_d6_smoke_tests.py`
+- `testing/macro_th_exp/D6_regime_analytics_2026-07-17.{md,json}` + 4 CSVs
+- `testing/macro_th_exp/D6_smoke_tests_2026-07-17.{md,json}`
+
+### Dev-only / revert before prod
+
+None.
+
+### Prod runtime
+
+None — CONFIG change ships with git merge.
+
+### Smoke tests `[DONE]` 2026-07-17
+
+- [x] Combo C: `combo_hit_rate_stats` + briefing rows show `insufficient episodes` (n=3 at 6M, min=5)
+- [x] API `macro_service.get_combo_detail('C')` → `insufficient_episodes: true`
+- [x] FM `fed_cycle_v2` slice: no PIVOTING bucket; liquidity analytics ≤4 buckets
+- [x] Artifacts: `testing/macro_th_exp/D6_smoke_tests_2026-07-17.{md,json}`
+
+### Regime re-slice `[DONE]` 2026-07-17
+
+- [x] `run_d6_regime_analytics_reslice.py` — PIVOTING n=27 merged into EASING; 9→4 liquidity
+- [x] CSVs: `D6_fm_regime_slices_analytics_2026-07-17.csv`, `D6_combo_fed_cycle_analytics_2026-07-17.csv`, `D6_liquidity_*_2026-07-17.csv`
+
+### Status: `[PENDING]` merge/deploy only (code + smoke on dev)
+
+---
+
+## 2026-07-17 — Combo E BEST PRODUCTION SCORE + CFTC escalation alert
+
+### Git (chatbot-dev → chatbot-prod)
+- [ ] Modified: `macro_intelligence/CONFIG.yaml` (E: CAPE≥32, NFCI≤−0.15, CFTC≥85, min_of_three=3 + escalation keys)
+- [ ] Modified: `src/macro_intelligence/engine/combo_detector.py`, `dominant.py`, `jobs/nightly_run.py`
+- [ ] Modified: `src/macro_intelligence/output/briefing_renderer.py`, `claude/nightly_briefing.py`
+- [ ] Modified: `api/services/macro_service.py` (E cheatsheet)
+- [ ] New: `tests/test_combo_e_thresholds.py`
+
+### Dev-only / revert before prod
+- None — intended production gate change.
+
+### Prod runtime (not in git)
+- None for thresholds (CONFIG is in git). Optional: replay named-combo backfill so `combo_fires` / hit rates reflect new E gates.
+
+### systemd / Nuxt
+- [ ] After merge: `bash scripts/prod-pull-and-restart.sh` (or pip + `systemctl restart mindwealth-api.service`)
+
+### Smoke tests `[PENDING]`
+- [ ] Nightly / `detect_named_combos`: E only ACTIVE at 3/3 with new gates; 2/3 → WATCH
+- [ ] With rising CFTC pctile history: status `ESCALATION_ALERT` + duration note
+- [ ] API combo E cheatsheet shows 3-of-3 / CAPE 32 / NFCI −0.15 / CFTC 85
+
+### Status: `[PENDING]`
+
+---
+
+## 2026-07-17 — Combo D BEST PRODUCTION SCORE + 2-of-3
+
+### Git (chatbot-dev → chatbot-prod)
+- [ ] Modified: `macro_intelligence/CONFIG.yaml` (D: VXTS≥1.18, CFTC≥95, VIX≤13, min_of_three=2; hit_rates D secondary spx_2w, E secondary spx_6m)
+- [ ] Modified: `src/macro_intelligence/engine/combo_detector.py` (true 2-of-3 ACTIVE/WATCH)
+- [ ] Modified: `src/macro_intelligence/claude/nightly_briefing.py`, `api/services/macro_service.py`
+- [ ] New: `tests/test_combo_d_thresholds.py`
+
+### Dev-only / revert before prod
+- None.
+
+### Prod runtime (not in git)
+- Optional: replay D combo_fires backfill under new gates for hit-rate tables.
+
+### systemd / Nuxt
+- [ ] Same restart as E promotion above.
+
+### Smoke tests `[PENDING]`
+- [ ] D ACTIVE on any 2 of {VXTS≥1.18, VIX≤13, CFTC≥95}; WATCH at 1 leg
+- [ ] Legacy-loose readings (VXTS 1.12 / VIX 17 / CFTC 86) do **not** fire D
+- [ ] Briefing / API cheatsheet show new D gates + 1W primary
+
+### Status: `[PENDING]`
+
+---
+
 ## Template for future entries
 
 Copy for each new dev feature:
@@ -362,5 +457,6 @@ Copy for each new dev feature:
 
 | Date | Change |
 |------|--------|
+| 2026-07-16 | D6: analytics collapse helpers + Combo C min-n guard (`insufficient episodes`) |
 | 2026-07-11 | Release A prod deploy: merge `chatbot-prod` `1f84f86ad`, prod env/bootstrap, Nuxt BFF `7661255`, smoke tests |
 | 2026-06-30 | Initial auth + activity logging migration checklist; documented Nuxt → `:8507` dev shortcut |
