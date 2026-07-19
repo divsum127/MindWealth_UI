@@ -1,0 +1,49 @@
+{
+  "task": "D6_smoke_tests",
+  "date": "2026-07-17",
+  "passed": 8,
+  "total": 8,
+  "all_pass": true,
+  "results": [
+    {
+      "name": "combo_c_insufficient_episodes_flag",
+      "pass": true,
+      "detail": "n_primary=3, min=5, insufficient=True"
+    },
+    {
+      "name": "combo_c_briefing_display_string",
+      "pass": true,
+      "detail": "hit_rate_cell='insufficient episodes', avg_cell='\u2014'"
+    },
+    {
+      "name": "briefing_all_time_combo_c_row",
+      "pass": true,
+      "detail": "hit_rate_display='insufficient episodes'"
+    },
+    {
+      "name": "briefing_combo_status_row_c",
+      "pass": true,
+      "detail": "C row hit_rate_3m='insufficient episodes'"
+    },
+    {
+      "name": "api_get_combo_detail_c",
+      "pass": true,
+      "detail": "insufficient=True, n=3"
+    },
+    {
+      "name": "api_list_named_combos_c",
+      "pass": true,
+      "detail": "hit_rate_primary=None"
+    },
+    {
+      "name": "fm_fed_slice_no_pivoting_bucket",
+      "pass": true,
+      "detail": "buckets=['EASING', 'EASY', 'TIGHTENING'], EASING n=20"
+    },
+    {
+      "name": "fm_liquidity_analytics_max_4_buckets",
+      "pass": true,
+      "detail": "buckets=['EASY_IMPROVING', 'EASY_TIGHTENING'] (n=2)"
+    }
+  ]
+}

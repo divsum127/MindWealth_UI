@@ -192,9 +192,13 @@ def _combo_b_instances() -> dict[str, Any]:
 
 
 def collapse_from_json(reg: dict) -> str:
-    from src.macro_intelligence.engine.regime_v2_shadow import collapse_fed_cycle_v2
+    from src.macro_intelligence.engine.regime_v2_shadow import (
+        collapse_fed_cycle_v2,
+        fed_cycle_v2_analytics,
+    )
 
-    return collapse_fed_cycle_v2(reg.get("fed_cycle", ""))
+    stored = reg.get("fed_cycle_v2") or collapse_fed_cycle_v2(reg.get("fed_cycle", ""))
+    return fed_cycle_v2_analytics(str(stored))
 
 
 def _combo_d_instances() -> dict[str, Any]:

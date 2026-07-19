@@ -228,6 +228,8 @@ def _build_rules() -> list[RateRule]:
         RateRule(frozenset({"POST", "DELETE"}), re.compile(rf"^{re.escape(p)}/monitored-trades"), "monitored_trades_write"),
         RateRule(frozenset({"POST"}), re.compile(rf"^{re.escape(p)}/portfolio/risk/analyze$"), "write_expensive"),
         RateRule(frozenset({"POST"}), re.compile(rf"^{re.escape(p)}/signals/check-degradation$"), "write_expensive"),
+        RateRule(frozenset({"GET"}), re.compile(rf"^{re.escape(p)}/overwatch/stream$"), "health", key_func=get_identity_key),
+        RateRule(frozenset({"GET"}), re.compile(rf"^{re.escape(p)}/system/health$"), "health", key_func=get_identity_key),
         RateRule(frozenset({"GET"}), re.compile(rf"^{re.escape(p)}/health$"), "health", key_func=get_identity_key),
         RateRule(frozenset({"POST"}), re.compile(rf"^{re.escape(p)}/activity/events$"), "activity_events"),
         RateRule(

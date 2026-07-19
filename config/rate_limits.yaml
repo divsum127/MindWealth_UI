@@ -13,9 +13,9 @@ shared:
   auth_accept_invite_ip: "5/minute"
   health: "120/minute"
 
-# API-key-only clients (curl/scripts, no JWT) — higher read for automation by teammates
+# API-key-only clients (Nuxt BFF, curl/scripts) — burst raised for parallel dashboard fan-out
 apikey:
-  read: "60/10seconds;600/minute"
+  read: "150/10seconds;1200/minute"
 
 # Admin — generous limits for ops, testing, and admin UI (normal usage never hits these)
 admin:

@@ -23,6 +23,24 @@ Reference deploy skill: `.cursor/skills/prod-pull-and-details/SKILL.md`
 
 ---
 
+## 2026-07-18 — Portfolio cluster sizing fix
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`
+
+| Path | Notes |
+|------|--------|
+| `api/services/portfolio_service.py` | Cluster budgets = % of equity ceiling ($80M); split budget across positions by BQ rank weight |
+| `tests/test_api_portfolio.py` | `test_sizer_cluster_deployed_within_equity_ceiling` |
+
+**Smoke test after deploy:**
+
+```bash
+curl -s -H "X-API-Key: $API_KEY" "http://127.0.0.1:8506/api/v1/portfolio/sizer?scenario=normal" \
+  | python3 -c "import sys,json; d=json.load(sys.stdin); cap=round(d['ceiling']['final_ceiling_pct']/100*d['ceiling']['portfolio_notional']); s=sum(c['deployed_usd'] for c in d['clusters']); print('cap',cap,'cluster_sum',s,'ok',s==cap and s==d['summary']['deployed_usd'])"
+```
+
+---
+
 ## Temporary dev-only config (revert for production)
 
 These are **not** in git on the server; they live in **`/etc/systemd/system/`** and must be corrected when prod auth ships.
@@ -328,6 +346,201 @@ Stage **only** these paths for the prod-bound release (exclude macro combo sweep
 
 ---
 
+## 2026-07-16 — D6 analytics collapse + Combo C insufficient episodes
+
+### Git (chatbot-dev → chatbot-prod)
+
+**Modified files:**
+- `src/macro_intelligence/engine/regime_v2_shadow.py` — `fed_cycle_v2_analytics`, `collapse_liquidity_v2_analytics`, `regime_value_for_analytics`
+- `src/macro_intelligence/analysis/regime_experiments/metrics.py` — analytics collapse in `slice_by_regime`
+- `src/macro_intelligence/analysis/regime_experiments/fm_events.py` — analytics fed labels
+- `src/macro_intelligence/engine/combo_metadata.py` — min-n guard, `insufficient episodes` display
+- `macro_intelligence/CONFIG.yaml` — `combo_hit_rates.C.min_episodes_for_hit_rate: 5`
+- `tests/test_regime_v2_experiments.py`, `tests/test_combo_metadata.py`
+
+**Research / verification (new):**
+- `testing/macro_th_exp/run_d6_regime_analytics_reslice.py`
+- `testing/macro_th_exp/run_d6_smoke_tests.py`
+- `testing/macro_th_exp/D6_regime_analytics_2026-07-17.{md,json}` + 4 CSVs
+- `testing/macro_th_exp/D6_smoke_tests_2026-07-17.{md,json}`
+
+### Dev-only / revert before prod
+
+None.
+
+### Prod runtime
+
+None — CONFIG change ships with git merge.
+
+### Smoke tests `[DONE]` 2026-07-17
+
+- [x] Combo C: `combo_hit_rate_stats` + briefing rows show `insufficient episodes` (n=3 at 6M, min=5)
+- [x] API `macro_service.get_combo_detail('C')` → `insufficient_episodes: true`
+- [x] FM `fed_cycle_v2` slice: no PIVOTING bucket; liquidity analytics ≤4 buckets
+- [x] Artifacts: `testing/macro_th_exp/D6_smoke_tests_2026-07-17.{md,json}`
+
+### Regime re-slice `[DONE]` 2026-07-17
+
+- [x] `run_d6_regime_analytics_reslice.py` — PIVOTING n=27 merged into EASING; 9→4 liquidity
+- [x] CSVs: `D6_fm_regime_slices_analytics_2026-07-17.csv`, `D6_combo_fed_cycle_analytics_2026-07-17.csv`, `D6_liquidity_*_2026-07-17.csv`
+
+### Status: `[PENDING]` merge/deploy only (code + smoke on dev)
+
+---
+
+## 2026-07-17 — B4 window fix (HY/VIX/VXTS → rolling_3y)
+
+### Git (chatbot-dev → chatbot-prod)
+- [ ] Modified: `macro_intelligence/CONFIG.yaml` (`pctile_window` for HY, VIX, VXTS → `rolling_3y`)
+- [ ] New: `testing/macro_th_exp/run_b4_window_fix_pipeline.py`
+- [ ] New: `testing/macro_th_exp/B4_window_fix_pipeline_2026-07-17.{md,json}`
+- [ ] New: `macro_intelligence/analysis/regime_v2_experiments/threshold_sweep_v2_b4_fix/*`
+- [ ] Modified: `macro_intelligence/analysis/regime_v2_experiments/B_twy_and_percentiles.json`
+
+### Dev-only / revert before prod
+- None — intentional CONFIG alignment to original B4 spec.
+
+### Prod runtime (not in git)
+- [ ] After deploy: nightly run will use rolling_3y pctiles for HY/VIX/VXTS (ranks may shift vs pre-fix prod)
+- [ ] Optional: one-time `run_b4_window_fix_pipeline.py` recompute on prod DB if shadow/backfill DB diverges
+
+### Smoke tests `[PENDING]`
+- [ ] `B4_window_audit` pass=true in Part B JSON
+- [ ] Combo B/D detector still fires on recent dates with new pctile ranks
+- [ ] Briefing HY/VIX/VXTS pctile columns reflect rolling_3y window
+
+### Status: `[PENDING]` merge/deploy
+
+---
+
+## 2026-07-17 — Combo E BEST PRODUCTION SCORE + CFTC escalation alert
+
+### Git (chatbot-dev → chatbot-prod)
+- [ ] Modified: `macro_intelligence/CONFIG.yaml` (E: CAPE≥32, NFCI≤−0.15, CFTC≥85, min_of_three=3 + escalation keys)
+- [ ] Modified: `src/macro_intelligence/engine/combo_detector.py`, `dominant.py`, `jobs/nightly_run.py`
+- [ ] Modified: `src/macro_intelligence/output/briefing_renderer.py`, `claude/nightly_briefing.py`
+- [ ] Modified: `api/services/macro_service.py` (E cheatsheet)
+- [ ] New: `tests/test_combo_e_thresholds.py`
+
+### Dev-only / revert before prod
+- None — intended production gate change.
+
+### Prod runtime (not in git)
+- None for thresholds (CONFIG is in git). Optional: replay named-combo backfill so `combo_fires` / hit rates reflect new E gates.
+
+### systemd / Nuxt
+- [ ] After merge: `bash scripts/prod-pull-and-restart.sh` (or pip + `systemctl restart mindwealth-api.service`)
+
+### Smoke tests `[PENDING]`
+- [ ] Nightly / `detect_named_combos`: E only ACTIVE at 3/3 with new gates; 2/3 → WATCH
+- [ ] With rising CFTC pctile history: status `ESCALATION_ALERT` + duration note
+- [ ] API combo E cheatsheet shows 3-of-3 / CAPE 32 / NFCI −0.15 / CFTC 85
+
+### Status: `[PENDING]`
+
+---
+
+## 2026-07-17 — Combo D BEST PRODUCTION SCORE + 2-of-3
+
+### Git (chatbot-dev → chatbot-prod)
+- [ ] Modified: `macro_intelligence/CONFIG.yaml` (D: VXTS≥1.18, CFTC≥95, VIX≤13, min_of_three=2; hit_rates D secondary spx_2w, E secondary spx_6m)
+- [ ] Modified: `src/macro_intelligence/engine/combo_detector.py` (true 2-of-3 ACTIVE/WATCH)
+- [ ] Modified: `src/macro_intelligence/claude/nightly_briefing.py`, `api/services/macro_service.py`
+- [ ] New: `tests/test_combo_d_thresholds.py`
+
+### Dev-only / revert before prod
+- None.
+
+### Prod runtime (not in git)
+- Optional: replay D combo_fires backfill under new gates for hit-rate tables.
+
+### systemd / Nuxt
+- [ ] Same restart as E promotion above.
+
+### Smoke tests `[PENDING]`
+- [ ] D ACTIVE on any 2 of {VXTS≥1.18, VIX≤13, CFTC≥95}; WATCH at 1 leg
+- [ ] Legacy-loose readings (VXTS 1.12 / VIX 17 / CFTC 86) do **not** fire D
+- [ ] Briefing / API cheatsheet show new D gates + 1W primary
+
+### Status: `[PENDING]`
+
+---
+
+## 2026-07-18 — AI Analyst backend (Overwatch)
+
+### Git merge (`chatbot-dev` → `chatbot-prod`) `[PENDING]`
+
+**New files:**
+
+| Path |
+|------|
+| `api/schemas/analyst.py` |
+| `api/services/analyst_service.py` |
+| `api/services/system_health_service.py` |
+| `api/services/overwatch_event_bus.py` |
+| `api/routers/overwatch.py` |
+| `api/routers/system.py` |
+| `scripts/overwatch/run_overwatch_signals.py` |
+| `scripts/overwatch/run_overwatch_macro.py` |
+| `scripts/overwatch/run_overwatch_system.py` |
+| `tests/test_api_analyst.py` |
+
+**Modified files:**
+
+| Path | Notes |
+|------|--------|
+| `api/services/degradation_service.py` | 60% watch/breach + weekly trend |
+| `api/routers/analytics.py` | `/analyst/alerts`, `/analyst/brief` |
+| `api/routers/signals.py` | Docstring aligned to spec |
+| `api/main.py` | v1.8.0, register overwatch + system routers |
+| `api/rate_limit.py` | SSE + system health rate rules |
+| `src/macro_intelligence/output/json_writer.py` | `historical_analogs` block |
+| `scripts/install_aws_cron_dual.sh` | Overwatch cron lines |
+| `.gitignore` | `overwatch_store/` |
+| `docs/api/openapi/mindwealth-v1.json` | OpenAPI export |
+| `docs/api/services/analyst/` | AI Analyst endpoint docs |
+| `docs/api/changelog.md` | v1.8.0 entry |
+
+### Prod runtime `[PROD-ACTION]`
+
+| Item | Action |
+|------|--------|
+| `overwatch_store/alert_state.json` | Create `{}` on first deploy (auto-created by cron) |
+| `.env` | Confirm `MINDWEALTH_TRADE_STORE`, `ANTHROPIC_API_KEY`, `TAVILY_API_KEY` |
+| `config/users.json` | Admin JWT for SYSTEM tab |
+
+### systemd `[PROD-ACTION]`
+
+| Service | Change |
+|---------|--------|
+| `mindwealth-api.service` | Ensure **1 worker** (in-process SSE bus) |
+| `mindwealth-api-dev.service` | Same |
+
+### Cron `[PROD-ACTION]`
+
+```bash
+bash scripts/install_aws_cron_dual.sh
+```
+
+Adds: signals daily 19:00 ET, macro 18:30 ET Mon–Fri, system every 15m.
+
+### Smoke tests `[PENDING]`
+
+```bash
+curl -s -H "X-API-Key: $KEY" http://127.0.0.1:8506/api/v1/analytics/analyst/alerts | jq '.count'
+curl -s -H "X-API-Key: $KEY" -H "Authorization: Bearer $JWT" http://127.0.0.1:8506/api/v1/system/health | jq '.checks[].status'
+curl -N -H "X-API-Key: $KEY" http://127.0.0.1:8506/api/v1/overwatch/stream
+```
+
+### Nuxt follow-up (separate repo)
+
+- Point BFF `overwatch.get.ts` at `GET /analytics/analyst/alerts`
+- Switch `useOverwatch.ts` to SSE proxy
+
+### Status: `[PENDING]`
+
+---
+
 ## Template for future entries
 
 Copy for each new dev feature:
@@ -362,5 +575,7 @@ Copy for each new dev feature:
 
 | Date | Change |
 |------|--------|
+| 2026-07-18 | AI Analyst backend: analyst alerts, system health, SSE, overwatch cron |
+| 2026-07-16 | D6: analytics collapse helpers + Combo C min-n guard (`insufficient episodes`) |
 | 2026-07-11 | Release A prod deploy: merge `chatbot-prod` `1f84f86ad`, prod env/bootstrap, Nuxt BFF `7661255`, smoke tests |
 | 2026-06-30 | Initial auth + activity logging migration checklist; documented Nuxt → `:8507` dev shortcut |

@@ -88,6 +88,60 @@ def _cftc_status() -> str | None:
     return row["status"] if row else "PENDING_CFTC_CONFIRM"
 
 
+def build_historical_analogs_block(combo_id: str | None, limit: int = 5) -> dict[str, Any] | None:
+    """Build historical_analogs block for AI Analyst Analog Finder."""
+    if not combo_id:
+        return None
+    combo_id = combo_id.upper()
+    try:
+        with get_connection() as conn:
+            rows = conn.execute(
+                """SELECT cf.date, fr.spx_3m, cf.macro_regime_json
+                   FROM combo_fires cf
+                   LEFT JOIN forward_returns fr ON cf.combo_id = fr.combo_id
+                   WHERE cf.runic_combo = ?
+                   ORDER BY cf.date DESC LIMIT ?""",
+                (combo_id, limit),
+            ).fetchall()
+    except Exception:
+        return None
+
+    if not rows:
+        return None
+
+    instances: list[dict[str, Any]] = []
+    returns_3m: list[float] = []
+    for row in rows:
+        spx_3m = row["spx_3m"]
+        description = ""
+        if row["macro_regime_json"]:
+            try:
+                regime = json.loads(row["macro_regime_json"])
+                description = regime.get("label") or regime.get("geo_overlay") or ""
+            except Exception:
+                description = ""
+        date_raw = str(row["date"])
+        instances.append({
+            "date": date_raw[:7] if len(date_raw) >= 7 else date_raw,
+            "description": description or f"Combo {combo_id} historical match",
+            "spx_3m": round(float(spx_3m), 2) if spx_3m is not None else None,
+        })
+        if spx_3m is not None:
+            returns_3m.append(float(spx_3m))
+
+    summary: dict[str, Any] = {}
+    if returns_3m:
+        sorted_r = sorted(returns_3m)
+        summary = {
+            "median_3m": round(sorted_r[len(sorted_r) // 2], 2),
+            "worst": round(min(returns_3m), 2),
+            "best": round(max(returns_3m), 2),
+            "hit_rate": round(sum(1 for v in returns_3m if v < 0) / len(returns_3m), 2),
+        }
+
+    return {"combo": combo_id, "instances": instances, "summary": summary}
+
+
 def write_runic_json(payload: dict[str, Any], path: Path | None = None) -> Path:
     out = path or json_output_path()
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -128,7 +182,8 @@ def build_payload(
     post_event_regime: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     pos = read_positioning_data()
-    return {
+    historical_analogs = build_historical_analogs_block(dominant_signal)
+    payload = {
         "date": as_of,
         "regime": regime,
         "dominant_signal": dominant_signal,
@@ -157,3 +212,6 @@ def build_payload(
         "post_event_regime": post_event_regime or {},
         "system_recommendation": system_recommendation,
     }
+    if historical_analogs:
+        payload["historical_analogs"] = historical_analogs
+    return payload

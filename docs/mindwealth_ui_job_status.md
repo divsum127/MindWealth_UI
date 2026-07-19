@@ -69,6 +69,129 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
 
 ---
 
+### 2026-07-16
+
+1. **F4 v2 steepening driver split (D3 spec) — context + analysis run** — SUCCESSFUL
+   - Summary: Mapped report section codes (F4, B2, etc.) to PDF Parts A–I. Implemented and ran `scripts/f4_v2_steepening_driver_split.py` on the −50/+15 cell (n=17): classified episodes by DGS2/DGS10 4-week yield moves (BULL/BEAR/TWIST), tagged HY OAS widening and ICSA claims momentum, compared SPX 3m/6m to unconditional rolling-window benchmark (~29.4% SPX-down at 3m). **Verdict: PARK F4** — pooled hit rate 17.6% vs 29.4% baseline (negative short edge); hypothesis bucket “BULL steepening + HY widening” has **n=0**; 2022–23 episodes classify mostly BEAR/TWIST (normalization steepening), not recessionary BULL. No prod impact — research artifact only.
+   - Files changed:
+     - `scripts/f4_v2_steepening_driver_split.py` (new)
+     - `macro_intelligence/analysis/regime_v2_experiments/F4_v2_steepening_driver_split.json` (new)
+
+2. **D5 — Fed-cycle re-slicing on recalibrated D/E thresholds (macro_th_exp)** — SUCCESSFUL
+   - Summary: Re-ran fed-cycle slices for recalibrated D (`VXTS≥1.18/CFTC≥95/VIX≤13`, 2-of-3, n=46) @ 1W/2W and E (`CAPE≥32/NFCI≤−0.15/CFTC≥85`, 3-of-3, n=10) @ 6M/9M/12M. **(a)** CUTTING_LATE vs HIKING_LATE spread **survives** at 1W (92.3% vs 41.7%, +50.6 pp) and 2W (69.2% vs 33.3%, +35.9 pp) — wider than legacy 3M spread (43.2% vs 18.3%, +24.9 pp). **(b)** E per-fed slices all **CANNOT USE** (n&lt;10); D QE n=9 **CANNOT USE**. Research only — no CONFIG/prod change.
+   - Files changed:
+     - `testing/macro_th_exp/run_d5_fed_cycle_reslice.py` (new)
+     - `testing/macro_th_exp/D5_fed_cycle_reslice_2026-07-16.{csv,json,md}` (new)
+     - `testing/macro_th_exp/D5_fed_cycle_per_fire_2026-07-16.csv` (new)
+
+3. **D6 — Quick answers to open macro regime doubts (macro_th_exp)** — SUCCESSFUL
+   - Summary: Captured Rohit sign-off from reply PDF thread: **(1)** A1 PIVOTING n=27 → merge into EASING for analytics only; **(2)** A5 keep 9-state liquidity storage + 4-state analytics collapse; **(3)** NEUTRAL folded into EASY for 4-way slice, kept in classifier storage; **(4)** Combo C n=4 → briefing shows "insufficient episodes" not hit rate; **(5)** HMM Dec 2026 target stands but excluded from short-gating (B/D/G) until walk-forward positive lift (prototype −1.2pp B, −1.9pp D). Docs only — no code/CONFIG change.
+   - Files changed:
+     - `testing/macro_th_exp/D6_open_doubts_resolution_2026-07-16.md` (new)
+     - `testing/macro_th_exp/D6_open_doubts_resolution_2026-07-16.json` (new)
+
+4. **D6 implementation — analytics collapse + Combo C min-n guard** — SUCCESSFUL
+   - Summary: Wired `fed_cycle_v2_analytics()`, `collapse_liquidity_v2_analytics()`, `regime_value_for_analytics()` in `regime_v2_shadow.py`; `slice_by_regime()` auto-collapses fed/liquidity for analytics; `combo_metadata` returns "insufficient episodes" when n&lt;5 (Combo C explicit in CONFIG); briefing/API inherit via `format_hit_rate_display`. 26 tests pass.
+   - Files changed:
+     - `src/macro_intelligence/engine/regime_v2_shadow.py`
+     - `src/macro_intelligence/analysis/regime_experiments/metrics.py`
+     - `src/macro_intelligence/analysis/regime_experiments/fm_events.py`
+     - `src/macro_intelligence/engine/combo_metadata.py`
+     - `macro_intelligence/CONFIG.yaml`
+     - `tests/test_regime_v2_experiments.py`, `tests/test_combo_metadata.py`
+
+5. **D6 smoke tests + regime analytics re-slice** — SUCCESSFUL
+   - Summary: `run_d6_smoke_tests.py` — **8/8 pass** (Combo C insufficient episodes, briefing rows, API `get_combo_detail`/`get_all_combos`, FM no PIVOTING bucket). `run_d6_regime_analytics_reslice.py` — PIVOTING n=27→EASING, 9→4 liquidity; 4 CSVs + report.
+   - Files changed:
+     - `testing/macro_th_exp/run_d6_smoke_tests.py`, `run_d6_regime_analytics_reslice.py` (new)
+     - `testing/macro_th_exp/D6_smoke_tests_2026-07-17.{md,json}` (new)
+     - `testing/macro_th_exp/D6_regime_analytics_2026-07-17.{md,json}` + 4 CSVs (new)
+
+---
+
+### 2026-07-19
+
+1. **Backend API endpoint health audit (prod 8506 + dev 8507)** — SUCCESSFUL
+   - Summary: Swept 97 OpenAPI routes on prod (`v1.7.3`): 55 OK, 27 skipped (JWT), 3×404 (analyst alerts/brief, overwatch stream — v1.8 only), 3 POST timeouts (expected long jobs), 0×5xx. Dashboard “Avg Fwd win rate: Could not compute” traced to Nuxt BFF `429 Too Many Requests` on `/analytics/performance` during parallel dashboard fan-out (not backend crash). Direct curl to performance returns `avg_fwd_testing_win_rate: 57.85%`.
+   - Files changed: none (investigation only)
+
+### 2026-07-18
+
+1. **Fix portfolio cluster sizes exceeding deployed equity ceiling** — SUCCESSFUL
+   - Summary: Each open position was allocated 100% of its cluster budget independently, so cluster `deployed_usd` summed to ~$1.77B while summary showed $80M. Cluster caps now use the equity ceiling (`deployed_cap_usd`, e.g. $80M at 80%) and each cluster budget is split proportionally across positions by BQ tier rank weight (MULTI-SIG +10% boost). Cluster deployed totals now sum to exactly the equity ceiling; constraint check shows "Cluster caps" OK.
+   - Files changed:
+     - `api/services/portfolio_service.py`
+     - `tests/test_api_portfolio.py`
+
+2. **AI Analyst backend — Overwatch alerts, system health, SSE** — SUCCESSFUL
+   - Summary: Implemented unified `GET /analytics/analyst/alerts` and `/brief`, admin `GET /system/health`, in-process SSE `GET /overwatch/stream`, spec-aligned degradation (60% watch/breach + 4-week trend), macro runic alerts with Analog Finder, `historical_analogs` in nightly JSON, overwatch cron scripts, API v1.8.0.
+   - Files changed:
+     - `api/schemas/analyst.py`, `api/services/analyst_service.py`, `api/services/system_health_service.py`, `api/services/overwatch_event_bus.py`, `api/services/degradation_service.py`
+     - `api/routers/analytics.py`, `api/routers/overwatch.py`, `api/routers/system.py`, `api/main.py`, `api/rate_limit.py`, `api/routers/signals.py`
+     - `src/macro_intelligence/output/json_writer.py`, `scripts/overwatch/*.py`, `scripts/install_aws_cron_dual.sh`
+     - `tests/test_api_analyst.py`, `docs/dev_to_prod_migration_todos.md`, `docs/api/openapi/mindwealth-v1.json`
+     - `docs/api/services/analyst/` (README + 5 endpoint pages), `docs/api/changelog.md`
+
+### 2026-07-17
+
+1. **B4 original-spec window fix pipeline (macro_th_exp)** — SUCCESSFUL
+   - Summary: Applied **original B4 rule** (not Rohit Jun 11 override): HY/VIX/VXTS → `rolling_3y`, WALCL → `full`. Recomputed 13,476 pctile rows (3,428 changed). **B4 pass=true** (12/12). Re-ran B/D/G sweeps on post-fix panel; refreshed `B_twy_and_percentiles.json`; D6 analytics re-slice. D production gates unchanged at n=46 / 56.5% bear @1W. G CONFIG baseline n=0 on first-crossing model.
+   - Files changed:
+     - `macro_intelligence/CONFIG.yaml` (HY/VIX/VXTS windows)
+     - `testing/macro_th_exp/run_b4_window_fix_pipeline.py` (new)
+     - `testing/macro_th_exp/B4_window_fix_pipeline_2026-07-17.{md,json}` (new)
+     - `macro_intelligence/analysis/regime_v2_experiments/B_twy_and_percentiles.json` (B4 pass refreshed)
+     - `macro_intelligence/analysis/regime_v2_experiments/threshold_sweep_v2_b4_fix/*` (new)
+     - `testing/macro_th_exp/D6_regime_analytics_2026-07-17.*` (new)
+     - `testing/macro_th_exp/D4_window_audit_rerun_2026-07-16.md` (superseded note)
+
+2. **Promote Combo E BEST PRODUCTION SCORE thresholds + CFTC escalation alert** — SUCCESSFUL
+   - Summary: Rohit sign-off on E gates CAPE≥32 / NFCI≤−0.15 / CFTC≥85 / **3-of-3** (n≥10 production score). Wired into `CONFIG.yaml`. Detector requires all three legs for CONFIRMED_3_OF_3; partial → WATCH. **ESCALATION_ALERT** when CFTC FM pctile rises ≥5 pts over 4 weeks while E is active. Briefing/dominant/API cheatsheet updated. Tests: `tests/test_combo_e_thresholds.py` (5 passed with dominant suite).
+   - Files changed:
+     - `macro_intelligence/CONFIG.yaml`
+     - `src/macro_intelligence/engine/combo_detector.py`
+     - `src/macro_intelligence/engine/dominant.py`
+     - `src/macro_intelligence/jobs/nightly_run.py`
+     - `src/macro_intelligence/output/briefing_renderer.py`
+     - `src/macro_intelligence/claude/nightly_briefing.py`
+     - `api/services/macro_service.py`
+     - `tests/test_combo_e_thresholds.py` (new)
+
+2. **Promote Combo D BEST PRODUCTION SCORE thresholds + true 2-of-3** — SUCCESSFUL
+   - Summary: From `de_threshold_test_analysis.md` case #4: VXTS≥1.18 / CFTC≥95 / VIX≤13 / **2-of-3** (n=46, 56.5% bear @1W). Detector rewritten to true 2-of-3 (ACTIVE ≥2 legs, WATCH at 1); VIX gate inclusive ≤. Horizons: D primary 1W + secondary 2W; E secondary 6M kept. API cheatsheet + Claude prompt updated. E left as already-promoted production score. Tests: `tests/test_combo_d_thresholds.py` (6 passed).
+   - Files changed:
+     - `macro_intelligence/CONFIG.yaml`
+     - `src/macro_intelligence/engine/combo_detector.py`
+     - `src/macro_intelligence/claude/nightly_briefing.py`
+     - `api/services/macro_service.py`
+     - `tests/test_combo_d_thresholds.py` (new)
+
+3. **Formal re-run D/E threshold sweeps against live CONFIG** — SUCCESSFUL
+   - Summary: Re-ran `run_combo_de_followup.py` + `run_combo_de_study.py` on post-promotion CONFIG. Live D/E gates = analysis BEST PRODUCTION SCORE (#4); hit rates match (D n=46 / 56.52% @1W; E n=10 / 66.67% @6/9/12M). Followup ranks both as #1 production_score. Fixed D baseline tagging to use `min_of_three` (was hardcoded legs=3).
+   - Files changed:
+     - `testing/combo_de_thresholds/run_combo_de_study.py`
+     - `testing/combo_de_thresholds/run_combo_de_followup.py`
+     - `testing/combo_de_thresholds/de_threshold_config_recheck_2026-07-17.md` (new)
+     - `testing/combo_de_thresholds/output_files/*` (regenerated)
+
+4. **D2 — Curve regime `post_inversion_steepening` phase flag proposal (macro_th_exp)** — SUCCESSFUL
+   - Summary: PROPOSE ONLY (no implementation). Diagnosed momentum-tier vs narrative gap on May 2025 slow grind (+51 bps spread, simple 4wk steepen −4 → NORMAL; post-trough +157 → STEEPENING; cheatsheet phase active). Proposed separate boolean phase flag alongside `curve_regime_v2`. Recommended ON/OFF (Spec A): ON after formal inversion (≥4wk &lt;0) ends + post-trough steepen ≥+15; OFF at spread ≥+80 or re-invert. Rejected literal `&lt;30 bps × 4wk` OFF (false exit Sep 2024). Backfill: **5** inversion episodes, **5** phase triggers, **165** phase-active weeks (8.65%); episode #5 ongoing since 2024-08-30. Combo A/E named legs unchanged (CURVE not a leg); phase storage-only does not alter fire logic.
+   - Files changed:
+     - `testing/macro_th_exp/D2_curve_phase_proposal_2026-07-17.md` (new)
+     - `testing/macro_th_exp/D2_curve_phase_proposal_2026-07-17.json` (new)
+     - `testing/macro_th_exp/D2_curve_phase_episodes_recommended_2026-07-17.csv` (new)
+     - `testing/macro_th_exp/D2_curve_phase_weekly_panel.csv` (new)
+     - `testing/macro_th_exp/D2_may2025_simple_vs_posttrough.csv` (new)
+     - `testing/macro_th_exp/D2_phase_off_spec_comparison_2026-07-17.json` (new)
+
+5. **D1 — Regime bucket feed for Ahil P3 (macro_th_exp)** — SUCCESSFUL
+   - Summary: Published version-stamped daily series 2018–2026 (`date`, `bucket`) with BENIGN / ADVERSE / MIXED buckets built on recalibrated CONFIG gates (D/E per D5). Point-in-time Friday replay via `get_readings_as_of` + `detect_named_combos`; Combo C sequential cancel replay (fixes live-flag leak). **2,149** daily rows: BENIGN=1,617, ADVERSE=238, MIXED=294. Series `D1_regime_bucket_v1.1_2026-07-17`. Research handoff only — no prod/API change.
+   - Files changed:
+     - `testing/macro_th_exp/run_d1_regime_bucket_feed.py` (new)
+     - `testing/macro_th_exp/D1_regime_bucket_daily_2026-07-17.csv` (new)
+     - `testing/macro_th_exp/D1_regime_bucket_fridays_2026-07-17.csv` (new)
+     - `testing/macro_th_exp/D1_regime_bucket_feed_2026-07-17.{json,md}` (new)
+
 ### 2026-07-09
 
 1. **Audit: adverse-regime / date-indexed combo classification API for Ahil** — SUCCESSFUL
@@ -851,6 +974,58 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
    - Date: 2026-06-30
    - Summary: Staged only Release A paths (44 files); commit `a1cd39f36` `feat(release-a): auth, activity logs, API rate limits`; pushed to `https://github.com/divsum127/MindWealth_UI.git` `chatbot-dev`. Macro/combo WIP and runtime artifacts left unstaged.
    - Files changed: see commit `a1cd39f36` (auth, activity, rate limits, tests, migration doc, systemd templates)
+
+### 2026-07-16
+
+1. **D4 — B4 window audit re-run (macro_th_exp)** — SUCCESSFUL
+   - Date: 2026-07-16
+   - Summary: Re-ran `_run_b4_window_audit()` against live `CONFIG.yaml`. WALCL fix (2026-06-09) confirmed PASS (`full`/`full`). HY, VIX, VXTS still FAIL (`full` vs plan `rolling_3y`) — 3/12 mismatches, B4 pass=false. These vars feed short-gate combos B/D/G. Flagged open spec conflict with Rohit 2026-06-11 structural-window override.
+   - Files changed:
+     - `testing/macro_th_exp/D4_window_audit_rerun_2026-07-16.json` (created)
+     - `testing/macro_th_exp/D4_window_audit_rerun_2026-07-16.md` (created)
+
+2. **D5 — Fed-cycle re-slicing on recalibrated D/E thresholds (macro_th_exp)** — SUCCESSFUL
+   - Date: 2026-07-16
+   - Summary: Recalibrated D/E fed-cycle slices at validated horizons. D spread CUTTING_LATE−HIKING_LATE survives at 1W (+50.6 pp) and 2W (+35.9 pp). E per-fed slices CANNOT USE (n&lt;10). See `testing/macro_th_exp/D5_fed_cycle_reslice_2026-07-16.md`.
+   - Files changed:
+     - `testing/macro_th_exp/run_d5_fed_cycle_reslice.py` (new)
+     - `testing/macro_th_exp/D5_fed_cycle_reslice_2026-07-16.*` (new)
+
+3. **Promote Combo E BEST PRODUCTION SCORE + CFTC escalation** — SUCCESSFUL
+   - Date: 2026-07-17
+   - Summary: CONFIG E → CAPE≥32 / NFCI≤−0.15 / CFTC≥85 / 3-of-3; ESCALATION_ALERT on CFTC pctile rise ≥5/4wk. Detector, briefing, dominant, API cheatsheet wired.
+   - Files: `macro_intelligence/CONFIG.yaml`, `combo_detector.py`, `dominant.py`, `nightly_run.py`, `briefing_renderer.py`, `nightly_briefing.py`, `macro_service.py`, `tests/test_combo_e_thresholds.py`
+
+4. **Promote Combo D BEST PRODUCTION SCORE + 2-of-3** — SUCCESSFUL
+   - Date: 2026-07-17
+   - Summary: CONFIG D → VXTS≥1.18 / CFTC≥95 / VIX≤13 / 2-of-3; true 2-of-3 detector; horizons 1W+2W.
+   - Files: `macro_intelligence/CONFIG.yaml`, `combo_detector.py`, `nightly_briefing.py`, `macro_service.py`, `tests/test_combo_d_thresholds.py`
+
+### 2026-07-14
+
+1. **Test 5 — Regime Sharpe uplift (SPY/TLT/GLD/HYG vs 5-dimension overlay)** — SUCCESSFUL
+   - Date: 2026-07-14
+   - Summary: Built full Michele demo backtest in `testing/5_regime_uplift/`. Equal-weight monthly-rebalance basket (2007-04 → 2026-07). Baseline Sharpe 0.885 → regime overlay 0.938 (+0.053). Overlay lowers CAGR (7.72%→6.39%) but improves max DD (−22.6%→−17.6%). v1 multipliers from economic priors in `multiplier_spec.md`. Outputs: REPORT.md, summary_metrics.json, daily CSVs.
+   - Files changed:
+     - `testing/5_regime_uplift/PLAN.md` (new)
+     - `testing/5_regime_uplift/multiplier_spec.md` (new)
+     - `testing/5_regime_uplift/run_regime_sharpe_uplift.py` (new)
+     - `testing/5_regime_uplift/README.md` (updated)
+     - `testing/5_regime_uplift/output_files/*` (new)
+
+### 2026-07-13
+
+1. **Fix prod login for admin@mindwealth.co (password mismatch)** — SUCCESSFUL
+   - Date: 2026-07-13
+   - Summary: Prod admin was bootstrapped with a random password at deploy; user expected dev/original password. Reset prod password to match dev; verified login via API and Nuxt proxy.
+   - Files: prod `config/users.json`, `config/.bootstrap_admin_password`
+
+### 2026-07-12
+
+1. **Release B — macro, cross-function, analysis artifacts → prod** — SUCCESSFUL
+   - Date: 2026-07-12
+   - Summary: Commits `03903169b`..`a577c1775` on `chatbot-dev`; prod merge `caff62630`. Features: pre/post catalyst macro APIs, cross-function exit flags, combo classification export, threshold sweep artifacts. Prod deployed; 21 endpoint smoke checks pass on `:8506`.
+   - Files: see commits on `chatbot-dev`; excluded `monitored_trades.json`
 
 ### 2026-07-11
 

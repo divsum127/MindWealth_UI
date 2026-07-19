@@ -207,14 +207,23 @@ named_combos:
     cpi_surprise_min: 0.2
     walcl_flat: true
   D:
-    vxts_min: 1.10
-    cftc_min_pctile: 85
-    vix_max: 18
-  E:
+    # BEST PRODUCTION SCORE (n=46): VXTS≥1.18 / CFTC≥95 / VIX≤13 / 2-of-3
+    # Validated primary horizon: 1W (also report 2W). See de_threshold_test_analysis.md
     min_of_three: 2
-    cape_min: 28
-    nfci_easy_max: -0.3
-    cftc_min_pctile: 80
+    vxts_min: 1.18
+    cftc_min_pctile: 95
+    vix_max: 13
+  E:
+    # BEST PRODUCTION SCORE (n≥10): CAPE≥32 / NFCI≤−0.15 / CFTC≥85 / 3-of-3
+    # CFTC escalation alert when FM pctile rises during an active E episode
+    # (NFCI tighter than −0.15 moves needle less than CFTC crowding — Rohit 2026-07-17)
+    min_of_three: 3
+    cape_min: 32
+    nfci_easy_max: -0.15
+    cftc_min_pctile: 85
+    cftc_escalation_alert: true
+    cftc_escalation_lookback_weeks: 4
+    cftc_escalation_min_pctile_rise: 5
   F:
     spx_50wma_reclaim_weekly_pct: 3.0
     cftc_max_pctile: 50
@@ -343,13 +352,16 @@ combo_hit_rates:
     primary_horizon: spx_6m
     secondary_horizon: spx_3m
     show_hit_rate: true
+    min_episodes_for_hit_rate: 5
   D:
     direction: bearish
     primary_horizon: spx_1w
+    secondary_horizon: spx_2w
     show_hit_rate: true
   E:
     direction: bearish
     primary_horizon: spx_12m
+    secondary_horizon: spx_6m
     show_hit_rate: true
   F:
     direction: bullish

@@ -24,7 +24,7 @@ VARIABLE SIGNIFICANCE GUIDE — use these definitions when interpreting variable
 - CNH: USD/CNH 4wk % change. Positive = yuan weakening / China stress. Negative = yuan strengthening / risk-on EM.
 - WTI: Oil 4wk % change. Spike above +10% = Combo C stagflation risk. Below -10% = disinflationary, potential Fed-easing tailwind.
 - VIX: Fear gauge. Below 15 = suppressed/complacent. 20-25 = normal concern. 25+ = Combo B territory. 35+ = capitulation/buy-zone.
-- VXTS: VIX term structure ratio (VIX3M/VIX). Above 1.10 = complacency/contango (Combo D watch). Below 1.0 = backwardation/near-term stress (Combo G territory). Normal = 1.05-1.15.
+- VXTS: VIX term structure ratio (VIX3M/VIX). Above 1.18 = complacency/contango (Combo D watch). Below 1.0 = backwardation/near-term stress (Combo G territory). Normal = 1.05-1.15.
 - CFTC: Hedge fund (Fast Money) net position 3yr rolling percentile. Below 15th = extreme short / contrarian buy territory. Above 85th = crowded long / fragile. Current level feeds Combos B, D, E, F directly.
 - CURVE: 10Y-2Y yield spread in bps. Positive = normal. Negative = inverted (recession signal). Rapid steepening from inversion = recovery signal.
 - CPI: Surprise vs consensus in pp. Above +0.2pp = hot surprise (Combo C fire leg). Near zero = neutral. Below -0.2pp = miss (disinflationary).
@@ -35,8 +35,8 @@ COMBO SIGNIFICANCE GUIDE:
 - Combo A (Liquidity): 2+ of NFCI/HY/WALCL/CNH at RARE+. Multi-variable macro stress or ease.
 - Combo B (Capitulation): VIX≥25 + HY≥400bps + CFTC≤15th ALL three. Rare blood-in-streets buy signal. VIX bypass active when confirmed.
 - Combo C (Stagflation/Energy Shock): WTI≥+10% + hot CPI + flat WALCL. Fed hands tied by inflation. CANCELLED means 4-Friday oil+CPI clear met.
-- Combo D (FOMO Top): VXTS≥1.10 + CFTC≥85th + VIX<18. Complacency extreme — crowded longs in calm market. Tactical bearish.
-- Combo E (Valuation Extreme): 2 of 3 — CAPE≥28 + NFCI easy + CFTC≥80th. Structural slow-burn bear. 12m horizon, not 3m.
+- Combo D (FOMO Top): 2 of 3 — VXTS≥1.18 + CFTC≥95th + VIX≤13. Complacency extreme — crowded longs in calm market. Tactical bearish; primary horizon 1W.
+- Combo E (Valuation Extreme): 3 of 3 — CAPE≥32 + NFCI≤−0.15 + CFTC≥85th. Structural slow-burn bear. 12m horizon, not 3m. If CFTC FM percentile rises ≥5 pts over ~4 weeks while E is active, status is ESCALATION_ALERT (crowding intensifying).
 - Combo F (Recovery): SPX ≥3% above 50WMA + CFTC≤50th. Momentum with positioning room. 6m primary, 26-week lifecycle.
 - Combo G (Hidden Stress): VXTS<1.0 + HY 4wk widening≥30bps + VIX≤20. Credit leading equity fear. Timing warning — no return hit rate. Testable from 2007 only.
 
@@ -333,8 +333,9 @@ def _template_briefing(payload: dict[str, Any]) -> str:
         direction = row.get("direction", "").lower()
         if status == "WATCH":
             comp_lines.append(f"Combo {letter} ({lbl}) is on WATCH ({direction}); not yet firing.")
-        elif status in ("CONFIRMED", "CONFIRMED_3_OF_3"):
-            comp_lines.append(f"Combo {letter} ({lbl}) is CONFIRMED ({direction}, {hr}).")
+        elif status in ("CONFIRMED", "CONFIRMED_3_OF_3", "ESCALATION_ALERT"):
+            esc = " CFTC crowding escalating." if status == "ESCALATION_ALERT" else ""
+            comp_lines.append(f"Combo {letter} ({lbl}) is {status} ({direction}, {hr}).{esc}")
         elif status == "CANCELLED":
             comp_lines.append(f"Combo {letter} ({lbl}) has been CANCELLED.")
         elif status in ("ACTIVE", "PARTIAL"):

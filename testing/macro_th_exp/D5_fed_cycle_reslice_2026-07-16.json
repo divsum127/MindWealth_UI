@@ -1,0 +1,420 @@
+{
+  "meta": {
+    "generated_at": "2026-07-15T22:09:56.757518+00:00",
+    "task": "D5_fed_cycle_reslice",
+    "min_n_use": 10,
+    "d_config": {
+      "experiment_id": "D_v1.18_c95_x13_l2",
+      "vxts_min": 1.18,
+      "cftc_min_pctile": 95,
+      "vix_max": 13,
+      "legs_required": 2,
+      "horizons": [
+        [
+          "1W",
+          5
+        ],
+        [
+          "2W",
+          10
+        ]
+      ],
+      "validated_horizon": "1W"
+    },
+    "e_config": {
+      "experiment_id": "E_cape32_nfci-0.15_cftc85_l3",
+      "cape_min": 32,
+      "nfci_easy_max": -0.15,
+      "cftc_min_pctile": 85,
+      "legs_required": 3,
+      "horizons": [
+        [
+          "6M",
+          126
+        ],
+        [
+          "9M",
+          189
+        ],
+        [
+          "12M",
+          252
+        ]
+      ],
+      "validated_horizons": [
+        "6M",
+        "9M",
+        "12M"
+      ],
+      "cftc_escalation_note": "3-of-3 gate includes CFTC>=85; escalation alert is briefing overlay when CFTC pctile rises during active E episode"
+    },
+    "legacy_baseline": {
+      "D": {
+        "horizon": "3M",
+        "overall_n": 452,
+        "overall_bear_hit_pct": 28.1,
+        "HIKING_LATE": {
+          "n": 197,
+          "bear_hit_pct": 18.3
+        },
+        "CUTTING_LATE": {
+          "n": 155,
+          "bear_hit_pct": 43.2
+        },
+        "QE": {
+          "n": 100,
+          "bear_hit_pct": 24.0
+        },
+        "spread_cutting_minus_hiking_pp": 24.9,
+        "spread_ratio": 2.36
+      },
+      "E": {
+        "horizon": "3M",
+        "overall_n": 507,
+        "overall_bear_hit_pct": 19.9,
+        "HIKING_LATE": {
+          "n": 221,
+          "bear_hit_pct": 18.1
+        },
+        "CUTTING_LATE": {
+          "n": 159,
+          "bear_hit_pct": 22.0
+        },
+        "QE": {
+          "n": 127,
+          "bear_hit_pct": 14.2
+        }
+      }
+    },
+    "n_d_events": 46,
+    "n_e_events": 10,
+    "friday_d_dates": 839,
+    "friday_e_dates": 839,
+    "d_overall_1W": {
+      "combo": "D",
+      "config_id": "D_v1.18_c95_x13_l2",
+      "fed_cycle": "OVERALL",
+      "horizon": "1W",
+      "n_events": 46,
+      "n_mature": 46,
+      "bear_hit_pct": 56.52,
+      "avg_spx_pct": -0.3499,
+      "min_spx_pct": -5.7685,
+      "max_spx_pct": 1.9682,
+      "verdict": "USE"
+    },
+    "e_overall_12M": {
+      "combo": "E",
+      "config_id": "E_cape32_nfci-0.15_cftc85_l3",
+      "fed_cycle": "OVERALL",
+      "horizon": "12M",
+      "n_events": 10,
+      "n_mature": 9,
+      "bear_hit_pct": 66.67,
+      "avg_spx_pct": -6.5376,
+      "min_spx_pct": -15.9249,
+      "max_spx_pct": 5.607,
+      "verdict": "USE"
+    },
+    "d_spread_1W": {
+      "horizon": "1W",
+      "CUTTING_LATE": {
+        "n": 13,
+        "bear_hit_pct": 92.31,
+        "verdict": "USE"
+      },
+      "HIKING_LATE": {
+        "n": 24,
+        "bear_hit_pct": 41.67,
+        "verdict": "USE"
+      },
+      "spread_cutting_minus_hiking_pp": 50.64,
+      "spread_ratio": 2.22,
+      "spread_usable": true,
+      "legacy_spread_pp": 24.9,
+      "spread_survives_recalibration": true,
+      "spread_magnitude_vs_legacy": "wider"
+    },
+    "d_spread_2W": {
+      "horizon": "2W",
+      "CUTTING_LATE": {
+        "n": 13,
+        "bear_hit_pct": 69.23,
+        "verdict": "USE"
+      },
+      "HIKING_LATE": {
+        "n": 24,
+        "bear_hit_pct": 33.33,
+        "verdict": "USE"
+      },
+      "spread_cutting_minus_hiking_pp": 35.9,
+      "spread_ratio": 2.08,
+      "spread_usable": true,
+      "legacy_spread_pp": 24.9,
+      "spread_survives_recalibration": true,
+      "spread_magnitude_vs_legacy": "wider"
+    }
+  },
+  "slices": [
+    {
+      "combo": "D",
+      "config_id": "D_v1.18_c95_x13_l2",
+      "fed_cycle": "CUTTING_LATE",
+      "horizon": "1W",
+      "n_events": 13,
+      "n_mature": 13,
+      "bear_hit_pct": 92.31,
+      "avg_spx_pct": -1.5923,
+      "min_spx_pct": -5.7685,
+      "max_spx_pct": 1.286,
+      "verdict": "USE"
+    },
+    {
+      "combo": "D",
+      "config_id": "D_v1.18_c95_x13_l2",
+      "fed_cycle": "CUTTING_LATE",
+      "horizon": "2W",
+      "n_events": 13,
+      "n_mature": 13,
+      "bear_hit_pct": 69.23,
+      "avg_spx_pct": -0.6773,
+      "min_spx_pct": -4.9088,
+      "max_spx_pct": 2.6698,
+      "verdict": "USE"
+    },
+    {
+      "combo": "D",
+      "config_id": "D_v1.18_c95_x13_l2",
+      "fed_cycle": "HIKING_LATE",
+      "horizon": "1W",
+      "n_events": 24,
+      "n_mature": 24,
+      "bear_hit_pct": 41.67,
+      "avg_spx_pct": -0.0516,
+      "min_spx_pct": -3.8547,
+      "max_spx_pct": 1.4057,
+      "verdict": "USE"
+    },
+    {
+      "combo": "D",
+      "config_id": "D_v1.18_c95_x13_l2",
+      "fed_cycle": "HIKING_LATE",
+      "horizon": "2W",
+      "n_events": 24,
+      "n_mature": 24,
+      "bear_hit_pct": 33.33,
+      "avg_spx_pct": -0.0861,
+      "min_spx_pct": -8.8177,
+      "max_spx_pct": 1.9528,
+      "verdict": "USE"
+    },
+    {
+      "combo": "D",
+      "config_id": "D_v1.18_c95_x13_l2",
+      "fed_cycle": "QE",
+      "horizon": "1W",
+      "n_events": 9,
+      "n_mature": 9,
+      "bear_hit_pct": 44.44,
+      "avg_spx_pct": 0.649,
+      "min_spx_pct": -1.0717,
+      "max_spx_pct": 1.9682,
+      "verdict": "CANNOT USE"
+    },
+    {
+      "combo": "D",
+      "config_id": "D_v1.18_c95_x13_l2",
+      "fed_cycle": "QE",
+      "horizon": "2W",
+      "n_events": 9,
+      "n_mature": 9,
+      "bear_hit_pct": 33.33,
+      "avg_spx_pct": 0.536,
+      "min_spx_pct": -1.6222,
+      "max_spx_pct": 2.3335,
+      "verdict": "CANNOT USE"
+    },
+    {
+      "combo": "D",
+      "config_id": "D_v1.18_c95_x13_l2",
+      "fed_cycle": "OVERALL",
+      "horizon": "1W",
+      "n_events": 46,
+      "n_mature": 46,
+      "bear_hit_pct": 56.52,
+      "avg_spx_pct": -0.3499,
+      "min_spx_pct": -5.7685,
+      "max_spx_pct": 1.9682,
+      "verdict": "USE"
+    },
+    {
+      "combo": "D",
+      "config_id": "D_v1.18_c95_x13_l2",
+      "fed_cycle": "OVERALL",
+      "horizon": "2W",
+      "n_events": 46,
+      "n_mature": 46,
+      "bear_hit_pct": 43.48,
+      "avg_spx_pct": -0.1314,
+      "min_spx_pct": -8.8177,
+      "max_spx_pct": 2.6698,
+      "verdict": "USE"
+    },
+    {
+      "combo": "E",
+      "config_id": "E_cape32_nfci-0.15_cftc85_l3",
+      "fed_cycle": "CUTTING_LATE",
+      "horizon": "6M",
+      "n_events": 2,
+      "n_mature": 1,
+      "bear_hit_pct": 100.0,
+      "avg_spx_pct": -15.5733,
+      "min_spx_pct": -15.5733,
+      "max_spx_pct": -15.5733,
+      "verdict": "CANNOT USE"
+    },
+    {
+      "combo": "E",
+      "config_id": "E_cape32_nfci-0.15_cftc85_l3",
+      "fed_cycle": "CUTTING_LATE",
+      "horizon": "9M",
+      "n_events": 2,
+      "n_mature": 1,
+      "bear_hit_pct": 100.0,
+      "avg_spx_pct": -21.1223,
+      "min_spx_pct": -21.1223,
+      "max_spx_pct": -21.1223,
+      "verdict": "CANNOT USE"
+    },
+    {
+      "combo": "E",
+      "config_id": "E_cape32_nfci-0.15_cftc85_l3",
+      "fed_cycle": "CUTTING_LATE",
+      "horizon": "12M",
+      "n_events": 2,
+      "n_mature": 1,
+      "bear_hit_pct": 100.0,
+      "avg_spx_pct": -15.7412,
+      "min_spx_pct": -15.7412,
+      "max_spx_pct": -15.7412,
+      "verdict": "CANNOT USE"
+    },
+    {
+      "combo": "E",
+      "config_id": "E_cape32_nfci-0.15_cftc85_l3",
+      "fed_cycle": "HIKING_LATE",
+      "horizon": "6M",
+      "n_events": 5,
+      "n_mature": 5,
+      "bear_hit_pct": 80.0,
+      "avg_spx_pct": -1.869,
+      "min_spx_pct": -5.5875,
+      "max_spx_pct": 4.0337,
+      "verdict": "CANNOT USE"
+    },
+    {
+      "combo": "E",
+      "config_id": "E_cape32_nfci-0.15_cftc85_l3",
+      "fed_cycle": "HIKING_LATE",
+      "horizon": "9M",
+      "n_events": 5,
+      "n_mature": 5,
+      "bear_hit_pct": 40.0,
+      "avg_spx_pct": 0.9015,
+      "min_spx_pct": -5.8234,
+      "max_spx_pct": 9.6321,
+      "verdict": "CANNOT USE"
+    },
+    {
+      "combo": "E",
+      "config_id": "E_cape32_nfci-0.15_cftc85_l3",
+      "fed_cycle": "HIKING_LATE",
+      "horizon": "12M",
+      "n_events": 5,
+      "n_mature": 5,
+      "bear_hit_pct": 40.0,
+      "avg_spx_pct": 0.0856,
+      "min_spx_pct": -8.1058,
+      "max_spx_pct": 5.607,
+      "verdict": "CANNOT USE"
+    },
+    {
+      "combo": "E",
+      "config_id": "E_cape32_nfci-0.15_cftc85_l3",
+      "fed_cycle": "QE",
+      "horizon": "6M",
+      "n_events": 3,
+      "n_mature": 3,
+      "bear_hit_pct": 33.33,
+      "avg_spx_pct": -1.5859,
+      "min_spx_pct": -9.7712,
+      "max_spx_pct": 4.3337,
+      "verdict": "CANNOT USE"
+    },
+    {
+      "combo": "E",
+      "config_id": "E_cape32_nfci-0.15_cftc85_l3",
+      "fed_cycle": "QE",
+      "horizon": "9M",
+      "n_events": 3,
+      "n_mature": 3,
+      "bear_hit_pct": 100.0,
+      "avg_spx_pct": -13.4439,
+      "min_spx_pct": -17.1025,
+      "max_spx_pct": -11.165,
+      "verdict": "CANNOT USE"
+    },
+    {
+      "combo": "E",
+      "config_id": "E_cape32_nfci-0.15_cftc85_l3",
+      "fed_cycle": "QE",
+      "horizon": "12M",
+      "n_events": 3,
+      "n_mature": 3,
+      "bear_hit_pct": 100.0,
+      "avg_spx_pct": -14.5085,
+      "min_spx_pct": -15.9249,
+      "max_spx_pct": -12.0258,
+      "verdict": "CANNOT USE"
+    },
+    {
+      "combo": "E",
+      "config_id": "E_cape32_nfci-0.15_cftc85_l3",
+      "fed_cycle": "OVERALL",
+      "horizon": "6M",
+      "n_events": 10,
+      "n_mature": 9,
+      "bear_hit_pct": 66.67,
+      "avg_spx_pct": -3.2973,
+      "min_spx_pct": -15.5733,
+      "max_spx_pct": 4.3337,
+      "verdict": "USE"
+    },
+    {
+      "combo": "E",
+      "config_id": "E_cape32_nfci-0.15_cftc85_l3",
+      "fed_cycle": "OVERALL",
+      "horizon": "9M",
+      "n_events": 10,
+      "n_mature": 9,
+      "bear_hit_pct": 66.67,
+      "avg_spx_pct": -6.3274,
+      "min_spx_pct": -21.1223,
+      "max_spx_pct": 9.6321,
+      "verdict": "USE"
+    },
+    {
+      "combo": "E",
+      "config_id": "E_cape32_nfci-0.15_cftc85_l3",
+      "fed_cycle": "OVERALL",
+      "horizon": "12M",
+      "n_events": 10,
+      "n_mature": 9,
+      "bear_hit_pct": 66.67,
+      "avg_spx_pct": -6.5376,
+      "min_spx_pct": -15.9249,
+      "max_spx_pct": 5.607,
+      "verdict": "USE"
+    }
+  ]
+}

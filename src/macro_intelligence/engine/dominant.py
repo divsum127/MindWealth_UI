@@ -37,7 +37,7 @@ def resolve_dominant(
     actives = [
         c
         for c in active_combos
-        if c.get("status") in ("ACTIVE", "PARTIAL", "CONFIRMED", "CONFIRMED_3_OF_3")
+        if c.get("status") in ("ACTIVE", "PARTIAL", "CONFIRMED", "CONFIRMED_3_OF_3", "ESCALATION_ALERT")
         and c.get("combo")
     ]
 
@@ -58,6 +58,7 @@ def _status_verb(status: str | None) -> str:
         "PARTIAL": "partial",
         "CONFIRMED": "confirmed (2/3)",
         "CONFIRMED_3_OF_3": "confirmed (3/3)",
+        "ESCALATION_ALERT": "confirmed (3/3) with CFTC escalation",
     }
     return mapping.get(status or "", "active")
 
@@ -82,7 +83,14 @@ def _build_reason(dominant: str, top: dict[str, Any], others: list[dict[str, Any
     hr_clause = format_reason_hit_rate(dominant)
     legs = top.get("confirmed_legs")
     leg_txt = f" Legs: {', '.join(legs)}." if legs else ""
-    base = f"Combo {dominant} {status}{duration}. {hr_clause}{leg_txt}"
+    esc_txt = ""
+    if top.get("escalation_alert") or top.get("status") == "ESCALATION_ALERT":
+        delta = top.get("cftc_pctile_delta")
+        if delta is not None:
+            esc_txt = f" CFTC FM pctile up {delta:+.1f} pts over lookback — escalation alert."
+        else:
+            esc_txt = " CFTC FM crowding escalating."
+    base = f"Combo {dominant} {status}{duration}. {hr_clause}{leg_txt}{esc_txt}"
 
     if others:
         alt = others[0].get("combo")

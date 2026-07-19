@@ -87,17 +87,27 @@ def evidence_tag(n: int, mechanism: bool = False) -> str:
     return "INSUFFICIENT"
 
 
+_ANALYTICS_REGIME_KEYS = frozenset({"fed_cycle_v2", "liquidity_v2"})
+
+
 def slice_by_regime(
     rows: list[dict[str, Any]],
     regime_key: str,
     horizon: str = "spx_3m",
     bullish: bool = True,
+    *,
+    use_analytics_collapse: bool = True,
 ) -> dict[str, dict[str, Any]]:
     """Group rows with 'returns' dict and 'regime' dict by regime dimension value."""
+    from src.macro_intelligence.engine.regime_v2_shadow import regime_value_for_analytics
+
     buckets: dict[str, list[float]] = {}
     for row in rows:
         reg = row.get("regime") or {}
-        val = str(reg.get(regime_key, "UNKNOWN"))
+        if use_analytics_collapse and regime_key in _ANALYTICS_REGIME_KEYS:
+            val = regime_value_for_analytics(reg, regime_key)
+        else:
+            val = str(reg.get(regime_key, "UNKNOWN"))
         ret = (row.get("returns") or {}).get(horizon)
         if ret is None:
             continue

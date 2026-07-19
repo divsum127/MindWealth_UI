@@ -69,13 +69,83 @@ def evaluate_combo_d_legs(
     vxts_r, vix_r, cftc_r = readings.get("VXTS"), readings.get("VIX"), readings.get("CFTC")
     if not (vxts_r and vix_r and cftc_r):
         return [], order[:]
-    vxts_ok = (vxts_r.get("raw_value") or 0) >= d_cfg.get("vxts_min", 1.10)
-    vix_ok = (vix_r.get("raw_value") or 99) < d_cfg.get("vix_max", 18)
-    cftc_ok = (combo_pctile_from_reading(cftc_r) or 0) >= d_cfg.get("cftc_min_pctile", 85)
+    # VIX leg uses ≤ max (matches threshold-sweep / production-score validation)
+    vxts_ok = (vxts_r.get("raw_value") or 0) >= d_cfg.get("vxts_min", 1.18)
+    vix_ok = (vix_r.get("raw_value") or 99) <= d_cfg.get("vix_max", 13)
+    cftc_ok = (combo_pctile_from_reading(cftc_r) or 0) >= d_cfg.get("cftc_min_pctile", 95)
     flags = {"VXTS": vxts_ok, "VIX": vix_ok, "CFTC": cftc_ok}
     passed = [v for v in order if flags[v]]
     pending = [v for v in order if not flags[v]]
     return passed, pending
+
+
+def evaluate_combo_e_legs(
+    readings: dict[str, dict[str, Any]],
+    e_cfg: dict[str, Any] | None = None,
+) -> tuple[list[str], list[str]]:
+    """Return (passed_legs, pending_legs) for Combo E gate."""
+    e_cfg = e_cfg or load_config().get("named_combos", {}).get("E", {})
+    order = ["CAPE", "NFCI", "CFTC"]
+    cape_r, nfci_r, cftc_r = readings.get("CAPE"), readings.get("NFCI"), readings.get("CFTC")
+    if not (cape_r and nfci_r and cftc_r):
+        return [], order[:]
+    cape_ok = (cape_r.get("raw_value") or 0) >= e_cfg.get("cape_min", 32)
+    nfci_ok = (nfci_r.get("raw_value") or 0) <= e_cfg.get("nfci_easy_max", -0.15)
+    cftc_ok = (combo_pctile_from_reading(cftc_r) or 0) >= e_cfg.get("cftc_min_pctile", 85)
+    flags = {"CAPE": cape_ok, "NFCI": nfci_ok, "CFTC": cftc_ok}
+    passed = [v for v in order if flags[v]]
+    pending = [v for v in order if not flags[v]]
+    return passed, pending
+
+
+def _cftc_pctile_delta(
+    as_of: str,
+    current_pctile: float | None,
+    lookback_weeks: int = 4,
+) -> tuple[float | None, float | None]:
+    """Return (prior_pctile, delta) from daily_readings CFTC row ~lookback_weeks ago."""
+    if current_pctile is None:
+        return None, None
+    prior_date = (pd.Timestamp(as_of) - pd.Timedelta(weeks=lookback_weeks)).strftime("%Y-%m-%d")
+    with get_connection() as conn:
+        row = conn.execute(
+            """
+            SELECT unconditional_pctile, pctile_rank_3yr FROM daily_readings
+            WHERE var_id = 'CFTC' AND date <= ?
+            ORDER BY date DESC LIMIT 1
+            """,
+            (prior_date,),
+        ).fetchone()
+    if not row:
+        return None, None
+    prior = row["unconditional_pctile"] if row["unconditional_pctile"] is not None else row["pctile_rank_3yr"]
+    if prior is None:
+        return None, None
+    prior_f = float(prior)
+    return prior_f, float(current_pctile) - prior_f
+
+
+def _combo_e_escalation(
+    as_of: str,
+    cftc_r: dict[str, Any] | None,
+    e_cfg: dict[str, Any],
+) -> dict[str, Any]:
+    """Flag when CFTC FM percentile rises enough during an active Combo E episode."""
+    if not e_cfg.get("cftc_escalation_alert", True) or not cftc_r:
+        return {"escalation_alert": False}
+    cur = combo_pctile_from_reading(cftc_r)
+    lookback = int(e_cfg.get("cftc_escalation_lookback_weeks", 4))
+    min_rise = float(e_cfg.get("cftc_escalation_min_pctile_rise", 5))
+    prior, delta = _cftc_pctile_delta(as_of, cur, lookback)
+    escalating = delta is not None and delta >= min_rise
+    return {
+        "escalation_alert": escalating,
+        "cftc_pctile": cur,
+        "cftc_pctile_prior": prior,
+        "cftc_pctile_delta": round(delta, 2) if delta is not None else None,
+        "cftc_escalation_lookback_weeks": lookback,
+        "cftc_escalation_min_pctile_rise": min_rise,
+    }
 
 
 def _attach_macro_regime(fires: list[ComboFire], macro_regime: dict[str, Any] | None) -> list[ComboFire]:
@@ -213,54 +283,76 @@ def detect_named_combos(
             )
         )
 
-    # Combo D — partial / watch
+    # Combo D — BEST PRODUCTION SCORE 2-of-3; WATCH when 1 leg
     d_cfg = named.get("D", {})
     vxts_r = readings.get("VXTS")
     vix_r = readings.get("VIX")
     cftc_r = readings.get("CFTC")
-    if vxts_r and vix_r and cftc_r:
-        vxts_val = vxts_r.get("raw_value") or 0
-        d_passed, d_pending = evaluate_combo_d_legs(readings, d_cfg)
-        if vxts_val >= d_cfg.get("vxts_min", 1.10) and (vix_r.get("raw_value") or 99) < d_cfg.get("vix_max", 18):
-            status = "ACTIVE" if (combo_pctile_from_reading(cftc_r) or 0) >= d_cfg.get("cftc_min_pctile", 85) else "WATCH"
-            fires.append(
-                ComboFire(
-                    date=as_of,
-                    runic_combo="D",
-                    var_ids=["VXTS", "CFTC", "VIX"],
-                    directions=[vxts_r.get("direction"), cftc_r.get("direction"), vix_r.get("direction")],
-                    status=status,
-                    macro_regime={"confirmed_legs": d_passed, "pending_legs": d_pending},
-                )
+    d_min = int(d_cfg.get("min_of_three", 2))
+    d_passed, d_pending = evaluate_combo_d_legs(readings, d_cfg)
+    d_hits = len(d_passed)
+    _d_dir = {
+        "VXTS": vxts_r.get("direction") if vxts_r else None,
+        "VIX": vix_r.get("direction") if vix_r else None,
+        "CFTC": cftc_r.get("direction") if cftc_r else None,
+    }
+    if d_hits >= d_min and vxts_r and vix_r and cftc_r:
+        fires.append(
+            ComboFire(
+                date=as_of,
+                runic_combo="D",
+                var_ids=d_passed,
+                directions=[_d_dir[v] for v in d_passed],
+                status="ACTIVE",
+                macro_regime={"confirmed_legs": d_passed, "pending_legs": d_pending},
             )
+        )
+    elif d_hits >= 1 and vxts_r and vix_r and cftc_r:
+        fires.append(
+            ComboFire(
+                date=as_of,
+                runic_combo="D",
+                var_ids=d_passed,
+                directions=[_d_dir[v] for v in d_passed],
+                status="WATCH",
+                macro_regime={"confirmed_legs": d_passed, "pending_legs": d_pending},
+            )
+        )
 
-    # Combo E — 2 of 3
+    # Combo E — 3 of 3 (BEST PRODUCTION SCORE); WATCH when partial; ESCALATION when CFTC rises
     e_cfg = named.get("E", {})
     cape_r = readings.get("CAPE")
     nfci_r = readings.get("NFCI")
     cftc_r = readings.get("CFTC")
-    e_hits = 0
-    e_vars: list[str] = []
-    if cape_r and (cape_r.get("raw_value") or 0) >= e_cfg.get("cape_min", 28):
-        e_hits += 1
-        e_vars.append("CAPE")
-    # Spec: "NFCI ≤ −0.3" — inclusive boundary
-    if nfci_r and (nfci_r.get("raw_value") or 0) <= e_cfg.get("nfci_easy_max", -0.3):
-        e_hits += 1
-        e_vars.append("NFCI")
-    if cftc_r and (combo_pctile_from_reading(cftc_r) or 0) >= e_cfg.get("cftc_min_pctile", 80):
-        e_hits += 1
-        e_vars.append("CFTC")
-    if e_hits >= e_cfg.get("min_of_three", 2):
-        e_status = "CONFIRMED_3_OF_3" if e_hits >= 3 else "CONFIRMED"
+    e_min = int(e_cfg.get("min_of_three", 3))
+    e_passed, e_pending = evaluate_combo_e_legs(readings, e_cfg)
+    e_hits = len(e_passed)
+    if e_hits >= e_min and cape_r and nfci_r and cftc_r:
+        esc = _combo_e_escalation(as_of, cftc_r, e_cfg)
+        e_status = "ESCALATION_ALERT" if esc.get("escalation_alert") else "CONFIRMED_3_OF_3"
         fires.append(
             ComboFire(
                 date=as_of,
                 runic_combo="E",
-                var_ids=e_vars,
-                directions=[None] * len(e_vars),
+                var_ids=e_passed,
+                directions=[None] * len(e_passed),
                 status=e_status,
-                macro_regime={"confirmed_legs": e_vars},
+                macro_regime={
+                    "confirmed_legs": e_passed,
+                    "pending_legs": e_pending,
+                    **esc,
+                },
+            )
+        )
+    elif e_hits >= 1 and cape_r and nfci_r and cftc_r:
+        fires.append(
+            ComboFire(
+                date=as_of,
+                runic_combo="E",
+                var_ids=e_passed,
+                directions=[None] * len(e_passed),
+                status="WATCH",
+                macro_regime={"confirmed_legs": e_passed, "pending_legs": e_pending},
             )
         )
 

@@ -179,8 +179,8 @@ def check_signal_degradation() -> dict[str, Any]:
 
     Triggers fire when **any** of these conditions are met:
 
-    - Live forward win rate for a combo drops below 61% **and** >=2 consecutive months of
-      successively lower FWD win rate are observed in the per-asset forward testing records.
+    - FWD win rate declining toward 60% while still >= 60% (DEGRADATION WATCH).
+    - FWD win rate below 60% (DEGRADATION BREACH).
     - A booked loss exists on any virtual trading portfolio position (realised P&L < 0).
     - A live position's MTM exceeds -10%.
 

@@ -7,6 +7,14 @@ DEV_URL="${DEV_URL:-http://127.0.0.1:8507}"
 PROD_STORE="/home/ubuntu/uiv2/prod/MindWealth_UI/conviction_store"
 GIT_STORE="/home/ubuntu/uiv2/git/MindWealth_UI/conviction_store"
 FAIL=0
+API_KEY=""
+if [[ -f /home/ubuntu/uiv2/prod/MindWealth_UI/.env ]]; then
+  API_KEY="$(grep -E '^API_KEY=' /home/ubuntu/uiv2/prod/MindWealth_UI/.env | cut -d= -f2- || true)"
+fi
+API_KEY_HEADER=()
+if [[ -n "$API_KEY" ]]; then
+  API_KEY_HEADER=(-H "X-API-Key: $API_KEY")
+fi
 
 pass() { echo "PASS: $*"; }
 fail() { echo "FAIL: $*" >&2; FAIL=1; }
@@ -14,7 +22,7 @@ fail() { echo "FAIL: $*" >&2; FAIL=1; }
 check_health() {
   local label="$1" url="$2" expected_store="$3"
   local body
-  if ! body="$(curl -sf "${url}/api/v1/health")"; then
+  if ! body="$(curl -sf "${API_KEY_HEADER[@]}" "${url}/api/v1/health")"; then
     fail "${label} health unreachable at ${url}/api/v1/health"
     return
   fi
@@ -52,7 +60,7 @@ else
   echo "SKIP: dev API not running on ${DEV_URL} (start mindwealth-api-dev.service to test)"
 fi
 
-if curl -sf "${PROD_URL}/api/v1/signals/counts" >/dev/null 2>&1; then
+if curl -sf "${API_KEY_HEADER[@]}" "${PROD_URL}/api/v1/signals/counts" >/dev/null 2>&1; then
   pass "prod /api/v1/signals/counts reachable"
 else
   fail "prod /api/v1/signals/counts unreachable"

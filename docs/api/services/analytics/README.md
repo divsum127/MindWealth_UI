@@ -1,6 +1,6 @@
 # Analytics API
 
-**Status:** implemented (v1.2.0)
+**Status:** implemented (v1.8.0)
 
 **Router:** `api/routers/analytics.py`
 
@@ -15,6 +15,8 @@
 | GET | `/analytics/sentiment/layers` | [get-sentiment-layers.md](endpoints/get-sentiment-layers.md) |
 | GET | `/analytics/performance` | [get-performance.md](endpoints/get-performance.md) |
 | GET | `/analytics/portfolio-ytd` | [get-portfolio-ytd.md](endpoints/get-portfolio-ytd.md) |
+| GET | `/analytics/analyst/alerts` | [../analyst/endpoints/get-analyst-alerts.md](../analyst/endpoints/get-analyst-alerts.md) |
+| GET | `/analytics/analyst/brief` | [../analyst/endpoints/get-analyst-brief.md](../analyst/endpoints/get-analyst-brief.md) |
 
 All paths are prefixed with `/api/v1`.
 
@@ -27,3 +29,7 @@ All paths are prefixed with `/api/v1`.
 | SSI layers | `/analytics/sentiment/layers` |
 | Performance table | `/analytics/performance` |
 | Overwatch YTD | `/analytics/portfolio-ytd` |
+| AI Analyst alerts | `/analytics/analyst/alerts` |
+| AI Analyst brief | `/analytics/analyst/brief` |
+| Overwatch SSE | `/overwatch/stream` |
+| System health (admin) | `/system/health` |

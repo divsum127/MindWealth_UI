@@ -191,13 +191,20 @@ def build_combo_status_rows(payload: dict[str, Any]) -> list[dict[str, Any]]:
             legs = match.get("confirmed_legs")
             if legs:
                 duration += f" · legs {', '.join(legs)}"
+            if match.get("escalation_alert") or match.get("status") == "ESCALATION_ALERT":
+                delta = match.get("cftc_pctile_delta")
+                if delta is not None:
+                    duration += f" · CFTC ESCALATION (+{delta:g} pctile)"
+                else:
+                    duration += " · CFTC ESCALATION"
             if match.get("show_hit_rate", True):
                 hr_disp, avg_disp = format_hit_rate_display(match)
+            status_disp = match.get("status", "ACTIVE")
             rows.append(
                 {
                     "combo": letter,
                     "name": label,
-                    "status": match.get("status", "ACTIVE"),
+                    "status": status_disp,
                     "duration": duration,
                     "direction": directions.get(letter, "—"),
                     "hit_rate_3m": hr_disp,
@@ -354,9 +361,9 @@ def build_briefing_sections(payload: dict[str, Any]) -> dict[str, Any]:
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _combo_row_style(status: str) -> str:
-    if status in ("ACTIVE", "PARTIAL", "CONFIRMED", "CONFIRMED_3_OF_3"):
+    if status in ("ACTIVE", "PARTIAL", "CONFIRMED", "CONFIRMED_3_OF_3", "ESCALATION_ALERT"):
         return f"background:{_GREEN_BG};color:{_GREEN_TEXT};"
-    if status == "WATCH":
+    if status == "WATCH" or str(status).startswith("WATCH"):
         return f"background:{_AMBER_BG};color:{_AMBER_TEXT};"
     if status == "CANCELLED":
         return f"background:#4A3728;color:{_WHITE};"
@@ -538,6 +545,7 @@ def _combo_row_on_color(status: str) -> bool:
         "PARTIAL",
         "CONFIRMED",
         "CONFIRMED_3_OF_3",
+        "ESCALATION_ALERT",
         "CANCELLED",
         "WATCH",
     )
@@ -690,7 +698,7 @@ def render_pdf(payload: dict[str, Any], pdf_path: Path) -> None:
                 combo_para(r["avg_return_3m"], on_color=on_color, nowrap=True),
             ]
         )
-        if r["status"] in ("ACTIVE", "PARTIAL", "CONFIRMED", "CONFIRMED_3_OF_3"):
+        if r["status"] in ("ACTIVE", "PARTIAL", "CONFIRMED", "CONFIRMED_3_OF_3", "ESCALATION_ALERT"):
             combo_row_colors += [
                 ("BACKGROUND", (0, i), (-1, i), c_green),
             ]

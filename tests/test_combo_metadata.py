@@ -12,9 +12,12 @@ if str(_ROOT) not in sys.path:
 
 from src.macro_intelligence.engine.combo_metadata import (
     combo_bullish,
+    combo_hit_rate_stats,
     combo_primary_horizon,
     combo_show_hit_rate,
+    format_hit_rate_display,
     horizon_display_label,
+    min_episodes_for_hit_rate,
 )
 
 
@@ -35,6 +38,34 @@ class TestComboMetadata(unittest.TestCase):
     def test_combo_d_5d_horizon(self) -> None:
         self.assertEqual(combo_primary_horizon("D"), "spx_1w")
         self.assertEqual(horizon_display_label("spx_1w"), "5D")
+
+    def test_combo_c_min_episodes_config(self) -> None:
+        self.assertEqual(min_episodes_for_hit_rate("C"), 5)
+
+    def test_format_hit_rate_insufficient_episodes(self) -> None:
+        stats = {
+            "show_hit_rate": True,
+            "insufficient_episodes": True,
+            "n_obs_primary": 4,
+            "min_episodes_required": 5,
+        }
+        hr, avg = format_hit_rate_display(stats)
+        self.assertEqual(hr, "insufficient episodes")
+        self.assertEqual(avg, "—")
+
+    def test_combo_c_hit_rate_stats_insufficient_when_few_fires(self) -> None:
+        from unittest.mock import patch
+
+        with patch(
+            "src.macro_intelligence.engine.combo_metadata.raw_hit_rate",
+            return_value={"hit_rate": 0.0, "n_obs": 4, "avg_return": 17.8},
+        ):
+            stats = combo_hit_rate_stats("C")
+        self.assertTrue(stats.get("insufficient_episodes"))
+        self.assertIsNone(stats.get("hit_rate_primary"))
+        self.assertEqual(stats.get("n_obs_primary"), 4)
+        hr, avg = format_hit_rate_display(stats)
+        self.assertEqual(hr, "insufficient episodes")
 
 
 if __name__ == "__main__":
