@@ -107,9 +107,45 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
      - `testing/macro_th_exp/D6_smoke_tests_2026-07-17.{md,json}` (new)
      - `testing/macro_th_exp/D6_regime_analytics_2026-07-17.{md,json}` + 4 CSVs (new)
 
+---
+
+### 2026-07-19
+
+1. **Backend API endpoint health audit (prod 8506 + dev 8507)** — SUCCESSFUL
+   - Summary: Swept 97 OpenAPI routes on prod (`v1.7.3`): 55 OK, 27 skipped (JWT), 3×404 (analyst alerts/brief, overwatch stream — v1.8 only), 3 POST timeouts (expected long jobs), 0×5xx. Dashboard “Avg Fwd win rate: Could not compute” traced to Nuxt BFF `429 Too Many Requests` on `/analytics/performance` during parallel dashboard fan-out (not backend crash). Direct curl to performance returns `avg_fwd_testing_win_rate: 57.85%`.
+   - Files changed: none (investigation only)
+
+### 2026-07-18
+
+1. **Fix portfolio cluster sizes exceeding deployed equity ceiling** — SUCCESSFUL
+   - Summary: Each open position was allocated 100% of its cluster budget independently, so cluster `deployed_usd` summed to ~$1.77B while summary showed $80M. Cluster caps now use the equity ceiling (`deployed_cap_usd`, e.g. $80M at 80%) and each cluster budget is split proportionally across positions by BQ tier rank weight (MULTI-SIG +10% boost). Cluster deployed totals now sum to exactly the equity ceiling; constraint check shows "Cluster caps" OK.
+   - Files changed:
+     - `api/services/portfolio_service.py`
+     - `tests/test_api_portfolio.py`
+
+2. **AI Analyst backend — Overwatch alerts, system health, SSE** — SUCCESSFUL
+   - Summary: Implemented unified `GET /analytics/analyst/alerts` and `/brief`, admin `GET /system/health`, in-process SSE `GET /overwatch/stream`, spec-aligned degradation (60% watch/breach + 4-week trend), macro runic alerts with Analog Finder, `historical_analogs` in nightly JSON, overwatch cron scripts, API v1.8.0.
+   - Files changed:
+     - `api/schemas/analyst.py`, `api/services/analyst_service.py`, `api/services/system_health_service.py`, `api/services/overwatch_event_bus.py`, `api/services/degradation_service.py`
+     - `api/routers/analytics.py`, `api/routers/overwatch.py`, `api/routers/system.py`, `api/main.py`, `api/rate_limit.py`, `api/routers/signals.py`
+     - `src/macro_intelligence/output/json_writer.py`, `scripts/overwatch/*.py`, `scripts/install_aws_cron_dual.sh`
+     - `tests/test_api_analyst.py`, `docs/dev_to_prod_migration_todos.md`, `docs/api/openapi/mindwealth-v1.json`
+     - `docs/api/services/analyst/` (README + 5 endpoint pages), `docs/api/changelog.md`
+
 ### 2026-07-17
 
-1. **Promote Combo E BEST PRODUCTION SCORE thresholds + CFTC escalation alert** — SUCCESSFUL
+1. **B4 original-spec window fix pipeline (macro_th_exp)** — SUCCESSFUL
+   - Summary: Applied **original B4 rule** (not Rohit Jun 11 override): HY/VIX/VXTS → `rolling_3y`, WALCL → `full`. Recomputed 13,476 pctile rows (3,428 changed). **B4 pass=true** (12/12). Re-ran B/D/G sweeps on post-fix panel; refreshed `B_twy_and_percentiles.json`; D6 analytics re-slice. D production gates unchanged at n=46 / 56.5% bear @1W. G CONFIG baseline n=0 on first-crossing model.
+   - Files changed:
+     - `macro_intelligence/CONFIG.yaml` (HY/VIX/VXTS windows)
+     - `testing/macro_th_exp/run_b4_window_fix_pipeline.py` (new)
+     - `testing/macro_th_exp/B4_window_fix_pipeline_2026-07-17.{md,json}` (new)
+     - `macro_intelligence/analysis/regime_v2_experiments/B_twy_and_percentiles.json` (B4 pass refreshed)
+     - `macro_intelligence/analysis/regime_v2_experiments/threshold_sweep_v2_b4_fix/*` (new)
+     - `testing/macro_th_exp/D6_regime_analytics_2026-07-17.*` (new)
+     - `testing/macro_th_exp/D4_window_audit_rerun_2026-07-16.md` (superseded note)
+
+2. **Promote Combo E BEST PRODUCTION SCORE thresholds + CFTC escalation alert** — SUCCESSFUL
    - Summary: Rohit sign-off on E gates CAPE≥32 / NFCI≤−0.15 / CFTC≥85 / **3-of-3** (n≥10 production score). Wired into `CONFIG.yaml`. Detector requires all three legs for CONFIRMED_3_OF_3; partial → WATCH. **ESCALATION_ALERT** when CFTC FM pctile rises ≥5 pts over 4 weeks while E is active. Briefing/dominant/API cheatsheet updated. Tests: `tests/test_combo_e_thresholds.py` (5 passed with dominant suite).
    - Files changed:
      - `macro_intelligence/CONFIG.yaml`
@@ -137,6 +173,24 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
      - `testing/combo_de_thresholds/run_combo_de_followup.py`
      - `testing/combo_de_thresholds/de_threshold_config_recheck_2026-07-17.md` (new)
      - `testing/combo_de_thresholds/output_files/*` (regenerated)
+
+4. **D2 — Curve regime `post_inversion_steepening` phase flag proposal (macro_th_exp)** — SUCCESSFUL
+   - Summary: PROPOSE ONLY (no implementation). Diagnosed momentum-tier vs narrative gap on May 2025 slow grind (+51 bps spread, simple 4wk steepen −4 → NORMAL; post-trough +157 → STEEPENING; cheatsheet phase active). Proposed separate boolean phase flag alongside `curve_regime_v2`. Recommended ON/OFF (Spec A): ON after formal inversion (≥4wk &lt;0) ends + post-trough steepen ≥+15; OFF at spread ≥+80 or re-invert. Rejected literal `&lt;30 bps × 4wk` OFF (false exit Sep 2024). Backfill: **5** inversion episodes, **5** phase triggers, **165** phase-active weeks (8.65%); episode #5 ongoing since 2024-08-30. Combo A/E named legs unchanged (CURVE not a leg); phase storage-only does not alter fire logic.
+   - Files changed:
+     - `testing/macro_th_exp/D2_curve_phase_proposal_2026-07-17.md` (new)
+     - `testing/macro_th_exp/D2_curve_phase_proposal_2026-07-17.json` (new)
+     - `testing/macro_th_exp/D2_curve_phase_episodes_recommended_2026-07-17.csv` (new)
+     - `testing/macro_th_exp/D2_curve_phase_weekly_panel.csv` (new)
+     - `testing/macro_th_exp/D2_may2025_simple_vs_posttrough.csv` (new)
+     - `testing/macro_th_exp/D2_phase_off_spec_comparison_2026-07-17.json` (new)
+
+5. **D1 — Regime bucket feed for Ahil P3 (macro_th_exp)** — SUCCESSFUL
+   - Summary: Published version-stamped daily series 2018–2026 (`date`, `bucket`) with BENIGN / ADVERSE / MIXED buckets built on recalibrated CONFIG gates (D/E per D5). Point-in-time Friday replay via `get_readings_as_of` + `detect_named_combos`; Combo C sequential cancel replay (fixes live-flag leak). **2,149** daily rows: BENIGN=1,617, ADVERSE=238, MIXED=294. Series `D1_regime_bucket_v1.1_2026-07-17`. Research handoff only — no prod/API change.
+   - Files changed:
+     - `testing/macro_th_exp/run_d1_regime_bucket_feed.py` (new)
+     - `testing/macro_th_exp/D1_regime_bucket_daily_2026-07-17.csv` (new)
+     - `testing/macro_th_exp/D1_regime_bucket_fridays_2026-07-17.csv` (new)
+     - `testing/macro_th_exp/D1_regime_bucket_feed_2026-07-17.{json,md}` (new)
 
 ### 2026-07-09
 

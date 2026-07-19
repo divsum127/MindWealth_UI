@@ -1,5 +1,28 @@
 # API Changelog
 
+## v1.8.0 (2026-07-18)
+
+### Added — AI Analyst / Overwatch
+
+- `GET /analytics/analyst/alerts` — unified Overwatch panel alerts (degradation + runic)
+- `GET /analytics/analyst/brief` — dashboard analyst snippet
+- `GET /overwatch/stream` — SSE push for auto-triggered alerts
+- `GET /system/health` — admin-only pipeline/integration checks
+- Services: `analyst_service`, `system_health_service`, `overwatch_event_bus`
+- Cron: `scripts/overwatch/run_overwatch_{signals,macro,system}.py`
+- Nightly JSON: `historical_analogs` block in `runic_output.json`
+- Tests: `tests/test_api_analyst.py`
+- Docs: `docs/api/services/analyst/`
+
+### Changed
+
+- `POST /signals/check-degradation` — spec-aligned 60% watch/breach tiers + 4-week weekly trend (replaces 61% + monthly decline rule)
+
+### Notes
+
+- SSE requires single uvicorn worker (in-process event bus).
+- See `docs/dev_to_prod_migration_todos.md` for prod deploy checklist.
+
 ## v1.5.0 (2026-07-03)
 
 ### Added

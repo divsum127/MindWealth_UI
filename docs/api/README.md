@@ -1,6 +1,6 @@
 # MindWealth API Documentation
 
-**Current version:** 1.2.0
+**Current version:** 1.8.0
 
 REST API for MindWealth trading analysis services. The Streamlit UI (`app.py`) remains the primary interface; this API exposes the same domain logic for automation and future clients.
 
@@ -43,6 +43,7 @@ X-API-Key: <your-api-key>
 | Virtual Trading | Implemented | `/api/v1/virtual-trading` | [services/virtual-trading/](services/virtual-trading/) |
 | Analytics | Implemented | `/api/v1/analytics` | [services/analytics/](services/analytics/) |
 | Macro / Runic | Implemented | `/api/v1/macro` | [services/macro/](services/macro/) |
+| AI Analyst / Overwatch | Implemented | `/api/v1/analytics/analyst`, `/overwatch`, `/system` | [services/analyst/](services/analyst/) |
 
 ## Getting started
 

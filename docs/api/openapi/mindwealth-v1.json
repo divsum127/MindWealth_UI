@@ -3,7 +3,7 @@
   "info": {
     "title": "MindWealth API",
     "description": "REST API for MindWealth trading analysis services.",
-    "version": "1.7.3"
+    "version": "1.8.0"
   },
   "paths": {
     "/api/v1/auth/login": {
@@ -3892,7 +3892,7 @@
           "signals"
         ],
         "summary": "Layer 1 degradation alert check",
-        "description": "Run Layer 1 degradation analysis across all (asset/function/interval/direction) combos.\n\nTriggers fire when **any** of these conditions are met:\n\n- Live forward win rate for a combo drops below 61% **and** >=2 consecutive months of\n  successively lower FWD win rate are observed in the per-asset forward testing records.\n- A booked loss exists on any virtual trading portfolio position (realised P&L < 0).\n- A live position's MTM exceeds -10%.\n\nOn trigger, loss pattern is classified as asset-specific, function degradation,\nor a combo issue, and a recommendation is generated.",
+        "description": "Run Layer 1 degradation analysis across all (asset/function/interval/direction) combos.\n\nTriggers fire when **any** of these conditions are met:\n\n- FWD win rate declining toward 60% while still >= 60% (DEGRADATION WATCH).\n- FWD win rate below 60% (DEGRADATION BREACH).\n- A booked loss exists on any virtual trading portfolio position (realised P&L < 0).\n- A live position's MTM exceeds -10%.\n\nOn trigger, loss pattern is classified as asset-specific, function degradation,\nor a combo issue, and a recommendation is generated.",
         "operationId": "check_signal_degradation",
         "parameters": [
           {
@@ -4575,6 +4575,165 @@
                   "type": "object",
                   "additionalProperties": true,
                   "title": "Response Get Portfolio Ytd"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analytics/analyst/alerts": {
+      "get": {
+        "tags": [
+          "analytics"
+        ],
+        "summary": "AI Analyst Overwatch panel alerts",
+        "operationId": "get_analyst_alerts",
+        "parameters": [
+          {
+            "name": "include_macro",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Include Macro"
+            }
+          },
+          {
+            "name": "include_degradation",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Include Degradation"
+            }
+          },
+          {
+            "name": "floor_pct",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "maximum": 100,
+              "minimum": 0,
+              "default": 60.0,
+              "title": "Floor Pct"
+            }
+          },
+          {
+            "name": "gap_threshold_pp",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "default": 10.0,
+              "title": "Gap Threshold Pp"
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "ISO datetime \u2014 only alerts after",
+              "title": "Since"
+            },
+            "description": "ISO datetime \u2014 only alerts after"
+          },
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalystAlertsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analytics/analyst/brief": {
+      "get": {
+        "tags": [
+          "analytics"
+        ],
+        "summary": "Dashboard AI analyst snippet",
+        "operationId": "get_analyst_brief",
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalystBriefResponse"
                 }
               }
             }
@@ -6114,6 +6273,123 @@
         }
       }
     },
+    "/api/v1/overwatch/stream": {
+      "get": {
+        "tags": [
+          "overwatch"
+        ],
+        "summary": "SSE stream for Overwatch auto-triggered alerts",
+        "operationId": "overwatch_stream",
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/system/health": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "AI Analyst system health checks (admin)",
+        "operationId": "get_system_health",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          },
+          {
+            "name": "mw_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Mw Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemHealthResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/health": {
       "get": {
         "tags": [
@@ -6414,6 +6690,129 @@
           "status"
         ],
         "title": "AdminUserSummary"
+      },
+      "AnalystAlertsMeta": {
+        "properties": {
+          "data_updated_at": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Updated At"
+          },
+          "floor_pct": {
+            "type": "number",
+            "title": "Floor Pct",
+            "default": 60.0
+          },
+          "gap_threshold_pp": {
+            "type": "number",
+            "title": "Gap Threshold Pp",
+            "default": 10.0
+          },
+          "next_signal_check": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Signal Check"
+          },
+          "next_macro_scan": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Macro Scan"
+          },
+          "stale_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stale Reason"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "title": "AnalystAlertsMeta"
+      },
+      "AnalystAlertsResponse": {
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/AnalystAlertsMeta"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "panel_alerts": {
+            "items": {
+              "$ref": "#/components/schemas/OverwatchPanelAlert"
+            },
+            "type": "array",
+            "title": "Panel Alerts"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "meta",
+          "count",
+          "panel_alerts"
+        ],
+        "title": "AnalystAlertsResponse"
+      },
+      "AnalystBriefResponse": {
+        "properties": {
+          "snippet": {
+            "type": "string",
+            "title": "Snippet"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "narrative",
+              "template",
+              "empty"
+            ],
+            "title": "Source",
+            "default": "empty"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "snippet"
+        ],
+        "title": "AnalystBriefResponse"
       },
       "AnalyzeHoldingsRequest": {
         "properties": {
@@ -6760,6 +7159,111 @@
         ],
         "title": "HealthResponse"
       },
+      "HistoricalAnalogInstance": {
+        "properties": {
+          "date": {
+            "type": "string",
+            "title": "Date"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "default": ""
+          },
+          "spx_3m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Spx 3M"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "date"
+        ],
+        "title": "HistoricalAnalogInstance"
+      },
+      "HistoricalAnalogSummary": {
+        "properties": {
+          "median_3m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Median 3M"
+          },
+          "worst": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Worst"
+          },
+          "best": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Best"
+          },
+          "hit_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hit Rate"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "title": "HistoricalAnalogSummary"
+      },
+      "HistoricalAnalogsBlock": {
+        "properties": {
+          "combo": {
+            "type": "string",
+            "title": "Combo"
+          },
+          "instances": {
+            "items": {
+              "$ref": "#/components/schemas/HistoricalAnalogInstance"
+            },
+            "type": "array",
+            "title": "Instances"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/HistoricalAnalogSummary"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "combo"
+        ],
+        "title": "HistoricalAnalogsBlock"
+      },
       "HoldingItem": {
         "properties": {
           "symbol": {
@@ -6955,6 +7459,246 @@
           "tactical_plus"
         ],
         "title": "OverlaySummaryResponse"
+      },
+      "OverwatchPanelAlert": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "degradation",
+              "runic",
+              "system"
+            ],
+            "title": "Type"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "html": {
+            "type": "string",
+            "title": "Html"
+          },
+          "recommendation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recommendation"
+          },
+          "fwd_trend": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fwd Trend"
+          },
+          "footer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Footer"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "border_color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Border Color"
+          },
+          "severity": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "watch",
+                  "breach"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Severity"
+          },
+          "signal": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OverwatchPanelSignalDetail"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "macro": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OverwatchPanelMacroDetail"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "id",
+          "type",
+          "label",
+          "html",
+          "created_at"
+        ],
+        "title": "OverwatchPanelAlert"
+      },
+      "OverwatchPanelMacroDetail": {
+        "properties": {
+          "combo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Combo"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "narrative": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Narrative"
+          },
+          "brave_fearful": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brave Fearful"
+          },
+          "variant": {
+            "type": "string",
+            "enum": [
+              "ssi",
+              "dominant"
+            ],
+            "title": "Variant",
+            "default": "dominant"
+          },
+          "historical_analogs": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HistoricalAnalogsBlock"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "title": "OverwatchPanelMacroDetail"
+      },
+      "OverwatchPanelSignalDetail": {
+        "properties": {
+          "strategy": {
+            "type": "string",
+            "title": "Strategy"
+          },
+          "interval": {
+            "type": "string",
+            "title": "Interval"
+          },
+          "signal_type": {
+            "type": "string",
+            "title": "Signal Type"
+          },
+          "fwd_wr": {
+            "type": "number",
+            "title": "Fwd Wr"
+          },
+          "backtest_wr": {
+            "type": "number",
+            "title": "Backtest Wr"
+          },
+          "gap": {
+            "type": "number",
+            "title": "Gap"
+          },
+          "pattern": {
+            "type": "string",
+            "title": "Pattern"
+          },
+          "above_floor": {
+            "type": "boolean",
+            "title": "Above Floor"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "strategy",
+          "interval",
+          "signal_type",
+          "fwd_wr",
+          "backtest_wr",
+          "gap",
+          "pattern",
+          "above_floor"
+        ],
+        "title": "OverwatchPanelSignalDetail"
       },
       "PresetLaunchRequest": {
         "properties": {
@@ -7347,6 +8091,83 @@
           "reasoning"
         ],
         "title": "SignalTypesPreviewResponse"
+      },
+      "SystemHealthCheck": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "warn",
+              "fail"
+            ],
+            "title": "Status"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          },
+          "last_success_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Success At"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "name",
+          "status",
+          "detail"
+        ],
+        "title": "SystemHealthCheck"
+      },
+      "SystemHealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "warn",
+              "fail"
+            ],
+            "title": "Status"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "checked_at": {
+            "type": "string",
+            "title": "Checked At"
+          },
+          "checks": {
+            "items": {
+              "$ref": "#/components/schemas/SystemHealthCheck"
+            },
+            "type": "array",
+            "title": "Checks"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "status",
+          "version",
+          "checked_at",
+          "checks"
+        ],
+        "title": "SystemHealthResponse"
       },
       "TickerOverridesRequest": {
         "properties": {

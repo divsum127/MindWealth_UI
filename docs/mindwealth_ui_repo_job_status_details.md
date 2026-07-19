@@ -13,6 +13,52 @@ This file captures minute-level implementation context for each completed task:
 
 ---
 
+### 2026-07-18 — Portfolio cluster sizing fix
+
+**Assumptions:** Cluster `budget_pct` values (summing to 100%) apply to the **equity ceiling** (`deployed_cap_usd`), not full $100M notional — matches user expectation that all cluster sizes are fractions of deployed capital (e.g. $80M at 80% ceiling).
+
+**Implementation:** Two-pass sizing — pass 1 scores positions and buckets by cluster; pass 2 splits each cluster's `budget_usd` by `_cluster_rank_weight` (BQ `adj_share` + 0.10 MULTI-SIG boost). Last eligible position in each cluster absorbs rounding remainder so `deployed_usd == budget_usd` exactly.
+
+**Deferred:** If a cluster has zero eligible positions, its budget stays undeployed (cash rises). Empty-cluster redistribution not implemented.
+
+**Edge cases not handled:** Duplicate ticker rows in same cluster each get a proportional slice (by design — one row per signal). Global scale when total cluster budgets exceed ceiling is unnecessary now because budgets are defined on ceiling directly.
+
+**Caveats:** `budget_pct` label still reads as "% of portfolio" in UI mock but dollar cap is % of equity ceiling; confirm with product if display should say "% of deployed" instead.
+
+---
+
+### 2026-07-18 — AI Analyst backend (Overwatch)
+
+**Assumptions:** In-process SSE bus requires single uvicorn worker. Degradation uses weekly FWD win-rate from forward_testing CSVs. System health Claude/Tavily probes run live when keys configured.
+
+**Deferred:** Nuxt BFF migration to call new endpoints directly (separate `MindwealthUI_Vue` repo). Redis pub/sub SSE upgrade if multi-worker needed. Google Sheets sync marker file not yet written by conviction pipeline.
+
+**Edge cases:** India CSV check returns fail when path missing. Portfolio booked-loss alerts run pattern analysis against full forward_testing frame (may be empty). `scan_and_publish_new_alerts` dedup is fingerprint-based, not TTL.
+
+**Decisions:** Spec 60% watch/breach tiers (not legacy 61%+monthly decline). `historical_analogs` written for dominant combo only in nightly JSON. System health admin-gated via JWT `require_admin`.
+
+**Prod impact:** New cron lines via `install_aws_cron_dual.sh`; runtime `overwatch_store/alert_state.json`; confirm API systemd `workers=1`.
+
+---
+
+**Context:** Chat **d2**; report section codes **A2** (curve_regime), **F2/F2a/F4** (inversion + steepening rules). Momentum `STEEPENING` tier is week-to-week; slow post-2022 grind can read **NORMAL** on simple 4wk steepen while narrative keeps post-inversion steepening active.
+
+**Proposed field:** `post_inversion_steepening` boolean alongside `curve_regime_v2` — does **not** replace momentum tier.
+
+**Recommended ON:** First Friday after formal inversion (T10Y2Y &lt;0 for ≥4wk) ends, where spread ≥0 and post-trough `steepen_4wk_bps` ≥+15.
+
+**Recommended OFF (Spec A):** spread ≥+80 bps **or** new formal inversion (≥4wk &lt;0). Rejected: spread &lt;+30 for 4wk alone (false OFF Oct 2024; kills May 2025 phase).
+
+**Backfill (1990→present):** 5 inversion episodes, 5 phase ON, 165 phase-active weeks (8.65%). Episode #5 (2022 trough −106 bps) ON 2024-08-30, ongoing 99 weeks at cut. May 2025-05-23: phase ON, post-trough STEEPENING, simple-tier NORMAL.
+
+**Combo A/E:** CURVE not a named leg (A=NFCI/HY/WALCL/CNH; E=CAPE/NFCI/CFTC). Phase flag storage-only → **no leg behaviour change**. Calendar overlap: A 3/174 fires, E 115/514 fires on phase-active Fridays (coincidence, not causal).
+
+**Deferred:** Implementation in `regime_v2_shadow.py` / briefing / API until Rohit sign-off; optional tertiary OFF (spread &lt;30 + neg simple steepen ×8wk).
+
+**Prod impact:** None — research artifacts only under `testing/macro_th_exp/`.
+
+---
+
 ### 2026-07-17 — Formal D/E threshold sweep recheck vs live CONFIG
 
 **Assumptions:** Same episode definition as original study (Friday crossing + 5d cooldown); live CONFIG is analysis case #4 for both D and E; followup production_score still valid ranking.
@@ -1926,6 +1972,28 @@ Spread **survives** recalibration; magnitude **wider** than legacy at both horiz
 
 ---
 
+---
+
+## 2026-07-17 — B4 original-spec window fix pipeline
+
+**Authoritative rule:** Original consolidated-plan B4 (structural → `full`: CAPE, NFCI, WALCL, CURVE, DXY; all others → `rolling_3y`). **Rejected** Rohit 2026-06-11 override (HY/VIX/VXTS full, WALCL rolling).
+
+**CONFIG changes:** HY, VIX, VXTS `pctile_window: full` → `rolling_3y`. WALCL unchanged at `full`.
+
+**Recompute:** 7,802 dates; 13,476 row updates; 3,428 pctile/tier changes in `daily_readings`.
+
+**B4 audit:** pass=true; 0 mismatches. `B_twy_and_percentiles.json` refreshed (25,083 dual-pctile rows).
+
+**Sweeps (post-fix panel):** `threshold_sweep_v2_b4_fix/` — B n=7 @100% 3M (VIX≥25); D prod gates n=46 / 56.5% bear @1W; G CONFIG baseline n=0.
+
+**D6 re-slice:** `D6_regime_analytics_2026-07-17.*`
+
+**Feedback backlog:** cheatsheet BLOCKED (no reference); liquidity PARTIAL (D6 CSVs); geo/regime_score PENDING.
+
+**Prod impact:** CONFIG window change affects nightly percentile ranks for HY/VIX/VXTS on deploy; no combo gate threshold change in this task.
+
+---
+
 ## 2026-07-17 — D6 smoke tests + regime analytics re-slice
 
 **Smoke (`run_d6_smoke_tests.py`):** 8/8 PASS on dev DB — Combo C n=3 at 6M → insufficient episodes; briefing rows; `macro_service.get_combo_detail('C')`; FM fed slice has no PIVOTING bucket.
@@ -1988,6 +2056,31 @@ Spread **survives** recalibration; magnitude **wider** than legacy at both horiz
 
 ---
 
+## 2026-07-17 — D1 regime bucket feed (Ahil P3)
+
+**Context:** Ahil P3 needs headline stats per regime. Divyanshu owns combo classification history. Sequence after D5 (fed-cycle re-slice on recalibrated D/E) to freeze ADVERSE definition. Report PDF section codes: **B2** = dual percentile storage; **F4** = steepening-of-inversion grid (not in bucket feed); **D5** = recalibrated D/E bear-hit validation.
+
+**Implementation:** `run_d1_regime_bucket_feed.py` replays 446 Fridays (2018-01-01 → 2026-07-17):
+- Gates from `macro_intelligence/CONFIG.yaml` (D: VXTS≥1.18/CFTC≥95/VIX≤13 2-of-3; E: CAPE≥32/NFCI≤−0.15/CFTC≥85 3-of-3)
+- Dominant = CONFIG PRIORITY (C>B>F>E>D>G>A)
+- **ADVERSE:** dominant C/D/E ACTIVE, G ACTIVE, A TIGHT_MONEY
+- **MIXED:** conflicting ACTIVE bullish+bearish, or A CONTESTED
+- **BENIGN:** else (incl. WATCH-only bearish legs)
+- Combo C: sequential 4-Friday cancel replay (not live `combo_c_cancel.active`)
+- Daily calendar forward-fill from last Friday
+
+**v1.1 fixes:** v1.0 had C always-active (live DB flag) → 0 BENIGN Fridays; WATCH→MIXED over-classification.
+
+**Output:** 2,149 daily rows — BENIGN 1,617 / ADVERSE 238 / MIXED 294. Fridays: 335 / 49 / 62.
+
+**Assumptions:** F episode persistence uses `combo_fires` ≤ as_of (not fully re-simulated). B/C/F/G gates = CONFIG (not `combo_all_thresholds` alternate sweeps).
+
+**Deferred:** API endpoint `GET /macro/combos/regime-bucket-history`; full combo_fires backfill replay; empirical MIXED threshold tuning.
+
+**Prod impact:** None — CSV/JSON handoff under `testing/macro_th_exp/`.
+
+---
+
 ## 2026-07-14 — Test 5 Regime Sharpe uplift (Ahil / Michele demo)
 
 **Goal:** Show whether 5 Runic regime dimensions improve risk-adjusted returns on EW SPY/TLT/GLD/HYG.
@@ -2015,3 +2108,39 @@ Spread **survives** recalibration; magnitude **wider** than legacy at both horiz
 - EUR=X excluded per spec
 
 **Prod impact:** None (testing artifacts only).
+
+---
+
+## 2026-07-19 — Backend API endpoint health audit
+
+**Goal:** User reported dashboard “Avg Fwd win rate: Could not compute” / blank win-rate chart; verify whether MindWealth API backend is failing.
+
+**Servers tested:**
+- Prod API: `http://127.0.0.1:8506` — `mindwealth-api.service`, **v1.7.3**
+- Dev API: `http://127.0.0.1:8507` — git clone reload, **v1.8.0**
+- Nuxt BFF: `http://127.0.0.1:8512` — `mindwealth-ui.service`
+
+**Prod sweep (97 routes, API key auth):**
+- 55× HTTP 200
+- 27× skipped (require JWT bearer — auth/chat/admin)
+- 3× HTTP 404 — not deployed on prod yet: `GET /analytics/analyst/alerts`, `GET /analytics/analyst/brief`, `GET /overwatch/stream` (added in chatbot-dev v1.8.0)
+- 3× client timeout at 10s — `POST /conviction/pipeline/daily`, `POST /macro/run-nightly`, `POST /signals/check-degradation` (long-running; not 5xx)
+- 0× HTTP 5xx
+
+**Dashboard-specific:**
+- `GET /api/v1/analytics/performance` returns 200 with `avg_fwd_testing_win_rate: 57.85`, `avg_win_rate: 83.61`, 69 records when called directly.
+- Nuxt `loadDashboard()` calls `loadPerformance()` in parallel with ~7 other backend calls. Journal shows bursts of `429 Too Many Requests` on performance, shortlist, sigma, runic/nightly, overlay-file (2026-07-19 ~17:27 UTC).
+- When outstanding signals load but performance fetch returns null (429), BFF still returns partial dashboard: KPI shows `UNAVAILABLE_COMPUTE` (“Could not compute”) and `awaiting API aggregate`; win-rate chart omitted.
+- Rate limit config (`config/rate_limits.yaml`): `apikey.read = 60/10seconds;600/minute`. Nuxt uses single `NUXT_API_KEY` for all BFF→API calls from localhost.
+
+**Assumptions:**
+- Screenshot API badge “v1.7.3” = prod `:8506`, not dev `:8507`.
+- Endpoint sweep at 17:27 may have contributed to transient 429s; parallel dashboard simulation (10 calls) succeeded after cooldown.
+
+**Deferred / recommendations:**
+- Raise `apikey.read` burst limit or exempt `127.0.0.1` BFF from apikey bucket.
+- Add BFF-side caching/dedup for dashboard bundle.
+- Deploy chatbot-dev → chatbot-prod (v1.8.0) for analyst/overwatch routes.
+- Frontend `PerformanceApiResponse` does not map `avg_fwd_testing_win_rate` (uses `avg_win_rate` = Latest Performance section); separate from “Could not compute” but affects label accuracy.
+
+**Prod impact:** Investigation only; no git changes. v1.8 deploy would add 3 routes currently 404 on prod.
