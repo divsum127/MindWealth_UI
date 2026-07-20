@@ -13,6 +13,18 @@ This file captures minute-level implementation context for each completed task:
 
 ---
 
+### 2026-07-20 — AI Analyst backend hardening
+
+**Assumptions:** First degradation request may take ~20s (parquet build); cron `run_overwatch_signals.py` pre-warms cache. Claude copy disabled unless `ANALYST_USE_CLAUDE_COPY=true`.
+
+**Performance:** `overwatch_store/fwd_trades.parquet` + `degradation_result_cache.json` invalidated by manifest (csv count + max mtime + trade store mtimes).
+
+**Health markers:** Tavily recorded on successful `WebSearchAgent` search; Sheets marker written on conviction daily run; fallback to conviction daily dir mtime.
+
+**Deferred:** Redis SSE; Nuxt BFF direct wiring; economic surprise alert type.
+
+---
+
 ### 2026-07-18 — Portfolio cluster sizing fix
 
 **Assumptions:** Cluster `budget_pct` values (summing to 100%) apply to the **equity ceiling** (`deployed_cap_usd`), not full $100M notional — matches user expectation that all cluster sizes are fractions of deployed capital (e.g. $80M at 80% ceiling).
@@ -2144,3 +2156,18 @@ Spread **survives** recalibration; magnitude **wider** than legacy at both horiz
 - Frontend `PerformanceApiResponse` does not map `avg_fwd_testing_win_rate` (uses `avg_win_rate` = Latest Performance section); separate from “Could not compute” but affects label accuracy.
 
 **Prod impact:** Investigation only; no git changes. v1.8 deploy would add 3 routes currently 404 on prod.
+
+---
+
+## 2026-07-19 — Fix dashboard 429 + v1.8 prod deploy
+
+**Changes:**
+- `config/rate_limits.yaml`: `apikey.read` `60/10seconds` → `150/10seconds;1200/minute`
+- API v1.8.0: analyst alerts/brief, overwatch SSE, system health, degradation spec alignment
+- MindwealthUI_Vue: GET 30s cache + in-flight dedup; `avg_fwd_testing_win_rate` mapping; removed `AVG_FORWARD_WR_OVERRIDE` from `resolveWrAggregates()`
+
+**Deploy:** Local merge `chatbot-dev`→`chatbot-prod`; prod clone fast-forward; `prod-pull-and-restart.sh`; `systemctl restart mindwealth-ui`. Prod health `v1.8.0`.
+
+**Push:** `git push origin` failed (no GitHub creds on host). Remote not updated; prod updated via local fetch.
+
+**Smoke:** `/api/v1/health` ok; `/analytics/performance` 200; `/analytics/analyst/brief` 200.

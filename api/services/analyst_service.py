@@ -6,11 +6,12 @@ import re
 from datetime import datetime, timezone
 from typing import Any
 
+from api.services import analyst_copy_service as copy_svc
 from api.services import degradation_service as degrade_svc
 from api.services import macro_service as macro_svc
+from api.services import meta_service as meta_svc
 from api.services import system_health_service as health_svc
-from src.config_paths import DATA_FETCH_DATETIME_JSON
-from src.utils.helpers import get_data_fetch_datetime
+from api.services.meta_service import market_close_data_updated_at, resolve_report_date
 
 
 def _utc_now_iso() -> str:
@@ -94,6 +95,20 @@ def _degradation_to_panel_alert(raw: dict[str, Any], floor_pct: float) -> dict[s
     if "<br>" not in html and "\n" in html:
         html = html.replace("\n", "<br>")
 
+    html = copy_svc.generate_alert_copy(
+        "degradation",
+        {
+            "function": function,
+            "direction": direction,
+            "interval": interval,
+            "asset": asset,
+            "fwd_rate": fwd_rate,
+            "severity": severity,
+            "pattern": raw.get("pattern"),
+        },
+        html,
+    )
+
     return {
         "id": alert_id,
         "type": "degradation",
@@ -163,11 +178,24 @@ def _build_runic_alerts() -> list[dict[str, Any]]:
                 f"Dominant <span class=\"wa\">Combo {combo_id}</span>: {reason}"
             )
 
+        full_html = html_body + analog_html
+        full_html = copy_svc.generate_alert_copy(
+            "runic",
+            {
+                "combo": combo_id,
+                "reason": reason,
+                "narrative": narr_text,
+                "brave_fearful": brave,
+                "historical_analogs": historical,
+            },
+            full_html,
+        )
+
         alerts.append({
             "id": f"runic-{_slug(str(combo_id))}",
             "type": "runic",
             "label": f"AI ANALYST · OVERWATCH AUTO-TRIGGERED · RUNIC SIGNAL · COMBO {combo_id}",
-            "html": html_body + analog_html,
+            "html": full_html,
             "footer": "TAVILY ACTIVE · INTERNAL DATA PRIORITY · ONCE PER PAGE VISIT",
             "created_at": _utc_now_iso(),
             "border_color": "#C5A059",
@@ -185,13 +213,8 @@ def _build_runic_alerts() -> list[dict[str, Any]]:
 
 
 def _meta_block(floor_pct: float, gap_threshold_pp: float, stale_reason: str | None = None) -> dict[str, Any]:
-    fetch_info = get_data_fetch_datetime(DATA_FETCH_DATETIME_JSON)
-    data_updated_at = None
-    if fetch_info:
-        data_updated_at = {
-            "datetime": fetch_info.get("datetime"),
-            "timezone": fetch_info.get("timezone", "IST"),
-        }
+    report_date = resolve_report_date()
+    data_updated_at = market_close_data_updated_at(report_date) if report_date else None
     return {
         "data_updated_at": data_updated_at,
         "floor_pct": floor_pct,

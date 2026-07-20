@@ -483,7 +483,10 @@ None — CONFIG change ships with git merge.
 | `scripts/overwatch/run_overwatch_signals.py` |
 | `scripts/overwatch/run_overwatch_macro.py` |
 | `scripts/overwatch/run_overwatch_system.py` |
-| `tests/test_api_analyst.py` |
+| `api/services/degradation_cache.py` | Parquet + result cache |
+| `api/services/integration_health_store.py` | Tavily/Sheets markers |
+| `api/services/analyst_copy_service.py` | Optional Claude copy |
+| `tests/test_degradation_cache.py` | Cache perf tests |
 
 **Modified files:**
 
@@ -498,7 +501,7 @@ None — CONFIG change ships with git merge.
 | `scripts/install_aws_cron_dual.sh` | Overwatch cron lines |
 | `.gitignore` | `overwatch_store/` |
 | `docs/api/openapi/mindwealth-v1.json` | OpenAPI export |
-| `docs/api/services/analyst/` | AI Analyst endpoint docs |
+| `docs/mindwealth-api-docs/` | v1.8.0 analyst docs + OpenAPI sync |
 | `docs/api/changelog.md` | v1.8.0 entry |
 
 ### Prod runtime `[PROD-ACTION]`

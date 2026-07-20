@@ -359,6 +359,8 @@ class WebSearchAgent:
             if days is not None:
                 kwargs["days"] = days
                 logger.info(f"WebSearchAgent: recency filter → days={days} for query '{query[:60]}'")
+            import time
+            start = time.perf_counter()
             response = self._tavily.search(**kwargs)
             results = []
             for item in response.get("results", []):
@@ -374,6 +376,15 @@ class WebSearchAgent:
                     )
                 )
             logger.info(f"WebSearchAgent: '{query}' → {len(results)} results")
+            try:
+                from api.services.integration_health_store import record_tavily_search
+                record_tavily_search(
+                    latency_ms=int((time.perf_counter() - start) * 1000),
+                    success=True,
+                    query=query,
+                )
+            except Exception:
+                pass
             return results
         except Exception as exc:
             logger.error(f"WebSearchAgent: Tavily search error for '{query}': {exc}")

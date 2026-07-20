@@ -1,6 +1,6 @@
 # API Changelog
 
-## v1.8.0 (2026-07-18)
+## v1.8.0 (2026-07-20)
 
 ### Added — AI Analyst / Overwatch
 
@@ -8,15 +8,16 @@
 - `GET /analytics/analyst/brief` — dashboard analyst snippet
 - `GET /overwatch/stream` — SSE push for auto-triggered alerts
 - `GET /system/health` — admin-only pipeline/integration checks
-- Services: `analyst_service`, `system_health_service`, `overwatch_event_bus`
-- Cron: `scripts/overwatch/run_overwatch_{signals,macro,system}.py`
-- Nightly JSON: `historical_analogs` block in `runic_output.json`
-- Tests: `tests/test_api_analyst.py`
+- Services: `analyst_service`, `system_health_service`, `overwatch_event_bus`, `analyst_copy_service`, `integration_health_store`
+- Degradation parquet + result cache (`overwatch_store/`) — cached reads &lt;1s
+- Optional Claude alert copy: `ANALYST_USE_CLAUDE_COPY=true`
+- Cron: `scripts/overwatch/run_overwatch_signals.py` pre-warms cache
 - Docs: `docs/api/services/analyst/`
 
 ### Changed
 
-- `POST /signals/check-degradation` — spec-aligned 60% watch/breach tiers + 4-week weekly trend (replaces 61% + monthly decline rule)
+- `POST /signals/check-degradation` — spec-aligned 60% watch/breach tiers + weekly trend; disk cache
+- System health Tavily/Sheets use integration markers from chatbot + conviction daily
 
 ### Notes
 

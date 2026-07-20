@@ -11,10 +11,16 @@ if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
 from api.services.analyst_service import scan_and_publish_new_alerts  # noqa: E402
+from api.services.degradation_service import warm_degradation_cache  # noqa: E402
 
 
 def main() -> int:
     store = _ROOT / "overwatch_store" / "alert_state.json"
+    warm = warm_degradation_cache()
+    print(
+        f"overwatch_signals: cache warmed "
+        f"(checked_combos={warm.get('checked_combos')}, alerts={warm.get('alert_count')})"
+    )
     new_alerts = scan_and_publish_new_alerts(
         state_path=str(store),
         floor_pct=60.0,

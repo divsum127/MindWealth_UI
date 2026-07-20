@@ -12,7 +12,7 @@ from slowapi.errors import RateLimitExceeded
 from api.dependencies import optional_api_key, require_api_key
 from api.rate_limit import RateLimitMiddleware, limiter, rate_limit_exceeded_handler
 from api.jobs.runner import shutdown_executor
-from api.routers import analytics, activity, auth, chatbot, conviction, macro, monitored_trades, overwatch, portfolio, signals, system, virtual_trading
+from api.routers import analytics, activity, auth, chatbot, conviction, macro, meta, monitored_trades, overwatch, portfolio, signals, system, virtual_trading
 from api.schemas.conviction import HealthResponse
 from api.services import conviction_service as svc
 from src.config_paths import CONVICTION_STORE_DIR
@@ -67,6 +67,7 @@ app.include_router(macro.router, prefix=API_PREFIX)
 app.include_router(portfolio.router, prefix=API_PREFIX)
 app.include_router(overwatch.router, prefix=API_PREFIX)
 app.include_router(system.router, prefix=API_PREFIX)
+app.include_router(meta.router, prefix=API_PREFIX)
 
 
 @app.get(

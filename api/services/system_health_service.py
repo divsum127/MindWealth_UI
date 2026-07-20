@@ -9,8 +9,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Literal
 
+from api.services import integration_health_store as ihs
 from src.config_paths import (
-    BASE_DIR,
     DATA_FETCH_DATETIME_JSON,
     MACRO_INTEL_JSON_PATH,
     MINDWEALTH_ROOT,
@@ -126,9 +126,13 @@ def _check_claude_api() -> dict[str, Any]:
 
 
 def _check_tavily() -> dict[str, Any]:
+    marker = ihs.tavily_health_info()
+    live_probe = os.getenv("SYSTEM_HEALTH_LIVE_PROBE", "false").strip().lower() in {"1", "true", "yes"}
+    if marker.get("last_success_at") and not live_probe:
+        return marker
     api_key = os.getenv("TAVILY_API_KEY")
     if not api_key:
-        return {
+        return marker if marker.get("last_success_at") else {
             "name": "Tavily",
             "status": "warn",
             "detail": "TAVILY_API_KEY not configured",
@@ -140,6 +144,7 @@ def _check_tavily() -> dict[str, Any]:
         start = time.perf_counter()
         TavilyClient(api_key=api_key).search(query="SPX", max_results=1)
         ms = int((time.perf_counter() - start) * 1000)
+        ihs.record_tavily_search(latency_ms=ms, success=True, query="SPX health probe")
         return {
             "name": "Tavily",
             "status": "ok",
@@ -151,27 +156,12 @@ def _check_tavily() -> dict[str, Any]:
             "name": "Tavily",
             "status": "fail",
             "detail": str(exc)[:120],
-            "last_success_at": None,
+            "last_success_at": marker.get("last_success_at"),
         }
 
 
 def _check_google_sheets_sync() -> dict[str, Any]:
-    sync_marker = BASE_DIR / "conviction_store" / ".last_sheets_sync"
-    age = _file_age_hours(sync_marker)
-    if sync_marker.exists():
-        status = _status_from_age(age, 48)
-        return {
-            "name": "Google Sheets sync",
-            "status": status,
-            "detail": _detail_from_age(age),
-            "last_success_at": _iso(datetime.fromtimestamp(sync_marker.stat().st_mtime, tz=timezone.utc)),
-        }
-    return {
-        "name": "Google Sheets sync",
-        "status": "warn",
-        "detail": "sync marker not tracked",
-        "last_success_at": None,
-    }
+    return ihs.sheets_health_info()
 
 
 def _check_macro_agent() -> dict[str, Any]:
