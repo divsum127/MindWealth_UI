@@ -38,6 +38,7 @@ conviction_store/
 chatbot/data/
 chatbot/history/
 chatbot/jobs/
+overwatch_store/
 macro_intelligence/logs/
 macro_intelligence/output/
 macro_intelligence/data/ssi/ssi.db

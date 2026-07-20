@@ -9,7 +9,7 @@ GIT_PY="${GIT_ROOT}/.venv/bin/python"
 PROD_PY="${PROD_ROOT}/.venv/bin/python"
 export TZ=America/New_York
 
-MACRO_MARKERS='run_ssi_daily\.py|run_macro_friday_pull\.py|run_macro_nightly\.py|run_emission_vectors_daily\.py'
+MACRO_MARKERS='run_ssi_daily\.py|run_macro_friday_pull\.py|run_macro_nightly\.py|run_emission_vectors_daily\.py|run_overwatch_'
 EMAIL_MARKER='emailscript\.sh'
 
 for ROOT in "$GIT_ROOT" "$PROD_ROOT"; do
@@ -37,6 +37,9 @@ CRON_FILE=$(mktemp)
     echo "30 17 * * 5 cd ${ROOT} && ${PY} scripts/run_macro_friday_pull.py >> macro_intelligence/logs/friday_pull.log 2>&1"
     echo "0 18 * * 1-5 cd ${ROOT} && ${PY} scripts/run_macro_nightly.py >> macro_intelligence/logs/nightly.log 2>&1"
     echo "15 18 * * 1-5 cd ${ROOT} && ${PY} scripts/run_emission_vectors_daily.py >> macro_intelligence/logs/emission_vectors_daily.log 2>&1"
+    echo "30 18 * * 1-5 cd ${ROOT} && ${PY} scripts/overwatch/run_overwatch_macro.py >> macro_intelligence/logs/overwatch_macro.log 2>&1"
+    echo "0 19 * * 1-5 cd ${ROOT} && ${PY} scripts/overwatch/run_overwatch_signals.py >> macro_intelligence/logs/overwatch_signals.log 2>&1"
+    echo "*/15 * * * * cd ${ROOT} && ${PY} scripts/overwatch/run_overwatch_system.py >> macro_intelligence/logs/overwatch_system.log 2>&1"
   done
 } > "$CRON_FILE"
 

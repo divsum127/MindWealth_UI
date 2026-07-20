@@ -438,6 +438,14 @@ def _adjusted_share(base_share: float, flags: list[str], combo_c_active: bool, d
     return share
 
 
+def _cluster_rank_weight(adj_share: float, flags: list[str]) -> float:
+    """Ranking weight for splitting a cluster budget across open positions."""
+    weight = adj_share
+    if "MULTI-SIG" in flags:
+        weight = min(1.0, weight + 0.10)
+    return weight
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Ceiling computation
 # ─────────────────────────────────────────────────────────────────────────────
@@ -675,14 +683,18 @@ def get_portfolio_sizer(scenario: str = "normal") -> dict[str, Any]:
             "id": c["id"],
             "label": c["label"],
             "budget_pct": scaled_pct,
-            "budget_usd": round(notional * scaled_pct / 100),
+            # Cluster caps are fractions of the equity ceiling (deployed cap), not full notional.
+            "budget_usd": round(deployed_cap_usd * scaled_pct / 100),
             "deployed_usd": 0,
             "deployed_pct": 0.0,
             "max_pct": scaled_pct,
             "positions": [],
         }
 
-    sized_rows: list[dict[str, Any]] = []
+    # Pass 1 — score each position and bucket by cluster (no USD yet).
+    pending_by_cluster: dict[str, list[dict[str, Any]]] = {
+        cid: [] for cid in cluster_map
+    }
     for row in all_rows:
         ticker = str(row.get("ticker") or row.get("Symbol") or "").upper()
         business_type = str(row.get("business_type") or "")
@@ -720,70 +732,126 @@ def get_portfolio_sizer(scenario: str = "normal") -> dict[str, Any]:
         adj_share = _adjusted_share(base_share, flags, combo_c, direction)
 
         blocked = adj_share == 0.0 or tier_label == "BLOCKED"
-        allocation_usd = 0 if blocked else round(cluster["budget_usd"] * adj_share)
-        allocation_pct = round(allocation_usd / notional * 100, 4) if notional else 0.0
+        rank_weight = 0.0 if blocked else _cluster_rank_weight(adj_share, flags)
 
-        win_rate_val = _safe_float(row.get("Backtested Win Rate [%]"))
-
-        # P&L enrichment
-        entry_price = _safe_float(row.get("Entry Price"))
-        today_price = _safe_float(row.get("Today price"))
-        pnl_pct_raw = str(row.get("Realised/Unrealised Profit") or "").replace("%", "").strip()
-        pnl_pct = _safe_float(pnl_pct_raw)
-
-        shares: float | None = None
-        market_value_usd: float | None = None
-        pnl_usd: float | None = None
-        if allocation_usd and entry_price and entry_price > 0:
-            shares = round(allocation_usd / entry_price, 4)
-        if shares is not None and today_price is not None:
-            market_value_usd = round(shares * today_price, 2)
-        if market_value_usd is not None and allocation_usd:
-            pnl_usd = round(market_value_usd - allocation_usd, 2)
-
-        sized_row: dict[str, Any] = {
+        pending_by_cluster[cluster_id].append({
+            "row": row,
             "ticker": ticker,
-            "name": name_map.get(ticker, ticker),
-            "investment_type": cluster["label"],
+            "cluster": cluster,
             "cluster_id": cluster_id,
-            "function": row.get("Function") or row.get("function"),
-            "interval": _normalize_interval(row.get("Interval") or row.get("interval")),
-            "direction": direction,
-            "entry_date": row.get("Entry Date"),
-            "entry_price": entry_price,
-            "today_price": today_price,
-            "shares": shares,
-            "market_value_usd": market_value_usd,
-            "pnl_usd": pnl_usd,
-            "pnl_pct": pnl_pct,
-            "bq_score": bq,
-            "conviction_score": _safe_float(row.get("conviction_score")),
-            "verdict": verdict or None,
+            "bq": bq,
+            "verdict": verdict,
             "not_applicable": not_applicable,
             "unscored": unscored,
-            "size_tier": f"{tier_label} {int(adj_share*100)}%" if not blocked else "BLOCKED",
-            "allocation_usd": allocation_usd,
-            "allocation_pct": allocation_pct,
+            "tier_label": tier_label,
+            "adj_share": adj_share,
             "flags": flags,
+            "direction": direction,
             "blocked": blocked,
-            "blocked_reason": (
-                "YIELD TRAP" if "YIELD TRAP" in flags
-                else "No conviction score — run conviction engine" if unscored and blocked
-                else "No conviction score — conservative REDUCED tier" if unscored
-                else "conviction_score < 0" if not_applicable and blocked
-                else "BQ < 2" if tier_label == "BLOCKED" and not not_applicable
-                else None
-            ),
-            "win_rate": win_rate_val,
-            "backtested_win_rate_pct": win_rate_val,
-            "win_rate_label": "Backtested Win Rate",
-        }
+            "rank_weight": rank_weight,
+        })
 
-        if not blocked:
-            cluster["deployed_usd"] += allocation_usd
+    # Pass 2 — split each cluster budget proportionally by ranking weight.
+    sized_rows: list[dict[str, Any]] = []
+    for cluster_id, pending in pending_by_cluster.items():
+        cluster = cluster_map[cluster_id]
+        eligible_indices = [
+            i for i, p in enumerate(pending)
+            if not p["blocked"] and p["rank_weight"] > 0
+        ]
+        total_weight = sum(pending[i]["rank_weight"] for i in eligible_indices)
+        allocation_by_idx: dict[int, int] = {}
+        remaining = cluster["budget_usd"]
+        for j, idx in enumerate(eligible_indices):
+            if j == len(eligible_indices) - 1:
+                allocation_by_idx[idx] = remaining
+            else:
+                share_usd = round(
+                    cluster["budget_usd"] * pending[idx]["rank_weight"] / total_weight
+                )
+                allocation_by_idx[idx] = share_usd
+                remaining -= share_usd
 
-        cluster["positions"].append(sized_row)
-        sized_rows.append(sized_row)
+        for i, p in enumerate(pending):
+            row = p["row"]
+            ticker = p["ticker"]
+            blocked = p["blocked"]
+            adj_share = p["adj_share"]
+            flags = p["flags"]
+            tier_label = p["tier_label"]
+            not_applicable = p["not_applicable"]
+            unscored = p["unscored"]
+            direction = p["direction"]
+            bq = p["bq"]
+            verdict = p["verdict"]
+
+            if blocked or total_weight <= 0:
+                allocation_usd = 0
+            else:
+                allocation_usd = allocation_by_idx.get(i, 0)
+            allocation_pct = round(allocation_usd / notional * 100, 4) if notional else 0.0
+
+            win_rate_val = _safe_float(row.get("Backtested Win Rate [%]"))
+
+            # P&L enrichment
+            entry_price = _safe_float(row.get("Entry Price"))
+            today_price = _safe_float(row.get("Today price"))
+            pnl_pct_raw = str(row.get("Realised/Unrealised Profit") or "").replace("%", "").strip()
+            pnl_pct = _safe_float(pnl_pct_raw)
+
+            shares: float | None = None
+            market_value_usd: float | None = None
+            pnl_usd: float | None = None
+            if allocation_usd and entry_price and entry_price > 0:
+                shares = round(allocation_usd / entry_price, 4)
+            if shares is not None and today_price is not None:
+                market_value_usd = round(shares * today_price, 2)
+            if market_value_usd is not None and allocation_usd:
+                pnl_usd = round(market_value_usd - allocation_usd, 2)
+
+            sized_row: dict[str, Any] = {
+                "ticker": ticker,
+                "name": name_map.get(ticker, ticker),
+                "investment_type": cluster["label"],
+                "cluster_id": cluster_id,
+                "function": row.get("Function") or row.get("function"),
+                "interval": _normalize_interval(row.get("Interval") or row.get("interval")),
+                "direction": direction,
+                "entry_date": row.get("Entry Date"),
+                "entry_price": entry_price,
+                "today_price": today_price,
+                "shares": shares,
+                "market_value_usd": market_value_usd,
+                "pnl_usd": pnl_usd,
+                "pnl_pct": pnl_pct,
+                "bq_score": bq,
+                "conviction_score": _safe_float(row.get("conviction_score")),
+                "verdict": verdict or None,
+                "not_applicable": not_applicable,
+                "unscored": unscored,
+                "size_tier": f"{tier_label} {int(adj_share*100)}%" if not blocked else "BLOCKED",
+                "allocation_usd": allocation_usd,
+                "allocation_pct": allocation_pct,
+                "flags": flags,
+                "blocked": blocked,
+                "blocked_reason": (
+                    "YIELD TRAP" if "YIELD TRAP" in flags
+                    else "No conviction score — run conviction engine" if unscored and blocked
+                    else "No conviction score — conservative REDUCED tier" if unscored
+                    else "conviction_score < 0" if not_applicable and blocked
+                    else "BQ < 2" if tier_label == "BLOCKED" and not not_applicable
+                    else None
+                ),
+                "win_rate": win_rate_val,
+                "backtested_win_rate_pct": win_rate_val,
+                "win_rate_label": "Backtested Win Rate",
+            }
+
+            if not blocked:
+                cluster["deployed_usd"] += allocation_usd
+
+            cluster["positions"].append(sized_row)
+            sized_rows.append(sized_row)
 
     # Compute deployed_pct per cluster
     for c in cluster_map.values():
@@ -791,7 +859,6 @@ def get_portfolio_sizer(scenario: str = "normal") -> dict[str, Any]:
 
     # Summary
     total_deployed = sum(c["deployed_usd"] for c in cluster_map.values())
-    total_deployed = min(total_deployed, deployed_cap_usd)  # cap at ceiling
     cash_usd = notional - total_deployed
     idle_income = round(cash_usd * IDLE_CASH_YIELD_PCT / 100, 0)
     open_count = sum(1 for r in sized_rows if not r["blocked"])

@@ -196,6 +196,11 @@ def run_daily_conviction_pipeline(
         manifest_path = snapshot_dir / "manifest.json"
         manifest_path.write_text(json.dumps(manifest, indent=2, default=str) + "\n", encoding="utf-8")
         (snapshot_dir / "daily_report.txt").write_text(daily_report_text + "\n", encoding="utf-8")
+        try:
+            from api.services.integration_health_store import record_sheets_sync
+            record_sheets_sync(source="conviction_daily")
+        except Exception:
+            pass
 
     status = "completed"
     if overlay_errors:

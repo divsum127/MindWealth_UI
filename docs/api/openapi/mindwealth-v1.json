@@ -6390,6 +6390,55 @@
         }
       }
     },
+    "/api/v1/meta": {
+      "get": {
+        "tags": [
+          "meta"
+        ],
+        "summary": "Get Meta",
+        "operationId": "get_meta",
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetaResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/health": {
       "get": {
         "tags": [
@@ -7067,6 +7116,34 @@
         "type": "object",
         "title": "DailyPipelineRequest"
       },
+      "DataUpdatedAt": {
+        "properties": {
+          "date": {
+            "type": "string",
+            "title": "Date"
+          },
+          "time": {
+            "type": "string",
+            "title": "Time"
+          },
+          "datetime": {
+            "type": "string",
+            "title": "Datetime"
+          },
+          "timezone": {
+            "type": "string",
+            "title": "Timezone"
+          }
+        },
+        "type": "object",
+        "required": [
+          "date",
+          "time",
+          "datetime",
+          "timezone"
+        ],
+        "title": "DataUpdatedAt"
+      },
       "FlagExchangeRequest": {
         "properties": {
           "message_index": {
@@ -7366,6 +7443,47 @@
           "role"
         ],
         "title": "LoginResponse"
+      },
+      "MetaResponse": {
+        "properties": {
+          "data_updated_at": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DataUpdatedAt"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "market_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Market Label"
+          },
+          "source_files": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Files"
+          }
+        },
+        "type": "object",
+        "title": "MetaResponse"
       },
       "NightlyRunRequest": {
         "properties": {

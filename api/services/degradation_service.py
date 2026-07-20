@@ -1,13 +1,4 @@
-"""Signal degradation detection service — Layer 1 Degradation Alerts (AI Analyst spec).
-
-Trigger conditions:
-  1. FWD win rate >= 60% with no declining trend → no alert.
-  2. FWD win rate declining toward 60% while still >= 60% → DEGRADATION WATCH.
-  3. FWD win rate below 60% → DEGRADATION BREACH.
-  4. Any booked loss on a portfolio position → immediate breach flag.
-  5. Any live MTM below -10% → immediate breach flag.
-  6. On loss events → pattern analysis (asset / function / combo).
-"""
+"""Signal degradation detection service — Layer 1 Degradation Alerts (AI Analyst spec)."""
 
 from __future__ import annotations
 
@@ -16,11 +7,8 @@ from typing import Any, Literal
 
 import pandas as pd
 
-from src.config_paths import (
-    MINDWEALTH_TRADE_STORE,
-    VIRTUAL_TRADING_LONG_CSV,
-    VIRTUAL_TRADING_SHORT_CSV,
-)
+from api.services import degradation_cache as deg_cache
+from src.config_paths import VIRTUAL_TRADING_LONG_CSV, VIRTUAL_TRADING_SHORT_CSV
 
 FWD_WR_FLOOR = 60.0
 _MTM_LOSS_THRESHOLD = -10.0
@@ -29,17 +17,6 @@ _BORDER_COLOR = "#ff4d6d"
 _LABEL_WATCH = "AI ANALYST · OVERWATCH AUTO-TRIGGERED · DEGRADATION WATCH"
 _LABEL_BREACH = "AI ANALYST · OVERWATCH AUTO-TRIGGERED · DEGRADATION BREACH"
 _LABEL_PORTFOLIO = "AI ANALYST · OVERWATCH AUTO-TRIGGERED · DEGRADATION BREACH"
-
-_FWD_TESTING_ROOT = MINDWEALTH_TRADE_STORE / "forward_testing"
-
-
-def _read_csv_safe(path: Path) -> pd.DataFrame:
-    if not path.exists() or path.stat().st_size == 0:
-        return pd.DataFrame()
-    try:
-        return pd.read_csv(path)
-    except Exception:
-        return pd.DataFrame()
 
 
 def _parse_profit(val: Any) -> float | None:
@@ -55,35 +32,6 @@ def _parse_profit(val: Any) -> float | None:
         return float(s)
     except ValueError:
         return None
-
-
-def _load_all_fwd_trades() -> pd.DataFrame:
-    root = _FWD_TESTING_ROOT
-    if not root.exists():
-        return pd.DataFrame()
-
-    frames: list[pd.DataFrame] = []
-    for fn_dir in root.iterdir():
-        if not fn_dir.is_dir():
-            continue
-        function = fn_dir.name.replace("_", " ")
-        for asset_dir in fn_dir.iterdir():
-            if not asset_dir.is_dir():
-                continue
-            symbol = asset_dir.name
-            for csv_file in asset_dir.glob("*.csv"):
-                df = _read_csv_safe(csv_file)
-                if df.empty:
-                    continue
-                if "Function" not in df.columns:
-                    df["Function"] = function
-                if "Symbol" not in df.columns:
-                    df["Symbol"] = symbol
-                frames.append(df)
-
-    if not frames:
-        return pd.DataFrame()
-    return pd.concat(frames, ignore_index=True)
 
 
 def _weekly_win_rates(group_df: pd.DataFrame) -> list[float]:
@@ -147,7 +95,6 @@ def _monthly_win_rates(group_df: pd.DataFrame) -> list[float]:
 
 
 def _is_declining_toward_floor(rates: list[float], floor: float = FWD_WR_FLOOR) -> bool:
-    """True when recent readings show a decline while still at or above floor."""
     if len(rates) < 2:
         return False
     current = rates[-1]
@@ -169,6 +116,8 @@ def _last_n_weekly(rates: list[float], n: int = 4) -> list[float]:
 
 def _classify_loss_pattern(symbol: str, function: str, full_df: pd.DataFrame) -> dict[str, str]:
     def _loss_count(mask_df: pd.DataFrame) -> int:
+        if mask_df.empty or "Profit [%]" not in mask_df.columns:
+            return 0
         profits = mask_df["Profit [%]"].apply(_parse_profit)
         return int((profits < 0).sum())
 
@@ -218,7 +167,16 @@ def _format_degradation_message(
     )
 
 
-def _check_portfolio_triggers() -> list[dict[str, Any]]:
+def _read_csv_safe(path: Path) -> pd.DataFrame:
+    if not path.exists() or path.stat().st_size == 0:
+        return pd.DataFrame()
+    try:
+        return pd.read_csv(path)
+    except Exception:
+        return pd.DataFrame()
+
+
+def _check_portfolio_triggers(fwd_df: pd.DataFrame) -> list[dict[str, Any]]:
     alerts: list[dict[str, Any]] = []
     sources = [("long", VIRTUAL_TRADING_LONG_CSV), ("short", VIRTUAL_TRADING_SHORT_CSV)]
 
@@ -242,7 +200,7 @@ def _check_portfolio_triggers() -> list[dict[str, Any]]:
             symbol = str(row.get("Symbol", ""))
             function = str(row.get("Function", ""))
             interval = str(row.get("Interval", ""))
-            pattern_info = _classify_loss_pattern(symbol, function, _load_all_fwd_trades())
+            pattern_info = _classify_loss_pattern(symbol, function, fwd_df)
             alerts.append({
                 "trigger_type": "booked_loss",
                 "severity": "breach",
@@ -290,16 +248,16 @@ def _check_portfolio_triggers() -> list[dict[str, Any]]:
     return alerts
 
 
-def check_degradation(floor_pct: float = FWD_WR_FLOOR) -> dict[str, Any]:
-    """Run full Layer 1 degradation analysis per AI Analyst spec."""
-    fwd_df = _load_all_fwd_trades()
+def _compute_degradation(fwd_df: pd.DataFrame, floor_pct: float) -> dict[str, Any]:
     signal_alerts: list[dict[str, Any]] = []
     checked_combos = 0
 
     if not fwd_df.empty and "Profit [%]" in fwd_df.columns:
         if "Signal" in fwd_df.columns:
+            fwd_df = fwd_df.copy()
             fwd_df["_direction"] = fwd_df["Signal"].astype(str).str.strip().str.title()
         else:
+            fwd_df = fwd_df.copy()
             fwd_df["_direction"] = "Long"
 
         fwd_df["Function"] = fwd_df["Function"].astype(str).str.strip()
@@ -370,7 +328,7 @@ def check_degradation(floor_pct: float = FWD_WR_FLOOR) -> dict[str, Any]:
                 "border_color": _BORDER_COLOR,
             })
 
-    portfolio_alerts = _check_portfolio_triggers()
+    portfolio_alerts = _check_portfolio_triggers(fwd_df)
 
     return {
         "triggered": bool(signal_alerts or portfolio_alerts),
@@ -382,3 +340,25 @@ def check_degradation(floor_pct: float = FWD_WR_FLOOR) -> dict[str, Any]:
         "label": _LABEL_BREACH if (signal_alerts or portfolio_alerts) else _LABEL_WATCH,
         "border_color": _BORDER_COLOR,
     }
+
+
+def check_degradation(floor_pct: float = FWD_WR_FLOOR, *, use_cache: bool = True) -> dict[str, Any]:
+    """Run Layer 1 degradation analysis with parquet + result disk cache."""
+    if use_cache:
+        cached = deg_cache.load_cached_degradation_result()
+        if cached is not None:
+            return cached
+
+    fwd_df = deg_cache.load_fwd_trades_df()
+    result = _compute_degradation(fwd_df, floor_pct)
+    if use_cache:
+        deg_cache.save_degradation_result(result)
+    return result
+
+
+def warm_degradation_cache(floor_pct: float = FWD_WR_FLOOR) -> dict[str, Any]:
+    """Force rebuild — used by cron pre-warm."""
+    deg_cache.load_fwd_trades_df(force_rebuild=True)
+    result = _compute_degradation(deg_cache.load_fwd_trades_df(), floor_pct)
+    deg_cache.save_degradation_result(result)
+    return result

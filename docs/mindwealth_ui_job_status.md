@@ -109,11 +109,22 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
 
 ---
 
+### 2026-07-20
+
+1. **AI Analyst backend hardening — cache, docs, health markers, Claude copy** — SUCCESSFUL
+   - Summary: Degradation parquet+result cache (`overwatch_store/`) — cached API reads ~0.1–0.25s (was >240s timeout). Fixed portfolio trigger re-loading 1990 CSVs per row. Added optional Claude alert copy (`ANALYST_USE_CLAUDE_COPY`), Tavily/Sheets integration health markers, synced `mindwealth-api-docs` to v1.8.0. Live curl: brief 37ms, alerts w/ degradation 248ms, check-degradation 142ms. Tests: 8/8 pass.
+   - Files changed: `api/services/degradation_cache.py`, `degradation_service.py`, `integration_health_store.py`, `analyst_copy_service.py`, `system_health_service.py`, `analyst_service.py`, `chatbot/agents/web_search_agent.py`, `src/conviction_engine/daily_run.py`, `tests/test_degradation_cache.py`, `docs/mindwealth-api-docs/`, `scripts/overwatch/run_overwatch_signals.py`
+
 ### 2026-07-19
 
 1. **Backend API endpoint health audit (prod 8506 + dev 8507)** — SUCCESSFUL
    - Summary: Swept 97 OpenAPI routes on prod (`v1.7.3`): 55 OK, 27 skipped (JWT), 3×404 (analyst alerts/brief, overwatch stream — v1.8 only), 3 POST timeouts (expected long jobs), 0×5xx. Dashboard “Avg Fwd win rate: Could not compute” traced to Nuxt BFF `429 Too Many Requests` on `/analytics/performance` during parallel dashboard fan-out (not backend crash). Direct curl to performance returns `avg_fwd_testing_win_rate: 57.85%`.
    - Files changed: none (investigation only)
+
+2. **Fix dashboard 429 + v1.8 analyst routes deploy to prod** — SUCCESSFUL
+   - Summary: Raised `apikey.read` burst in `config/rate_limits.yaml` (60→150/10s). Shipped API v1.8.0 (analyst alerts/brief, overwatch SSE, system health). Nuxt BFF: GET cache/dedup, real `avg_fwd_testing_win_rate`, removed hardcoded WR override. Merged `chatbot-dev`→`chatbot-prod` locally; prod clone fast-forwarded; restarted `mindwealth-api` + `mindwealth-ui`. Prod health now `v1.8.0`; analyst/performance routes 200.
+   - Files changed: `config/rate_limits.yaml`, `api/main.py`, `api/routers/{analytics,overwatch,system,signals}.py`, `api/services/{analyst,degradation,overwatch_event_bus,system_health}_*.py`, `api/schemas/analyst.py`, `tests/test_api_analyst.py`, `scripts/overwatch/*`; MindwealthUI_Vue: `mindwealth-client.ts`, `mindwealth-data.ts`, `performance-aggregates.ts`, `unavailable-data.ts`
+   - Note: `git push origin` failed (no GitHub credentials on host); deploy done via local fetch into prod clone.
 
 ### 2026-07-18
 
