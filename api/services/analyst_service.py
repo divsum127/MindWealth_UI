@@ -2,16 +2,22 @@
 
 from __future__ import annotations
 
+import json
 import re
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, Literal
 
 from api.services import analyst_copy_service as copy_svc
 from api.services import degradation_service as degrade_svc
 from api.services import macro_service as macro_svc
 from api.services import meta_service as meta_svc
+from api.services import reports_service as reports_svc
 from api.services import system_health_service as health_svc
+from api.services.macro_override import compute_macro_override
 from api.services.meta_service import market_close_data_updated_at, resolve_report_date
+
+PanelChannel = Literal["signals", "macro", "system"]
+PanelTabId = Literal["all", "signals", "macro", "system"]
 
 
 def _utc_now_iso() -> str:
@@ -20,6 +26,20 @@ def _utc_now_iso() -> str:
 
 def _slug(value: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
+
+
+def _channel_for_type(alert_type: str) -> PanelChannel:
+    if alert_type == "degradation":
+        return "signals"
+    if alert_type == "system":
+        return "system"
+    return "macro"
+
+
+def _with_channel(alert: dict[str, Any]) -> dict[str, Any]:
+    alert = dict(alert)
+    alert["channel"] = _channel_for_type(str(alert.get("type", "runic")))
+    return alert
 
 
 def _build_historical_analogs(combo_id: str) -> dict[str, Any] | None:
@@ -112,6 +132,7 @@ def _degradation_to_panel_alert(raw: dict[str, Any], floor_pct: float) -> dict[s
     return {
         "id": alert_id,
         "type": "degradation",
+        "channel": "signals",
         "label": label,
         "html": html,
         "recommendation": raw.get("recommendation"),
@@ -194,6 +215,7 @@ def _build_runic_alerts() -> list[dict[str, Any]]:
         alerts.append({
             "id": f"runic-{_slug(str(combo_id))}",
             "type": "runic",
+            "channel": "macro",
             "label": f"AI ANALYST · OVERWATCH AUTO-TRIGGERED · RUNIC SIGNAL · COMBO {combo_id}",
             "html": full_html,
             "footer": "TAVILY ACTIVE · INTERNAL DATA PRIORITY · ONCE PER PAGE VISIT",
@@ -212,7 +234,200 @@ def _build_runic_alerts() -> list[dict[str, Any]]:
     return alerts
 
 
-def _meta_block(floor_pct: float, gap_threshold_pp: float, stale_reason: str | None = None) -> dict[str, Any]:
+def _normalize_combo_id(entry: Any) -> str | None:
+    if isinstance(entry, str):
+        return entry.strip().upper() or None
+    if isinstance(entry, dict):
+        raw = entry.get("combo") or entry.get("id")
+        return str(raw).strip().upper() if raw else None
+    return None
+
+
+def _build_watch_combo_alerts(
+    *,
+    status: dict[str, Any],
+    narrative: dict[str, Any],
+    active_ids: set[str],
+) -> list[dict[str, Any]]:
+    alerts: list[dict[str, Any]] = []
+    watch = status.get("watch_combos") or []
+    for entry in watch:
+        combo_id = _normalize_combo_id(entry)
+        if not combo_id or combo_id in active_ids:
+            continue
+        reason = f"Combo {combo_id} on WATCH — legs building toward activation."
+        html = (
+            f"<span class=\"wa\">Combo {combo_id}</span> is on WATCH. "
+            "Review Signals page for leg status."
+        )
+        alerts.append({
+            "id": f"runic-watch-{_slug(combo_id)}",
+            "type": "runic_watch",
+            "channel": "macro",
+            "label": f"AI ANALYST · OVERWATCH AUTO-TRIGGERED · RUNIC WATCH · COMBO {combo_id}",
+            "html": html,
+            "footer": "TAVILY ACTIVE · INTERNAL DATA PRIORITY · ONCE PER PAGE VISIT",
+            "created_at": _utc_now_iso(),
+            "border_color": "#C5A059",
+            "macro": {
+                "combo": combo_id,
+                "reason": reason,
+                "narrative": narrative.get("narrative"),
+                "brave_fearful": status.get("brave_fearful") or narrative.get("brave_fearful"),
+                "variant": "watch",
+            },
+        })
+    return alerts
+
+
+def _build_regime_warning_alerts(runic: dict[str, Any]) -> list[dict[str, Any]]:
+    override = compute_macro_override(runic)
+    if not override.get("active"):
+        return []
+    reasons = override.get("reasons") or []
+    regime = runic.get("regime") or {}
+    html_lines = [
+        "The Overwatch agent flagged macro conditions not fully reflected in the VIX ceiling:",
+        "",
+        *[f"• {r}" for r in reasons],
+        "",
+        "These do not automatically reduce the equity ceiling — consider reviewing the Stress scenario.",
+    ]
+    return [{
+        "id": "regime-macro-override",
+        "type": "regime_warning",
+        "channel": "macro",
+        "label": "AI ANALYST · OVERWATCH · MACRO OVERRIDE",
+        "html": "<br>".join(html_lines),
+        "created_at": _utc_now_iso(),
+        "border_color": "#C5A059",
+        "macro": {
+            "combo": runic.get("dominant_signal"),
+            "reason": "; ".join(reasons),
+            "narrative": runic.get("narrative"),
+            "brave_fearful": runic.get("brave_fearful"),
+            "variant": "regime_warning",
+        },
+        "warning": {"reasons": reasons, "regime": regime},
+    }]
+
+
+def _build_persistence_alerts(persistence: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    alerts: list[dict[str, Any]] = []
+    for item in persistence:
+        if not isinstance(item, dict):
+            continue
+        name = item.get("signal_name") or item.get("name") or "Persistence"
+        var_id = item.get("var_id") or item.get("variable") or ""
+        weeks = item.get("weeks_count")
+        trigger = item.get("trigger_value")
+        html = (
+            f"Persistence signal <b>{name}</b>"
+            f"{f' ({var_id})' if var_id else ''}"
+            f"{f' — {weeks} weeks' if weeks else ''}"
+            f"{f', value {trigger}' if trigger is not None else ''}."
+        )
+        alerts.append({
+            "id": f"persistence-{_slug(f'{name}-{var_id}')}",
+            "type": "persistence",
+            "channel": "macro",
+            "label": "AI ANALYST · OVERWATCH · PERSISTENCE SIGNAL",
+            "html": html,
+            "created_at": _utc_now_iso(),
+            "border_color": "#C5A059",
+            "macro": {"combo": None, "reason": name, "variant": "persistence"},
+            "warning": {"signal_name": str(name), "var_id": str(var_id) if var_id else None},
+        })
+    return alerts
+
+
+def _build_sentiment_warning_alerts(ssi: dict[str, Any]) -> list[dict[str, Any]]:
+    level = ssi.get("ssi_level")
+    if level is None:
+        return []
+    posture = ssi.get("posture") or "NEUTRAL"
+    long_active = bool(ssi.get("long_signal_active"))
+    short_active = bool(ssi.get("short_signal_active"))
+    if not long_active and not short_active:
+        layer2 = (ssi.get("layer2_status") or "").upper()
+        if layer2 not in {"CONFIRMED", "EXTREME"}:
+            return []
+
+    if short_active:
+        headline = f"SSI {level:.2f} — Fear / risk-off zone ({posture})"
+        note = "Elevated short-vol / defensive posture per SSI layer rules."
+    elif long_active:
+        headline = f"SSI {level:.2f} — Complacency / risk-on zone ({posture})"
+        note = "Long-vol / complacency signal active per SSI layer rules."
+    else:
+        headline = f"SSI layer-2 status: {ssi.get('layer2_status')}"
+        note = "Layer-2 sentiment confirmation active."
+
+    return [{
+        "id": "sentiment-ssi-warning",
+        "type": "sentiment_warning",
+        "channel": "macro",
+        "label": "AI ANALYST · OVERWATCH · SENTIMENT WARNING",
+        "html": f"{headline}<br>{note}",
+        "created_at": _utc_now_iso(),
+        "border_color": "#C5A059",
+        "macro": {"variant": "sentiment", "reason": headline},
+        "warning": {"ssi_level": level, "ssi_posture": posture},
+    }]
+
+
+def _load_runic_safe() -> dict[str, Any]:
+    try:
+        return reports_svc.load_runic_nightly()
+    except Exception:
+        return {}
+
+
+def _compute_tab_badges(panel_alerts: list[dict[str, Any]], dominant: str | None) -> dict[str, Any]:
+    signal_count = sum(1 for a in panel_alerts if a.get("channel") == "signals")
+    macro_count = sum(1 for a in panel_alerts if a.get("channel") == "macro")
+    system_count = sum(1 for a in panel_alerts if a.get("channel") == "system")
+    dom = dominant or next(
+        (a.get("macro", {}).get("combo") for a in panel_alerts if a.get("type") == "runic"),
+        None,
+    )
+    macro_badge = (
+        f"Overwatch · Combo {dom} firing"
+        if dom
+        else f"Overwatch · {macro_count} macro alert{'s' if macro_count != 1 else ''}"
+    )
+    return {
+        "all": {"count": len(panel_alerts), "badge": "Overwatch · auto-triggered"},
+        "signals": {
+            "count": signal_count,
+            "badge": (
+                f"Overwatch · {signal_count} watch active"
+                if signal_count
+                else "Overwatch · no signal watches"
+            ),
+        },
+        "macro": {"count": macro_count, "badge": macro_badge},
+        "system": {"count": system_count, "badge": "System monitor · admin only"},
+        "active_combo": dom,
+    }
+
+
+def _filter_by_channel(
+    panel_alerts: list[dict[str, Any]],
+    channel: PanelTabId | None,
+) -> list[dict[str, Any]]:
+    if not channel or channel == "all":
+        return panel_alerts
+    return [a for a in panel_alerts if a.get("channel") == channel]
+
+
+def _meta_block(
+    floor_pct: float,
+    gap_threshold_pp: float,
+    stale_reason: str | None = None,
+    *,
+    tabs: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     report_date = resolve_report_date()
     data_updated_at = market_close_data_updated_at(report_date) if report_date else None
     return {
@@ -222,6 +437,7 @@ def _meta_block(floor_pct: float, gap_threshold_pp: float, stale_reason: str | N
         "next_signal_check": None,
         "next_macro_scan": None,
         "stale_reason": stale_reason,
+        "tabs": tabs,
     }
 
 
@@ -230,12 +446,19 @@ def get_panel_alerts(
     include_macro: bool = True,
     include_degradation: bool = True,
     include_system: bool = False,
+    include_regime_warnings: bool = True,
+    include_sentiment_warnings: bool = True,
+    include_persistence: bool = True,
+    include_watch_combos: bool = True,
+    channel: PanelTabId | None = None,
     floor_pct: float = 60.0,
     gap_threshold_pp: float = 10.0,
     since: str | None = None,
 ) -> dict[str, Any]:
     panel_alerts: list[dict[str, Any]] = []
     stale_reason: str | None = None
+    dominant: str | None = None
+    runic = _load_runic_safe()
 
     if include_degradation:
         try:
@@ -248,26 +471,122 @@ def get_panel_alerts(
     if include_macro:
         try:
             panel_alerts.extend(_build_runic_alerts())
+            status = macro_svc.get_status_bar()
+            narrative = macro_svc.get_narrative()
+            dominant = status.get("dominant_signal")
+            active_ids = {str(c).upper() for c in (status.get("active_combos") or []) if c}
+            if include_watch_combos:
+                panel_alerts.extend(
+                    _build_watch_combo_alerts(
+                        status=status,
+                        narrative=narrative,
+                        active_ids=active_ids,
+                    )
+                )
+            if include_regime_warnings and runic:
+                panel_alerts.extend(_build_regime_warning_alerts(runic))
+            if include_persistence:
+                persistence = runic.get("persistence_signals") or []
+                if not persistence:
+                    try:
+                        persistence = macro_svc.get_persistence_signals().get("persistence_signals", [])
+                    except Exception:
+                        persistence = []
+                panel_alerts.extend(_build_persistence_alerts(persistence))
         except Exception as exc:
             stale_reason = (stale_reason or "") + f"; macro_unavailable: {exc}"
 
+    if include_sentiment_warnings:
+        try:
+            panel_alerts.extend(_build_sentiment_warning_alerts(macro_svc.get_ssi_summary()))
+        except Exception as exc:
+            stale_reason = (stale_reason or "") + f"; sentiment_unavailable: {exc}"
+
     if include_system:
-        from api.main import API_VERSION  # noqa: PLC0415 — lazy to avoid import cycle at module load
+        from api.main import API_VERSION  # noqa: PLC0415
 
         health = health_svc.run_system_health(API_VERSION)
-        panel_alerts.extend(
-            health_svc.system_checks_to_panel_alerts(health["checks"], health["checked_at"])
-        )
+        for alert in health_svc.system_checks_to_panel_alerts(health["checks"], health["checked_at"]):
+            panel_alerts.append(_with_channel(alert))
+
+    panel_alerts = [_with_channel(a) if "channel" not in a else a for a in panel_alerts]
 
     if since:
         panel_alerts = [a for a in panel_alerts if a.get("created_at", "") > since]
 
     panel_alerts.sort(key=lambda a: a.get("created_at", ""), reverse=True)
+    tabs = _compute_tab_badges(panel_alerts, dominant)
+    filtered = _filter_by_channel(panel_alerts, channel)
 
     return {
-        "meta": _meta_block(floor_pct, gap_threshold_pp, stale_reason),
-        "count": len(panel_alerts),
-        "panel_alerts": panel_alerts,
+        "meta": _meta_block(floor_pct, gap_threshold_pp, stale_reason, tabs=tabs),
+        "count": len(filtered),
+        "panel_alerts": filtered,
+    }
+
+
+def get_panel_context(
+    *,
+    include_system: bool = False,
+    channel: PanelTabId | None = None,
+    floor_pct: float = 60.0,
+) -> dict[str, Any]:
+    """Cross-page Overwatch bundle: alerts, tab badges, regime, sentiment, chat wiring."""
+    alerts_payload = get_panel_alerts(
+        include_system=include_system,
+        channel=channel,
+        floor_pct=floor_pct,
+    )
+    runic = _load_runic_safe()
+    regime_block: dict[str, Any] = {}
+    try:
+        regime_block = macro_svc.get_regime()
+    except Exception:
+        if runic:
+            regime_block = {
+                "date": runic.get("date"),
+                "regime": runic.get("regime", {}),
+                "brave_fearful": runic.get("brave_fearful"),
+                "brave_fearful_display": runic.get("brave_fearful_display"),
+                "dominant_signal": runic.get("dominant_signal"),
+                "dominant_reason": runic.get("dominant_reason"),
+            }
+
+    sentiment_block: dict[str, Any] = {}
+    try:
+        sentiment_block = macro_svc.get_ssi_summary()
+    except Exception:
+        pass
+
+    override = compute_macro_override(runic) if runic else {"active": False, "reasons": []}
+
+    return {
+        **alerts_payload,
+        "regime": {
+            "date": regime_block.get("date"),
+            "regime": regime_block.get("regime", {}),
+            "brave_fearful": regime_block.get("brave_fearful"),
+            "brave_fearful_display": regime_block.get("brave_fearful_display"),
+            "dominant_signal": regime_block.get("dominant_signal"),
+            "dominant_reason": regime_block.get("dominant_reason"),
+            "macro_override": override,
+        },
+        "sentiment": {
+            "ssi_level": sentiment_block.get("ssi_level"),
+            "ssi_percentile_5y": sentiment_block.get("ssi_percentile_5y"),
+            "ssi_multiplier": sentiment_block.get("ssi_multiplier"),
+            "layer2_status": sentiment_block.get("layer2_status"),
+            "posture": sentiment_block.get("posture"),
+            "long_signal_active": sentiment_block.get("long_signal_active", False),
+            "short_signal_active": sentiment_block.get("short_signal_active", False),
+            "date": sentiment_block.get("date"),
+        },
+        "chat": {
+            "create_session_path": "/api/v1/chatbot/sessions",
+            "messages_path_template": "/api/v1/chatbot/sessions/{session_id}/messages",
+            "history_path_template": "/api/v1/chatbot/sessions/{session_id}/history",
+            "supports_page_context": True,
+        },
     }
 
 

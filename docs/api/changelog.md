@@ -1,5 +1,13 @@
 # API Changelog
 
+## v1.8.1 (2026-07-20)
+
+### Overwatch panel completeness
+
+- `GET /analytics/analyst/context` — cross-page bundle (alerts, tab badges, regime, sentiment, chat)
+- Extended `GET /analytics/analyst/alerts` — channel filter, regime/sentiment/persistence/watch warnings, `include_system`
+- Chat `page_context` on `POST /chatbot/sessions/{id}/messages`
+
 ## v1.8.0 (2026-07-20)
 
 ### Added — AI Analyst / Overwatch

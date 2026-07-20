@@ -602,21 +602,9 @@ def _combo_c_active(runic: dict[str, Any]) -> bool:
 
 
 def _macro_override(runic: dict[str, Any]) -> dict[str, Any]:
-    regime = runic.get("regime", {})
-    reasons = []
-    # Actual key is 'val_regime' in runic_output.json
-    val = (regime.get("val_regime") or regime.get("valuation") or "").upper()
-    if "EXTREME" in val:
-        cape_val = None
-        for v in runic.get("variables_dashboard", []):
-            if isinstance(v, dict) and v.get("variable") == "CAPE":
-                cape_val = v.get("current")
-        reasons.append(f"Valuation extreme: CAPE {cape_val:.1f}×" if cape_val else "Valuation extreme")
-    # Actual key is 'geo_overlay' in runic_output.json
-    geo = (regime.get("geo_overlay") or regime.get("geo") or "").upper()
-    if geo and geo != "NEUTRAL":
-        reasons.append(f"Geopolitical: {geo}")
-    return {"active": bool(reasons), "reasons": reasons}
+    from api.services.macro_override import compute_macro_override
+
+    return compute_macro_override(runic)
 
 
 # ─────────────────────────────────────────────────────────────────────────────

@@ -1,6 +1,6 @@
 # AI Analyst / Overwatch API
 
-**Status:** implemented (v1.8.0)
+**Status:** implemented (v1.8.1)
 
 **Routers:**
 - `api/routers/analytics.py` — analyst alerts + brief
@@ -20,6 +20,7 @@
 | Method | Path | Doc |
 |--------|------|-----|
 | GET | `/analytics/analyst/alerts` | [get-analyst-alerts.md](endpoints/get-analyst-alerts.md) |
+| GET | `/analytics/analyst/context` | [get-analyst-context.md](endpoints/get-analyst-context.md) |
 | GET | `/analytics/analyst/brief` | [get-analyst-brief.md](endpoints/get-analyst-brief.md) |
 | GET | `/overwatch/stream` | [get-overwatch-stream.md](endpoints/get-overwatch-stream.md) |
 | GET | `/system/health` | [get-system-health.md](endpoints/get-system-health.md) |
@@ -31,12 +32,15 @@ All paths are prefixed with `/api/v1`.
 
 | UI area | Endpoint |
 |---------|----------|
+| Overwatch shell (cross-page) | `GET /analytics/analyst/context` |
 | AI Analyst ALERTS / SIGNALS / MACRO tabs | `GET /analytics/analyst/alerts` |
+| Tab filter only | `GET /analytics/analyst/alerts?channel=signals\|macro\|system` |
+| Tab badge text | `meta.tabs` on alerts or context |
 | Dashboard AI brief snippet | `GET /analytics/analyst/brief` |
 | Overwatch auto-open (SSE) | `GET /overwatch/stream` |
-| SYSTEM tab (admin only) | `GET /system/health` |
+| SYSTEM tab (admin only) | `GET /system/health` or `?include_system=true` on alerts |
 | Raw degradation scan (BFF compat) | `POST /signals/check-degradation` |
-| Panel chat (PULL mode) | `POST /chatbot/sessions/{id}/messages` |
+| Panel chat (PULL mode) | `POST /chatbot/sessions/{id}/messages` with `page_context` |
 
 ## Auth
 
