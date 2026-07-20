@@ -114,6 +114,7 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
 1. **AI Analyst backend hardening — cache, docs, health markers, Claude copy** — SUCCESSFUL
    - Summary: Degradation parquet+result cache (`overwatch_store/`) — cached API reads ~0.1–0.25s (was >240s timeout). Fixed portfolio trigger re-loading 1990 CSVs per row. Added optional Claude alert copy (`ANALYST_USE_CLAUDE_COPY`), Tavily/Sheets integration health markers, synced `mindwealth-api-docs` to v1.8.0. Live curl: brief 37ms, alerts w/ degradation 248ms, check-degradation 142ms. Tests: 8/8 pass.
    - Files changed: `api/services/degradation_cache.py`, `degradation_service.py`, `integration_health_store.py`, `analyst_copy_service.py`, `system_health_service.py`, `analyst_service.py`, `chatbot/agents/web_search_agent.py`, `src/conviction_engine/daily_run.py`, `tests/test_degradation_cache.py`, `docs/mindwealth-api-docs/`, `scripts/overwatch/run_overwatch_signals.py`
+   - Note: Commits `0a7e68ff9` (MindWealth_UI) and `08264a1` (mindwealth-api-docs) on host; `git push` blocked (no GitHub credentials on server).
 
 ### 2026-07-19
 
