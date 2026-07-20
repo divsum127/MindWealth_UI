@@ -27,13 +27,22 @@ def market_close_data_updated_at(report_date: str) -> dict[str, str]:
 
 
 def resolve_report_date() -> str | None:
-    """Report date from data_fetch_datetime.json, else latest outstanding_signal CSV."""
+    """Report date from latest dated trade-store report, else data_fetch_datetime.json.
+
+    Prefer outstanding_signal / new_signal CSV dates over data_fetch_datetime.json
+    because the JSON date can advance on weekends while reports stay on the last
+  trading day.
+    """
+    for report_name in ("outstanding_signal", "new_signal"):
+        path = resolve_report_path(report_name)
+        if path:
+            dated = _report_date_from_path(path)
+            if dated:
+                return dated
+
     fetch = get_data_fetch_datetime(str(DATA_FETCH_DATETIME_JSON))
     if fetch and fetch.get("date"):
         return str(fetch["date"])
-    path = resolve_report_path("outstanding_signal")
-    if path:
-        return _report_date_from_path(path)
     return None
 
 

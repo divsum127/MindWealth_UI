@@ -46,14 +46,37 @@ class TestMetaAPI(unittest.TestCase):
 
     @patch("api.services.meta_service.resolve_report_path")
     @patch("api.services.meta_service.get_data_fetch_datetime")
-    def test_meta_from_json_date(self, mock_fetch, mock_path) -> None:
+    def test_meta_prefers_csv_date_over_json(self, mock_fetch, mock_path) -> None:
+        mock_fetch.return_value = {
+            "date": "2026-07-19",
+            "time": "18:00:08",
+            "datetime": "2026-07-19 18:00:08",
+            "timezone": "US/Eastern",
+        }
+
+        def _resolve(name: str, *_args, **_kwargs):
+            if name == "outstanding_signal":
+                return Path("/trade_store/US/2026-07-17_outstanding_signal.csv")
+            return None
+
+        mock_path.side_effect = _resolve
+
+        response = self.client.get("/api/v1/meta")
+        self.assertEqual(response.status_code, 200)
+        body = response.json()
+        self.assertEqual(body["data_updated_at"]["date"], "2026-07-17")
+        self.assertIn("T16:00:00-04:00", body["data_updated_at"]["datetime"])
+
+    @patch("api.services.meta_service.resolve_report_path")
+    @patch("api.services.meta_service.get_data_fetch_datetime")
+    def test_meta_from_json_when_no_dated_reports(self, mock_fetch, mock_path) -> None:
         mock_fetch.return_value = {
             "date": "2026-07-17",
             "time": "18:00:08",
             "datetime": "2026-07-17 18:00:08",
             "timezone": "US/Eastern",
         }
-        mock_path.return_value = Path("/trade_store/US/2026-07-17_outstanding_signal.csv")
+        mock_path.return_value = None
 
         response = self.client.get("/api/v1/meta")
         self.assertEqual(response.status_code, 200)
@@ -62,7 +85,6 @@ class TestMetaAPI(unittest.TestCase):
         self.assertEqual(body["data_updated_at"]["time"], "16:00:00")
         self.assertIn("T16:00:00-04:00", body["data_updated_at"]["datetime"])
         self.assertEqual(body["data_updated_at"]["timezone"], "US/Eastern")
-        self.assertIn("outstanding_signal", body["source_files"])
 
     @patch("api.services.meta_service.resolve_report_path")
     @patch("api.services.meta_service.get_data_fetch_datetime")
