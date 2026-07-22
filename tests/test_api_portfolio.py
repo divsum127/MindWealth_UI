@@ -187,6 +187,21 @@ class TestPortfolioSizer(_PortfolioTestMixin, unittest.TestCase):
 
     @patch("api.services.portfolio_service._load_runic_safe", return_value=_MOCK_RUNIC)
     @patch("api.services.portfolio_service._load_ssi_safe", return_value=_MOCK_SSI)
+    def test_sizer_cluster_deployed_within_equity_ceiling(self, *_mocks) -> None:
+        from api.services.portfolio_service import get_portfolio_sizer
+
+        body = get_portfolio_sizer("normal")
+        notional = body["ceiling"]["portfolio_notional"]
+        deployed_cap = round(body["ceiling"]["final_ceiling_pct"] / 100 * notional)
+        cluster_deployed = sum(c["deployed_usd"] for c in body["clusters"])
+        self.assertEqual(cluster_deployed, deployed_cap)
+        self.assertEqual(cluster_deployed, body["summary"]["deployed_usd"])
+        for cluster in body["clusters"]:
+            self.assertLessEqual(cluster["deployed_usd"], cluster["budget_usd"])
+            self.assertLessEqual(cluster["budget_usd"], deployed_cap)
+
+    @patch("api.services.portfolio_service._load_runic_safe", return_value=_MOCK_RUNIC)
+    @patch("api.services.portfolio_service._load_ssi_safe", return_value=_MOCK_SSI)
     def test_sizer_pnl_rows_have_names(self, *_mocks) -> None:
         r = client.get("/api/v1/portfolio/sizer")
         pnl_rows = r.json()["pnl_rows"]
@@ -195,6 +210,52 @@ class TestPortfolioSizer(_PortfolioTestMixin, unittest.TestCase):
                 self.assertIsNotNone(row.get("name"))
                 self.assertNotEqual(row.get("name"), "")
                 self.assertEqual(row.get("win_rate_label"), "Backtested Win Rate")
+
+    def test_bq_tier_nan_treated_as_missing(self) -> None:
+        from api.services.portfolio_service import _bq_tier
+        import math
+
+        label, share = _bq_tier(float("nan"))
+        self.assertEqual(label, "REDUCED")
+        self.assertGreater(share, 0.0)
+
+    @patch("api.services.portfolio_service._load_runic_safe", return_value=_MOCK_RUNIC)
+    @patch("api.services.portfolio_service._load_ssi_safe", return_value=_MOCK_SSI)
+    def test_sizer_not_applicable_etf_not_blocked(self, *_mocks) -> None:
+        from api.services.portfolio_service import get_portfolio_sizer
+
+        body = get_portfolio_sizer("normal")
+        na_positions = [
+            pos
+            for cluster in body["clusters"]
+            for pos in cluster["positions"]
+            if pos.get("not_applicable")
+        ]
+        self.assertGreater(len(na_positions), 0, "Expected NOT_APPLICABLE positions in sizer output")
+        for pos in na_positions:
+            self.assertFalse(pos["blocked"], f"{pos['ticker']} should not be blocked when conviction N/A")
+            self.assertGreater(pos["allocation_usd"], 0, f"{pos['ticker']} should receive base allocation")
+            self.assertIsNone(pos["bq_score"])
+            self.assertTrue(str(pos["size_tier"]).startswith("N/A"))
+
+    @patch("api.services.portfolio_service._load_runic_safe", return_value=_MOCK_RUNIC)
+    @patch("api.services.portfolio_service._load_ssi_safe", return_value=_MOCK_SSI)
+    def test_sizer_no_unscored_when_overlay_stale(self, *_mocks) -> None:
+        from api.services.portfolio_service import get_portfolio_sizer
+
+        body = get_portfolio_sizer("normal")
+        unscored = [
+            pos
+            for cluster in body["clusters"]
+            for pos in cluster["positions"]
+            if pos.get("unscored")
+        ]
+        self.assertEqual(
+            unscored,
+            [],
+            f"Expected on-demand conviction merge; got unscored: "
+            f"{[p['ticker'] for p in unscored[:10]]}",
+        )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -325,6 +386,104 @@ class TestTickerSearch(_PortfolioTestMixin, unittest.TestCase):
         for item in r.json():
             self.assertIn("symbol", item)
             self.assertIn("name", item)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Holdings + book_id + sizing alias
+# ─────────────────────────────────────────────────────────────────────────────
+
+class TestPortfolioNav(_PortfolioTestMixin, unittest.TestCase):
+
+    def test_nav_model_enhanced_returns_200(self) -> None:
+        r = client.get(
+            "/api/v1/portfolio/nav",
+            params={"book_id": "model", "book": "enhanced"},
+        )
+        self.assertEqual(r.status_code, 200, r.text)
+        body = r.json()
+        self.assertEqual(body["book_id"], "model")
+        self.assertEqual(body["book"], "enhanced")
+        for key in (
+            "nav", "as_of", "deployed_pct", "cash_pct", "position_count",
+            "conviction_summary", "mtm", "waterfall_steps", "top_contributors",
+        ):
+            self.assertIn(key, body)
+
+    def test_nav_unsupported_book_returns_422(self) -> None:
+        r = client.get(
+            "/api/v1/portfolio/nav",
+            params={"book_id": "model", "book": "base"},
+        )
+        self.assertEqual(r.status_code, 422)
+
+    def test_nav_position_count_matches_holdings(self) -> None:
+        nav = client.get(
+            "/api/v1/portfolio/nav",
+            params={"book_id": "model", "book": "enhanced"},
+        ).json()
+        holdings = client.get(
+            "/api/v1/portfolio/holdings",
+            params={"book_id": "model", "book": "enhanced"},
+        ).json()
+        self.assertEqual(nav["position_count"], len(holdings.get("holdings", [])))
+
+
+class TestPortfolioHoldings(_PortfolioTestMixin, unittest.TestCase):
+
+    def test_holdings_model_enhanced_returns_200(self) -> None:
+        r = client.get(
+            "/api/v1/portfolio/holdings",
+            params={"book_id": "model", "book": "enhanced"},
+        )
+        self.assertEqual(r.status_code, 200, r.text)
+        body = r.json()
+        self.assertEqual(body["book_id"], "model")
+        self.assertEqual(body["book"], "enhanced")
+        self.assertIn("holdings", body)
+        self.assertIn("as_of", body)
+        if body["holdings"]:
+            h = body["holdings"][0]
+            for key in (
+                "ticker", "score", "rank", "size_usd", "same_asset_siblings",
+                "multi_sig", "rr_dynamic", "hold_time_used_pct", "sleeve",
+            ):
+                self.assertIn(key, h)
+
+    def test_holdings_unsupported_book_returns_422(self) -> None:
+        r = client.get(
+            "/api/v1/portfolio/holdings",
+            params={"book_id": "model", "book": "base"},
+        )
+        self.assertEqual(r.status_code, 422)
+
+    def test_holdings_brokerage_returns_422(self) -> None:
+        r = client.get(
+            "/api/v1/portfolio/holdings",
+            params={"book_id": "brokerage", "book": "enhanced"},
+        )
+        self.assertEqual(r.status_code, 422)
+
+
+class TestPortfolioSizingAlias(_PortfolioTestMixin, unittest.TestCase):
+
+    def test_sizing_alias_matches_sizer(self) -> None:
+        r1 = client.get("/api/v1/portfolio/sizer", params={"book_id": "model", "scenario": "normal"})
+        r2 = client.get("/api/v1/portfolio/sizing", params={"book_id": "model", "scenario": "normal"})
+        self.assertEqual(r1.status_code, 200)
+        self.assertEqual(r2.status_code, 200)
+        self.assertEqual(r1.json()["summary"], r2.json()["summary"])
+
+    def test_sizer_includes_book_id(self) -> None:
+        r = client.get("/api/v1/portfolio/sizer", params={"book_id": "model"})
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.json().get("book_id"), "model")
+
+    def test_risk_includes_conviction_summary(self) -> None:
+        r = client.get("/api/v1/portfolio/risk", params={"book_id": "model", "scenario": "normal"})
+        self.assertEqual(r.status_code, 200)
+        cs = r.json().get("conviction_summary")
+        self.assertIsInstance(cs, dict)
+        self.assertIn("max_count", cs)
 
 
 if __name__ == "__main__":

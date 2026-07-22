@@ -401,9 +401,8 @@ def _assign_cluster(
 
 def _bq_tier(bq: float | None) -> tuple[str, float]:
     """Return (tier_label, share_fraction) for a BQ score."""
-    if bq is None:
-        # None means NOT_APPLICABLE (ETF/INDEX) — not unscored equities.
-        # Default to REDUCED tier; caller applies further adjustments.
+    if bq is None or (isinstance(bq, float) and math.isnan(bq)):
+        # None/NaN means missing BQ — caller applies NOT_APPLICABLE or unscored rules.
         return "REDUCED", 0.40
     for threshold, label, share in _BQ_TIERS:
         if bq >= threshold:
@@ -690,30 +689,16 @@ def get_portfolio_sizer(scenario: str = "normal") -> dict[str, Any]:
         cluster_id = _assign_cluster(ticker, business_type, asset_type)
         cluster = cluster_map[cluster_id]
 
-        bq = row.get("bq_raw")
-        if bq is not None:
-            try:
-                bq = float(bq)
-            except (TypeError, ValueError):
-                bq = None
+        bq = _safe_float(row.get("bq_raw"))
 
         verdict = str(row.get("verdict") or "")
         not_applicable = verdict.upper() == "NOT_APPLICABLE"
         unscored = bq is None and not not_applicable and not verdict
         tier_label, base_share = _bq_tier(bq)
 
-        # For NOT_APPLICABLE (ETFs/Indexes): use conviction_score as guidance if available
-        if not_applicable and bq is None:
-            cscore = _safe_float(row.get("conviction_score"))
-            if cscore is not None:
-                # Map conviction_score (typically −10 to +10) to tier
-                if cscore >= 5:
-                    tier_label, base_share = "TACTICAL", 0.75
-                elif cscore >= 2:
-                    tier_label, base_share = "REDUCED", 0.40
-                elif cscore < 0:
-                    tier_label, base_share = "BLOCKED", 0.00
-                # else keep REDUCED default
+        # D2: ETF/FX/index/commodity — conviction N/A → base size, never BLOCKED/$0
+        if not_applicable:
+            tier_label, base_share = "N/A", 1.00
 
         flags = _detect_flags(row, multi_sig_tickers)
         direction = str(row.get("Signal") or row.get("direction") or "Long")
@@ -826,7 +811,6 @@ def get_portfolio_sizer(scenario: str = "normal") -> dict[str, Any]:
                     "YIELD TRAP" if "YIELD TRAP" in flags
                     else "No conviction score — run conviction engine" if unscored and blocked
                     else "No conviction score — conservative REDUCED tier" if unscored
-                    else "conviction_score < 0" if not_applicable and blocked
                     else "BQ < 2" if tier_label == "BLOCKED" and not not_applicable
                     else None
                 ),
@@ -916,33 +900,47 @@ def _merge_conviction(vt_df: pd.DataFrame, conv_df: pd.DataFrame, side: str) -> 
     """Merge VT rows with conviction overlay on Symbol/ticker.
 
     Handles duplicate tickers by taking the first conviction row per ticker.
+    When a ticker is missing from the overlay (stale CSV), scores on demand via
+    Conviction Engine so portfolio sizing does not show unscored rows.
     """
     if vt_df.empty:
         return []
     rows = dataframe_to_records(vt_df)
-    if conv_df.empty:
-        return rows
-    conv_df = conv_df.copy()
-    # Normalise key column name
-    if "ticker" not in conv_df.columns and "Symbol" in conv_df.columns:
-        conv_df = conv_df.rename(columns={"Symbol": "ticker"})
-    if "ticker" not in conv_df.columns:
-        return rows
-
-    conv_df["ticker"] = conv_df["ticker"].astype(str).str.upper()
-    # Drop duplicates — keep first occurrence per ticker to avoid orient='index' error
-    conv_dedup = conv_df.drop_duplicates(subset=["ticker"], keep="first")
     conv_index: dict[str, dict[str, Any]] = {}
-    for rec in dataframe_to_records(conv_dedup):
-        t = str(rec.get("ticker") or "").upper()
-        if t:
-            conv_index[t] = rec
+    if not conv_df.empty:
+        conv_df = conv_df.copy()
+        if "ticker" not in conv_df.columns and "Symbol" in conv_df.columns:
+            conv_df = conv_df.rename(columns={"Symbol": "ticker"})
+        if "ticker" in conv_df.columns:
+            conv_df["ticker"] = conv_df["ticker"].astype(str).str.upper()
+            conv_dedup = conv_df.drop_duplicates(subset=["ticker"], keep="first")
+            for rec in dataframe_to_records(conv_dedup):
+                t = str(rec.get("ticker") or "").upper()
+                if t:
+                    conv_index[t] = rec
+
+    overlay_cache: dict[str, dict[str, Any]] = dict(conv_index)
+
+    def _overlay_on_demand(sym: str, row: dict[str, Any]) -> dict[str, Any]:
+        if sym in overlay_cache:
+            return overlay_cache[sym]
+        try:
+            from src.conviction_engine.engine import apply_to_signal
+            from src.conviction_engine.signals import normalize_signal_row
+
+            mod = apply_to_signal(normalize_signal_row(row), persist=False)
+            overlay_cache[sym] = mod
+        except Exception:
+            overlay_cache[sym] = {}
+        return overlay_cache[sym]
 
     merged = []
     for row in rows:
         sym = str(row.get("Symbol") or "").upper()
         extra = conv_index.get(sym, {})
-        merged.append({**extra, **row})  # VT fields take priority for price/date cols
+        if sym and sym not in conv_index:
+            extra = _overlay_on_demand(sym, row)
+        merged.append({**extra, **row})
     return merged
 
 
@@ -987,6 +985,7 @@ def get_portfolio_risk(scenario: str = "normal") -> dict[str, Any]:
     labels, matrix, corr_meta = _load_correlation_matrix()
 
     # Cluster weights from sizer for requested scenario
+    sizer: dict[str, Any] = {"pnl_rows": []}
     try:
         sizer = get_portfolio_sizer(scenario)
         clusters = sizer.get("clusters", [])
@@ -1057,6 +1056,35 @@ def get_portfolio_risk(scenario: str = "normal") -> dict[str, Any]:
         "breach_threshold_watch": _BREACH_RHO_WARN,
         "breach_threshold_action": _BREACH_RHO_ACTION,
         "cluster_weights": weight_bars,
+        "conviction_summary": build_conviction_summary({"pnl_rows": sizer.get("pnl_rows", [])}),
+    }
+
+
+def build_conviction_summary(sizer: dict[str, Any]) -> dict[str, Any]:
+    """Conviction tier counts from sizer pnl_rows (HANDOFF §8)."""
+    counts = {"max_count": 0, "tactical_count": 0, "reduced_count": 0, "yield_trap_count": 0}
+    max_names: list[str] = []
+    yield_trap_names: list[str] = []
+    for row in sizer.get("pnl_rows", []):
+        if row.get("blocked"):
+            continue
+        ticker = str(row.get("ticker") or "")
+        tier = str(row.get("size_tier") or "").upper()
+        flags = row.get("flags") or []
+        if "YIELD TRAP" in flags:
+            counts["yield_trap_count"] += 1
+            yield_trap_names.append(ticker)
+        if tier.startswith("MAX"):
+            counts["max_count"] += 1
+            max_names.append(ticker)
+        elif tier.startswith("TACTICAL"):
+            counts["tactical_count"] += 1
+        elif tier.startswith("REDUCED") or tier == "N/A":
+            counts["reduced_count"] += 1
+    return {
+        **counts,
+        "max_names": max_names[:10],
+        "yield_trap_names": yield_trap_names[:10],
     }
 
 

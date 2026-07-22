@@ -1,4 +1,4 @@
-"""Portfolio REST routes — Sizer + Risk."""
+"""Portfolio REST routes — Sizer, Risk, Holdings."""
 
 from __future__ import annotations
 
@@ -8,7 +8,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 
 from api.dependencies import optional_api_key
+from api.services import portfolio_pipeline_service as pipeline_svc
 from api.services import portfolio_service as svc
+from api.services.portfolio_book import BookUnavailableError
 
 router = APIRouter(
     prefix="/portfolio",
@@ -16,10 +18,6 @@ router = APIRouter(
     dependencies=[Depends(optional_api_key)],
 )
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Schemas
-# ─────────────────────────────────────────────────────────────────────────────
 
 class HoldingItem(BaseModel):
     symbol: str
@@ -31,9 +29,93 @@ class AnalyzeHoldingsRequest(BaseModel):
     cash_usd: float = 0.0
 
 
+def _book_error(exc: Exception) -> HTTPException:
+    if isinstance(exc, BookUnavailableError):
+        return HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc))
+    if isinstance(exc, ValueError):
+        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+    return HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc))
+
+
 # ─────────────────────────────────────────────────────────────────────────────
-# Sizer
+# NAV overview (P0)
 # ─────────────────────────────────────────────────────────────────────────────
+
+@router.get(
+    "/nav",
+    operation_id="getPortfolioNav",
+    summary="Portfolio NAV overview — chart, attribution, admission snapshot",
+)
+def get_nav(
+    book_id: str = Query(..., description="model | brokerage | personal"),
+    book: str = Query(..., description="base | ssi | cv | enhanced (required for model)"),
+    scenario: str = Query(
+        default="normal",
+        description="Sizer scenario for consistency with holdings: normal | stress | lowvol",
+        pattern="^(normal|stress|lowvol)$",
+    ),
+) -> dict[str, Any]:
+    """Return overview NAV payload (HANDOFF §3). MODEL enhanced only until four-book replay."""
+    try:
+        return pipeline_svc.get_portfolio_nav(book_id, book, scenario=scenario)
+    except (BookUnavailableError, ValueError) as exc:
+        raise _book_error(exc) from exc
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Portfolio NAV failed: {exc}",
+        ) from exc
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Holdings (P0)
+# ─────────────────────────────────────────────────────────────────────────────
+
+@router.get(
+    "/holdings",
+    operation_id="getPortfolioHoldings",
+    summary="Portfolio holdings with sizing, siblings, and quality fields",
+)
+def get_holdings(
+    book_id: str = Query(..., description="model | brokerage | personal"),
+    book: str = Query(..., description="base | ssi | cv | enhanced (required for model)"),
+    scenario: str = Query(
+        default="normal",
+        description="Sizer scenario for size_usd alignment: normal | stress | lowvol",
+        pattern="^(normal|stress|lowvol)$",
+    ),
+) -> dict[str, Any]:
+    """Return MODEL holdings merged with sizer allocations (HANDOFF §4)."""
+    try:
+        return pipeline_svc.get_portfolio_holdings(book_id, book, scenario=scenario)
+    except (BookUnavailableError, ValueError) as exc:
+        raise _book_error(exc) from exc
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Portfolio holdings failed: {exc}",
+        ) from exc
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Sizer / Sizing (P0)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _sizer_response(
+  scenario: str,
+  book_id: str,
+) -> dict[str, Any]:
+    from api.services.portfolio_book import validate_model_only
+
+    validate_model_only(book_id)
+    payload = svc.get_portfolio_sizer(scenario=scenario)
+    payload["book_id"] = book_id
+    return payload
+
 
 @router.get(
     "/sizer",
@@ -41,19 +123,18 @@ class AnalyzeHoldingsRequest(BaseModel):
     summary="Portfolio Sizer — full PortfolioResponse",
 )
 def get_sizer(
+    book_id: str = Query(default="model", description="Must be model"),
     scenario: str = Query(
         default="normal",
         description="Scenario: normal | stress | lowvol",
         pattern="^(normal|stress|lowvol)$",
     ),
 ) -> dict[str, Any]:
-    """Return full regime-aware portfolio allocation payload.
-
-    Includes ceiling decomposition, cluster budgets, per-position sizing,
-    P&L enrichment, constraints, and active combo context.
-    """
+    """Return full regime-aware portfolio allocation payload."""
     try:
-        return svc.get_portfolio_sizer(scenario=scenario)
+        return _sizer_response(scenario, book_id)
+    except BookUnavailableError as exc:
+        raise _book_error(exc) from exc
     except FileNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     except ValueError as exc:
@@ -63,6 +144,25 @@ def get_sizer(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=f"Portfolio sizer computation failed: {exc}",
         ) from exc
+
+
+@router.get(
+    "/sizing",
+    operation_id="getPortfolioSizing",
+    summary="Portfolio Sizing — alias for /portfolio/sizer (July spec)",
+    include_in_schema=True,
+)
+def get_sizing(
+    book_id: str = Query(default="model", description="Must be model"),
+    scenario: str = Query(
+        default="normal",
+        description="Scenario: normal | stress | lowvol | auto",
+        pattern="^(normal|stress|lowvol|auto)$",
+    ),
+) -> dict[str, Any]:
+    """Alias for sizer; `auto` maps to `normal` until AUTO scenario is specified."""
+    effective = "normal" if scenario == "auto" else scenario
+    return get_sizer(book_id=book_id, scenario=effective)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -75,18 +175,23 @@ def get_sizer(
     summary="Portfolio Risk — cluster correlation matrix + breaches",
 )
 def get_risk(
+    book_id: str = Query(default="model", description="Must be model"),
     scenario: str = Query(
         default="normal",
         description="Sizer scenario for cluster weights: normal | stress | lowvol",
         pattern="^(normal|stress|lowvol)$",
     ),
 ) -> dict[str, Any]:
-    """Return cluster-level correlation matrix, breach list, and cluster weight bars.
-
-    Breaches: ρ > 0.75 = watch, ρ > 0.85 = action required.
-    """
+    """Return cluster-level correlation matrix, breach list, and cluster weight bars."""
     try:
-        return svc.get_portfolio_risk(scenario=scenario)
+        from api.services.portfolio_book import validate_model_only
+
+        validate_model_only(book_id)
+        payload = svc.get_portfolio_risk(scenario=scenario)
+        payload["book_id"] = book_id
+        return payload
+    except BookUnavailableError as exc:
+        raise _book_error(exc) from exc
     except FileNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     except ValueError as exc:
@@ -105,9 +210,7 @@ def get_risk(
     status_code=status.HTTP_200_OK,
 )
 def analyze_holdings(body: AnalyzeHoldingsRequest) -> dict[str, Any]:
-    """Accept a user holdings list and return concentration warnings,
-    correlation breaches, and suggested trims vs the model book.
-    """
+    """Accept a user holdings list and return concentration warnings and correlation breaches."""
     try:
         holdings_dicts = [{"symbol": h.symbol, "quantity": h.quantity} for h in body.holdings]
         return svc.analyze_user_holdings(holdings=holdings_dicts, cash_usd=body.cash_usd)

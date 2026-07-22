@@ -473,6 +473,7 @@ def enrich_record(
 
     # ── Tier ────────────────────────────────────────────────────────────────────
     rr_static = _parse_rr_static(row) or core.get("rr_static")
+    rr_dynamic = core.get("rr_dynamic") or _parse_float(row.get("R:R Dynamic")) or _parse_float(row.get("rr_dynamic"))
     fwd_wr_raw = row.get(
         "Forward Testing Win Rate[%]/No. of Analysed Trades/Avg Holding Period "
         "(days) (Across ALL Assets)"
@@ -520,6 +521,7 @@ def enrich_record(
             "er": er,
             "signal_alpha": signal_alpha,
             "rr_static": rr_static,
+            "rr_dynamic": rr_dynamic,
             "fwd_wr": fwd_wr,
             "cagr_diff": cagr_diff,
             "conviction_score": conviction_score,

@@ -3,7 +3,7 @@
   "info": {
     "title": "MindWealth API",
     "description": "REST API for MindWealth trading analysis services.",
-    "version": "1.8.0"
+    "version": "1.8.1"
   },
   "paths": {
     "/api/v1/auth/login": {
@@ -3329,6 +3329,192 @@
         }
       }
     },
+    "/api/v1/signals/entries": {
+      "get": {
+        "tags": [
+          "signals"
+        ],
+        "summary": "New Entries pipeline (Portfolio + Signals)",
+        "operationId": "getSignalEntries",
+        "parameters": [
+          {
+            "name": "book_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "model | brokerage | personal",
+              "title": "Book Id"
+            },
+            "description": "model | brokerage | personal"
+          },
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Getsignalentries"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/signals/exits": {
+      "get": {
+        "tags": [
+          "signals"
+        ],
+        "summary": "New Exits pipeline (Portfolio + Signals)",
+        "operationId": "getSignalExits",
+        "parameters": [
+          {
+            "name": "book_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "model | brokerage | personal",
+              "title": "Book Id"
+            },
+            "description": "model | brokerage | personal"
+          },
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Getsignalexits"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/signals/reports/portfolio-risk/latest": {
+      "get": {
+        "tags": [
+          "signals"
+        ],
+        "summary": "Cross-function exit conflicts (HANDOFF \u00a711 shape)",
+        "operationId": "getPortfolioRiskReportLatest",
+        "parameters": [
+          {
+            "name": "book_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "model | brokerage | personal",
+              "title": "Book Id"
+            },
+            "description": "model | brokerage | personal"
+          },
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Getportfolioriskreportlatest"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/signals/reports/{report_name}/latest": {
       "get": {
         "tags": [
@@ -4621,6 +4807,80 @@
             }
           },
           {
+            "name": "include_system",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Include System"
+            }
+          },
+          {
+            "name": "include_regime_warnings",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Include Regime Warnings"
+            }
+          },
+          {
+            "name": "include_sentiment_warnings",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Include Sentiment Warnings"
+            }
+          },
+          {
+            "name": "include_persistence",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Include Persistence"
+            }
+          },
+          {
+            "name": "include_watch_combos",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Include Watch Combos"
+            }
+          },
+          {
+            "name": "channel",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "all",
+                    "signals",
+                    "macro",
+                    "system"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter alerts to one Overwatch tab channel",
+              "title": "Channel"
+            },
+            "description": "Filter alerts to one Overwatch tab channel"
+          },
+          {
             "name": "floor_pct",
             "in": "query",
             "required": false,
@@ -4685,6 +4945,99 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AnalystAlertsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analytics/analyst/context": {
+      "get": {
+        "tags": [
+          "analytics"
+        ],
+        "summary": "Overwatch panel cross-page context bundle",
+        "operationId": "get_analyst_panel_context",
+        "parameters": [
+          {
+            "name": "include_system",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Include System"
+            }
+          },
+          {
+            "name": "channel",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "all",
+                    "signals",
+                    "macro",
+                    "system"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Channel"
+            }
+          },
+          {
+            "name": "floor_pct",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "maximum": 100,
+              "minimum": 0,
+              "default": 60.0,
+              "title": "Floor Pct"
+            }
+          },
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalystPanelContextResponse"
                 }
               }
             }
@@ -6003,15 +6356,201 @@
         }
       }
     },
+    "/api/v1/portfolio/nav": {
+      "get": {
+        "tags": [
+          "portfolio"
+        ],
+        "summary": "Portfolio NAV overview \u2014 chart, attribution, admission snapshot",
+        "description": "Return overview NAV payload (HANDOFF \u00a73). MODEL enhanced only until four-book replay.",
+        "operationId": "getPortfolioNav",
+        "parameters": [
+          {
+            "name": "book_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "model | brokerage | personal",
+              "title": "Book Id"
+            },
+            "description": "model | brokerage | personal"
+          },
+          {
+            "name": "book",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "base | ssi | cv | enhanced (required for model)",
+              "title": "Book"
+            },
+            "description": "base | ssi | cv | enhanced (required for model)"
+          },
+          {
+            "name": "scenario",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^(normal|stress|lowvol)$",
+              "description": "Sizer scenario for consistency with holdings: normal | stress | lowvol",
+              "default": "normal",
+              "title": "Scenario"
+            },
+            "description": "Sizer scenario for consistency with holdings: normal | stress | lowvol"
+          },
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Getportfolionav"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/portfolio/holdings": {
+      "get": {
+        "tags": [
+          "portfolio"
+        ],
+        "summary": "Portfolio holdings with sizing, siblings, and quality fields",
+        "description": "Return MODEL holdings merged with sizer allocations (HANDOFF \u00a74).",
+        "operationId": "getPortfolioHoldings",
+        "parameters": [
+          {
+            "name": "book_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "model | brokerage | personal",
+              "title": "Book Id"
+            },
+            "description": "model | brokerage | personal"
+          },
+          {
+            "name": "book",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "base | ssi | cv | enhanced (required for model)",
+              "title": "Book"
+            },
+            "description": "base | ssi | cv | enhanced (required for model)"
+          },
+          {
+            "name": "scenario",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^(normal|stress|lowvol)$",
+              "description": "Sizer scenario for size_usd alignment: normal | stress | lowvol",
+              "default": "normal",
+              "title": "Scenario"
+            },
+            "description": "Sizer scenario for size_usd alignment: normal | stress | lowvol"
+          },
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Getportfolioholdings"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/portfolio/sizer": {
       "get": {
         "tags": [
           "portfolio"
         ],
         "summary": "Portfolio Sizer \u2014 full PortfolioResponse",
-        "description": "Return full regime-aware portfolio allocation payload.\n\nIncludes ceiling decomposition, cluster budgets, per-position sizing,\nP&L enrichment, constraints, and active combo context.",
+        "description": "Return full regime-aware portfolio allocation payload.",
         "operationId": "getPortfolioSizer",
         "parameters": [
+          {
+            "name": "book_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Must be model",
+              "default": "model",
+              "title": "Book Id"
+            },
+            "description": "Must be model"
+          },
           {
             "name": "scenario",
             "in": "query",
@@ -6068,15 +6607,104 @@
         }
       }
     },
+    "/api/v1/portfolio/sizing": {
+      "get": {
+        "tags": [
+          "portfolio"
+        ],
+        "summary": "Portfolio Sizing \u2014 alias for /portfolio/sizer (July spec)",
+        "description": "Alias for sizer; `auto` maps to `normal` until AUTO scenario is specified.",
+        "operationId": "getPortfolioSizing",
+        "parameters": [
+          {
+            "name": "book_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Must be model",
+              "default": "model",
+              "title": "Book Id"
+            },
+            "description": "Must be model"
+          },
+          {
+            "name": "scenario",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^(normal|stress|lowvol|auto)$",
+              "description": "Scenario: normal | stress | lowvol | auto",
+              "default": "normal",
+              "title": "Scenario"
+            },
+            "description": "Scenario: normal | stress | lowvol | auto"
+          },
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Getportfoliosizing"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/portfolio/risk": {
       "get": {
         "tags": [
           "portfolio"
         ],
         "summary": "Portfolio Risk \u2014 cluster correlation matrix + breaches",
-        "description": "Return cluster-level correlation matrix, breach list, and cluster weight bars.\n\nBreaches: \u03c1 > 0.75 = watch, \u03c1 > 0.85 = action required.",
+        "description": "Return cluster-level correlation matrix, breach list, and cluster weight bars.",
         "operationId": "getPortfolioRisk",
         "parameters": [
+          {
+            "name": "book_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Must be model",
+              "default": "model",
+              "title": "Book Id"
+            },
+            "description": "Must be model"
+          },
           {
             "name": "scenario",
             "in": "query",
@@ -6139,7 +6767,7 @@
           "portfolio"
         ],
         "summary": "Analyze user holdings vs model book",
-        "description": "Accept a user holdings list and return concentration warnings,\ncorrelation breaches, and suggested trims vs the model book.",
+        "description": "Accept a user holdings list and return concentration warnings and correlation breaches.",
         "operationId": "analyzeUserHoldings",
         "parameters": [
           {
@@ -6796,6 +7424,16 @@
               }
             ],
             "title": "Stale Reason"
+          },
+          "tabs": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnalystTabsMeta"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": true,
@@ -6862,6 +7500,279 @@
           "snippet"
         ],
         "title": "AnalystBriefResponse"
+      },
+      "AnalystChatIntegration": {
+        "properties": {
+          "create_session_path": {
+            "type": "string",
+            "title": "Create Session Path",
+            "default": "/api/v1/chatbot/sessions"
+          },
+          "messages_path_template": {
+            "type": "string",
+            "title": "Messages Path Template",
+            "default": "/api/v1/chatbot/sessions/{session_id}/messages"
+          },
+          "history_path_template": {
+            "type": "string",
+            "title": "History Path Template",
+            "default": "/api/v1/chatbot/sessions/{session_id}/history"
+          },
+          "supports_page_context": {
+            "type": "boolean",
+            "title": "Supports Page Context",
+            "default": true
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "title": "AnalystChatIntegration"
+      },
+      "AnalystPanelContextResponse": {
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/AnalystAlertsMeta"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "panel_alerts": {
+            "items": {
+              "$ref": "#/components/schemas/OverwatchPanelAlert"
+            },
+            "type": "array",
+            "title": "Panel Alerts"
+          },
+          "regime": {
+            "$ref": "#/components/schemas/AnalystRegimeSnapshot"
+          },
+          "sentiment": {
+            "$ref": "#/components/schemas/AnalystSentimentSnapshot"
+          },
+          "chat": {
+            "$ref": "#/components/schemas/AnalystChatIntegration"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "meta",
+          "count",
+          "panel_alerts",
+          "regime",
+          "sentiment",
+          "chat"
+        ],
+        "title": "AnalystPanelContextResponse"
+      },
+      "AnalystRegimeSnapshot": {
+        "properties": {
+          "date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date"
+          },
+          "regime": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Regime"
+          },
+          "brave_fearful": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brave Fearful"
+          },
+          "brave_fearful_display": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brave Fearful Display"
+          },
+          "dominant_signal": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dominant Signal"
+          },
+          "dominant_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dominant Reason"
+          },
+          "macro_override": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Macro Override"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "title": "AnalystRegimeSnapshot"
+      },
+      "AnalystSentimentSnapshot": {
+        "properties": {
+          "ssi_level": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ssi Level"
+          },
+          "ssi_percentile_5y": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ssi Percentile 5Y"
+          },
+          "ssi_multiplier": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ssi Multiplier"
+          },
+          "layer2_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Layer2 Status"
+          },
+          "posture": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Posture"
+          },
+          "long_signal_active": {
+            "type": "boolean",
+            "title": "Long Signal Active",
+            "default": false
+          },
+          "short_signal_active": {
+            "type": "boolean",
+            "title": "Short Signal Active",
+            "default": false
+          },
+          "date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "title": "AnalystSentimentSnapshot"
+      },
+      "AnalystTabBadge": {
+        "properties": {
+          "count": {
+            "type": "integer",
+            "title": "Count",
+            "default": 0
+          },
+          "badge": {
+            "type": "string",
+            "title": "Badge",
+            "default": ""
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "title": "AnalystTabBadge"
+      },
+      "AnalystTabsMeta": {
+        "properties": {
+          "all": {
+            "$ref": "#/components/schemas/AnalystTabBadge"
+          },
+          "signals": {
+            "$ref": "#/components/schemas/AnalystTabBadge"
+          },
+          "macro": {
+            "$ref": "#/components/schemas/AnalystTabBadge"
+          },
+          "system": {
+            "$ref": "#/components/schemas/AnalystTabBadge"
+          },
+          "active_combo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active Combo"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "all",
+          "signals",
+          "macro",
+          "system"
+        ],
+        "title": "AnalystTabsMeta"
       },
       "AnalyzeHoldingsRequest": {
         "properties": {
@@ -7023,6 +7934,16 @@
               }
             ],
             "title": "Additional Context"
+          },
+          "page_context": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PageContext"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -7589,9 +8510,22 @@
             "enum": [
               "degradation",
               "runic",
+              "runic_watch",
+              "regime_warning",
+              "sentiment_warning",
+              "persistence",
               "system"
             ],
             "title": "Type"
+          },
+          "channel": {
+            "type": "string",
+            "enum": [
+              "signals",
+              "macro",
+              "system"
+            ],
+            "title": "Channel"
           },
           "label": {
             "type": "string",
@@ -7686,6 +8620,16 @@
                 "type": "null"
               }
             ]
+          },
+          "warning": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OverwatchPanelWarningDetail"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": true,
@@ -7693,6 +8637,7 @@
         "required": [
           "id",
           "type",
+          "channel",
           "label",
           "html",
           "created_at"
@@ -7749,7 +8694,11 @@
             "type": "string",
             "enum": [
               "ssi",
-              "dominant"
+              "dominant",
+              "watch",
+              "regime_warning",
+              "sentiment",
+              "persistence"
             ],
             "title": "Variant",
             "default": "dominant"
@@ -7817,6 +8766,154 @@
           "above_floor"
         ],
         "title": "OverwatchPanelSignalDetail"
+      },
+      "OverwatchPanelWarningDetail": {
+        "properties": {
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons"
+          },
+          "regime": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Regime"
+          },
+          "ssi_level": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ssi Level"
+          },
+          "ssi_posture": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ssi Posture"
+          },
+          "signal_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signal Name"
+          },
+          "var_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Var Id"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "title": "OverwatchPanelWarningDetail"
+      },
+      "PageContext": {
+        "properties": {
+          "route": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Route",
+            "description": "Current app route, e.g. /portfolio"
+          },
+          "page_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Title"
+          },
+          "active_tab": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "all",
+                  "signals",
+                  "macro",
+                  "system"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active Tab",
+            "description": "Overwatch panel tab: all | signals | macro | system"
+          },
+          "panel_open": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Panel Open"
+          },
+          "alert_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Alert Ids"
+          },
+          "dominant_combo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dominant Combo"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "PageContext",
+        "description": "Overwatch panel / page context for cross-page PULL-mode chat."
       },
       "PresetLaunchRequest": {
         "properties": {

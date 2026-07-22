@@ -1,5 +1,17 @@
 # API Changelog
 
+## v1.8.2 (2026-07-22)
+
+### Added — Portfolio page HANDOFF endpoints
+
+- `GET /portfolio/nav` — overview snapshot (MODEL enhanced; NAV history pending Ahil A1)
+- `GET /portfolio/holdings` — holdings merged with sizer allocations
+- `GET /portfolio/sizing` — alias for `/portfolio/sizer`
+- `GET /signals/entries`, `GET /signals/exits` — Portfolio admission/exit pipelines
+- `GET /signals/reports/portfolio-risk/latest` — cross-function conflict report (HANDOFF §11)
+- Services: `portfolio_book.py`, `portfolio_pipeline_service.py`
+- Extended: `portfolio_service.py` (D2 base size, `conviction_summary`), `signal_enrichment_service.py` (`rr_dynamic`)
+
 ## v1.8.1 (2026-07-20)
 
 ### Overwatch panel completeness
