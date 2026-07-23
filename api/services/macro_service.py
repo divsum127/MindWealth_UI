@@ -814,6 +814,12 @@ def _ssi_db_conn():
     return conn
 
 
+# Display rounding: 2 decimals for indicators (ratios, betas, oscillators, spreads).
+# 4 decimals reserved for currency pairs (none of the SSI legacy inputs are FX).
+def _round2(value: Any) -> float | None:
+    return round(float(value), 2) if value is not None else None
+
+
 def _parse_layer2_votes(payload_json: str | None) -> list[dict[str, Any]]:
     """Extract layer2_votes list from the stored payload_json column."""
     if not payload_json:
@@ -854,7 +860,7 @@ def get_ssi_summary() -> dict[str, Any]:
     def _vote(key: str) -> dict[str, Any]:
         v = vote_map.get(key, {})
         return {
-            "raw": row[key],
+            "raw": _round2(row[key]),
             "vote": v.get("vote"),
             "signal": v.get("signal"),
             "pctile": v.get("pctile"),
@@ -911,10 +917,10 @@ def get_ssi_history(days: int = 30) -> dict[str, Any]:
             "layer2_status": r["layer2_status"],
             "layer2_confirmed_count": r["layer2_confirmed_count"],
             "inputs": {
-                "hyg_lqd":   r["hyg_lqd"],
-                "dbmf_beta": r["dbmf_beta"],
-                "cnn_fg":    r["cnn_fg"],
-                "vix_ratio": r["vix_ratio"],
+                "hyg_lqd":   _round2(r["hyg_lqd"]),
+                "dbmf_beta": _round2(r["dbmf_beta"]),
+                "cnn_fg":    _round2(r["cnn_fg"]),
+                "vix_ratio": _round2(r["vix_ratio"]),
             },
         }
         for r in rows

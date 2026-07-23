@@ -69,6 +69,22 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
 
 ---
 
+### 2026-07-23
+
+1. **McClellan Oscillator formula bug — proper fix + tests + docs** — SUCCESSFUL
+   - Summary: McClellan cumsum bug and display rounding were already fixed on 2026-07-21 (part of the SSI superindex work), but had no dedicated regression test and `docs/MACRO_INTELLIGENCE_MASTER.md` still documented the old (wrong) cumsum formula. Verified live `positioning.json` (2026-07-23) shows `mcclellan: -12.02` (rounded, correct formula) — not the old inflated ~217 reading. Added `tests/test_mcclellan_pull.py` (4 tests: no-cumsum convergence check, stays within ±150 band for realistic input, matches manual EMA formula, display rounding to 2dp). Updated `MACRO_INTELLIGENCE_MASTER.md` "Hard part 4" and the spec-audit table to document the corrected formula and the bug history.
+   - Files changed: `tests/test_mcclellan_pull.py` (new), `docs/MACRO_INTELLIGENCE_MASTER.md`
+
+2. **NH/NL Ratio formula bug — proper fix + tests + docs** — SUCCESSFUL
+   - Summary: `nh_nl_ratio = highs / lows` (unbounded) was already fixed to `highs / (highs + lows)` (bounded 0–1) on 2026-07-21, and `nh_nl_ratio.csv` was already rebuilt (2026-07-16 now correctly reads 0.9787 instead of 46.0). Same gap as McClellan: no dedicated regression test, and `MACRO_INTELLIGENCE_MASTER.md` still described the old `new_highs / new_lows` formula in two places. Verified live `positioning.json` (2026-07-23) shows `nh_nl_ratio: 0.7273` — correctly bounded. Added `tests/test_sp500_breadth_nh_nl.py` (3 tests: ratio bounded [0,1] over a synthetic breadth frame, formula matches `highs/(highs+lows)` incl. the exact 46/1 → 0.9787 worked example from the bug report, zero-highs-and-lows guard returns NaN). Updated `MACRO_INTELLIGENCE_MASTER.md` variable table and "Hard part 5" with the corrected formula and bug history.
+   - Files changed: `tests/test_sp500_breadth_nh_nl.py` (new), `docs/MACRO_INTELLIGENCE_MASTER.md`
+
+3. **SKEW decimals + general SSI display-rounding policy** — SUCCESSFUL
+   - Summary: SKEW/McClellan rounding was already fixed 2026-07-21, but `nh_nl_ratio`, `hyg_lqd`, `vix_ratio`, `dbmf_beta` were inconsistently rounded to 4 decimals in `positioning.py` and the Nuxt mapper even though none are currency pairs (per the requested rule: 2dp for indicators, 4dp only for actual FX pairs like USDCNH). Also found `api/services/macro_service.py::get_ssi_summary()`/`get_ssi_history()` (the `/macro/ssi/summary`, `/macro/ssi/history` endpoints, separate legacy code path from `positioning.json`) returned fully unrounded floats straight from `ssi.db`. Fixed: added a shared `_display_decimals(key)` policy in `positioning.py` (2dp default, 4dp only for a `_CURRENCY_PAIR_KEYS` allowlist — currently empty of SSI inputs, future-proofed for FX); added `_round2()` helper in `macro_service.py` for the same two endpoints; fixed `sentiment-mapper.ts` and `MacroSsiPanel.vue` to drop their 3/4-decimal overrides. Rebuilt `positioning.json` + Nuxt dev UI; verified live API responses on `:8507` show 2dp everywhere (`nh_nl_ratio: 0.73`, `hyg_lqd: 0.75`, `vix_ratio: 1.09`, `dbmf_beta: 0.56`, was 4dp before).
+   - Files changed: `src/sentiment_superindex/engine/positioning.py`, `api/services/macro_service.py`, `MindwealthUI_Vue/server/utils/sentiment-mapper.ts`, `MindwealthUI_Vue/components/runic/MacroSsiPanel.vue`, `tests/test_ssi_display_rounding.py` (new)
+
+---
+
 ### 2026-07-16
 
 1. **F4 v2 steepening driver split (D3 spec) — context + analysis run** — SUCCESSFUL

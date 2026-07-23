@@ -19,7 +19,29 @@ ssi_score:
   history_years: 5
   design_percentile: 20  # ~20th percentile of 5y distribution by design intent
   zscore_clip: 3.0
-  weights:
+  layer_weights:
+    layer1: 0.40
+    layer2: 0.35
+    layer3: 0.25
+  layers:
+    layer1:
+      - aaii_spread
+      - naaim_exposure
+      - cnn_fg
+      - pct_above_200dma
+    layer2:
+      - mcclellan
+      - nh_nl_ratio
+      - hyg_lqd
+      - skew
+      - vix_ratio
+    layer3:
+      - dbmf_beta
+      - cftc_fm_net
+      - cftc_rm_net
+      - gross_net
+  # Legacy 4-input weights (Layer 2 confirmation votes only — not composite)
+  legacy_composite_weights:
     hyg_lqd: 0.30
     dbmf_beta: 0.25
     cnn_fg: 0.25

@@ -1,4 +1,4 @@
-"""Classic McClellan oscillator: EMA(19) − EMA(39) of cumulative net advances (S&P 500)."""
+"""Classic McClellan oscillator: EMA(19) − EMA(39) of daily net advances (S&P 500)."""
 
 from __future__ import annotations
 
@@ -17,9 +17,9 @@ CACHE_CSV = SSI_DATA_DIR / "mcclellan_oscillator.csv"
 
 
 def _classic_mcclellan(net_advances: pd.Series) -> pd.Series:
-    ad_line = net_advances.fillna(0).cumsum()
-    ema19 = ad_line.ewm(span=19, adjust=False).mean()
-    ema39 = ad_line.ewm(span=39, adjust=False).mean()
+    net = net_advances.fillna(0)
+    ema19 = net.ewm(span=19, adjust=False).mean()
+    ema39 = net.ewm(span=39, adjust=False).mean()
     osc = (ema19 - ema39).dropna()
     osc.name = "mcclellan"
     return osc.astype(float)

@@ -2171,3 +2171,205 @@ Spread **survives** recalibration; magnitude **wider** than legacy at both horiz
 **Push:** `git push origin` failed (no GitHub creds on host). Remote not updated; prod updated via local fetch.
 
 **Smoke:** `/api/v1/health` ok; `/analytics/performance` 200; `/analytics/analyst/brief` 200.
+---
+
+## 2026-07-23 — McClellan Oscillator formula bug: proper fix (tests + docs)
+
+**Context:** The actual cumsum bug fix (`mcclellan_pull.py`) and display rounding
+(`positioning.py::_round_display`, default 2dp) were already shipped on 2026-07-21 as part
+of the SSI 3-layer superindex work, along with a cache rebuild (`mcclellan_oscillator.csv`)
+and a full `ssi.db` history backfill. User asked to "fix this issue properly" for the McClellan
+report specifically — this pass closes the remaining gaps: no dedicated regression test existed
+for the formula itself, and `docs/MACRO_INTELLIGENCE_MASTER.md` still documented the old (buggy)
+cumsum formula as if it were correct.
+
+**Verification (no new bug found):**
+- Live `positioning.json` (2026-07-23) — `inputs.layer2.mcclellan = -12.02` (correct-range,
+  rounded). No lingering 217-style readings anywhere in the repo (`grep -r "217\.0"` only matches
+  unrelated `testing/macro_th_exp/D2_curve_phase_weekly_panel.csv` yield-curve data).
+- `mcclellan_oscillator.csv` cache confirmed already rebuilt: `2026-07-16,12.160863139182467`
+  (matches the corrected value cited in the root-cause analysis).
+
+**What changed in this pass:**
+- Added `tests/test_mcclellan_pull.py` (4 tests):
+  1. `test_does_not_cumsum_input` — constant daily net-advances series must converge the
+     oscillator to ~0 (EMA19 == EMA39 for a constant input); would fail if cumsum() were
+     reintroduced since the AD line would then grow unbounded.
+  2. `test_stays_within_normal_band_for_realistic_input` — realistic daily net-advances noise
+     (not a running total) must keep `|oscillator| < 150` for the whole series.
+  3. `test_matches_manual_ema_formula` — `_classic_mcclellan()` output must exactly equal
+     `EMA(19) - EMA(39)` computed directly on the raw input series (pandas `assert_series_equal`).
+  4. `test_positioning_rounds_mcclellan_to_two_decimals` — `_round_display(217.095146...)` →
+     `217.1`; `_round_display(12.160863...)` → `12.16`; `None` passthrough.
+- Updated `docs/MACRO_INTELLIGENCE_MASTER.md`:
+  - "Hard part 4" formula description and code sample corrected to EMA-on-daily-net-advances
+    (no cumsum), with an explicit bug-history paragraph documenting the 217.10 vs 12.16
+    discrepancy and referencing where the fix lives.
+  - Spec-audit table row for `MCCLELLAN` (`pull_all.py` source description) updated to match.
+
+**Assumptions:**
+- No further code change needed in `mcclellan_pull.py` / `positioning.py` — the underlying
+  computation and rounding were already correct from the 2026-07-21 pass; this pass is
+  test-coverage + documentation hardening so the bug cannot silently regress and the docs
+  don't mislead the next reader into reintroducing `cumsum()`.
+- Did not re-run `scripts/rebuild_ssi_history.py` again since the 2026-07-21 backfill already
+  covers 2015-01-01 → 2026-07-21 with the corrected formula; the daily cron will pick up
+  2026-07-22 onward automatically.
+
+**Deferred:**
+- No dedicated test yet for `nh_nl_pull.py` / NH-NL ratio fix (same 2026-07-21 batch) —
+  candidate for a follow-up `tests/test_nh_nl_pull.py` if that also needs "properly fixed"
+  treatment.
+- SKEW display rounding relies solely on `_round_display()` in `positioning.py`; no schema-level
+  enforcement (e.g. a Pydantic response model) prevents a future code path from re-emitting an
+  unrounded float.
+
+**Prod impact:** Docs-only + test-only change in this pass — the functional fix already shipped
+2026-07-21 (see that entry) and is pending prod merge/deploy along with the rest of the SSI
+superindex work.
+
+---
+
+## 2026-07-23 — SKEW decimals + general SSI display-rounding policy
+
+**Context:** User's 4th flagged issue reported SKEW rendering as `147.27999877929688`
+(raw Yahoo float, no rounding) and asked for a general rule: 2 decimal places for
+indicators (SKEW, McClellan, NH/NL, breadth, etc.), 4 decimal places reserved for
+currency pairs (e.g. USDCNH).
+
+**What was already correct:** SKEW and McClellan display rounding (both default 2dp via
+`_round_display()` in `positioning.py`) were already fixed 2026-07-21.
+
+**What was actually wrong (found during this pass, not previously caught):**
+- `positioning.py`'s `inputs.layer2.nh_nl_ratio`, `inputs.layer2.hyg_lqd`,
+  `inputs.layer2.vix_ratio`, and `inputs.layer3.dbmf_beta` were all explicitly rounded to
+  **4 decimals** (`decimals=4` kwarg), inconsistent with the "2dp for indicators" rule —
+  none of hyg_lqd (bond ETF ratio), vix_ratio (vol term-structure ratio), or dbmf_beta
+  (regression beta) are currency pairs.
+- `MindwealthUI_Vue/server/utils/sentiment-mapper.ts::formatLayer2InputItem()` had matching
+  overrides (`nh_nl_ratio` → `.toFixed(3)`, `hyg_lqd`/`vix_ratio` → `.toFixed(4)`), plus the
+  layer-2 confirmation-vote sub-label used `.toFixed(3)` for the same four legacy inputs.
+- `api/services/macro_service.py::get_ssi_summary()` and `get_ssi_history()` — a **separate**
+  legacy API surface (`/macro/ssi/summary`, `/macro/ssi/history`, consumed by
+  `MacroSsiPanel.vue` via `useRunicMacro.ts`) — read `hyg_lqd`/`dbmf_beta`/`cnn_fg`/`vix_ratio`
+  straight out of `ssi_daily` in `ssi.db` with **zero rounding**. The Vue component happened
+  to call `.toFixed(3)` at render time so the raw float never reached the screen there, but
+  the JSON payload itself (e.g. via `curl`) would leak full float precision — the same failure
+  mode as the original SKEW bug, just one layer removed from the UI.
+- `MacroSsiPanel.vue`'s `inputRows` also rendered those same four raw values at `.toFixed(3)`.
+
+**Fix:**
+- Added a shared, documented rounding policy in `positioning.py`:
+  - `_CURRENCY_PAIR_KEYS` frozenset (currently `usdcnh`, `eurusd`, `gbpusd`, `usdjpy`,
+    `audusd`, `usdcad`, `usdchf`, `nzdusd`) — none of the current SSI inputs match, so
+    every field rounds to 2dp today; this exists so a future FX-linked SSI input
+    automatically gets 4dp instead of silently defaulting to 2dp.
+  - `_display_decimals(key)` returns 4 if `key.lower()` is in the currency-pair set, else 2.
+  - `_round_display(value, *, key=None, decimals=None)` — `decimals` explicit override still
+    works (back-compat), otherwise resolved from `key` via `_display_decimals()`.
+  - Updated every call site in `build_positioning_payload()` to pass `key=` instead of a
+    hardcoded `decimals=4`, so `nh_nl_ratio`/`hyg_lqd`/`vix_ratio`/`dbmf_beta`/`cftc_fm_net`/
+    `cftc_rm_net`/`gross_net` all now round to 2dp like everything else.
+- Added `_round2()` in `macro_service.py`, applied to `_vote()`'s `raw` field in
+  `get_ssi_summary()` and to the four `inputs` fields in `get_ssi_history()`'s per-day series.
+- Fixed `sentiment-mapper.ts`: `formatLayer2InputItem()` now always uses `.toFixed(2)` (removed
+  the `nh_nl_ratio`/`hyg_lqd`/`vix_ratio` overrides); vote sub-label raw value also `.toFixed(2)`.
+- Fixed `MacroSsiPanel.vue`'s `inputRows.raw` from `.toFixed(3)` to `.toFixed(2)`.
+- Rebuilt `positioning.json` (`scripts/run_ssi_daily.py`) and Nuxt dev UI (`npm run build`);
+  restarted `mindwealth-api-dev` and `mindwealth-ui-dev`. Verified live on `:8507`:
+  `nh_nl_ratio: 0.73` (was `0.7273`), `hyg_lqd: 0.75` (was `0.7455`), `vix_ratio: 1.09` (was
+  `1.0943`), `dbmf_beta: 0.56` (was `0.5566`) — all now 2dp, matching skew/mcclellan.
+
+**Tests:** `tests/test_ssi_display_rounding.py` (6 tests) — `_round_display()` defaults to 2dp
+for the worked examples from all three bug reports (`147.27999877929688` → `147.28`,
+`217.09514599086106` → `217.1`, `0.9787234042553191` → `0.98`); `None` passthrough; the
+currency-pair allowlist correctly returns 4dp (`_display_decimals("usdcnh") == 4`,
+case-insensitive) while every real SSI key returns 2dp; explicit `decimals=` kwarg still
+overrides; and a full `build_positioning_payload()` mock-integration test asserts no field in
+`inputs.layer1`/`inputs.layer2` has more than 2 decimal places in its string representation.
+
+**Assumptions:**
+- Did not touch `ssi_level`/`ssi_percentile_5y` precision (already `round(level, 4)` /
+  `round(pctile, 2)` at write time in `positioning.py`, and displayed at various precisions —
+  1dp on the sentiment dashboard KPI, 4dp on `RunicBriefPanel.vue`/`MacroSsiPanel.vue` for
+  Runic-brief audit precision). These are the **composite score**, not a raw "indicator" input
+  like SKEW/McClellan/NH-NL/HYG-LQD/VIX-ratio/DBMF-beta that the bug report was about, and the
+  4dp composite convention is already documented/tested elsewhere (`get-ssi-summary.md` shows
+  `ssi_level: 0.2691`). Revisit only if explicitly asked to change composite-score precision too.
+- `ssi.db`'s stored `hyg_lqd`/`dbmf_beta`/`cnn_fg`/`vix_ratio` columns remain full-precision on
+  disk — rounding is applied at the API response boundary (`macro_service.py`), not by
+  rewriting history via another `rebuild_ssi_history.py` run. This matches "round at render
+  time" from the fix instructions and avoids an unnecessary ~5+ minute full backfill for a
+  display-only change.
+- `RunicBriefPanel.vue` doesn't render the four raw legacy inputs directly (only
+  `ssi_level`/`ssi_multiplier`/`posture`/`layer2_status`), so it needed no changes.
+
+**Deferred:**
+- CFTC layer-3 net-position fields (`cftc_fm_net`, `cftc_rm_net`, `gross_net`) are large
+  integers (e.g. `-370589.0`) — rounding to 2dp is a no-op for these but keeps the policy
+  uniform; no separate "large integer" formatting rule was requested.
+- No schema-level enforcement (e.g. a Pydantic response model with `Field` rounding) added;
+  relies on each service function calling the shared helper consistently. A future refactor
+  could centralize this into a single `format_ssi_indicator()` used by both `positioning.py`
+  and `macro_service.py` instead of two separate 2dp helpers.
+
+**Prod impact:** `src/sentiment_superindex/engine/positioning.py`,
+`api/services/macro_service.py` merge `chatbot-dev` → `chatbot-prod` (pending, same batch as
+the 2026-07-21 SSI superindex work). `MindwealthUI_Vue` changes are a **separate repo**, not
+deployed via `prod-pull-and-restart.sh` — needs its own build + restart on the Nuxt prod host
+when that cutover happens.
+
+---
+
+## 2026-07-23 — NH/NL Ratio formula bug: proper fix (tests + docs)
+
+**Context:** Same pattern as the McClellan follow-up above. The actual formula fix
+(`sp500_breadth.py::compute_daily_breadth_stats` — `nh_nl_ratio = highs / (highs + lows)`
+instead of the old unbounded `highs / lows`) and the `nh_nl_ratio.csv` cache rebuild were
+already shipped on 2026-07-21. User asked to "fix the issue properly" for this specific
+report — closed the remaining gaps: no dedicated regression test existed for the formula,
+and `docs/MACRO_INTELLIGENCE_MASTER.md` still described the old `new_highs / new_lows`
+formula in two places (variable table + Hard part 5 narrative).
+
+**Verification (no new bug found):**
+- Live `positioning.json` (2026-07-23) — `inputs.layer2.nh_nl_ratio = 0.7273`, correctly
+  bounded in [0, 1].
+- `nh_nl_ratio.csv` cache confirmed already rebuilt: `2026-07-16,0.9787234042553191` — matches
+  the corrected value cited in the root-cause analysis (46 highs / (46+1) = 0.9787).
+
+**What changed in this pass:**
+- Added `tests/test_sp500_breadth_nh_nl.py` (3 tests):
+  1. `test_ratio_is_bounded_zero_to_one` — over a synthetic multi-symbol breadth frame,
+     `nh_nl_ratio` must never exceed 1 or go below 0 (the old `highs/lows` formula had no
+     such bound).
+  2. `test_matches_expected_formula_on_known_counts` — asserts the general relationship
+     `ratio == highs / (highs + lows)` on whatever counts the synthetic data produces, plus
+     an explicit worked-example assertion reproducing the bug report's exact numbers:
+     `46 / 1 == 46.0` (old, wrong) vs `46 / 47 == 0.9787234042553191` (new, correct).
+  3. `test_zero_highs_and_lows_yields_nan` — the zero-guard (`denom > 0`) must return `NaN`
+     when both highs and lows are 0 for a given day, not divide-by-zero or silently show 0.
+- Updated `docs/MACRO_INTELLIGENCE_MASTER.md`:
+  - Variable summary table: `NH/NL Ratio` description changed from "ratio of new highs to
+    new lows" to "new highs as a share of new highs + new lows... bounded 0–1".
+  - "Hard part 5" (`sp500_breadth.py` walkthrough): formula bullet corrected to
+    `new_highs / (new_highs + new_lows)` with an explicit bug-history paragraph (the
+    46-highs/1-low → 46.0 vs 0.979 example).
+  - Spec-audit table row for `NH_NL_RATIO` appended with a note on the bounded-ratio fix.
+
+**Assumptions:**
+- No further code change needed in `sp500_breadth.py` / `positioning.py` — the formula and
+  the general `_round_display()` display rounding (4dp for `nh_nl_ratio` per `positioning.py`)
+  were already correct from 2026-07-21; this pass is test-coverage + documentation hardening.
+- The synthetic-data tests use a fixed-seed random walk rather than mocking yfinance, so they
+  exercise the real `compute_daily_breadth_stats()` vectorized logic (MIN_STOCKS gate, 52-week
+  rolling high/low, `dropna(how="all")`) rather than a trivial hand-built DataFrame — closer
+  to what production actually runs.
+
+**Deferred:**
+- None outstanding for NH/NL specifically. SKEW display-rounding schema-level enforcement
+  (noted as deferred in the McClellan follow-up above) remains the only open item from this
+  batch of three flagged issues (McClellan, NH/NL, SKEW).
+
+**Prod impact:** Docs-only + test-only change in this pass — the functional fix already shipped
+2026-07-21 (see that entry) and is pending prod merge/deploy along with the rest of the SSI
+superindex work.

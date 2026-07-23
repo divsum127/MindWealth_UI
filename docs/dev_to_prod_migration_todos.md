@@ -23,6 +23,30 @@ Reference deploy skill: `.cursor/skills/prod-pull-and-details/SKILL.md`
 
 ---
 
+## 2026-07-23 — SSI display-rounding policy (SKEW/NH-NL/HYG-LQD/VIX-ratio/DBMF-beta → 2dp)
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`
+
+| Path | Notes |
+|------|--------|
+| `src/sentiment_superindex/engine/positioning.py` | `_display_decimals()`/`_CURRENCY_PAIR_KEYS` policy; `nh_nl_ratio`/`hyg_lqd`/`vix_ratio`/`dbmf_beta`/CFTC fields now 2dp (was 4dp) |
+| `api/services/macro_service.py` | `_round2()` applied to `get_ssi_summary()` and `get_ssi_history()` legacy-input fields |
+| `tests/test_ssi_display_rounding.py` | **new** |
+
+**Separate Nuxt repo (`MindwealthUI_Vue`, not deployed via this repo's script):**
+- `server/utils/sentiment-mapper.ts` — removed 3/4dp overrides for `nh_nl_ratio`/`hyg_lqd`/`vix_ratio`, vote sub-label now 2dp
+- `components/runic/MacroSsiPanel.vue` — `inputRows.raw` now `.toFixed(2)` (was `.toFixed(3)`)
+- Nuxt dev already rebuilt + `mindwealth-ui-dev` restarted on `:8514`; **prod Nuxt host needs its own `npm run build` + restart** at cutover
+
+**`[PROD-ACTION]`** after deploy:
+- No `ssi.db` backfill needed — rounding is applied at API-response time, not stored data.
+- Re-run `scripts/run_ssi_daily.py` (or wait for the daily cron) to refresh `positioning.json` with 2dp values on prod.
+
+**Smoke tests:**
+- `[DONE]` 2026-07-23 dev `:8507` — `/analytics/sentiment/layers` and `/macro/ssi/summary` both return 2dp for `nh_nl_ratio`, `hyg_lqd`, `vix_ratio`, `dbmf_beta`, `skew`, `mcclellan`
+- `[PENDING]` prod `:8506` — same check after merge/deploy
+
+---
 ## 2026-07-18 — Portfolio cluster sizing fix
 
 `[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`

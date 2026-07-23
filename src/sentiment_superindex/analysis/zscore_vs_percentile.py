@@ -18,7 +18,7 @@ def build_percentile_ssi_history(start: str = "2010-01-01", window_days: int = 7
     """3yr rolling percentile rank composite (distribution-agnostic)."""
     series = load_all_series(force=True)
     cfg = load_config()
-    weights = cfg.get("ssi_score", {}).get("weights", {})
+    weights = cfg.get("ssi_score", {}).get("legacy_composite_weights", {})
     idx = series["hyg_lqd"].index
     for s in series.values():
         idx = idx.union(s.index)

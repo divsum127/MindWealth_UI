@@ -6,6 +6,10 @@ from typing import Any
 
 import pandas as pd
 
+from src.macro_intelligence.data.cftc_pull import (
+    fetch_cftc_asset_manager_net,
+    fetch_cftc_fast_money_net,
+)
 from src.sentiment_superindex.data.aaii_pull import fetch_aaii_spread
 from src.sentiment_superindex.data.cftc_ssi import cftc_layer3_snapshot
 from src.sentiment_superindex.data.cnn_fear_greed import load_cnn_series
@@ -17,6 +21,16 @@ from src.sentiment_superindex.data.skew_pull import fetch_skew
 from src.sentiment_superindex.data.yahoo_inputs import dbmf_beta_vs_spy, hyg_lqd_ratio, vix_ratio_series
 
 _CACHE: dict[str, pd.Series] = {}
+
+
+def _gross_net_series() -> pd.Series:
+    fm = fetch_cftc_fast_money_net()
+    rm = fetch_cftc_asset_manager_net()
+    if fm.empty or rm.empty:
+        return pd.Series(dtype=float, name="gross_net")
+    combined = fm.add(rm, fill_value=0).sort_index()
+    combined.name = "gross_net"
+    return combined.astype(float)
 
 
 def load_all_series(force: bool = False) -> dict[str, pd.Series]:
@@ -35,6 +49,9 @@ def load_all_series(force: bool = False) -> dict[str, pd.Series]:
             "mcclellan": fetch_mcclellan_oscillator("2010-01-01"),
             "skew": fetch_skew("1990-01-01"),
             "nh_nl_ratio": fetch_nh_nl_ratio("2010-01-01"),
+            "cftc_fm_net": fetch_cftc_fast_money_net(),
+            "cftc_rm_net": fetch_cftc_asset_manager_net(),
+            "gross_net": _gross_net_series(),
         }
     )
     return _CACHE
