@@ -7,11 +7,15 @@ from tempfile import TemporaryDirectory
 import pandas as pd
 
 from src.utils.mtm_pricing import (
+    MTM_HOLDING_COLUMN,
+    TODAY_PRICE_COLUMN,
+    TRADING_DAYS_COLUMN,
     batch_latest_prices,
     calculate_mark_to_market,
     get_latest_price_from_stock_data,
     parse_mtm_holding_cell,
     parse_symbol_signal_column,
+    refresh_dataframe_current_prices,
     resolve_signal_basis,
 )
 
@@ -84,6 +88,33 @@ class TestBatchLatestPrices(unittest.TestCase):
             p, d = mp["BAT"]
             self.assertAlmostEqual(p, 42.0, places=5)
             self.assertEqual(d, "2025-06-01")
+
+
+class TestRefreshDataframeCurrentPrices(unittest.TestCase):
+    def test_updates_stale_zero_mtm_from_stock_data(self):
+        with TemporaryDirectory() as td:
+            stock_dir = Path(td)
+            pd.DataFrame({"Date": ["2026-07-21"], "Close": [54.0]}).to_csv(
+                stock_dir / "MCHI.csv", index=False
+            )
+            sym_col = "Symbol, Signal, Signal Date/Price[$]"
+            df = pd.DataFrame(
+                [
+                    {
+                        sym_col: "MCHI, Short, 2026-06-26 (Price: 50.48)",
+                        "Signal Open Price": "55.18",
+                        MTM_HOLDING_COLUMN: "-0.0%, 0 days",
+                        TODAY_PRICE_COLUMN: "2026-06-26 (Price: 50.48), 0.0% below",
+                        TRADING_DAYS_COLUMN: "0 days",
+                    }
+                ]
+            )
+            refreshed = refresh_dataframe_current_prices(df, stock_dir)
+            mtm, days = parse_mtm_holding_cell(refreshed.iloc[0][MTM_HOLDING_COLUMN])
+            self.assertNotEqual(mtm, "0.0%")
+            self.assertNotEqual(mtm, "-0.0%")
+            self.assertGreater(days or 0, 0)
+            self.assertIn("2026-07-21", str(refreshed.iloc[0][TODAY_PRICE_COLUMN]))
 
 
 class TestParseSymbolSignal(unittest.TestCase):

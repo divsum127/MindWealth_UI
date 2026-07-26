@@ -1,0 +1,26 @@
+{
+  "combo": "G",
+  "validated_horizon": "spx_3m",
+  "direction": "bearish",
+  "current_gates": {
+    "vxts_max": 1.0,
+    "hy_widen_4wk_bps": 30,
+    "vix_max": 20
+  },
+  "config_baseline": {
+    "n_events": 0,
+    "bear_hit_3m_pct": null,
+    "avg_spx_3m_pct": null,
+    "pw_summary": {
+      "n": 0,
+      "hit_rate": null,
+      "avg_win": null,
+      "avg_loss": null,
+      "pw_expected": null,
+      "benchmark_pct": 2.5,
+      "excess_pct": null
+    }
+  },
+  "run_date": "2026-07-17",
+  "note": "CONFIG baseline first-crossing after B4 rolling_3y pctile fix"
+}

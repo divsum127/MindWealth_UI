@@ -88,14 +88,17 @@ def full_recalculation(
     overrides = overrides or {}
     fundamentals = fundamentals or {}
     info = info or {}
+    raw_fetch = raw_fetch or {}
 
-    if not info:
-        yf_ticker = _try_yfinance_ticker(ticker)
-        if yf_ticker is not None:
-            try:
-                info = dict(yf_ticker.info or {})
-            except Exception:
-                info = {}
+    if not fundamentals or not info:
+        from .fundamentals import fetch_yfinance_fundamentals
+
+        payload = fetch_yfinance_fundamentals(symbol)
+        info = {**info, **(payload.get("info") or {})}
+        if not fundamentals:
+            fundamentals = dict(payload.get("fundamentals") or {})
+        raw_fetch = raw_fetch or payload.get("raw_fetch") or {}
+        fundamentals["ticker"] = symbol
 
     existing = load_record(symbol, store_dir) or default_record(symbol)
     record = {**existing, "ticker": symbol}
@@ -114,13 +117,37 @@ def full_recalculation(
         skip_agents = False
     if not skip_agents:
         company = str(info.get("longName") or info.get("shortName") or symbol)
-        agent_out = run_agent_dimensions(symbol, company, business_type)
+        agent_out = run_agent_dimensions(
+            symbol, company, business_type, revenue_ttm=_safe_float(fundamentals.get("revenue_ttm") or fundamentals.get("fwd_revenue_stored"))
+        )
         for key, val in agent_out.items():
             if val:
                 manual[key] = val
+        if isinstance(manual.get("reinvestment_runway_detail"), dict):
+            tam_mult = manual["reinvestment_runway_detail"].get("tam_revenue_multiple")
+            if tam_mult is not None:
+                manual["reinvestment_runway"] = tam_mult
         record["manual_overrides"] = manual
 
-    bq_inputs = {**fundamentals, "roic": fundamentals.get("roic_proxy")}
+    # Divergence counter — update before BQ so divergence_signal uses persisted days
+    from .divergence import bootstrap_days_below_from_history, update_divergence_state
+
+    price_hist = fundamentals.get("price_history_series")
+    f52 = _safe_float(fundamentals.get("fifty_two_week_high"))
+    px = _safe_float(fundamentals.get("price") or info.get("currentPrice"))
+    state = dict(record.get("divergence_state") or {})
+    if not state.get("bootstrapped_from_history") and price_hist is not None:
+        boot = bootstrap_days_below_from_history(price_history=price_hist, fifty_two_week_high=f52, current_price=px)
+        if boot > 0:
+            record["days_below_high"] = boot
+            state["days_below_high"] = boot
+            state["bootstrapped_from_history"] = True
+            record["divergence_state"] = state
+    update_divergence_state(record, current_price=px, fifty_two_week_high=f52)
+    fundamentals["days_below_high"] = record.get("days_below_high")
+    fundamentals["fd_direction"] = record.get("fd_direction")
+
+    bq_inputs = {**fundamentals, "roic": fundamentals.get("roic_proxy"), "ticker": symbol}
     bq_components = compute_bq_components_auto(bq_inputs, business_type, manual)
     if not any(bq_components.values()):
         bq_components = compute_bq_components(fundamentals, manual)
@@ -159,8 +186,19 @@ def full_recalculation(
             "dividend_yield_5y_std": _first_not_none(
                 fundamentals.get("dividend_yield_5y_std"), overrides.get("dividend_yield_5y_std")
             ),
+            "shares_outstanding_change_pct": fundamentals.get("shares_outstanding_change_pct"),
+            "fifty_two_week_high": fundamentals.get("fifty_two_week_high"),
+            "days_below_high": fundamentals.get("days_below_high"),
         },
     )
+
+    # EPS revision tracking — store prior estimate for FD vote 4
+    eps_est = _safe_float(fundamentals.get("eps_estimate_current") or fundamentals.get("eps_fwd"))
+    if eps_est is not None:
+        prior = record.get("eps_estimate_current")
+        if prior is not None and record.get("eps_estimate_prior") is None:
+            record["eps_estimate_prior"] = prior
+        record["eps_estimate_current"] = eps_est
 
     if fundamentals.get("fetch_errors") is not None:
         record["fetch_errors"] = fundamentals.get("fetch_errors")
@@ -237,9 +275,12 @@ def daily_update(
     stored_price = _safe_float(record.get("price"))
     if stored_price is not None and eps_ttm and eps_ttm > 0:
         record["pe_ttm"] = round(stored_price / eps_ttm, 4)
+    else:
+        record["pe_ttm"] = None
+        record["pe_percentile_20y"] = None
 
     pe_history = record.get("pe_20y_array") or []
-    if isinstance(pe_history, list):
+    if isinstance(pe_history, list) and record.get("pe_ttm") and record["pe_ttm"] > 0:
         record["pe_percentile_20y"] = _percentile_rank(pe_history, _safe_float(record.get("pe_ttm")))
 
     mcap = _safe_float(record.get("market_cap"))
@@ -265,6 +306,50 @@ def daily_update(
     if isinstance(pe_meta, dict) and pe_meta.get("insufficient_20y"):
         record["pe_history_insufficient"] = True
         record["pe_percentile_20y"] = None
+    if not record.get("pe_ttm") or (record.get("pe_ttm") or 0) <= 0:
+        record["pe_percentile_20y"] = None
+
+    # Divergence state persistence (bootstrap from price history on first run)
+    from .divergence import bootstrap_days_below_from_history, update_divergence_state
+
+    fifty_two_week_high = _safe_float(market_data.get("fifty_two_week_high"))
+    if fifty_two_week_high is None:
+        fifty_two_week_high = _safe_float(record.get("fifty_two_week_high"))
+    price_hist = market_data.get("price_history_series")
+    if price_hist is None:
+        price_hist = market_data.get("price_history")
+    if int(record.get("days_below_high") or 0) == 0 and price_hist is not None:
+        boot = bootstrap_days_below_from_history(
+            price_history=price_hist,
+            fifty_two_week_high=fifty_two_week_high,
+            current_price=stored_price,
+        )
+        if boot > 0:
+            record["days_below_high"] = boot
+            state = dict(record.get("divergence_state") or {})
+            state["days_below_high"] = boot
+            state["bootstrapped_from_history"] = True
+            record["divergence_state"] = state
+    update_divergence_state(
+        record,
+        current_price=stored_price,
+        fifty_two_week_high=fifty_two_week_high,
+    )
+    if market_data.get("days_below_high") is not None:
+        record["days_below_high"] = int(market_data["days_below_high"])
+
+    # M&A flags from auxiliary DB
+    try:
+        from .ma_activity import get_ma_flags
+
+        ma_flags = get_ma_flags(symbol)
+        record.update(ma_flags)
+        if not ma_flags.get("m_and_a_activity"):
+            record.pop("m_and_a_bid_price", None)
+            record.pop("m_and_a_note", None)
+            record.pop("m_and_a_board_response", None)
+    except Exception:
+        pass
 
     record["valuation_tax_breakdown"] = valuation_tax_breakdown(record)
     record["valuation_tax"] = record["valuation_tax_breakdown"]["total"]
@@ -275,6 +360,9 @@ def daily_update(
     record["yield_trap_warning"] = is_yield_trap(record, symbol)
     record["last_daily_update"] = utc_now_iso()
     apply_coverage_to_record(record, market_data, raw_fetch=raw_fetch, info=coverage_info)
+
+    # Drop non-serializable / transient enrichment fields before persist
+    record.pop("price_history_series", None)
 
     if save:
         save_record(record, store_dir)
@@ -373,9 +461,7 @@ def modify_signal(
         rationale.append("TRAILING_STOP_WARNING: long position near stop")
     elif technical_signal == "BUY":
         verdict, sizing = verdict_for_buy(final_score, record.get("fd_direction"), yield_trap)
-        fd_adj = _safe_float(record.get("fd_sizing_adj")) or 0.0
-        if fd_adj and verdict not in ("CANCEL BUY", "NOT_APPLICABLE"):
-            sizing = round(clamp(sizing * (1.0 + fd_adj), 0.0, 100.0), 2)
+        # fd_direction sizing is encoded in verdict_for_buy tiers — do not double-apply fd_sizing_adj
         if (
             signal_timeframe == "short"
             and technical_signal == "BUY"

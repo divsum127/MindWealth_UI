@@ -8,7 +8,7 @@ REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PY="${REPO_ROOT}/.venv/bin/python"
 export TZ=America/New_York
 
-MACRO_MARKERS='run_ssi_daily\.py|run_macro_friday_pull\.py|run_macro_nightly\.py|run_emission_vectors_daily\.py'
+MACRO_MARKERS='run_ssi_daily\.py|run_macro_friday_pull\.py|run_macro_nightly\.py|run_emission_vectors_daily\.py|run_portfolio_book_snapshot_daily\.py|run_personal_book_snapshot_daily\.py'
 EMAIL_MARKER='emailscript\.sh'
 
 EXISTING="$(crontab -l 2>/dev/null || true)"
@@ -25,7 +25,10 @@ CRON_FILE=$(mktemp)
   echo "30 17 * * 5 cd ${REPO_ROOT} && ${PY} scripts/run_macro_friday_pull.py >> macro_intelligence/logs/friday_pull.log 2>&1"
   echo "0 18 * * 1-5 cd ${REPO_ROOT} && ${PY} scripts/run_macro_nightly.py >> macro_intelligence/logs/nightly.log 2>&1"
   echo "15 18 * * 1-5 cd ${REPO_ROOT} && ${PY} scripts/run_emission_vectors_daily.py >> macro_intelligence/logs/emission_vectors_daily.log 2>&1"
+  echo "5 19 * * 1-5 cd ${REPO_ROOT} && ${PY} scripts/run_portfolio_book_snapshot_daily.py >> portfolio_store/logs/book_snapshot_daily.log 2>&1"
+  echo "10 19 * * 1-5 cd ${REPO_ROOT} && ${PY} scripts/run_personal_book_snapshot_daily.py >> portfolio_store/logs/personal_book_snapshot_daily.log 2>&1"
 } > "$CRON_FILE"
+mkdir -p "${REPO_ROOT}/portfolio_store/logs"
 mkdir -p "${REPO_ROOT}/macro_intelligence/logs"
 crontab "$CRON_FILE"
 rm -f "$CRON_FILE"

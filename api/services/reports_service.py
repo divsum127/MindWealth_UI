@@ -496,6 +496,9 @@ def get_shortlist_report() -> dict[str, Any]:
     # Build structured records: prefer csv rows; fall back to txt parsing
     if not csv_df.empty:
         from api.services.signal_enrichment_service import enrich_records
+        from src.utils.mtm_pricing import refresh_dataframe_current_prices
+
+        csv_df = refresh_dataframe_current_prices(csv_df)
         structured_records = enrich_records(dataframe_to_records(csv_df))
     else:
         structured_records = _parse_shortlist_structured_records(markdown_text)

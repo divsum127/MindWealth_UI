@@ -150,6 +150,11 @@ def default_record(ticker: str) -> dict[str, Any]:
         "position_layers": PositionLayers().to_dict(),
         "last_full_calc": None,
         "last_daily_update": None,
+        "days_below_high": 0,
+        "divergence_state": {},
+        "m_and_a_activity": False,
+        "eps_estimate_current": None,
+        "eps_estimate_prior": None,
         "created_at": now,
         "updated_at": now,
     }

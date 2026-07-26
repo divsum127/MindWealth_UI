@@ -25,6 +25,22 @@ COMMON_ETFS = {
     "XLE",
     "VGT",
     "XIU.TO",
+    # Bond / treasury / broad market ETFs used in VT book
+    "TLT",
+    "IEF",
+    "SHY",
+    "BND",
+    "AGG",
+    "LQD",
+    "HYG",
+    "MCHI",
+    "EFA",
+    "EWJ",
+    "EWZ",
+    "INDA",
+    "VEA",
+    "VTI",
+    "VOO",
 }
 
 EV_REV_TIERS = {
@@ -189,10 +205,11 @@ def _score_insider(value: Any) -> float:
 
 
 def _score_reinvestment(value: Any) -> float:
+    """TAM/Revenue ratio: >10x → +1, 3–10x → 0, <3x → -1."""
     multiple = _float_or_none(value)
     if multiple is None:
         return 0.0
-    if multiple >= 5:
+    if multiple > 10:
         return 1.0
     if multiple < 3:
         return -1.0

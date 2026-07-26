@@ -560,10 +560,15 @@ def get_combo_detail(combo_id: str) -> dict[str, Any]:
         confirmed_legs = (fire_detail or {}).get("confirmed_legs", [])
 
     try:
-        from src.macro_intelligence.engine.combo_metadata import combo_hit_rate_stats
+        from src.macro_intelligence.engine.combo_metadata import (
+            combo_fed_cycle_slice_stats,
+            combo_hit_rate_stats,
+        )
         hr_stats = combo_hit_rate_stats(combo_id)
+        fed_cycle_slices = combo_fed_cycle_slice_stats(combo_id)
     except Exception:
         hr_stats = {}
+        fed_cycle_slices = None
 
     analog_details = _safe(data, "analog_details", [])
     if not analog_details or (analog_details and analog_details[0].get("date") is None):
@@ -591,6 +596,7 @@ def get_combo_detail(combo_id: str) -> dict[str, Any]:
         "hit_rate_primary": hr_stats.get("hit_rate_primary"),
         "avg_return_primary": hr_stats.get("avg_return_primary"),
         "primary_label": hr_stats.get("primary_label"),
+        "fed_cycle_slices": fed_cycle_slices,
         "analog_dates": [a.get("date") for a in analog_details if a.get("date")],
         "analog_details": analog_details,
     }

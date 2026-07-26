@@ -1,0 +1,30 @@
+D1 regime bucket feed — D1_regime_bucket_v1.1_2026-07-17
+  Range: 2018-01-01 → 2026-12-31
+/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/cftc_pull.py:261: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  sub[date_col] = pd.to_datetime(sub[date_col], errors="coerce")
+/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/cftc_pull.py:261: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  sub[date_col] = pd.to_datetime(sub[date_col], errors="coerce")
+CFTC freshness: CFTC source 2026-07-07 older than expected 2026-07-14 (report lag 10d, expected max 3d) (ZIP refresh did not reach expected Tuesday)
+/home/ubuntu/uiv2/git/MindWealth_UI/src/macro_intelligence/data/cftc_pull.py:261: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  sub[date_col] = pd.to_datetime(sub[date_col], errors="coerce")
+  ... evaluated 25/446 Fridays (2018-06-22)
+  ... evaluated 50/446 Fridays (2018-12-14)
+  ... evaluated 75/446 Fridays (2019-06-07)
+  ... evaluated 100/446 Fridays (2019-11-29)
+  ... evaluated 125/446 Fridays (2020-05-22)
+  ... evaluated 150/446 Fridays (2020-11-13)
+  ... evaluated 175/446 Fridays (2021-05-07)
+  ... evaluated 200/446 Fridays (2021-10-29)
+  ... evaluated 225/446 Fridays (2022-04-22)
+  ... evaluated 250/446 Fridays (2022-10-14)
+  ... evaluated 275/446 Fridays (2023-04-07)
+  ... evaluated 300/446 Fridays (2023-09-29)
+  ... evaluated 325/446 Fridays (2024-03-22)
+  ... evaluated 350/446 Fridays (2024-09-13)
+  ... evaluated 375/446 Fridays (2025-03-07)
+  ... evaluated 400/446 Fridays (2025-08-29)
+  ... evaluated 425/446 Fridays (2026-02-20)
+  ... evaluated 446/446 Fridays (2026-07-17)
+Wrote 2149 daily rows → /home/ubuntu/uiv2/git/MindWealth_UI/testing/macro_th_exp/D1_regime_bucket_daily_2026-07-17.csv
+  buckets: {'BENIGN': 1617, 'ADVERSE': 238, 'MIXED': 294}
+  artifacts: D1_regime_bucket_fridays_2026-07-17.csv, D1_regime_bucket_feed_2026-07-17.json, D1_regime_bucket_feed_2026-07-17.md

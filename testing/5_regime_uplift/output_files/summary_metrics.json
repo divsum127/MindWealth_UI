@@ -1,0 +1,43 @@
+{
+  "generated_utc": "2026-07-14T06:38:46.785704+00:00",
+  "tickers": [
+    "SPY",
+    "TLT",
+    "GLD",
+    "HYG"
+  ],
+  "start": "2007-04-11",
+  "baseline": {
+    "n_days": 4843,
+    "start": "2007-04-12",
+    "end": "2026-07-13",
+    "cagr_pct": 7.72,
+    "vol_ann_pct": 8.84,
+    "sharpe_ann": 0.885,
+    "max_drawdown_pct": -22.63,
+    "total_return_pct": 317.29
+  },
+  "regime_overlay": {
+    "n_days": 4843,
+    "start": "2007-04-12",
+    "end": "2026-07-13",
+    "cagr_pct": 6.39,
+    "vol_ann_pct": 6.85,
+    "sharpe_ann": 0.938,
+    "max_drawdown_pct": -17.59,
+    "total_return_pct": 228.56
+  },
+  "uplift": {
+    "sharpe_delta": 0.053,
+    "cagr_delta_pp": -1.33,
+    "max_dd_delta_pp": 5.04
+  },
+  "mult_summary": {
+    "mean_gross_mult": 0.805,
+    "min_gross_mult": 0.532,
+    "max_gross_mult": 1.0,
+    "pct_full_exposure": 0.2,
+    "pct_below_80": 47.0
+  },
+  "multiplier_spec": "testing/5_regime_uplift/multiplier_spec.md"
+}

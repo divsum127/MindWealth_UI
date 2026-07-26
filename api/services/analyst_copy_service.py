@@ -58,7 +58,7 @@ def generate_alert_copy(kind: AlertKind, context: dict[str, Any], fallback_html:
         )
         if kind == "degradation":
             prompt = (
-                "Rewrite this degradation alert for a trading panel. "
+                "Rewrite this forward win-rate drift alert for a trading panel. "
                 "Hard data only, no hype. Keep under 3 lines HTML with <br>. "
                 f"Context: {json.dumps(context, default=str)}"
             )

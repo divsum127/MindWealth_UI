@@ -1,0 +1,89 @@
+{
+  "combo": "F",
+  "validated_horizon": "spx_6m",
+  "direction": "bullish",
+  "current_gates": {
+    "spx_50wma_reclaim_weekly_pct": 3.0,
+    "cftc_max_pctile": 50,
+    "active_weeks": 26
+  },
+  "tests": [
+    {
+      "test_id": "CF_SPX_1pct",
+      "param": "spx_50wma_reclaim_weekly_pct",
+      "value": 1.0,
+      "cftc_max_pctile": 50,
+      "n": 47,
+      "pw_6m": {
+        "n": 45,
+        "hit_rate": 0.8,
+        "avg_win": 10.525110140959999,
+        "avg_loss": -5.051667348371679,
+        "pw_expected": 7.409754643093663,
+        "benchmark_pct": 5.0,
+        "excess_pct": 2.409754643093663,
+        "avg": 7.409754643093662,
+        "median": 8.130508818658704,
+        "worst": -19.546737398979623
+      }
+    },
+    {
+      "test_id": "CF_SPX_2pct",
+      "param": "spx_50wma_reclaim_weekly_pct",
+      "value": 2.0,
+      "cftc_max_pctile": 50,
+      "n": 47,
+      "pw_6m": {
+        "n": 45,
+        "hit_rate": 0.8222222222222222,
+        "avg_win": 10.109181821291127,
+        "avg_loss": -5.871554684058473,
+        "pw_expected": 7.268161998117864,
+        "benchmark_pct": 5.0,
+        "excess_pct": 2.268161998117864,
+        "avg": 7.268161998117866,
+        "median": 7.682289528169199,
+        "worst": -19.546737398979623
+      }
+    },
+    {
+      "test_id": "CF_SPX_3pct",
+      "param": "spx_50wma_reclaim_weekly_pct",
+      "value": 3.0,
+      "cftc_max_pctile": 50,
+      "n": 44,
+      "pw_6m": {
+        "n": 42,
+        "hit_rate": 0.8571428571428571,
+        "avg_win": 10.219002968366325,
+        "avg_loss": -4.249749338851186,
+        "pw_expected": 8.152038353049537,
+        "benchmark_pct": 5.0,
+        "excess_pct": 3.1520383530495373,
+        "avg": 8.152038353049539,
+        "median": 8.151293317272334,
+        "worst": -11.58211775218963
+      }
+    },
+    {
+      "test_id": "CF_SPX_5pct",
+      "param": "spx_50wma_reclaim_weekly_pct",
+      "value": 5.0,
+      "cftc_max_pctile": 50,
+      "n": 43,
+      "pw_6m": {
+        "n": 41,
+        "hit_rate": 0.8536585365853658,
+        "avg_win": 10.531340309904968,
+        "avg_loss": -3.346296952257013,
+        "pw_expected": 8.500466564222725,
+        "benchmark_pct": 5.0,
+        "excess_pct": 3.500466564222725,
+        "avg": 8.500466564222727,
+        "median": 8.172077815885963,
+        "worst": -8.359784899204715
+      }
+    }
+  ],
+  "run_date": "2026-07-17"
+}

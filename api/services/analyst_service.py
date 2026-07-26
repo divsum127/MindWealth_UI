@@ -106,9 +106,9 @@ def _degradation_to_panel_alert(raw: dict[str, Any], floor_pct: float) -> dict[s
     alert_id = _slug(f"deg-{function}-{direction}-{interval}-{asset}")
     severity = raw.get("severity", "breach")
     label = raw.get("label") or (
-        "AI ANALYST · OVERWATCH AUTO-TRIGGERED · DEGRADATION WATCH"
+        "AI ANALYST · OVERWATCH AUTO-TRIGGERED · DRIFT ALERT WATCH"
         if severity == "watch"
-        else "AI ANALYST · OVERWATCH AUTO-TRIGGERED · DEGRADATION BREACH"
+        else "AI ANALYST · OVERWATCH AUTO-TRIGGERED · DRIFT ALERT BREACH"
     )
 
     html = raw.get("message", "")
@@ -148,7 +148,7 @@ def _degradation_to_panel_alert(raw: dict[str, Any], floor_pct: float) -> dict[s
             "backtest_wr": bt_rate,
             "gap": gap,
             "pattern": raw.get("pattern", ""),
-            "above_floor": fwd_rate >= floor_pct,
+            "above_floor": fwd_rate >= 61.0,
         },
     }
 

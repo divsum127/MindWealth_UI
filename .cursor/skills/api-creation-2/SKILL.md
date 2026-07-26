@@ -258,8 +258,9 @@ This is a **separate git repository**. Commit docs there in addition to MindWeal
 cd /home/ubuntu/uiv2/git/MindWealth_UI
 export PYTHONPATH="$(pwd)"
 python scripts/export_openapi.py
-cp docs/api/openapi/mindwealth-v1.json docs/mindwealth-api-docs/openapi/mindwealth-v1.json
 ```
+
+Writes directly to `docs/mindwealth-api-docs/openapi/mindwealth-v1.json`.
 
 Use **8606** in curl examples:
 

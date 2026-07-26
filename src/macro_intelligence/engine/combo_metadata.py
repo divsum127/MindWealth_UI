@@ -157,6 +157,49 @@ def format_reason_hit_rate_short(letter: str) -> str | None:
     return hit_rate_reason_short(combo_hit_rate_stats(letter))
 
 
+def combo_fed_cycle_slice_stats(letter: str) -> dict[str, Any] | None:
+    """Fed-cycle slice table for combos with validated D5-style breakdown (e.g. Combo D)."""
+    slice_cfg = _combo_cfg(letter).get("fed_cycle_slices")
+    if not slice_cfg:
+        return None
+    min_n = int(slice_cfg.get("min_episodes", 10))
+    regimes = slice_cfg.get("regimes") or []
+    validated = slice_cfg.get("validated") or {}
+    primary = combo_primary_horizon(letter) or "spx_3m"
+    secondary = combo_secondary_horizon(letter)
+    horizons = [h for h in (primary, secondary) if h]
+
+    slices: list[dict[str, Any]] = []
+    for regime in regimes:
+        reg_data = validated.get(regime, {})
+        horizon_stats: dict[str, Any] = {}
+        for horizon in horizons:
+            hdata = reg_data.get(horizon, {})
+            n = int(hdata.get("n") or 0)
+            horizon_stats[horizon] = {
+                "label": horizon_display_label(horizon),
+                "n": n,
+                "hit_rate": hdata.get("hit_rate"),
+                "avg_return": hdata.get("avg_return"),
+                "verdict": "USE" if n >= min_n else "CANNOT USE",
+            }
+        primary_n = int((reg_data.get(primary) or {}).get("n") or 0)
+        slices.append(
+            {
+                "fed_cycle": regime,
+                "verdict": "USE" if primary_n >= min_n else "CANNOT USE",
+                "horizons": horizon_stats,
+            }
+        )
+
+    return {
+        "min_episodes": min_n,
+        "validated_source": slice_cfg.get("validated_source"),
+        "validated_config_id": slice_cfg.get("validated_config_id"),
+        "slices": slices,
+    }
+
+
 def format_hit_rate_display(stats: dict[str, Any]) -> tuple[str, str]:
     """Return (hit_rate_cell, avg_return_cell) for briefing table."""
     if not stats.get("show_hit_rate"):

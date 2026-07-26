@@ -7,7 +7,7 @@ Run after trade_store daily signal reports are synced (e.g. from update_trade_da
   2. Attach conviction scores to the New Signals report (default)
   3. Archive overlays under conviction_store/daily/YYYY-MM-DD/
 
-Outputs per report date (default: new_signal only):
+Outputs per report date (default: new_signal only; update_trade_data.sh also overlays VT long/short):
   conviction_store/daily/{date}/manifest.json
   conviction_store/daily/{date}/{date}_new_signal_conviction.csv
   conviction_store/daily/{date}/{date}_new_signal_conviction_scores.csv

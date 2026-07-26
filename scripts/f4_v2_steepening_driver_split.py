@@ -26,6 +26,54 @@ from src.macro_intelligence.engine.forward_returns import forward_return_pct
 OUTPUT = Path("macro_intelligence/analysis/regime_v2_experiments/F4_v2_steepening_driver_split.json")
 TROUGH_BPS = -50.0
 STEEPEN_BPS = 15.0
+TRADING_DAYS_PER_MONTH = 21.0
+WEEKS_PER_MONTH = 52.0 / 12.0  # ≈4.333
+
+
+def rolling_window_months(trading_days: int) -> float:
+    return trading_days / TRADING_DAYS_PER_MONTH
+
+
+def weekly_step_months() -> float:
+    """One Friday-to-Friday step in month units (D3d: weekly-start, not daily)."""
+    return 1.0 / WEEKS_PER_MONTH
+
+
+def effective_independent_n(n_raw: int, window_months: float, step_months: float) -> float:
+    """≈ n_raw ÷ (window_months ÷ step_months) — overlap-adjusted sample size."""
+    if n_raw <= 0 or step_months <= 0:
+        return 0.0
+    overlap_factor = window_months / step_months
+    return round(n_raw / overlap_factor, 1)
+
+
+def sample_size_meta(
+    n_raw: int,
+    *,
+    window_months: float | None = None,
+    step_months: float | None = None,
+    step_label: str = "weekly_friday",
+    independent_events: bool = False,
+) -> dict[str, Any]:
+    """Attach raw count + effective independent n next to every percentage."""
+    if independent_events or window_months is None or step_months is None:
+        return {
+            "n_raw": n_raw,
+            "n_effective_independent": float(n_raw),
+            "overlap_factor": 1.0,
+            "step": step_label,
+            "note": "discrete non-overlapping event fires",
+        }
+    overlap = window_months / step_months
+    return {
+        "n_raw": n_raw,
+        "n_effective_independent": effective_independent_n(n_raw, window_months, step_months),
+        "overlap_factor": round(overlap, 2),
+        "window_months": round(window_months, 2),
+        "step_months": round(step_months, 4),
+        "step": step_label,
+        "note": "rolling forward windows; weekly Friday start (not daily)",
+    }
 
 
 def _weekly_fri(series: pd.Series) -> pd.Series:
@@ -102,7 +150,7 @@ def unconditional_down_rate(
     trading_days: int,
     start: str = "1990-01-01",
 ) -> dict[str, Any]:
-    """% of all weekly Fridays with negative SPX forward return (edge-vs-baseline)."""
+    """% of weekly-Friday-start rolling forward windows with negative SPX return."""
     spx = spx.sort_index()
     spx = spx[spx.index >= pd.Timestamp(start)]
     weekly_dates = spx.resample("W-FRI").last().dropna().index
@@ -111,13 +159,22 @@ def unconditional_down_rate(
         r = forward_return_pct(spx, dt, trading_days)
         if r is not None:
             rets.append(r)
+    window_m = rolling_window_months(trading_days)
+    step_m = weekly_step_months()
+    n_raw = len(rets)
     if not rets:
-        return {"n": 0, "pct_spx_down": None, "avg_return": None}
+        return {
+            "n_raw": 0,
+            "pct_spx_down": None,
+            "avg_return": None,
+            "sample_size": sample_size_meta(0, window_months=window_m, step_months=step_m),
+        }
     down = sum(1 for r in rets if r < 0)
     return {
-        "n": len(rets),
-        "pct_spx_down": down / len(rets),
-        "avg_return": float(sum(rets) / len(rets)),
+        "n_raw": n_raw,
+        "pct_spx_down": down / n_raw,
+        "avg_return": float(sum(rets) / n_raw),
+        "sample_size": sample_size_meta(n_raw, window_months=window_m, step_months=step_m),
     }
 
 
@@ -125,17 +182,33 @@ def _horizon_block(
     rets: list[float],
     bullish: bool,
     horizon_key: str,
-    unconditional_down_pct: float | None,
+    unconditional: dict[str, Any] | None,
+    *,
+    independent_events: bool = True,
 ) -> dict[str, Any]:
     summary = summarize_returns(rets, bullish=bullish)
     pw = probability_weighted_summary(rets, bullish=bullish, horizon=horizon_key)
     hit = summary.get("hit_rate")
+    n_raw = summary.get("n") or 0
+    uncond_pct = (unconditional or {}).get("pct_spx_down")
+    window_m = None
+    step_m = None
+    if unconditional and unconditional.get("sample_size"):
+        window_m = unconditional["sample_size"].get("window_months")
+        step_m = unconditional["sample_size"].get("step_months")
     return {
         **summary,
+        "sample_size": sample_size_meta(
+            int(n_raw),
+            window_months=window_m,
+            step_months=step_m,
+            independent_events=independent_events,
+        ),
         "pw": pw,
-        "unconditional_pct_spx_down": unconditional_down_pct,
+        "unconditional_pct_spx_down": uncond_pct,
+        "unconditional_sample_size": (unconditional or {}).get("sample_size"),
         "edge_vs_baseline_pp": (
-            (hit - unconditional_down_pct) * 100 if hit is not None and unconditional_down_pct is not None else None
+            (hit - uncond_pct) * 100 if hit is not None and uncond_pct is not None else None
         ),
     }
 
@@ -189,16 +262,29 @@ def run_f4_v2() -> dict[str, Any]:
     bearish_eps = [e for e in enriched if e["bearish_bucket"]]
     other_eps = [e for e in enriched if not e["bearish_bucket"]]
 
-    def bucket_stats(eps: list[dict], horizon: str, days: int) -> dict[str, Any]:
+    def bucket_stats(eps: list[dict], horizon: str) -> dict[str, Any]:
         key = f"spx_{horizon}"
         rets = [e[key] for e in eps if e.get(key) is not None]
         bench = bench_3m if horizon == "3m" else bench_6m
-        return _horizon_block(rets, bullish=False, horizon_key=f"spx_{horizon}", unconditional_down_pct=bench["pct_spx_down"])
+        return _horizon_block(
+            rets,
+            bullish=False,
+            horizon_key=f"spx_{horizon}",
+            unconditional=bench,
+            independent_events=True,
+        )
 
     payload: dict[str, Any] = {
         "spec": "D3 F4 v2 — steepening driver split (−50/+15 cell)",
         "cell": {"trough_bps": TROUGH_BPS, "steepen_4wk_bps": STEEPEN_BPS},
         "n_episodes": len(enriched),
+        "benchmark_methodology": {
+            "start_cadence": "weekly_friday",
+            "step": "1 week (W-FRI grid, not daily-start)",
+            "forward_horizons_trading_days": {"spx_3m": 63, "spx_6m": 126},
+            "effective_n_formula": "n_raw ÷ (window_months ÷ step_months)",
+            "event_cells_note": "F4 fire dates are discrete non-overlapping episodes; n_effective = n_raw",
+        },
         "unconditional_benchmark": {
             "spx_3m": bench_3m,
             "spx_6m": bench_6m,
@@ -208,8 +294,8 @@ def run_f4_v2() -> dict[str, Any]:
             driver: {
                 "n": len(eps),
                 "episodes": [e["date"] for e in eps],
-                "spx_3m": bucket_stats(eps, "3m", 63),
-                "spx_6m": bucket_stats(eps, "6m", 126),
+                "spx_3m": bucket_stats(eps, "3m"),
+                "spx_6m": bucket_stats(eps, "6m"),
             }
             for driver, eps in sorted(by_driver.items())
         },
@@ -218,13 +304,13 @@ def run_f4_v2() -> dict[str, Any]:
                 "label": "BULL steepening + HY widening (2000/2007-type)",
                 "n": len(bearish_eps),
                 "dates": [e["date"] for e in bearish_eps],
-                "spx_3m": bucket_stats(bearish_eps, "3m", 63),
-                "spx_6m": bucket_stats(bearish_eps, "6m", 126),
+                "spx_3m": bucket_stats(bearish_eps, "3m"),
+                "spx_6m": bucket_stats(bearish_eps, "6m"),
             },
             "everything_else": {
                 "n": len(other_eps),
-                "spx_3m": bucket_stats(other_eps, "3m", 63),
-                "spx_6m": bucket_stats(other_eps, "6m", 126),
+                "spx_3m": bucket_stats(other_eps, "3m"),
+                "spx_6m": bucket_stats(other_eps, "6m"),
             },
         },
         "verdict": None,

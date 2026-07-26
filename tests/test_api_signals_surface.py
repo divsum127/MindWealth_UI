@@ -53,6 +53,28 @@ def test_portfolio_risk_cross_function_conflicts_key():
             assert "implied_natural_exit_date" in c["open_positions"][0]
 
 
+def test_parse_signal_meta_reads_plain_interval_column():
+    """Regression (2026-07-27): portfolio-risk (outstanding) report rows carry a plain
+    "Interval" column, not the "Interval, Confirmation Status" compound used by
+    new-signals/target-signals. Before this fix, interval always resolved to "" for that
+    report, silently breaking _lookup_hold_days()/implied_natural_exit_date matching."""
+    from api.services.portfolio_pipeline_service import _parse_signal_meta
+
+    row = {
+        "Symbol, Signal, Signal Date/Price[$]": "3690.HK, Long, 2026-07-08 @ 80.9",
+        "Function": "TRENDPULSE",
+        "Interval": "Daily",
+    }
+    meta = _parse_signal_meta(row)
+    assert meta["interval"] == "Daily"
+    assert meta["symbol"] == "3690.HK"
+    assert meta["function"] == "TRENDPULSE"
+
+    # Compound column still takes priority when both are present.
+    row2 = {**row, "Interval, Confirmation Status": "Weekly, Confirmed"}
+    assert _parse_signal_meta(row2)["interval"] == "Weekly"
+
+
 def test_signal_entries_endpoint():
     r = client.get(f"{BASE}/signals/entries", params={"book_id": "model"})
     assert r.status_code == 200

@@ -1,0 +1,137 @@
+{
+  "task": "B4_window_fix_pipeline",
+  "date": "2026-07-17",
+  "authoritative_rule": "original_b4_consolidated_plan",
+  "rejected_override": "rohit_2026-06-11_structural_full_for_hy_vix_vxts",
+  "recompute": {
+    "dates": 7802,
+    "rows_updated": 13476,
+    "rows_with_pctile_or_tier_change": 3428
+  },
+  "b4_audit": {
+    "n_vars": 12,
+    "mismatches": [],
+    "pass": true
+  },
+  "sweeps": {
+    "out_dir": "/home/ubuntu/uiv2/git/MindWealth_UI/macro_intelligence/analysis/regime_v2_experiments/threshold_sweep_v2_b4_fix",
+    "written": {
+      "COMBO_B_gate_sweep.json": "/home/ubuntu/uiv2/git/MindWealth_UI/macro_intelligence/analysis/regime_v2_experiments/threshold_sweep_v2_b4_fix/COMBO_B_gate_sweep.json",
+      "COMBO_F_spx_sweep.json": "/home/ubuntu/uiv2/git/MindWealth_UI/macro_intelligence/analysis/regime_v2_experiments/threshold_sweep_v2_b4_fix/COMBO_F_spx_sweep.json",
+      "COMBO_E_cape_sweep.json": "/home/ubuntu/uiv2/git/MindWealth_UI/macro_intelligence/analysis/regime_v2_experiments/threshold_sweep_v2_b4_fix/COMBO_E_cape_sweep.json",
+      "COMBO_D_gate_sweep.json": "/home/ubuntu/uiv2/git/MindWealth_UI/macro_intelligence/analysis/regime_v2_experiments/threshold_sweep_v2_b4_fix/COMBO_D_gate_sweep.json",
+      "COMBO_G_config_baseline.json": "/home/ubuntu/uiv2/git/MindWealth_UI/macro_intelligence/analysis/regime_v2_experiments/threshold_sweep_v2_b4_fix/COMBO_G_config_baseline.json"
+    },
+    "combo_g_baseline": {
+      "combo": "G",
+      "validated_horizon": "spx_3m",
+      "direction": "bearish",
+      "current_gates": {
+        "vxts_max": 1.0,
+        "hy_widen_4wk_bps": 30,
+        "vix_max": 20
+      },
+      "config_baseline": {
+        "n_events": 0,
+        "bear_hit_3m_pct": null,
+        "avg_spx_3m_pct": null,
+        "pw_summary": {
+          "n": 0,
+          "hit_rate": null,
+          "avg_win": null,
+          "avg_loss": null,
+          "pw_expected": null,
+          "benchmark_pct": 2.5,
+          "excess_pct": null
+        }
+      },
+      "run_date": "2026-07-17",
+      "note": "CONFIG baseline first-crossing after B4 rolling_3y pctile fix"
+    }
+  },
+  "part_b": {
+    "B1_B2_twy_roc_apr2025": {
+      "2025-04-07": {
+        "twy_roc_pp": -0.55,
+        "direction": "DOVISH",
+        "dgs2": 3.73
+      },
+      "2025-04-04": {
+        "twy_roc_pp": -0.61,
+        "direction": "DOVISH",
+        "dgs2": 3.68
+      }
+    },
+    "B2_validation": {
+      "expected_dovish_bps": "65-75 over 8 weeks",
+      "observed_pp": -0.55,
+      "direction": "DOVISH",
+      "pass_dovish": true
+    },
+    "B3_dual_percentile": {
+      "rows_with_unconditional_only": 0,
+      "rows_with_both": 25083
+    },
+    "B4_window_audit": {
+      "n_vars": 12,
+      "mismatches": [],
+      "pass": true
+    },
+    "B5_cape_triple_storage": {
+      "combo_e_high_cape_6m": {
+        "n": 508,
+        "hit_rate": 0.7893700787401575,
+        "avg": 6.392751916819613,
+        "median": 7.325601133251302,
+        "worst": -25.222342684956878
+      },
+      "combo_e_moderate_cape_6m": {
+        "n": 0,
+        "hit_rate": null,
+        "avg": null,
+        "median": null,
+        "worst": null
+      },
+      "winner": "level_extreme"
+    },
+    "C1_emission_vectors_backfilled": 19611
+  },
+  "combo_d_production_gates": {
+    "gates": "VXTS>=1.18; CFTC>=95; VIX<=13; 2-of-3",
+    "n_events": 46,
+    "pw_1w": {
+      "n": 46,
+      "hit_rate": 0.5652,
+      "avg": -0.35
+    },
+    "pw_2w": {
+      "n": 46,
+      "hit_rate": 0.4348,
+      "avg": -0.13
+    },
+    "note": "Post-B4 rolling_3y pctile panel; matches promoted production score thresholds"
+  },
+  "feedback_backlog": {
+    "cheatsheet_compare": {
+      "status": "BLOCKED",
+      "reason": "i3 Invest Combo Cheatsheet reference numbers not in repo; need Rohit to share values for diff column."
+    },
+    "liquidity_spx_tables": {
+      "status": "PARTIAL",
+      "reason": "D6 reslice produces FM band + 9-state/4-state liquidity combo-fire tables at 1M\u201312M (FM) and 3M (combo fires). Full A5 band grid (every liquidity slice \u00d7 1m/3m/6m/9m/12m) in separate export if needed.",
+      "artifacts": [
+        "D6_fm_regime_slices_analytics_2026-07-17.csv",
+        "D6_liquidity_9state_combo_fires_2026-07-17.csv",
+        "D6_liquidity_4state_analytics_combo_fires_2026-07-17.csv"
+      ]
+    },
+    "geo_2state_prod": {
+      "status": "PENDING",
+      "reason": "D6 decision: 2-state NEUTRAL/ELEVATED approved in principle; production classifier still 3-state. Prompt + code switch deferred."
+    },
+    "regime_score_validation": {
+      "status": "PENDING",
+      "reason": "Section D addendum tests (Spearman \u03c1, AND vs time-only, hit-rate weights, time-decay) not implemented as automated suite yet."
+    }
+  }
+}

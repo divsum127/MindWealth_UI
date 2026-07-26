@@ -87,7 +87,11 @@ def get_ticker_record(ticker: str) -> dict[str, Any] | None:
 
 
 def recalculate_ticker(ticker: str) -> dict[str, Any]:
-    return full_recalculation(ticker)
+    from src.conviction_engine.fundamentals import update_ticker_fundamentals
+
+    result = update_ticker_fundamentals(ticker, mode="full")
+    record = load_record(ticker)
+    return record if record is not None else result
 
 
 def daily_refresh_ticker(ticker: str) -> dict[str, Any]:

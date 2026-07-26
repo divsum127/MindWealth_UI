@@ -117,3 +117,14 @@ cd /home/ubuntu/uiv2/git/MindWealth_UI
 3. If override stands: update `_run_b4_window_audit()` structural set to include HY, VIX, VXTS and move WALCL to flow; re-run B4 (should pass with current CONFIG except WALCL).
 
 Until resolved, **B4 remains FAIL** and short-gate hit rates for B/D/G are computed against mismatched windows.
+
+---
+
+## Superseded by B4 fix pipeline (2026-07-17)
+
+**Resolution:** Original B4 rule applied as authoritative (Rohit June 11 override rejected).
+
+- CONFIG: HY/VIX/VXTS → `rolling_3y`; WALCL → `full`
+- Percentiles recomputed (3,428 tier/pctile changes)
+- **B4 pass = true** (12/12)
+- Full pipeline: [`B4_window_fix_pipeline_2026-07-17.md`](B4_window_fix_pipeline_2026-07-17.md)

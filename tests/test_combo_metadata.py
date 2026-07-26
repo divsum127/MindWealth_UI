@@ -12,6 +12,7 @@ if str(_ROOT) not in sys.path:
 
 from src.macro_intelligence.engine.combo_metadata import (
     combo_bullish,
+    combo_fed_cycle_slice_stats,
     combo_hit_rate_stats,
     combo_primary_horizon,
     combo_show_hit_rate,
@@ -66,6 +67,25 @@ class TestComboMetadata(unittest.TestCase):
         self.assertEqual(stats.get("n_obs_primary"), 4)
         hr, avg = format_hit_rate_display(stats)
         self.assertEqual(hr, "insufficient episodes")
+
+    def test_combo_d_fed_cycle_slices_qe_usable(self) -> None:
+        stats = combo_fed_cycle_slice_stats("D")
+        self.assertIsNotNone(stats)
+        assert stats is not None
+        self.assertEqual(stats["min_episodes"], 9)
+        by_regime = {s["fed_cycle"]: s for s in stats["slices"]}
+        self.assertEqual(by_regime["CUTTING_LATE"]["verdict"], "USE")
+        self.assertEqual(by_regime["HIKING_LATE"]["verdict"], "USE")
+        qe = by_regime["QE"]
+        self.assertEqual(qe["verdict"], "USE")
+        qe_1w = qe["horizons"]["spx_1w"]
+        self.assertEqual(qe_1w["n"], 9)
+        self.assertAlmostEqual(qe_1w["hit_rate"], 0.4444, places=4)
+        self.assertAlmostEqual(qe_1w["avg_return"], 0.649, places=3)
+        self.assertEqual(qe_1w["label"], "5D")
+
+    def test_combo_b_no_fed_cycle_slices(self) -> None:
+        self.assertIsNone(combo_fed_cycle_slice_stats("B"))
 
 
 if __name__ == "__main__":

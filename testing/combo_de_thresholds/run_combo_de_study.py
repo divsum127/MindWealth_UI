@@ -179,7 +179,7 @@ def sweep_d(
             abs(v - cfg.get("vxts_min", 1.1)) < 1e-9
             and abs(c - cfg.get("cftc_min_pctile", 85)) < 1e-9
             and abs(x - cfg.get("vix_max", 18)) < 1e-9
-            and legs == 3
+            and legs == int(cfg.get("min_of_three", 3))
         )
         hstats = {lbl: _stats(idx, fwd, lbl) for lbl, _ in D_HORIZONS}
         hits = [hstats[l]["bear_hit_pct"] for l, _ in D_HORIZONS if hstats[l]["bear_hit_pct"] is not None]
@@ -208,13 +208,17 @@ def sweep_d(
         summary[-1]["event_indices"] = idx  # stripped before csv write
 
     bv, bc, bx = cfg.get("vxts_min", 1.1), cfg.get("cftc_min_pctile", 85), cfg.get("vix_max", 18)
-    run(bv, bc, bx, 3, "config_baseline")
+    bl = int(cfg.get("min_of_three", 3))
+    run(bv, bc, bx, bl, "config_baseline")
     for v in D_VXTS:
-        run(v, bc, bx, 3, "univariate_vxts")
+        run(v, bc, bx, bl, "univariate_vxts")
     for c in D_CFTC:
-        run(bv, c, bx, 3, "univariate_cftc")
+        run(bv, c, bx, bl, "univariate_cftc")
     for x in D_VIX:
-        run(bv, bc, x, 3, "univariate_vix")
+        run(bv, bc, x, bl, "univariate_vix")
+    # Ensure live CONFIG VIX gate is in grid even if outside D_VIX defaults
+    if bx not in D_VIX:
+        run(bv, bc, bx, bl, "config_baseline")
     for v, c, x, legs in product(D_VXTS, D_CFTC, D_VIX, D_LEGS):
         run(v, c, x, legs, "factorial")
 

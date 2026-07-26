@@ -9,7 +9,9 @@ Covers:
 
 from __future__ import annotations
 
+import os
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -21,6 +23,7 @@ if str(_ROOT) not in sys.path:
 from fastapi.testclient import TestClient
 
 from api.main import app
+from api.services import portfolio_service as portfolio_svc
 from tests.api_test_helpers import disable_rate_limits
 
 client = TestClient(app)
@@ -210,6 +213,39 @@ class TestPortfolioSizer(_PortfolioTestMixin, unittest.TestCase):
                 self.assertIsNotNone(row.get("name"))
                 self.assertNotEqual(row.get("name"), "")
                 self.assertEqual(row.get("win_rate_label"), "Backtested Win Rate")
+
+    @patch("api.services.portfolio_service._load_runic_safe", return_value=_MOCK_RUNIC)
+    @patch("api.services.portfolio_service._load_ssi_safe", return_value=_MOCK_SSI)
+    def test_sizer_pnl_rows_have_cross_function_asset_class_status(self, *_mocks) -> None:
+        """HANDOFF §7 / DATA_ISSUES §6 gap — pnl_rows/positions must carry cross_function_exit,
+        asset_class, status. Was missing on live API before this fix."""
+        r = client.get("/api/v1/portfolio/sizer")
+        pnl_rows = r.json()["pnl_rows"]
+        self.assertGreater(len(pnl_rows), 0)
+        for row in pnl_rows[:20]:
+            self.assertIn("cross_function_exit", row)
+            self.assertIsInstance(row["cross_function_exit"], bool)
+            self.assertIn("asset_class", row)
+            self.assertIsInstance(row["asset_class"], str)
+            self.assertNotEqual(row["asset_class"], "")
+            self.assertIn(row["status"], ("Open", "Blocked"))
+            self.assertEqual(row["status"], "Blocked" if row["blocked"] else "Open")
+        # Same sized_row dict backs cluster positions[] — fields must be there too (HANDOFF §7).
+        for cluster in r.json()["clusters"][:3]:
+            for pos in cluster["positions"][:5]:
+                self.assertIn("cross_function_exit", pos)
+                self.assertIn("asset_class", pos)
+                self.assertIn("status", pos)
+
+    def test_asset_class_label_mapping(self) -> None:
+        from api.services.portfolio_service import _asset_class_label
+
+        self.assertEqual(_asset_class_label("EQUITY"), "Equity")
+        self.assertEqual(_asset_class_label("ETF"), "ETF")
+        self.assertEqual(_asset_class_label("CRYPTOCURRENCY"), "Cryptocurrency")
+        self.assertEqual(_asset_class_label("CURRENCY"), "Currency")
+        self.assertEqual(_asset_class_label(""), "Equity")
+        self.assertEqual(_asset_class_label(None), "Equity")
 
     def test_bq_tier_nan_treated_as_missing(self) -> None:
         from api.services.portfolio_service import _bq_tier
@@ -412,6 +448,63 @@ class TestPortfolioNav(_PortfolioTestMixin, unittest.TestCase):
     def test_nav_unsupported_book_returns_422(self) -> None:
         r = client.get(
             "/api/v1/portfolio/nav",
+            params={"book_id": "brokerage", "book": "enhanced"},
+        )
+        self.assertEqual(r.status_code, 422)
+
+    def test_nav_model_base_returns_200_with_history(self) -> None:
+        r = client.get(
+            "/api/v1/portfolio/nav",
+            params={"book_id": "model", "book": "base"},
+        )
+        self.assertEqual(r.status_code, 200, r.text)
+        body = r.json()
+        self.assertGreaterEqual(len(body.get("mtm") or []), 2)
+        self.assertGreaterEqual(len(body.get("benchmark") or []), 2)
+        self.assertTrue(body.get("nav_series_source"))
+        self.assertIsNotNone(body.get("since_go_live_pct"))
+        self.assertIsNotNone(body.get("realized_vol_pct"))
+
+    def test_nav_monthly_series_has_drawdown(self) -> None:
+        body = client.get(
+            "/api/v1/portfolio/nav",
+            params={"book_id": "model", "book": "enhanced"},
+        ).json()
+        point = (body.get("mtm") or [])[-1]
+        for key in ("date", "value", "drawdown_pct", "high_water_mark"):
+            self.assertIn(key, point)
+
+    def test_nav_includes_daily_series_fields(self) -> None:
+        body = client.get(
+            "/api/v1/portfolio/nav",
+            params={"book_id": "model", "book": "enhanced"},
+        ).json()
+        self.assertIn("mtm_daily", body)
+        self.assertIn("closed_daily", body)
+        self.assertIsInstance(body["mtm_daily"], list)
+        self.assertIsInstance(body["closed_daily"], list)
+        if body.get("nav_series_source") == "nav_engine" and body["mtm_daily"]:
+            day = body["mtm_daily"][-1]
+            for key in ("date", "value", "drawdown_pct", "high_water_mark"):
+                self.assertIn(key, day)
+
+    def test_nav_portfolio_notional_fields(self) -> None:
+        body = client.get(
+            "/api/v1/portfolio/sizer",
+            params={"scenario": "normal"},
+        ).json()
+        self.assertEqual(body["ceiling"]["portfolio_notional"], 100_000_000)
+        self.assertEqual(body["ceiling"]["portfolio_notional_source"], "default")
+        nav = client.get(
+            "/api/v1/portfolio/nav",
+            params={"book_id": "model", "book": "enhanced"},
+        ).json()
+        self.assertEqual(nav.get("portfolio_notional_usd"), 100_000_000)
+        self.assertEqual(nav.get("portfolio_notional_source"), "default")
+
+    def test_holdings_base_still_422(self) -> None:
+        r = client.get(
+            "/api/v1/portfolio/holdings",
             params={"book_id": "model", "book": "base"},
         )
         self.assertEqual(r.status_code, 422)
@@ -484,6 +577,223 @@ class TestPortfolioSizingAlias(_PortfolioTestMixin, unittest.TestCase):
         cs = r.json().get("conviction_summary")
         self.assertIsInstance(cs, dict)
         self.assertIn("max_count", cs)
+
+
+class TestPortfolioNotional(unittest.TestCase):
+
+    def tearDown(self) -> None:
+        for key in ("PORTFOLIO_NOTIONAL", "PORTFOLIO_USE_RESEARCH_NOTIONAL"):
+            os.environ.pop(key, None)
+
+    def test_default_notional_100m(self) -> None:
+        self.assertEqual(portfolio_svc.get_portfolio_notional(), 100_000_000)
+        self.assertEqual(portfolio_svc.portfolio_notional_source(), "default")
+
+    def test_env_override(self) -> None:
+        os.environ["PORTFOLIO_NOTIONAL"] = "25000000"
+        self.assertEqual(portfolio_svc.get_portfolio_notional(), 25_000_000)
+        self.assertEqual(portfolio_svc.portfolio_notional_source(), "env")
+
+    def test_research_flag_uses_yaml(self) -> None:
+        os.environ["PORTFOLIO_USE_RESEARCH_NOTIONAL"] = "1"
+        self.assertEqual(portfolio_svc.get_portfolio_notional(), 10_000_000)
+        self.assertEqual(portfolio_svc.portfolio_notional_source(), "research")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Phase 6 — AUTO / MANUAL sizing scenarios, manual overrides CRUD, alerts, regime-history
+# ─────────────────────────────────────────────────────────────────────────────
+
+class TestScenarioMetaAndAlerts(_PortfolioTestMixin, unittest.TestCase):
+
+    @patch("api.services.portfolio_service._load_runic_safe", return_value=_MOCK_RUNIC)
+    @patch("api.services.portfolio_service._load_ssi_safe", return_value=_MOCK_SSI)
+    def test_auto_scenario_resolves_to_a_base_scenario(self, *_mocks) -> None:
+        r = client.get("/api/v1/portfolio/sizer", params={"scenario": "auto"})
+        self.assertEqual(r.status_code, 200, r.text)
+        body = r.json()
+        self.assertEqual(body["scenario"], "auto")
+        self.assertIn(body["auto_resolved_scenario"], ("normal", "stress", "lowvol"))
+        self.assertIn("auto_resolution_reason", body)
+
+    @patch("api.services.portfolio_service._load_runic_safe", return_value=_MOCK_RUNIC)
+    @patch("api.services.portfolio_service._load_ssi_safe", return_value=_MOCK_SSI)
+    def test_manual_scenario_applies_override(self, *_mocks) -> None:
+        from api.services import manual_overrides_service
+
+        with tempfile.TemporaryDirectory() as tmp:
+            override_path = Path(tmp) / "overrides.json"
+            with patch.object(manual_overrides_service, "_STORE_PATH", override_path):
+                base = client.get("/api/v1/portfolio/sizer", params={"scenario": "normal"}).json()
+                sample = next(
+                    row for row in base["pnl_rows"]
+                    if not row.get("blocked") and row.get("allocation_usd")
+                )
+                r = client.post(
+                    "/api/v1/portfolio/sizing/manual-overrides",
+                    json={
+                        "ticker": sample["ticker"], "function": sample["function"],
+                        "interval": sample["interval"], "direction": sample.get("direction") or "Long",
+                        "allocation_usd": 987654,
+                    },
+                )
+                self.assertEqual(r.status_code, 200, r.text)
+
+                listed = client.get("/api/v1/portfolio/sizing/manual-overrides").json()
+                self.assertEqual(len(listed["overrides"]), 1)
+
+                manual = client.get("/api/v1/portfolio/sizer", params={"scenario": "manual"}).json()
+                self.assertEqual(manual["scenario"], "manual")
+                self.assertGreaterEqual(manual["manual_overrides_applied"], 1)
+                matched = next(
+                    row for row in manual["pnl_rows"]
+                    if row.get("ticker") == sample["ticker"] and row.get("manual_override")
+                )
+                self.assertEqual(matched["allocation_usd"], 987654)
+
+                r = client.delete(
+                    "/api/v1/portfolio/sizing/manual-overrides",
+                    params={
+                        "ticker": sample["ticker"], "function": sample["function"],
+                        "interval": sample["interval"], "direction": sample.get("direction") or "Long",
+                    },
+                )
+                self.assertEqual(r.status_code, 200)
+
+    def test_manual_override_negative_allocation_returns_400(self) -> None:
+        r = client.post(
+            "/api/v1/portfolio/sizing/manual-overrides",
+            json={"ticker": "AAPL", "allocation_usd": -100},
+        )
+        self.assertEqual(r.status_code, 400)
+
+    def test_remove_nonexistent_override_returns_404(self) -> None:
+        r = client.delete(
+            "/api/v1/portfolio/sizing/manual-overrides",
+            params={"ticker": "ZZZZZ_NOPE"},
+        )
+        self.assertEqual(r.status_code, 404)
+
+    @patch("api.services.portfolio_service._load_runic_safe", return_value=_MOCK_RUNIC)
+    @patch("api.services.portfolio_service._load_ssi_safe", return_value=_MOCK_SSI)
+    def test_alerts_returns_200_with_expected_shape(self, *_mocks) -> None:
+        r = client.get("/api/v1/portfolio/alerts")
+        self.assertEqual(r.status_code, 200, r.text)
+        body = r.json()
+        for key in ("book_id", "as_of", "alert_count", "alerts"):
+            self.assertIn(key, body)
+        self.assertEqual(body["alert_count"], len(body["alerts"]))
+        for alert in body["alerts"][:5]:
+            for key in ("id", "type", "severity", "title", "body", "target_page"):
+                self.assertIn(key, alert)
+
+    def test_regime_history_returns_200_with_data_status(self) -> None:
+        r = client.get("/api/v1/portfolio/regime-history")
+        self.assertEqual(r.status_code, 200, r.text)
+        body = r.json()
+        self.assertIn("series", body)
+        self.assertIn("data_status", body)
+        self.assertIn("note", body["data_status"])
+
+    def test_regime_history_invalid_scenario_returns_422(self) -> None:
+        r = client.get("/api/v1/portfolio/regime-history", params={"scenario": "moon"})
+        self.assertEqual(r.status_code, 422)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Phase 7 — personal book CRUD + NAV/Holdings, brokerage still blocked
+# ─────────────────────────────────────────────────────────────────────────────
+
+class TestPersonalBookApi(_PortfolioTestMixin, unittest.TestCase):
+
+    def setUp(self) -> None:
+        super().setUp()
+        from api.services import personal_book_service
+        from src.portfolio_nav import book_snapshot_store
+
+        self._tmpdir = tempfile.TemporaryDirectory()
+        self._path = Path(self._tmpdir.name) / "personal_holdings.json"
+        self._db_path = Path(self._tmpdir.name) / "test_snapshots.db"
+        self._patches2 = [
+            patch.object(personal_book_service, "PERSONAL_HOLDINGS_JSON", self._path),
+            patch.object(personal_book_service, "_live_price", return_value=250.0),
+            patch.object(personal_book_service, "_ticker_name", return_value="Apple Inc."),
+            patch.object(book_snapshot_store, "BOOK_SNAPSHOTS_DB", self._db_path),
+        ]
+        for p in self._patches2:
+            p.start()
+
+    def tearDown(self) -> None:
+        for p in reversed(self._patches2):
+            p.stop()
+        self._tmpdir.cleanup()
+        super().tearDown()
+
+    def test_add_list_remove_holding(self) -> None:
+        r = client.post(
+            "/api/v1/portfolio/personal/holdings",
+            json={"ticker": "aapl", "shares": 10, "cost_basis": 150.0, "entry_date": "2025-01-15"},
+        )
+        self.assertEqual(r.status_code, 200, r.text)
+
+        r = client.get("/api/v1/portfolio/personal/holdings")
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(len(r.json()["holdings"]), 1)
+
+        r = client.delete("/api/v1/portfolio/personal/holdings", params={"ticker": "AAPL"})
+        self.assertEqual(r.status_code, 200)
+        self.assertTrue(r.json()["removed"])
+
+    def test_remove_nonexistent_holding_returns_404(self) -> None:
+        r = client.delete("/api/v1/portfolio/personal/holdings", params={"ticker": "NOPE"})
+        self.assertEqual(r.status_code, 404)
+
+    def test_set_cash(self) -> None:
+        r = client.put("/api/v1/portfolio/personal/cash", json={"cash_usd": 2500.0})
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.json()["cash_usd"], 2500.0)
+
+    def test_personal_nav_snapshot(self) -> None:
+        client.post(
+            "/api/v1/portfolio/personal/holdings",
+            json={"ticker": "AAPL", "shares": 10, "cost_basis": 150.0},
+        )
+        r = client.get("/api/v1/portfolio/nav", params={"book_id": "personal"})
+        self.assertEqual(r.status_code, 200, r.text)
+        body = r.json()
+        self.assertEqual(body["book_id"], "personal")
+        self.assertIsNone(body["book"])
+        self.assertEqual(body["nav"], 2500.0)  # 10 * 250.0
+        self.assertEqual(body["mtm"], [])
+        self.assertEqual(body["data_status"]["status"], "live_snapshot_only")
+
+    def test_personal_holdings_view(self) -> None:
+        client.post(
+            "/api/v1/portfolio/personal/holdings",
+            json={"ticker": "AAPL", "shares": 10, "cost_basis": 150.0},
+        )
+        r = client.get("/api/v1/portfolio/holdings", params={"book_id": "personal"})
+        self.assertEqual(r.status_code, 200, r.text)
+        body = r.json()
+        self.assertEqual(body["book_id"], "personal")
+        self.assertEqual(len(body["holdings"]), 1)
+        self.assertEqual(body["holdings"][0]["ticker"], "AAPL")
+
+    def test_personal_sizer_still_blocked(self) -> None:
+        r = client.get("/api/v1/portfolio/sizer", params={"book_id": "personal"})
+        self.assertEqual(r.status_code, 422)
+
+    def test_personal_risk_still_blocked(self) -> None:
+        r = client.get("/api/v1/portfolio/risk", params={"book_id": "personal"})
+        self.assertEqual(r.status_code, 422)
+
+    def test_brokerage_nav_still_blocked(self) -> None:
+        r = client.get("/api/v1/portfolio/nav", params={"book_id": "brokerage", "book": "enhanced"})
+        self.assertEqual(r.status_code, 422)
+
+    def test_brokerage_holdings_still_blocked(self) -> None:
+        r = client.get("/api/v1/portfolio/holdings", params={"book_id": "brokerage", "book": "enhanced"})
+        self.assertEqual(r.status_code, 422)
 
 
 if __name__ == "__main__":

@@ -142,40 +142,40 @@ def detect_divergence_signal(
     current_price: float | None,
     fifty_two_week_high: float | None,
     price_history: Any = None,
+    days_below_high: int | None = None,
     fd_direction: str | None = None,
     manual_flag: bool | None = None,
+    ticker: str | None = None,
 ) -> bool:
-    if manual_flag is True:
-        return True
-    if manual_flag is False:
-        return False
-    if str(fd_direction or "").lower() == "negative":
-        return False
-    if current_price is None or fifty_two_week_high is None or fifty_two_week_high <= 0:
-        return False
+    """Delegate to persistent divergence module (July 2026 spec)."""
+    from .divergence import detect_divergence_signal as _detect
 
-    threshold = fifty_two_week_high * 0.85
-    if current_price > threshold:
-        return False
-
-    # Prefer calendar days below 85% of 52W high when history available
-    if price_history is not None:
+    # Bootstrap days counter from price history when store has no persisted state yet
+    if days_below_high is None and price_history is not None and current_price and fifty_two_week_high:
         try:
             import pandas as pd
 
             series = price_history["Close"] if isinstance(price_history, pd.DataFrame) else price_history
-            if hasattr(series, "dropna") and len(series.dropna()) >= 60:
+            threshold = fifty_two_week_high * 0.85
+            if hasattr(series, "dropna") and current_price <= threshold:
                 clean = series.dropna().sort_index()
                 above = clean >= threshold
                 if not above.any():
-                    return len(clean) >= 60
-                last_above = clean.index[above][-1]
-                days_below = (clean.index[-1] - last_above).days
-                return days_below >= 60
+                    days_below_high = len(clean)
+                else:
+                    last_above = clean.index[above][-1]
+                    days_below_high = (clean.index[-1] - last_above).days
         except Exception:
             pass
 
-    return current_price <= threshold
+    return _detect(
+        current_price=current_price,
+        fifty_two_week_high=fifty_two_week_high,
+        days_below_high=days_below_high,
+        fd_direction=fd_direction,
+        manual_flag=manual_flag,
+        ticker=ticker,
+    )
 
 
 def score_margin_quality_cyclical(fcf_margin: float | None, revenue_growth: float | None) -> float:

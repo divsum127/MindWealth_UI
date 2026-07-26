@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>MindWealth · Portfolio v4</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --gold:#C9A84C;--gf:rgba(201,168,76,0.08);
+  --green:#2ecc71;--red:#e74c3c;--blue:#5dade2;--teal:#1abc9c;--purple:#a569bd;--amber:#f39c12;
+  --bg:#040404;--s1:#0a0a0a;--s2:#111;
+  --b1:#1a1a1a;--b2:#222;--b3:#2e2e2e;
+  /* TEXT — boosted contrast vs v3 */
+  --t1:#f5f5f5;--t2:#cccccc;--t3:#999;--t4:#666;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:'Inter',sans-serif;color:var(--t1)}
+#app{display:flex;flex-direction:column;height:100%;overflow:hidden}
+
+/* TOPBAR */
+.tb{display:flex;align-items:center;padding:0 20px;height:44px;border-bottom:1px solid var(--b1);background:var(--bg);flex-shrink:0}
+.logo{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--gold);margin-right:20px;white-space:nowrap}
+.logo small{font-family:'JetBrains Mono',monospace;font-size:7px;color:#444;letter-spacing:2px;margin-left:8px;vertical-align:middle}
+.tabs{display:flex;gap:1px;flex:1}
+.tn{padding:5px 11px;font-size:9px;letter-spacing:0.8px;color:#444;border-radius:3px;font-family:'JetBrains Mono',monospace;cursor:pointer;white-space:nowrap}
+.tn.on{color:var(--gold);background:var(--gf)}
+.tbr{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t4);display:flex;align-items:center;gap:5px;flex-shrink:0}
+.dot-g{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pu 2s infinite}
+@keyframes pu{0%,100%{opacity:1}50%{opacity:.15}}
+
+/* REGIME STRIP */
+.rs{display:flex;align-items:center;padding:0 20px;height:36px;flex-shrink:0;border-bottom:1px solid var(--b1);background:#070707;gap:0;overflow:visible;position:relative;z-index:50}
+.rs-pill{display:flex;align-items:center;gap:5px;padding:3px 9px;border-radius:3px;margin-right:10px;flex-shrink:0;cursor:help;position:relative}
+.rs-pill.green{background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.2)}
+.rs-pill .rdot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.rs-pill .rlbl{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;letter-spacing:1px}
+.rs-pill.green .rlbl{color:var(--green)}
+.rs-sep{width:1px;height:14px;background:var(--b3);flex-shrink:0;margin:0 10px}
+.rs-item{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t3);white-space:nowrap;display:flex;align-items:center;gap:4px;cursor:help;position:relative}
+.rs-item .val{color:var(--t2)}
+.rs-item .val.gold{color:var(--gold);font-size:10px;font-weight:600}
+.rs-formula{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--t4);white-space:nowrap}
+.rs-combo{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 8px;border-radius:3px;background:rgba(243,156,18,.08);border:1px solid rgba(243,156,18,.25);color:var(--amber);flex-shrink:0;cursor:help;position:relative;max-width:380px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* MACRO OVERRIDE WARNING */
+.macro-warn{margin-left:8px;font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 8px;border-radius:3px;background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.25);color:var(--red);flex-shrink:0;cursor:help;position:relative;white-space:nowrap}
+
+/* TOOLTIP */
+.tip{display:none;position:absolute;z-index:9999;background:#161616;border:1px solid #333;border-radius:6px;padding:10px 12px;pointer-events:none}
+.tip-title{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--gold);letter-spacing:1px;margin-bottom:6px;text-transform:uppercase}
+.tip-body{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--t3);line-height:1.75;white-space:normal}
+.tip-body b{color:var(--t2)}.tip-body .hi{color:var(--gold)}.tip-body .gn{color:var(--green)}.tip-body .rd{color:var(--red)}
+*:hover > .tip{display:block}
+.tip-below{top:calc(100% + 6px);left:0;width:300px}
+.tip-above{bottom:calc(100% + 6px);left:0;width:280px}
+.tip-r{top:calc(100% + 6px);right:0;left:auto;width:320px}
+
+/* BODY */
+.body{display:flex;flex:1;overflow:hidden;min-height:0}
+
+/* LEFT NAV */
+.lnav{width:190px;flex-shrink:0;border-right:1px solid var(--b1);background:var(--bg);display:flex;flex-direction:column;overflow:hidden}
+.lnav-sec{padding:10px 12px 6px;border-bottom:1px solid var(--b1)}
+.lnav-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1.5px;color:var(--t3);text-transform:uppercase;margin-bottom:6px}
+.ni{display:flex;align-items:flex-start;gap:7px;padding:7px 9px;border-radius:4px;margin-bottom:1px;border:1px solid transparent;cursor:pointer}
+.ni:hover{background:rgba(255,255,255,.02)}
+.ni.on{background:var(--gf);border-color:rgba(201,168,76,.15)}
+.ni.on .nn{color:var(--gold)}
+.nd{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.nd.g{background:var(--green)}.nd.gold{background:var(--gold)}.nd.r{background:var(--red)}
+.nn{font-size:12px;color:var(--t2);font-weight:500;line-height:1.3}
+.ns2{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--t3);margin-top:1px}
+
+/* CALC BOX in nav */
+.calcbox{margin:8px 10px;padding:10px 12px;background:var(--s1);border:1px solid var(--b2);border-radius:5px;overflow:hidden}
+.cb-row{display:flex;justify-content:space-between;margin-bottom:4px;font-family:'JetBrains Mono',monospace;font-size:9px}
+.cb-key{color:var(--t3)}
+.cb-val{color:var(--t2);font-weight:500}
+.cb-val.gold{color:var(--gold);font-weight:600}
+.cb-val.amber{color:var(--amber)}
+.cb-val.green{color:var(--green)}
+.cb-div{height:1px;background:var(--b2);margin:5px 0}
+.cb-note{font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--t4);margin-top:6px;line-height:1.6}
+
+/* FLAG LEGEND */
+.flag-leg{padding:10px 12px;border-top:1px solid var(--b1)}
+.fl-item{display:flex;align-items:flex-start;gap:6px;margin-bottom:6px}
+.fl-badge{font-family:'JetBrains Mono',monospace;font-size:7px;padding:2px 6px;border-radius:2px;flex-shrink:0;margin-top:1px}
+.fl-desc{font-size:9px;color:var(--t3);line-height:1.4}
+.f-ms{background:rgba(93,173,226,.12);color:var(--blue);border:1px solid rgba(93,173,226,.25)}
+.f-fdp{background:rgba(46,204,113,.1);color:var(--green);border:1px solid rgba(46,204,113,.22)}
+.f-fdn{background:rgba(231,76,60,.1);color:var(--red);border:1px solid rgba(231,76,60,.22)}
+.f-yt{background:rgba(231,76,60,.15);color:var(--red);border:1px solid rgba(231,76,60,.3)}
+.f-dd{background:rgba(243,156,18,.1);color:var(--amber);border:1px solid rgba(243,156,18,.22)}
+
+/* MAIN */
+.main{flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0}
+.view{display:none;flex:1;overflow:hidden;flex-direction:column}
+.view.show{display:flex}
+
+/* ── SIZED ALLOC ── */
+.sub-hd{display:flex;align-items:center;padding:8px 16px;border-bottom:1px solid var(--b1);background:var(--s1);gap:8px;flex-shrink:0;flex-wrap:wrap}
+.sub-hd-txt{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t2)}
+.sub-hd-txt b{color:var(--gold)}
+.scene-wrap{display:flex;align-items:center;gap:4px;margin-left:auto}
+.scene-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--t4)}
+.rbtn{font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 10px;border-radius:3px;border:1px solid var(--b3);color:var(--t4);cursor:pointer;transition:all .1s}
+.rbtn.on{border-color:rgba(201,168,76,.4);color:var(--gold);background:var(--gf)}
+.rbtn:hover:not(.on){color:var(--t2)}
+.auto-badge{font-family:'JetBrains Mono',monospace;font-size:7px;padding:2px 6px;border-radius:3px;background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.2);color:var(--green);flex-shrink:0}
+#v-alloc .inner{flex:1;display:flex;overflow:hidden;min-height:0}
+.al-scroll{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.al-scroll::-webkit-scrollbar{width:2px}.al-scroll::-webkit-scrollbar-thumb{background:var(--b2)}
+.al-side{width:262px;flex-shrink:0;border-left:1px solid var(--b1);overflow-y:auto;padding:14px}
+.al-side::-webkit-scrollbar{width:2px}.al-side::-webkit-scrollbar-thumb{background:var(--b2)}
+
+/* CLUSTER */
+.cluster{background:var(--s1);border:1px solid var(--b1);border-radius:6px;overflow:hidden}
+.cl-hd{display:flex;align-items:center;padding:8px 12px;background:var(--s2);border-bottom:1px solid var(--b1);gap:8px}
+.cl-name{font-size:12px;font-weight:600;color:var(--t1)}
+.cl-tag{font-family:'JetBrains Mono',monospace;font-size:8px;padding:2px 7px;border-radius:3px}
+.ct-ok{background:rgba(46,204,113,.1);color:var(--green);border:1px solid rgba(46,204,113,.22)}
+.ct-warn{background:rgba(243,156,18,.1);color:var(--amber);border:1px solid rgba(243,156,18,.22)}
+.cl-budget{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t2)}
+.cl-bar{padding:5px 12px;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:8px}
+.cl-bar-track{flex:1;height:4px;background:var(--b2);border-radius:2px;overflow:hidden}
+.cl-bar-fill{height:100%;border-radius:2px}
+.cl-bar-pct{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--t3);width:120px;text-align:right;flex-shrink:0}
+
+/* POSITION ROW */
+.pr{display:flex;align-items:center;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.025);gap:8px}
+.pr:last-child{border-bottom:none}
+.pr.blocked{opacity:.4}
+.pr-ticker{font-weight:700;font-size:13px;color:#fff;width:54px;flex-shrink:0}
+.pr-name{font-size:10px;color:var(--t4);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.pr-signal{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--blue);width:110px;flex-shrink:0;cursor:help;position:relative}
+.pr-bq{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;width:58px;flex-shrink:0;cursor:help;position:relative}
+.pr-size{font-family:'JetBrains Mono',monospace;font-size:9px;width:80px;flex-shrink:0;text-align:right}
+.pr-alloc{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;width:76px;flex-shrink:0;text-align:right;color:var(--gold)}
+.pr-flags{display:flex;gap:3px;flex-shrink:0}
+.flag{font-family:'JetBrains Mono',monospace;font-size:7px;padding:2px 6px;border-radius:2px;cursor:help;position:relative;white-space:nowrap}
+
+/* SUMMARY PANEL */
+.sp-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1.5px;color:var(--t3);text-transform:uppercase;margin-bottom:8px}
+.sp-big{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:#fff;line-height:1}
+.sp-sub{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t3);margin:4px 0 12px}
+.dbar{height:5px;background:var(--b2);border-radius:3px;overflow:hidden;margin-bottom:14px}
+.dbar-fill{height:100%;background:var(--gold);border-radius:3px;transition:width .4s}
+.sr{display:flex;justify-content:space-between;margin-bottom:6px;font-family:'JetBrains Mono',monospace;font-size:9px}
+.sr .k{color:var(--t3)}.sr .v{color:var(--t2)}
+.sdiv{height:1px;background:var(--b1);margin:10px 0}
+.con-row{display:flex;align-items:flex-start;gap:7px;padding:6px 8px;border-radius:4px;margin-bottom:4px;font-family:'JetBrains Mono',monospace;font-size:9px}
+.con-row .ico{flex-shrink:0}
+.con-row .txt{color:var(--t2);line-height:1.5;flex:1}
+.con-row .txt b{color:#fff}
+.c-ok{border-left:2px solid var(--green);background:rgba(46,204,113,.04)}
+.c-warn{border-left:2px solid var(--amber);background:rgba(243,156,18,.04)}
+.c-bad{border-left:2px solid var(--red);background:rgba(231,76,60,.04)}
+.wfall{background:var(--s2);border:1px solid var(--b2);border-radius:5px;padding:10px;margin-top:8px}
+.wf-row{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:9px;margin-bottom:4px}
+.wf-row .k{color:var(--t3)}.wf-row .v{color:var(--t2)}
+.wf-tot{border-top:1px solid var(--b2);margin-top:5px;padding-top:6px}
+.wf-tot .k{color:var(--t1);font-weight:600}.wf-tot .v{color:var(--gold);font-weight:700}
+
+/* RISK VIEW */
+#v-risk .inner{flex:1;display:grid;grid-template-columns:1fr 330px;overflow:hidden;min-height:0}
+.rscroll{overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.rscroll::-webkit-scrollbar{width:2px}
+.rpanel{border-left:1px solid var(--b1);display:flex;flex-direction:column;overflow:hidden}
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:6px;overflow:hidden}
+.card-hd{display:flex;align-items:center;padding:9px 12px;border-bottom:1px solid var(--b1);gap:8px}
+.card-title{font-size:12px;font-weight:600;color:var(--t2)}
+.card-sub{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--t4);margin-left:auto;cursor:help;position:relative}
+
+/* MATRIX */
+.mx-grid{display:inline-grid;gap:2px}
+.mx-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--t3);display:flex;align-items:center;justify-content:flex-end;padding-right:5px;white-space:nowrap}
+.mx-head{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--t3);text-align:center;padding-bottom:2px}
+.mc{display:flex;align-items:center;justify-content:center;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;height:26px;width:50px;cursor:default}
+.mc.diag{background:rgba(255,255,255,.04);color:var(--t4)}
+
+/* ACTIONS */
+.act{display:flex;gap:8px;padding:8px 12px;border-radius:4px;margin-bottom:4px}
+.act.red{border-left:2px solid var(--red);background:rgba(231,76,60,.04)}
+.act.gold{border-left:2px solid var(--amber);background:rgba(243,156,18,.03)}
+.act.green{border-left:2px solid var(--green);background:rgba(46,204,113,.03)}
+.act.purple{border-left:2px solid var(--purple);background:rgba(165,105,189,.03)}
+.act-ico{width:20px;height:20px;border-radius:3px;font-size:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.act.red .act-ico{background:rgba(231,76,60,.12)}.act.gold .act-ico{background:rgba(243,156,18,.1)}.act.green .act-ico{background:rgba(46,204,113,.1)}.act.purple .act-ico{background:rgba(165,105,189,.1)}
+.act-title{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;color:var(--t1);margin-bottom:3px}
+.act-body{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--t3);line-height:1.65}
+.act-body b{color:var(--t2)}
+
+/* SECT BARS */
+.sect-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.sect-name{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t2);width:90px;flex-shrink:0}
+.sect-track{flex:1;height:6px;background:var(--b2);border-radius:3px;overflow:hidden}
+.sect-fill{height:100%;border-radius:3px}
+.sect-pct{font-family:'JetBrains Mono',monospace;font-size:9px;width:32px;text-align:right;flex-shrink:0}
+
+/* ENTRY PANEL */
+.ep-hd{padding:10px 13px;border-bottom:1px solid rgba(201,168,76,.15);background:rgba(201,168,76,.03);display:flex;align-items:center;gap:8px;flex-shrink:0}
+.ep-title{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--gold);flex:1}
+.ep-body{flex:1;overflow-y:auto;padding:10px 12px}
+.ep-body::-webkit-scrollbar{width:2px}
+.ep-sec{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1.5px;color:var(--t3);text-transform:uppercase;margin:10px 0 5px}
+.pe-row{display:flex;align-items:center;gap:5px;padding:7px 9px;background:var(--s2);border:1px solid var(--b2);border-radius:5px;margin-bottom:4px}
+.pe-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.pe-sym{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:#fff;width:46px;background:transparent;border:none;outline:none}
+.pe-sep{color:var(--b3);flex-shrink:0}
+.pe-qty{width:44px;background:transparent;border:none;outline:none;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t2);text-align:right}
+.pe-name{font-size:9px;color:var(--t4);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pe-del{margin-left:auto;width:15px;height:15px;border-radius:2px;border:1px solid rgba(231,76,60,.25);color:rgba(231,76,60,.45);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;transition:all .1s}
+.pe-del:hover{color:var(--red);border-color:rgba(231,76,60,.6)}
+.srch-wrap{position:relative;margin-bottom:6px}
+.srch-row{display:flex;align-items:center;gap:6px;padding:8px 10px;background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.2);border-radius:5px}
+.srch-inp{flex:1;background:transparent;border:none;outline:none;font-family:'JetBrains Mono',monospace;font-size:11px;color:#fff}
+.srch-inp::placeholder{color:var(--t4)}
+.srch-hint{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--t4);flex-shrink:0}
+.drop{background:var(--s1);border:1px solid var(--b2);border-radius:5px;overflow:hidden;position:absolute;top:calc(100% + 3px);left:0;right:0;z-index:20;display:none}
+.drop.show{display:block}
+.di{display:flex;align-items:center;gap:7px;padding:8px 10px;cursor:pointer;border-bottom:1px solid var(--b1)}
+.di:last-child{border-bottom:none}
+.di:hover,.di.hi{background:rgba(201,168,76,.06)}
+.di-sym{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:#fff;width:46px}
+.di-name{font-size:10px;color:var(--t3);flex:1}
+.di-exch{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--t4);width:50px;text-align:right}
+.di-price{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gold);width:52px;text-align:right}
+.sc{display:none;align-items:center;gap:6px;padding:8px 10px;background:rgba(46,204,113,.05);border:1px solid rgba(46,204,113,.2);border-radius:5px;margin-top:4px;margin-bottom:6px}
+.sc.show{display:flex}
+.sc-sym{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--green);width:48px}
+.sc-btn{width:22px;height:22px;border-radius:3px;background:var(--b2);border:1px solid var(--b3);color:var(--t3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;user-select:none}
+.sc-btn:hover{color:var(--gold)}
+.sc-qty{width:48px;text-align:center;background:transparent;border:none;border-bottom:1px solid var(--b3);outline:none;font-family:'JetBrains Mono',monospace;font-size:12px;color:#fff}
+.sc-not{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t3);flex:1;text-align:right}
+.sc-not b{color:var(--t2)}
+.sc-add{padding:5px 12px;border-radius:4px;background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.3);color:var(--green);font-family:'JetBrains Mono',monospace;font-size:9px;cursor:pointer;white-space:nowrap}
+.ep-sum{padding:8px 13px;border-top:1px solid var(--b1);background:var(--s2);display:flex;gap:14px;flex-shrink:0}
+.es-l{font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--t4);letter-spacing:1.5px;text-transform:uppercase}
+.es-v{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700}
+.run-btn{margin:8px 12px;padding:10px;border-radius:5px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);color:var(--gold);font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;cursor:pointer;text-align:center;flex-shrink:0}
+.run-btn:hover{background:rgba(201,168,76,.18)}
+
+/* P&L TABLE */
+#v-pnl .inner{flex:1;overflow-y:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:10px}
+.tbl th{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1px;color:var(--t3);text-align:left;padding:8px 10px;border-bottom:1px solid var(--b1);background:var(--s2);text-transform:uppercase;white-space:nowrap;position:sticky;top:0;cursor:help}
+.tbl th.r{text-align:right}.tbl th.c{text-align:center}
+.tbl td{padding:9px 10px;border-bottom:1px solid rgba(255,255,255,.025);vertical-align:middle}
+.tbl tr:hover td{background:rgba(255,255,255,.012)}
+.tkr{font-weight:700;font-size:13px;color:#fff}
+.tsub{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--t4);margin-top:1px}
+.mono{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t2);text-align:right}
+.mono.g{color:var(--green)}.mono.r{color:var(--red)}
+.sz-pill{font-family:'JetBrains Mono',monospace;font-size:8px;padding:2px 7px;border-radius:3px;display:inline-block}
+
+/* STATUSBAR */
+.sbar{display:flex;align-items:center;gap:8px;padding:5px 18px;border-top:1px solid var(--b1);background:var(--s1);flex-shrink:0;overflow:hidden}
+.sb{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--t4);display:flex;align-items:center;gap:3px;white-space:nowrap}
+.sb b{color:var(--t2)}
+.sb-sep{width:1px;height:10px;background:var(--b3);flex-shrink:0}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ══ TOPBAR ══ -->
+<div class="tb">
+  <div class="logo">MindWealth<small>ALPHA TERMINAL</small></div>
+  <div class="tabs">
+    <div class="tn">DASHBOARD</div><div class="tn">SIGNALS</div>
+    <div class="tn">SENTIMENT</div><div class="tn">CONVICTION</div>
+    <div class="tn on">PORTFOLIO</div><div class="tn">OVERWATCH</div>
+  </div>
+  <div class="tbr"><div class="dot-g"></div>&nbsp;SIZER ACTIVE</div>
+</div>
+
+<!-- ══ REGIME STRIP ══ -->
+<div class="rs">
+  <!-- Regime pill -->
+  <div class="rs-pill green" style="position:relative">
+    <div class="rdot" style="background:var(--green)"></div>
+    <div class="rlbl">VIX NORMAL</div>
+    <div class="tip tip-below">
+      <div class="tip-title">How "Normal" regime is determined</div>
+      <div class="tip-body">
+        We download <b>3 years</b> of daily VIX closes (Yahoo: ^VIX).<br>
+        Today VIX = <b>16.4</b> → sits at the <b>40th percentile</b> of that 3yr window.<br><br>
+        <b>3yr percentile → Regime:</b><br>
+        Below 25th pct → <span class="gn">Low Volatility</span><br>
+        25th–75th pct → <span class="hi">Normal ← you are here</span><br>
+        Above 75th pct → <span class="rd">Stress</span><br><br>
+        Why 3 years? It captures a full market cycle (bull + correction + recovery) without being distorted by a single extreme event. Full-history percentiles can be anchored to 2020 COVID spikes and skew everything.
+      </div>
+    </div>
+  </div>
+  <div class="rs-sep"></div>
+  <!-- 72% — shown ONCE, with full tooltip -->
+  <div class="rs-item" style="position:relative">
+    Equity ceiling&nbsp;<span class="val gold" id="rs-ceiling">72%</span>
+    <div class="tip tip-below" style="width:320px">
+      <div class="tip-title">How the equity ceiling is calculated (step by step)</div>
+      <div class="tip-body">
+        <b>Step 1 — Regime sets the starting maximum:</b><br>
+        Normal VIX regime → up to <span class="hi">80%</span> of portfolio can be in equities.<br>
+        (Stress → 65% max. Low Volatility → 85% max.)<br>
+        This is NOT a position-size cap. It's "how much cash must we keep."<br><br>
+        <b>Step 2 — Three SSI multipliers haircut that 80%:</b><br>
+        × VIX level 16.4 (calm, 15–25 band): <span class="hi">1.00×</span> — no haircut<br>
+        × SPX vs 200-day average (above): <span class="hi">1.00×</span> — no haircut<br>
+        × HY credit spreads 318bp (300–500bp band): <span class="hi">0.90×</span> — 10% haircut for mild credit stress<br><br>
+        <b>80% × 1.00 × 1.00 × 0.90 = <span class="hi">72% final equity ceiling</span></b><br><br>
+        On a $100M portfolio:<br>
+        → <span class="hi">$72M</span> can be deployed into equities<br>
+        → <span class="hi">$28M</span> stays in cash, earning 3.5% p.a. ≈ $980k/yr
+      </div>
+    </div>
+  </div>
+  <div class="rs-sep"></div>
+  <div class="rs-formula" id="rs-formula">80% regime max × 1.00 VIX × 1.00 trend × 0.90 HY credit</div>
+  <div class="rs-sep"></div>
+  <div class="rs-item"><span id="rs-cash-txt" class="val" style="color:var(--teal)">$28M cash @ 3.5% p.a. ≈ $980k/yr idle income</span></div>
+  <!-- Combo strip -->
+  <div class="rs-combo" style="position:relative">
+    ⚡ COMBO C wk 11 · bearish 83% · new entries −20 pct pts &nbsp;·&nbsp; COMBO F wk 8 · bullish 78% · recovery open
+    <div class="tip tip-r">
+      <div class="tip-title">Two combos active — opposing time horizons</div>
+      <div class="tip-body">
+        <b style="color:var(--amber)">Combo C · Bearish · 83% confidence · Week 11</b><br>
+        New long position entries this week: each allocation cut by <b>20 percentage points</b>. Example: NVDA normally gets MAX (100% of cluster budget). While Combo C active → capped at 80%. Existing positions are NOT affected. Earliest cancel: Jun 20.<br><br>
+        <b style="color:var(--green)">Combo F · Recovery window · 78% confidence · Week 8 of 26</b><br>
+        SPX +22% from fire date. Medium-term (6-month) bullish structural signal. Both C and F being true at once means: be tactically cautious on new entries (C), but the medium-term recovery is intact (F). These operate on different time horizons — they don't cancel each other.
+      </div>
+    </div>
+  </div>
+  <!-- Macro override warning (INC-03 fix — CAPE + regional war) -->
+  <div class="macro-warn" style="position:relative">
+    ⚠ MACRO OVERRIDE
+    <div class="tip tip-r" style="width:300px">
+      <div class="tip-title">Macro regime flags — consider manual ceiling reduction</div>
+      <div class="tip-body">
+        The Overwatch agent has flagged two macro conditions not reflected in the VIX ceiling:<br><br>
+        <b style="color:var(--red)">Valuation extreme: CAPE 42×</b> — highest since dot-com peak (Mar 2000 ~44×). Signals page Combo E confirmed 2/3 legs. Historical precedent: elevated drawdown risk over 3–5 year horizon.<br><br>
+        <b style="color:var(--amber)">Geopolitical: Regional conflict active</b> — Signals page regime classification shows REGIONAL_WAR. Tail risk to oil prices and supply chains.<br><br>
+        These do not automatically reduce the 72% ceiling — you remain systematic. But Overwatch recommends review. Consider manually moving to Stress scenario to assess impact.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ BODY ══ -->
+<div class="body">
+
+<!-- ══ LEFT NAV ══ -->
+<div class="lnav">
+  <div class="lnav-sec">
+    <div class="lnav-lbl">Portfolio</div>
+    <div class="ni on" onclick="sw('alloc',this)">
+      <div class="nd g"></div>
+      <div><div class="nn">Sized Allocations</div><div class="ns2">regime-aware sizing</div></div>
+    </div>
+    <div class="ni" onclick="sw('risk',this)">
+      <div class="nd r" style="animation:pu 2s infinite"></div>
+      <div><div class="nn">Portfolio Risk</div><div class="ns2">enter your holdings →</div></div>
+    </div>
+    <div class="ni" onclick="sw('pnl',this)">
+      <div class="nd gold"></div>
+      <div><div class="nn">Live P&amp;L</div><div class="ns2">open positions</div></div>
+    </div>
+  </div>
+
+  <!-- CALC BOX — readable, boosted contrast -->
+  <div style="padding:10px 12px 0;border-bottom:1px solid var(--b1)">
+    <div class="lnav-lbl">Equity deployment ceiling</div>
+    <div class="calcbox">
+      <div class="cb-row"><span class="cb-key">VIX 16.4 (3yr: 40th pct)</span><span class="cb-val green">NORMAL</span></div>
+      <div class="cb-row"><span class="cb-key">Normal regime max</span><span class="cb-val">80%</span></div>
+      <div class="cb-div"></div>
+      <div class="cb-row"><span class="cb-key">× VIX level mult</span><span class="cb-val">1.00×</span></div>
+      <div class="cb-row"><span class="cb-key">× SPX trend mult</span><span class="cb-val">1.00×</span></div>
+      <div class="cb-row"><span class="cb-key">× HY credit mult</span><span class="cb-val amber">0.90×</span></div>
+      <div class="cb-div"></div>
+      <div class="cb-row"><span class="cb-key" style="color:var(--t2)">Final equity ceiling</span><span class="cb-val gold" id="nav-ceiling">72%</span></div>
+      <div class="cb-row"><span class="cb-key" style="color:var(--t2)">In equities ($100M)</span><span class="cb-val gold" id="nav-eq">$72,000,000</span></div>
+      <div class="cb-row"><span class="cb-key" style="color:var(--teal)">In cash (3.5% p.a.)</span><span class="cb-val" style="color:var(--teal)" id="nav-cash">$28,000,000</span></div>
+      <div class="cb-note" id="nav-note">HY credit at 318bp = mild stress, 10% haircut applied. VIX and SPX trend healthy, no haircut. Cash of $28M earns ~$980k/yr at 3.5%.</div>
+    </div>
+  </div>
+
+  <!-- FLAG LEGEND — boosted text size -->
+  <div class="flag-leg" style="overflow-y:auto;flex:1">
+    <div class="lnav-lbl">Flag guide</div>
+    <div class="fl-item">
+      <div class="fl-badge f-ms">MULTI-SIG</div>
+      <div class="fl-desc">2+ different analysis functions agree on direction this week → larger allocation within cluster (+10% ranking boost)</div>
+    </div>
+    <div class="fl-item">
+      <div class="fl-badge f-fdp">FD+</div>
+      <div class="fl-desc">Price fell, business quality (BQ) improved → hidden opportunity → upsize allocation +10 pct pts</div>
+    </div>
+    <div class="fl-item">
+      <div class="fl-badge f-fdn">FD−</div>
+      <div class="fl-desc">Price rose, business quality fell → hidden risk → downsize allocation −15 pct pts</div>
+    </div>
+    <div class="fl-item">
+      <div class="fl-badge f-yt">YIELD TRAP</div>
+      <div class="fl-desc">High yield + financial distress both confirmed → hard zero, no entry ever</div>
+    </div>
+    <div class="fl-item">
+      <div class="fl-badge f-dd">DRAWDOWN</div>
+      <div class="fl-desc">Position down &gt;10% from entry price → auto-exit triggered</div>
+    </div>
+  </div>
+</div><!-- /lnav -->
+
+<!-- ══ MAIN ══ -->
+<div class="main">
+
+<!-- ════════════════════════════
+     VIEW: SIZED ALLOCATIONS
+════════════════════════════ -->
+<div class="view show" id="v-alloc">
+  <div class="sub-hd">
+    <div class="sub-hd-txt" id="alloc-hd">
+      $100,000,000 portfolio &nbsp;·&nbsp; <b>72%</b> equity ceiling (auto: NORMAL) &nbsp;·&nbsp; <b>$72M</b> in equities &nbsp;·&nbsp; <b>$28M</b> cash earning 3.5% p.a.
+    </div>
+    <div class="scene-wrap">
+      <div class="scene-lbl">Scenario:</div>
+      <div class="rbtn on" onclick="switchR('normal',this)">NORMAL</div>
+      <div class="rbtn" onclick="switchR('stress',this)">STRESS</div>
+      <div class="rbtn" onclick="switchR('lowvol',this)">LOW VOL</div>
+      <div class="auto-badge" id="auto-badge">● AUTO</div>
+    </div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 9px;border-radius:3px;background:var(--gf);border:1px solid rgba(201,168,76,.3);color:var(--gold);cursor:pointer;flex-shrink:0">↻ REFRESH SIZES</div>
+  </div>
+
+  <div class="inner">
+  <div class="al-scroll">
+
+    <!-- GLOBAL RISK-ON -->
+    <div class="cluster">
+      <div class="cl-hd">
+        <div class="cl-name">Global risk-on</div>
+        <div class="cl-tag ct-ok">3 signals active</div>
+        <div class="cl-budget"><b id="c1-b">$18,000,000</b> · 18% of portfolio</div>
+      </div>
+      <div class="cl-bar">
+        <div class="cl-bar-track"><div class="cl-bar-fill" style="width:78%;background:var(--green)"></div></div>
+        <div class="cl-bar-pct" style="color:var(--green)">14% deployed / 18% max</div>
+      </div>
+      <div class="pr">
+        <div class="pr-ticker">SPY</div>
+        <div class="pr-name">SPDR S&P 500 ETF</div>
+        <div class="pr-signal" style="position:relative">FractalTrack · Monthly
+          <div class="tip tip-above">
+            <div class="tip-title">Signal: FractalTrack · Monthly</div>
+            <div class="tip-body"><b>Monthly</b> = this function's analysis ran on monthly data intervals. Longer-duration trade — typically holds weeks to months before the data conditions change. Not a reference to "charts" — the function processes price and volume data at monthly frequency.<br><br>Weekly = shorter-duration, days to weeks.<br>Daily = short-term, days.</div>
+          </div>
+        </div>
+        <div class="pr-bq" style="color:var(--green);position:relative">BQ +7
+          <div class="tip tip-above">
+            <div class="tip-title">Business Quality score: +7 → TACTICAL</div>
+            <div class="tip-body">BQ = Business Quality. 15 dimensions each scored −1, 0, or +1. SPY scores +7.<br><br>≥+8 MAX · +5–7 <b>TACTICAL (75%)</b> · +2–4 REDUCED (40%) · &lt;+2 BLOCKED (0%)</div>
+          </div>
+        </div>
+        <div class="pr-size" style="color:var(--t2)">TACTICAL 75%</div>
+        <div class="pr-alloc" id="spy-alloc">$6,750,000</div>
+      </div>
+      <div class="pr">
+        <div class="pr-ticker">QQQ</div>
+        <div class="pr-name">Invesco QQQ Trust</div>
+        <div class="pr-signal">TrendPulse · Weekly</div>
+        <div class="pr-bq" style="color:var(--green)">BQ +8</div>
+        <div class="pr-size" style="color:var(--green)">MAX 100%</div>
+        <div class="pr-alloc">$6,480,000</div>
+        <div class="pr-flags">
+          <div class="flag f-ms" style="position:relative">MULTI-SIG
+            <div class="tip tip-above" style="width:260px">
+              <div class="tip-title">Multiple functions agree</div>
+              <div class="tip-body">TrendPulse and FractalTrack both independently signal LONG on QQQ this week. A single signal is enough to enter — agreement between functions does NOT gate entry. But it boosts QQQ's ranking score by 10% within the cluster, meaning it gets a larger slice of the cluster's budget.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="pr">
+        <div class="pr-ticker">IWM</div>
+        <div class="pr-name">iShares Russell 2000</div>
+        <div class="pr-signal">OscillatorDelta · Daily</div>
+        <div class="pr-bq" style="color:var(--t2)">BQ +3</div>
+        <div class="pr-size" style="color:var(--amber)">REDUCED 40%</div>
+        <div class="pr-alloc">$1,944,000</div>
+        <div class="pr-flags"></div>
+      </div>
+    </div>
+
+    <!-- SEMICONDUCTORS -->
+    <div class="cluster">
+      <div class="cl-hd">
+        <div class="cl-name">Semiconductors</div>
+        <div class="cl-tag ct-ok">2 of 3 signals</div>
+        <div class="cl-budget"><b>$12,000,000</b> · 12% of portfolio</div>
+      </div>
+      <div class="cl-bar">
+        <div class="cl-bar-track"><div class="cl-bar-fill" style="width:62%;background:var(--green)"></div></div>
+        <div class="cl-bar-pct" style="color:var(--green)">7% deployed / 12% max</div>
+      </div>
+      <div class="pr">
+        <div class="pr-ticker">NVDA</div>
+        <div class="pr-name">NVIDIA Corp</div>
+        <div class="pr-signal">FractalTrack · Monthly</div>
+        <div class="pr-bq" style="color:var(--green);position:relative">BQ +9
+          <div class="tip tip-above">
+            <div class="tip-title">Business Quality: +9 → MAX + FD upsize</div>
+            <div class="tip-body">BQ +9 = highest conviction. Gets 100% of its cluster share. Then FD+ adds a further +10 percentage points on top.</div>
+          </div>
+        </div>
+        <div class="pr-size" style="color:var(--green)">MAX + FD upsize</div>
+        <div class="pr-alloc">$5,280,000</div>
+        <div class="pr-flags">
+          <div class="flag f-ms" style="position:relative">MULTI-SIG
+            <div class="tip tip-above" style="width:250px">
+              <div class="tip-title">Multiple functions agree on NVDA</div>
+              <div class="tip-body">FractalTrack + DeltaDrift both signal LONG this week. Boosts NVDA's share of the semiconductor cluster budget by 10%.</div>
+            </div>
+          </div>
+          <div class="flag f-fdp" style="position:relative">FD+
+            <div class="tip tip-above" style="width:270px">
+              <div class="tip-title">Fundamental Divergence — positive (FD+)</div>
+              <div class="tip-body">
+                <b>Price fell 18%</b> over the past 3–6 months.<br>
+                <b>Business quality improved</b> — revenue growing, margins expanding, return on capital rising.<br><br>
+                The business is getting stronger while the market is selling the stock. This gap between price and business reality is a hidden opportunity.<br><br>
+                Effect: <span class="gn">Upsize allocation by +10 percentage points</span> on top of what BQ+9 already allocates.<br><br>
+                Simple version: "The stock is on sale, but the company is doing better than ever."
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="pr">
+        <div class="pr-ticker">ASML</div>
+        <div class="pr-name">ASML Holding NV</div>
+        <div class="pr-signal">TrendPulse · Weekly</div>
+        <div class="pr-bq" style="color:var(--green)">BQ +6</div>
+        <div class="pr-size" style="color:var(--t2)">TACTICAL 75%</div>
+        <div class="pr-alloc">$4,050,000</div>
+        <div class="pr-flags"></div>
+      </div>
+      <div class="pr blocked">
+        <div class="pr-ticker" style="color:var(--red)">AMD</div>
+        <div class="pr-name">Advanced Micro Devices</div>
+        <div class="pr-signal">DeltaDrift · Daily</div>
+        <div class="pr-bq" style="color:var(--red)">BQ +1</div>
+        <div class="pr-size" style="color:var(--red)">BLOCKED</div>
+        <div class="pr-alloc" style="color:var(--t4)">$0</div>
+        <div class="pr-flags">
+          <div class="flag f-fdn" style="position:relative">FD−
+            <div class="tip tip-above" style="width:270px">
+              <div class="tip-title">Fundamental Divergence — negative (FD−)</div>
+              <div class="tip-body">
+                <b>Price rose 22%</b> over the past 3–6 months.<br>
+                <b>Business quality fell</b> — margins compressing, debt rising.<br><br>
+                The market is optimistic but the business is quietly weakening. This gap is a hidden risk.<br><br>
+                Effect: <span class="rd">Downsize allocation by −15 percentage points.</span> Combined with BQ+1 (already below the +2 block threshold), AMD is hard blocked at zero.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FINANCIALS -->
+    <div class="cluster">
+      <div class="cl-hd">
+        <div class="cl-name">Financials</div>
+        <div class="cl-tag ct-ok">2 signals active</div>
+        <div class="cl-budget"><b>$12,000,000</b> · 12% of portfolio</div>
+      </div>
+      <div class="cl-bar">
+        <div class="cl-bar-track"><div class="cl-bar-fill" style="width:74%;background:var(--green)"></div></div>
+        <div class="cl-bar-pct" style="color:var(--green)">9% deployed / 12% max</div>
+      </div>
+      <div class="pr">
+        <div class="pr-ticker">JPM</div>
+        <div class="pr-name">JPMorgan Chase</div>
+        <div class="pr-signal">FractalTrack · Monthly</div>
+        <div class="pr-bq" style="color:var(--green)">BQ +6</div>
+        <div class="pr-size" style="color:var(--t2)">TACTICAL 75%</div>
+        <div class="pr-alloc">$5,280,000</div>
+        <div class="pr-flags"><div class="flag f-ms">MULTI-SIG</div></div>
+      </div>
+      <div class="pr">
+        <div class="pr-ticker">GS</div>
+        <div class="pr-name">Goldman Sachs</div>
+        <div class="pr-signal">TrendPulse · Weekly</div>
+        <div class="pr-bq" style="color:var(--t2)">BQ +4</div>
+        <div class="pr-size" style="color:var(--amber)">REDUCED 40%</div>
+        <div class="pr-alloc">$3,330,000</div>
+        <div class="pr-flags"></div>
+      </div>
+      <div class="pr blocked">
+        <div class="pr-ticker" style="color:var(--red)">T.TO</div>
+        <div class="pr-name">TELUS Corporation (TSX)</div>
+        <div class="pr-signal">BaselineDivergence · Wkly</div>
+        <div class="pr-bq" style="color:var(--red)">BQ −6</div>
+        <div class="pr-size" style="color:var(--red)">HARD ZERO</div>
+        <div class="pr-alloc" style="color:var(--t4)">$0</div>
+        <div class="pr-flags">
+          <div class="flag f-yt" style="position:relative">YIELD TRAP
+            <div class="tip tip-above" style="width:270px">
+              <div class="tip-title">Yield Trap — hard zero, no override</div>
+              <div class="tip-body">Two conditions simultaneously:<br>1. Dividend yield 7.3% &gt; 7.0% TSX threshold (dividend likely unsustainable)<br>2. Altman Z-score 2.0 &gt; 1.5 (financial distress signal)<br><br>A yield trap is when investors buy for the high dividend and get a dividend cut + stock collapse instead. Hard zero = no entry under any circumstances.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMMODITIES -->
+    <div class="cluster">
+      <div class="cl-hd">
+        <div class="cl-name">Commodities</div>
+        <div class="cl-tag ct-warn">1 of 3 signals</div>
+        <div class="cl-budget"><b>$10,000,000</b> · 10% of portfolio</div>
+      </div>
+      <div class="cl-bar">
+        <div class="cl-bar-track"><div class="cl-bar-fill" style="width:45%;background:var(--amber)"></div></div>
+        <div class="cl-bar-pct" style="color:var(--amber)">4% deployed / 10% max</div>
+      </div>
+      <div class="pr">
+        <div class="pr-ticker">GDX</div>
+        <div class="pr-name">VanEck Gold Miners ETF</div>
+        <div class="pr-signal">DeltaDrift · Daily</div>
+        <div class="pr-bq" style="color:var(--green)">BQ +5</div>
+        <div class="pr-size" style="color:var(--t2)">TACTICAL 75%</div>
+        <div class="pr-alloc">$4,500,000</div>
+        <div class="pr-flags"></div>
+      </div>
+    </div>
+
+  </div><!-- /al-scroll -->
+
+  <!-- SUMMARY PANEL — all readable contrast -->
+  <div class="al-side">
+    <div class="sp-lbl">Portfolio summary</div>
+    <div class="sp-big" id="sp-deployed">$72,000,000</div>
+    <div class="sp-sub" id="sp-sub">deployed · 72% of $100M</div>
+    <div class="dbar"><div class="dbar-fill" id="dbar" style="width:72%"></div></div>
+
+    <div class="sr"><span class="k">Global risk-on (18%)</span><span class="v" id="sr1">$12,960,000</span></div>
+    <div class="sr"><span class="k">Semiconductors (12%)</span><span class="v" id="sr2">$8,640,000</span></div>
+    <div class="sr"><span class="k">Financials (12%)</span><span class="v" id="sr3">$8,610,000</span></div>
+    <div class="sr"><span class="k">Commodities (10%)</span><span class="v" id="sr4">$4,500,000</span></div>
+    <div class="sr"><span class="k">Canada defensive (10%)</span><span class="v">$5,560,000</span></div>
+    <div class="sr"><span class="k">Other clusters</span><span class="v" id="sr5">$8,830,000</span></div>
+
+    <div class="sdiv"></div>
+    <div class="wfall">
+      <div class="sp-lbl" style="margin-bottom:6px">Cash breakdown</div>
+      <div class="wf-row"><span class="k">Total portfolio</span><span class="v">$100,000,000</span></div>
+      <div class="wf-row"><span class="k">− Equities deployed</span><span class="v" id="wf-eq">$72,000,000</span></div>
+      <div class="wf-tot">
+        <div class="wf-row"><span class="k">= Cash</span><span class="v" id="wf-cash">$28,000,000</span></div>
+      </div>
+      <div class="wf-row" style="margin-top:4px"><span class="k" style="color:var(--teal)">Idle income (3.5% p.a.)</span><span class="v" style="color:var(--teal)" id="wf-earn">≈ $980,000/yr</span></div>
+    </div>
+
+    <div class="sdiv"></div>
+    <div class="sp-lbl">Constraint checks</div>
+    <div class="con-row c-ok"><span class="ico">✓</span><div class="txt"><b>Cluster caps:</b> all clusters within budget</div></div>
+    <div class="con-row c-warn"><span class="ico">⚠</span><div class="txt"><b>Combo C active:</b> new long entries this week reduced by 20 percentage points. Existing positions untouched.</div></div>
+    <div class="con-row c-ok"><span class="ico">✓</span><div class="txt"><b>Cash floor:</b> 28% held · above 10% minimum</div></div>
+    <div class="con-row c-ok"><span class="ico">✓</span><div class="txt"><b>Drawdown:</b> no positions currently down &gt;10% from entry</div></div>
+    <div class="con-row c-warn"><span class="ico">⚠</span><div class="txt"><b>Macro override flagged:</b> CAPE 42× + regional conflict. Overwatch recommends reviewing Stress scenario.</div></div>
+
+    <div class="sdiv"></div>
+    <div class="sp-lbl">Sizing rules</div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t3);line-height:2.2">
+      BQ ≥+8 → MAX · 100% of cluster share<br>
+      BQ +5–7 → TACTICAL · 75% of cluster share<br>
+      BQ +2–4 → REDUCED · 40% of cluster share<br>
+      BQ &lt;+2 → BLOCKED · 0%<br>
+      <span style="color:var(--green)">FD+ → Upsize +10 percentage points</span><br>
+      <span style="color:var(--red)">FD− → Downsize −15 percentage points</span><br>
+      <span style="color:var(--blue)">MULTI-SIG → +10% ranking boost within cluster</span>
+    </div>
+  </div>
+  </div>
+</div><!-- /v-alloc -->
+
+<!-- ════════════════════════════
+     VIEW: PORTFOLIO RISK
+════════════════════════════ -->
+<div class="view" id="v-risk">
+  <div class="inner">
+  <div class="rscroll">
+
+    <div class="card">
+      <div class="card-hd">
+        <div class="card-title">Correlation — by investment type (cluster)</div>
+        <div class="card-sub" style="position:relative;cursor:help">Why cluster view?
+          <div class="tip tip-r">
+            <div class="tip-title">Why cluster-level, not individual stocks</div>
+            <div class="tip-body">With 30 stocks a full matrix = 900 cells — unreadable. Professional risk systems (Bloomberg, FactSet) show cluster-level first, then drill into specific pairs that breach thresholds.<br><br>Each cell shows the average correlation between all stocks in those two investment types. Pairs breaching ρ &gt;0.85 appear in the list below — those are the only ones requiring action.<br><br>Diagonal = 1.00 always (each cluster with itself).</div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:10px 12px;overflow-x:auto">
+        <div class="mx-grid" style="grid-template-columns:78px repeat(8,50px)">
+          <div></div>
+          <div class="mx-head">Global</div><div class="mx-head">Semis</div><div class="mx-head">Fin</div>
+          <div class="mx-head">Cmdty</div><div class="mx-head">CA Def</div><div class="mx-head">Tech L</div>
+          <div class="mx-head">India</div><div class="mx-head">Bonds</div>
+          <!-- Row Global -->
+          <div class="mx-lbl">Global</div>
+          <div class="mc diag">1.00</div>
+          <div class="mc" style="background:rgba(243,156,18,.3);color:#fff">0.87</div>
+          <div class="mc" style="background:rgba(93,173,226,.18);color:var(--blue)">0.61</div>
+          <div class="mc" style="background:rgba(93,173,226,.08);color:var(--t3)">0.22</div>
+          <div class="mc" style="background:rgba(93,173,226,.1);color:var(--t3)">0.38</div>
+          <div class="mc" style="background:rgba(243,156,18,.22);color:var(--amber)">0.83</div>
+          <div class="mc" style="background:rgba(93,173,226,.1);color:var(--t3)">0.41</div>
+          <div class="mc" style="background:rgba(231,76,60,.12);color:var(--red)">−0.31</div>
+          <!-- Row Semis -->
+          <div class="mx-lbl">Semis</div>
+          <div class="mc" style="background:rgba(243,156,18,.3);color:#fff">0.87</div>
+          <div class="mc diag">1.00</div>
+          <div class="mc" style="background:rgba(93,173,226,.14);color:var(--t2)">0.48</div>
+          <div class="mc" style="background:rgba(93,173,226,.08);color:var(--t3)">0.19</div>
+          <div class="mc" style="background:rgba(93,173,226,.08);color:var(--t3)">0.27</div>
+          <div class="mc" style="background:rgba(243,156,18,.2);color:var(--amber)">0.79</div>
+          <div class="mc" style="background:rgba(93,173,226,.1);color:var(--t3)">0.35</div>
+          <div class="mc" style="background:rgba(231,76,60,.1);color:var(--t3)">−0.22</div>
+          <!-- Row Financials -->
+          <div class="mx-lbl">Fin</div>
+          <div class="mc" style="background:rgba(93,173,226,.18);color:var(--blue)">0.61</div>
+          <div class="mc" style="background:rgba(93,173,226,.14);color:var(--t2)">0.48</div>
+          <div class="mc diag">1.00</div>
+          <div class="mc" style="background:rgba(93,173,226,.1);color:var(--t3)">0.29</div>
+          <div class="mc" style="background:rgba(93,173,226,.12);color:var(--t3)">0.44</div>
+          <div class="mc" style="background:rgba(93,173,226,.15);color:var(--t2)">0.55</div>
+          <div class="mc" style="background:rgba(93,173,226,.1);color:var(--t3)">0.33</div>
+          <div class="mc" style="background:rgba(231,76,60,.08);color:var(--t3)">−0.18</div>
+          <!-- Row Commodities -->
+          <div class="mx-lbl">Cmdty</div>
+          <div class="mc" style="background:rgba(93,173,226,.08);color:var(--t3)">0.22</div>
+          <div class="mc" style="background:rgba(93,173,226,.08);color:var(--t3)">0.19</div>
+          <div class="mc" style="background:rgba(93,173,226,.1);color:var(--t3)">0.29</div>
+          <div class="mc diag">1.00</div>
+          <div class="mc" style="background:rgba(93,173,226,.1);color:var(--t3)">0.37</div>
+          <div class="mc" style="background:rgba(93,173,226,.08);color:var(--t3)">0.18</div>
+          <div class="mc" style="background:rgba(93,173,226,.08);color:var(--t3)">0.24</div>
+          <div class="mc" style="background:rgba(93,173,226,.08);color:var(--t3)">0.11</div>
+          <!-- Rows CA Def, Tech L, India, Bonds abbreviated -->
+          <div class="mx-lbl">CA Def</div>
+          <div class="mc" style="background:rgba(93,173,226,.1);color:var(--t3)">0.38</div><div class="mc" style="background:rgba(93,173,226,.08);color:var(--t3)">0.27</div><div class="mc" style="background:rgba(93,173,226,.12);color:var(--t3)">0.44</div><div class="mc" style="background:rgba(93,173,226,.1);color:var(--t3)">0.37</div><div class="mc diag">1.00</div><div class="mc" style="background:rgba(93,173,226,.1);color:var(--t3)">0.31</div><div class="mc" style="background:rgba(93,173,226,.08);color:var(--t3)">0.19</div><div class="mc" style="background:rgba(93,173,226,.06);color:var(--t3)">0.08</div>
+          <div class="mx-lbl">Tech L</div>
+          <div class="mc" style="background:rgba(243,156,18,.22);color:var(--amber)">0.83</div><div class="mc" style="background:rgba(243,156,18,.2);color:var(--amber)">0.79</div><div class="mc" style="background:rgba(93,173,226,.15);color:var(--t2)">0.55</div><div class="mc" style="background:rgba(93,173,226,.08);color:var(--t3)">0.18</div><div class="mc" style="background:rgba(93,173,226,.1);color:var(--t3)">0.31</div><div class="mc diag">1.00</div><div class="mc" style="background:rgba(93,173,226,.1);color:var(--t3)">0.42</div><div class="mc" style="background:rgba(231,76,60,.08);color:var(--t3)">−0.24</div>
+          <div class="mx-lbl">India</div>
+          <div class="mc" style="background:rgba(93,173,226,.1);color:var(--t3)">0.41</div><div class="mc" style="background:rgba(93,173,226,.1);color:var(--t3)">0.35</div><div class="mc" style="background:rgba(93,173,226,.1);color:var(--t3)">0.33</div><div class="mc" style="background:rgba(93,173,226,.08);color:var(--t3)">0.24</div><div class="mc" style="background:rgba(93,173,226,.08);color:var(--t3)">0.19</div><div class="mc" style="background:rgba(93,173,226,.1);color:var(--t3)">0.42</div><div class="mc diag">1.00</div><div class="mc" style="background:rgba(93,173,226,.06);color:var(--t3)">0.05</div>
+          <div class="mx-lbl">Bonds</div>
+          <div class="mc" style="background:rgba(231,76,60,.12);color:var(--red)">−0.31</div><div class="mc" style="background:rgba(231,76,60,.1);color:var(--t3)">−0.22</div><div class="mc" style="background:rgba(231,76,60,.08);color:var(--t3)">−0.18</div><div class="mc" style="background:rgba(93,173,226,.08);color:var(--t3)">0.11</div><div class="mc" style="background:rgba(93,173,226,.06);color:var(--t3)">0.08</div><div class="mc" style="background:rgba(231,76,60,.08);color:var(--t3)">−0.24</div><div class="mc" style="background:rgba(93,173,226,.06);color:var(--t3)">0.05</div><div class="mc diag">1.00</div>
+        </div>
+        <div style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--t3)">
+          <span style="color:var(--amber)">■</span> ρ &gt;0.75 — watch &nbsp;·&nbsp; <span style="color:var(--red)">■</span> negative — natural hedge &nbsp;·&nbsp; Diagonal = 1.00 always
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd"><div class="card-title">Correlation breaches requiring action</div><div class="card-sub">ρ &gt;0.85 threshold</div></div>
+      <div style="padding:8px 0">
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.02)">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:#fff;width:120px">Global / Semis</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--amber);width:48px;text-align:center">ρ 0.87</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t3);flex:1">Combined weight 30% ($30M) exceeds 20% cap. <b style="color:var(--t2)">Reduce semis cluster by ~$10M or trim global risk-on.</b></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 12px">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:var(--t2);width:120px">Global / Tech L</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t2);width:48px;text-align:center">ρ 0.83</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t3);flex:1">Below 0.85 threshold — <b style="color:var(--t2)">monitoring only.</b></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd"><div class="card-title">Cluster weight vs ceiling</div><div class="card-sub">bar = deployed · mark = max allowed</div></div>
+      <div style="padding:12px">
+        <div class="sect-row"><div class="sect-name">Global risk-on</div><div class="sect-track"><div class="sect-fill" style="width:78%;background:var(--green)"></div></div><div class="sect-pct" style="color:var(--green)">14%</div></div>
+        <div class="sect-row"><div class="sect-name">Semiconductors</div><div class="sect-track"><div class="sect-fill" style="width:62%;background:var(--green)"></div></div><div class="sect-pct" style="color:var(--green)">7%</div></div>
+        <div class="sect-row"><div class="sect-name">Financials</div><div class="sect-track"><div class="sect-fill" style="width:74%;background:var(--green)"></div></div><div class="sect-pct" style="color:var(--green)">9%</div></div>
+        <div class="sect-row"><div class="sect-name">Commodities</div><div class="sect-track"><div class="sect-fill" style="width:44%;background:var(--amber)"></div></div><div class="sect-pct" style="color:var(--amber)">4%</div></div>
+        <div class="sect-row"><div class="sect-name">CA Defensive</div><div class="sect-track"><div class="sect-fill" style="width:56%;background:var(--green)"></div></div><div class="sect-pct" style="color:var(--green)">6%</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd"><div class="card-title">Actions required</div></div>
+      <div style="padding:10px 12px">
+        <div class="act gold"><div class="act-ico">⚡</div><div><div class="act-title">GLOBAL / SEMIS CORRELATION BREACH</div><div class="act-body">ρ=<b>0.87</b> · combined 30% exceeds 20% cap. Trim semis cluster by ~$10M or reduce global risk-on.</div></div></div>
+        <div class="act red"><div class="act-ico">⊗</div><div><div class="act-title">T.TO YIELD TRAP — DO NOT ENTER</div><div class="act-body">Yield 7.3% + Altman Z 2.0 both breach thresholds. Hard zero. Not overrideable.</div></div></div>
+        <div class="act green"><div class="act-ico">↑</div><div><div class="act-title">NVDA FD+ — UPSIZE CONFIRMED</div><div class="act-body">Price −18% while business quality improved. Upsize allocation +10 pct pts applied. Final allocation $5,280,000.</div></div></div>
+        <div class="act purple"><div class="act-ico">⚠</div><div><div class="act-title">MACRO OVERRIDE — OVERWATCH ALERT</div><div class="act-body">CAPE Valuation extreme (42×) + Regional conflict active. Consider switching to Stress scenario view. Overwatch agent can brief further.</div></div></div>
+      </div>
+    </div>
+
+  </div><!-- /rscroll -->
+
+  <!-- ENTRY PANEL -->
+  <div class="rpanel">
+    <div class="ep-hd">
+      <div class="ep-title">ENTER MY PORTFOLIO</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--t4)">type ticker to search</div>
+    </div>
+    <div class="ep-body">
+      <div class="ep-sec">Holdings entered</div>
+      <div class="pe-row"><div class="pe-dot" style="background:var(--green)"></div><div class="pe-sym">SPY</div><div class="pe-sep">·</div><div class="pe-qty">120</div><div class="pe-name">SPDR S&P 500 · $482.10</div><div class="pe-del" onclick="this.parentElement.remove()">×</div></div>
+      <div class="pe-row"><div class="pe-dot" style="background:var(--green)"></div><div class="pe-sym">QQQ</div><div class="pe-sep">·</div><div class="pe-qty">85</div><div class="pe-name">Invesco QQQ · $441.30</div><div class="pe-del" onclick="this.parentElement.remove()">×</div></div>
+      <div class="pe-row"><div class="pe-dot" style="background:var(--blue)"></div><div class="pe-sym">ASML</div><div class="pe-sep">·</div><div class="pe-qty">62</div><div class="pe-name">ASML Holding · $715.20</div><div class="pe-del" onclick="this.parentElement.remove()">×</div></div>
+      <div class="pe-row"><div class="pe-dot" style="background:var(--green)"></div><div class="pe-sym">JPM</div><div class="pe-sep">·</div><div class="pe-qty">310</div><div class="pe-name">JPMorgan Chase · $218.50</div><div class="pe-del" onclick="this.parentElement.remove()">×</div></div>
+      <div class="pe-row"><div class="pe-dot" style="background:var(--gold)"></div><div class="pe-sym">GDX</div><div class="pe-sep">·</div><div class="pe-qty">540</div><div class="pe-name">VanEck Gold Miners · $52.80</div><div class="pe-del" onclick="this.parentElement.remove()">×</div></div>
+      <div class="ep-sec">Add position</div>
+      <div class="srch-wrap">
+        <div class="srch-row">
+          <span style="color:var(--t4)">+</span>
+          <input class="srch-inp" id="si" placeholder="Ticker or company name..." oninput="hs(this.value)">
+          <div class="srch-hint" id="sh">↑↓ select · Enter</div>
+        </div>
+        <div class="drop" id="sd">
+          <div class="di" onclick="st('NVDA','NVIDIA Corp','NASDAQ',134.82)"><div class="di-sym">NVDA</div><div class="di-name">NVIDIA Corp</div><div class="di-exch">NASDAQ</div><div class="di-price">134.82</div></div>
+          <div class="di" onclick="st('NVDS','T-Rex 2X Inv NVDA','NASDAQ',12.40)"><div class="di-sym">NVDS</div><div class="di-name">T-Rex 2X Inverse NVDA</div><div class="di-exch">NASDAQ</div><div class="di-price">12.40</div></div>
+        </div>
+      </div>
+      <div class="sc" id="sc">
+        <div class="sc-sym" id="sc-sym">NVDA</div>
+        <div class="sc-btn" onclick="aq(-10)">−</div>
+        <input class="sc-qty" type="number" id="sc-qty" value="100" min="1" oninput="un()">
+        <div class="sc-btn" onclick="aq(10)">+</div>
+        <div class="sc-not">= <b id="sc-not">$13,482</b></div>
+        <div class="sc-add" onclick="cp()">Add →</div>
+      </div>
+    </div>
+    <div class="ep-sum">
+      <div><div class="es-l">Equity</div><div class="es-v" style="color:var(--blue)">$139,707</div></div>
+      <div><div class="es-l">Cash</div><div class="es-v" style="color:var(--gold)">$38,293</div></div>
+      <div><div class="es-l">Positions</div><div class="es-v" style="color:var(--t2)">5</div></div>
+    </div>
+    <div class="run-btn">RUN RISK ANALYSIS →</div>
+  </div>
+  </div>
+</div><!-- /v-risk -->
+
+<!-- ════════════════════════════
+     VIEW: LIVE P&L
+════════════════════════════ -->
+<div class="view" id="v-pnl">
+  <div style="padding:7px 16px;border-bottom:1px solid var(--b1);background:var(--s1);display:flex;align-items:center;gap:8px;flex-shrink:0">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t3)">Open positions · Yahoo Finance prices · auto-exit if any position falls &gt;10% from entry</div>
+    <div style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:8px;padding:2px 8px;border-radius:3px;background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.2);color:var(--green)">● LIVE</div>
+  </div>
+  <div class="inner">
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th>Ticker</th>
+          <th style="position:relative;cursor:help">Investment type<div class="tip tip-below" style="width:180px"><div class="tip-title">Investment type</div><div class="tip-body">The cluster this position belongs to: Global risk-on, Semiconductors, Financials etc. Drives cluster budget rules and correlation monitoring.</div></div></th>
+          <th style="position:relative;cursor:help">Signal · Frequency<div class="tip tip-below" style="width:220px"><div class="tip-title">Signal and data frequency</div><div class="tip-body">Format: [Function name] · [Data frequency]<br><br><b>Monthly</b> = analysis runs on monthly data → longer-duration trade, hold weeks to months.<br><b>Weekly</b> = shorter duration, days to weeks.<br><b>Daily</b> = short-term, days.<br><br>Not a reference to charting — the function processes price and volume data at the specified frequency.</div></div></th>
+          <th class="r">Entry $</th>
+          <th class="r">Current $</th>
+          <th class="r">Shares</th>
+          <th class="r">Market value</th>
+          <th class="r">P&amp;L $</th>
+          <th class="r">P&amp;L %</th>
+          <th class="c" style="position:relative;cursor:help">BQ<div class="tip tip-r" style="width:220px"><div class="tip-title">Business Quality (BQ) score</div><div class="tip-body">15 dimensions scored −1/0/+1. ≥+8 MAX · +5–7 TACTICAL · +2–4 REDUCED · &lt;+2 BLOCKED.</div></div></th>
+          <th class="c">Size tier</th>
+          <th>Flags</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="tkr">SPY</div></td>
+          <td><div class="tsub">Global risk-on</div></td>
+          <td><div class="tsub">FractalTrack · Monthly</div></td>
+          <td class="mono">462.40</td><td class="mono">482.10</td><td class="mono">120</td>
+          <td class="mono">$57,852</td>
+          <td class="mono g">+$2,364</td><td class="mono g">+4.3%</td>
+          <td style="text-align:center"><div style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:var(--green)">+7</div><div class="tsub">TACTICAL</div></td>
+          <td style="text-align:center"><div class="sz-pill" style="background:rgba(46,204,113,.1);color:var(--green)">75%</div></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><div class="tkr">NVDA</div></td>
+          <td><div class="tsub">Semiconductors</div></td>
+          <td><div class="tsub">FractalTrack · Monthly</div></td>
+          <td class="mono">116.20</td><td class="mono">134.82</td><td class="mono">200</td>
+          <td class="mono">$26,964</td>
+          <td class="mono g">+$3,724</td><td class="mono g">+16.0%</td>
+          <td style="text-align:center"><div style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:var(--green)">+9</div><div class="tsub">MAX</div></td>
+          <td style="text-align:center"><div class="sz-pill" style="background:rgba(46,204,113,.1);color:var(--green)">100%+</div></td>
+          <td><div style="display:flex;gap:3px">
+            <div class="flag f-ms" style="position:relative">MULTI-SIG<div class="tip tip-above" style="width:200px"><div class="tip-title">Multiple functions agree</div><div class="tip-body">FractalTrack + DeltaDrift both signal LONG. Bigger allocation within semis cluster.</div></div></div>
+            <div class="flag f-fdp" style="position:relative">FD+<div class="tip tip-above" style="width:200px"><div class="tip-title">FD+ — upsize applied</div><div class="tip-body">Price fell while business quality improved. Upsize allocation +10 pct pts applied.</div></div></div>
+          </div></td>
+        </tr>
+        <tr>
+          <td><div class="tkr">ASML</div></td>
+          <td><div class="tsub">Semiconductors</div></td>
+          <td><div class="tsub">TrendPulse · Weekly</div></td>
+          <td class="mono">732.50</td><td class="mono">715.20</td><td class="mono">62</td>
+          <td class="mono">$44,342</td>
+          <td class="mono r">−$1,073</td><td class="mono r">−2.4%</td>
+          <td style="text-align:center"><div style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:var(--green)">+6</div><div class="tsub">TACTICAL</div></td>
+          <td style="text-align:center"><div class="sz-pill" style="background:rgba(243,156,18,.1);color:var(---amber)">75%</div></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><div class="tkr">JPM</div></td>
+          <td><div class="tsub">Financials</div></td>
+          <td><div class="tsub">FractalTrack · Monthly</div></td>
+          <td class="mono">201.30</td><td class="mono">218.50</td><td class="mono">310</td>
+          <td class="mono">$67,735</td>
+          <td class="mono g">+$5,332</td><td class="mono g">+8.5%</td>
+          <td style="text-align:center"><div style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:var(--green)">+6</div><div class="tsub">TACTICAL</div></td>
+          <td style="text-align:center"><div class="sz-pill" style="background:rgba(243,156,18,.1);color:var(--amber)">75%</div></td>
+          <td><div class="flag f-ms">MULTI-SIG</div></td>
+        </tr>
+        <tr style="opacity:.38">
+          <td><div class="tkr" style="color:var(--red)">T.TO</div></td>
+          <td><div class="tsub">Financials</div></td>
+          <td><div class="tsub">BaselineDivergence · Wkly</div></td>
+          <td class="mono" style="color:var(--t4)">—</td><td class="mono" style="color:var(--t4)">19.84</td><td class="mono" style="color:var(--t4)">—</td>
+          <td class="mono" style="color:var(--t4)">—</td><td class="mono" style="color:var(--t4)">—</td><td class="mono" style="color:var(--t4)">—</td>
+          <td style="text-align:center"><div style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:var(--red)">−6</div><div class="tsub" style="color:var(--red)">BLOCKED</div></td>
+          <td style="text-align:center"><div class="sz-pill" style="background:rgba(231,76,60,.08);color:var(--red)">0%</div></td>
+          <td><div class="flag f-yt">YIELD TRAP</div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</div></div>
+<div class="sbar">
+  <div class="sb"><div style="width:5px;height:5px;border-radius:50%;background:var(--green);animation:pu 2s infinite;display:inline-block;margin-right:3px"></div>Yahoo Finance</div>
+  <div class="sb-sep"></div><div class="sb" id="sb-regime">Regime: <b>NORMAL · 72% equity ceiling</b></div>
+  <div class="sb-sep"></div><div class="sb">Drawdown: <b>−10% from entry = auto-exit</b></div>
+  <div class="sb-sep"></div><div class="sb" style="color:var(--amber)">Combo C: <b>active wk 11</b></div>
+  <div class="sb-sep"></div><div class="sb">Combo F: <b style="color:var(--green)">recovery wk 8/26</b></div>
+  <div class="sb-sep"></div><div class="sb">Sharpe: <b style="color:var(--green)">2.94</b></div>
+  <div class="sb-sep"></div><div class="sb">Win rate: <b style="color:var(--green)">67.3%</b></div>
+  <div class="sb-sep"></div><div class="sb" style="margin-left:auto">portfolio_sizer.py · last run <b>08:04 ET · 3yr VIX window</b></div>
+</div>
+</div>
+<script>
+function sw(id,el){document.querySelectorAll('.view').forEach(v=>v.classList.remove('show'));document.getElementById('v-'+id).classList.add('show');document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));el.classList.add('on');}
+const AUTO='normal';
+const S={
+  normal:{ceiling:72,eq:72,cash:28,label:'NORMAL (auto)',note:'HY credit 318bp = mild stress, 10% haircut. VIX + SPX trend healthy. $28M cash earns ~$980k/yr.',formula:'80% regime max × 1.00 VIX × 1.00 trend × 0.90 HY credit',earn:'~$980k/yr'},
+  stress:{ceiling:58,eq:58,cash:42,label:'STRESS (manual)',note:'Stress regime: 65% max × 0.90 credit = 58%. $42M cash earns ~$1.47M/yr.',formula:'65% regime max × 1.00 VIX × 1.00 trend × 0.90 HY credit',earn:'~$1.47M/yr'},
+  lowvol:{ceiling:80,eq:80,cash:20,label:'LOW VOL (manual)',note:'Low vol: 85% max × 0.95 credit = 80%. $20M cash earns ~$700k/yr.',formula:'85% regime max × 1.00 VIX × 1.00 trend × 0.95 HY credit',earn:'~$700k/yr'}
+};
+function switchR(mode,el){
+  document.querySelectorAll('.rbtn').forEach(b=>b.classList.remove('on'));el.classList.add('on');
+  const s=S[mode],isAuto=mode===AUTO;
+  const ab=document.getElementById('auto-badge');
+  ab.textContent=isAuto?'● AUTO':'● MANUAL';
+  ab.style.background=isAuto?'rgba(46,204,113,.08)':'rgba(243,156,18,.08)';
+  ab.style.borderColor=isAuto?'rgba(46,204,113,.2)':'rgba(243,156,18,.2)';
+  ab.style.color=isAuto?'var(--green)':'var(--amber)';
+  document.getElementById('alloc-hd').innerHTML='$100,000,000 portfolio &nbsp;·&nbsp; <b>'+s.ceiling+'%</b> equity ceiling ('+s.label+') &nbsp;·&nbsp; <b>$'+s.eq+'M</b> in equities &nbsp;·&nbsp; <b>$'+s.cash+'M</b> cash earning 3.5% p.a.';
+  document.getElementById('rs-ceiling').textContent=s.ceiling+'%';
+  document.getElementById('rs-formula').textContent=s.formula;
+  document.getElementById('rs-cash-txt').textContent='$'+s.cash+'M cash @ 3.5% p.a. ≈ '+s.earn+' idle income';
+  document.getElementById('nav-ceiling').textContent=s.ceiling+'%';
+  document.getElementById('nav-eq').textContent='$'+s.eq+',000,000';
+  document.getElementById('nav-cash').textContent='$'+s.cash+',000,000';
+  document.getElementById('nav-note').textContent=s.note;
+  document.getElementById('sp-deployed').textContent='$'+s.eq+',000,000';
+  document.getElementById('sp-sub').textContent='deployed · '+s.ceiling+'% of $100M';
+  document.getElementById('dbar').style.width=s.ceiling+'%';
+  document.getElementById('wf-eq').textContent='$'+s.eq+',000,000';
+  document.getElementById('wf-cash').textContent='$'+s.cash+',000,000';
+  document.getElementById('sb-regime').innerHTML='Regime: <b>'+s.label.toUpperCase()+' · '+s.ceiling+'% equity ceiling</b>';
+  const r=s.eq/72;
+  document.getElementById('sr1').textContent='$'+Math.round(12960*r).toLocaleString()+',000';
+  document.getElementById('sr2').textContent='$'+Math.round(8640*r).toLocaleString()+',000';
+  document.getElementById('sr3').textContent='$'+Math.round(8610*r).toLocaleString()+',000';
+  document.getElementById('sr4').textContent='$'+Math.round(4500*r).toLocaleString()+',000';
+  document.getElementById('sr5').textContent='$'+Math.round(8830*r).toLocaleString()+',000';
+  const earn=Math.round(s.cash*1e6*0.035/1000);
+  document.getElementById('wf-earn').textContent='≈ $'+earn.toLocaleString()+',000/yr';
+}
+let sp=0;
+function hs(v){document.getElementById('sd').classList[v.length>=2?'add':'remove']('show');if(v.length<2)document.getElementById('sc').classList.remove('show');}
+function st(sym,name,exch,price){sp=price;document.getElementById('sd').classList.remove('show');document.getElementById('sc').classList.add('show');document.getElementById('sc-sym').textContent=sym;document.getElementById('si').value=sym+' — '+name;document.getElementById('sh').textContent=exch+' · $'+price.toFixed(2);un();}
+function un(){const q=parseInt(document.getElementById('sc-qty').value)||0;document.getElementById('sc-not').textContent='$'+(q*sp).toLocaleString(undefined,{maximumFractionDigits:0});}
+function aq(d){const el=document.getElementById('sc-qty');el.value=Math.max(1,(parseInt(el.value)||0)+d);un();}
+function cp(){document.getElementById('sc').classList.remove('show');document.getElementById('si').value='';document.getElementById('sh').textContent='↑↓ select · Enter';}
+</script>
+</body></html>

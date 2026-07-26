@@ -58,7 +58,7 @@ variables:
     source: "FRED"
     ticker: "BAMLH0A0HYM2"
     paradigm: DUAL
-    pctile_window: full
+    pctile_window: rolling_3y
     pctile_start: "1996-01-01"
     combos: [A, B, F, G]
     rare:
@@ -108,21 +108,25 @@ variables:
     source: "YAHOO"
     ticker: "^VIX"
     paradigm: DUAL
-    pctile_window: full
+    pctile_window: rolling_3y
     pctile_start: "1990-01-01"
     combos: [B, D, G]
     rare:
       abs_level: 25
       high_pctile: 80
+      # T-03 fix (2026-06-06 audit): a single-day % jump this large is historically significant
+      # stress even when the absolute level (e.g. 21.51 post-jump) is still below abs_level.
+      single_day_pct_change: 0.25
     extreme:
       abs_level: 35
       high_pctile: 95
+      single_day_pct_change: 0.40
   - id: VXTS
     name: "VIX Term Structure"
     source: "YAHOO"
     ticker_ratio: ["^VIX3M", "^VIX"]
     paradigm: RATIO
-    pctile_window: full
+    pctile_window: rolling_3y
     pctile_start: "2007-01-01"
     combos: [D, G]
     rare:
@@ -358,6 +362,22 @@ combo_hit_rates:
     primary_horizon: spx_1w
     secondary_horizon: spx_2w
     show_hit_rate: true
+    # D5 recalibrated gates (D_v1.18_c95_x13_l2); min_episodes=9 per Divyanshu 2026-07-21 (QE n=9)
+    fed_cycle_slices:
+      min_episodes: 9
+      regimes: [CUTTING_LATE, HIKING_LATE, QE]
+      validated_source: D5_fed_cycle_reslice
+      validated_config_id: D_v1.18_c95_x13_l2
+      validated:
+        CUTTING_LATE:
+          spx_1w: {n: 13, hit_rate: 0.9231, avg_return: -1.5923}
+          spx_2w: {n: 13, hit_rate: 0.6923, avg_return: -0.6773}
+        HIKING_LATE:
+          spx_1w: {n: 24, hit_rate: 0.4167, avg_return: -0.0516}
+          spx_2w: {n: 24, hit_rate: 0.3333, avg_return: -0.0861}
+        QE:
+          spx_1w: {n: 9, hit_rate: 0.4444, avg_return: 0.649}
+          spx_2w: {n: 9, hit_rate: 0.3333, avg_return: 0.536}
   E:
     direction: bearish
     primary_horizon: spx_12m

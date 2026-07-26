@@ -32,7 +32,7 @@ _DEGRADATION_FIXTURE = {
     "triggered": True,
     "alerts": [
         {
-            "trigger_type": "fwd_degradation",
+            "trigger_type": "fwd_drift",
             "severity": "watch",
             "strategy": "DeltaDrift",
             "combo": {
@@ -42,12 +42,12 @@ _DEGRADATION_FIXTURE = {
                 "direction": "Short",
             },
             "bt_rate": 88.0,
-            "fwd_rate": 62.5,
-            "weekly_trend": [66.0, 64.5, 63.2, 62.5],
+            "fwd_rate": 60.5,
+            "weekly_trend": [66.0, 64.5, 62.0, 60.5],
             "pattern": "Combo issue",
             "recommendation": "pause new entries",
-            "message": "DeltaDrift / Short / Daily: FWD win rate 62.5% — approaching 60% floor.",
-            "label": "AI ANALYST · OVERWATCH AUTO-TRIGGERED · DEGRADATION WATCH",
+            "message": "DeltaDrift / Short / Daily: FWD win rate 60.5% — below 61% with 2 consecutive monthly declines.",
+            "label": "AI ANALYST · OVERWATCH AUTO-TRIGGERED · DRIFT ALERT WATCH",
             "border_color": "#ff4d6d",
         }
     ],
@@ -55,7 +55,7 @@ _DEGRADATION_FIXTURE = {
     "checked_combos": 1,
     "alert_count": 1,
     "floor_pct": 60.0,
-    "label": "AI ANALYST · OVERWATCH AUTO-TRIGGERED · DEGRADATION WATCH",
+    "label": "AI ANALYST · OVERWATCH AUTO-TRIGGERED · DRIFT ALERT WATCH",
     "border_color": "#ff4d6d",
 }
 
@@ -108,9 +108,9 @@ class TestAnalystAPI(unittest.TestCase):
         deg = next(a for a in body["panel_alerts"] if a["type"] == "degradation")
         self.assertEqual(deg["id"], "deg-deltadrift-short-daily-aapl")
         self.assertEqual(deg["channel"], "signals")
-        self.assertEqual(deg["fwd_trend"], [66.0, 64.5, 63.2, 62.5])
+        self.assertEqual(deg["fwd_trend"], [66.0, 64.5, 62.0, 60.5])
         self.assertIn("signal", deg)
-        self.assertEqual(deg["signal"]["fwd_wr"], 62.5)
+        self.assertEqual(deg["signal"]["fwd_wr"], 60.5)
         self.assertIn("tabs", body["meta"])
         self.assertIn("signals", body["meta"]["tabs"])
 
@@ -251,11 +251,32 @@ class TestAnalystAPI(unittest.TestCase):
         r = self.client.get("/api/v1/system/health")
         self.assertEqual(r.status_code, 401)
 
-    def test_degradation_watch_vs_breach_logic(self) -> None:
+    def test_drift_alert_rules(self) -> None:
         from api.services import degradation_service as ds
 
-        self.assertTrue(ds._is_declining_toward_floor([65.0, 63.0, 61.5], 60.0))
-        self.assertFalse(ds._is_declining_toward_floor([62.0, 61.0, 59.0], 60.0))
+        self.assertTrue(ds._is_falling_streak([70.0, 65.0, 62.0, 60.0], 2))
+        self.assertTrue(ds._is_falling_streak([72.0, 68.0, 64.0, 58.0], 3))
+        self.assertFalse(ds._is_falling_streak([62.0, 61.0, 62.0], 2))
+        self.assertFalse(ds._is_falling_streak([70.0, 72.0, 74.0], 2))
+
+        # Email false-positive: high cumulative FWD vs BT gap — no alert.
+        self.assertIsNone(ds._classify_drift_severity(70.59, [80.0, 75.0, 72.0, 70.59]))
+
+        # Orange: below 61% with 2-month fall.
+        self.assertEqual(
+            ds._classify_drift_severity(60.5, [65.0, 62.0, 60.5]),
+            "watch",
+        )
+
+        # Red: below 60% with 3-month fall.
+        self.assertEqual(
+            ds._classify_drift_severity(58.0, [72.0, 68.0, 64.0, 58.0]),
+            "breach",
+        )
+
+        # Below 61% but only one monthly decline — no alert.
+        self.assertIsNone(ds._classify_drift_severity(59.0, [70.0, 59.0]))
+
         trend = ds._last_n_weekly([70.0, 68.0, 66.0, 64.0], 4)
         self.assertEqual(trend, [70.0, 68.0, 66.0, 64.0])
 

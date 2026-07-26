@@ -129,6 +129,15 @@ def evaluate_variable_tier(
             return SignalTier.EXTREME, "UP"
         if raw >= rare.get("abs_level", 25) and pctile and pctile >= rare.get("high_pctile", 80):
             return SignalTier.RARE, "UP"
+        # T-03 fix (2026-06-06 audit): escalate on single-day spike magnitude alone, regardless
+        # of absolute level/percentile — e.g. a 40% one-day jump (15.40 -> 21.51) is historically
+        # significant stress even though 21.51 sits below the RARE abs_level (25.0).
+        day_chg = meta.get("single_day_pct_change")
+        if day_chg is not None:
+            if day_chg >= extreme.get("single_day_pct_change", 0.40):
+                return SignalTier.EXTREME, "UP"
+            if day_chg >= rare.get("single_day_pct_change", 0.25):
+                return SignalTier.RARE, "UP"
         return SignalTier.NORMAL, None
 
     if var_id == "HY":

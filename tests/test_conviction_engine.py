@@ -30,6 +30,7 @@ from src.conviction_engine.scoring import (
     detect_business_type,
     is_yield_trap,
     score_manual,
+    verdict_for_buy,
 )
 from src.conviction_engine.signals import normalize_signal_row, signal_timeframe_from_interval
 from src.conviction_engine.store import load_record, save_record
@@ -747,6 +748,143 @@ class TestV6Scoring(unittest.TestCase):
         self.assertEqual(comps["ceo_quality"], -1.0)
         self.assertEqual(comps["mgmt_capital_allocation"], 1.0)
         self.assertEqual(comps["competitive_moat"], 2.0)
+
+
+class TestJuly2026FundamentalUpdates(unittest.TestCase):
+    def test_reinvestment_runway_threshold_ten_x(self):
+        from src.conviction_engine.scoring import _score_reinvestment
+
+        self.assertEqual(_score_reinvestment(11), 1.0)
+        self.assertEqual(_score_reinvestment(10), 0.0)
+        self.assertEqual(_score_reinvestment(2), -1.0)
+
+    def test_capital_allocation_buyback_scoring(self):
+        from src.conviction_engine.capital_allocation import score_capital_allocation
+
+        score, detail = score_capital_allocation({"shares_outstanding_change_pct": -0.071})
+        self.assertEqual(score, 2.0)
+        self.assertGreater(detail.get("buyback_pct", 0), 0.05)
+
+    def test_divergence_persistence_counter(self):
+        from src.conviction_engine.divergence import detect_divergence_signal, update_divergence_state
+
+        record: dict = {}
+        update_divergence_state(record, current_price=50.0, fifty_two_week_high=100.0, as_of=__import__("datetime").date(2026, 1, 1))
+        self.assertEqual(record["days_below_high"], 1)
+        update_divergence_state(record, current_price=50.0, fifty_two_week_high=100.0, as_of=__import__("datetime").date(2026, 3, 1))
+        self.assertEqual(record["days_below_high"], 2)
+        self.assertTrue(
+            detect_divergence_signal(
+                current_price=50.0,
+                fifty_two_week_high=100.0,
+                days_below_high=65,
+                fd_direction="positive",
+            )
+        )
+
+    def test_pe_percentile_neutral_when_eps_missing(self):
+        from src.conviction_engine.engine import daily_update
+
+        with tempfile.TemporaryDirectory() as tmp:
+            record = default_record("NOPETEST")
+            record.update(
+                {
+                    "asset_type": "EQUITY",
+                    "quote_type": "EQUITY",
+                    "bq_raw": 4.0,
+                    "eps_ttm": None,
+                    "pe_20y_array": [10.0, 12.0, 15.0],
+                    "market_cap": 1_000_000.0,
+                    "fcf_ttm": 100_000.0,
+                    "fwd_revenue_stored": 500_000.0,
+                }
+            )
+            out = daily_update("NOPETEST", record=record, market_data={"price": 100.0}, store_dir=Path(tmp), save=False)
+            self.assertIsNone(out.get("pe_ttm"))
+            self.assertIsNone(out.get("pe_percentile_20y"))
+            components = (out.get("valuation_tax_breakdown") or {}).get("components", {})
+            self.assertEqual(components.get("pe_hist_percentile"), 0.0)
+
+    def test_fd_sizing_in_verdict_not_multiplier(self):
+        verdict, sizing = verdict_for_buy(6.0, "positive")
+        self.assertEqual(verdict, "TACTICAL BUY")
+        self.assertEqual(sizing, 85.0)
+        verdict_neg, sizing_neg = verdict_for_buy(6.0, "negative")
+        self.assertEqual(sizing_neg, 60.0)
+
+    def test_ceo_transition_penalty(self):
+        from src.conviction_engine.ceo_quality import compute_ceo_quality_score
+
+        score, detail = compute_ceo_quality_score(
+            {"ticker": "PYPL"},
+            {"ceo_start_date": "2026-03-01"},
+        )
+        self.assertEqual(score, -1.0)
+        self.assertLess(detail.get("ceo_tenure_months", 99), 12)
+
+    def test_revenue_acceleration_yoy_quarterly(self):
+        import pandas as pd
+        from src.conviction_engine.fundamentals_enriched import build_fundamentals_from_raw
+
+        dates = pd.date_range("2023-01-01", periods=8, freq="QE")
+        rev = pd.Series([100, 110, 120, 130, 140, 155, 170, 190], index=dates)
+        q_inc = pd.DataFrame([rev.values], index=["Total Revenue"], columns=rev.index)
+        raw = {
+            "ticker": "TEST",
+            "info": {"quoteType": "EQUITY"},
+            "fast_info": {},
+            "quarterly_income": q_inc,
+            "errors": [],
+        }
+        out = build_fundamentals_from_raw(raw)
+        self.assertTrue(out.get("revenue_accelerating"))
+
+    def test_ttm_and_balance_sheet_fields_use_latest_quarter_not_oldest(self):
+        """Regression: _df_row / _df_ttm_sum must sort ascending before slicing — yfinance
+        quarterly columns are newest-first, and iloc[-1]/iloc[-periods:] on the raw (unsorted)
+        columns silently returns the OLDEST quarter/quarters instead of the latest (same bug
+        class fixed for revenue_growth_yoy on 2026-07-22)."""
+        import pandas as pd
+        from src.conviction_engine.fundamentals_enriched import build_fundamentals_from_raw
+
+        # 8 quarters, newest-first column order (Q8..Q1) — matches real yfinance output.
+        dates_desc = pd.date_range("2023-01-01", periods=8, freq="QE")[::-1]
+        revenue = [170, 160, 150, 140, 130, 120, 110, 100]  # Q8..Q1
+        debt = [64, 62, 60, 58, 56, 54, 52, 50]
+        cash = [17, 16, 15, 14, 13, 12, 11, 10]
+        ocf = [40, 38, 36, 34, 32, 30, 28, 26]
+        capex = [-5, -5, -5, -5, -4, -4, -4, -4]
+
+        q_inc = pd.DataFrame([revenue], index=["Total Revenue"], columns=dates_desc)
+        q_bal = pd.DataFrame(
+            [debt, cash], index=["Total Debt", "Cash And Cash Equivalents"], columns=dates_desc,
+        )
+        q_cf = pd.DataFrame(
+            [ocf, capex], index=["Operating Cash Flow", "Capital Expenditure"], columns=dates_desc,
+        )
+
+        raw = {
+            "ticker": "TEST3",
+            "info": {"quoteType": "EQUITY"},
+            "fast_info": {},
+            "quarterly_income": q_inc,
+            "quarterly_balance": q_bal,
+            "quarterly_cashflow": q_cf,
+            "errors": [],
+        }
+        out = build_fundamentals_from_raw(raw)
+
+        # Latest chronological quarter (Q8) must win, not the DataFrame's first column.
+        self.assertEqual(out["total_debt"], 64)
+        self.assertEqual(out["cash_and_equivalents"], 17)
+        self.assertEqual(out["net_debt_stored"], 64 - 17)
+
+        # TTM = sum of the 4 most recent quarters (Q5-Q8: 140+150+160+170), not the 4 oldest.
+        self.assertEqual(out["revenue_ttm"], 140 + 150 + 160 + 170)
+        self.assertEqual(out["fcf_ttm"], (34 + 36 + 38 + 40) + (-5 - 5 - 5 - 5))
+
+        # Prior-year (Q1-Q4) FCF must use the quarters before the current TTM window.
+        self.assertEqual(out["fcf_prior_year"], (26 + 28 + 30 + 32) + (-4 - 4 - 4 - 4))
 
 
 if __name__ == "__main__":

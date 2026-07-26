@@ -1,3 +1,22 @@
+# Test 5 — Regime Sharpe Uplift (Ahil)
+
+Demonstrates whether the Runic **5 regime dimensions** improve risk-adjusted returns on an equal-weight **SPY / TLT / GLD / HYG** benchmark.
+
+| Doc | Purpose |
+|-----|---------|
+| [PLAN.md](PLAN.md) | Experiment spec |
+| [multiplier_spec.md](multiplier_spec.md) | v1 dimension → multiplier table |
+| [output_files/REPORT.md](output_files/REPORT.md) | **Michele-ready results** |
+| [run_regime_sharpe_uplift.py](run_regime_sharpe_uplift.py) | Backtest script |
+
+**Latest result (2026-07-14):** Baseline Sharpe **0.885** → overlay **0.938** (**+0.053**). CAGR lower (6.39% vs 7.72%) but max drawdown improved (−17.6% vs −22.6%) — de-risking story.
+
+```bash
+.venv/bin/python testing/5_regime_uplift/run_regime_sharpe_uplift.py
+```
+
+---
+
 # Test 3 — Adverse regime conditioning flag
 
 ## File

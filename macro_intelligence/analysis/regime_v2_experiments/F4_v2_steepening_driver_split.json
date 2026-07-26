@@ -5,16 +5,44 @@
     "steepen_4wk_bps": 15.0
   },
   "n_episodes": 17,
+  "benchmark_methodology": {
+    "start_cadence": "weekly_friday",
+    "step": "1 week (W-FRI grid, not daily-start)",
+    "forward_horizons_trading_days": {
+      "spx_3m": 63,
+      "spx_6m": 126
+    },
+    "effective_n_formula": "n_raw \u00f7 (window_months \u00f7 step_months)",
+    "event_cells_note": "F4 fire dates are discrete non-overlapping episodes; n_effective = n_raw"
+  },
   "unconditional_benchmark": {
     "spx_3m": {
-      "n": 1893,
+      "n_raw": 1893,
       "pct_spx_down": 0.2942419440042261,
-      "avg_return": 2.4103540419604608
+      "avg_return": 2.4103540419604608,
+      "sample_size": {
+        "n_raw": 1893,
+        "n_effective_independent": 145.6,
+        "overlap_factor": 13.0,
+        "window_months": 3.0,
+        "step_months": 0.2308,
+        "step": "weekly_friday",
+        "note": "rolling forward windows; weekly Friday start (not daily)"
+      }
     },
     "spx_6m": {
-      "n": 1880,
+      "n_raw": 1880,
       "pct_spx_down": 0.26382978723404255,
-      "avg_return": 4.850202617565756
+      "avg_return": 4.850202617565756,
+      "sample_size": {
+        "n_raw": 1880,
+        "n_effective_independent": 72.3,
+        "overlap_factor": 26.0,
+        "window_months": 6.0,
+        "step_months": 0.2308,
+        "step": "weekly_friday",
+        "note": "rolling forward windows; weekly Friday start (not daily)"
+      }
     }
   },
   "episodes": [
@@ -293,6 +321,13 @@
         "avg": 6.132055320015385,
         "median": 7.2316325512825355,
         "worst": 11.23541692334916,
+        "sample_size": {
+          "n_raw": 8,
+          "n_effective_independent": 8.0,
+          "overlap_factor": 1.0,
+          "step": "weekly_friday",
+          "note": "discrete non-overlapping event fires"
+        },
         "pw": {
           "n": 8,
           "hit_rate": 0.125,
@@ -306,6 +341,15 @@
           "worst": 11.23541692334916
         },
         "unconditional_pct_spx_down": 0.2942419440042261,
+        "unconditional_sample_size": {
+          "n_raw": 1893,
+          "n_effective_independent": 145.6,
+          "overlap_factor": 13.0,
+          "window_months": 3.0,
+          "step_months": 0.2308,
+          "step": "weekly_friday",
+          "note": "rolling forward windows; weekly Friday start (not daily)"
+        },
         "edge_vs_baseline_pp": -16.92419440042261
       },
       "spx_6m": {
@@ -314,6 +358,13 @@
         "avg": 13.67722996899353,
         "median": 14.840647955301042,
         "worst": 21.4027424052537,
+        "sample_size": {
+          "n_raw": 8,
+          "n_effective_independent": 8.0,
+          "overlap_factor": 1.0,
+          "step": "weekly_friday",
+          "note": "discrete non-overlapping event fires"
+        },
         "pw": {
           "n": 8,
           "hit_rate": 0.125,
@@ -327,6 +378,15 @@
           "worst": 21.4027424052537
         },
         "unconditional_pct_spx_down": 0.26382978723404255,
+        "unconditional_sample_size": {
+          "n_raw": 1880,
+          "n_effective_independent": 72.3,
+          "overlap_factor": 26.0,
+          "window_months": 6.0,
+          "step_months": 0.2308,
+          "step": "weekly_friday",
+          "note": "rolling forward windows; weekly Friday start (not daily)"
+        },
         "edge_vs_baseline_pp": -13.882978723404255
       }
     },
@@ -345,6 +405,13 @@
         "avg": 6.917498302835497,
         "median": 8.426713492501724,
         "worst": 12.586042237531087,
+        "sample_size": {
+          "n_raw": 5,
+          "n_effective_independent": 5.0,
+          "overlap_factor": 1.0,
+          "step": "weekly_friday",
+          "note": "discrete non-overlapping event fires"
+        },
         "pw": {
           "n": 5,
           "hit_rate": 0.2,
@@ -358,6 +425,15 @@
           "worst": 12.586042237531087
         },
         "unconditional_pct_spx_down": 0.2942419440042261,
+        "unconditional_sample_size": {
+          "n_raw": 1893,
+          "n_effective_independent": 145.6,
+          "overlap_factor": 13.0,
+          "window_months": 3.0,
+          "step_months": 0.2308,
+          "step": "weekly_friday",
+          "note": "rolling forward windows; weekly Friday start (not daily)"
+        },
         "edge_vs_baseline_pp": -9.424194400422609
       },
       "spx_6m": {
@@ -366,6 +442,13 @@
         "avg": 8.65832442384772,
         "median": 9.22817614934976,
         "worst": 13.707920751037381,
+        "sample_size": {
+          "n_raw": 5,
+          "n_effective_independent": 5.0,
+          "overlap_factor": 1.0,
+          "step": "weekly_friday",
+          "note": "discrete non-overlapping event fires"
+        },
         "pw": {
           "n": 5,
           "hit_rate": 0.0,
@@ -379,6 +462,15 @@
           "worst": 13.707920751037381
         },
         "unconditional_pct_spx_down": 0.26382978723404255,
+        "unconditional_sample_size": {
+          "n_raw": 1880,
+          "n_effective_independent": 72.3,
+          "overlap_factor": 26.0,
+          "window_months": 6.0,
+          "step_months": 0.2308,
+          "step": "weekly_friday",
+          "note": "rolling forward windows; weekly Friday start (not daily)"
+        },
         "edge_vs_baseline_pp": -26.382978723404253
       }
     },
@@ -393,6 +485,13 @@
         "avg": -9.711428756233612,
         "median": -9.711428756233612,
         "worst": -9.711428756233612,
+        "sample_size": {
+          "n_raw": 1,
+          "n_effective_independent": 1.0,
+          "overlap_factor": 1.0,
+          "step": "weekly_friday",
+          "note": "discrete non-overlapping event fires"
+        },
         "pw": {
           "n": 1,
           "hit_rate": 1.0,
@@ -406,6 +505,15 @@
           "worst": -9.711428756233612
         },
         "unconditional_pct_spx_down": 0.2942419440042261,
+        "unconditional_sample_size": {
+          "n_raw": 1893,
+          "n_effective_independent": 145.6,
+          "overlap_factor": 13.0,
+          "window_months": 3.0,
+          "step_months": 0.2308,
+          "step": "weekly_friday",
+          "note": "rolling forward windows; weekly Friday start (not daily)"
+        },
         "edge_vs_baseline_pp": 70.5758055995774
       },
       "spx_6m": {
@@ -414,6 +522,13 @@
         "avg": 7.544365882681772,
         "median": 7.544365882681772,
         "worst": 7.544365882681772,
+        "sample_size": {
+          "n_raw": 1,
+          "n_effective_independent": 1.0,
+          "overlap_factor": 1.0,
+          "step": "weekly_friday",
+          "note": "discrete non-overlapping event fires"
+        },
         "pw": {
           "n": 1,
           "hit_rate": 0.0,
@@ -427,6 +542,15 @@
           "worst": 7.544365882681772
         },
         "unconditional_pct_spx_down": 0.26382978723404255,
+        "unconditional_sample_size": {
+          "n_raw": 1880,
+          "n_effective_independent": 72.3,
+          "overlap_factor": 26.0,
+          "window_months": 6.0,
+          "step_months": 0.2308,
+          "step": "weekly_friday",
+          "note": "rolling forward windows; weekly Friday start (not daily)"
+        },
         "edge_vs_baseline_pp": -26.382978723404253
       }
     },
@@ -443,6 +567,13 @@
         "avg": 8.087074556787783,
         "median": 5.811028852486056,
         "worst": 15.161355576413582,
+        "sample_size": {
+          "n_raw": 3,
+          "n_effective_independent": 3.0,
+          "overlap_factor": 1.0,
+          "step": "weekly_friday",
+          "note": "discrete non-overlapping event fires"
+        },
         "pw": {
           "n": 3,
           "hit_rate": 0.0,
@@ -456,6 +587,15 @@
           "worst": 15.161355576413582
         },
         "unconditional_pct_spx_down": 0.2942419440042261,
+        "unconditional_sample_size": {
+          "n_raw": 1893,
+          "n_effective_independent": 145.6,
+          "overlap_factor": 13.0,
+          "window_months": 3.0,
+          "step_months": 0.2308,
+          "step": "weekly_friday",
+          "note": "rolling forward windows; weekly Friday start (not daily)"
+        },
         "edge_vs_baseline_pp": -29.42419440042261
       },
       "spx_6m": {
@@ -464,6 +604,13 @@
         "avg": 17.446819231764664,
         "median": 18.465750303859725,
         "worst": 20.03687400879428,
+        "sample_size": {
+          "n_raw": 3,
+          "n_effective_independent": 3.0,
+          "overlap_factor": 1.0,
+          "step": "weekly_friday",
+          "note": "discrete non-overlapping event fires"
+        },
         "pw": {
           "n": 3,
           "hit_rate": 0.0,
@@ -477,6 +624,15 @@
           "worst": 20.03687400879428
         },
         "unconditional_pct_spx_down": 0.26382978723404255,
+        "unconditional_sample_size": {
+          "n_raw": 1880,
+          "n_effective_independent": 72.3,
+          "overlap_factor": 26.0,
+          "window_months": 6.0,
+          "step_months": 0.2308,
+          "step": "weekly_friday",
+          "note": "rolling forward windows; weekly Friday start (not daily)"
+        },
         "edge_vs_baseline_pp": -26.382978723404253
       }
     }
@@ -492,6 +648,13 @@
         "avg": null,
         "median": null,
         "worst": null,
+        "sample_size": {
+          "n_raw": 0,
+          "n_effective_independent": 0.0,
+          "overlap_factor": 1.0,
+          "step": "weekly_friday",
+          "note": "discrete non-overlapping event fires"
+        },
         "pw": {
           "n": 0,
           "hit_rate": null,
@@ -502,6 +665,15 @@
           "excess_pct": null
         },
         "unconditional_pct_spx_down": 0.2942419440042261,
+        "unconditional_sample_size": {
+          "n_raw": 1893,
+          "n_effective_independent": 145.6,
+          "overlap_factor": 13.0,
+          "window_months": 3.0,
+          "step_months": 0.2308,
+          "step": "weekly_friday",
+          "note": "rolling forward windows; weekly Friday start (not daily)"
+        },
         "edge_vs_baseline_pp": null
       },
       "spx_6m": {
@@ -510,6 +682,13 @@
         "avg": null,
         "median": null,
         "worst": null,
+        "sample_size": {
+          "n_raw": 0,
+          "n_effective_independent": 0.0,
+          "overlap_factor": 1.0,
+          "step": "weekly_friday",
+          "note": "discrete non-overlapping event fires"
+        },
         "pw": {
           "n": 0,
           "hit_rate": null,
@@ -520,6 +699,15 @@
           "excess_pct": null
         },
         "unconditional_pct_spx_down": 0.26382978723404255,
+        "unconditional_sample_size": {
+          "n_raw": 1880,
+          "n_effective_independent": 72.3,
+          "overlap_factor": 26.0,
+          "window_months": 6.0,
+          "step_months": 0.2308,
+          "step": "weekly_friday",
+          "note": "rolling forward windows; weekly Friday start (not daily)"
+        },
         "edge_vs_baseline_pp": null
       }
     },
@@ -531,6 +719,13 @@
         "avg": 5.776101705201783,
         "median": 7.423095862091418,
         "worst": 15.161355576413582,
+        "sample_size": {
+          "n_raw": 17,
+          "n_effective_independent": 17.0,
+          "overlap_factor": 1.0,
+          "step": "weekly_friday",
+          "note": "discrete non-overlapping event fires"
+        },
         "pw": {
           "n": 17,
           "hit_rate": 0.17647058823529413,
@@ -544,6 +739,15 @@
           "worst": 15.161355576413582
         },
         "unconditional_pct_spx_down": 0.2942419440042261,
+        "unconditional_sample_size": {
+          "n_raw": 1893,
+          "n_effective_independent": 145.6,
+          "overlap_factor": 13.0,
+          "window_months": 3.0,
+          "step_months": 0.2308,
+          "step": "weekly_friday",
+          "note": "rolling forward windows; weekly Friday start (not daily)"
+        },
         "edge_vs_baseline_pp": -11.777135576893198
       },
       "spx_6m": {
@@ -552,6 +756,13 @@
         "avg": 12.505546202891917,
         "median": 13.707920751037381,
         "worst": 21.4027424052537,
+        "sample_size": {
+          "n_raw": 17,
+          "n_effective_independent": 17.0,
+          "overlap_factor": 1.0,
+          "step": "weekly_friday",
+          "note": "discrete non-overlapping event fires"
+        },
         "pw": {
           "n": 17,
           "hit_rate": 0.058823529411764705,
@@ -565,6 +776,15 @@
           "worst": 21.4027424052537
         },
         "unconditional_pct_spx_down": 0.26382978723404255,
+        "unconditional_sample_size": {
+          "n_raw": 1880,
+          "n_effective_independent": 72.3,
+          "overlap_factor": 26.0,
+          "window_months": 6.0,
+          "step_months": 0.2308,
+          "step": "weekly_friday",
+          "note": "rolling forward windows; weekly Friday start (not daily)"
+        },
         "edge_vs_baseline_pp": -20.500625782227782
       }
     }

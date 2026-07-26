@@ -171,9 +171,25 @@ def _reading_for_var(
     raw = float(hist.iloc[-1])
     uncond = compute_unconditional_pctile(s, var_cfg, as_of_ts)
     regime_p, _ = compute_regime_pctile(s, var_cfg, as_of_ts, fed_cycle)
-    tier, direction = evaluate_variable_tier(vid, var_cfg, raw, uncond)
+    tier_meta = _single_day_change_meta(vid, hist, raw)
+    tier, direction = evaluate_variable_tier(vid, var_cfg, raw, uncond, meta=tier_meta)
     meta = _variable_source_meta(vid, s, as_of)
+    meta.update(tier_meta)
     return _pack(vid, as_of, raw, uncond, regime_p, tier, direction, meta=meta)
+
+
+def _single_day_change_meta(vid: str, hist: pd.Series, raw: float) -> dict[str, Any]:
+    """Prior-day close + single-day % change for spike-magnitude tier escalation (T-03 audit fix,
+    2026-06-06: a large one-day VIX jump is stress even when the absolute level stays low)."""
+    if vid != "VIX" or len(hist) < 2:
+        return {}
+    prior_close = float(hist.iloc[-2])
+    if not prior_close or pd.isna(prior_close):
+        return {}
+    return {
+        "prior_close": prior_close,
+        "single_day_pct_change": (raw - prior_close) / prior_close,
+    }
 
 
 def _variable_source_meta(vid: str, series: pd.Series, as_of: str) -> dict[str, Any]:

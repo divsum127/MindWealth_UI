@@ -6,10 +6,18 @@ import re
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
+from api.services import personal_book_service, policy_service
 from api.services import portfolio_book as book_svc
 from api.services import portfolio_service as portfolio_svc
 from api.services import reports_service
-from api.services.portfolio_book import BookUnavailableError, validate_book_access
+from api.services.portfolio_book import (
+    BookUnavailableError,
+    validate_book_access,
+    validate_holdings_book_access,
+    validate_nav_book_access,
+)
+from src.portfolio_nav import NavHistoryUnavailableError, get_nav_history, serialize_history
+from src.portfolio_nav import book_snapshot_store, eviction_engine
 
 _SYM_DATE_RE = re.compile(r"(\d{4}-\d{2}-\d{2})")
 _SYM_PRICE_RE = re.compile(r"Price:\s*([\d.]+)")
@@ -59,8 +67,15 @@ def _parse_signal_meta(row: dict[str, Any]) -> dict[str, Any]:
         if m_price:
             entry_price = float(m_price.group(1))
 
-    interval_field = str(row.get("Interval, Confirmation Status") or row.get("interval") or "")
-    interval = interval_field.split(",")[0].strip() if interval_field else str(row.get("interval") or "")
+    # "Interval, Confirmation Status" is the compound column on new-signals/target-signals;
+    # the portfolio-risk (outstanding) report instead has a plain "Interval" column — without
+    # this fallback, interval always resolved to "" for that report, silently breaking
+    # _lookup_hold_days()/implied_natural_exit_date matching (HANDOFF §11 gap, found 2026-07-27
+    # while wiring cross-function conflicts: hold_index keys never matched on interval).
+    interval_field = str(
+        row.get("Interval, Confirmation Status") or row.get("Interval") or row.get("interval") or ""
+    )
+    interval = interval_field.split(",")[0].strip() if interval_field else ""
 
     function = str(row.get("Function") or row.get("function") or "").strip()
     return {
@@ -294,7 +309,24 @@ def get_signal_entries(book_id: str) -> dict[str, Any]:
     }
 
 
-def _classify_exit_type(row: dict[str, Any]) -> str:
+def _recent_evicted_tickers(days: int = 45) -> set[str]:
+    """Tickers evicted (1C/A2) in the last N days, per book_snapshot_store.eviction_log.
+
+    No eviction history exists before the daily eviction check first ran (Phase 3 / A1-A3) —
+    this returns an empty set until then, never a fabricated backfill.
+    """
+    try:
+        cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).strftime("%Y-%m-%d")
+        rows = book_snapshot_store.read_evictions(start_date=cutoff)
+        return {str(r.get("evicted_ticker") or "").upper() for r in rows}
+    except Exception:
+        return set()
+
+
+def _classify_exit_type(row: dict[str, Any], *, evicted_tickers: set[str] | None = None) -> str:
+    ticker = str(row.get("Symbol") or row.get("ticker") or "").upper()
+    if evicted_tickers is not None and ticker and ticker in evicted_tickers:
+        return "eviction"
     exit_field = str(row.get("Exit Signal Date/Price[$]") or "")
     if row.get("exit_fired") or (
         exit_field and exit_field.strip().lower() not in ("", "no exit yet")
@@ -304,6 +336,113 @@ def _classify_exit_type(row: dict[str, Any]) -> str:
     if rr is not None and rr < 0:
         return "rr"
     return "signal"
+
+
+def get_regime_history(
+    *,
+    scenario: str = "normal",
+    start_date: str | None = None,
+    end_date: str | None = None,
+) -> dict[str, Any]:
+    """Regime-bucket daily series (A1) — served from Phase 1's book_snapshot_store.
+
+    No history exists before the daily snapshot job first ran — this returns whatever
+    ``book_snapshot_store.regime_bucket_daily`` has, plus the earliest-date boundary via
+    ``book_snapshot_store.snapshot_status()``. Never backfilled/fabricated.
+    """
+    series = book_snapshot_store.read_regime_bucket_series(
+        scenario=scenario, start_date=start_date, end_date=end_date,
+    )
+    status = book_snapshot_store.snapshot_status()
+    return {
+        "scenario": scenario,
+        "series": [
+            {
+                "date": r.get("snapshot_date"),
+                "regime_bucket": r.get("regime_bucket"),
+                "vix_regime": r.get("vix_regime"),
+                "val_regime": r.get("val_regime"),
+                "final_ceiling_pct": r.get("final_ceiling_pct"),
+                "formula_text": r.get("formula_text"),
+            }
+            for r in series
+        ],
+        "data_status": status,
+    }
+
+
+def run_eviction_check(
+    book_id: str = "model",
+    *,
+    snapshot_date: str | None = None,
+) -> dict[str, Any]:
+    """Run one day's 1C admission/eviction pass (A1/A2/A3) and persist decisions.
+
+    No eviction/slot-occupancy history exists in production — this starts capturing exact
+    decisions from the day it first runs (book_snapshot_store's "set up books from today"
+    principle), so D4's exit_type=eviction can be classified going forward without guessing.
+    """
+    book_svc.validate_book_access(book_id)
+    outstanding_payload = reports_service.load_report_records("outstanding-signals", enrich=True)
+    new_payload = reports_service.load_report_records("new-signals", enrich=True)
+    outstanding = outstanding_payload.get("records", [])
+    new_rows = new_payload.get("records", [])
+
+    def _to_candidates(rows: list[dict[str, Any]]) -> list[eviction_engine.Candidate]:
+        out: list[eviction_engine.Candidate] = []
+        for row in rows:
+            meta = _parse_signal_meta(row)
+            key = _pos_key(meta["symbol"], meta["function"], meta["interval"], meta["direction"])
+            out.append(eviction_engine.Candidate(key=key, ticker=meta["symbol"], score=_score(row)))
+        return out
+
+    held = _to_candidates(outstanding)
+    candidates = _to_candidates(new_rows)
+    n_max, _n_source = policy_service.get_n_slots()
+    margin_m, _m_source = policy_service.get_eviction_margin_m()
+    freeze = policy_service.get_f5_freeze_at_n()
+
+    decision = eviction_engine.decide_admissions(
+        held=held, candidates=candidates, n_max=n_max, margin_m=margin_m, freeze_at_n=freeze,
+    )
+
+    date_str = snapshot_date or str(
+        outstanding_payload.get("report_date")
+        or datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    )
+    for pair in decision.evictions:
+        book_snapshot_store.write_eviction(
+            date_str,
+            evicted_ticker=pair.evicted.ticker,
+            evicted_function=pair.evicted.key[1],
+            evicted_interval=pair.evicted.key[2],
+            challenger_ticker=pair.challenger.ticker,
+            challenger_score=pair.challenger.score,
+            weakest_score=pair.evicted.score,
+            margin_m=margin_m,
+            mode=decision.mode,
+        )
+
+    return {
+        "book_id": book_id,
+        "date": date_str,
+        "mode": decision.mode,
+        "margin_m": margin_m,
+        "n_max": n_max,
+        "evicted_count": len(decision.evicted),
+        "admitted_count": len(decision.admitted),
+        "waiting_count": len(decision.waiting),
+        "evicted": [
+            {
+                "ticker": p.evicted.ticker,
+                "weakest_score": p.evicted.score,
+                "challenger_ticker": p.challenger.ticker,
+                "challenger_score": p.challenger.score,
+                "margin": p.margin,
+            }
+            for p in decision.evictions
+        ],
+    }
 
 
 def _parse_exit_price(row: dict[str, Any]) -> float | None:
@@ -335,7 +474,8 @@ def get_signal_exits(book_id: str) -> dict[str, Any]:
     book_svc.validate_book_access(book_id)
     payload = reports_service.load_report_records("target-signals", enrich=True)
     records = payload.get("records", [])
-    # Exit candidates: fired exits, cross-function conflicts, or negative R:R
+    evicted_tickers = _recent_evicted_tickers()
+    # Exit candidates: fired exits, cross-function conflicts, negative R:R, or 1C eviction
     candidates = [
         r for r in records
         if r.get("exit_fired")
@@ -343,6 +483,7 @@ def get_signal_exits(book_id: str) -> dict[str, Any]:
         or r.get("conflict")
         or (_rr_dynamic(r) is not None and _rr_dynamic(r) < 0)
         or str(r.get("Exit Signal Date/Price[$]", "")).strip().lower() not in ("", "no exit yet")
+        or str(r.get("Symbol") or r.get("ticker") or "").upper() in evicted_tickers
     ]
     ranked = sorted(
         candidates,
@@ -352,6 +493,7 @@ def get_signal_exits(book_id: str) -> dict[str, Any]:
     for rank, row in enumerate(ranked, start=1):
         meta = _parse_signal_meta(row)
         sc = _score(row)
+        exit_type = _classify_exit_type(row, evicted_tickers=evicted_tickers)
         exits.append({
             "id": f"exit-{_slug(meta['symbol'])}-{_slug(meta['function'])}-{_slug(meta['interval'])}-{meta['signal_date']}",
             "ticker": meta["symbol"],
@@ -363,13 +505,15 @@ def get_signal_exits(book_id: str) -> dict[str, Any]:
             "rank": rank,
             "forward_win_rate_pct": _fwd_wr(row),
             "detail": (
-                "Cross-function exit conflict"
+                "Evicted — stronger challenger signal took the slot (1C)"
+                if exit_type == "eviction"
+                else "Cross-function exit conflict"
                 if row.get("cross_function_exit_triggered")
                 else "Risk/reward exit triggered"
-                if _classify_exit_type(row) == "rr"
+                if exit_type == "rr"
                 else "Signal exit triggered"
             ),
-            "exit_type": _classify_exit_type(row),
+            "exit_type": exit_type,
             "exit_price": _parse_exit_price(row),
             "closed_pnl_pct": _closed_pnl_pct(row),
             "conflict": bool(row.get("cross_function_exit_triggered") or row.get("conflict")),
@@ -427,11 +571,13 @@ def get_portfolio_risk_report(book_id: str) -> dict[str, Any]:
 
 def get_portfolio_holdings(
     book_id: str,
-    book: str,
+    book: str | None,
     *,
     scenario: str = "normal",
 ) -> dict[str, Any]:
-    validate_book_access(book_id, book=book, require_model_book=True)
+    bid, _bk = validate_holdings_book_access(book_id, book)
+    if bid == "personal":
+        return personal_book_service.get_personal_holdings_payload(book_id)
     outstanding_payload = reports_service.load_report_records("outstanding-signals", enrich=True)
     new_payload = reports_service.load_report_records("new-signals", enrich=True)
     outstanding = outstanding_payload.get("records", [])
@@ -537,23 +683,40 @@ def _risk_chips_from_breaches(breaches: list[dict[str, Any]]) -> list[dict[str, 
 
 def get_portfolio_nav(
     book_id: str,
-    book: str,
+    book: str | None,
     *,
     scenario: str = "normal",
 ) -> dict[str, Any]:
-    """Overview NAV payload (HANDOFF §3) — MODEL enhanced book from sizer + holdings pipeline."""
-    validate_book_access(book_id, book=book, require_model_book=True)
+    """Overview NAV payload (HANDOFF §3) — live snapshot + monthly history from nav_engine or workbook."""
+    bid, book = validate_nav_book_access(book_id, book)
+    if bid == "personal":
+        return personal_book_service.get_personal_nav_payload(book_id)
+
+    history_block: dict[str, Any] = {}
+    try:
+        history_bundle = get_nav_history(book)
+        history_block = serialize_history(history_bundle)
+    except NavHistoryUnavailableError:
+        history_block = {
+            "nav_history_note": (
+                "NAV history unavailable. Add Ahil nav_engine.py or workbooks under ahil_analysis/."
+            ),
+            "nav_series_source": None,
+        }
+
+    # Live holdings/sizer snapshot remains enhanced-only until D1 four-book sizing ships.
+    live_book = "enhanced" if book != "enhanced" else book
 
     sizer = portfolio_svc.get_portfolio_sizer(scenario=scenario)
-    holdings_payload = get_portfolio_holdings(book_id, book, scenario=scenario)
+    holdings_payload = get_portfolio_holdings(book_id, live_book, scenario=scenario)
     entries_payload = get_signal_entries(book_id)
     exits_payload = get_signal_exits(book_id)
     risk_payload = portfolio_svc.get_portfolio_risk(scenario=scenario)
 
     summary = sizer.get("summary") or {}
     ceiling = sizer.get("ceiling") or {}
-    notional = float(ceiling.get("portfolio_notional") or portfolio_svc.PORTFOLIO_NOTIONAL)
-    nav = notional
+    notional = float(ceiling.get("portfolio_notional") or portfolio_svc.get_portfolio_notional())
+    nav = history_block.get("nav") if history_block.get("nav") is not None else notional
     pnl_rows = sizer.get("pnl_rows") or []
 
     day_mtm_usd = round(sum(float(r.get("pnl_usd") or 0) for r in pnl_rows), 2)
@@ -654,31 +817,33 @@ def get_portfolio_nav(
         "nav": nav,
         "day_mtm_usd": day_mtm_usd if day_mtm_usd else None,
         "day_mtm_pct": day_mtm_pct,
-        "since_go_live_pct": None,
+        "since_go_live_pct": history_block.get("since_go_live_pct"),
         "position_count": len(holdings),
-        "position_limit": None,
+        "position_limit": history_block.get("position_limit"),
         "deployed_pct": summary.get("deployed_pct"),
         "cash_pct": summary.get("cash_pct"),
         "long_count": len(long_rows),
         "short_count": len(short_rows),
         "net_exposure_pct": net_exposure_pct,
         "gross_exposure_pct": gross_exposure_pct,
-        "realized_vol_pct": None,
-        "beta_sp500": None,
-        "best_month_pct": None,
-        "worst_month_pct": None,
-        "mtm": [{
+        "realized_vol_pct": history_block.get("realized_vol_pct"),
+        "beta_sp500": history_block.get("beta_sp500"),
+        "best_month_pct": history_block.get("best_month_pct"),
+        "worst_month_pct": history_block.get("worst_month_pct"),
+        "mtm": history_block.get("mtm") or [{
             "date": series_date,
             "value": nav,
             "drawdown_pct": 0.0,
             "high_water_mark": nav,
         }],
-        "closed": [],
+        "closed": history_block.get("closed") or [],
+        "mtm_daily": history_block.get("mtm_daily") or [],
+        "closed_daily": history_block.get("closed_daily") or [],
         "base_mtm": [],
         "base_closed": [],
-        "benchmark": [],
-        "monthly_returns": [],
-        "attribution": [],
+        "benchmark": history_block.get("benchmark") or [],
+        "monthly_returns": history_block.get("monthly_returns") or [],
+        "attribution": history_block.get("attribution") or [],
         "waterfall_steps": waterfall_steps,
         "ceiling_marker_pct": final_ceiling,
         "stance": {
@@ -693,8 +858,13 @@ def get_portfolio_nav(
         "next_out": next_out,
         "eviction_margin": eviction_margin,
         "eviction_margin_note": eviction_note,
-        "nav_history_note": (
-            "Daily NAV history and benchmark attribution require Ahil A1 four-book replay; "
-            "mtm currently exposes a single as-of snapshot."
-        ),
+        "nav_history_note": history_block.get("nav_history_note"),
+        "nav_series_source": history_block.get("nav_series_source"),
+        "nav_series_metadata": history_block.get("nav_series_metadata"),
+        "research_notional_usd": (
+            history_block.get("nav_series_metadata") or {}
+        ).get("research_notional_usd"),
+        "portfolio_notional_usd": notional,
+        "portfolio_notional_source": ceiling.get("portfolio_notional_source"),
+        "live_snapshot_book": live_book if live_book != book else None,
     }

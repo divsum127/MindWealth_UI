@@ -31,7 +31,7 @@ def resolve_report_date() -> str | None:
 
     Prefer outstanding_signal / new_signal CSV dates over data_fetch_datetime.json
     because the JSON date can advance on weekends while reports stay on the last
-  trading day.
+    trading day.
     """
     for report_name in ("outstanding_signal", "new_signal"):
         path = resolve_report_path(report_name)

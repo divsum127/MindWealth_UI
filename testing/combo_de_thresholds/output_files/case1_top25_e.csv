@@ -1,5 +1,5 @@
 experiment_id,cape_min,nfci_easy_max,cftc_min_pctile,legs_required,n_events,n_band,is_config_baseline,bear_hit_6M,bear_hit_9M,bear_hit_12M,avg_spx_6M,avg_spx_9M,avg_spx_12M,bear_hit_mean_6M_12M,production_score
-E_cape32_nfci-0.15_cftc85_l3,32,-0.15,85,3,10,10-19,False,66.67,66.67,66.67,-3.2973,-6.3274,-6.5376,66.67,64.17
+E_cape32_nfci-0.15_cftc85_l3,32,-0.15,85,3,10,10-19,True,66.67,66.67,66.67,-3.2973,-6.3274,-6.5376,66.67,64.17
 E_cape32_nfci-0.20_cftc85_l3,32,-0.2,85,3,10,10-19,False,66.67,66.67,66.67,-3.2973,-6.3274,-6.5376,66.67,64.17
 E_cape32_nfci-0.25_cftc85_l3,32,-0.25,85,3,10,10-19,False,66.67,66.67,66.67,-3.2973,-6.3274,-6.5376,66.67,64.17
 E_cape32_nfci-0.30_cftc85_l3,32,-0.3,85,3,10,10-19,False,66.67,66.67,66.67,-3.2973,-6.3274,-6.5376,66.67,64.17

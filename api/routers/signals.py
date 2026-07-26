@@ -233,17 +233,17 @@ def get_signal_summary(
 )
 def check_signal_degradation() -> dict[str, Any]:
     """
-    Run Layer 1 degradation analysis across all (asset/function/interval/direction) combos.
+    Run Layer 1 forward win-rate drift analysis across all combos.
 
-    Triggers fire when **any** of these conditions are met:
+    DRIFT ALERT triggers (email spec 5D):
 
-    - FWD win rate declining toward 60% while still >= 60% (DEGRADATION WATCH).
-    - FWD win rate below 60% (DEGRADATION BREACH).
-    - A booked loss exists on any virtual trading portfolio position (realised P&L < 0).
-    - A live position's MTM exceeds -10%.
+    - Orange watch: cumulative FWD win rate below 61% **and** falling 2 months in a row.
+    - Red breach: cumulative FWD win rate below 60% **and** falling 3 months in a row.
+    - BT vs FWD gap does **not** trigger — only live forward rate + monthly trend.
+    - Booked loss on any virtual trading portfolio position (realised P&L < 0).
+    - Live position MTM below -10%.
 
-    On trigger, loss pattern is classified as asset-specific, function degradation,
-    or a combo issue, and a recommendation is generated.
+    On trigger, loss pattern is classified and a recommendation is generated.
     """
     try:
         return degrade_svc.check_degradation()
