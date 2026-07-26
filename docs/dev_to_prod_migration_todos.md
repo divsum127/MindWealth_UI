@@ -58,9 +58,9 @@ curl -s -H "X-API-Key: $KEY" "http://127.0.0.1:8506/api/v1/signals/reports/portf
 # expect: at least some non-null dates (was unconditionally all-null before this fix)
 ```
 
-**Overview unblock (bundled ask, not yet actioned):** the two docs' actual headline complaint (`nav`/`holdings`/`entries`/`exits` 404 on prod) requires the **full** uncommitted `chatbot-dev` tree to be committed + pushed + merged into `chatbot-prod`, then `prod-pull-and-restart.sh`. Not done in this pass — recommended to the user explicitly rather than pushed unprompted (~230 changed files spanning many prior sessions). Once that broader deploy happens, this entry's two fixes ride along automatically (same tree).
+**Overview unblock — user confirmed, attempted, blocked on push credentials:** user asked to proceed with commit + push + merge + deploy. Committed the full accumulated `chatbot-dev` tree (279 files, commit `6bc1343e6` — includes this entry's 2 fixes plus everything else pending below) and pushed the `docs/mindwealth-api-docs` submodule successfully (`1026c45`, via SSH key `ahiliitb`). **`git push origin chatbot-dev` fails**: HTTPS has no credential helper/PAT configured (`could not read Username for 'https://github.com'`); the available SSH key authenticates as `ahiliitb`, which has push rights to the *legacy* `upstream` remote (`ahiliitb/MindWealth_UI`) but **not** the canonical `origin` (`divsum127/MindWealth_UI`) that prod's clone tracks — `permission denied`. Did not push to the wrong remote as a workaround (would fragment history and not unblock prod either way). **Next action needed from a human:** either (a) provide a valid GitHub PAT with write access to `divsum127/MindWealth_UI` for `chatbot-dev`, or (b) grant the `ahiliitb` deploy key/account write access on that repo, or (c) push commit `6bc1343e6` from a machine that already has working `divsum127` credentials. Once pushed, the merge-to-`chatbot-prod` + `prod-pull-and-restart.sh` steps below are unblocked and low-risk (same commands as every prior release in this file).
 
-### Status: `[PENDING]`
+### Status: `[PENDING]` — code committed locally (`6bc1343e6`), push to `origin/chatbot-dev` blocked on credentials (2026-07-27)
 
 ---
 
