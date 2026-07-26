@@ -1,0 +1,82 @@
+Hi Ahil (Divyanshu — A section for you at the bottom - CONTINUIING THE MACRO VARIABLES DISCUSSION - AT THIS STAGE YOU BOTH SHD BE AWARE OF WHAT HE OTHER IS DOING - MORE EXPLICITLY),
+
+This replaces the open methodology questions from my earlier emails. Three parts: (I) six AXIOMS — fixed rules from now on, every test must follow them; (II) the test program, centred on 1C; (III) one small standalone test to run first.
+
+==================================
+PART I — AXIOMS
+==================================
+
+AXIOM 0:  RECONCILIATION WATERFALL — ONE TABLE THAT EXPLAINS THE WHOLE GAP.
+The Stat Tests report shows CAGR ~27–50% (depending on test); the honest MTM workbook shows 13.9%. I want that gap broken up precisely, not explained in words. Build one table: start from the stat-test headline row (say 1A at N=80), then change ONE thing at a time, re-run, and show the CAGR / Sharpe / Max DD after each single change:
+Step 0 — stat-test as published (averaging construction, its window, its gate list).
+Step 1 — same everything, but restricted to the workbook's window (Jan 2024–Jul 2026). Delta = the window effect.
+Step 2 — same, but switch from return-averaging to true position-level NAV (Axiom 1). Delta = the construction effect.
+Step 3 — same, but hold-original-weight instead of any rebalancing (Axiom 2). Delta = the rebalancing effect.
+Step 4 — same, but the workbook's gate list / trade set, if it differs. Delta = the membership effect.
+Step 5 — same, but sampled month-end instead of daily. Delta = the sampling effect (this step is for the DD line mainly).
+Step 6 — closed-trades-only variant of the final row. Delta = the open-book (MTM) effect.
+The last row should land at (or very near) the workbook's numbers. If it doesn't, whatever residual remains is a bug, and now we'll know exactly where to look. Each step's delta is the answer to "how much of the gap does this cause explain" — no narrative needed, the table IS the explanation. Same waterfall for Max DD (the −3.57/−5.51 vs −16/−30 question) — steps 1, 2, 3 and 5 are where that gap should resolve.
+
+AXIOM 1: NAV COMES FROM POSITION VALUES, NOT FROM AVERAGED RETURNS.
+Portfolio return on day t = NAV(t) / NAV(t-1) − 1, where NAV(t) is the total dollar value of all positions that day. What the stat tests do now — averaging each open position's daily % return — is NOT a harmless shortcut. It is the same maths as rebalancing every position back to equal dollar weight every single morning, for free. Why: if every position contributes exactly 1/K of the day's return no matter how big or small it has become, then every position must be holding an equal dollar share every morning — and that only happens if you rebalance daily. That is a different portfolio from the one we designed, and a flattering one. ACTION: rebuild the stat tests on true position-level NAV and re-run the headline 1A/1B/1C rows. If you think both methods give the same answer at our N, prove it with numbers, don't assume it.
+
+AXIOM 2: NEVER TRIM OR TOP UP A POSITION. HOLD ORIGINAL WEIGHT TO EXIT.
+While building up to N: each new signal takes its own $100/N slot, existing positions untouched. Once full: the only changes are a position's own natural exit, and in 1C a score-based eviction where the new trade takes the evicted slot. No reset-to-1/N on entry. No spreading a closed position's money across survivors. (The NAV workbooks do both today.) Why it matters: constant equalizing keeps selling winners and topping up losers — it kills the compounding of the very trends our functions ride, it means Test 1A actually answered a different question ("best N under constant equalizing"), and it hides what 1C's eviction is really contributing. Exited cash sits idle until the next admitted signal takes the slot.
+
+AXIOM 3: NEVER TRUST A NUMBER TESTED ON THE SAME DATA THAT PICKED IT.
+Picking threshold 50 because it scored best on the data you tested it on is like grading a student on the answer key he studied from — of course it looks good, it was chosen for looking good. The fix, always: PICK on one period (say 2024), MEASURE on data it never saw (2025–26). If it still wins, it's real. If not, it was curve-fitting. Apply this now to the 1B threshold — and first reconcile the contradiction: your reply says the grid tops at 40, but the delivered report has rows at 50 and 60 and names 50 as the finding. Tell me which run produced the report, re-run 0–60 fresh, then do the out-of-sample check. AND — I hope and assume the combo FWD WR system already respects this, since forward testing after the backtest window IS out-of-sample — but confirm in writing: no combo's forward window overlaps the backtest window that admitted it, and the gate never judges a combo on data that helped pick it. Working rule: out-of-sample should keep roughly 60–70% of in-sample performance; a bigger drop is an overfitting alarm, not bad luck.
+
+AXIOM 4: GATE MEMBERSHIP IS COMPUTED AT RUN TIME, NEVER TYPED IN.
+The 60%/70% cutoffs are fixed policy — fine. But WHICH combos pass must be computed fresh from the latest weekly SQL each time a test runs — never from a typed-in list. Confirm the SQL really runs weekly; if yes, the gate refreshes weekly. Add a buffer so borderline combos don't flip in and out on noise: drop only below 57%, re-admit only above 63% (suggest better numbers if you have them). Every output must show: the stamp — e.g. "Gate list as of 2026-05-10 [Short]: OscDelta D-S, DD D-S, DD W-S, FT M-S, FT W-S, PG W-S" — plus per-combo rows (WR, n, CAGR), never an aggregate alone. If membership changed between two runs, comparing aggregates tells you nothing — you can't tell improvement from "the worst two dropped out." The 6-vs-4 short confusion was exactly this.
+
+AXIOM 5: TWO TURNOVER NUMBERS, PLUS COSTS, ALWAYS.
+(a) CHURN = forced evictions ÷ admitted trades × 100. How hard 1C's re-ranking kicks positions out. (Your existing number, now named properly.)
+(b) DOLLAR TURNOVER (annualized) = [(total $ bought + total $ sold) ÷ 2] ÷ average daily NAV × (252 ÷ trading days in period) × 100. How much money actually trades — costs come from this one.
+Costs in one step, IBKR-style: round trip ≈ 15 bps (≈5 commission + ≈5 slippage per side, US liquid names; non-US later). Cost drag % per year = Dollar Turnover % × 0.15%. Net CAGR ≈ Gross − drag. Show gross and net on every 1C row. Example: 250% turnover → ≈0.375% drag. Not scary — but visible from now on, never assumed away.
+
+AXIOM 6: PROTECTIVE MECHANISMS ARE PROVEN IN BAD MARKETS, NOT IN AVERAGES.
+Anything whose job is protection or clearing lemons — stop-losses, R:R exits, evictions, regime de-risking — only earns its place if it works when lemons actually hurt: bear markets and stress periods. 2024–26 has none. So a mechanism that improves Sharpe on 2024–26 alone has proven nothing about its job. From now on every protective mechanism is reported (a) per regime bucket and (b) specifically over the bear episodes we can reach: 2018 Q4, the 2020 COVID crash, and the 2022 bear once the common-window replay (P3) exists; the older bears (2000–02, 2007–09) via the backtest-ledger re-sim, same way Test 5 did the stop-loss. The signature of a real protective mechanism: adds little (or costs a little) in good markets, adds a lot in bad ones. That shape is the evidence — and it's what we'd show a fund.
+
+==================================
+PART II — TEST PROGRAM: 1C IS THE FOCUS
+==================================
+
+The whole point of this program — quality scores, eviction, R:R flags, short stops — is to avoid getting stuck with lemons while still respecting formulaic exits. 1C is the machine that's supposed to do that. Everything below runs on the axiom-compliant base.
+
+P1. LEMON TEST (the big one). Open trades are dragging: MTM workbook CAGR 13.9% vs 26.1% closed-only. Some of that gap is normal — winners exit into the closed pile, losers stay open — but some may be losers piling up abnormally. Run 1C at N=60 and N=120 and compare against 1A at the same N: (a) open-% per combo vs the expected level (expected open-% ≈ avg holding period ÷ lookback window length — e.g. FRACTAL TRACK Daily Long: ~110-day hold ÷ ~500-day window ≈ 22% expected, actual 59.7% — flag anything over 1.5x), (b) age of open trades vs each combo's average backtested hold, (c) total unrealized P&L of the open book over time, and its sign per combo, (d) Sharpe/CAGR/DD/Calmar, gross and net. If 1C's open book is younger, smaller, and less underwater than 1A's — eviction is working.
+THE CATCH TO TEST EXPLICITLY: the composite score is per strategy+asset+timeframe+direction, but it is built from that combo's BACKTEST record — it knows nothing about the live trade's own age or P&L. An 8-month-old position 20% underwater scores the same as a fresh one in the same combo. So 1C by score alone can still keep lemons whose combo history is strong. Report the age and unrealized-P&L of the positions 1C chose to KEEP — that shows whether this hole is real.
+THE PLUG: dynamic R:R (Test 8). Unlike the score, live R:R is computed from the position's state right now — price vs stop/support vs remaining target — so it decays exactly as a position goes stale and underwater, which the score never sees. Run Test 8 on this same 1C base, and judge it by Axiom 6's standard: (a) does the R:R force-exit remove precisely the old/underwater positions the score kept (show removed set vs kept set), (b) does it work in the bear episodes, not just 2024–26. Expect: little value in good markets, real value in bad ones. That shape is the win.
+
+P2. SHORT STOP-LOSS (already asked — anchored here). Apply the stop formula to gated short combos where CAGR barely falls — shorts are where the drag and negative Sharpe live, and Test 5 already showed the stop helps short Sharpe/Calmar. Run on the same 1C base so results stack.
+
+P3. COMMON-WINDOW REPLAY (the structural fix under everything). So you know I understand the mechanism and why it matters: the current ledger mixes Daily trades that only span 2024–26 with Monthly/Yearly trades spanning 2018–26. A "portfolio" built from that ledger is a fiction in the early years — pre-2024 it appears to hold only slow-interval trades, not because the strategy would have held only those, but because Daily trades from those years were never generated into the dataset. Any stat computed across that stitched span — CAGR, DD, average positions — blends two periods that can't be compared. One window, all intervals regenerated over it, is the only way the portfolio math means anything. CONFIRM this per-interval lookback is really why pre-2024 is thin (and whether a live-record start date also plays a part). Then fix it the way professional quant shops do — this is textbook, not us inventing rigor: (1) POINT-IN-TIME replay — the test only sees information that existed on each historical date; signals regenerated as-of each date, gates applied as-of each date, no peeking; (2) WALK-FORWARD validation — train on one window, test on the next, roll forward — the industry's standard proof of stability over time; (3) results reported PER REGIME, not as one blended number. This is the Lopez de Prado / Bailey school the serious quant world runs on — and the same literature's warning is blunt: ~95% of backtested strategies fail live, almost always through exactly the biases we're closing here. Concretely: one window 2018–2026, regenerate every interval's signals across it point-in-time, re-run the headline tests on that one ledger, and show every headline stat per regime bucket (Divyanshu supplies the bucket series — his section). Until this exists, every headline number is a 2.5-year good-market result and anything fund-facing will say so.
+
+P4. R:R IN PRODUCTION — THREE RULES, SIMPLE.
+(1) ONE CODE PATH. The R:R used in historical tests and the R:R shown in the daily API/reports must be the SAME function — the test just calls it with an old date, the live report calls it with today. If the test computes support levels one way and the live system another way, then the thing we validated and the thing we trade are two different machines — and the validation proves nothing about the live system. One function, two dates.
+(2) SHOW THE INGREDIENTS. Every row that shows an R:R also shows what built it: which level was used (F-Stack 1/2, horizontal, F-Track, MA), the level's value, distance to it, and a clear FALLBACK flag when no clean stop/support exists (per the Test 8 spec). Then any historical replay can be checked against what was actually shown, and any live decision can be traced.
+(3) SNAPSHOT DAILY, STARTING NOW. Save a dated daily record of R:R and composite score for every open position — same idea as your dated scored-signal CSVs suggestion, now standard. Costs almost nothing today; from the day it starts, future validations read real recorded history instead of reconstructing it. It cannot be backfilled — so it starts now.
+
+P5. Everything else from earlier emails stands: US-only rerun, daily DD row + Drawdown_Episodes sheet, realized-vs-MTM per-combo split, FEARFUL→BEARISH display fix. Fold into P1 reporting where natural.
+
+==================================
+PART III — STANDALONE TEST TO RUN FIRST: REPEAT SIGNALS
+==================================
+
+Run this before everything above — it touches nothing else, and the answer changes how we count everything.
+
+The situation, plainly: sometimes the same combo fires again while its earlier trade is still open — TrendPulse Daily gives a buy, and a few days later another buy on the same asset, before the first trade has exited. A repeat is either (a) the same information again — tells us nothing — or (b) a signal at a different point in the move: maybe we were early and this confirms, or maybe the move has run and this one is late. I don't know which. Only the data can say.
+
+Step 1 — CONFIRMED (per your reply): every signal is treated as a fresh trade regardless of whether the same combo+asset already has one open. Good to have this nailed down, but it has a direct consequence for the counting: if a combo fires repeatedly on the same asset while an earlier trade is still open, "total analysed trades" and open-% both count every one of those as a separate trade — so a combo that fires often on a still-moving asset will show inflated trade counts and inflated open-% purely from stacking, not from anything wrong with exits. Before Step 2, tell me: are concurrent same-asset trades in the same combo capped at all (a max stack size), or can the same combo hold the same asset an unlimited number of times simultaneously? That number matters for reading P1's open-% flags correctly.
+
+Step 2 — the test: tag every historical signal FIRST (no open trade in that combo+asset at fire time) or REPEAT (fired while one or more were already open). For each repeat record: days since the earliest still-open signal in that stack, and % price move since that earliest signal. Report per combo: win rate and average profit, FIRST vs REPEAT, and repeats bucketed by how far the move had already gone. Also report the stack-depth distribution itself (how many times, at most, has a single combo+asset stacked) — since "fresh trade always" means stacking could in principle run deep, and that alone is worth seeing before judging whether repeats add value or just add noise.
+
+You may also test the Same Asset Conflict Handling herein
+
+https://docs.google.com/document/d/1Yu2LZxYKf8nJDI6rwfYkf2PYD51JuuXICH_bTu7xShw/edit?pli=1&tab=t.0#heading=h.pt1cbvhtobo9
+
+
+Three outcomes, three clean rules: repeats equal → keep as is, document it. Repeats worse → block repeats while a trade is open. Repeats better early but worse late → re-entry window (accept within X days / Y% of the first, reject after). Data decides.
+
+SEQUENCE: Part III step 1 first. Then Axiom 3's threshold reconciliation (it blocks 1C). Then P1+P2 together on the axiom base. Then P3.
+
+Finally - i think i had mentioned earlier(perhaso i forgot) to beta test short signals versus being short the s and p 500 for the same period of hold of the signals - do for usa listed assets only. I am trying to triangulate what you tested earlier i e OUR CURRENT FUNCTIONS' GATED short signals are not better than JUST CASH everytime we get a short. IF DIVYANSHU SHARPENS REGIMES ON MACRO VARIABLES WE CAN EVALUATE IF THERE IS ANY PLAY HERE. OR YOU COME OUT WITH YOUR OWN REGIMES WHAT EVER YOU LIKE OR BOTH IDEALLY

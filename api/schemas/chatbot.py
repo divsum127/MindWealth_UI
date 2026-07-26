@@ -21,6 +21,22 @@ class UpdateSessionRequest(BaseModel):
     title: str = Field(min_length=1, max_length=200)
 
 
+class PageContext(BaseModel):
+    """Overwatch panel / page context for cross-page PULL-mode chat."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    route: str | None = Field(default=None, description="Current app route, e.g. /portfolio")
+    page_title: str | None = None
+    active_tab: Literal["all", "signals", "macro", "system"] | None = Field(
+        default=None,
+        description="Overwatch panel tab: all | signals | macro | system",
+    )
+    panel_open: bool | None = None
+    alert_ids: list[str] = Field(default_factory=list)
+    dominant_combo: str | None = None
+
+
 class ChatMessageRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -36,6 +52,7 @@ class ChatMessageRequest(BaseModel):
     deep_research_enabled: bool = False
     query_kind: str | None = None
     additional_context: str | None = None
+    page_context: PageContext | None = None
 
 
 class PresetLaunchRequest(BaseModel):

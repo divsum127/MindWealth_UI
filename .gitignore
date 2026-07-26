@@ -42,3 +42,9 @@ overwatch_store/
 macro_intelligence/logs/
 macro_intelligence/output/
 macro_intelligence/data/ssi/ssi.db
+portfolio_store/
+config/personal_holdings.json
+config/manual_sizing_overrides.json
+/ssi.db
+/conviction_aux.db
+macro_intelligence/data/ssi.db

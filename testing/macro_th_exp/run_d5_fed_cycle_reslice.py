@@ -39,7 +39,9 @@ from testing.combo_de_thresholds.run_combo_de_study import (  # noqa: E402
 
 OUT_DIR = Path(__file__).resolve().parent
 DATE_TAG = datetime.now(UTC).strftime("%Y-%m-%d")
-MIN_N_USE = 10
+# Combo D: min_n=9 (Divyanshu 2026-07-21 — QE n=9 acceptable). Combo E: keep n≥10.
+COMBO_MIN_N_USE = {"D": 9, "E": 10}
+DEFAULT_MIN_N_USE = 10
 COOLDOWN_DAYS = 5
 
 # Recalibrated production candidates (post threshold sweep)
@@ -109,8 +111,12 @@ def _fed_label(ds: str) -> str:
     return label
 
 
-def _verdict(n_events: int) -> str:
-    return "USE" if n_events >= MIN_N_USE else "CANNOT USE"
+def _min_n_use(combo: str) -> int:
+    return COMBO_MIN_N_USE.get(combo, DEFAULT_MIN_N_USE)
+
+
+def _verdict(n_events: int, combo: str) -> str:
+    return "USE" if n_events >= _min_n_use(combo) else "CANNOT USE"
 
 
 def _slice_rows(
@@ -144,7 +150,7 @@ def _slice_rows(
                     "avg_spx_pct": s["avg_spx_pct"],
                     "min_spx_pct": s["min_spx_pct"],
                     "max_spx_pct": s["max_spx_pct"],
-                    "verdict": _verdict(n_ev),
+                    "verdict": _verdict(n_ev, combo),
                 }
             )
 
@@ -162,7 +168,7 @@ def _slice_rows(
                 "avg_spx_pct": s["avg_spx_pct"],
                 "min_spx_pct": s["min_spx_pct"],
                 "max_spx_pct": s["max_spx_pct"],
-                "verdict": _verdict(len(indices)),
+                "verdict": _verdict(len(indices), combo),
             }
         )
     return rows
@@ -274,7 +280,8 @@ def _markdown_report(
         "",
         f"E note: {E_CONFIG['cftc_escalation_note']}.",
         "",
-        f"**Sample rule:** slices with n < {MIN_N_USE} episodes → **CANNOT USE** (no hit rate reported as actionable).",
+        "**Sample rule:** Combo D slices with n < 9 → CANNOT USE; Combo E n < 10 → CANNOT USE "
+        "(QE n=9 approved for D per Divyanshu 2026-07-21).",
         "",
         "## (a) Combo D — CUTTING_LATE vs HIKING_LATE spread",
         "",
@@ -324,7 +331,7 @@ def _markdown_report(
             out.append("")
             out.append(
                 "**Verdict:** **CANNOT USE** — at least one fed slice below "
-                f"n={MIN_N_USE}; do not compare spread at this horizon."
+                f"n={_min_n_use('D')}; do not compare spread at this horizon."
             )
         out.append("")
         return out
@@ -441,7 +448,7 @@ def main() -> None:
     meta = {
         "generated_at": datetime.now(UTC).isoformat(),
         "task": "D5_fed_cycle_reslice",
-        "min_n_use": MIN_N_USE,
+        "min_n_use": COMBO_MIN_N_USE,
         "d_config": D_CONFIG,
         "e_config": E_CONFIG,
         "legacy_baseline": LEGACY_BASELINE,

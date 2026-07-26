@@ -496,6 +496,9 @@ def get_shortlist_report() -> dict[str, Any]:
     # Build structured records: prefer csv rows; fall back to txt parsing
     if not csv_df.empty:
         from api.services.signal_enrichment_service import enrich_records
+        from src.utils.mtm_pricing import refresh_dataframe_current_prices
+
+        csv_df = refresh_dataframe_current_prices(csv_df)
         structured_records = enrich_records(dataframe_to_records(csv_df))
     else:
         structured_records = _parse_shortlist_structured_records(markdown_text)
@@ -646,14 +649,17 @@ def load_positioning() -> dict[str, Any]:
 def sentiment_layers() -> dict[str, Any]:
     positioning = load_positioning() if SSI_POSITIONING_JSON.exists() else {}
     signals = latest_sentiment_signals()
+    layers = positioning.get("layers", {})
+    composite = {
+        "ssi_level": positioning.get("ssi_level"),
+        "ssi_percentile_5y": positioning.get("ssi_percentile_5y"),
+        "layer2_status": positioning.get("layer2_status"),
+        "ssi_multiplier": positioning.get("ssi_multiplier"),
+        "layers": layers,
+    }
     return {
         "positioning": positioning,
-        "composite": {
-            "ssi_level": positioning.get("ssi_level"),
-            "ssi_percentile_5y": positioning.get("ssi_percentile_5y"),
-            "layer2_status": positioning.get("layer2_status"),
-            "ssi_multiplier": positioning.get("ssi_multiplier"),
-        },
+        "composite": composite,
         "layer_inputs": positioning.get("inputs", {}),
         "layer2_votes": (positioning.get("inputs") or {}).get("layer2_votes", []),
         "signal_rows": signals.get("records", []),

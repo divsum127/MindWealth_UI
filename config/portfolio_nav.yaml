@@ -1,0 +1,34 @@
+# Portfolio NAV history — workbook interim source + nav_engine integration hooks.
+# Research notional ($10M) matches Ahil workbooks; sizer may still use PORTFOLIO_NOTIONAL until Rohit signs off.
+# Live sizer flip to $10M: set PORTFOLIO_USE_RESEARCH_NOTIONAL=1 (reads research_notional_usd below).
+# Explicit override: PORTFOLIO_NOTIONAL=10000000
+
+research_notional_usd: 10000000
+position_limit_n: 60
+inception_label: "2024-01-01"
+
+# Ahil consolidated report A1 proxy (Jul 2026) — replace when nav_engine ships live feeds.
+attribution_proxy_cagr_pct:
+  base: 13.41
+  ssi: 15.04
+  cv: 15.56
+  enhanced: 17.71
+
+attribution_effects_pp:
+  ssi: 1.63
+  conviction: 2.15
+  interaction: 0.52
+
+workbooks:
+  mtm:
+    path: instruction_docs/portfolio_page/ahil_analysis/MindWealth_Ahil_NAV_FILLED_GATED_FIXED_DAILYDD.xlsx
+    version_label: "Version B (all / MTM)"
+  closed:
+    path: instruction_docs/portfolio_page/ahil_analysis/MindWealth_Ahil_NAV_FILLED_VersionA_GATED_FIXED_DAILYDD.xlsx
+    version_label: "Version A (closed only)"
+
+# Drop Ahil's nav_engine.py beside this adapter module, or set PORTFOLIO_NAV_ENGINE_MODULE.
+engine:
+  module: src.portfolio_nav.ahil_nav_engine
+  callable: get_nav_history
+  forward_testing_root: null  # defaults to MINDWEALTH_ROOT/trade_store/US/forward_testing

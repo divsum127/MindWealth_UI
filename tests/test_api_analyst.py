@@ -32,7 +32,7 @@ _DEGRADATION_FIXTURE = {
     "triggered": True,
     "alerts": [
         {
-            "trigger_type": "fwd_degradation",
+            "trigger_type": "fwd_drift",
             "severity": "watch",
             "strategy": "DeltaDrift",
             "combo": {
@@ -42,12 +42,12 @@ _DEGRADATION_FIXTURE = {
                 "direction": "Short",
             },
             "bt_rate": 88.0,
-            "fwd_rate": 62.5,
-            "weekly_trend": [66.0, 64.5, 63.2, 62.5],
+            "fwd_rate": 60.5,
+            "weekly_trend": [66.0, 64.5, 62.0, 60.5],
             "pattern": "Combo issue",
             "recommendation": "pause new entries",
-            "message": "DeltaDrift / Short / Daily: FWD win rate 62.5% — approaching 60% floor.",
-            "label": "AI ANALYST · OVERWATCH AUTO-TRIGGERED · DEGRADATION WATCH",
+            "message": "DeltaDrift / Short / Daily: FWD win rate 60.5% — below 61% with 2 consecutive monthly declines.",
+            "label": "AI ANALYST · OVERWATCH AUTO-TRIGGERED · DRIFT ALERT WATCH",
             "border_color": "#ff4d6d",
         }
     ],
@@ -55,7 +55,7 @@ _DEGRADATION_FIXTURE = {
     "checked_combos": 1,
     "alert_count": 1,
     "floor_pct": 60.0,
-    "label": "AI ANALYST · OVERWATCH AUTO-TRIGGERED · DEGRADATION WATCH",
+    "label": "AI ANALYST · OVERWATCH AUTO-TRIGGERED · DRIFT ALERT WATCH",
     "border_color": "#ff4d6d",
 }
 
@@ -107,9 +107,120 @@ class TestAnalystAPI(unittest.TestCase):
 
         deg = next(a for a in body["panel_alerts"] if a["type"] == "degradation")
         self.assertEqual(deg["id"], "deg-deltadrift-short-daily-aapl")
-        self.assertEqual(deg["fwd_trend"], [66.0, 64.5, 63.2, 62.5])
+        self.assertEqual(deg["channel"], "signals")
+        self.assertEqual(deg["fwd_trend"], [66.0, 64.5, 62.0, 60.5])
         self.assertIn("signal", deg)
-        self.assertEqual(deg["signal"]["fwd_wr"], 62.5)
+        self.assertEqual(deg["signal"]["fwd_wr"], 60.5)
+        self.assertIn("tabs", body["meta"])
+        self.assertIn("signals", body["meta"]["tabs"])
+
+    @patch("api.services.analyst_service.degrade_svc.check_degradation", return_value=_DEGRADATION_FIXTURE)
+    @patch("api.services.analyst_service.macro_svc.get_ssi_summary")
+    @patch("api.services.analyst_service.macro_svc.get_persistence_signals")
+    @patch("api.services.analyst_service.macro_svc.get_status_bar")
+    @patch("api.services.analyst_service.macro_svc.get_narrative")
+    @patch("api.services.analyst_service.macro_svc.get_analog_table")
+    @patch("api.services.analyst_service.reports_svc.load_runic_nightly")
+    def test_analyst_channel_filter_and_warnings(
+        self,
+        mock_runic,
+        mock_analog,
+        mock_narrative,
+        mock_status,
+        mock_persistence,
+        mock_ssi,
+        _mock_deg,
+    ) -> None:
+        mock_runic.return_value = {
+            **_RUNIC_FIXTURE,
+            "regime": {"val_regime": "EXTREME", "geo_overlay": "REGIONAL_WAR"},
+            "variables_dashboard": [{"variable": "CAPE", "current": 42.0}],
+            "persistence_signals": [
+                {"signal_name": "7WK_GRIND", "var_id": "SPX", "weeks_count": 7, "trigger_value": 0.5}
+            ],
+        }
+        mock_status.return_value = {
+            "dominant_signal": "C",
+            "active_combos": ["C"],
+            "watch_combos": ["B"],
+            "brave_fearful": "TACTICAL_TIGHT_MONEY",
+        }
+        mock_narrative.return_value = {
+            "narrative": "Tactical tight money backdrop.",
+            "dominant_reason": "Combo C active",
+            "brave_fearful": "TACTICAL_TIGHT_MONEY",
+            "date": "2026-06-18",
+        }
+        mock_analog.return_value = {"combo": "C", "analog_details": [], "hit_rate_stats": {}}
+        mock_persistence.return_value = {"persistence_signals": []}
+        mock_ssi.return_value = {
+            "ssi_level": 0.9,
+            "posture": "RISK_OFF",
+            "short_signal_active": True,
+            "long_signal_active": False,
+            "layer2_status": "CONFIRMED",
+        }
+
+        r = self.client.get("/api/v1/analytics/analyst/alerts?channel=macro")
+        self.assertEqual(r.status_code, 200, r.text)
+        body = r.json()
+        types = {a["type"] for a in body["panel_alerts"]}
+        self.assertNotIn("degradation", types)
+        self.assertIn("regime_warning", types)
+        self.assertIn("sentiment_warning", types)
+        self.assertIn("runic_watch", types)
+
+    @patch("api.services.analyst_service.get_panel_alerts")
+    @patch("api.services.analyst_service.macro_svc.get_regime")
+    @patch("api.services.analyst_service.macro_svc.get_ssi_summary")
+    @patch("api.services.analyst_service.reports_svc.load_runic_nightly")
+    def test_analyst_context_bundle(
+        self,
+        mock_runic,
+        mock_ssi,
+        mock_regime,
+        mock_alerts,
+    ) -> None:
+        mock_alerts.return_value = {
+            "meta": {
+                "floor_pct": 60.0,
+                "gap_threshold_pp": 10.0,
+                "tabs": {
+                    "all": {"count": 1, "badge": "Overwatch · auto-triggered"},
+                    "signals": {"count": 0, "badge": "Overwatch · no signal watches"},
+                    "macro": {"count": 1, "badge": "Overwatch · Combo C firing"},
+                    "system": {"count": 0, "badge": "System monitor · admin only"},
+                    "active_combo": "C",
+                },
+            },
+            "count": 1,
+            "panel_alerts": [{
+                "id": "runic-c",
+                "type": "runic",
+                "channel": "macro",
+                "label": "RUNIC",
+                "html": "Combo C",
+                "created_at": "2026-06-18T00:00:00Z",
+            }],
+        }
+        mock_regime.return_value = {
+            "date": "2026-06-18",
+            "regime": {"val_regime": "EXTREME"},
+            "dominant_signal": "C",
+        }
+        mock_ssi.return_value = {"ssi_level": 0.2, "posture": "NEUTRAL"}
+        mock_runic.return_value = {
+            "regime": {"val_regime": "EXTREME"},
+            "variables_dashboard": [{"variable": "CAPE", "current": 42.0}],
+        }
+
+        r = self.client.get("/api/v1/analytics/analyst/context")
+        self.assertEqual(r.status_code, 200, r.text)
+        body = r.json()
+        self.assertIn("regime", body)
+        self.assertIn("sentiment", body)
+        self.assertTrue(body["chat"]["supports_page_context"])
+        self.assertTrue(body["regime"]["macro_override"]["active"])
 
     @patch("api.services.analyst_service.macro_svc.get_narrative")
     def test_analyst_brief_from_narrative(self, mock_narrative) -> None:
@@ -140,11 +251,32 @@ class TestAnalystAPI(unittest.TestCase):
         r = self.client.get("/api/v1/system/health")
         self.assertEqual(r.status_code, 401)
 
-    def test_degradation_watch_vs_breach_logic(self) -> None:
+    def test_drift_alert_rules(self) -> None:
         from api.services import degradation_service as ds
 
-        self.assertTrue(ds._is_declining_toward_floor([65.0, 63.0, 61.5], 60.0))
-        self.assertFalse(ds._is_declining_toward_floor([62.0, 61.0, 59.0], 60.0))
+        self.assertTrue(ds._is_falling_streak([70.0, 65.0, 62.0, 60.0], 2))
+        self.assertTrue(ds._is_falling_streak([72.0, 68.0, 64.0, 58.0], 3))
+        self.assertFalse(ds._is_falling_streak([62.0, 61.0, 62.0], 2))
+        self.assertFalse(ds._is_falling_streak([70.0, 72.0, 74.0], 2))
+
+        # Email false-positive: high cumulative FWD vs BT gap — no alert.
+        self.assertIsNone(ds._classify_drift_severity(70.59, [80.0, 75.0, 72.0, 70.59]))
+
+        # Orange: below 61% with 2-month fall.
+        self.assertEqual(
+            ds._classify_drift_severity(60.5, [65.0, 62.0, 60.5]),
+            "watch",
+        )
+
+        # Red: below 60% with 3-month fall.
+        self.assertEqual(
+            ds._classify_drift_severity(58.0, [72.0, 68.0, 64.0, 58.0]),
+            "breach",
+        )
+
+        # Below 61% but only one monthly decline — no alert.
+        self.assertIsNone(ds._classify_drift_severity(59.0, [70.0, 59.0]))
+
         trend = ds._last_n_weekly([70.0, 68.0, 66.0, 64.0], 4)
         self.assertEqual(trend, [70.0, 68.0, 66.0, 64.0])
 

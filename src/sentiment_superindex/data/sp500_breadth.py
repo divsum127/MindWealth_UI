@@ -117,7 +117,8 @@ def compute_daily_breadth_stats(close: pd.DataFrame) -> pd.DataFrame:
         },
         index=dates,
     )
-    out["nh_nl_ratio"] = out["new_highs"] / out["new_lows"].replace(0, np.nan)
+    nh_nl_denom = out["new_highs"] + out["new_lows"]
+    out["nh_nl_ratio"] = np.where(nh_nl_denom > 0, out["new_highs"] / nh_nl_denom, np.nan)
     out["net_advances"] = out["advancers"] - out["decliners"]
     return out.dropna(how="all")
 

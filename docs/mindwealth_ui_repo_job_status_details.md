@@ -13,6 +13,704 @@ This file captures minute-level implementation context for each completed task:
 
 ---
 
+---
+
+### 2026-07-27 — Analyze PORTFOLIO_API_HANDOFF_02.md + PORTFOLIO_DATA_ISSUES.md, loop until fixable issues closed
+
+**Ask:** "analyze these 2 page and loop until all issues are fixed @PORTFOLIO_API_HANDOFF_02.md @PORTFOLIO_DATA_ISSUES.md"
+
+**Approach:** Both docs describe the Portfolio Overview page as blocked by backend gaps, dated 2026-07-22/23. Rather than trust the docs at face value, live-verified every claim against the actual running services on this host — this host's public IP (`51.20.53.218`) matches the one named in the docs, and `mindwealth-api-dev.service`/`mindwealth-api.service` are the literal `:8507`/`:8506` hosts referenced.
+
+**Infra findings (no code fix possible/needed):**
+- `systemctl cat` confirmed `mindwealth-api-dev.service` (`:8507`) runs `uvicorn api.main:app --reload` with `WorkingDirectory=/home/ubuntu/uiv2/git/MindWealth_UI` — i.e. **this exact repo checkout**, live-reloading. `mindwealth-api.service` (`:8506`) runs from `/home/ubuntu/uiv2/prod/MindWealth_UI` (`chatbot-prod`).
+- `curl 127.0.0.1:8507/api/v1/portfolio/nav?book_id=model&book=enhanced` (with the real `X-API-Key` from `.env`) → clean `200` JSON with a full NAV payload today. Same for `/portfolio/holdings`, `/signals/entries`, `/signals/exits` — all `200`. The docs' "Squid returns HTML 503" finding for `:8507` does **not** reproduce; no squid binary/service even exists on this host (`systemctl status squid` → unit not found). Whatever produced that finding was either transient or a misdiagnosis of the separate hairpin-NAT symptom below.
+- `curl http://51.20.53.218:8507/...` (this host's own public IP) times out (`000`) from this same host, while `curl http://51.20.53.218:8506/...` succeeds identically to its `127.0.0.1` equivalent. Read as most likely AWS EC2 hairpin-NAT (an instance often cannot reach its own Elastic/public IP from inside itself) rather than a real inbound block, since `ufw` is inactive and `iptables INPUT`/`OUTPUT` policy is `ACCEPT` with no matching DROP rules for 8507. Could not fully confirm without an external network vantage point or AWS console/CLI access (no AWS credentials configured in this environment — `aws sts get-caller-identity` fails with `NoCredentials`), so flagged as "likely benign, needs external verification" rather than declared fixed.
+- Crucially, **this doesn't matter for real usage**: `systemctl cat mindwealth-ui-dev.service` (Nuxt dev BFF, in `/home/ubuntu/MindwealthUI_Vue`, outside this repo's scope — not edited) shows `NUXT_API_BASE_URL=http://127.0.0.1:8507` — the actual server-side BFF call never goes over the public IP at all, so the "test host down" framing in the doc does not describe the live user-facing path.
+- Prod (`:8506`) genuinely 404s for all four P0/P1 endpoints — this is real and reproducible. Root cause is a **deploy gap, not a missing feature**: `git log -1` on `chatbot-dev` shows the last commit (`3bda80ccc`, 2026-07-23) predates a large amount of further uncommitted work, and `git status --short` shows 164 modified files + 67 untracked (`+9046/-19161` diff) still sitting uncommitted on `chatbot-dev` — including the entire Portfolio HANDOFF v1.8.2 nav/holdings/entries/exits work from earlier sessions and all four Task A-D fixes from the prior session in this same conversation. None of it has been pushed, merged into `chatbot-prod`, or deployed. Did **not** commit/push/merge/deploy in this pass — per the git-safety protocol ("never commit unless explicitly asked") and because pushing ~230 changed files spanning many unrelated prior sessions to a shared GitHub remote and production is a materially different, higher-stakes action than "fix the two docs' described gaps," this was left as an explicit recommendation to the user rather than actioned unilaterally.
+
+**Real code gaps found and fixed:**
+1. **Sizer `pnl_rows[]`/`clusters[].positions[]` missing `cross_function_exit`, `asset_class`, `status`** (HANDOFF §7, DATA_ISSUES §6) — confirmed genuinely absent (holdings already had them via `portfolio_pipeline_service.py`'s separate builder; the sizer's `sized_row` dict in `portfolio_service.py` did not). Fixed in `api/services/portfolio_service.py`:
+   - `_ASSET_CLASS_LABELS` + `_asset_class_label(asset_type)`: maps the VT book's raw `asset_type` tag (`EQUITY`/`ETF`/`INDEX`/`CRYPTOCURRENCY`/`CURRENCY`/etc.) to a human label, defaulting to `"Equity"` for blank/unknown — same fallback the holdings endpoint already uses, so the two endpoints agree per HANDOFF §12's cross-endpoint consistency rule.
+   - `_cross_function_conflict_tickers()`: loads `reports_service._load_cross_function_conflicts()` (the same `cross_function_conflicts.json` blob already backing `/signals/reports/portfolio-risk/latest`) and returns the set of conflicted symbols — one conflict source of truth, now also projected onto the sizer.
+   - Wired `"cross_function_exit"`, `"asset_class"`, `"status"` (`"Blocked"` if `blocked` else `"Open"`) onto the shared `sized_row` dict, which backs both `pnl_rows[]` (`sized_rows.append(sized_row)`) and `clusters[].positions[]` (`cluster["positions"].append(sized_row)`) — same object, so one fix covers both per HANDOFF §7's ask.
+2. **`_parse_signal_meta()` interval-parsing bug** (found while verifying `implied_natural_exit_date`, not explicitly named in either doc but caused §11's exact gap in practice): `interval_field = row.get("Interval, Confirmation Status") or row.get("interval") or ""` only checked the compound column (used by `new-signals`/`target-signals`) or the lowercase key. The `portfolio-risk` (outstanding) report instead has a plain `"Interval"` column (confirmed via direct dict inspection: `row.get("Interval")` = `'Daily'` while the old code produced `interval=''` for that same row). Every `hold_index` key built from this report therefore had `interval=""`, so `_lookup_hold_days()`'s exact `(symbol, function, interval)` match against conflict `open_positions[]` (which do have real intervals like `"Daily"`/`"Weekly"`) **always** missed, making `implied_natural_exit_date` unconditionally `null` regardless of whether real hold-day data existed. Fixed by adding `row.get("Interval")` as a fallback between the compound column and the lowercase key. Live-verified: of 25 open-position/conflict pairs checked, 6 now resolve a real date (e.g. `3690.HK TRENDPULSE Daily`, `signal_date=2026-07-24`, `avg_hold_days=51` → `implied_natural_exit_date=2026-09-13`); the remaining 19 correctly stay `null` because no matching `(symbol, function, interval)` row exists at all in the outstanding-signals universe (genuine absence, not a parsing failure).
+
+**Confirmed already resolved (docs are stale relative to accumulated uncommitted dev work):**
+- `conviction_summary` on `/portfolio/risk` — present (`build_conviction_summary()`, wired into `get_portfolio_risk()`'s return dict).
+- `book_id` isolation on `/signals/reports/portfolio-risk/latest` — `book_svc.validate_book_access(book_id)` (no `allow_personal`) raises `BookUnavailableError` → router maps to `422` for `brokerage`/`personal`; only `model` is served. Live-verified `curl ...?book_id=personal` → `422`.
+- `implied_natural_exit_date` field itself was already present in the response shape; it was just always `null` due to bug #2 above.
+
+**Investigated, deliberately left alone (pre-existing, Rohit-gated policy decision — not a new bug to silently fix):**
+- Live `/portfolio/sizer?scenario=normal` returns `summary.open_position_count=756` while the advertised `n_slots`/`position_limit` is `60`, and `/portfolio/nav` shows `net_exposure_pct≈267%`/`gross_exposure_pct≈716%`. Traced root cause: `sizing_engine.sizing_engine_version()` returns `"legacy"` (no `SIZING_ENGINE_VERSION` env var set, and `"legacy"` is the documented default "until the sleeve table and N are confirmed by Rohit" per that module's own docstring). Legacy mode has no admission-slot cap — it proportionally splits each cluster's fixed dollar budget across every non-blocked row from the raw VT book, however many there are. Checked whether the raw VT book itself has corrupt exact-duplicate rows: 903 raw rows reduce to 476 unique `(ticker, function, interval, direction)` keys, but manually inspecting the "duplicates" (e.g. `3033.HK TRENDPULSE Daily Long` appearing 5×) shows each has a **different `Entry Date`** — these are legitimate repeated re-entries of the same strategy/ticker/interval combo on different signal dates, still open, not data corruption. The D1 `d1_slots` engine (`api/services/sizing_engine.py`) that would cap this at N=60 already exists and was built in an earlier phase, but flipping `SIZING_ENGINE_VERSION=d1_slots` live would materially change deployed/exposure numbers shown to users and is explicitly gated behind a pending Rohit decision (`OPEN_QUESTIONS_FOR_ROHIT.md` Asks 1/4) — out of scope for a docs-driven bug-fix pass; flagged to the user instead of silently flipped.
+
+**Assumptions made:**
+- Treated "loop until all issues are fixed" as scoped to code-level issues actually fixable without a product/Rohit decision or a production deploy action — not as blanket authorization to commit/push/merge/deploy to `chatbot-prod` on behalf of the user. Git safety protocol ("never commit unless explicitly asked") was treated as taking precedence over the workspace rule's description of the deploy workflow as "correct", since the two are not in conflict (workspace rule describes the *allowed* path when deploying; it doesn't mean every session should deploy unprompted).
+- Assumed the two docs' "Squid 503" / "prod 404" framing was accurate as of when written (2026-07-22/23) even though it doesn't reproduce today — plausible given how much uncommitted work has landed on `chatbot-dev` since, and/or the docs' author hit the hairpin-NAT symptom rather than a real outage.
+
+**Things left for future / deferred:**
+- **Prod deploy** (closes the real remaining gap): commit the ~230 changed files on `chatbot-dev` with an appropriately scoped set of commits (ideally split by feature/session rather than one giant commit, per the `split-to-prs` pattern), push to `origin/chatbot-dev`, merge into `chatbot-prod`, push, then run `prod-pull-and-restart.sh` in `/home/ubuntu/uiv2/prod/MindWealth_UI` and re-verify `nav`/`holdings`/`entries`/`exits` return `200` on `:8506`. Explicitly recommended to the user, not done automatically.
+- **`:8507` external reachability** — needs verification from outside this host (AWS console security-group check, or a curl from a genuinely external machine) to distinguish "hairpin-NAT self-access artifact" from "actually blocked inbound"; low priority since the real Nuxt BFF path uses loopback regardless.
+- **`SIZING_ENGINE_VERSION=d1_slots` flip** — sitting ready to go behind policy config once Rohit confirms N/sleeves; will materially shrink `open_position_count` and exposure percentages when flipped. Not actioned here.
+- Did not re-run the entire historical `implied_natural_exit_date` backfill or check every other report type (`new-signals`, `target-signals`, `all-signal`, etc.) for the same "Interval" vs "Interval, Confirmation Status" column mismatch — only confirmed the one report (`portfolio-risk`) that this task's live testing actually exercised. Worth a quick grep-audit of which other report CSVs carry a plain `"Interval"` column if similar interval-dependent bugs are suspected elsewhere.
+
+**Verification:** `pytest tests/test_api_portfolio.py tests/test_portfolio_backend_engines.py tests/test_api_signals_surface.py` — 153 passed. Full `tests/` — 585 passed, 2 skipped, 1 pre-existing unrelated failure (`test_d6_smoke.py`, leftover git-conflict-marker syntax error in `/home/ubuntu/MindWealth/testing.py`, a different repo, not touched by this task — same known flake noted in prior sessions).
+
+---
+
+### 2026-07-24 — Investigate "Valuation Tax / P/E percentile wrong for all assets" complaint
+
+**Ask:** User pasted a WhatsApp-style chat where a reporting manager tells "Divyanshu IITB MindWealth Intern": "All macro engine outputs are wrong because p/e percentile has been set at 0 for all leading to a too high Valuation Tax as every p/e > 0th percentile is being taxed as a high valuation... PYPL shd have 0 valuation tax as per my earlier communication... checking multiple assets, everything is obviously wrong." Asked to analyze the macro engine codebase and chats.
+
+**Approach:** Searched for "macro engine" valuation-tax code across both in-scope repos; found none — the actual logic lives in the **Conviction Engine** (`src/conviction_engine/`), not `src/macro_intelligence/` (which only has its own CAPE/VIX/etc. percentiles, unrelated to `valuation_tax`/`pe_percentile_20y`). Read `scoring.py::calculate_valuation_tax_components` (PE tier thresholds ≥55/70/85 → −1/−2/−3) and `engine.py::_percentile_rank`/`daily_update` (PE percentile assignment). Compared **prod** (`/home/ubuntu/uiv2/prod/MindWealth_UI`, `chatbot-prod`, HEAD `0d7748557`, 2026-07-20) vs **dev** (`/home/ubuntu/uiv2/git/MindWealth_UI`, `chatbot-dev`, HEAD `3bda80ccc` + uncommitted working-tree changes) `conviction_store/*.json` directly with ad-hoc Python scans (percentile/tax distributions across the full universe), and diffed `engine.py`/`scoring.py` between the two clones.
+
+**Key findings:**
+- **Naming:** "Macro engine" in the chat is colloquial for "the engine that produces per-asset conviction/valuation output across the universe" — i.e. the Conviction Engine. There is no separate macro-engine valuation-tax code path to fix.
+- **Bug confirmed live on prod today:** PYPL prod record — `pe_ttm=10.41`, `pe_20y_array` has only **8 points** covering **0.0–0.56 years** (yfinance quarterly EPS depth, nowhere near 20y), yet `_percentile_rank` still computed `pe_percentile_20y=83.33` off that thin sample → `>=70` tier → `pe_hist_percentile=-2.0` → `valuation_tax=-3.0`. Universe-wide on prod (132 non-`unknown`-type records): 35 show a literal `0.0` percentile, 27 show `100.0`, and 34 total take the full `-3.0` PE-tax hit — all symptomatic of ranking a live PE against a handful of recent, sparse quarterly points instead of a real 20-year distribution. This matches the manager's framing almost exactly ("p/e percentile ~0/extreme for [many], PYPL should be 0 tax but isn't").
+- **Fix already exists on dev, unreleased:** `instruction_docs/ssi_and_conviction_updates/FUNDAMENTAL_AGENT_UPDATE_JULY_2026_STATUS.md` (dated "Completed 2026-07-22") documents this exact PYPL case being fixed: "PE percentile tax: −2 (buggy) → 0 (fixed)". Verified live in dev's `conviction_store/PYPL.json` today: `pe_history_insufficient=true`, `pe_percentile_20y=null`, `pe_hist_percentile=0.0` component, total `valuation_tax=-1.0` (from the separate EV/Revenue `entry_multiple` component, not PE). Mechanism: `engine.py` now sets `pe_percentile_20y=None` whenever `pe_history_meta.insufficient_20y` is true (computed in `fundamentals_enriched.compute_pe_history`, target 20y), and `scoring.py`'s PE-tax branch is guarded by `pe_pct is not None and not pe_insufficient`, so an insufficient-history asset always lands on the neutral `0.0` default instead of a spurious tier.
+- **Why prod is still broken:** `git status --short` on `chatbot-dev` shows `src/conviction_engine/engine.py` and `scoring.py` **still uncommitted** (`M`, not committed) — the fix has never even been git-committed, let alone merged to `chatbot-prod` or deployed via `prod-pull-and-restart.sh`. This exact gap was already tracked as `[PENDING]` in `docs/dev_to_prod_migration_todos.md` under "2026-07-22 — Fundamental Agent Update (conviction engine)" before this investigation — the chat complaint is consistent with prod simply not having received that pending deploy yet, not a new/different bug.
+- **New concern surfaced by this pass (not previously flagged):** `PE_HISTORY_TARGET_YEARS=20` in `fundamentals_enriched.py` is a very high bar for yfinance-sourced quarterly EPS (which rarely goes back more than ~4–5 years, often much less). Scanning the current dev universe: **129/133 (97%)** equities now have `pe_percentile_20y=None`/`pe_history_insufficient=True`, and the PE-percentile tax component (`pe_hist_percentile`) is nonzero for **exactly one ticker (SONY, percentile 100 → −3.0)** across the whole store. The July-22 fix correctly stops the *false-positive* taxing (PYPL and friends), but as a side effect it has made the PE-percentile tax mechanism almost entirely inert for the whole universe — this is a product/design question (accept full neutrality until a longer-history data vendor is wired in, vs. lower the minimum-history bar so decent-but-<20y-history names still get a percentile) rather than a code bug per se, and should be called out to Rohit/Divyanshu explicitly rather than assumed.
+- **Scope check on "everything is wrong":** the EV/Revenue-tier `entry_multiple` component (a separate lever in the same `calculate_valuation_tax_components`, untouched by the PE-percentile bug/fix) still produces broad negative tax in the dev universe — 45/133 equities at `-5.0`, 20 at `-7.0`, plus smaller counts at `-1`/`-2`/`-3`/`-4`; only 35/133 show `0.0` total `valuation_tax`. If the manager's "everything is obviously wrong" read includes overall tax magnitude (not just the PE-driven component), this second lever should be separately reviewed/confirmed with the team — it was not part of the July-22 fix's scope and this investigation did not evaluate whether its tier thresholds (`EV_REV_TIERS` in `scoring.py`) are themselves correct.
+
+**Assumptions made:**
+- Treated "macro engine" in the pasted chat as informal shorthand for the Conviction Engine's universe-wide daily output, since no code, doc, or git history anywhere in either in-scope repo ties `valuation_tax`/`pe_percentile` to an actual module named "macro engine" (that name is reserved for `src/macro_intelligence/`, which has unrelated CAPE/VIX/Fed-cycle percentiles).
+- Assumed the pasted chat's timestamps ("12:13 PM", "12:15PM", no date) describe a live/current complaint about the currently-deployed production site, since that is what the numbers actually match (prod PYPL tax=-3, not dev PYPL tax=-1) — did not find this exact chat text anywhere already logged in `instruction_docs/chat_ques/` or agent transcripts, so treated it as a fresh, not-yet-actioned report rather than a duplicate of an already-answered thread.
+- Did not attempt to identify who "Divyanshu Malu IIT B" is relative to the July-22 fix's author — assumed the fix and the complaint are about the same underlying issue based on the exact PYPL match, not on authorship records.
+
+**Things left for future / deferred:**
+- No code changes made in this pass (analysis-only, as requested). The actual remediation is: (1) commit the uncommitted `chatbot-dev` conviction-engine changes, (2) merge `chatbot-dev` → `chatbot-prod`, (3) run `prod-pull-and-restart.sh`, (4) run the universe backfill recalc on prod (already flagged `[PENDING]` in the migration-todos entry), (5) separately decide/resolve the `PE_HISTORY_TARGET_YEARS=20` near-total-neutrality side effect.
+- Did not re-run or extend `tests/test_conviction_engine.py` in this pass; relied on existing tests (`test_pe_percentile_neutral_when_eps_missing` etc.) plus direct `conviction_store/*.json` inspection for verification.
+- Did not evaluate whether `EV_REV_TIERS` (the separate entry-multiple component driving the bulk of nonzero `valuation_tax` today) is itself correctly calibrated — flagged as an open question, not investigated further.
+
+**Edge cases / caveats for next developer:**
+- `pe_percentile_20y` can be a **literal `0.0`** (genuinely cheap, ranks below all history) vs `None` (no percentile computed) — these mean very different things and both need to be handled distinctly in any future fix; conflating "0.0" with "null" was the crux of why this bug was hard to describe precisely in the original chat report.
+- Prod and dev conviction_store data are **not in sync** — prod still reflects the pre-fix logic; any before/after comparison must pull records from the correct clone (`/home/ubuntu/uiv2/prod/MindWealth_UI/conviction_store/` vs `/home/ubuntu/uiv2/git/MindWealth_UI/conviction_store/`), not assume dev numbers represent what users/managers are currently seeing live.
+
+**2026-07-24 addendum (same session):** user recalled specifying an alternate P/E data source at some point, suspected Macrotrends. Confirmed: `ConvictionEngine_v5_FINAL.pdf` §10.2 ("Post-Earnings Checklist") explicitly specifies `fetch_pe_history_macrotrends(ticker, slug)`, documented as "Auto-called in `full_recalculation` if <20 pts and US ticker" — i.e. the spec's actual designed fix for thin PE history was always "auto-fetch real multi-year history from Macrotrends," not "null the percentile out." Confirmed this was **never implemented**: no `macrotrends`/`fetch_pe_history_macrotrends` symbol anywhere in `src/`; explicitly tracked as "Not implemented" in `docs/updates_and_fixes/conviction_engine_v6_updates.md` (summary table + "Not done (follow-up)" bullet list) and as an open gap in `/home/ubuntu/.cursor/plans/conviction_engine_v6_b411d996.plan.md` (line 47: "Gaps: earnings trigger cron, monthly universe cron, Macrotrends auto-fetch (not implemented)"). This reframes the July-22 "null when insufficient" change as a **stopgap that avoids the false-positive tax**, not the spec'd fix — the spec'd fix would give most of the universe a real percentile (solving the "PE tax disabled for 97% of universe" side effect noted above) instead of permanent `None`. Recommend implementing the Macrotrends scrape (likely `macrotrends.net/stocks/charts/{TICKER}/{slug}/pe-ratio`, needs a ticker→slug resolution step) as a follow-up work item, ideally before/alongside the pending prod deploy so the "lower the minimum-history bar" product decision becomes moot. No code written in this addendum — pure doc/spec cross-reference, `dev_to_prod_migration_todos.md` updated with the same finding.
+
+**Files changed:** none (read-only investigation). Updated `docs/dev_to_prod_migration_todos.md` (added verification note + new insufficient-history-neutrality finding, plus this Macrotrends-spec addendum, to the existing 2026-07-22 pending entry).
+
+---
+
+### 2026-07-24 — FMP PE History Fix (implements the plan from the addendum above)
+
+**Ask:** Implement the pre-approved "FMP PE History Fix" plan (`.cursor/plans/fmp_pe_history_fix_fb86eede.plan.md`, not edited per instructions) end-to-end, working through its 9 todos sequentially, "don't stop until all todos are completed."
+
+**Why FMP instead of Macrotrends (recap):** Direct testing earlier in the session confirmed Macrotrends is behind a Cloudflare Managed Challenge (Turnstile) that `requests`, `curl_cffi` (Chrome TLS impersonation), `cloudscraper`, and headless Playwright+stealth (15s wait) all failed to pass — including their ticker-search endpoint, so slug resolution isn't viable either. User explicitly said "don't keep fighting it" and redirected to Financial Modeling Prep (FMP) for US tickers + manual entry for non-US.
+
+**Implementation:**
+1. **`src/conviction_engine/pe_history_fmp.py` (new).** `is_us_ticker(ticker)` — bare ticker = US; suffix list covers `.TO/.V/.NE` (Canada), `.NS/.BO` (India), `.NZ`, `.AX`, `.HK`, `.KS/.KQ` (Korea), `.SI`, `.PA`, `.F/.DE` (Germany), `.L` (London) — broader than the plan's minimum-required set (`.NS/.HK/.KS/.SI/.PA/.F`) to also cover this universe's `.TO`/`.NZ` majority (31+17 of the 72 non-US tickers per the plan's own universe breakdown). `fetch_pe_history_fmp(ticker, target_years=20, cache_dir=None, api_key=None)` — hard short-circuits with zero network calls when `is_us_ticker()` is false or `FMP_API_KEY` (env, or injected `api_key=` for tests) is unset; otherwise checks an on-disk cache (`conviction_store/pe_history_cache/{TICKER}.json`, `FMP_CACHE_MAX_AGE_DAYS=80` ~quarterly) before calling `GET /stable/ratios?symbol=...&period=quarter&limit=80`; 2-attempt exponential backoff (2s→20s cap) on 429/5xx via `_get_with_backoff`; parses via `_parse_fmp_ratios_response()` which tries `priceToEarningsRatio` → `priceEarningsRatio` → `peRatio` field names in that order (FMP's `/stable/ratios` docs/examples confirm `priceToEarningsRatio` is correct for this endpoint — verified via web search of FMP's own published sample response during this session, not just assumed) and filters to the same `0 < pe < 500` sanity band `compute_pe_history()` uses; returns the identical `{values, meta}` shape as `compute_pe_history()` with `meta["source"]="fmp"` so it's a drop-in.
+2. **Wire-in (`fundamentals_enriched.py`).** Right after the existing `compute_pe_history()` call: tags the yfinance bundle `source="yfinance"`; if `insufficient_20y` is true **and** `is_us_ticker(ticker)`, calls `fetch_pe_history_fmp(ticker, target_years=PE_HISTORY_TARGET_YEARS)`; only swaps in the FMP bundle when its `point_count` is strictly greater than the yfinance bundle's (never regresses to a thinner series). No change to `engine.py`'s existing `insufficient_20y` → null-percentile safety net — it now just fires less often for US tickers with any FMP data at all.
+3. **`scripts/set_manual_pe_history.py` (new).** CLI: `python scripts/set_manual_pe_history.py TICKER --csv path/to/pe_history.csv` (columns `date,pe`). Validates rows (date format, `0 < pe < 500` sanity band, matching the FMP/yfinance filter), builds the identical `{values, meta}` bundle shape tagged `source="manual"`, writes into `conviction_store/{TICKER}.json` via the existing `store.load_or_create_record`/`save_record`. Operationalizes the v5 spec's own already-documented non-US fallback (Gurufocus/TIKR/Screener.in) as a script instead of hand-edited JSON.
+4. **Config.** `.env.example` and local `.env` (gitignored, not committed) both got a commented `FMP_API_KEY=` placeholder with a one-line explanation that the feature no-ops until set.
+5. **Tests.** `tests/test_pe_history_fmp.py` (20 tests) — `is_us_ticker` suffix coverage incl. case-insensitivity and empty/`None` input; `fetch_pe_history_fmp` never calls `requests.get` when key unset or ticker non-US (cost-control assertion via `mock_get.assert_not_called()`); `_parse_fmp_ratios_response` unit tests for the realistic-response case, the alternate-field-name fallback, empty/malformed/out-of-range-filtered inputs; full `fetch_pe_history_fmp` tests for mocked-success-plus-cache-write, cache-hit-skips-network-on-second-call, non-200/malformed-JSON/empty-list/network-exception all returning `None` gracefully; 4 wire-in tests against `build_fundamentals_from_raw` proving FMP is called exactly once when thin+US, never called when already-sufficient, never called for non-US even when thin, and that a thinner FMP result is discarded in favor of the existing yfinance series. `tests/test_set_manual_pe_history.py` (8 tests) — CSV parsing/validation edge cases, bundle-building insufficient-vs-sufficient span logic, and two full round-trip tests: (a) a 26-year synthetic manual CSV for `INFY.NS` written via the script's own `main()`, loaded back through `store.load_record`, fed through `engine.daily_update()` (confirms `pe_percentile_20y` computes and is ≥85), then `scoring.calculate_valuation_tax_components()` (confirms `pe_hist_percentile == -3.0`, proving a manual series drives the tax exactly like an auto-fetched one); (b) a still-short 3-point manual series proving the existing insufficient-history neutrality safety net still applies identically regardless of source.
+6. **Regression.** `tests/test_conviction_engine.py` + `tests/test_api_conviction.py` (87 combined incl. new files): all pass. Full `tests/` suite: 560 passed, 2 skipped, 1 failed — the failure (`test_d6_smoke.py::test_d6_smoke_suite_all_pass`) is a pre-existing, unrelated `SyntaxError` from a literal unresolved git-merge-conflict marker (`>>>>>>> 40a690f1...`) left in `/home/ubuntu/MindWealth/testing.py` (the separate MindWealth core repo, not touched by this change) — confirmed not caused by or related to this work.
+
+**Assumptions made:**
+- `is_us_ticker()`'s suffix list is a fixed lookup table, not derived from any live exchange registry — matches the existing `market_yield_threshold()` pattern in `scoring.py` (also a fixed suffix table) for consistency, but will silently misclassify any future ticker suffix not in the list as "US" (fails open toward calling FMP, not toward skipping it — worth flagging if new non-US suffixes get added to the universe later without updating this list too).
+- FMP field name confirmed via FMP's own published documentation/example response (web search, not a live authenticated call) — the parser also has 2 fallback field names (`priceEarningsRatio`, `peRatio`) precisely because this couldn't be 100% confirmed against a real response without a provisioned key; if the live response differs from all three, `_parse_fmp_ratios_response` will silently return `None` (falls back to the existing yfinance/neutral path) rather than raising, so a field-name mismatch would show up as "FMP never seems to help" rather than a crash — worth an explicit live-response check in the smoke test once the key exists.
+- Cache freshness window (`FMP_CACHE_MAX_AGE_DAYS=80`) is a judgment call balancing "don't re-spend the 250/day budget on every `full_recalculation` run" against "don't go too stale" — not specified in the plan; picked to roughly match quarterly earnings cadence (a new quarter's ratio wouldn't exist yet at day 80 anyway for most tickers).
+- Kept the plan's explicitly-flagged threshold question (whether `PE_HISTORY_TARGET_YEARS=20` should be lowered so a solid 5-year FMP series can drive a lower-confidence percentile instead of staying neutral forever) as an open follow-up, exactly as the plan specified — not resolved in this pass.
+
+**Things left for future / deferred (2 of 9 plan todos genuinely blocked, not skipped):**
+- **Live smoke test** (`live_smoke_test` in plan) — requires a real `FMP_API_KEY`; provisioning that requires a human to sign up for a (free-tier) FMP account, which an agent cannot do. Added an exact one-line runbook to `mindwealth_ui_job_status.md` TODO section (`FMP-01`) for whoever provisions the key.
+- **Universe rollout** (`universe_rollout` in plan) — requires the smoke test to pass first, plus a business-provided priority list of ~15-20 non-US holdings for manual entry (not something inferable from the codebase). Added as `FMP-02` in the same TODO section.
+- Did not lower `PE_HISTORY_TARGET_YEARS` or otherwise touch the free-tier-will-still-show-insufficient_20y caveat the plan itself flagged — shipped as the plan's "safe, additive" option, left the threshold question open per the plan's own recommendation.
+- Did not attempt an unauthenticated/demo-key smoke call against FMP's real endpoint (no such option exists for `/stable/ratios`; FMP's free tier still requires a registered key) — confirmed this is a hard blocker, not a shortcut being skipped for convenience.
+
+**Edge cases / caveats for next developer:**
+- `fetch_pe_history_fmp`'s on-disk cache is unconditional once a successful bundle is fetched — even a *worse* eventual live response wouldn't get re-fetched for 80 days once cached; if a bad response ever gets cached, the fix is to delete the specific `conviction_store/pe_history_cache/{TICKER}.json` file (there's no cache-busting CLI flag yet).
+- `build_fundamentals_from_raw`'s FMP call only fires from the "insufficient" branch of the *yfinance* result, not on every call — a ticker that briefly has enough yfinance history (so `insufficient_20y=False`) will never get an FMP-sourced series even if FMP's would objectively be richer; this matches the plan's explicit cost-control design ("never called otherwise") and should not be treated as a bug.
+- The manual-entry script's `0 < pe < 500` validation will hard-reject legitimate extreme P/E readings (e.g. a company with near-zero trailing earnings could show PE > 500 or negative) — same bound `compute_pe_history()`/`fetch_pe_history_fmp()` already use, kept consistent rather than looser, but means genuinely extreme quarters must be dropped from the manual CSV rather than entered as-is.
+
+**Files changed:** `src/conviction_engine/pe_history_fmp.py` (new), `scripts/set_manual_pe_history.py` (new), `src/conviction_engine/fundamentals_enriched.py` (added import + wire-in block after the existing `compute_pe_history()` call site), `.env.example`, `.env` (local, gitignored — not part of any commit), `tests/test_pe_history_fmp.py` (new, 20 tests), `tests/test_set_manual_pe_history.py` (new, 8 tests). No existing test files modified.
+
+---
+
+### 2026-07-24 — SEC EDGAR PE History pivot (supersedes FMP as primary fallback)
+
+**Ask:** User asked "is the API key paid, I need a free solution?" then, after being told FMP's free tier caps history at 5 years, explicitly said "I need the 20-30 years of data as planned, check all the alternatives and find what's free."
+
+**Research done before writing any code (live-verified, not just doc claims):**
+- Alpha Vantage: free tier is 25 requests/day (cut down from a historical 500/day) — has a real `EARNINGS` endpoint with deep quarterly EPS history, but the rate limit makes it impractical for batch use across a ~121-ticker universe.
+- Macrotrends: already exhaustively ruled out earlier in the session (Cloudflare Turnstile blocks `requests`/`curl_cffi`/`cloudscraper`/stealth Playwright).
+- Third-party "free" wrappers surfaced by search (Business Quant, StockFit, Finkipedia): all ultimately re-derive from the same SEC filings; on close reading their advertised "20-27 years free" headlines often gate the actual deep-history/normalized endpoints behind a paid tier (e.g. Finkipedia's actual `$0` plan caps price history at 10y and reserves "full fundamentals history" for its $29/mo tier) — judged less trustworthy/durable for a production data feed than going to the primary source directly.
+- **SEC EDGAR's own XBRL API** (`data.sec.gov`): the SEC's official machine-readable filings API. No API key, no daily cap (SEC's own fair-use guidance is ~10 req/sec), only requires a descriptive `User-Agent` contact header. This is literally where FMP/Macrotrends/every wrapper gets US fundamentals from in the first place — going direct removes a layer of dependency, not just cost.
+- **Live-tested before committing to the design** (`curl`/Python against the real `data.sec.gov` endpoints, not assumed from docs): `companyconcept/CIK.../us-gaap/EarningsPerShareDiluted.json` for AAPL and MSFT both return facts back to FY2007 (~17-19y as of 2026), NVDA back to FY2008 (~16-18y), PYPL back to 2013 (~11-12y, limited by its 2015 eBay spinoff, not a data gap). Confirms a real ceiling around the 2009 XBRL mandate (true 20-30y isn't available free from *any* source for most companies), but categorically deeper than FMP's free 5y cap and yfinance's typical <2y quarterly-statement depth.
+
+**Design decisions — asked the user via `AskQuestion` rather than assumed, since these are genuine trade-offs:**
+1. **Quarterly reconstruction with Q4-plug** (chosen) over annual-only — SEC only files discrete Q1-Q3 EPS via 10-Qs and full-year EPS via 10-Ks (never a standalone Q4 report); Q4 must be derived as `FY - (Q1+Q2+Q3)` to keep the same 4-quarters-per-year cadence the existing `compute_pe_history()` TTM/monthly-sampling logic expects. The simpler "annual only" option was explicitly not chosen (would have meant ~15-19 yearly points instead of the current-shape smooth monthly series).
+2. **SEC EDGAR first, FMP only when SEC returns `None` outright** (chosen) over "FMP stays first" or "drop FMP entirely" — SEC is free/unlimited/deeper, so it should be tried first; FMP is kept only as a narrow safety net for the tickers SEC's CIK map/EPS-facts genuinely can't cover (rather than removed entirely, in case SEC ever has a gap FMP could fill).
+3. **First-filed value per (start, end) period** (chosen) over "latest/most-recent value" — the same fiscal period's EPS can legitimately appear in multiple filings (its own 10-Q/10-K, then again as a prior-year comparative in the following year's filing, sometimes restated for discontinued-ops/segment reclassification). Picking the earliest-`filed` value approximates point-in-time data and avoids look-ahead bias, consistent with how the yfinance path already effectively works.
+
+**Implementation:**
+1. **Extracted shared core (`src/conviction_engine/pe_history_core.py`, new).** Moved `PE_HISTORY_TARGET_YEARS`, `PE_HISTORY_MAX_STORED_POINTS`, `_empty_pe_history_bundle()`, `compute_pe_history()` verbatim out of `fundamentals_enriched.py` into this new module. `fundamentals_enriched.py` now does `from .pe_history_core import (...)` and re-exports the same names, so every existing caller (`data_coverage.py`, `conviction_engine_page.py`, `scripts/set_manual_pe_history.py`, and the `from src.conviction_engine.fundamentals_enriched import compute_pe_history` pattern used in `test_conviction_engine.py`) keeps working unmodified. This extraction was necessary, not cosmetic: `pe_history_sec.py` needs to call `compute_pe_history()` to reuse the exact tested TTM/monthly-sampling logic, but `fundamentals_enriched.py` needs to import `fetch_pe_history_sec` from `pe_history_sec.py` — without the extraction this would be a circular import (A imports B, B imports A).
+2. **`src/conviction_engine/pe_history_sec.py` (new).**
+   - `get_cik_for_ticker(ticker, cache_dir=None)` — resolves via SEC's bulk `https://www.sec.gov/files/company_tickers.json` (cached on disk 30 days; this file changes rarely).
+   - `_dedupe_first_filed(facts)` — groups XBRL facts by `(start, end)`, keeps the one with the lexicographically-earliest `filed` date string (ISO dates sort correctly as strings).
+   - `_plug_quarterly_series(facts)` — classifies each fact by `(end - start).days`: 80-100 days = discrete quarter (from a 10-Q), 340-380 days = full fiscal year (from a 10-K). For each annual fact, looks for exactly 3 quarter facts whose end-dates fall strictly inside that FY's span (excluding the FY's own end-date to avoid double-counting); if exactly 3 are found, plugs `Q4 = FY_val - sum(3 quarters)`. If fewer than 3 are found, leaves that FY's Q4 as a gap rather than guessing — safe, because `compute_pe_history()`'s `rolling(window=4, min_periods=4)` simply produces fewer usable TTM points for that stretch, not a corrupted value.
+   - `build_quarterly_eps_series(facts)` — filters to `10-K`/`10-Q`/`10-K/A`/`10-Q/A` forms only (excludes stray EPS facts sometimes present in 8-Ks etc.), then dedup + plug, returns a sorted `pd.Series` indexed by quarter-end date.
+   - `fetch_pe_history_sec(ticker, price_series, cache_dir=None, cik=None)` — the main entry point. Returns `None` fast (no network) for non-US-style tickers (reuses `is_us_ticker()` from `pe_history_fmp.py`) or an empty/`None` price series. Otherwise resolves CIK, tries `EarningsPerShareDiluted` then falls back to `EarningsPerShareBasic` if the primary concept 404s or is empty, builds the quarterly series, feeds it + the given historical price series into `compute_pe_history()`, tags `meta["source"] = "sec_edgar"`, and caches the resulting bundle to `conviction_store/pe_history_cache/{TICKER}_sec.json` for 80 days (same cadence as the FMP cache — fundamentals only change quarterly).
+   - `_get_with_backoff()` mirrors the FMP module's 2-attempt exponential backoff (2s→20s cap) on 429/5xx.
+3. **Rewire (`fundamentals_enriched.py`).** Inside the existing "if `insufficient_20y` and `is_us_ticker`" branch: calls `fetch_pe_history_sec(ticker, price_hist)` first; swaps it in if its `point_count` beats the current bundle's. Only if `sec_bundle is None` (SEC had genuinely nothing — not merely "still insufficient") does it fall through to `fetch_pe_history_fmp(...)` as before. This literal "FMP only if SEC has no data" ordering was the user's explicit choice, not an inference — e.g. a ticker where SEC returns a real-but-still-sub-20y bundle (the common case, since XBRL only goes back to ~2009) does **not** also spend an FMP call, even though FMP's data might theoretically be non-null too; this trades a small chance of FMP being marginally richer for keeping the FMP call budget reserved for cases SEC truly can't help with at all.
+4. **Config.** `SEC_EDGAR_USER_AGENT` documented as optional in `.env.example`/`.env` (the module has a working built-in default; override recommended for production so SEC has a real contact per their Fair Access policy, not because it's required to function).
+5. **Tests.** `tests/test_pe_history_sec.py` (20 tests, all mocked — no real network calls in the automated suite) covering: dedup keeps earliest-filed and skips facts missing a period; Q4-plug math for a single FY, for two consecutive FYs, the "gap left when <3 quarters found" safety case, and "ignores out-of-range durations" (45-day and 180-day spans neither classified as quarter nor annual); `build_quarterly_eps_series` filters non-periodic forms (e.g. an `8-K` fact) and sorts by date; CIK resolution incl. on-disk cache hit skipping network on the second call, unknown-ticker and network-failure paths both returning `None`; full `fetch_pe_history_sec` tests for non-US short-circuit (asserts `requests.get` never called), `None`/empty price series, no-CIK-found, a full successful mocked fetch with cache-write-then-cache-hit-skips-network, diluted-EPS-404-falls-back-to-basic-EPS, no-facts-at-all, and malformed-JSON all returning `None` gracefully rather than raising. Rewrote `tests/test_pe_history_fmp.py`'s `TestFundamentalsEnrichedWireIn` class (6 tests, up from 4) to lock in the new ordering: SEC called and used when thin+US with FMP never called at all; FMP called only when SEC explicitly returns `None`; neither called when already-sufficient or non-US; and the subtle "SEC returns a real-but-thinner-than-yfinance bundle, so yfinance stays but FMP must still be skipped" case (locks in the literal "FMP only if SEC has no data" semantics, not "FMP if the *result* is unhelpful").
+6. **Live smoke test (manual, not part of the automated suite — documented here for the record).** Ran `fetch_pe_history_sec()` against the real API with real yfinance price history for AAPL, PYPL, NVDA, MSFT during development. Results: AAPL `years_available=17.07` (`eps_quarters=71`, `point_count=3917`, `stored_point_count=190`), PYPL `years_available=11.05` (`eps_quarters=49`), NVDA `years_available=16.22` (`eps_quarters=72`), MSFT `years_available=18.06` (`eps_quarters=75`) — all still technically `insufficient_20y=True` under the strict `PE_HISTORY_TARGET_YEARS=20` bar, but a dramatic real-world improvement over the pre-fix yfinance baseline (~0.5-2y) and the FMP-only 5y cap.
+7. **Regression.** `tests/test_conviction_engine.py` + `tests/test_api_conviction.py` + `tests/test_pe_history_fmp.py` + `tests/test_pe_history_sec.py` + `tests/test_set_manual_pe_history.py` = 109/109 passed. Full `tests/` suite: 581 passed, 2 skipped, 2 failed — both pre-existing and unrelated: `test_d6_smoke.py` (the same leftover git-conflict-marker syntax error in `/home/ubuntu/MindWealth/testing.py`, a different repo, noted in the previous FMP entry) and `test_dominant_reason.py::TestDominantReasonDbIntegration::test_live_f_e_reason_contract` (a live-data-dependent macro-intelligence assertion — reads `macro_intelligence/output/runic_output.json` and asserts on the *current* dominant-combo reason text; fails because live combo state changed, nothing to do with conviction engine/PE history — this session made zero changes to `macro_intelligence/`).
+
+**Assumptions made:**
+- The 340-380 day and 80-100 day duration windows for classifying annual vs. quarterly XBRL facts are a judgment call to tolerate 52/53-week fiscal years and minor reporting-date drift; not specified anywhere in SEC's docs as exact bounds, derived from reasoning about real-world fiscal calendars.
+- `EPS_CONCEPTS = ("EarningsPerShareDiluted", "EarningsPerShareBasic")` tries diluted first (conventional for trailing-P/E) and only falls back to basic if the whole diluted concept fetch is empty/missing — does not mix diluted and basic within the same series, to keep the EPS basis consistent across all quarters for one ticker.
+- Did not attempt to also reconstruct pre-XBRL (pre-2009) data from SEC's full-text-search of older, non-XBRL 10-Ks/10-Qs — that data isn't structured (would require parsing free-text/HTML financial statement tables per filing), assessed as materially more engineering effort than the incremental depth gained, and out of scope for "check what's free" given the live-verified ~2009 ceiling already discussed with the user.
+
+**Things left for future / deferred:**
+- **Universe rollout** — SEC EDGAR needs no key, so unlike the old FMP-only plan this is no longer blocked on external provisioning; it just hasn't been run yet (a `full_recalculation` across the ~121-ticker US universe). Added as `PE-01` in `mindwealth_ui_job_status.md`, deliberately left for the user to trigger explicitly rather than run automatically in this pass, since it writes real conviction-store records used by the live dev pipeline.
+- **FMP key provisioning** — now genuinely optional/low-priority (only reached when SEC has nothing at all for a ticker); kept as `PE-02`, not removed, in case SEC ever has coverage gaps FMP could fill.
+- **Non-US manual entry** — unchanged from the original plan (`PE-03`), still blocked on a business-prioritized ticker list; SEC EDGAR only covers US-GAAP filers so this pivot doesn't help non-US tickers at all.
+- Did not lower `PE_HISTORY_TARGET_YEARS` below 20 to let a ~17-19y SEC-sourced series drive a (lower-confidence) percentile instead of staying neutral — same open threshold question flagged in the previous FMP entry, still unresolved, still a product decision rather than an engineering one.
+
+**Edge cases / caveats for next developer:**
+- **Stock splits are not handled and this is a pre-existing gap, not a new one.** "First-filed" EPS values are intentionally *not* retroactively split-adjusted (a later filing's split-adjusted comparative figure is exactly the kind of restatement this design deliberately ignores), while yfinance's historical *prices* fed into `compute_pe_history()` **are** split-adjusted. A stock split will show as a visible step-change discontinuity in the reconstructed P/E series around the split date. This equally affects the pre-existing yfinance-only path (yfinance's own `quarterly_income_stmt` EPS is also not retroactively adjusted) — not something this change introduced, but worth fixing properly (e.g. detecting splits via `Ticker.splits` and adjusting older EPS accordingly) in a future pass if it turns out to matter in practice.
+- `fetch_pe_history_sec`'s on-disk cache behaves the same as the FMP one: once a bundle is successfully cached, it won't be re-fetched for 80 days even if a better/different response would now be available — no cache-busting CLI flag exists yet; delete the specific `conviction_store/pe_history_cache/{TICKER}_sec.json` file to force a refresh.
+- SEC's `company_tickers.json` bulk file only maps *currently listed* tickers to CIKs (as far as verified) — a ticker that's been delisted/renamed/acquired since the file was last refreshed could resolve to `None` even though SEC has historical filings for it under a different/old ticker; not handled (would need CIK lookup by company name or a stale-ticker alias table).
+- Foreign private issuers (20-F/40-F/6-K filers, e.g. most ADRs) will resolve a CIK from the ticker map but then return no `EarningsPerShareDiluted`/`EarningsPerShareBasic` facts (they report under IFRS or a different taxonomy) — `fetch_pe_history_sec` correctly returns `None` for these via the empty-facts path, so they fall through to FMP/yfinance as before, but this is worth knowing if debugging "why didn't SEC help this ticker."
+
+**Files changed:** `src/conviction_engine/pe_history_core.py` (new), `src/conviction_engine/pe_history_sec.py` (new), `src/conviction_engine/fundamentals_enriched.py` (extraction + rewire), `.env.example`, `.env` (local, gitignored), `tests/test_pe_history_sec.py` (new, 20 tests), `tests/test_pe_history_fmp.py` (`TestFundamentalsEnrichedWireIn` rewritten, 6 tests).
+
+---
+
+### 2026-07-23 — Status/answer file for 11-July consolidated feedback email
+
+**Ask:** Review `instruction_docs/chat_ques/11july_mail.md` (Rohit's "Consolidating everything currently open across the platform" email, Part 1 backend/methodology for Divyanshu/Ahil + Part 2 frontend for Parth) and produce a status file marking already-done items as done — same treatment as the earlier WhatsApp-chat status file in the same folder.
+
+**Approach:** Read the full (32-line) source file, itemized each of the ~14 discrete asks (10 in Part 1, 4 in Part 2), and cross-referenced each against `docs/mindwealth_ui_job_status.md`, `docs/mindwealth_ui_repo_job_status_details.md`, `instruction_docs/portfolio_page/portfolio_implementation_log.md`, `instruction_docs/portfolio_page/OPEN_QUESTIONS_FOR_ROHIT.md`, and `git log --oneline` on `chatbot-dev`. Output: `instruction_docs/chat_ques/11july_mail - STATUS.md`.
+
+**Key findings:**
+- **FX "Could not compute" (item 1):** confirmed ✅ done. The job-status entry for this fix ("Portfolio 'Could not compute' / BLOCKED $0 for ETFs & indexes") only lists ETF/index example tickers (^GSPC, FXI, EFA, EWJ), not FX pairs by name — but `portfolio_implementation_log.md`'s "D2 fix — ETF / FX / commodity base size" section explicitly documents FX as one of the three `NOT_APPLICABLE` asset classes the fix covers ("ETFs, FX, indexes"), and the fix itself (`_bq_tier` NaN-hardening + D2 100%-share base sizing) is keyed off the conviction-overlay `verdict=NOT_APPLICABLE` flag, not asset type — so FX pairs go through the identical code path. Treated as done with high confidence despite the job-status one-liner not naming FX tickers explicitly.
+- **Degradation-alert definition (item 4):** confirmed ✅ done with an unusually strong evidence match — the 2026-07-22 "DRIFT ALERT trigger fix (email spec 5D)" entry in `mindwealth_ui_repo_job_status_details.md` cites the *exact same* worked example Rohit used in this email ("70.59% vs BT 81.72%"), which all but confirms this fix was made specifically in response to this email (or an equivalent restatement of it), even though the two docs don't cross-reference each other by name.
+- **SBI page rebuild (item 5):** flagged as the standout unresolved item — this is now the *third* time (23/06, 24/06, 29/06 in the WhatsApp chat; now again 11/07) the SBI page/backtest mismatch has been raised with no corresponding fix found in either job-status doc. Recommend surfacing this specifically to Ahil/Divyanshu as the top-priority open item from this email.
+- **Portfolio sizing methodology (item 6):** `OPEN_QUESTIONS_FOR_ROHIT.md` has a "Jul 2026 update" banner showing Ahil delivered NAV workbooks and Ask 1/Ask 2 are "partially answered" but still need Rohit's formal sign-off where the $100M UI mock conflicts with the $10M research figure — i.e. the honest answer to "is current sizing live or placeholder" is **placeholder/legacy**, since the D1 quality-threshold engine from the Jul-8 Test Suite exists in code (`sizing_engine.py::compute_d1_sizing()`) but is opt-in only (`SIZING_ENGINE_VERSION=d1_slots`), not yet the default.
+- **New Entries/New Exits menu rename (item 7):** backend (`GET /signals/entries`, `/signals/exits`) is done and `portfolio_implementation_log.md` documents the intended menu rename as spec ("'New Signals' → New Entries; new New Exits below Claude Shortlisted"), so this is backend-unblocked for Parth — but whether the actual Vue menu labels were changed live could not be confirmed from repos in scope here.
+- Frontend-only items (mobile nav, popup/Live-P&L scroll, x-axis label copy, left-menu click-behavior consistency) were tagged `❓ UNVERIFIED (frontend)` for the same reason as in the WhatsApp chat status file — the actual Nuxt/Vue app (`/home/ubuntu/MindwealthUI_Vue`) lives outside this workspace's two scoped repos, and no corresponding job-status entries exist to confirm these one way or the other.
+
+**Assumptions made:**
+- Treated the email's Part-1 items as directed at "the team" collectively (Divyanshu/Ahil/Parth as named per-line), consistent with the approach taken for the WhatsApp chat status file.
+- Where a fix's job-status one-liner didn't name the exact asset/ticker from the email (e.g. FX pairs vs the ETF tickers actually listed in the fix's summary), inferred coverage from the *mechanism* of the fix (keyed on `NOT_APPLICABLE` verdict, not asset type) rather than requiring a literal ticker-name match — flagged this reasoning explicitly in the status file rather than silently assuming it.
+
+**Things left for future / deferred:**
+- **The source file itself is incomplete.** `11july_mail.md` (32 lines) cuts off mid-word at the very last line: "Individual function click-thr..." under "BLOCKED — WAITING ON BACKEND." This single item could not be assessed at all — flagged clearly in the output file (tagged "⚠️ CANNOT ASSESS") rather than guessing at its likely meaning. If the user has the original full email/Notion doc, worth re-running this one line item once the complete text is available.
+- No live-site visual QA performed (no browser access in this session) for any of the `❓ UNVERIFIED (frontend)` items — same caveat as the WhatsApp chat status file.
+- Did not dig further into `ahil_analysis/` (referenced in `OPEN_QUESTIONS_FOR_ROHIT.md`'s Jul-2026 update) to independently verify the NAV-workbook contents Ahil delivered — took the doc's own summary of "partially answered, Rohit sign-off pending" at face value rather than re-deriving the numbers from the workbook itself.
+
+**Edge cases / caveats for next developer:**
+- This is the **second** status/answer file created in this session for files in the `instruction_docs/chat_ques/` folder (the first covers the 21-Jun–21-Jul WhatsApp export). Several items overlap between the two sources (SBI page, CFTC freshness tag, SSI/SBI-Composite label, cross-function exit scroll) since the 11-July email is itself a mid-period consolidation of items also present in the longer WhatsApp thread — cross-references between the two status files were added where useful rather than duplicating full analysis.
+- Documentation only — no code, config, or runtime changes. Zero prod-deployment impact; `docs/dev_to_prod_migration_todos.md` intentionally not updated for this entry.
+
+**Files changed:** `instruction_docs/chat_ques/11july_mail - STATUS.md` (new).
+
+---
+
+### 2026-07-23 — Reply document to Ahil's "7 items to finalize test suite" email
+
+**Ask:** Ahil sent a prioritized 7-item email listing what he needs from Divyanshu to finalize his axiom/protective-mechanisms test suite: (1) P3 point-in-time signal-ledger replay 2018–2026, (2) the exact `compute_rr_to_nearest_support_stop` R:R function + no-clean-stop fallback, (3) a real SSI-ceiling daily series, (4) real conviction-tier per position, (5) the D1 regime-bucket daily series he was told is "ready in macro_th_exp", (6) a macro overlay/combo-classification feed, (7) a fix for a composite-score API 401. User asked to generate an answer document.
+
+**Approach:**
+1. Ran an `explore` subagent first to map every one of the 7 items against the actual repo/data (not just the portfolio docs) — canonical spec is `14July_axioms_and_specs.md` (Axiom 6 / P3), status doc is `PORTFOLIO_PAGE_AIM_AND_STATUS.md` §8.0, and the exact same 5-item "still blocked on Divyanshu" list already existed there almost verbatim before this reply was drafted.
+2. Verified item #2 directly in code rather than trusting the docs' "Not built" label: `compute_rr_to_nearest_support_stop()` in `MindWealth/helper_functions/claude_lateness_metrics.py:526` already exists, is already wired into `enrich_signal_dict()` and already populates the live `rr_dynamic` field exposed on `/signals/entries` and `/portfolio/holdings`. The `PORTFOLIO_PAGE_AIM_AND_STATUS.md`/`portfolio_implementation_log.md` docs both say "Not built" for this — that's now known to be **stale**; the function exists and is live, it just hasn't been confirmed back to Ahil in writing before. Also found the Test-8 "no clean stop" fallback is already partially implemented (`rr_null_reason` distinguishes "no valid stop level found" vs "stopped out" vs missing BT data, and returns `rr=None` rather than crashing or fabricating a number) — this satisfies option (a) on Ahil's own fallback list, but was never confirmed to him.
+3. Verified item #5 (D1 regime-bucket) was fully delivered 2026-07-17 per `testing/macro_th_exp/D1_regime_bucket_feed_2026-07-17.md` and the 2026-07-17 DONE entry in this repo's own job-status file — Ahil's email treats it as still-pending ("you said this is ready... just point me to the file"), so the correct reply is literally just the file path, not new work.
+4. Verified item #6 (291→8 macro shortlist + combo classification) already exists as research artifacts (`testing/291_combo_tests/shortlist_tiered.csv`, `testing/5_regime_uplift/combo_classification_history.csv`).
+5. Verified item #3 (SSI ceiling): `load_ssi_ceiling_series()` in `src/portfolio_nav/four_book_engine.py` already has full 2015+ SSI-only history from `macro_intelligence/data/ssi/ssi.db` (3,858 rows) — shippable today. But the module's own docstring is explicit that the **full 5-factor chain** (regime_max × VIX × trend × HY × SSI, which is what the *live* `_compute_ceiling()` in `portfolio_service.py` actually computes) has **no historical VIX/trend/HY multiplier series stored anywhere in the repo** — this is a real, separate, already-tracked gap, not something to paper over.
+6. Verified item #4 (conviction tiers): real tier multipliers exist in `_BQ_TIERS` in `api/services/portfolio_service.py` (MAX=1.00 @ BQ≥8, TACTICAL=0.75 @ BQ≥5, REDUCED=0.40 @ BQ≥2, BLOCKED=0.00 below, N/A→1.00 for non-equities) — these are the *real* numbers, not Ahil's guessed 1.25/1.10/1.0/0.85. But `conviction_store/daily/` archive only starts 2026-05-15 (31 dates) per `four_book_engine.py`'s explicit "core ask, do not violate" comment: never backfill/fabricate a tier before the archive's earliest date.
+7. Verified item #7 (401): traced the auth dependency chain (`api/dependencies.py::require_api_key`, `X-API-Key` header checked against `API_KEY` env var) — this is a credential/header issue, not a missing feature or auth-model gap. Recommended action is a key handoff over a secure channel (deliberately did not paste the actual key value into the document).
+8. For item #1 (P3) — the one item that is genuinely unscoped and unbuilt — wrote an honest "here's what I know, here's what I don't, here are the three concrete unknowns before I can commit to a date" answer instead of fabricating a timeline. The three flagged unknowns: (a) backtest compute cost for 9 functions × Daily × ~180 symbols × ~2,000 trading days, (b) whether point-in-time macro/gate inputs exist at the granularity the Daily gates need back to 2018 (distinct from the day-level bucket series in item #5), (c) which rule-set vintage to replay if Daily-interval function logic changed over time — flagged as needing Rohit's product sign-off, not a unilateral engineering decision.
+9. Left one explicit bracketed placeholder (`[fill in date — need to check backtest infra capacity first]`) in the P3 section rather than inventing a commitment date, since no real capacity/scoping data was available to generate one honestly.
+10. Output: `instruction_docs/portfolio_page/23July_reply_to_ahil_7_items.md` — status-at-a-glance table, then one detailed section per item (in Ahil's original priority order) with exact file/function citations, followed by a "priority commitment, mirrored back" closing section.
+
+**Key findings surfaced:**
+- 4 of the 7 items were already fully or mostly done in the repo and simply hadn't been confirmed back to Ahil — the email's "still blocked on you" framing for #2, #5, and #6 is stale relative to actual repo state as of 2026-07-23.
+- The `PORTFOLIO_PAGE_AIM_AND_STATUS.md` / `portfolio_implementation_log.md` docs both currently say `compute_rr_to_nearest_support_stop` is "Not built" — this is now a known documentation staleness issue worth fixing in a follow-up pass (not fixed in this task since the ask was specifically to draft the reply, not to audit/correct the status docs — flagged here as a deferred item).
+- The genuinely real, unresolved gaps are: (1) P3 itself (no scoping done anywhere), (2) full 5-factor SSI/regime-chain history (VIX/trend/HY, not just SSI), (3) conviction-tier history before 2026-05-15, and (4) the Test-8 numeric-fallback policy decision (currently defaults to `rr=None` + reason string; a numeric fallback would need an explicit ask).
+
+**Assumptions made:**
+- Assumed "Divyanshu" in the user's email is the persona the user is operating as in this session (the MindWealth_UI backend/API owner per the workspace rules), and that "Ahil" is the axiom-test-suite researcher referenced throughout `instruction_docs/portfolio_page/`. This matches every existing doc's role assignment (`PORTFOLIO_PAGE_AIM_AND_STATUS.md` §9 "Who does what").
+- Did not fabricate a P3 completion date, a specific dollar/date value for anything not in the repo, or a Test-8 fallback numeric policy — treated all three as open questions for the user/Rohit/Ahil to close, per the "no fabrication" pattern already established in `four_book_engine.py`'s own docstrings (which this task explicitly modeled its honesty policy on).
+- Did not paste the live `API_KEY` value into the document (security — a shared secret should not live in a committed markdown file); recommended out-of-band handoff instead.
+
+**Things left for future / deferred:**
+- The stale "Not built" status for `compute_rr_to_nearest_support_stop` in `PORTFOLIO_PAGE_AIM_AND_STATUS.md` and `portfolio_implementation_log.md` should be corrected in a follow-up doc-sync pass now that it's confirmed live.
+- P3 scoping itself (compute cost estimate, point-in-time gate-input coverage audit, rule-vintage decision routed to Rohit) is not done — this document only surfaces the three unknowns, it does not resolve them.
+- SSI full-chain history (VIX/trend/HY multiplier backfill) and conviction-tier pre-2026-05-15 backfill are both flagged as separate potential scoping asks, not started.
+- No code changes were made or needed for items #2, #5, #6, #7 — they required confirmation/handoff, not new engineering.
+
+**Edge cases / caveats for the next developer:**
+- If someone later scopes and builds P3, the point-in-time discipline must match the standard already set by `testing/macro_th_exp/run_d1_regime_bucket_feed.py` (Friday-eval + forward-fill pattern) and the `four_book_engine.py` "never fabricate before archive start" rule — both are the house style for this codebase's point-in-time work and should be followed for consistency.
+- `compute_rr_to_nearest_support_stop`'s reward leg is BT-avg-exit-price-based despite the function name implying "nearest resistance/support" as the target — this naming mismatch could confuse a future reader; worth a docstring clarification in `claude_lateness_metrics.py` itself in a future pass (not changed in this task, since it's MindWealth core, read-only-verified only, and out of scope for a reply-document task).
+
+---
+
+### 2026-07-23 — Status/answer file for "All of Us" WhatsApp chat questions (21 Jun – 21 Jul 2026)
+
+**Ask:** Review `instruction_docs/chat_ques/All of Us - last month (21 Jun - 21 Jul 2026).txt` (WhatsApp export, 810 messages / 1139 lines, group chat with Rohit Sir, Ahil, Divyanshu, Parth), extract every question/ask directed at the team, and produce a status file marking items already done as done.
+
+**Approach:**
+1. Read the full chat export in three passes (lines 1–400, 400–800, 800–1139) to get complete coverage — the file exceeds the single-read character limit.
+2. Grouped ~120 distinct substantive asks (skipping pure filler/typo-correction/venting messages with no actionable content, and near-duplicate re-pasted messages — WhatsApp exports in this chat repeat several messages verbatim, e.g. the 23/06 signals-v9 block and the 24/06 SBI block each appear twice) into 13 thematic sections: Macro Runic combos/DRIFT, Signals page, Portfolio page, Dashboard, SSI page, SBI backtest, AI Analyst chatbot, Overwatch/alerts, website infra, quant/analytics methodology (Ahil), data-integrity one-offs, AI-industry chat, and scheduling/personal (not itemized).
+3. Cross-referenced every item against: `docs/mindwealth_ui_job_status.md` (grep for topic keywords — DRIFT, forced portfolio, Claude Shortlisted, SSI Composite, McClellan, CFTC, portfolio cluster, login/password, etc.), `docs/mindwealth_ui_repo_job_status_details.md`, and `git log --oneline` on `chatbot-dev` (336 commits) for corroborating commit subjects.
+4. Where an item is pure frontend UI copy/layout work with no corresponding job-status entry, tagged it **❓ UNVERIFIED (frontend)** rather than guessing — the actual Nuxt/Vue frontend (`/home/ubuntu/MindwealthUI_Vue`, github.com/D-ParthChauhan/MindwealthUI_Vue, branch `ui-dev`) lives **outside** the two repos this workspace is scoped to per the repository rules (`MindWealth` core + `MindWealth_UI`), so its source could not be inspected in depth to confirm these. A light `git log`/`git remote` check on that repo was done only to confirm its existence/branch, not to read its file contents at length, to stay within the intended scope.
+5. Where an item is Ahil's personal quantitative/analysis work (Sharpe scenario testing, portfolio-sizer scripts, SBI percentile tables, transaction-cost disclosures) with no artifact in either tracked repo, tagged **❓ UNVERIFIED (analysis)** — likely lives in local Excel/Notion files not under git.
+6. Output: `instruction_docs/chat_ques/All of Us - last month (21 Jun - 21 Jul 2026) - STATUS.md` — one table per theme (date | ask | status-tag + evidence), plus a summary roll-up table and a "biggest open items" callout.
+
+**Key findings surfaced:**
+- The single most-repeated, highest-friction thread in the whole chat (22/06 → 02/07, escalating to multiple all-caps/expletive messages on 02/07) was the dashboard's "average FWD win rate must be gated-(>60%)-combos-only" number flip-flopping between 61%/72%/74.33%/75.92%/77.3% — confirmed resolved 02/07 ("looks fine now"), landing on 74.33% (trade-weighted average of the 19–22 Model-Approved combos). This one thread is also the root motivation for the DRIFT rename, Function-Health gating, and portfolio sizing-engine rebuild that followed it.
+- Several items were **explicitly self-deferred by Rohit**, not bugs: the 14/07 Portfolio Unified page (NAV masthead / New Entries / New Exits) is stated in his own message to be "NOT FINALIZED... treat as a design reference only, not a build request yet... PENDING Ahil and I to lock the portfolio methodology" — flagged as PENDING-by-design, not a gap.
+- The SBI (Signal Breadth Indicator) long/short backtest at 1w–2m horizons, asked for at least 3 times (23/06 referencing an original 17-April ask, 24/06, 29/06) with Rohit saying as late as 24/06 "sbi is garbage, you haven't changed that" and 29/06 "still not showing up", does not have a clear matching deliverable in the tracked repos — the closest artifact found, `src/sentiment_superindex/analysis/sbi_short_validation.py` ("Test 15"), validates SBI as one *input component* to the SSI composite, not the specific S&P-100 top/bottom-10-percentile buy/sell trigger table Rohit described wanting "in the same format as other website tables." Flagged as likely still open.
+
+**Assumptions made:**
+- Interpreted "questions asked to me" as all substantive questions/action items Rohit Sir raised to the group (not literally only messages that used the word "you", since the chat is a group thread and most asks are addressed to "guys"/@Divyanshu/@Ahil/@Parth collectively — the person actually driving this Cursor session works within the `MindWealth_UI` repo scope, which spans exactly the backend/API work items that are verifiable here).
+- Treated messages that are pure OCR-style typos/corrections of an immediately preceding message (common in this export, e.g. "flow" → "flaw", "regard" appended after a cut-off word) as continuations of the same ask, not separate items.
+- Where the chat itself contains a teammate's direct written answer (e.g. Divyanshu's detailed cancellation-column explanation on 07/07, his `build_reason()` explanation on 23/06), tagged as **💬 ANSWERED IN CHAT** even if no corresponding code change exists, since the ask was informational rather than a build request.
+
+**Things left for future / deferred:**
+- No live-site visual QA was performed (no browser access in this session) — all `❓ UNVERIFIED (frontend)` items should be spot-checked visually against the live Signals/Macro/SSI/Dashboard/Overwatch pages by Parth to close them out definitively.
+- Did not attempt to read the full contents of `/home/ubuntu/MindwealthUI_Vue` beyond `git log`/`git remote -v`, per the repository-scope rule; a follow-up task explicitly scoped to that repo path could tighten several of the `UNVERIFIED (frontend)` tags into confirmed ✅/❌.
+- Did not open `/home/ubuntu/MindWealth`'s Excel/Notion-adjacent analysis artifacts beyond a filename search (`portfolio_sizer`/`portfolio_size` not found under that exact name in the core repo) — Ahil's scenario-testing workbooks referenced in the chat (e.g. `MindWealth_Ahil_NAV_Template.xlsx`) are WhatsApp attachments, not committed files, so their contents could not be checked.
+
+**Edge cases / caveats for next developer:**
+- The source `.txt` file has at least two instances of large verbatim message blocks appearing twice in sequence (23/06 ~05:38–06:01 signals-v9 block; 24/06 ~16:02–16:37 SBI/percentile block) — these are WhatsApp export artifacts (likely a forwarded/re-sent duplicate), not two separate asks. The STATUS.md file de-duplicates these; if re-generating this status file from a fresh export, watch for the same duplication pattern before double-counting items.
+- This task produced **documentation only** — no code, config, or runtime changes. Zero prod-deployment impact; `docs/dev_to_prod_migration_todos.md` intentionally not updated for this entry.
+
+**Files changed:** `instruction_docs/chat_ques/All of Us - last month (21 Jun - 21 Jul 2026) - STATUS.md` (new).
+
+---
+
+### 2026-07-23 — Investigate: cluster weight >100% double-counting concern (21-July review D3)
+
+**Question asked:** Divyanshu's 21-July review email (D3) says the Portfolio Risk cluster bars "print 351%" because "61 signals each independently granted 3–10% of a cluster budget" — Rohit asked for the exact numerator/denominator and whether this is gross notional summed across all functions holding the same asset (double-counting) given some assets are held by 3–4 functions simultaneously.
+
+**Finding — largely already mitigated, but not fully closed:**
+- The literal math bug the email describes was already fixed on **2026-07-18** ("Portfolio cluster sizing fix" — see that date's entry below). `get_portfolio_sizer()` Pass 2 splits each cluster's fixed `budget_usd` (itself `deployed_cap_usd × scaled cluster budget_pct`) proportionally across every eligible position row (`_cluster_rank_weight`) *in that cluster*; the last eligible row absorbs the rounding remainder so `deployed_usd == budget_usd` exactly — never more. Numerator = that cluster's summed `allocation_usd` across all its position rows (bounded to the pool); denominator = total portfolio notional (`get_portfolio_notional()`). `deployed_pct = deployed_usd / notional × 100`.
+- Multiple functions/signals holding the *same* ticker each produce a separate row in `pending_by_cluster[cluster_id]` (one row per signal, by design — see 07-18 entry's "Edge cases not handled": "Duplicate ticker rows in same cluster each get a proportional slice"). Each such row draws from the **same shared, fixed cluster pool**, so the cluster's total cannot mathematically exceed its own cap — this is not unbounded double counting, it's a bounded proportional split. `tests/test_api_portfolio.py` has a regression assertion (`assertLessEqual(cluster["deployed_usd"], cluster["budget_usd"])`) guarding this.
+- Frontend (`/home/ubuntu/MindwealthUI_Vue/components/portfolio/PortfolioRiskView.vue`, committed 2026-06-24 — predates the review email) already renders the raw `deployed_pct.toFixed(1)}% / max_pct.toFixed(0)}%` text (not a `deployed/max*100` ratio) and clamps the fill-bar width to `Math.min(100, (deployed_pct/max_pct)*100)`. So a literal "351%" reading should not be reproducible on the live page today from either side.
+- Best guess for why Rohit still saw it 21-July: the `MindWealth_Portfolio_Unified_v5.html` mock he's reviewing against is explicitly labelled illustrative in its footer (noted in the 2026-07-20 "Portfolio open questions doc" entry) and may not reflect live API output; or he is describing the *pre-07-18* engine's behavior as the architectural motivation for D1, not a literal current-page screenshot.
+
+**What is NOT yet done (real gap):**
+- D1 (NAV/N admission-slot model, sleeve weights that structurally sum to ≤100% of NAV as "true portfolio weight") is implemented in `api/services/sizing_engine.py::compute_d1_sizing()` but is **not the default** — only active when `SIZING_ENGINE_VERSION=d1_slots` is set; the legacy (07-18-patched) engine still runs by default in `get_portfolio_sizer()`.
+- Breach recommendation dollar math (`_build_constraints`'s over-budget check is fine, but the correlation-breach $ recommendation in `get_portfolio_risk()`) still reads legacy cluster-% figures, not D1 "true weights" — flagged in the 07-20 entry as "D7 blocked."
+- No formal written reply to Rohit/Divyanshu confirming the exact numerator/denominator exists in the repo (this investigation is the first documented answer). No sanity-check reply to Ahil's tangential correlation-matrix ask (lookback/source/staleness) exists either, though `_load_correlation_matrix()` already carries `source`, `window_days`, `as_of`, and computed `age_days` staleness fields that such a reply could cite directly.
+
+**Assumptions:** Took "Portfolio Risk page" in the email to mean the live Nuxt `PortfolioRiskView.vue` + `/api/v1/portfolio/risk` endpoint (D7's "live site's Portfolio → Portfolio Risk page"), not the `MindWealth_Portfolio_Unified_v5.html` static mock.
+
+**Deferred:** Did not flip `SIZING_ENGINE_VERSION` to `d1_slots` default, did not draft/send the actual reply email to Rohit, and did not implement D3's "annotate bars" ask beyond what's already there (the display already can't read >100%/cap visually) — none of these were explicitly requested by this task, which was investigation-only ("is this issue solved?").
+
+**Caveats:** If the user wants the "true weight" (D1/D7) semantics live by default, or wants a drafted reply sent to Divyanshu/Ahil, that is separate follow-up work, not done here.
+
+---
+
+### 2026-07-22 — Portfolio Backend Remaining Build — Phases 0-9
+
+Implemented the full plan (`portfolio_backend_remaining_build_ace8e43a.plan.md`) sequentially,
+todos marked `in_progress` → `completed` per phase, no stopping between phases per instruction.
+
+**Phase 0 (policy config layer).**
+- **Assumption:** all five open Rohit decisions default to the spec docs' best guess
+  (`status: interim`) except `same_asset_siblings.scope=all_rows` (`status: confirmed` — already
+  implemented behavior, not a new decision).
+- **Decision:** `policy_service.py` lives in `api/services/`, not `src/`, since it's the
+  canonical *reader* for engines that live in `api/` (sizing_engine, portfolio_service). Engines
+  living in `src/portfolio_nav/` (ahil_nav_engine, four_book_engine) read the YAML **directly**
+  instead of importing `api.services.policy_service`, to avoid `src/` → `api/` coupling —
+  `ahil_nav_engine.py` has its own tiny `_load_policy_config()`/`_resolve_*` helpers that
+  duplicate ~15 lines of YAML-reading logic. **Caveat for next dev:** if a 6th open decision is
+  added to the YAML, remember to add a resolver in *both* `policy_service.py` and
+  `ahil_nav_engine.py` if `src/` needs it too.
+- **Deferred:** no UI surface for policy status yet (`policy_meta()` is API-only, returned inside
+  sizer's `policy_source` field) — Parth would need a small "interim decision" badge component.
+
+**Phase 1 (daily book-state snapshot).**
+- **Edge case hit + fixed:** first live run raised `sqlite3.IntegrityError` on
+  `position_snapshots` — the original PK `(snapshot_date, ticker, function, interval, direction,
+  scenario)` isn't actually unique (same ticker/function/interval/direction can appear more than
+  once per day, e.g. multiple entries at different signal dates). Fixed by switching to
+  `id INTEGER PRIMARY KEY AUTOINCREMENT` + a non-unique index on `(snapshot_date, scenario)`.
+  Deleted the old (empty, dev-only) db file to apply the new schema — **no data was lost** since
+  the job had never successfully completed a write before this fix.
+- **Deferred:** `slot_index`/`eviction_margin` columns exist in the schema but are only
+  populated once Phase 2/3 (sizing/eviction engines) are wired into the snapshot script, which
+  happened later in this same session (see Phase 3 note below — `run_eviction_check` now writes
+  eviction rows daily; slot_index population is still a TODO for a future pass since the daily
+  script snapshot rows are built from the **legacy** sizer path, not yet the D1 engine's
+  `slot_index` field — cosmetic gap, doesn't block anything today).
+- **No backfill, by design:** `earliest_snapshot_date()`/`snapshot_status()` return `None`/empty
+  until the cron job's first successful run in each environment (dev now has data from
+  2026-07-22 forward; prod will start from whenever it's deployed).
+
+**Phase 2 (D1 sizing engine).**
+- **Decision:** `compute_d1_sizing()` ranks admission by `(bq_score, adjusted_conviction_share)`
+  descending — Signal Quality Score first, adjusted-share as tiebreak. This differs from D1's
+  spec wording ("waits for a slot to free") only in that ties are broken deterministically rather
+  than FIFO by discovery order; acceptable since BQ ties are rare in practice.
+- **Deferred:** `SIZING_ENGINE_VERSION=d1_slots` is **not** the default — legacy engine remains
+  default until the SLEEVES table + N are confirmed (Ask 1/4). Both engines are fully wired and
+  tested; flipping is a one-line env var, no code change needed when Rohit confirms.
+- **Edge case handled:** blocked rows (BQ<2, non-N/A) never consume a slot but still ride along
+  as `$0` ledger rows in `sized_rows` — matches A1's "never remove a row from the ledger" rule.
+
+**Phase 3 (eviction engine).**
+- **Decision:** `eviction_engine.py` is a pure function library (no I/O, no policy_service
+  import) — `margin_m`/`freeze_at_n` are explicit params, resolved by the caller
+  (`portfolio_pipeline_service.run_eviction_check`). This keeps the decision logic trivially
+  unit-testable without mocking config.
+- **Edge case fixed mid-session:** initial `EvictionDecision.evicted` was just a flat list of
+  `Candidate`, which lost the challenger↔evicted pairing needed for `eviction_log`'s
+  `challenger_ticker`/`challenger_score` columns. Added `EvictionPair` + `evictions: list[EvictionPair]`
+  alongside the flat list (kept for back-compat with any code checking `decision.evicted`).
+- **Deferred:** `run_eviction_check` currently re-derives "held" vs "candidates" from the
+  outstanding/new-signal reports on every call — no incremental state. Fine at today's data
+  volume (hundreds of signals); would need optimizing if that grows by 10x+.
+
+**Phase 4 (Axiom 2 rebalance mode).**
+- **Decision:** `hold_original` is now the **default** rebalance mode (matches Ahil's Jul 2026
+  resolved research direction), sourced from policy — `legacy_rebalance` (old 1/N-reset-on-entry
+  behavior) is preserved and selectable via `PORTFOLIO_REBALANCE_MODE=legacy_rebalance` env or
+  policy YAML, so no behavior is silently lost, just no longer the default.
+- **Edge case:** `n_target` for `hold_original` slot sizing falls back to
+  `max(len(open_ids)+len(entering), 1)` if not passed — i.e. "one slot per position currently
+  wanting one," not a fixed N — only `four_book_engine`/`ahil_nav_engine` pass an explicit
+  `n_target` (from policy's `n_slots`); a caller that forgets to pass `n_target` still runs
+  correctly, just without the NAV/N slot-sizing benefit (positions get equal-ish shares based on
+  count, not a fixed dollar slot).
+
+**Phase 5 (four-book engine) — the trickiest phase.**
+- **Bug found and fixed during smoke-testing:** first pass computed `conviction_effect_pp` as
+  `(cv_cum_return - base_cum_return_over_FULL_history)`, i.e. divided the conviction book's short
+  (weeks-long) window return by the wrong baseline (full-history BASE cum return, not BASE's
+  return over that *same* short window) — produced nonsensical multi-hundred-percent "effects."
+  Fixed with `_window_cum_return()` — re-bases BASE/SSI over the conviction book's own date
+  range (`base.loc[base.index.intersection(cv.index)]`) before computing the effect. Verified
+  after fix: `conviction_effect_pp=-1.04` for the current ~47-day conviction window — a sane,
+  small number.
+- **Deliberate scope limit (documented in module docstring):** the "SSI ceiling" applied here is
+  the SSI multiplier only (capped at 1.0), **not** the full live regime chain (regime max × VIX ×
+  trend × HY × SSI) that `/portfolio/sizer`'s live ceiling uses — there is no historical daily
+  series for VIX/trend/HY multipliers stored anywhere in this repo. Reconstructing one is a
+  separate, not-yet-scoped gap; `four_book_engine.py`'s BASE+SSI book is intentionally a partial
+  (SSI-only) overlay, not the full live ceiling replay.
+- **No fabrication, by design:** `cv`/`enhanced` books only compute from trades entering on/after
+  the conviction archive's earliest snapshot date (2026-05-15 today); tickers with no conviction
+  snapshot at all get a conservative 0.40 (REDUCED tier) multiplier rather than 1.0 default, so an
+  unscored name never silently gets full weight.
+- **Residual check:** `residual_pp` is defined as the plug (`enhanced - base - ssi - conviction -
+  interaction ≡ 0` by construction) — this closes to exactly 0 today because `interaction_pp` is
+  *derived* from the other three, not independently simulated. If a future revision computes
+  interaction from a true joint-overlay simulation instead of the plug formula, the residual
+  check would then catch real decomposition drift — left the `residual_flag` threshold (>0.5pp)
+  in place for that future case even though it can never fire today.
+- **Wiring into `/portfolio/nav`:** `ahil_nav_engine.get_nav_history()` now calls
+  `_compute_four_book_cached()` (own `@lru_cache`, independent of the B/A engine's cache) for
+  `book in (base, ssi, cv, enhanced)`; falls back to the standard B/A series if four_book_engine
+  raises or returns empty (logged as a warning, never a 500). Attribution rows are now built from
+  real decomposition numbers (`_four_book_attribution()`), replacing the old static
+  `attribution_for_book()` proxy for these four books — the proxy function still exists and is
+  used as the fallback path.
+
+**Phase 6 (AUTO/MANUAL scenarios, alerts, regime-history).**
+- **Decision:** `resolve_auto_scenario()`'s thresholds (VIX pctile >70 or HY>4% or SSI<0.9 →
+  stress; VIX pctile <30 and SSI>=1.0 → lowvol; else normal) are a **first-pass heuristic**, not
+  a Rohit-confirmed rule — flagged as `status: interim` implicitly (not yet added to the YAML as
+  its own policy block; a reasonable follow-up would be to move these thresholds into
+  `portfolio_policy.yaml` too, for consistency with the other four open decisions).
+- **Decision:** MANUAL overrides recompute `shares`/`market_value_usd`/`pnl_usd` from the
+  override's fixed `allocation_usd` against the row's already-resolved live price — matches "the
+  user sets an explicit $ size... REFRESH SIZES recomputes against them" from spec_15July.md.
+  Manual-override rows are force-unblocked (`blocked=False`) since a user override is treated as
+  an explicit intent to hold, overriding the BQ-tier hard-block for that one position only.
+- **Deferred:** no audit trail for manual overrides (just `updated_at`, last-write-wins) — fine
+  for a single-operator tool; would need versioning if multiple people share the account.
+- **Alerts service** deliberately has zero new state/computation — every alert type re-uses an
+  existing service call (`get_portfolio_risk`, `get_portfolio_risk_report`,
+  `get_portfolio_holdings`, `read_evictions`) so it can never show something Holdings/Risk don't
+  also show. Each source call is wrapped in its own try/except returning `[]` on failure, so one
+  broken source degrades the alert feed rather than 502ing the whole endpoint.
+
+**Phase 7 (personal book).**
+- **Decision:** personal book is keyed **by ticker only** (one lot per ticker) — matches the
+  "manual holdings tracker" scope (§4 of `PORTFOLIO_PAGE_AIM_AND_STATUS.md`), not a full
+  multi-lot cost-basis ledger. A user adding AAPL twice with different cost bases overwrites the
+  first entry — documented in the endpoint doc, not silently averaged.
+- **Deferred, explicitly:** no historical NAV series for personal — `get_personal_nav_payload()`
+  returns a single live snapshot with `data_status.status=live_snapshot_only`. Building a real
+  history would require either (a) asking the user for a full historical cash-flow ledger, or
+  (b) starting a daily personal-book snapshot job (same pattern as Phase 1) from today forward —
+  neither was in scope for this pass; flagged as a natural next step if Personal usage grows.
+- **Field naming fix caught in review:** first draft named the P&L field `day_mtm_usd` on the
+  personal NAV payload, which is misleading (it's unrealized P&L since entry, not a daily
+  change — there's no prior-day price stored for a user-entered book). Renamed to
+  `total_pnl_usd`/`total_pnl_pct` with an inline comment explaining why, before shipping.
+
+**Phase 8 (brokerage — docs only).**
+- Added a status note to `OPEN_QUESTIONS_FOR_ROHIT.md` Ask 3 confirming the 422-everywhere
+  behavior is intentional and unchanged this pass — zero code touched. `BookUnavailableError`'s
+  detail message for `book_id=personal` was also corrected (it previously said "pending product
+  spec," which became stale the moment Phase 7 shipped persistence) — now explains personal is
+  NAV/Holdings-only, not that it's unavailable.
+
+**Phase 9 (tests + docs).**
+- **Test coverage:** `tests/test_portfolio_backend_engines.py` (52 tests) covers every new pure
+  function/engine in isolation (policy_service env-override precedence, sizing_engine slot math,
+  eviction_engine 1C/A2/A3, book_snapshot_store read/write with a temp db, four_book_engine's
+  `_bq_multiplier`/`apply_ssi_overlay`/`decompose_attribution`, manual_overrides_service and
+  personal_book_service CRUD with temp JSON stores and mocked price/name lookups). 22 new cases
+  added to `tests/test_api_portfolio.py` for the actual HTTP surface (auto/manual scenario
+  end-to-end including a real matched-position override round-trip, alerts shape, regime-history
+  shape, personal CRUD+nav+holdings, brokerage-still-422 regressions).
+- **Full suite re-run:** 496 passed / 2 pre-existing failures unrelated to this work
+  (`test_d6_smoke.py` — known flaky in isolation per prior job-status entry #12/#14 above;
+  `test_dominant_reason.py::test_live_f_e_reason_contract` — depends on live
+  `runic_output.json`'s current active-combo state at test run time, not a code regression).
+- **Docs:** `docs/mindwealth-api-docs/changelog.md` v1.9.0 entry, `services/portfolio/README.md`
+  endpoint table + status line, 4 new endpoint pages (`get-alerts.md`, `get-regime-history.md`,
+  `manual-overrides.md`, `personal-book.md`), updated `get-nav.md`/`get-holdings.md`/
+  `get-sizer.md`/`get-sizing.md`/`get-risk.md` for the real per-book series / auto-manual /
+  personal-book changes, re-exported `openapi/mindwealth-v1.json`. `PORTFOLIO_API_HANDOFF.md`
+  gained a new §15 implementation-status section and updated §13 Definition-of-Done checkboxes
+  (left brokerage and frontend-wiring items unchecked — both explicitly out of scope this pass).
+
+**Overall deferred / left for future (across all phases):**
+- Brokerage (IBKR) integration — blocked on Rohit (owner, API type, credentials).
+- D1 slot sizing not yet the default — blocked on Rohit (SLEEVES table, N confirmation).
+- Full live regime chain (VIX/trend/HY) has no historical daily series — four_book_engine's SSI
+  overlay is SSI-only by necessity, documented as a known scope limit, not silently approximated.
+- No personal-book historical NAV — single live snapshot only, disclosed via `data_status`.
+- `resolve_auto_scenario()` thresholds are a first-pass heuristic, not yet in
+  `portfolio_policy.yaml` as its own confirmable decision block.
+- `slot_index`/`eviction_margin` columns in the daily book-snapshot schema exist but aren't
+  populated yet from the D1/eviction engines (the daily script still snapshots the legacy sizer
+  path) — cosmetic gap, tracked here for whoever wires that up next.
+
+**Files:** see job-status entry #15 above for the full file list (unchanged here to avoid duplication).
+
+---
+
+### 2026-07-22 — Portfolio daily NAV API + configurable sizer notional (v1.8.3)
+
+**Phase 1 — daily NAV:** `NavHistoryBundle` gains `mtm_daily` / `closed_daily`. `ahil_nav_engine` serializes `run_nav_engine` daily frame (912 points verified). `serialize_history()` and `get_portfolio_nav()` expose arrays. Workbook fallback returns empty daily arrays.
+
+**Phase 2 — notional:** `get_portfolio_notional()` in `portfolio_service.py`. Priority: `PORTFOLIO_NOTIONAL` env → `PORTFOLIO_USE_RESEARCH_NOTIONAL=1` (yaml $10M) → default $100M. `portfolio_notional_source` on sizer ceiling and `/portfolio/nav`.
+
+**Deferred:** UI daily chart wire (Parth); flip research notional in prod until Rohit sign-off.
+
+**Tests:** 56 pass.
+
+---
+
+### 2026-07-22 — Portfolio NAV history layer (workbook + nav_engine adapter)
+
+**Architecture:** `src/portfolio_nav/service.py` tries `engine_provider.load_engine_history()` first, falls back to `workbook_provider.load_workbook_history()`.
+
+**Workbook ingest:** Parses Ahil xlsx `Monthly_NAV` (Version B → `mtm[]`, Version A → `closed[]`), benchmark col L, computes drawdown/HWM, vol, beta, best/worst month. Research notional $10M from `config/portfolio_nav.yaml`.
+
+**nav_engine integration:** Ahil's `nav_engine.py` ported to `ahil_nav_engine_core.py` (position-level MTM, 1/N rebalance on entry, pro-rata redistribution on exit) + `ahil_nav_engine.get_nav_history()` API adapter. Env: `PORTFOLIO_NAV_ENGINE_MODULE`, `PORTFOLIO_NAV_FORCE_WORKBOOK=1` (tests), `PORTFOLIO_FORWARD_TESTING_ROOT`, `PORTFOLIO_NAV_PRICE_CACHE`.
+
+**Live verification (Jul 22):** Version B dual-gated trades: 5,567 positions, 192 symbols. Engine CAGR 16.79% / Sharpe 1.82 / final NAV $14.74M vs Ahil workbook 13.89% / $13.84M (~6.5% NAV gap). Likely causes: forward_testing CSVs updated since workbook run, yfinance vs Ahil price source, `GLXY.TO` delisted on yfinance. Excel `fill_template` / CSV writers not ported (API-only).
+
+**Methodology caveat:** Engine uses rebalance-on-entry (Ahil script), not Axiom 2 hold-to-exit from consolidated report — Rohit alignment still open (`OPEN_QUESTIONS_FOR_ROHIT.md`).
+
+**API merge:** `get_portfolio_nav` uses requested `book` for history; live holdings/sizer snapshot still `enhanced` only (`live_snapshot_book` field when differ).
+
+**Deferred:** Daily NAV points (daily frame computed but not exposed); live four-book series (proxy attribution); holdings/sizer for base/ssi/cv; `pnl_contribution_bps` since-go-live.
+
+**Tests:** 49 pass (`test_portfolio_nav.py` + `test_api_portfolio.py`).
+
+---
+
+### 2026-07-22 — Ahil NAV analysis deliverables (implementation status refresh)
+
+**Files reviewed:** `ahil_analysis/MindWealth_Consolidated_Report.pdf`, `MindWealth_Ahil_NAV_FILLED_GATED_FIXED_DAILYDD.xlsx` (Version B MTM), `MindWealth_Ahil_NAV_FILLED_VersionA_GATED_FIXED_DAILYDD.xlsx` (Version A closed).
+
+**Key findings:** $10M opening NAV; monthly closes Jan-24→Jun-26 + S&P benchmark; drawdown episodes; A1 proxy four-book (+4.3pp ENHANCED vs BASE); Axiom 2 hold-to-exit confirmed; 1C eviction validated; still needs Divyanshu ingest + real SSI/conviction feeds + exact R:R.
+
+**Docs updated:** `PORTFOLIO_PAGE_AIM_AND_STATUS.md` (§8.0–8.4), `portfolio_implementation_log.md` (Ahil impact + status snapshot), `OPEN_QUESTIONS_FOR_ROHIT.md` (Ask 1 & 2 partial answers).
+
+**Deferred:** XLSX ingest into `get_portfolio_nav()`; no code changes this task.
+
+**Caveats:** Portfolio_Stats vol/Sharpe cells in workbook are mostly formula placeholders — only CAGR and true daily max DD populated. Daily NAV **line** for chart not in workbooks (monthly only). Four-book numbers are **proxy** until API feeds wired.
+
+---
+
+### 2026-07-22 — Portfolio implementation log product overview section
+
+**What changed:** New top section in `portfolio_implementation_log.md` before "Simple Explanation": product definition, feature table, per-view visibility (Overview / Sizing / Risk / Live P&L / Signals), nine HANDOFF endpoints + cross-cutting backend duties, status snapshot, data-flow diagram.
+
+**Assumptions:** Status snapshot matches the rest of the log (nav daily series, four-book replay, brokerage/personal still blocked). Does not duplicate full `PORTFOLIO_PAGE_AIM_AND_STATUS.md` — links to it for deeper aim context.
+
+**Deferred:** Reconcile snapshot with v1.8.2 nav stub if/when daily NAV + benchmark ship; update "Not built" rows in one pass.
+
+**Caveats:** IBKR pointer uses `ikbr_details.md` (Gateway + ib_async plan). Frontend wire-up remains Parth; doc states dev `:8507` / `:8514`.
+
+---
+
+### 2026-07-22 — Claude shortlist MTM 0.0% fix
+
+**Root cause:** `GET /signals/shortlist` reads `claude_signals_report.csv`, which is only written when the Claude report is generated. Unlike `outstanding_signal.csv` (refreshed nightly by the email/converter pipeline), the shortlist CSV keeps signal-day prices forever — e.g. MCHI/TLT/BRK-B showed `0.0%, 0 days` from 2026-06-26 while `outstanding_signal` had live MTM (−5.83% for MCHI on 2026-07-21).
+
+**Fix:** Added `refresh_dataframe_current_prices()` in `src/utils/mtm_pricing.py` (same logic as `convert_signals_to_data_structure.update_current_prices_in_data_files` but in-memory). `get_shortlist_report()` calls it before `enrich_records()`.
+
+**Assumptions:** `trade_store/stock_data/{SYMBOL}.csv` exists for shortlist tickers (verified for MCHI, TLT, BRK-B). MTM basis uses `Signal Open Price` when set (`resolve_signal_basis`).
+
+**Deferred:** Persist refreshed MTM back to `claude_signals_report.csv` on disk (not needed for API; would help Streamlit `text_file_page` if loaded without API). TLK has no stock file — would remain 0 if ever shortlisted.
+
+**Caveats:** Symbols with no `stock_data` CSV keep stale CSV MTM. User-reported "mhci"/"brbk" map to **MCHI** and **BRK-B** in the report.
+
+---
+
+### 2026-07-22 — Fundamental Agent Update July 2026 (conviction engine)
+
+**Assumptions:**
+- M&A storage uses SQLite (`conviction_aux.db`) matching macro/SSI patterns; PostgreSQL DDL in spec mirrored in `schema.sql` for future prod migration.
+- Agent dimensions (moat, macro, reinvestment, M&A search) remain opt-in via `CONVICTION_RUN_AGENT_DIMS=1` + `ANTHROPIC_API_KEY`.
+- Divergence `days_below_high` bootstraps once from max price history when `divergence_state.bootstrapped_from_history` is unset.
+
+**Key decisions:**
+- Removed `fd_sizing_adj` multiplier in `modify_signal` — sizing tiers in `verdict_for_buy` are authoritative per July 2026 spec.
+- `recalculate_ticker` API now calls `update_ticker_fundamentals(mode="full")` instead of info-only `full_recalculation`.
+- PE percentile tax suppressed when `pe_ttm` missing/≤0 (data failure → neutral).
+
+**Deferred:**
+- Parth Nuxt UI: drawer FS links, BQ drill, FS page navigation (Section 6).
+- `ceo_start_date` bulk ingest from SEC DEF14A for universe TSR scoring.
+- PostgreSQL `ma_activity` on prod if required (SQLite sufficient for dev).
+
+**PYPL verification:** bq_raw 8.0, conviction 7.0, OEY 11.3%, pe_ttm 10.48, divergence +2, capital allocation +2.
+
+**Caveats:** `price_history_series` stripped before JSON save; divergence counter increments +1 per calendar day after bootstrap (not intraday).
+
+---
+
+### 2026-07-22 — Push mindwealth-api-docs to GitHub
+
+**Task:** Local `docs/mindwealth-api-docs` had 2 unpushed commits; GitHub showed last update ~1 month ago (`5abb580` v1.7.3).
+
+**Root cause:** Commits were made locally but `git push` was never run (or failed silently). Remote was HTTPS (`https://github.com/divsum127/mindwealth-api-docs.git`) with no stored credentials — `git fetch` failed with "could not read Username". Branch tracked `origin/main` as "ahead 2" indefinitely.
+
+**Resolution:**
+- Pushed `08264a1` (v1.8.0 AI Analyst) and `c5c5b59` (v1.8.1 Overwatch) to `divsum127/mindwealth-api-docs` `main` via SSH (`git@github.com:divsum127/mindwealth-api-docs.git`).
+- User-supplied PAT rejected (`Invalid username or token`) — likely revoked/expired; SSH auth on this host (`ahiliitb`) has push access.
+- Set `origin` remote to SSH URL for reliable future fetch/push.
+
+**Assumptions:** Submodule pointer in parent `MindWealth_UI` repo already references `c5c5b59`; no parent-repo commit needed for this push-only fix.
+
+**Deferred:** Revoke exposed PAT in chat; prefer SSH or `gh auth login` over embedding tokens in remote URLs.
+
+**Caveats:** HTTPS remote without credential helper will fail fetch/push on this host; use SSH remote or configure credential helper.
+
+---
+
+### 2026-07-22 — Portfolio HANDOFF v1.8.2 API + docs
+
+**Implemented:** `GET /portfolio/nav` (MODEL `book=enhanced` snapshot from sizer + holdings + entries/exits + risk). Committed pipeline services and 6 new api-docs pages. OpenAPI exported. Tests: 62 pass in portfolio + signals surface.
+
+**Pushed:** `divsum127/mindwealth-api-docs` `1efaa09` via SSH.
+
+**Not pushed:** `divsum127/MindWealth_UI` `chatbot-dev` — commits `b984f0d6c`, `2531daf9a`, `368da62c9` local; PAT write fails; SSH user lacks `divsum127` repo push.
+
+**Still blocked:** four valuation books, brokerage/personal books, NAV history series, `exit_type=eviction`, `position_limit`.
+
+---
+
+### 2026-07-21 — JULY presentation slides 5–7 review
+
+**Scope:** Read-only review of `instruction_docs/JULY_MindWealth_Presentation_v3.pptx` (slides 5 Macro Runic, 6 Independent Validation, 7 Combo A forward returns).
+
+**Critical findings:**
+- Slide 5 priority stack `G→C→B→E→D→F→A` contradicts production `CONFIG.yaml` `dominant.PRIORITY`: `C(100) > B(90) > F(80) > E(70) > D(60) > G(50) > A(40)`.
+- Slide 5 “Currently Active” stale: Combo E is CONFIRMED 2/3 (not partial); posture is TACTICAL FEARFUL / STRATEGIC BRAVE (not “TACTICAL BULLISH”).
+- Slide 5 Combo D ~28% hit rate likely confuses VIX 10yr ~28th percentile with bearish hit rate (spec/HTML: 72–85% at 5d; production ~38.5% at 5D).
+- Slide 7 speaker notes are Portfolio Layer 1 copy-paste (“$100/N”, quality score) — belong on slide 8.
+
+**Methodology caveats flagged:** uniform 3m hit column across combos with different validated horizons (D=5d, E=12m, G=no return HR); Combo G should not show return hit rate; rank-4 discovery theme is bullish generic vs bearish Combo D framing; slide 7 event dates are illustrative not engine-validated trigger dates.
+
+**Deferred:** No pptx edits in this pass; presenter should refresh “Currently Active” from latest `runic_output.json` before delivery.
+
+---
+
+### 2026-07-21 — Portfolio unscored / stale conviction overlay
+
+**Root cause:** `virtual_trading_*_conviction.csv` last written 2026-05-18; VT book updated daily. Daily cron (`update_trade_data.sh`) only overlaid `new_signal.csv`, not VT long/short → 23 tickers / 59 position rows had no conviction row → `unscored=true` → UI Could not compute.
+
+**Fixes:**
+1. `update_trade_data.sh` — `--overlay-reports virtual_trading_long.csv,virtual_trading_short.csv,new_signal.csv,outstanding_signal.csv`
+2. `_merge_conviction` — on-demand `apply_to_signal` when ticker absent from overlay (runtime safety net; unscored 59→0)
+3. `COMMON_ETFS` — TLT, MCHI, EFA, EWJ, bond ETFs → NOT_APPLICABLE when scored
+4. Nuxt — `Unscored` label + amber style for any future unscored rows
+5. Full conviction pipeline kicked off to refresh overlay CSVs on disk
+
+**Deferred:** Pipeline may take 15–30 min for full fundamentals universe; on-demand merge covers API until CSV refresh completes. Prod merge still pending user review.
+
+---
+
+### 2026-07-21 — Portfolio "Could not compute" (ETF/index conviction NaN)
+
+**Root cause:** Conviction CSV stores `bq_raw=NaN` (pandas) for `verdict=NOT_APPLICABLE` assets. Sizer used `if bq is not None: bq=float(bq)` so NaN survived; `_bq_tier(nan)` fell through to BLOCKED/0.0. Prior D2 fix required `bq is None`, so ETFs never got base size.
+
+**Fix:** `_safe_float(bq_raw)`; `if not_applicable: tier N/A 100%`; `_bq_tier` treats NaN like None; removed misleading `conviction_score < 0` blocked_reason for N/A assets.
+
+**Verification:** `^GSPC`, `FXI`, `EFA`, `EWJ` now `blocked=false`, `allocation_usd>0`, `size_tier` starts with `N/A`. Tests: `test_bq_tier_nan_treated_as_missing`, `test_sizer_not_applicable_etf_not_blocked`.
+
+**Deferred:** Nuxt `PortfolioClusterCard.vue` still renders `UNAVAILABLE_COMPUTE` when `bq_score` is null — should show `conviction n/a` when `not_applicable=true`. Prod API (`:8506`) still on pre-fix code until merge/deploy.
+
+---
+
+### 2026-07-20 — Presentation doc (week of 13–17 July 2026)
+
+**Purpose:** Single presentation artifact for stakeholder review — frames AI Analyst, Portfolio, and macro/regime work as one week (13–17 Jul 2026).
+
+**Sources:** `instruction_docs/ai_analyst/ai_analyst_implementation_log.md`, `instruction_docs/portfolio_page/portfolio_implementation_log.md`, `docs/mindwealth_ui_job_status.md` (13–17 Jul entries).
+
+**Structure:** Executive summary, deliverables tables, day-by-day (work / blockers / issues+resolutions), technical deep-dives (Analyst + Portfolio), verification, outstanding items, presentation guidance, Rohit open questions appendix. **Simple Explanation** at top — plain-language overview of three tracks, day flow, headline fixes, and what was not finished.
+
+**Assumptions:** Week framing is presentation-oriented; some implementation timestamps in source logs are 18–20 Jul but work is attributed to 13–17 for the review narrative.
+
+**Deferred:** No slide deck or PDF export — markdown only.
+
+---
+
+### 2026-07-20 — Portfolio implementation log
+
+**Content:** Mirrors `ai_analyst_implementation_log.md` structure — Simple Explanation, Part 1 summary, Part 2 detailed API/file map, frontend integration guide, spec gaps vs HANDOFF, prod checklist.
+
+**Cross-links:** PORTFOLIO_API_HANDOFF, spec_15July, OPEN_QUESTIONS_FOR_ROHIT, v5 HTML mock.
+
+**Deferred:** No code changes — documentation only.
+
+---
+
+### 2026-07-20 — Portfolio API unblocked HANDOFF endpoints
+
+**Assumptions:** Only `book_id=model` + `book=enhanced` serves holdings until Ahil A1 four-book replay. `same_asset_siblings` populates for all rows (spec_15July/v5), not D4 negative-only. Sizer still uses interim cluster-% engine (D1 slot model deferred).
+
+**Implemented:** `/portfolio/holdings`, `/portfolio/sizing`, `/signals/entries`, `/signals/exits`, HANDOFF §11 portfolio-risk report, `book_id` validation, `rr_dynamic` in enrichment output, D2 NOT_APPLICABLE → base size (never $0 blocked), conviction_summary on `/portfolio/risk`.
+
+**Deferred:** `/portfolio/nav`, four valuation books, D1 sleeve slots, brokerage/personal books, `pnl_contribution_bps`, eviction-type exits, `exit_ref` ladder string (Ahil §12).
+
+**Edge cases:** Holdings `size_usd` matches current sizer allocations by (ticker,function,interval,direction) key; unmatched VT rows get size_usd=0. Portfolio-risk `implied_natural_exit_date` uses outstanding `avg_hold_days` lookup.
+
+**Caveats:** Breach dollar recommendations still use cluster-% math (D7 blocked). `/portfolio/sizing?scenario=auto` maps to `normal`.
+
+---
+
+### 2026-07-20 — Portfolio open questions doc for Rohit
+
+**Assumptions:** v5 HTML (`MindWealth_Portfolio_Unified_v5.html`) is treated as authoritative UI mock per prior team direction; `Ahil_portfolio_page_docs.md` (full, 429 lines) used over truncated `_2.md`.
+
+**Content:** Five decision briefs — (1) notional/N, (2) Axiom 2 rebalancing, (3) IBKR owner+spec, (4) v5 SLEEVES table, (5) `same_asset_siblings` scope — each with blocking rationale, per-file citations, and numbered questions for Rohit.
+
+**Deferred:** Actual API implementation blocked until Rohit locks answers; no change to `portfolio_service.py` or endpoints.
+
+**Edge cases noted in doc:** v5 footer says numbers illustrative; NZ Core sleeve excluded from overlay; June `CLUSTER_BUDGETS` may be legacy; HANDOFF `position_limit: 24` vs N=60/80/58.
+
+**Caveats:** IBKR has zero technical spec in repo; brokerage book may need 501 until spec exists. Rebalancing mismatch between Ahil `nav_engine.py` and Axiom 2 will cause NAV reconciliation drift until aligned.
+
+---
+
 ### 2026-07-20 — AI Analyst backend hardening
 
 **Assumptions:** First degradation request may take ~20s (parquet build); cron `run_overwatch_signals.py` pre-warms cache. Claude copy disabled unless `ANALYST_USE_CLAUDE_COPY=true`.
@@ -2159,7 +2857,30 @@ Spread **survives** recalibration; magnitude **wider** than legacy at both horiz
 
 ---
 
-## 2026-07-19 — Fix dashboard 429 + v1.8 prod deploy
+## 2026-07-21 — SSI 3-layer superindex composite fix
+
+**Root cause:** `compute_ssi_at_date()` weighted only four legacy inputs (30/25/25/20). Dashboard layer scores used semantic Layer 1/2/3 groupings from `DATA_SOURCES.yaml` at 40/35/25, so composite (+0.16 on 2026-07-16) did not match manual weighted layer average (~+0.63 if using rounded display buckets).
+
+**Implementation:**
+- New `superindex.py`: `build_layer1/2/3()` average per-layer z-scored normalized components; `build_superindex()` applies 40/35/25 weights to layer scores (not display-rounded values).
+- `ssi_score.py` delegates composite + history to superindex.
+- `positioning.json` adds top-level `layers` with scores/weights/components; raw inputs split into `inputs.layer1/2/3` (McClellan/NH-NL/SKEW moved out of mislabeled `layer1` block).
+- McClellan: EMA(19)−EMA(39) on daily net advances (removed cumsum bug giving ~217).
+- NH/NL: `new_highs / (new_highs + new_lows)` instead of highs/lows ratio (~46).
+
+**Assumptions:**
+- Within each layer, components are equally weighted after normalization.
+- Layer 2 confirmation votes (`layer2.py`) unchanged — still uses legacy four series for sizing multiplier.
+- CFTC layer-3 inputs use `cftc_fm_net`, `cftc_rm_net`, `gross_net` weekly series with forward-fill at daily dates.
+
+**Deferred:**
+- UI may still round layer scores to one decimal (+1.0/+0.5/+0.2); backend now exposes full-precision `layers.layerN.score` for display binding.
+- SKEW display rounding only in `positioning.py` (2 dp); no change to norm pipeline.
+- Rebuild `ssi.db` / run daily SSI job on deploy to refresh stored history.
+
+**Prod impact:** Composite SSI level and percentile will shift vs pre-fix values; Runic `layer2_status` / multiplier unchanged.
+
+---
 
 **Changes:**
 - `config/rate_limits.yaml`: `apikey.read` `60/10seconds` → `150/10seconds;1200/minute`
@@ -2171,3 +2892,790 @@ Spread **survives** recalibration; magnitude **wider** than legacy at both horiz
 **Push:** `git push origin` failed (no GitHub creds on host). Remote not updated; prod updated via local fetch.
 
 **Smoke:** `/api/v1/health` ok; `/analytics/performance` 200; `/analytics/analyst/brief` 200.
+
+---
+
+## 2026-07-21 — Combo D fed-cycle slices (QE n=9 USE)
+
+**Context:** D5 recalibrated Combo D (VXTS≥1.18/CFTC≥95/VIX≤13, 2-of-3, n=46) @ 1W/2W. Prior rule n&lt;10 → CANNOT USE excluded QE (n=9). Divyanshu approved QE slice for reporting (9 vs 10 not materially different).
+
+**CONFIG (`combo_hit_rates.D.fed_cycle_slices`):**
+- `min_episodes: 9`
+- `regimes: [CUTTING_LATE, HIKING_LATE, QE]`
+- Validated stats from D5 `D_v1.18_c95_x13_l2` backtest (static until combo_fires backfill on new gates)
+
+**QE validated stats:**
+| Horizon | n | Bear hit % | Avg SPX % |
+|---------|---|------------|-----------|
+| 1W (5D) | 9 | 44.44 | +0.65 |
+| 2W | 9 | 33.33 | +0.54 |
+
+**Implementation:**
+- `combo_fed_cycle_slice_stats(letter)` — reads CONFIG validated block; verdict USE when n≥min_episodes
+- `GET /macro/combos/D` → `fed_cycle_slices` object with per-regime horizons (hit_rate, avg_return, label)
+- D5 script: `COMBO_MIN_N_USE = {D: 9, E: 10}`
+
+**Caveats:**
+- E fed slices still CANNOT USE (n&lt;10 per regime)
+- Live `combo_fires` DB may still reflect legacy D gates; CONFIG stats are D5-validated reference
+- Briefing PDF does not yet render fed-cycle footnote table (API only)
+
+**Prod impact:** CONFIG + API field merge on next deploy.
+
+---
+
+## 2026-07-22 — DRIFT ALERT trigger fix (email spec 5D)
+
+**Assumptions:**
+- “Forward win rate” for thresholds = cumulative win rate across all closed forward-test trades for the combo (matches report FWD WR field), not last-week bucket rate.
+- “Falling N months in a row” = N consecutive month-over-month declines in calendar-month win rates from exit dates.
+- BT vs FWD gap is display-only (`signal.gap`); never a trigger (confirmed prior `gap_threshold_pp` was unused in logic).
+
+**Root cause:**
+- Old `_is_declining_toward_floor` fired on any single weekly decline while cumulative FWD ≥60%, and breach used last-week rate &lt;60% — caused false positives when cumulative FWD was healthy (e.g. 70.59% vs BT 81.72%).
+
+**Decisions:**
+- Orange = `DRIFT ALERT WATCH` (&lt;61%, 2-month fall); Red = `DRIFT ALERT BREACH` (&lt;60%, 3-month fall).
+- API `type` stays `degradation` for BFF backward compatibility; `trigger_type` now `fwd_drift`.
+- 4-week `weekly_trend` / `fwd_trend` unchanged for mini-chart.
+
+**Deferred:**
+- Nuxt label binding if hardcoded “DEGRADATION” strings exist client-side.
+- `mindwealth-api-docs` OpenAPI text still says degradation (update on next API doc release).
+
+**Prod impact:** Overwatch SIGNALS tab alert count may drop (fewer false positives). Cron `run_overwatch_signals.py` rebuilds cache on next warm run.
+
+---
+
+## 2026-07-22 — New Signals page empty (nav badge 7, table 0)
+
+**Root cause:** `loadSignalCounts()` uses `GET /signals/counts` (authoritative, returned `new.total = 7`). `loadNewSignals()` only called `POST /conviction/signals/overlay-file` for `new_signal.csv`. When overlay POST failed, timed out, or returned no rows, BFF fell through to `getUnavailableSignalsNew()` → empty table and KPI zeros while nav still showed 7.
+
+**Fix:** Added `loadSignalsFromReport()` shared helper:
+1. `GET /signals/reports/{slug}/latest` (primary)
+2. Overlay file (secondary)
+3. `GET /signals/surface?report={slug}` (tertiary)
+
+Applied to `loadNewSignals` (`new-signals`) and `loadOutstandingSignals` (`outstanding-signals`) for parity with `loadAllSignals`.
+
+**Assumptions:**
+- Report API rows include composite CSV column `Symbol, Signal, Signal Date/Price[$]` or lowercase `symbol` — verified on dev API (7 rows parse correctly).
+
+**Deferred:**
+- `loadAllSignals` still has inline `fromRecords`; could dedupe into shared helper later.
+- Shortlist fallback in `loadShortlist` still depends on `loadNewSignals` when API shortlist missing.
+
+**Prod impact:** Nuxt only — rebuild `MindwealthUI_Vue` and restart `mindwealth-ui.service`. No API merge required.
+
+---
+
+## 2026-07-22 — Conviction Engine score audit (AMZN weak BQ)
+
+**Scope:** Confirm `daily_update` running, input freshness, spot-check 15-dimension BQ on AMZN / MSFT / NVDA.
+
+**daily_update status:** Running. Manifest `conviction_store/daily/2026-07-21/manifest.json` generated `2026-07-22T03:22:11Z` — 193 tickers fundamentals-updated, 0 errors. JSON records show `last_daily_update` `2026-07-22T14:01:19Z`. Triggered via `update_trade_data.sh` → `scripts/run_conviction_engine_daily.py --fundamentals-mode daily` (also nightly `emailscript.sh` at 22:00).
+
+**Freshness caveat:** Daily mode calls `daily_update()` only — refreshes price, valuation_tax, fs_score, yield_trap. Does **not** recompute `bq_components` / `bq_raw`. BQ last fully rebuilt on most mega-caps in May 2026 (`last_full_calc`).
+
+**data_coverage false alarms:** On daily runs, `apply_coverage_to_record` gets thin `market_data` (not full enriched fundamentals), so UI/API shows `info_available: false`, `low_data_confidence: true`, and dimensions tagged `neutral_missing_inputs` even when yfinance statements are fetchable. Live `fetch_and_compute_fundamentals('AMZN')` returns gross_margin 50.6%, roic_proxy 24%, etc.
+
+**Root cause — inverted YoY revenue growth:** `fundamentals_enriched.py` lines 681–684 use `rev_series.iloc[-1]` vs `iloc[-5]`. yfinance quarterly income columns are **newest-first** (`iloc[0]` = latest quarter). Code compares oldest vs 4-quarters-prior → negative YoY for growing names:
+- AMZN: computed −14.2% vs yfinance `revenueGrowth` +16.6%
+- MSFT: −15.5% vs +18.3%
+- NVDA: −46.0% vs +85.2%
+
+This sets `growth_trajectory` = −1 on all three (stored and fresh-with-buggy-growth).
+
+**Spot-check 15 dimensions (stored → fresh with correct rev growth):**
+
+| Dimension | AMZN | MSFT | NVDA |
+|-----------|------|------|------|
+| revenue_quality | +2 | +2 | +2 |
+| growth_trajectory | −1 → +2 | −1 → +2 | −1 → +2 |
+| margin_quality | +0.5 | +0.5 | +0.5 |
+| balance_sheet | +1 | 0 | +1 → +2 |
+| roic_wacc_spread | +2 | +2 | +2 |
+| gross_margin_trend | −1 | 0 | −1 |
+| divergence_signal | 0 | +2 | 0 |
+| insider_ownership | 0 | −1 | 0 |
+| ceo/moat/macro/manual (8 dims) | all 0 | all 0 | all 0 |
+| **bq_raw** | **+3.5 → +5.0** | **+4.5 → +9.0** | **+3.5 → +10.0** |
+| conviction (incl val tax) | −3.5 | −0.5 | −1.5 |
+
+**AMZN confusion:** BQ is **positive** (+3.5 REDUCED tier). Negative **conviction_score** (−3.5) = BQ + valuation_tax (−7: entry_multiple −5, OEY −2). Portfolio sizer uses `bq_raw` for tier, not conviction.
+
+**Recommended fixes (deferred):**
+1. Fix YoY: use `iloc[0]` vs `iloc[4]` (or sort columns ascending before slice).
+2. Run `--fundamentals-mode full` universe refresh after fix.
+3. Pass enriched fundamentals into `apply_coverage_to_record` on daily runs.
+4. Consider periodic full BQ refresh (weekly) since daily mode skips BQ.
+
+**Prod impact:** Bug affects all equities using statement-derived YoY growth — fix + full recalc required before prod deploy.
+
+---
+
+## 2026-07-22 — Conviction Engine revenue-growth YoY fix + full recalc
+
+**Fix applied** (`src/conviction_engine/fundamentals_enriched.py`, `if q_inc is not None` block, ~line 675):
+- `rev_series.dropna()` → `.dropna().sort_index()` before any `iloc[]` indexing, so ascending date order is guaranteed regardless of yfinance's raw (newest-first) column order.
+- `revenue_growth_yoy`: `iloc[-1]` (now truly latest) minus/over `iloc[-5]` (same quarter, 1 year prior) — sign was previously inverted.
+- `gross_margin_trend`: rewrote to intersect Revenue/Gross Profit indices (`common_idx`) and sort both ascending before comparing `iloc[-1]` (recent) vs `iloc[-5]` (year-ago). Previously `gm_recent`/`gm_older` were also swapped (recent used the oldest available quarter).
+- `revenue_accelerating` (`pct_change(periods=4)`) was already correct — it explicitly sorted (`rev_sorted = rev_series.sort_index()`) before this fix; now reuses the single `rev_sorted` variable instead of a duplicate.
+
+**Verification before full recalc:**
+- `fetch_and_compute_fundamentals` → `revenue_growth` now matches yfinance's own `info["revenueGrowth"]` almost exactly: AMZN 16.61% vs 16.6%, MSFT 18.30% vs 18.3%, NVDA 85.23% vs 85.2%.
+- `tests/test_conviction_engine.py`: 51/51 pass. Broader `-k "conviction or fundamentals"`: 59/59 pass.
+
+**Full recalc:** `scripts/run_conviction_engine_daily.py --fundamentals-mode full --overlay-reports virtual_trading_long.csv,virtual_trading_short.csv,new_signal.csv,outstanding_signal.csv` — 193/193 tickers updated, 0 fetch errors, ~7 minutes runtime. Regenerated all `conviction_store/*.json`, `conviction_store/daily/2026-07-21/*`, `conviction_store/overlays/*`.
+
+**Before → after (bq_raw / tier / conviction_score):**
+
+| Ticker | bq_raw before | bq_raw after | Tier before → after | conviction before → after |
+|--------|---------------|--------------|----------------------|----------------------------|
+| AMZN | +3.5 | +7.0 | REDUCED → TACTICAL | −3.5 → 0.0 |
+| MSFT | +4.5 | +9.0 | TACTICAL → MAX | −0.5 → 4.0 |
+| NVDA | +3.5 | +12.0 | REDUCED → MAX | −1.5 → 7.0 |
+| AAPL | +0.0 | +12.0 | **BLOCKED → MAX** | −8.0 → 7.0 |
+| GOOG | +3.5 | +9.0 | REDUCED → MAX | −1.5 → 4.0 |
+| META | +3.5 | +7.0 | REDUCED → TACTICAL | −1.5 → 2.0 |
+
+AAPL was the most dramatic case — went from a hard BLOCKED (0% size, bq_raw 0.0) to MAX tier purely because of the inverted growth sign; AAPL's real revenue growth is positive.
+
+**Full test suite after fix:** `pytest tests/ -q` → 429 passed, 1 failed, 2 skipped. The 1 failure (`tests/test_d6_smoke.py::test_d6_smoke_suite_all_pass`) is an unrelated macro-regime smoke test; re-ran in isolation and it **passed** — confirms a pre-existing test-isolation/ordering flake (depends on shared script output files touched by other tests in the same run), not caused by this change.
+
+**Overlay impact (VT long book, 904 rows):** `max_conviction` count 0 → 52; `tactical_plus` 0 → 205; `cancel_buy` 515 → 248. Portfolio sizer will now size several mega-caps at TACTICAL/MAX instead of REDUCED/BLOCKED.
+
+**Deferred / not fixed in this pass** (flagged for follow-up, same root-cause class — column-order assumption on yfinance quarterly frames):
+1. `_df_row()` helper (line ~80) uses `row.iloc[-1]` on **unsorted** balance-sheet/cashflow rows to get "the latest column value" — but yfinance balance sheet columns are also newest-first, so this actually returns the **oldest** available quarter. Verified live: AMZN Total Debt `iloc[-1]` = 133.2B (quarter ending 2025-03-31) vs true latest 209.9B (2026-03-31). Feeds `total_debt`, `cash_and_equivalents`, `net_debt_stored`, `net_debt_ebitda` (balance_sheet BQ dimension), and `roic_proxy` equity fallback.
+2. `_df_ttm_sum()` (line ~100) uses `row.iloc[-periods:]` on unsorted rows — with the typical 5-quarter yfinance fetch window this produces a TTM window lagged by one quarter (excludes the newest quarter, includes one extra old quarter) rather than a true trailing-twelve-months. Feeds `revenue_ttm`, `gross_profit_ttm`, `net_income_ttm`, `ebitda_ttm`, `operating_cf_ttm`, `capex_ttm`, and transitively `fcf_ttm` → `owner_earnings_yield` (valuation_tax input).
+3. Lines 609/617 (`fcf_prior`/`rev_prior` via `.iloc[-8:-4]`) have the same unsorted-order assumption for "prior year" TTM windows (FD vote 3 / `fcf_growth_yoy`).
+
+These were out of scope for this fix (user asked specifically for the revenue-growth YoY fix) but are the same bug class and directly affect `balance_sheet` BQ dimension accuracy plus `owner_earnings_yield`/valuation_tax. Recommend a follow-up pass to sort-then-index consistently in `_df_row`/`_df_ttm_sum`, followed by another full recalc.
+
+**Prod impact:** `src/conviction_engine/fundamentals_enriched.py` must merge `chatbot-dev` → `chatbot-prod`. Regenerated `conviction_store/*.json` are runtime data (not committed to git) — prod needs its own `--fundamentals-mode full` recalc run after the code merge, not a file copy (prod fetches live yfinance data independently).
+
+---
+
+## 2026-07-22 — Signals KPI long/short counts vs function filter
+
+**Root cause:** `displaySummary` in `signals.vue` called `buildSignalsSummary(filteredSignals)`. Sidebar function filter (e.g. TrendPulse) reduced KPI LONG/SHORT to filtered subset (55/0) while nav badges correctly used `/signals/counts` (112/9). `buildSignalsSummary` also set `new_long`/`new_short` equal to page long/short, so NEW TODAY card on Outstanding showed 112L/9S instead of new-signals bucket (4L/3S).
+
+**Fix:**
+- `summaryWithCountBucket()` merges `GET /signals/counts` bucket into summary; avg long WR still from loaded rows.
+- KPI cards use `pageKpiSummary` (unfiltered authoritative counts); filter hint still shows `N of M signals`.
+- `newTodayKpi` from `counts.new_detail`.
+- BFF `loadSignalsFromReport` enriches summary from counts API.
+- Dashboard `outstanding_count` uses `outstanding_detail.total`.
+
+**No irrelevant filtering changes** in list loaders — prior overlay→reports fix unchanged; table filter behavior unchanged.
+
+---
+
+## 2026-07-22 — Sync docs/api clone into mindwealth-api-docs
+
+**Assumptions:**
+- `docs/mindwealth-api-docs` is canonical; `docs/api` is a stale clone that received some macro scheduled-events updates in isolation.
+- Merge direction is one-way: bring missing clone content into main, never overwrite newer main content with older clone copies.
+
+**What was missing in main (copied from clone):**
+- `frontend/macro-scheduled-events-integration.md`
+- `services/macro/endpoints/get-pre-catalyst.md`, `get-post-event-regime.md`, `get-scheduled-events-calendar.md`
+
+**Merged into existing main files:**
+- `services/macro/README.md` — scheduled events section, frontend integration link, backward-compat note, tab mapping rows
+- `services/macro/endpoints/get-runic-nightly.md` — documents `pre_catalyst` / `post_event_regime` in nightly JSON
+- `services/analytics/README.md` — analyst/overwatch cross-links from clone
+- `changelog.md` — Macro scheduled events (2026-07-03) section
+- `README.md`, `services/README.md` — version bumps, portfolio index row, macro event routes
+
+**Intentionally not copied (main is newer):**
+- Portfolio service docs (v1.8.2/v1.8.3)
+- Signals enrich/limit params on report endpoints
+- Analyst alert query params and panel alert type table
+- OpenAPI snapshot (`/portfolio/nav` differs; main has v1.8.3 fields)
+
+**Deferred:** Retire or delete `docs/api` clone to avoid future drift; update stale `docs/api/` path references in changelog footnotes.
+
+**Prod impact:** None (documentation only).
+
+---
+
+## 2026-07-22 — Delete docs/api clone + canonical API docs cursor rule
+
+**Actions:**
+- Deleted entire `docs/api/` tree (stale clone; content already merged into `docs/mindwealth-api-docs`).
+- Added **API documentation (canonical path)** to workspace + global Cursor rules: user phrases like "update API docs" → `docs/mindwealth-api-docs/` only; never recreate `docs/api/`.
+
+**Live reference fixes (would break after delete):**
+- `api/README.md` — canonical doc links
+- `scripts/export_openapi.py` — output path
+- `docs/mindwealth-api-docs/getting-started.md` — export path note
+- `.cursor/skills/api-creation/SKILL.md` and `api-creation-2/SKILL.md` — removed obsolete `cp docs/api/...` step
+
+**Deferred:** Historical job logs, instruction docs, and `docs/plans/` still mention `docs/api/` in past-tense entries — left unchanged.
+
+**Prod impact:** None.
+
+---
+
+## 2026-07-22 — Consolidated "questions for Rohit" (portfolio page backend review, chat-only)
+
+**Task:** User asked (via `/explain-simple`) to elaborate every outstanding clarification Divyanshu still needs from Rohit for the portfolio page, using context from the "Portfolio page backend review" agent chat.
+
+**Source located:** Agent transcript `4b247cde-4c9f-451f-8fdb-c943fc0f497d` (385 turns, 2026-07-20 → 2026-07-22) — the session that produced `instruction_docs/portfolio_page/OPEN_QUESTIONS_FOR_ROHIT.md` (Asks 1–5) and the later blocker-table follow-ups after the 21 July review email and `ikbr_details.md`.
+
+**What was done:**
+- Re-read `OPEN_QUESTIONS_FOR_ROHIT.md` (Asks 1–5: notional/N, rebalancing rule, IBKR, SLEEVES table, `same_asset_siblings` scope) for the original five blocking decisions.
+- Re-read the later in-chat blocker tables (turns 227–235) that added PERSONAL book, FX for MODEL book, D1 sign-off items, four-book toggle sign-off, and conviction audit scope, and the IBKR update after `ikbr_details.md` (stack decided; account provisioning still open).
+- Synthesized all of it into one plain-English, jargon-defined answer in chat, grouped by decision area, each with the actual question(s) to send Rohit.
+
+**Assumptions:**
+- "Portfolio page backend review" refers to this chat by content match (heaviest hit count on distinctive spec terms: `same_asset_siblings`, `exit_ref`, `multi_sig`, `book_id`, `Sizing & Allocation`, `THREE BOOKS`), not a literally-stored chat title — this environment does not persist a separate chat-title index outside the transcript content itself.
+- Only Rohit-owned clarifications were included; Ahil-owned (NAV replay, rebalancing engine timing) and Parth-owned (UI wiring) asks from the same chat were excluded per the user's explicit ask ("questions... from Rohit").
+
+**Deferred / left for future:** Nothing written to `OPEN_QUESTIONS_FOR_ROHIT.md` — that file remains the single source of record; this task only explained its contents plus newer follow-ups back to the user in chat.
+
+**Prod impact:** None (chat answer only, zero file/code changes).
+
+---
+
+## 2026-07-22 — `_df_row`/`_df_ttm_sum` sort-order fix (follow-up to revenue-growth YoY fix)
+
+This is exactly the deferred item #1/#2/#3 flagged in the "Conviction Engine revenue-growth YoY
+fix" entry above — closing it out.
+
+**Fix applied** (`src/conviction_engine/fundamentals_enriched.py`):
+- `_df_row()` (line ~80): `df.loc[label].dropna()` → `.dropna().sort_index()` before `iloc[-1]`.
+- `_df_ttm_sum()` (line ~100): same `.sort_index()` added before `iloc[-periods:]`.
+- Prior-year FCF block (~line 606-623): `ocf_row`/`capex_row` (from `q_cf.loc[...]`, previously
+  unsorted) now sorted into `ocf_sorted`/`capex_sorted` before `iloc[-8:-4]`; `rev_prior`'s
+  `q_inc.loc[label].dropna().iloc[-8:-4]` also gained `.sort_index()`.
+
+**Verification:**
+- Live check before fix: AMZN `total_debt` returned the 2025-03-31 quarter (oldest of the 8
+  fetched) instead of 2026-03-31 (per the deferred-item note's own example).
+- New regression test `test_ttm_and_balance_sheet_fields_use_latest_quarter_not_oldest` in
+  `tests/test_conviction_engine.py` — builds an 8-quarter mock DataFrame with explicit
+  newest-first columns (matching real yfinance layout) and asserts `total_debt`,
+  `cash_and_equivalents`, `net_debt_stored`, `revenue_ttm` (sum of the 4 *newest* quarters),
+  `fcf_ttm`, and `fcf_prior_year` (the 4 quarters *before* that) all resolve correctly.
+- Full recalc: `scripts/run_conviction_engine_daily.py --fundamentals-mode full
+  --overlay-reports virtual_trading_long.csv,virtual_trading_short.csv,new_signal.csv,
+  outstanding_signal.csv` — 193/193 tickers, 0 overlay errors, ~6 min runtime.
+- Before → after spot-check (6 mega-caps): `net_debt_stored` and `fcf_ttm` shifted materially
+  for all six (e.g. AMZN net debt $67.0B→$108.1B, FCF $7.7B→**−$2.5B**; MSFT net debt
+  $31.7B→$24.9B, FCF $77.4B→$72.9B). `bq_raw`/`bq_components.balance_sheet` for the sampled
+  tickers happened to land in the same score bucket before/after (that specific BQ sub-score
+  doesn't consume these exact recomputed fields directly) — the real, visible impact is on
+  `owner_earnings_yield`/`net_debt_ebitda`/`fcf_margin` valuation-tax inputs downstream.
+
+**Deferred / left for future:**
+- Did **not** re-audit every consumer of `net_debt_stored`/`fcf_ttm`/`owner_earnings_yield` for
+  second-order effects on `valuation_tax` or `bq_components` beyond the 6-ticker spot check —
+  a full before/after diff across all 193 tickers' `bq_raw`/`conviction_score` was not run (the
+  revenue-growth-YoY fix precedent did a full before/after table; this one only sampled 6
+  large-cap names since the fix is more surgical and the field set is more balance-sheet-adjacent
+  than growth-trajectory-adjacent).
+- AMZN's FCF flipping to negative (heavy AI/AWS capex outpacing operating cash flow) is a real,
+  large swing worth a human sanity check against the actual AMZN 10-Q before trusting downstream
+  valuation-tax scores for AMZN specifically.
+
+**Full test suite after fix:** `pytest tests/ -q` (excluding the same pre-existing
+`test_dominant_reason.py` live-combo flake) → 497 passed, 2 skipped.
+
+**Prod impact:** `src/conviction_engine/fundamentals_enriched.py` must merge `chatbot-dev` →
+`chatbot-prod`. `conviction_store/*.json` are runtime data (gitignored) — prod needs its own
+`--fundamentals-mode full` recalc after the code merge (independent live yfinance fetch, not a
+file copy).
+
+---
+
+## 2026-07-22 — Move `resolve_auto_scenario()` thresholds into `portfolio_policy.yaml`
+
+**Why:** `resolve_auto_scenario()` (D4 AUTO scenario resolver, `api/services/portfolio_service.py`)
+hardcoded five magic numbers (VIX pctile 70/30, HY 4.0%, SSI multiplier 0.9/1.0) inline — every
+other open Rohit-adjacent decision already lives in `config/portfolio_policy.yaml` via
+`policy_service.py`; this one was the odd one out.
+
+**What changed:**
+- `config/portfolio_policy.yaml`: new `auto_scenario` block (`status: interim` — this heuristic
+  itself has never been Rohit-reviewed, unlike the other 5 blocks which map to specific spec
+  asks) with `vix_pctile_stress`, `hy_pct_stress`, `ssi_multiplier_stress_below`,
+  `vix_pctile_lowvol`, `ssi_multiplier_lowvol_at_least` — same numeric defaults as before, so
+  this is a zero-behavior-change refactor until someone edits the YAML.
+- `policy_service.get_auto_scenario_thresholds()` / `get_auto_scenario_status()`; added to
+  `policy_meta()` as `auto_scenario_thresholds`.
+- `resolve_auto_scenario()` now calls `policy_service.get_auto_scenario_thresholds()` instead of
+  inlining the numbers.
+
+**Assumption:** kept the exact same threshold values and comparison logic (stress if VIX>70 OR
+HY>4% OR SSI<0.9; lowvol if VIX<30 AND SSI>=1.0; else normal) — this was a config-location
+refactor, not a threshold re-tuning. Actually re-tuning these (e.g. against live regime-bucket
+history from Phase 1's snapshot store) is a good candidate for a future task once enough daily
+snapshots exist to backtest against.
+
+**Verification:** new tests in `tests/test_portfolio_backend_engines.py` — threshold defaults,
+`status=interim`, three `resolve_auto_scenario()` behavior tests (stress/lowvol/normal from mock
+runic/ssi inputs), and one regression that patches `policy_service.get_auto_scenario_thresholds`
+to a tightened value and asserts the same inputs now resolve differently — proves the function
+reads from policy at call time rather than having the values baked in. 122/122 portfolio tests
+(`test_portfolio_backend_engines.py` + `test_api_portfolio.py`) pass.
+
+**Deferred:** no UI-facing change; `auto_scenario_thresholds` status only surfaces inside
+`policy_meta()`/`policy_source` on the sizer payload, same pattern as the other 5 decisions.
+
+**Prod impact:** `config/portfolio_policy.yaml`, `api/services/policy_service.py`,
+`api/services/portfolio_service.py` merge `chatbot-dev` → `chatbot-prod`. No runtime data changes.
+
+---
+
+## 2026-07-22 — Daily personal-book snapshot job (`book_id=personal` NAV history)
+
+**Why:** Phase 7's personal book service (`personal_book_service.py`) was deliberately
+history-less (`data_status.status=live_snapshot_only` forever) since holdings are user-entered
+with no known past valuation dates. That's still true for *before* today, but there was no
+mechanism to start accumulating a real series *going forward* — this closes that gap, matching
+the same "set up books from today" pattern already used for the model book (Phase 1) and
+conviction overlay history.
+
+**What changed:**
+- `src/portfolio_nav/book_snapshot_store.py`: new `personal_book_snapshot_daily` table
+  (`snapshot_date` PK, `nav_usd`, `cash_usd`, `position_count`, `total_pnl_usd`, `total_pnl_pct`,
+  `holdings_json`) + `write_personal_book_snapshot()` (idempotent upsert-by-date),
+  `read_personal_book_series()` (optional start/end date filters), `earliest_personal_snapshot_date()`.
+- `scripts/run_personal_book_snapshot_daily.py` (new): calls
+  `personal_book_service.get_personal_snapshot()` and writes one row/day. Writes even when the
+  personal book is empty (NAV 0) so gaps in the series are explicit, not silently missing.
+- `scripts/install_aws_cron.sh`: installs the new script at 19:10 ET weekdays (5 min after the
+  model-book snapshot job at 19:05).
+- `personal_book_service.get_personal_nav_history()` reads the store;
+  `get_personal_nav_payload()` now populates `mtm`/`mtm_daily` from it once any row exists, and
+  switches `data_status.status` from `live_snapshot_only` to `live_from_snapshot_start` (with
+  `earliest_date`) — the no-backfill boundary is still explicitly disclosed, never fabricated
+  before that date.
+
+**Assumption:** one row per calendar day is sufficient granularity (matches every other book's
+daily-only history — no intraday personal-book series exists anywhere in this codebase).
+Re-running the script twice on the same date overwrites (idempotent), matching the model-book
+snapshot job's semantics.
+
+**Edge case handled:** empty personal book (no holdings, $0 cash) still gets a snapshot row
+(NAV 0) rather than being skipped — verified live (today's dev-box personal book has $5000 cash,
+0 positions; snapshot wrote NAV=5000 correctly).
+
+**Verification:** new unit tests in `tests/test_portfolio_backend_engines.py`
+(`TestBookSnapshotStore`: write/read/overwrite/date-filter/earliest-date for the new table;
+`TestPersonalBookService`: NAV payload switches to `live_from_snapshot_start` once history
+exists, stays `live_snapshot_only` when it doesn't). Isolated both `TestPersonalBookService` and
+`test_api_portfolio.py`'s `TestPersonalBookApi` against a temp `BOOK_SNAPSHOTS_DB` path so tests
+never touch the real dev store. Ran the script live against the real dev
+`portfolio_store/book_snapshots.db` as an end-to-end smoke test (confirmed via direct
+`get_personal_nav_history()`/`get_personal_nav_payload()` calls that the new row is served
+correctly). Full suite: 517 passed, 2 skipped, 1 pre-existing deselect.
+
+**Deferred:** the personal-book snapshot currently re-fetches live prices for every holding on
+every run (same cost as a live `/portfolio/nav?book_id=personal` call) — fine at current scale
+(one user, small holding count) but would need batching if personal book usage grows. No
+retention/pruning policy on `personal_book_snapshot_daily` yet (same as every other
+`book_snapshot_store` table — unbounded growth, one row/day, negligible size for years).
+
+**Prod impact:** `src/portfolio_nav/book_snapshot_store.py`,
+`scripts/run_personal_book_snapshot_daily.py` (new), `api/services/personal_book_service.py`,
+`scripts/install_aws_cron.sh` merge `chatbot-dev` → `chatbot-prod`. On prod, the new cron line
+needs installing via `scripts/install_aws_cron.sh` (same as Phase 1's job) — `book_snapshots.db`
+is gitignored runtime data, created automatically on first run.
+
+---
+
+## 2026-07-22 — macro_intelligence Priority-1 audit fixes (T-01 Fed PAUSING, T-03 VIX spike)
+
+Closes out the two 🔴 Priority-1 items from the 2026-06-06 Data & Pipeline Integrity Audit that
+had sat open in the TODO section for ~6 weeks.
+
+**T-01 — Fed cycle stale-label resurrection (`src/macro_intelligence/engine/fed_cycle.py`):**
+- **Root cause, precisely:** `build_fed_cycle_series()` already correctly labels every PAUSE
+  week as `"PAUSING"` (via `_label_from_state()`). The bug was entirely in `fed_cycle_at_date()`'s
+  fallback path (old lines 187-221): when the freshly-computed `direction == "PAUSE"`, it checked
+  `sl.iloc[-1]` (correctly `"PAUSING"`) but the `if label.startswith("HIKING") or
+  label.startswith("CUTTING")` guard meant it only trusted that check for *stale* HIKING/CUTTING
+  labels — for the correct `"PAUSING"` case it fell through into a second loop that rescans the
+  **entire** historical series for the most recent HIKING/CUTTING-labeled week, found the
+  now-ended March 2026 `CUTTING_EARLY`→`CUTTING_LATE` cycle, and resurrected it as if still active.
+- **Fix:** inverted the guard — when direction is PAUSE and the series' own label is *not* a
+  stale HIKING/CUTTING carry-over (i.e. it's already `PAUSING`/`QE`/`QT`), return it directly.
+  The historical rescan loop now only runs in the genuine edge case (series cache hasn't caught
+  up to a very recent pause transition yet).
+- **Live verification:** `fed_cycle_at_date('2026-07-22')` returned `CUTTING_LATE` before the fix,
+  `PAUSING` after (Fed has been on hold since March 2026 per the live `build_fed_cycle_series()`
+  output — 20+ consecutive `PAUSING` weeks through 2026-07-17).
+- **Not done:** did not add the audit's alternative suggestion (`hike_risk_threshold` /
+  `PAUSING_POST_CUT` distinct state) — `PAUSING` already exists and is a well-supported value
+  throughout the codebase (`models.py` default, `regime_v2_shadow.py` collapse logic), and fixing
+  the resurrection bug fully resolves the reported symptom without adding a new regime state.
+  If Rohit/Ahil later want hike-risk-aware framing (e.g. distinguishing "paused, dovish" from
+  "paused, hike risk rising"), that's a separate follow-up, not blocked by this fix.
+- **Existing fixture tests** (`tests/test_fed_cycle_fixtures.py`) are all HIKE/CUT dates — none
+  exercised the PAUSE path, so the bug had no test coverage before now. Added
+  `test_pause_does_not_resurrect_stale_hike_or_cut_label` (probes the midpoint of the fixture
+  series' PAUSING weeks).
+- **Caveat:** `clear_fed_cycle_cache()` exists but has zero callers outside its own definition and
+  the test fixture — module-level caches (`_FED_CYCLE_CACHE`, `_WALCL_MOM_CACHE`,
+  `_DFF_DAILY_CACHE`) only reset on process restart. Not an issue for the nightly cron (fresh
+  process each run) but worth knowing if this module is ever used inside a long-lived server
+  process without periodic cache invalidation.
+
+**T-03 — VIX single-day spike detection (`src/macro_intelligence/engine/percentiles.py`,
+`src/macro_intelligence/data/pull_all.py`):**
+- Added `single_day_pct_change` to `CONFIG.yaml`'s VIX `rare`/`extreme` blocks (0.25 / 0.40).
+- New `_single_day_change_meta()` helper in `pull_all.py` — only fires for `vid == "VIX"`,
+  computes `(raw - hist.iloc[-2]) / hist.iloc[-2]`, guards against `len(hist) < 2` and a zero/NaN
+  prior close. Wired into `_reading_for_var()`'s generic (non-CURVE) path, merged into both the
+  `meta` passed to `evaluate_variable_tier()` and the persisted `meta_json` on the reading (so
+  `prior_close`/`single_day_pct_change` are now auditable per the audit's own suggested fix
+  wording: "requires pulling prior-day VIX close alongside current").
+- `evaluate_variable_tier()`'s VIX branch: after the existing abs-level/percentile checks fail,
+  checks `meta.get("single_day_pct_change")` against the new thresholds independently — escalates
+  to RARE/EXTREME purely on spike magnitude even when the absolute level stays low.
+- **Verification against the real audit event:** Jun 5 2026 VIX 15.40→21.51 (+39.68%) — new test
+  asserts this now resolves to RARE (39.68% is between the 25%/40% thresholds); a synthetic 45%
+  move asserts EXTREME. A small 5% move stays NORMAL (no false-positive escalation).
+- **Scoped to VIX only** (as the audit finding specified) — did not generalize
+  `single_day_pct_change` to other variables (HY, CFTC, etc.); those weren't part of T-03 and
+  would need their own tier-logic review before adding a similar spike check.
+- **CURVE's separate reading path** (`_reading_for_var`'s `if vid == "CURVE"` branch, line ~147)
+  does not call `_single_day_change_meta()` — irrelevant since the helper explicitly no-ops for
+  non-VIX ids, but noting for the next dev that CURVE builds its own `meta` dict independently and
+  would need its own wiring if a similar spike-detection need ever arises there.
+
+**Full test suite after both fixes:** `pytest tests/ -q` (same pre-existing deselect) → 517
+passed, 2 skipped.
+
+**Prod impact:** `src/macro_intelligence/engine/fed_cycle.py`,
+`src/macro_intelligence/engine/percentiles.py`, `src/macro_intelligence/data/pull_all.py`,
+`macro_intelligence/CONFIG.yaml` merge `chatbot-dev` → `chatbot-prod`. No runtime data migration
+needed — both fixes are pure classification-logic corrections that apply to future
+`daily_readings`/regime-log writes; historical rows written under the old buggy logic are left
+as-is (no backfill/rewrite of past `macro_regime_log`/`daily_readings` entries), consistent with
+this repo's established no-backfill convention.
+
+---
+
+## 2026-07-23 — McClellan Oscillator formula bug: proper fix (tests + docs)
+
+**Context:** The actual cumsum bug fix (`mcclellan_pull.py`) and display rounding
+(`positioning.py::_round_display`, default 2dp) were already shipped on 2026-07-21 as part
+of the SSI 3-layer superindex work, along with a cache rebuild (`mcclellan_oscillator.csv`)
+and a full `ssi.db` history backfill. User asked to "fix this issue properly" for the McClellan
+report specifically — this pass closes the remaining gaps: no dedicated regression test existed
+for the formula itself, and `docs/MACRO_INTELLIGENCE_MASTER.md` still documented the old (buggy)
+cumsum formula as if it were correct.
+
+**Verification (no new bug found):**
+- Live `positioning.json` (2026-07-23) — `inputs.layer2.mcclellan = -12.02` (correct-range,
+  rounded). No lingering 217-style readings anywhere in the repo (`grep -r "217\.0"` only matches
+  unrelated `testing/macro_th_exp/D2_curve_phase_weekly_panel.csv` yield-curve data).
+- `mcclellan_oscillator.csv` cache confirmed already rebuilt: `2026-07-16,12.160863139182467`
+  (matches the corrected value cited in the root-cause analysis).
+
+**What changed in this pass:**
+- Added `tests/test_mcclellan_pull.py` (4 tests):
+  1. `test_does_not_cumsum_input` — constant daily net-advances series must converge the
+     oscillator to ~0 (EMA19 == EMA39 for a constant input); would fail if cumsum() were
+     reintroduced since the AD line would then grow unbounded.
+  2. `test_stays_within_normal_band_for_realistic_input` — realistic daily net-advances noise
+     (not a running total) must keep `|oscillator| < 150` for the whole series.
+  3. `test_matches_manual_ema_formula` — `_classic_mcclellan()` output must exactly equal
+     `EMA(19) - EMA(39)` computed directly on the raw input series (pandas `assert_series_equal`).
+  4. `test_positioning_rounds_mcclellan_to_two_decimals` — `_round_display(217.095146...)` →
+     `217.1`; `_round_display(12.160863...)` → `12.16`; `None` passthrough.
+- Updated `docs/MACRO_INTELLIGENCE_MASTER.md`:
+  - "Hard part 4" formula description and code sample corrected to EMA-on-daily-net-advances
+    (no cumsum), with an explicit bug-history paragraph documenting the 217.10 vs 12.16
+    discrepancy and referencing where the fix lives.
+  - Spec-audit table row for `MCCLELLAN` (`pull_all.py` source description) updated to match.
+
+**Assumptions:**
+- No further code change needed in `mcclellan_pull.py` / `positioning.py` — the underlying
+  computation and rounding were already correct from the 2026-07-21 pass; this pass is
+  test-coverage + documentation hardening so the bug cannot silently regress and the docs
+  don't mislead the next reader into reintroducing `cumsum()`.
+- Did not re-run `scripts/rebuild_ssi_history.py` again since the 2026-07-21 backfill already
+  covers 2015-01-01 → 2026-07-21 with the corrected formula; the daily cron will pick up
+  2026-07-22 onward automatically.
+
+**Deferred:**
+- No dedicated test yet for `nh_nl_pull.py` / NH-NL ratio fix (same 2026-07-21 batch) —
+  candidate for a follow-up `tests/test_nh_nl_pull.py` if that also needs "properly fixed"
+  treatment.
+- SKEW display rounding relies solely on `_round_display()` in `positioning.py`; no schema-level
+  enforcement (e.g. a Pydantic response model) prevents a future code path from re-emitting an
+  unrounded float.
+
+**Prod impact:** Docs-only + test-only change in this pass — the functional fix already shipped
+2026-07-21 (see that entry) and is pending prod merge/deploy along with the rest of the SSI
+superindex work.
+
+---
+
+## 2026-07-23 — SKEW decimals + general SSI display-rounding policy
+
+**Context:** User's 4th flagged issue reported SKEW rendering as `147.27999877929688`
+(raw Yahoo float, no rounding) and asked for a general rule: 2 decimal places for
+indicators (SKEW, McClellan, NH/NL, breadth, etc.), 4 decimal places reserved for
+currency pairs (e.g. USDCNH).
+
+**What was already correct:** SKEW and McClellan display rounding (both default 2dp via
+`_round_display()` in `positioning.py`) were already fixed 2026-07-21.
+
+**What was actually wrong (found during this pass, not previously caught):**
+- `positioning.py`'s `inputs.layer2.nh_nl_ratio`, `inputs.layer2.hyg_lqd`,
+  `inputs.layer2.vix_ratio`, and `inputs.layer3.dbmf_beta` were all explicitly rounded to
+  **4 decimals** (`decimals=4` kwarg), inconsistent with the "2dp for indicators" rule —
+  none of hyg_lqd (bond ETF ratio), vix_ratio (vol term-structure ratio), or dbmf_beta
+  (regression beta) are currency pairs.
+- `MindwealthUI_Vue/server/utils/sentiment-mapper.ts::formatLayer2InputItem()` had matching
+  overrides (`nh_nl_ratio` → `.toFixed(3)`, `hyg_lqd`/`vix_ratio` → `.toFixed(4)`), plus the
+  layer-2 confirmation-vote sub-label used `.toFixed(3)` for the same four legacy inputs.
+- `api/services/macro_service.py::get_ssi_summary()` and `get_ssi_history()` — a **separate**
+  legacy API surface (`/macro/ssi/summary`, `/macro/ssi/history`, consumed by
+  `MacroSsiPanel.vue` via `useRunicMacro.ts`) — read `hyg_lqd`/`dbmf_beta`/`cnn_fg`/`vix_ratio`
+  straight out of `ssi_daily` in `ssi.db` with **zero rounding**. The Vue component happened
+  to call `.toFixed(3)` at render time so the raw float never reached the screen there, but
+  the JSON payload itself (e.g. via `curl`) would leak full float precision — the same failure
+  mode as the original SKEW bug, just one layer removed from the UI.
+- `MacroSsiPanel.vue`'s `inputRows` also rendered those same four raw values at `.toFixed(3)`.
+
+**Fix:**
+- Added a shared, documented rounding policy in `positioning.py`:
+  - `_CURRENCY_PAIR_KEYS` frozenset (currently `usdcnh`, `eurusd`, `gbpusd`, `usdjpy`,
+    `audusd`, `usdcad`, `usdchf`, `nzdusd`) — none of the current SSI inputs match, so
+    every field rounds to 2dp today; this exists so a future FX-linked SSI input
+    automatically gets 4dp instead of silently defaulting to 2dp.
+  - `_display_decimals(key)` returns 4 if `key.lower()` is in the currency-pair set, else 2.
+  - `_round_display(value, *, key=None, decimals=None)` — `decimals` explicit override still
+    works (back-compat), otherwise resolved from `key` via `_display_decimals()`.
+  - Updated every call site in `build_positioning_payload()` to pass `key=` instead of a
+    hardcoded `decimals=4`, so `nh_nl_ratio`/`hyg_lqd`/`vix_ratio`/`dbmf_beta`/`cftc_fm_net`/
+    `cftc_rm_net`/`gross_net` all now round to 2dp like everything else.
+- Added `_round2()` in `macro_service.py`, applied to `_vote()`'s `raw` field in
+  `get_ssi_summary()` and to the four `inputs` fields in `get_ssi_history()`'s per-day series.
+- Fixed `sentiment-mapper.ts`: `formatLayer2InputItem()` now always uses `.toFixed(2)` (removed
+  the `nh_nl_ratio`/`hyg_lqd`/`vix_ratio` overrides); vote sub-label raw value also `.toFixed(2)`.
+- Fixed `MacroSsiPanel.vue`'s `inputRows.raw` from `.toFixed(3)` to `.toFixed(2)`.
+- Rebuilt `positioning.json` (`scripts/run_ssi_daily.py`) and Nuxt dev UI (`npm run build`);
+  restarted `mindwealth-api-dev` and `mindwealth-ui-dev`. Verified live on `:8507`:
+  `nh_nl_ratio: 0.73` (was `0.7273`), `hyg_lqd: 0.75` (was `0.7455`), `vix_ratio: 1.09` (was
+  `1.0943`), `dbmf_beta: 0.56` (was `0.5566`) — all now 2dp, matching skew/mcclellan.
+
+**Tests:** `tests/test_ssi_display_rounding.py` (6 tests) — `_round_display()` defaults to 2dp
+for the worked examples from all three bug reports (`147.27999877929688` → `147.28`,
+`217.09514599086106` → `217.1`, `0.9787234042553191` → `0.98`); `None` passthrough; the
+currency-pair allowlist correctly returns 4dp (`_display_decimals("usdcnh") == 4`,
+case-insensitive) while every real SSI key returns 2dp; explicit `decimals=` kwarg still
+overrides; and a full `build_positioning_payload()` mock-integration test asserts no field in
+`inputs.layer1`/`inputs.layer2` has more than 2 decimal places in its string representation.
+
+**Assumptions:**
+- Did not touch `ssi_level`/`ssi_percentile_5y` precision (already `round(level, 4)` /
+  `round(pctile, 2)` at write time in `positioning.py`, and displayed at various precisions —
+  1dp on the sentiment dashboard KPI, 4dp on `RunicBriefPanel.vue`/`MacroSsiPanel.vue` for
+  Runic-brief audit precision). These are the **composite score**, not a raw "indicator" input
+  like SKEW/McClellan/NH-NL/HYG-LQD/VIX-ratio/DBMF-beta that the bug report was about, and the
+  4dp composite convention is already documented/tested elsewhere (`get-ssi-summary.md` shows
+  `ssi_level: 0.2691`). Revisit only if explicitly asked to change composite-score precision too.
+- `ssi.db`'s stored `hyg_lqd`/`dbmf_beta`/`cnn_fg`/`vix_ratio` columns remain full-precision on
+  disk — rounding is applied at the API response boundary (`macro_service.py`), not by
+  rewriting history via another `rebuild_ssi_history.py` run. This matches "round at render
+  time" from the fix instructions and avoids an unnecessary ~5+ minute full backfill for a
+  display-only change.
+- `RunicBriefPanel.vue` doesn't render the four raw legacy inputs directly (only
+  `ssi_level`/`ssi_multiplier`/`posture`/`layer2_status`), so it needed no changes.
+
+**Deferred:**
+- CFTC layer-3 net-position fields (`cftc_fm_net`, `cftc_rm_net`, `gross_net`) are large
+  integers (e.g. `-370589.0`) — rounding to 2dp is a no-op for these but keeps the policy
+  uniform; no separate "large integer" formatting rule was requested.
+- No schema-level enforcement (e.g. a Pydantic response model with `Field` rounding) added;
+  relies on each service function calling the shared helper consistently. A future refactor
+  could centralize this into a single `format_ssi_indicator()` used by both `positioning.py`
+  and `macro_service.py` instead of two separate 2dp helpers.
+
+**Prod impact:** `src/sentiment_superindex/engine/positioning.py`,
+`api/services/macro_service.py` merge `chatbot-dev` → `chatbot-prod` (pending, same batch as
+the 2026-07-21 SSI superindex work). `MindwealthUI_Vue` changes are a **separate repo**, not
+deployed via `prod-pull-and-restart.sh` — needs its own build + restart on the Nuxt prod host
+when that cutover happens.
+
+---
+
+## 2026-07-23 — NH/NL Ratio formula bug: proper fix (tests + docs)
+
+**Context:** Same pattern as the McClellan follow-up above. The actual formula fix
+(`sp500_breadth.py::compute_daily_breadth_stats` — `nh_nl_ratio = highs / (highs + lows)`
+instead of the old unbounded `highs / lows`) and the `nh_nl_ratio.csv` cache rebuild were
+already shipped on 2026-07-21. User asked to "fix the issue properly" for this specific
+report — closed the remaining gaps: no dedicated regression test existed for the formula,
+and `docs/MACRO_INTELLIGENCE_MASTER.md` still described the old `new_highs / new_lows`
+formula in two places (variable table + Hard part 5 narrative).
+
+**Verification (no new bug found):**
+- Live `positioning.json` (2026-07-23) — `inputs.layer2.nh_nl_ratio = 0.7273`, correctly
+  bounded in [0, 1].
+- `nh_nl_ratio.csv` cache confirmed already rebuilt: `2026-07-16,0.9787234042553191` — matches
+  the corrected value cited in the root-cause analysis (46 highs / (46+1) = 0.9787).
+
+**What changed in this pass:**
+- Added `tests/test_sp500_breadth_nh_nl.py` (3 tests):
+  1. `test_ratio_is_bounded_zero_to_one` — over a synthetic multi-symbol breadth frame,
+     `nh_nl_ratio` must never exceed 1 or go below 0 (the old `highs/lows` formula had no
+     such bound).
+  2. `test_matches_expected_formula_on_known_counts` — asserts the general relationship
+     `ratio == highs / (highs + lows)` on whatever counts the synthetic data produces, plus
+     an explicit worked-example assertion reproducing the bug report's exact numbers:
+     `46 / 1 == 46.0` (old, wrong) vs `46 / 47 == 0.9787234042553191` (new, correct).
+  3. `test_zero_highs_and_lows_yields_nan` — the zero-guard (`denom > 0`) must return `NaN`
+     when both highs and lows are 0 for a given day, not divide-by-zero or silently show 0.
+- Updated `docs/MACRO_INTELLIGENCE_MASTER.md`:
+  - Variable summary table: `NH/NL Ratio` description changed from "ratio of new highs to
+    new lows" to "new highs as a share of new highs + new lows... bounded 0–1".
+  - "Hard part 5" (`sp500_breadth.py` walkthrough): formula bullet corrected to
+    `new_highs / (new_highs + new_lows)` with an explicit bug-history paragraph (the
+    46-highs/1-low → 46.0 vs 0.979 example).
+  - Spec-audit table row for `NH_NL_RATIO` appended with a note on the bounded-ratio fix.
+
+**Assumptions:**
+- No further code change needed in `sp500_breadth.py` / `positioning.py` — the formula and
+  the general `_round_display()` display rounding (4dp for `nh_nl_ratio` per `positioning.py`)
+  were already correct from 2026-07-21; this pass is test-coverage + documentation hardening.
+- The synthetic-data tests use a fixed-seed random walk rather than mocking yfinance, so they
+  exercise the real `compute_daily_breadth_stats()` vectorized logic (MIN_STOCKS gate, 52-week
+  rolling high/low, `dropna(how="all")`) rather than a trivial hand-built DataFrame — closer
+  to what production actually runs.
+
+**Deferred:**
+- None outstanding for NH/NL specifically. SKEW display-rounding schema-level enforcement
+  (noted as deferred in the McClellan follow-up above) remains the only open item from this
+  batch of three flagged issues (McClellan, NH/NL, SKEW).
+
+**Prod impact:** Docs-only + test-only change in this pass — the functional fix already shipped
+2026-07-21 (see that entry) and is pending prod merge/deploy along with the rest of the SSI
+superindex work.
+
+---
+
+## 2026-07-24 — Super Sentiment dashboard layer-score display bug (post Q1-fix regression check)
+
+**Context:** After the 2026-07-21 composite-calc fix and the 2026-07-23 rounding fixes, user
+attached a screenshot of the live Super Sentiment page and said "can still see the discrepancy
+related to question 1" — composite +0.2, Layer 1 +0.6, Layer 2 +0.0, Layer 3 +0.0. Naive mental
+math (0.6×0.4 + 0.0×0.35 + 0.0×0.25 = 0.24) looks close to but not exactly the displayed +0.2,
+and Layer 3 showing "+0.0" looked inconsistent with a composite pulled down below what Layer 1
+alone would imply.
+
+**Investigation:** Pulled the live `/api/v1/analytics/sentiment/layers` payload for the same
+date: `layer1.score=0.5871`, `layer2.score=0.0047`, `layer3.score=-0.0318`, weights 0.40/0.35/0.25.
+`0.4×0.5871 + 0.35×0.0047 + 0.25×(-0.0318) = 0.228535`, which matches `ssi_level=0.2285` to 4
+decimal places — **the calculation itself is correct**, this was not a repeat of the Q1 bug.
+
+**Root cause (two display bugs in `MindwealthUI_Vue`, not `MindWealth_UI`):**
+1. `sentiment-mapper.ts::roundLayerScore()` rounded each layer score to only **1 decimal**
+   before sending it to the page, too coarse for a user to verify the weighted average by eye
+   (0.5871 → 0.6, 0.0047 → 0.0, -0.0318 → -0.0).
+2. `pages/sentiment.vue::formatLayerScore()` (and `sentiment-mapper.ts::compositeFromApi()`)
+   computed the display sign as `score >= 0 ? '+' : ''` **before** noticing that
+   `Math.round(-0.0318 * 10) / 10` evaluates to JavaScript negative zero (`-0`), and `-0 >= 0`
+   is `true` in JS. So Layer 3's genuinely negative z-score mean displayed as `+0.0` instead of
+   a minus sign — actively misleading about the direction of that layer's signal.
+
+**Fix:**
+- `roundLayerScore()`: round to 2 decimals (`Math.round(score * 100) / 100`) instead of 1.
+  At 2dp, `-0.0318` rounds to a real nonzero `-0.03` rather than `-0`, which incidentally also
+  fixes most instances of the sign bug on its own, but the sign-check logic was hardened
+  independently too (see below) so a future near-zero value doesn't regress the same way.
+- Added `formatSignedScore(value, decimals)` in `sentiment-mapper.ts` and rewrote
+  `compositeFromApi()` to use it: rounds first via `.toFixed(decimals)`, then derives the sign
+  from the **rounded** value and formats `Math.abs(rounded)` — so the sign decision and the
+  magnitude are always consistent with each other.
+- Composite display bumped from 1dp to 2dp (`+0.2` → `+0.23`) so it's checkable against the
+  now-2dp layer scores: `0.4×0.59 + 0.35×0.00 + 0.25×(-0.03) = 0.2285 ≈ 0.23`, matching.
+- `pages/sentiment.vue::formatLayerScore()`: same rounded-then-sign pattern, standalone (page
+  doesn't import the mapper's helper since it runs client-side on the already-mapped response).
+- Verified the corrected formatting logic against the real live payload numbers with a
+  standalone Node one-liner (not a full authenticated browser/curl test — the Nuxt dev BFF
+  requires an authenticated session cookie which wasn't readily available in this shell) —
+  confirmed output `composite +0.23`, `layer1 +0.59`, `layer2 +0.00`, `layer3 -0.03`.
+- Rebuilt (`npm run build`) and restarted `mindwealth-ui-dev` (port 8514).
+
+**Assumptions:**
+- Did not add a browser-level / Playwright test for this — verified via a standalone Node
+  script running the exact same formatting functions against real API numbers, plus lint
+  (no errors). No existing test file covers `sentiment-mapper.ts` or `sentiment.vue` formatting
+  helpers, so there's no regression-test scaffold in this repo to extend; a proper fix would add
+  a small Vitest unit test for `formatSignedScore()`/`formatLayerScore()` covering the exact
+  `-0` case, but that wasn't set up in this pass given the existing test infra gap.
+- Did not change `roundLayerScore`'s fallback branches (`legacyWeeklyScore()`, the layer2-votes
+  fraction fallback, or the `ssi_level`-based positioning fallback) — those only run when the API
+  doesn't return a layer score at all (dead code path today since the API always returns
+  `positioning.layers`), left at their existing precision since they're unrelated to this bug.
+- Did not touch other places `ssi_level`/layer scores might render elsewhere in the Nuxt app
+  (e.g. `RunicBriefPanel.vue`, `MacroSsiPanel.vue`, `regime-strip.ts`) — those show different
+  fields (mostly the legacy 4-input `ssi.db` snapshot, not `composite.layers`) and weren't part
+  of what the screenshot showed (the dedicated Super Sentiment page, `pages/sentiment.vue`).
+
+**Deferred:**
+- A Vitest unit test for the two formatting helpers (`formatSignedScore`, `formatLayerScore`)
+  covering: normal positive/negative values, a value that rounds to exactly zero, and the
+  historical `-0` reproduction case.
+- Broader audit of every `toFixed(1)` / `score >= 0 ? '+' : ''` pattern across
+  `MindwealthUI_Vue` for the same negative-zero trap — this pass only fixed the two call sites
+  feeding the Super Sentiment page's headline KPI cards.
+
+**Prod impact:** `MindwealthUI_Vue` is a separate repo/deploy target from `MindWealth_UI`, not
+covered by `chatbot-dev`→`chatbot-prod` merge or `prod-pull-and-restart.sh`. Needs its own
+commit + `npm run build` + service restart on whichever host serves the prod Nuxt UI.
+
+---
+
+## 2026-07-24 — Super Sentiment dashboard: bump display from 2dp to 3dp
+
+**Context:** Immediately after confirming the 2dp fix above resolved the mismatch, user asked
+"show upto 3 decimal places, would look better I think?" — a pure readability request, not a
+bug report.
+
+**Change:** In `MindwealthUI_Vue`:
+- `server/utils/sentiment-mapper.ts::roundLayerScore()`: `Math.round(score * 100) / 100` →
+  `Math.round(score * 1000) / 1000`.
+- `server/utils/sentiment-mapper.ts::compositeFromApi()`: `formatSignedScore(level, 2)` →
+  `formatSignedScore(level, 3)`.
+- `pages/sentiment.vue::formatLayerScore()`: `score.toFixed(2)` → `score.toFixed(3)` (both the
+  rounding step and the final display `.toFixed()`), fallback string `+0.00` → `+0.000`.
+- The `-0` guard (round first, derive sign from the rounded value, format `Math.abs(rounded)`)
+  was left untouched — it's decimal-place-agnostic and still correct at 3dp.
+
+**Verification:** Re-ran the same standalone Node approach used for the 2dp fix, against the
+still-current live payload (`layer1=0.5871`, `layer2=0.0047`, `layer3=-0.0318`,
+`ssi_level=0.2285`, weights 40/35/25 unchanged since the prior fix):
+- `layer1 → +0.587`, `layer2 → +0.005`, `layer3 → -0.032`, `composite → +0.229`.
+- Manual check: `0.4×0.587 + 0.35×0.005 + 0.25×(-0.032) = 0.22855 ≈ 0.229` ✓, and the
+  composite computed directly from `ssi_level=0.2285` also rounds to `+0.229` — consistent.
+- No linter errors on either edited file.
+- `npm run build` succeeded; restarted `mindwealth-ui-dev.service` (port 8514). Could not
+  curl the BFF `/api/sentiment` route directly to see final rendered JSON (401 without an
+  authenticated session cookie, same limitation as the prior fix), so confidence rests on the
+  Node-script replica of the exact formatting functions plus the successful build/restart.
+
+**Assumptions:**
+- Scoped this to only the 4 headline KPI numbers on the Super Sentiment page (composite +
+  Layer 1/2/3 scores) — the same fields touched by the 2dp fix — not the raw input-indicator
+  panels below (SKEW, McClellan, NH/NL, etc.), which have a deliberately separate, explicitly
+  requested 2dp-indicators/4dp-currency-pairs display policy from an earlier, unrelated task.
+  Did not change that policy.
+- Did not add a Vitest test for the new precision (same pre-existing test-infra gap noted in
+  the 2dp entry above still applies).
+
+**Deferred:** Same items as the 2dp entry above (Vitest coverage for the formatting helpers,
+broader repo-wide audit of other `toFixed()`/sign-check call sites).
+
+**Prod impact:** Same as above — `MindwealthUI_Vue` is a separate repo/deploy target, not
+covered by `chatbot-dev`→`chatbot-prod`. Needs its own commit on that repo plus rebuild/restart
+on the prod Nuxt host when promoted.

@@ -12,7 +12,7 @@
 
 E note: 3-of-3 gate includes CFTC>=85; escalation alert is briefing overlay when CFTC pctile rises during active E episode.
 
-**Sample rule:** slices with n < 10 episodes → **CANNOT USE** (no hit rate reported as actionable).
+**Sample rule:** Combo D slices with n < 9 → CANNOT USE; Combo E n < 10 → CANNOT USE (QE n=9 approved for D per Divyanshu 2026-07-21).
 
 ## (a) Combo D — CUTTING_LATE vs HIKING_LATE spread
 
@@ -57,11 +57,11 @@ Production CONFIG @ **3M**: overall **28.1%** bear hit (n=452).
 | CUTTING_LATE | 1W | 13 | 13 | 92.31 | -1.5923 | USE |
 | HIKING_LATE | 1W | 24 | 24 | 41.67 | -0.0516 | USE |
 | OVERALL | 1W | 46 | 46 | 56.52 | -0.3499 | USE |
-| QE | 1W | 9 | 9 | — | — | CANNOT USE |
+| QE | 1W | 9 | 9 | 44.44 | 0.649 | USE |
 | CUTTING_LATE | 2W | 13 | 13 | 69.23 | -0.6773 | USE |
 | HIKING_LATE | 2W | 24 | 24 | 33.33 | -0.0861 | USE |
 | OVERALL | 2W | 46 | 46 | 43.48 | -0.1314 | USE |
-| QE | 2W | 9 | 9 | — | — | CANNOT USE |
+| QE | 2W | 9 | 9 | 33.33 | 0.536 | USE |
 
 ### Combo E
 

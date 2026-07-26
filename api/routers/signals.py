@@ -7,9 +7,11 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from api.dependencies import optional_api_key
+from api.services import portfolio_pipeline_service as pipeline_svc
 from api.services import reports_service as svc
 from api.services import signal_enrichment_service as enrich_svc
 from api.services import degradation_service as degrade_svc
+from api.services.portfolio_book import BookUnavailableError
 
 router = APIRouter(prefix="/signals", tags=["signals"], dependencies=[Depends(optional_api_key)])
 
@@ -20,6 +22,62 @@ def list_reports() -> list[dict[str, Any]]:
 
 
 _ALL_SIGNAL_SLUGS = frozenset({"all-signal", "all_signal"})
+
+
+# ── Portfolio pipeline (HANDOFF) — register before generic /reports/{name}/latest ──
+
+@router.get(
+    "/entries",
+    operation_id="getSignalEntries",
+    summary="New Entries pipeline (Portfolio + Signals)",
+)
+def get_signal_entries(
+    book_id: str = Query(..., description="model | brokerage | personal"),
+) -> dict[str, Any]:
+    try:
+        return pipeline_svc.get_signal_entries(book_id)
+    except BookUnavailableError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+
+
+@router.get(
+    "/exits",
+    operation_id="getSignalExits",
+    summary="New Exits pipeline (Portfolio + Signals)",
+)
+def get_signal_exits(
+    book_id: str = Query(..., description="model | brokerage | personal"),
+) -> dict[str, Any]:
+    try:
+        return pipeline_svc.get_signal_exits(book_id)
+    except BookUnavailableError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+
+
+@router.get(
+    "/reports/portfolio-risk/latest",
+    operation_id="getPortfolioRiskReportLatest",
+    summary="Cross-function exit conflicts (HANDOFF §11 shape)",
+)
+def get_portfolio_risk_report_latest(
+    book_id: str = Query(..., description="model | brokerage | personal"),
+) -> dict[str, Any]:
+    try:
+        return pipeline_svc.get_portfolio_risk_report(book_id)
+    except BookUnavailableError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
 
 @router.get("/reports/{report_name}/latest", operation_id="get_latest_signal_report")
@@ -175,17 +233,17 @@ def get_signal_summary(
 )
 def check_signal_degradation() -> dict[str, Any]:
     """
-    Run Layer 1 degradation analysis across all (asset/function/interval/direction) combos.
+    Run Layer 1 forward win-rate drift analysis across all combos.
 
-    Triggers fire when **any** of these conditions are met:
+    DRIFT ALERT triggers (email spec 5D):
 
-    - FWD win rate declining toward 60% while still >= 60% (DEGRADATION WATCH).
-    - FWD win rate below 60% (DEGRADATION BREACH).
-    - A booked loss exists on any virtual trading portfolio position (realised P&L < 0).
-    - A live position's MTM exceeds -10%.
+    - Orange watch: cumulative FWD win rate below 61% **and** falling 2 months in a row.
+    - Red breach: cumulative FWD win rate below 60% **and** falling 3 months in a row.
+    - BT vs FWD gap does **not** trigger — only live forward rate + monthly trend.
+    - Booked loss on any virtual trading portfolio position (realised P&L < 0).
+    - Live position MTM below -10%.
 
-    On trigger, loss pattern is classified as asset-specific, function degradation,
-    or a combo issue, and a recommendation is generated.
+    On trigger, loss pattern is classified and a recommendation is generated.
     """
     try:
         return degrade_svc.check_degradation()

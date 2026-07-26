@@ -17,6 +17,13 @@ from .bq_scoring import (
 )
 from .dividend_yield import compute_dividend_yield_stats
 from .fd_votes import compute_fd_votes
+from .pe_history_core import (  # re-exported: existing `from .fundamentals_enriched import ...` callers keep working
+    PE_HISTORY_MAX_STORED_POINTS,
+    PE_HISTORY_TARGET_YEARS,
+    compute_pe_history,
+)
+from .pe_history_fmp import fetch_pe_history_fmp, is_us_ticker
+from .pe_history_sec import fetch_pe_history_sec
 from .scoring import (
     BusinessType,
     _float_or_none,
@@ -78,13 +85,18 @@ def _first_not_none(*values: Any) -> Any:
 
 
 def _df_row(df: pd.DataFrame | None, *row_labels: str) -> float | None:
-    """Return the latest column value for the first matching income/balance/cashflow row."""
+    """Return the latest column value for the first matching income/balance/cashflow row.
+
+    yfinance quarterly statement columns are newest-first — ``sort_index()`` before slicing
+    so ``iloc[-1]`` is always the latest quarter regardless of raw column order (same bug class
+    fixed for ``revenue_growth_yoy`` — see job-status 2026-07-22).
+    """
     if df is None or df.empty:
         return None
     for label in row_labels:
         if label not in df.index:
             continue
-        row = df.loc[label].dropna()
+        row = df.loc[label].dropna().sort_index()
         if row.empty:
             continue
         val = row.iloc[-1]
@@ -98,12 +110,13 @@ def _df_row(df: pd.DataFrame | None, *row_labels: str) -> float | None:
 
 
 def _df_ttm_sum(df: pd.DataFrame | None, *row_labels: str, periods: int = 4) -> float | None:
+    """Sum the most recent ``periods`` quarters. See ``_df_row`` for the sort-order rationale."""
     if df is None or df.empty:
         return None
     for label in row_labels:
         if label not in df.index:
             continue
-        row = df.loc[label].dropna()
+        row = df.loc[label].dropna().sort_index()
         if len(row) < 1:
             continue
         chunk = row.iloc[-periods:]
@@ -196,95 +209,6 @@ def _normalize_ratio(value: float | None) -> float | None:
     if abs(v) > 5:
         return v / 100.0
     return v
-
-
-PE_HISTORY_TARGET_YEARS = 20
-PE_HISTORY_MAX_STORED_POINTS = 240  # ~20Y of month-end P/E samples for JSON + percentile
-
-
-def _empty_pe_history_bundle() -> dict[str, Any]:
-    return {
-        "values": [],
-        "meta": {
-            "years_available": 0.0,
-            "price_years_available": 0.0,
-            "eps_quarters": 0,
-            "eps_years_available": 0.0,
-            "start_date": None,
-            "end_date": None,
-            "point_count": 0,
-            "stored_point_count": 0,
-            "target_years": PE_HISTORY_TARGET_YEARS,
-            "insufficient_20y": True,
-        },
-    }
-
-
-def compute_pe_history(price_series: pd.Series, quarterly_eps: pd.Series) -> dict[str, Any]:
-    """Build trailing P/E history: each day's close / TTM EPS known as of that date.
-
-    Uses **historical** prices from ``history(period='max')`` (not today's spot for past dates).
-    Returns monthly-sampled values for storage plus metadata on calendar span vs 20Y target.
-    """
-    if price_series is None or price_series.empty or quarterly_eps is None or quarterly_eps.empty:
-        return _empty_pe_history_bundle()
-
-    prices = price_series.dropna().sort_index()
-    eps = quarterly_eps.dropna().sort_index()
-    if eps.index.tz is not None:
-        eps.index = eps.index.tz_localize(None)
-    if len(eps) < 4:
-        return _empty_pe_history_bundle()
-
-    price_years = 0.0
-    if len(prices) > 1:
-        price_years = (prices.index[-1] - prices.index[0]).days / 365.25
-    eps_years = 0.0
-    if len(eps) > 1:
-        eps_years = (eps.index[-1] - eps.index[0]).days / 365.25
-
-    ttm_eps = eps.rolling(window=4, min_periods=4).sum()
-    pe_dates: list[pd.Timestamp] = []
-    pe_values: list[float] = []
-    for dt, price in prices.items():
-        mask = ttm_eps.index <= dt
-        if not mask.any():
-            continue
-        eps_val = float(ttm_eps[mask].iloc[-1])
-        if eps_val > 0:
-            pe = float(price) / eps_val
-            if 0 < pe < 500:
-                pe_dates.append(pd.Timestamp(dt))
-                pe_values.append(round(pe, 4))
-
-    if not pe_values:
-        bundle = _empty_pe_history_bundle()
-        bundle["meta"]["price_years_available"] = round(price_years, 2)
-        bundle["meta"]["eps_quarters"] = len(eps)
-        bundle["meta"]["eps_years_available"] = round(eps_years, 2)
-        return bundle
-
-    pe_series = pd.Series(pe_values, index=pd.DatetimeIndex(pe_dates)).sort_index()
-    monthly = pe_series.resample("ME").last().dropna()
-    stored = monthly.tail(PE_HISTORY_MAX_STORED_POINTS).round(4)
-
-    first_dt = pe_series.index[0]
-    last_dt = pe_series.index[-1]
-    years_available = (last_dt - first_dt).days / 365.25
-
-    meta = {
-        "years_available": round(years_available, 2),
-        "price_years_available": round(price_years, 2),
-        "eps_quarters": len(eps),
-        "eps_years_available": round(eps_years, 2),
-        "start_date": first_dt.strftime("%Y-%m-%d"),
-        "end_date": last_dt.strftime("%Y-%m-%d"),
-        "point_count": len(pe_values),
-        "stored_point_count": len(stored),
-        "target_years": PE_HISTORY_TARGET_YEARS,
-        "insufficient_20y": years_available < PE_HISTORY_TARGET_YEARS,
-    }
-    return {"values": stored.tolist(), "meta": meta}
 
 
 def compute_fd_direction(
@@ -449,12 +373,15 @@ def compute_bq_components_auto(
     fundamentals["debt_purpose"] = debt_purpose
 
     ceo_score = score_manual("ceo_quality_score", overrides)
-    if overrides.get("ceo_quality_score") is None and isinstance(overrides.get("ceo_quality_detail"), dict):
-        from .agent_dims import analyst_score_to_bq
+    if overrides.get("ceo_quality_score") is None:
+        from .ceo_quality import compute_ceo_quality_score
 
-        ceo_score = analyst_score_to_bq(_float_or_none(overrides["ceo_quality_detail"].get("score_0_10")))
-    if overrides.get("new_ceo_transition"):
-        ceo_score -= 1.0
+        ceo_score, ceo_detail = compute_ceo_quality_score(
+            {"ticker": fundamentals.get("ticker"), **fundamentals},
+            overrides,
+        )
+        if ceo_detail:
+            overrides.setdefault("ceo_quality_detail", ceo_detail)
 
     moat_score = score_manual("competitive_moat_score", overrides)
     if overrides.get("competitive_moat_score") is None and isinstance(overrides.get("competitive_moat_detail"), dict):
@@ -462,13 +389,23 @@ def compute_bq_components_auto(
 
         moat_score = analyst_score_to_bq(_float_or_none(overrides["competitive_moat_detail"].get("score_0_10")))
 
+    cap_score = score_manual("mgmt_alloc_score", overrides)
+    if overrides.get("mgmt_alloc_score") is None:
+        from .capital_allocation import score_capital_allocation
+
+        cap_score, cap_detail = score_capital_allocation(fundamentals, overrides)
+        if cap_detail:
+            fundamentals["capital_allocation_detail"] = cap_detail
+
     div_flag = overrides.get("divergence_signal")
     if div_flag is None:
         div_flag = detect_divergence_signal(
             current_price=_float_or_none(fundamentals.get("price")),
             fifty_two_week_high=_float_or_none(fundamentals.get("fifty_two_week_high")),
             price_history=fundamentals.get("price_history_series"),
+            days_below_high=fundamentals.get("days_below_high"),
             fd_direction=str(overrides.get("fd_direction") or fundamentals.get("fd_direction") or "stable"),
+            ticker=str(fundamentals.get("ticker") or ""),
         )
 
     return {
@@ -480,7 +417,7 @@ def compute_bq_components_auto(
         "gross_margin_trend": score_gross_margin_trend(margin_trend),
         "debt_maturity_risk": score_debt_maturity_risk(fundamentals, business_type, overrides),
         "ceo_quality": ceo_score,
-        "mgmt_capital_allocation": score_manual("mgmt_alloc_score", overrides),
+        "mgmt_capital_allocation": cap_score,
         "competitive_moat": moat_score,
         "macro_tailwind": score_macro_tailwind(overrides),
         "divergence_signal": 2.0 if div_flag else 0.0,
@@ -509,9 +446,12 @@ def build_fundamentals_from_raw(raw: dict[str, Any]) -> dict[str, Any]:
     q_inc = raw.get("quarterly_income")
     q_bal = raw.get("quarterly_balance")
     q_cf = raw.get("quarterly_cashflow")
-    shares = _float_or_none(info.get("sharesOutstanding"))
+    shares = _float_or_none(
+        _first_not_none(info.get("sharesOutstanding"), info.get("impliedSharesOutstanding"))
+    )
 
     fundamentals: dict[str, Any] = {
+        "ticker": raw.get("ticker"),
         "quote_type": info.get("quoteType"),
         "price": price,
         "market_cap": market_cap,
@@ -564,7 +504,13 @@ def build_fundamentals_from_raw(raw: dict[str, Any]) -> dict[str, Any]:
         fundamentals["fcf_ttm"] = operating_cf_ttm + capex_ttm
         fundamentals["capex_ttm"] = capex_ttm
     else:
-        fundamentals["fcf_ttm"] = _float_or_none(_first_not_none(info.get("freeCashflow"), info.get("freeCashFlow")))
+        fcf = _float_or_none(_first_not_none(info.get("freeCashflow"), info.get("freeCashFlow")))
+        if not fcf or fcf <= 0:
+            if q_cf is not None and "Free Cash Flow" in getattr(q_cf, "index", []):
+                fcf = _df_ttm_sum(q_cf, "Free Cash Flow")
+            if (not fcf or fcf <= 0) and operating_cf_ttm is not None and capex_ttm is not None:
+                fcf = operating_cf_ttm - abs(capex_ttm)
+        fundamentals["fcf_ttm"] = fcf
 
     fundamentals["revenue_ttm"] = revenue_ttm
     if revenue_ttm and revenue_ttm > 0:
@@ -575,6 +521,34 @@ def build_fundamentals_from_raw(raw: dict[str, Any]) -> dict[str, Any]:
     if fcf is not None and rev_base and rev_base > 0:
         fundamentals["fcf_margin"] = round(fcf / rev_base, 6)
 
+    # Prior-year FCF for FD vote 3
+    if q_cf is not None:
+        ocf_prior = _df_ttm_sum(q_cf, "Operating Cash Flow", "Total Cash From Operating Activities", periods=4)
+        capex_prior = _df_ttm_sum(q_cf, "Capital Expenditure", periods=4)
+        if ocf_prior is not None and capex_prior is not None and len(q_cf.columns) >= 8:
+            try:
+                ocf_row = q_cf.loc["Operating Cash Flow"] if "Operating Cash Flow" in q_cf.index else q_cf.loc["Total Cash From Operating Activities"]
+                capex_row = q_cf.loc["Capital Expenditure"]
+                # yfinance columns are newest-first; sort ascending so iloc[-4:] is the current
+                # TTM quarter set and iloc[-8:-4] is the same four quarters one year prior.
+                ocf_sorted = ocf_row.dropna().sort_index()
+                capex_sorted = capex_row.dropna().sort_index()
+                if len(ocf_sorted) >= 8:
+                    fcf_prior = float(ocf_sorted.iloc[-8:-4].sum() + capex_sorted.iloc[-8:-4].sum())
+                    fundamentals["fcf_prior_year"] = fcf_prior
+                    if fcf is not None and fcf_prior and fcf_prior > 0:
+                        fundamentals["fcf_growth_yoy"] = (fcf - fcf_prior) / abs(fcf_prior)
+                    rev_prior = None
+                    if q_inc is not None:
+                        for label in ("Total Revenue", "Revenue", "Operating Revenue"):
+                            if label in q_inc.index and len(q_inc.loc[label].dropna()) >= 8:
+                                rev_prior = float(q_inc.loc[label].dropna().sort_index().iloc[-8:-4].sum())
+                                break
+                    if rev_prior and rev_prior > 0 and fcf_prior:
+                        fundamentals["fcf_margin_prior"] = round(fcf_prior / rev_prior, 6)
+            except Exception:
+                pass
+
     if ebitda_ttm and ebitda_ttm > 0 and fundamentals.get("net_debt_stored") is not None:
         fundamentals["net_debt_ebitda"] = round(fundamentals["net_debt_stored"] / ebitda_ttm, 4)
     elif info.get("ebitda"):
@@ -582,19 +556,29 @@ def build_fundamentals_from_raw(raw: dict[str, Any]) -> dict[str, Any]:
         if ebitda_info and ebitda_info > 0 and fundamentals.get("net_debt_stored") is not None:
             fundamentals["net_debt_ebitda"] = round(fundamentals["net_debt_stored"] / ebitda_info, 4)
 
-    fundamentals["eps_ttm"] = _float_or_none(
-        _first_not_none(info.get("trailingEps"), (net_income_ttm / shares if net_income_ttm and shares else None))
-    )
+    fundamentals["eps_ttm"] = _float_or_none(info.get("trailingEps"))
+    if not fundamentals["eps_ttm"] or fundamentals["eps_ttm"] <= 0:
+        if net_income_ttm and shares and shares > 0:
+            fundamentals["eps_ttm"] = net_income_ttm / shares
     fundamentals["eps_fwd"] = _float_or_none(info.get("forwardEps"))
     fundamentals["eps_estimate_current"] = fundamentals["eps_fwd"]
 
     shares_now = shares
-    shares_prior = _float_or_none(info.get("sharesOutstanding"))  # placeholder; refined below
-    if q_bal is not None and "Ordinary Shares Number" in getattr(q_bal, "index", []):
-        sh_series = q_bal.loc["Ordinary Shares Number"].dropna()
-        if len(sh_series) >= 5:
-            shares_now = float(sh_series.iloc[-1])
-            shares_prior = float(sh_series.iloc[-5])
+    shares_prior = None
+    if q_bal is not None:
+        for label in ("Ordinary Shares Number", "Share Issued", "Common Stock Shares Outstanding"):
+            if label not in getattr(q_bal, "index", []):
+                continue
+            sh_series = q_bal.loc[label].dropna().sort_index()
+            if len(sh_series) >= 1:
+                shares_now = float(sh_series.iloc[-1])
+            if len(sh_series) >= 5:
+                shares_prior = float(sh_series.iloc[-5])
+            elif len(sh_series) >= 4:
+                shares_prior = float(sh_series.iloc[0])
+            break
+    fundamentals["shares_outstanding_now"] = shares_now
+    fundamentals["shares_outstanding_12m_ago"] = shares_prior
     if shares_now and shares_prior and shares_prior > 0:
         fundamentals["shares_outstanding_change_pct"] = round((shares_now - shares_prior) / shares_prior, 4)
 
@@ -620,23 +604,27 @@ def build_fundamentals_from_raw(raw: dict[str, Any]) -> dict[str, Any]:
         for label in ("Total Revenue", "Revenue", "Operating Revenue"):
             if label not in q_inc.index:
                 continue
-            rev_series = q_inc.loc[label].dropna()
-            if len(rev_series) >= 5:
-                latest = float(rev_series.iloc[-1])
-                prior = float(rev_series.iloc[-5])
+            # yfinance quarterly columns are newest-first; sort ascending so
+            # iloc[-1] is always the latest quarter and iloc[-5] is the same
+            # quarter one year prior, regardless of the raw column order.
+            rev_sorted = q_inc.loc[label].dropna().sort_index()
+            if len(rev_sorted) >= 5:
+                latest = float(rev_sorted.iloc[-1])
+                prior = float(rev_sorted.iloc[-5])
                 if prior > 0:
                     fundamentals["revenue_growth_yoy"] = (latest - prior) / prior
-            if len(rev_series) >= 3:
-                fundamentals["revenue_accelerating"] = (
-                    float(rev_series.iloc[-1]) > float(rev_series.iloc[-2]) > float(rev_series.iloc[-3])
-                )
-            if "Gross Profit" in q_inc.index and len(rev_series) >= 5:
-                gp = q_inc.loc["Gross Profit"].dropna()
-                if len(gp) >= 5:
-                    rev_tail = rev_series.iloc[-5:]
-                    gp_tail = gp.iloc[-5:]
-                    gm_recent = float(gp_tail.iloc[-1] / rev_tail.iloc[-1]) if rev_tail.iloc[-1] else None
-                    gm_older = float(gp_tail.iloc[0] / rev_tail.iloc[0]) if rev_tail.iloc[0] else None
+            growth_rates = rev_sorted.pct_change(periods=4).dropna()
+            if len(growth_rates) >= 3:
+                last3 = growth_rates.tail(3).values
+                fundamentals["revenue_accelerating"] = bool(last3[-1] > last3[-2] > last3[-3])
+            if "Gross Profit" in q_inc.index and len(rev_sorted) >= 5:
+                gp_sorted = q_inc.loc["Gross Profit"].dropna().sort_index()
+                common_idx = rev_sorted.index.intersection(gp_sorted.index)
+                if len(common_idx) >= 5:
+                    rev_common = rev_sorted.loc[common_idx].sort_index()
+                    gp_common = gp_sorted.loc[common_idx].sort_index()
+                    gm_recent = float(gp_common.iloc[-1] / rev_common.iloc[-1]) if rev_common.iloc[-1] else None
+                    gm_older = float(gp_common.iloc[-5] / rev_common.iloc[-5]) if rev_common.iloc[-5] else None
                     if gm_recent is not None and gm_older and gm_older > 0:
                         fundamentals["gross_margin_trend"] = (gm_recent - gm_older) / gm_older
             break
@@ -654,14 +642,30 @@ def build_fundamentals_from_raw(raw: dict[str, Any]) -> dict[str, Any]:
     if isinstance(price_hist, pd.Series) and not price_hist.empty:
         fundamentals["price_history_series"] = price_hist
         if fundamentals.get("fifty_two_week_high") is None:
-            fundamentals["fifty_two_week_high"] = float(price_hist.max())
+            fundamentals["fifty_two_week_high"] = float(price_hist.tail(252).max() if len(price_hist) >= 252 else price_hist.max())
         fundamentals.update(compute_dividend_yield_stats(pd.DataFrame({"Close": price_hist}), divs))
+    elif fundamentals.get("fifty_two_week_high") is None:
+        fundamentals["fifty_two_week_high"] = _float_or_none(info.get("fiftyTwoWeekHigh"))
 
     if isinstance(price_hist, pd.Series) and q_inc is not None:
         for label in ("Diluted EPS", "Basic EPS"):
             if label in q_inc.index:
                 pe_bundle = compute_pe_history(price_hist, q_inc.loc[label])
                 if pe_bundle.get("values"):
+                    pe_bundle["meta"]["source"] = "yfinance"
+                    ticker = fundamentals.get("ticker") or raw.get("ticker")
+                    if pe_bundle["meta"].get("insufficient_20y") and ticker and is_us_ticker(ticker):
+                        # SEC EDGAR first: free, unlimited, deeper (~15-19y vs FMP's
+                        # free-tier 5y cap) — confirmed live 2026-07-24. FMP is only
+                        # tried when SEC has genuinely nothing for this ticker (e.g.
+                        # foreign private issuer filing 20-F, or not in SEC's CIK map).
+                        sec_bundle = fetch_pe_history_sec(ticker, price_hist)
+                        if sec_bundle and sec_bundle["meta"]["point_count"] > pe_bundle["meta"]["point_count"]:
+                            pe_bundle = sec_bundle
+                        if sec_bundle is None:
+                            fmp_bundle = fetch_pe_history_fmp(ticker, target_years=PE_HISTORY_TARGET_YEARS)
+                            if fmp_bundle and fmp_bundle["meta"]["point_count"] > pe_bundle["meta"]["point_count"]:
+                                pe_bundle = fmp_bundle
                     fundamentals["pe_20y_array"] = pe_bundle["values"]
                     fundamentals["pe_history_meta"] = pe_bundle["meta"]
                 break
@@ -682,22 +686,34 @@ def map_to_engine_fundamentals(enriched: dict[str, Any]) -> dict[str, Any]:
         "industry",
         "eps_ttm",
         "eps_fwd",
+        "eps_estimate_current",
         "fcf_ttm",
+        "fcf_prior_year",
+        "fcf_growth_yoy",
+        "fcf_margin",
+        "fcf_margin_prior",
         "net_debt_stored",
         "fwd_revenue_stored",
+        "revenue_ttm",
         "annual_div_per_share_stored",
         "revenue_growth",
-        "fcf_margin",
         "gross_margin",
         "net_debt_ebitda",
         "distribution_coverage_ratio",
         "gross_margin_trend",
         "roic_proxy",
         "pe_20y_array",
+        "pe_history_meta",
         "dividend_yield_5y_mean",
         "dividend_yield_5y_std",
         "revenue_accelerating",
         "insider_pct",
+        "fifty_two_week_high",
+        "shares_outstanding_change_pct",
+        "shares_outstanding_now",
+        "shares_outstanding_12m_ago",
+        "days_below_high",
+        "capital_allocation_detail",
     ]
     out = {k: enriched[k] for k in keys if k in enriched and enriched[k] is not None}
     if enriched.get("gross_margin_computed") is not None and "gross_margin" not in out:
@@ -709,6 +725,11 @@ def fetch_and_compute_fundamentals(ticker: str) -> dict[str, Any]:
     raw = fetch_yfinance_enriched(ticker)
     enriched = build_fundamentals_from_raw(raw)
     engine = map_to_engine_fundamentals(enriched)
+    # Transient fields for divergence bootstrap (not persisted in JSON store)
+    if enriched.get("price_history_series") is not None:
+        engine["price_history_series"] = enriched["price_history_series"]
+    if enriched.get("fifty_two_week_high") is not None:
+        engine["fifty_two_week_high"] = enriched["fifty_two_week_high"]
     engine["fetch_errors"] = enriched.get("fetch_errors", [])
     raw_summary = {
         "info": raw.get("info", {}),

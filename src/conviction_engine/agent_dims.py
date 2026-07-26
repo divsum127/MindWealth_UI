@@ -147,21 +147,33 @@ def compute_competitive_moat_agent(ticker: str, company_name: str, current_year:
     from datetime import datetime
 
     year = current_year or datetime.now().year
-    system = """Adversarial moat analysis: list disruption threats FIRST. Respond ONLY JSON:
-{"score_0_10": <0-10>, "rationale": "<max 120 chars>", "sources": [], "confidence": <0-1>,
- "evidence_for": "", "evidence_against": ""}"""
-    user = f"Search {company_name} ({ticker}) competitive moat switching costs disruption risk {year}."
+    system = (
+        'You are an adversarial investment analyst. First identify the 3 most significant '
+        "threats to this company's competitive position, including new entrants, technology "
+        "disruption, or margin erosion risks. Only then score overall moat strength. "
+        "Apply a conservative bias. Return JSON: "
+        '{"score_0_10":<0-10>,"rationale":"<120chars>","threats":["str","str","str"],'
+        '"moat_sources":["str"],"evidence_against":"<str>","sources":["str"],"confidence":<float>}'
+    )
+    user = f"Adversarial moat analysis for {company_name} ({ticker}) in {year}."
 
     try:
         with _AGENT_SEMAPHORE:
             raw = _call_claude_web_search(system=system, user=user, max_tokens=350)
         score_10 = _float_or_none(raw.get("score_0_10")) or 5.0
-        return {
-            "score_0_10": score_10,
-            "rationale": raw.get("rationale", ""),
-            "sources": raw.get("sources", []),
-            "confidence": raw.get("confidence", 0.5),
-        }
+        detail = _apply_confidence_rules(
+            {
+                "score": 0,
+                "rationale": raw.get("rationale", ""),
+                "sources": raw.get("sources", []),
+                "confidence": raw.get("confidence", 0.5),
+                "evidence_against": raw.get("evidence_against", ""),
+                "threats": raw.get("threats", []),
+            },
+            default_score=0,
+        )
+        detail["score_0_10"] = score_10 if float(detail.get("confidence", 0)) >= 0.7 else 5.0
+        return detail
     except Exception as exc:
         logger.warning("[competitive_moat] %s failed: %s", ticker, exc)
         return {"score_0_10": 5.0, "rationale": "Agent unavailable", "confidence": 0.0, "sources": []}
@@ -180,18 +192,39 @@ def analyst_score_to_bq(score_10: float | None) -> float:
     return -1.0
 
 
+def compute_reinvestment_runway_agent(ticker: str, company_name: str, revenue_ttm: float | None = None) -> dict[str, Any]:
+    system = """Find official TAM for this company. Priority: Investor Day, earnings calls, Gartner/Grand View.
+Return JSON: {"tam_usd": <float|null>, "tam_source": "<source>", "rationale": "<includes TAM value + source>",
+"sources": ["url"], "confidence": <0-1>}"""
+    user = f"Total addressable market TAM for {company_name} ({ticker}). Revenue TTM USD: {revenue_ttm}"
+    try:
+        with _AGENT_SEMAPHORE:
+            raw = _call_claude_web_search(system=system, user=user, max_tokens=400)
+        result = _apply_confidence_rules(raw, default_score=0)
+        tam = _float_or_none(raw.get("tam_usd"))
+        rev = revenue_ttm
+        if tam and rev and rev > 0:
+            result["tam_revenue_multiple"] = round(tam / rev, 2)
+        return result
+    except Exception as exc:
+        logger.warning("[reinvestment_runway] %s failed: %s", ticker, exc)
+        return {"tam_usd": None, "rationale": "Agent unavailable", "confidence": 0.0, "sources": []}
+
+
 def run_agent_dimensions(
     ticker: str,
     company_name: str,
     business_type: str,
     *,
     skip_agents: bool = False,
+    revenue_ttm: float | None = None,
 ) -> dict[str, Any]:
-    """Run macro / CEO / moat agent calls (sequential with semaphore)."""
+    """Run macro / CEO / moat / reinvestment agent calls (sequential with semaphore)."""
     if skip_agents or not os.environ.get("ANTHROPIC_API_KEY"):
         return {}
     return {
         "macro_tailwind_detail": compute_macro_tailwind(ticker, company_name, business_type),
         "ceo_quality_detail": compute_ceo_quality_agent(ticker, company_name),
         "competitive_moat_detail": compute_competitive_moat_agent(ticker, company_name),
+        "reinvestment_runway_detail": compute_reinvestment_runway_agent(ticker, company_name, revenue_ttm),
     }

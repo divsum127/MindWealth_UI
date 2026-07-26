@@ -127,7 +127,7 @@ def case1_production_sweeps(
                 abs(v - d_cfg.get("vxts_min", 1.1)) < 1e-9
                 and abs(c - d_cfg.get("cftc_min_pctile", 85)) < 1e-9
                 and abs(x - d_cfg.get("vix_max", 18)) < 1e-9
-                and legs == 3
+                and legs == int(d_cfg.get("min_of_three", 3))
             ),
             **{f"bear_hit_{lbl}": hstats[lbl]["bear_hit_pct"] for lbl in TACTICAL},
             **{f"avg_spx_{lbl}": hstats[lbl]["avg_spx_pct"] for lbl in TACTICAL},

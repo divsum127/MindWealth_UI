@@ -1,7 +1,7 @@
 recommendation_tier,combo,experiment_id,sweep_type,is_config_baseline,vxts_min,cftc_min_pctile,vix_max,legs_required,n_events,bear_hit_1W,bear_hit_4W,bear_hit_mean_1W_4W,avg_spx_1W,avg_spx_mean_1W_4W,meets_n_target,meets_80pct_1W,target_80pct_met,target_n_20_40_met,cape_min,nfci_easy_max,bear_hit_6M,bear_hit_12M,bear_hit_mean_6M_12M,avg_spx_12M,avg_spx_mean_6M_12M,meets_80pct_12M
-CONFIG_BASELINE,D,D_v1.10_c85_x18_l3,config_baseline,True,1.1,85,18,3,31,41.94,25.81,35.48,0.2162,0.2978,True,False,False,True,,,,,,,,
-CONFIG_BASELINE,E,E_cape28_nfci-0.30_cftc80_l2,config_baseline,True,,80,,2,22,,,,,,True,,False,True,28,-0.3,9.09,9.09,12.12,15.9577,11.505,False
-BEST_IN_TARGET_N,D,D_v1.25_c95_x16_l2,factorial,False,1.25,95,16,2,42,54.76,38.1,40.48,-0.1126,0.1704,True,False,False,True,,,,,,,,
+CONFIG_BASELINE,D,D_v1.18_c95_x13_l2,config_baseline,True,1.18,95,13,2,46,56.52,41.3,46.19,-0.3499,-0.2107,True,False,False,True,,,,,,,,
+CONFIG_BASELINE,E,E_cape32_nfci-0.15_cftc85_l3,config_baseline,True,,85,,3,10,,,,,,False,,False,False,32,-0.15,66.67,66.67,66.67,-6.5376,-5.3874,False
+BEST_IN_TARGET_N,D,D_v1.18_c95_x13_l2,config_baseline,True,1.18,95,13,2,46,56.52,41.3,46.19,-0.3499,-0.2107,True,False,False,True,,,,,,,,
 BEST_IN_TARGET_N,E,E_cape30_nfci-0.20_cftc92_l3,factorial,False,,92,,3,16,,,,,,True,,False,True,30,-0.2,40.0,46.67,48.89,0.4108,0.1705,False
-BEST_ANY_N,D,D_v1.18_c90_x16_l2,factorial,False,1.18,90,16,2,78,57.14,44.74,46.25,-0.3558,-0.2165,False,False,False,False,,,,,,,,
-BEST_ANY_N,E,E_cape32_nfci-0.20_cftc95_l3,factorial,False,,95,,3,4,,,,,,False,,True,False,32,-0.2,50.0,100.0,75.0,-5.9573,-4.5009,True
+BEST_ANY_N,D,D_v1.18_c95_x16_l2,univariate_vix,False,1.18,95,16,2,78,57.14,42.86,46.11,-0.3547,-0.2306,False,False,False,False,,,,,,,,
+BEST_ANY_N,E,E_cape35_nfci-0.15_cftc85_l3,univariate_cape,False,,85,,3,5,,,,,,False,,True,False,35,-0.15,50.0,100.0,83.33,-14.8167,-11.7543,True

@@ -21,7 +21,9 @@ def test_outstanding_signals_enriched():
     assert "days_elapsed" in rec
     assert "avg_hold_days" in rec
     assert "direction" in rec
-    assert rec["tier"] in ("tA", "best", "tierc", "exit")
+    assert rec["tier"] in ("tA", "best", "tierc", "exit", "watch", "ok")
+    if rec.get("rr_dynamic") is not None:
+        assert isinstance(rec["rr_dynamic"], (int, float))
 
 
 def test_outstanding_not_enriched():
@@ -35,16 +37,63 @@ def test_outstanding_not_enriched():
 
 
 def test_portfolio_risk_cross_function_conflicts_key():
-    r = client.get(f"{BASE}/signals/reports/portfolio-risk/latest")
+    r = client.get(f"{BASE}/signals/reports/portfolio-risk/latest", params={"book_id": "model"})
     if r.status_code == 404:
         pytest.skip("portfolio-risk report not available")
     assert r.status_code == 200
     d = r.json()
+    assert d["book_id"] == "model"
     assert "cross_function_conflicts" in d
     assert isinstance(d["cross_function_conflicts"], list)
-    if d.get("records"):
-        rec = d["records"][0]
-        assert "conflict" in rec or "cross_function_exit_triggered" in rec or True
+    assert "cross_function_conflict_count" in d
+    if d["cross_function_conflicts"]:
+        c = d["cross_function_conflicts"][0]
+        assert "symbol" in c
+        if c.get("open_positions"):
+            assert "implied_natural_exit_date" in c["open_positions"][0]
+
+
+def test_parse_signal_meta_reads_plain_interval_column():
+    """Regression (2026-07-27): portfolio-risk (outstanding) report rows carry a plain
+    "Interval" column, not the "Interval, Confirmation Status" compound used by
+    new-signals/target-signals. Before this fix, interval always resolved to "" for that
+    report, silently breaking _lookup_hold_days()/implied_natural_exit_date matching."""
+    from api.services.portfolio_pipeline_service import _parse_signal_meta
+
+    row = {
+        "Symbol, Signal, Signal Date/Price[$]": "3690.HK, Long, 2026-07-08 @ 80.9",
+        "Function": "TRENDPULSE",
+        "Interval": "Daily",
+    }
+    meta = _parse_signal_meta(row)
+    assert meta["interval"] == "Daily"
+    assert meta["symbol"] == "3690.HK"
+    assert meta["function"] == "TRENDPULSE"
+
+    # Compound column still takes priority when both are present.
+    row2 = {**row, "Interval, Confirmation Status": "Weekly, Confirmed"}
+    assert _parse_signal_meta(row2)["interval"] == "Weekly"
+
+
+def test_signal_entries_endpoint():
+    r = client.get(f"{BASE}/signals/entries", params={"book_id": "model"})
+    assert r.status_code == 200
+    d = r.json()
+    assert d["book_id"] == "model"
+    assert "entries" in d
+    if d["entries"]:
+        e = d["entries"][0]
+        assert "ticker" in e and "rank" in e
+
+
+def test_signal_exits_endpoint():
+    r = client.get(f"{BASE}/signals/exits", params={"book_id": "model"})
+    assert r.status_code == 200
+    d = r.json()
+    assert d["book_id"] == "model"
+    assert "exits" in d
+    if d["exits"]:
+        assert d["exits"][0]["exit_type"] in ("signal", "rr", "eviction")
 
 
 def test_new_signals_enriched():

@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>MindWealth — Portfolio (Unified) · Design v5 · PM upgrades + same-asset intelligence · 15 Jul 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0908; --s1:#121110; --s2:#1a1815; --b1:#26221c; --b2:#332d24;
+  --gold:#C5A059; --gold-dim:rgba(197,160,89,0.14);
+  --em:#2de08a; --em-dim:rgba(45,224,138,0.10);
+  --ruby:#ff4d6d; --ruby-dim:rgba(255,77,109,0.10);
+  --teal:#4fd8d0; --teal-dim:rgba(79,216,208,0.08); --amber:#e0a52d;
+  --t1:#f0ece4; --t2:#a89f8f; --t3:#6b6355; --t4:#453f35;
+  --mono:'DM Mono',monospace; --ui:'Outfit',sans-serif; --fin:'Cormorant Garamond',serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:var(--bg);color:var(--t1);font-family:var(--ui);font-size:13px;-webkit-text-size-adjust:100%}
+::selection{background:var(--gold-dim)}
+a{color:var(--gold);text-decoration:none}
+
+/* ── top nav ── */
+.tb{display:flex;align-items:center;gap:20px;padding:0 18px;height:52px;border-bottom:1px solid var(--b1);background:var(--bg);position:sticky;top:0;z-index:60;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.logo{font-family:var(--fin);font-size:19px;font-weight:700;white-space:nowrap}
+.logo em{font-style:normal;color:var(--gold)}
+.tabs{display:flex;gap:2px;font-family:var(--mono);font-size:10.5px;letter-spacing:1.2px}
+.tn{padding:7px 11px;color:var(--t3);border-radius:4px;cursor:pointer;white-space:nowrap}
+.tn:hover{color:var(--t2)}
+.tn.on{color:var(--gold);background:var(--gold-dim);outline:1px solid rgba(197,160,89,0.25)}
+.tbr{margin-left:auto;display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:9.5px;color:var(--t3);white-space:nowrap}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--em);display:inline-block;margin-right:5px}
+.admin{border:1px solid var(--b2);border-radius:12px;padding:3px 10px;color:var(--gold)}
+
+/* ── regime strip ── */
+.rs{display:flex;align-items:center;padding:0 18px;height:34px;border-bottom:1px solid var(--b1);background:var(--s1);font-family:var(--mono);font-size:9.5px;letter-spacing:0.8px;color:var(--t2);overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap}
+.rs b{color:var(--t1);font-weight:500}
+.rs .g{color:var(--em)} .rs .gd{color:var(--gold)} .rs .a{color:var(--amber)}
+.rssep{width:1px;height:14px;background:var(--b2);margin:0 12px;flex-shrink:0}
+.rs .right{margin-left:auto;color:var(--t3);padding-left:16px}
+
+/* ── layout ── */
+.body{display:grid;grid-template-columns:196px minmax(0,1fr) 268px;min-height:calc(100vh - 86px)}
+.nav{border-right:1px solid var(--b1);padding:16px 10px;background:var(--bg)}
+.main{padding:16px 18px 60px;min-width:0}
+.rail{border-left:1px solid var(--b1);padding:18px 16px;background:var(--bg)}
+@media(max-width:1150px){
+  .body{grid-template-columns:minmax(0,1fr)}
+  .nav{border-right:none;border-bottom:1px solid var(--b1);display:flex;gap:8px;overflow-x:auto;padding:10px 12px;-webkit-overflow-scrolling:touch}
+  .nav .ngl{display:none}.nav .linknote{display:none}
+  .nav .ni{flex-shrink:0;border:1px solid var(--b1)}
+  .rail{border-left:none;border-top:1px solid var(--b1)}
+}
+
+/* left nav items */
+.ngl{font-family:var(--mono);font-size:8.5px;letter-spacing:2px;color:var(--t4);padding:6px 8px}
+.ni{display:flex;gap:9px;align-items:flex-start;padding:8px;border-radius:6px;cursor:pointer;margin-bottom:2px}
+.ni:hover{background:var(--s1)}
+.ni.on{background:var(--s2);outline:1px solid var(--b2)}
+.nd{width:6px;height:6px;border-radius:50%;margin-top:5px;flex-shrink:0;background:var(--t4)}
+.nd.g{background:var(--em)} .nd.gold{background:var(--gold)} .nd.r{background:var(--ruby)} .nd.t{background:var(--teal)}
+.nn{font-size:11.5px;color:var(--t1);white-space:nowrap}
+.ns2{font-family:var(--mono);font-size:8.5px;color:var(--t3);margin-top:1px;white-space:nowrap}
+.linknote{margin:14px 8px 0;padding:9px 10px;border:1px dashed var(--b2);border-radius:7px;font-family:var(--mono);font-size:8.5px;line-height:1.7;color:var(--t3)}
+.linknote b{color:var(--teal);font-weight:500}
+
+/* views */
+.view{display:none}.view.show{display:block}
+.stub{border:1px solid var(--b1);border-radius:12px;background:var(--s1);padding:22px 24px;margin-top:8px}
+.stub h2{font-family:var(--fin);font-size:26px;font-weight:600;color:var(--gold);margin-bottom:6px}
+.stub .tag{font-family:var(--mono);font-size:8.5px;letter-spacing:1.5px;color:var(--t3);margin-bottom:14px}
+.stub p{font-size:12.5px;line-height:1.7;color:var(--t2);max-width:720px;margin-bottom:10px}
+.stub b{color:var(--t1);font-weight:500}
+.back{display:inline-block;margin-top:10px;font-family:var(--mono);font-size:9px;letter-spacing:1.5px;color:var(--teal);border:1px solid rgba(79,216,208,0.3);border-radius:6px;padding:6px 12px;cursor:pointer}
+/* conflict cards (F6 treatment) */
+.conf{border:1px solid rgba(224,165,45,0.4);border-left:3px solid var(--amber);border-radius:10px;background:rgba(224,165,45,0.06);padding:14px 16px;margin:12px 0}
+.confh{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;font-family:var(--mono);font-size:11px;color:var(--t1);margin-bottom:8px}
+.confh .tk{font-size:14px;font-weight:500}
+.confh .x{color:var(--amber)}
+.confrow{display:flex;flex-wrap:wrap;gap:8px 18px;font-family:var(--mono);font-size:9.5px;color:var(--t2);padding:4px 0;border-top:1px dashed var(--b2)}
+.confrow b{color:var(--t1);font-weight:400}
+.confnote{font-family:var(--mono);font-size:8.5px;color:var(--t3);margin-top:8px;line-height:1.6}
+
+/* ── model mode toggle ── */
+.modebar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:8px}
+.modelbl{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--t3);flex-shrink:0}
+.modes{display:flex;flex-wrap:wrap;border:1px solid var(--b2);border-radius:8px;overflow:hidden;font-family:var(--mono);font-size:9px;letter-spacing:1px}
+.mode{padding:8px 12px;color:var(--t3);cursor:pointer;background:none;border:none;border-right:1px solid var(--b2);font-family:inherit;font-size:inherit;letter-spacing:inherit;white-space:nowrap}
+.mode:last-child{border-right:none}
+.mode.on{color:var(--bg);background:var(--gold);font-weight:500}
+.modehint{font-family:var(--mono);font-size:8.5px;color:var(--t3);letter-spacing:0.4px;line-height:1.6;margin:0 0 12px;max-width:900px}
+.modehint b{color:var(--gold);font-weight:500}
+
+/* NAV masthead */
+.mast{display:flex;flex-wrap:wrap;gap:22px 34px;align-items:flex-end;padding:20px 22px 18px;border:1px solid var(--b1);border-radius:12px;background:linear-gradient(180deg,var(--s1),var(--bg));margin-bottom:12px;position:relative;overflow:hidden}
+.mast::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(197,160,89,0.5),transparent)}
+.mhero{flex:0 1 auto;min-width:260px}
+.navlbl{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--t3);margin-bottom:4px}
+.navval{font-family:var(--fin);font-size:clamp(34px,5vw,50px);font-weight:600;color:var(--gold);line-height:1}
+.navsub{font-family:var(--mono);font-size:9.5px;color:var(--t3);margin-top:6px;line-height:1.6;max-width:340px}
+.mstats{flex:1 1 420px;display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:12px 10px;min-width:0}
+.ms{border-left:1px solid var(--b1);padding-left:12px;min-width:0}
+.msl{font-family:var(--mono);font-size:8px;letter-spacing:1.2px;color:var(--t3);margin-bottom:5px;white-space:nowrap}
+.msv{font-family:var(--fin);font-size:22px;font-weight:600;color:var(--t1);line-height:1;white-space:nowrap}
+.msv.up{color:var(--em)} .msv.dn{color:var(--ruby)} .msv.gd{color:var(--gold)}
+.mss{font-family:var(--mono);font-size:8px;color:var(--t3);margin-top:4px;line-height:1.5}
+.ph{display:inline-block;font-family:var(--mono);font-size:7px;letter-spacing:1px;color:var(--amber);border:1px solid rgba(224,165,45,0.35);border-radius:3px;padding:1px 4px;margin-left:5px;vertical-align:2px}
+
+/* attribution */
+.attr{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));border:1px solid var(--b1);border-radius:10px;background:var(--s1);margin-bottom:4px;overflow:hidden}
+.at{padding:12px 14px;border-right:1px solid var(--b1);border-top:1px solid var(--b1);margin-top:-1px}
+.atl{font-family:var(--mono);font-size:8px;letter-spacing:1.2px;color:var(--t3);margin-bottom:5px}
+.atv{font-family:var(--fin);font-size:20px;font-weight:600}
+.ats{font-family:var(--mono);font-size:8px;color:var(--t3);margin-top:3px;line-height:1.55}
+.at.active{background:var(--s2)}
+.at .op{color:var(--t4);font-family:var(--mono);font-size:13px;vertical-align:2px;margin-right:5px}
+.units{font-family:var(--mono);font-size:8px;color:var(--t3);letter-spacing:0.5px;margin:6px 2px 14px;line-height:1.6}
+.units b{color:var(--t2);font-weight:500}
+
+/* pipeline ribbon */
+.pipe{display:grid;grid-template-columns:1fr auto 1.1fr auto 1fr;gap:0;align-items:stretch;margin-bottom:12px}
+@media(max-width:760px){.pipe{grid-template-columns:1fr}.parr{transform:rotate(90deg);padding:4px 0}}
+.pc{border:1px solid var(--b1);border-radius:10px;background:var(--s1);padding:12px 15px;cursor:pointer}
+.pc:hover{border-color:var(--b2)} .pc.sel{border-color:var(--gold);background:var(--s2)}
+.pcl{font-family:var(--mono);font-size:8.5px;letter-spacing:1.5px;margin-bottom:6px;line-height:1.8}
+.pcl.en{color:var(--em)} .pcl.ho{color:var(--gold)} .pcl.ex{color:var(--ruby)}
+.pcv{font-family:var(--fin);font-size:28px;font-weight:600;line-height:1}
+.pcs{font-family:var(--mono);font-size:8.5px;color:var(--t3);margin-top:5px;line-height:1.6}
+.parr{display:flex;align-items:center;justify-content:center;padding:0 8px;color:var(--t4);font-size:16px}
+.sync{font-family:var(--mono);font-size:7.5px;letter-spacing:1px;color:var(--teal);border:1px solid rgba(79,216,208,0.3);border-radius:3px;padding:1px 5px;margin-left:6px}
+
+.pdetail{display:none;border:1px solid var(--b1);border-left:2px solid var(--gold);border-radius:10px;background:var(--s1);padding:13px 16px;margin:-2px 0 12px}
+.pdetail.show{display:block}
+.pdt{font-family:var(--mono);font-size:9px;letter-spacing:1.2px;color:var(--gold);margin-bottom:9px;line-height:1.7}
+.prow{display:grid;grid-template-columns:90px 150px 62px minmax(160px,1fr) 110px;gap:10px;font-family:var(--mono);font-size:9.5px;padding:6px 0;border-bottom:1px solid var(--b1);align-items:center}
+@media(max-width:760px){.prow{grid-template-columns:1fr 1fr;gap:4px 10px}}
+.prow:last-child{border-bottom:none}
+.prow .tk{color:var(--t1);font-weight:500}
+.badge{display:inline-block;font-size:8px;letter-spacing:1px;border-radius:3px;padding:2px 6px}
+.badge.long{color:var(--em);border:1px solid rgba(45,224,138,0.35)}
+.badge.short{color:var(--ruby);border:1px solid rgba(255,77,109,0.35)}
+.badge.sigx{color:var(--amber);border:1px solid rgba(224,165,45,0.35)}
+.badge.rrx{color:var(--ruby);border:1px solid rgba(255,77,109,0.35)}
+
+.sec{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px;margin:20px 0 10px}
+.sect{font-size:15px;font-weight:500}
+.secr{margin-left:auto;font-family:var(--mono);font-size:8px;color:var(--t3);letter-spacing:1px;line-height:1.6}
+
+/* next in / next out */
+.evict{display:grid;grid-template-columns:1fr auto 1fr;gap:0;align-items:stretch;margin-bottom:6px}
+@media(max-width:760px){.evict{grid-template-columns:1fr}.margin{padding:12px 0}}
+.ev{border:1px solid var(--b1);border-radius:10px;background:var(--s1);padding:13px 16px;min-width:0}
+.ev.in{border-left:2px solid var(--em)} .ev.out{border-right:2px solid var(--ruby)}
+.evl{font-family:var(--mono);font-size:8.5px;letter-spacing:1.5px;margin-bottom:8px;line-height:1.7}
+.ev.in .evl{color:var(--em)} .ev.out .evl{color:var(--ruby)}
+.evtk{font-family:var(--fin);font-size:23px;font-weight:600}
+.evfn{font-family:var(--mono);font-size:9px;color:var(--t2);margin-top:2px;line-height:1.6}
+.evcq{font-family:var(--mono);font-size:9.5px;margin-top:8px;color:var(--t2);line-height:1.7}
+.evcq b{font-size:14px;font-weight:500}
+.ev.in .evcq b{color:var(--em)} .ev.out .evcq b{color:var(--ruby)}
+.margin{display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 18px;gap:4px}
+.mgl{font-family:var(--mono);font-size:8px;letter-spacing:1.5px;color:var(--t3)}
+.mgv{font-family:var(--fin);font-size:24px;font-weight:600;color:var(--gold)}
+.mgs{font-family:var(--mono);font-size:8px;color:var(--t3);text-align:center;line-height:1.6;max-width:170px}
+
+/* reward-exhausted info banner (was QC) */
+.info{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;border:1px solid rgba(79,216,208,0.3);border-left:3px solid var(--teal);background:var(--teal-dim);border-radius:8px;padding:11px 14px;margin:12px 0;font-size:11.5px;line-height:1.65;color:var(--t2)}
+.info b{color:var(--teal);font-weight:500}
+.info .who{font-family:var(--mono);font-size:8.5px;letter-spacing:1px;color:var(--t3);white-space:nowrap;margin-left:auto;padding-top:2px}
+
+/* NAV chart */
+.chartbox{border:1px solid var(--b1);border-radius:12px;background:var(--s1);padding:14px 14px 10px;margin-bottom:6px}
+.ch-head{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:8px}
+.toggle{display:flex;border:1px solid var(--b2);border-radius:6px;overflow:hidden;font-family:var(--mono);font-size:8.5px;letter-spacing:1px;margin-left:auto}
+.tg{padding:5px 10px;color:var(--t3);cursor:pointer;background:none;border:none;font-family:inherit;font-size:inherit;letter-spacing:inherit}
+.tg.on{color:var(--gold);background:var(--gold-dim)}
+.mrets{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin-top:8px;padding-bottom:4px}
+.mr{text-align:center;font-family:var(--mono);min-width:0}
+.mrv{font-size:9px} .mrv.up{color:var(--em)} .mrv.dn{color:var(--ruby)}
+.mrl{font-size:7px;color:var(--t4);margin-top:2px}
+
+/* holdings table */
+.tblbox{border:1px solid var(--b1);border-radius:12px;background:var(--s1);overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;min-width:920px;border-collapse:collapse;font-family:var(--mono);font-size:10px}
+th{font-size:8.5px;letter-spacing:1.2px;color:var(--t3);font-weight:400;text-align:left;padding:10px 11px;border-bottom:1px solid var(--b1);cursor:pointer;white-space:nowrap;-webkit-user-select:none;user-select:none}
+th:hover{color:var(--t2)} th .sa{color:var(--gold)}
+td{padding:9px 11px;border-bottom:1px solid var(--b1);color:var(--t2);white-space:nowrap}
+tr.h:hover td{background:var(--s2);cursor:pointer}
+tr.h.open td{background:var(--s2)}
+td.tk{color:var(--t1);font-weight:500}
+.up{color:var(--em)} .dn{color:var(--ruby)} .gdt{color:var(--gold)}
+.cvb{display:inline-block;font-size:7.5px;letter-spacing:0.8px;border-radius:3px;padding:2px 6px}
+.cvb.max{color:var(--em);border:1px solid rgba(45,224,138,0.4)}
+.cvb.tac{color:var(--teal);border:1px solid rgba(79,216,208,0.4)}
+.cvb.red{color:var(--amber);border:1px solid rgba(224,165,45,0.4)}
+.cvb.na{color:var(--t4);border:1px solid var(--b2)}
+.rrflag{color:var(--amber);border-bottom:1px dotted var(--amber)}
+tr.drawer td{background:var(--bg);padding:0;border-bottom:1px solid var(--b2);white-space:normal}
+.dwrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;padding:16px}
+.dcol{min-width:0}
+.dh{font-family:var(--mono);font-size:8.5px;letter-spacing:1.2px;color:var(--gold);margin-bottom:8px}
+.dl{display:flex;justify-content:space-between;gap:12px;font-family:var(--mono);font-size:9.5px;padding:3px 0;color:var(--t3)}
+.dl b{color:var(--t1);font-weight:400;text-align:right;min-width:0;overflow-wrap:anywhere}
+.dnote{grid-column:1/-1;margin-top:4px;padding-top:10px;border-top:1px dashed var(--b2);font-family:var(--mono);font-size:8.5px;color:var(--teal);line-height:1.6}
+
+/* right rail */
+.rt{font-family:var(--mono);font-size:8.5px;letter-spacing:2px;color:var(--t4);margin:0 0 10px}
+.wf{border:1px solid var(--b1);border-radius:10px;background:var(--s1);padding:13px 14px;margin-bottom:16px}
+.wfr{display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:9.5px;padding:5px 0;color:var(--t2)}
+.wfr .v{color:var(--t1)} .wfr .v.gd{color:var(--gold)} .wfr .v.g{color:var(--em)} .wfr .v.t{color:var(--teal)}
+.wfr.final{border-top:1px solid var(--b2);margin-top:5px;padding-top:9px}
+.bar{height:5px;border-radius:3px;background:var(--s2);margin:8px 0 2px;position:relative;overflow:hidden}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--gold),#e0c17e);border-radius:3px}
+.bar u{position:absolute;top:-2px;bottom:-2px;width:1px;background:var(--t2)}
+.cvsum{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:16px}
+.cvc{border:1px solid var(--b1);border-radius:8px;background:var(--s1);padding:10px 11px}
+.cvcl{font-family:var(--mono);font-size:7.5px;letter-spacing:1.2px;color:var(--t3)}
+.cvcv{font-family:var(--fin);font-size:21px;font-weight:600;margin-top:3px}
+.chip{display:flex;gap:9px;align-items:flex-start;border:1px solid var(--b1);border-radius:8px;background:var(--s1);padding:10px 12px;margin-bottom:9px;cursor:pointer;font-size:11px;line-height:1.55;color:var(--t2)}
+.chip:hover{border-color:var(--b2)}
+.chip .ic{font-size:12px;margin-top:1px}
+.chip b{color:var(--t1);font-weight:500}
+.chip .goto{font-family:var(--mono);font-size:8px;color:var(--teal);letter-spacing:1px;display:block;margin-top:4px}
+.stance{border:1px solid rgba(45,224,138,0.3);background:var(--em-dim);border-radius:8px;padding:10px 12px;margin-bottom:16px;font-family:var(--mono);font-size:9.5px;letter-spacing:1px;color:var(--em)}
+.stance small{display:block;color:var(--t3);letter-spacing:0.5px;margin-top:4px;font-size:8.5px}
+.railoff{opacity:0.35;pointer-events:none;filter:grayscale(0.4)}
+.offtag{font-family:var(--mono);font-size:7.5px;letter-spacing:1px;color:var(--ruby);border:1px solid rgba(255,77,109,0.35);border-radius:3px;padding:1px 5px;margin-left:6px;display:none}
+.offtag.show{display:inline-block}
+
+/* per-view developer notes */
+.devd{max-width:760px;margin:16px 0 8px;border:1px dashed var(--b2);border-radius:8px;padding:8px 12px}
+.devd summary{font-family:var(--mono);font-size:8.5px;letter-spacing:1.5px;color:var(--t4);cursor:pointer}
+.devd p{font-size:10.5px;line-height:1.7;color:var(--t3);margin-top:8px}
+/* agent slide-in (mindwealth_v7 S8 mechanic) */
+.agent{position:fixed;right:16px;bottom:110px;width:min(330px,calc(100vw - 32px));z-index:85;border:1px solid rgba(197,160,89,0.5);border-radius:12px;background:var(--s1);box-shadow:0 20px 60px rgba(0,0,0,0.75);transform:translateX(120%);transition:transform .45s ease;overflow:hidden}
+.agent.show{transform:translateX(0)}
+.agh{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--b1);font-family:var(--mono);font-size:8.5px;letter-spacing:1.5px;color:var(--gold)}
+.agh .pulse{width:7px;height:7px;border-radius:50%;background:var(--amber);animation:agp 1.2s infinite}
+@keyframes agp{0%,100%{opacity:1}50%{opacity:0.3}}
+.agh .x{margin-left:auto;cursor:pointer;color:var(--t3);font-size:13px;letter-spacing:0}
+.agb{padding:12px 14px;font-size:11.5px;line-height:1.65;color:var(--t2)}
+.agb b{color:var(--t1);font-weight:500}
+.agb .act{display:inline-block;margin-top:8px;font-family:var(--mono);font-size:8.5px;letter-spacing:1px;color:var(--teal);border:1px solid rgba(79,216,208,0.3);border-radius:5px;padding:4px 9px;cursor:pointer}
+.agf{padding:7px 14px;border-top:1px solid var(--b1);font-family:var(--mono);font-size:7.5px;color:var(--t4);letter-spacing:0.5px}
+.agentbtn{position:fixed;right:16px;bottom:62px;z-index:84;width:38px;height:38px;border-radius:50%;border:1px solid var(--b2);background:var(--s1);color:var(--gold);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.agentbtn .bdg{display:none;position:absolute;top:-2px;right:-2px;width:9px;height:9px;border-radius:50%;background:var(--ruby)}
+.agentbtn.hasalert .bdg{display:block}
+/* dev notes */
+.devbtn{position:fixed;right:16px;bottom:16px;z-index:80;font-family:var(--mono);font-size:9px;letter-spacing:1.5px;padding:9px 14px;border-radius:20px;border:1px solid var(--gold);background:var(--bg);color:var(--gold);cursor:pointer}
+.devnotes{display:none;position:fixed;right:12px;bottom:60px;width:min(420px,calc(100vw - 24px));max-height:70vh;overflow:auto;z-index:80;border:1px solid var(--gold);border-radius:12px;background:var(--s1);padding:16px 18px;box-shadow:0 20px 60px rgba(0,0,0,0.7);-webkit-overflow-scrolling:touch}
+.devnotes.show{display:block}
+.dn-h{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--gold);margin:12px 0 6px}
+.dn-h:first-child{margin-top:0}
+.devnotes p,.devnotes li{font-size:11px;line-height:1.65;color:var(--t2)}
+.devnotes code{font-family:var(--mono);font-size:9.5px;color:var(--teal);background:var(--bg);padding:1px 5px;border-radius:3px;overflow-wrap:anywhere}
+.devnotes ul{padding-left:16px;margin:4px 0}
+footer{padding:14px 18px;border-top:1px solid var(--b1);font-family:var(--mono);font-size:8.5px;color:var(--t4);letter-spacing:1px;display:flex;flex-wrap:wrap;gap:8px 20px}
+footer .r{margin-left:auto}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="tb">
+  <div class="logo">Mind<em>Wealth</em></div>
+  <div class="tabs">
+    <div class="tn">DASHBOARD</div><div class="tn">SIGNALS · 103</div><div class="tn">MACRO · RUNIC</div>
+    <div class="tn">SUPER SENTIMENT</div><div class="tn">CONVICTION</div>
+    <div class="tn on">PORTFOLIO</div><div class="tn">OVERWATCH</div>
+  </div>
+  <div class="tbr"><span><span class="dot"></span>VIX NORMAL</span><span>Jul 15, 05:30 AM</span><span class="admin">admin</span></div>
+</div>
+
+<div class="rs">
+  <span><b class="g">VIX REGIME: NORMAL</b></span><span class="rssep"></span>
+  <span>VIX <b class="gd">15.35</b></span><span class="rssep"></span>
+  <span>SSI MULT <b class="gd">1.00×</b></span><span class="rssep"></span>
+  <span>CEILING <b>80%</b></span><span class="rssep"></span>
+  <span>VAL REGIME <b class="a">EXTREME</b></span><span class="rssep"></span>
+  <span>RUNIC <b class="g">STRATEGIC BULLISH</b></span>
+  <span class="right">80% regime max × 1.00 VIX × 1.00 trend × 1.00 HY credit × 1.00 SSI</span>
+</div>
+
+<div class="body">
+
+  <!-- LEFT NAV -->
+  <div class="nav">
+    <div class="ngl">PORTFOLIO</div>
+    <div class="ni on" id="nav-ov" onclick="go('ov')"><div class="nd gold"></div><div><div class="nn">Overview</div><div class="ns2">NAV · entries · exits</div></div></div>
+    <div class="ni" id="nav-sa" onclick="go('sa')"><div class="nd g"></div><div><div class="nn">Sizing &amp; Allocation</div><div class="ns2">regime-aware sizing</div></div></div>
+    <div class="ni" id="nav-pr" onclick="go('pr')"><div class="nd r"></div><div><div class="nn">Portfolio Risk</div><div class="ns2">correlation · holdings</div></div></div>
+    <div class="ni" id="nav-pl" onclick="go('pl')"><div class="nd t"></div><div><div class="nn">Live P&amp;L</div><div class="ns2">open positions · conflicts</div></div></div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+  <!-- ═══ OVERVIEW VIEW ═══ -->
+  <div class="view show" id="v-ov">
+
+    <div class="modebar">
+      <span class="modelbl">MODEL BOOK</span>
+      <div class="modes">
+        <button class="mode" id="m-base" onclick="setMode('base')">BASE</button>
+        <button class="mode" id="m-ssi" onclick="setMode('ssi')">BASE + SSI</button>
+        <button class="mode" id="m-cv" onclick="setMode('cv')">BASE + CONVICTION</button>
+        <button class="mode on" id="m-enh" onclick="setMode('enh')">ENHANCED · LIVE</button>
+      </div>
+    </div>
+    <div class="modehint" id="modehint"></div>
+
+    <div class="mast">
+      <div class="mhero">
+        <div class="navlbl" id="navlbl">PORTFOLIO VALUE · NAV · ENHANCED</div>
+        <div class="navval" id="navval">$10,684,220</div>
+        <div class="navsub">All figures USD · FX at daily close · as of Jul 15, 05:30 ET · one ledger, four parallel valuations</div>
+      </div>
+      <div class="mstats">
+        <div class="ms"><div class="msl">DAY MTM</div><div class="msv up" id="ms-day">+$63,400</div><div class="mss" id="ms-days">+0.60% today</div></div>
+        <div class="ms"><div class="msl">SINCE GO-LIVE</div><div class="msv up" id="ms-inc">+6.84%</div><div class="mss">MTM incl. open positions</div></div>
+        <div class="ms"><div class="msl">POSITIONS</div><div class="msv">58<span style="font-size:14px;color:var(--t3)"> / 60</span></div><div class="mss">identical in all books</div></div>
+        <div class="ms"><div class="msl">DEPLOYED</div><div class="msv gd" id="ms-dep">76.2%</div><div class="mss" id="ms-deps">vs SSI ceiling 80% · cash 23.8%</div></div>
+        <div class="ms"><div class="msl">L / S · NET · GROSS</div><div class="msv" style="font-size:17px;padding-top:3px">52 / 6</div><div class="mss">net +79% · gross 96%</div></div>
+        <div class="ms"><div class="msl">SHARPE<span class="ph">PLACEHOLDER</span></div><div class="msv" id="ms-sh">1.92</div><div class="mss">Test 1C · N=60 · pending final candidate</div></div>
+      </div>
+    </div>
+
+    <div class="attr">
+      <div class="at" id="at-base"><div class="atl">BASE RETURN</div><div class="atv up">+5.98%</div><div class="ats">macro-gated signals · Quality-Score construction · 1/N · fully deployed</div></div>
+      <div class="at" id="at-ssi"><div class="atl"><span class="op">+</span>SSI DEPLOYMENT EFFECT</div><div class="atv dn">−0.31%</div><div class="ats">effect of the deployment ceiling on returns</div></div>
+      <div class="at" id="at-cv"><div class="atl"><span class="op">+</span>CONVICTION SIZING EFFECT</div><div class="atv up">+1.17%</div><div class="ats">Business-Quality tiers resize equity positions</div></div>
+      <div class="at active" id="at-enh"><div class="atl"><span class="op">=</span>ENHANCED · LIVE</div><div class="atv up">+6.84%</div><div class="ats">5.98 − 0.31 + 1.17 = 6.84</div></div>
+      <div class="at"><div class="atl">VERDICT TO DATE</div><div class="atv" style="font-size:12px;font-family:var(--mono);color:var(--t2);line-height:1.6;padding-top:2px">Overlays net <span class="up">+0.86%</span> to date. The real test is a stress period — calm markets prove little.</div></div>
+    </div>
+
+    <div class="pipe">
+      <div class="pc" id="pc-en" onclick="pipe('en')">
+        <div class="pcl en">NEW ENTRIES · TODAY<span class="sync">SIGNALS PAGE FEED</span></div>
+        <div class="pcv">4</div>
+        <div class="pcs">Admitted by Signal Quality Score rank into freed slots · 4L / 0S</div>
+      </div>
+      <div class="parr">→</div>
+      <div class="pc" id="pc-ho" onclick="pipe('ho')">
+        <div class="pcl ho">HOLDINGS</div>
+        <div class="pcv">58</div>
+        <div class="pcs">52 long · 6 short · net +79% · gross 96% of deployed capital</div>
+      </div>
+      <div class="parr">→</div>
+      <div class="pc" id="pc-ex" onclick="pipe('ex')">
+        <div class="pcl ex">NEW EXITS · TODAY<span class="sync">SIGNALS PAGE FEED</span></div>
+        <div class="pcv">2</div>
+        <div class="pcs">1 signal exit · 1 R:R exit · 0 evictions · 1 cross-function conflict</div>
+      </div>
+    </div>
+
+    <div class="pdetail" id="pd-en">
+      <div class="pdt">NEW ENTRIES — TODAY · same rows as Signals → New Entries</div>
+      <div class="prow"><span class="tk">HDFCBANK.NS</span><span>TRENDPULSE · Daily</span><span class="badge long">LONG</span><span>Score 63.1 · rank 4 of 58 · slot freed by BABA exit</span><span class="up">FWD WR 77.5%</span></div>
+      <div class="prow"><span class="tk">GDX</span><span>OSCILLATOR DELTA · Daily</span><span class="badge long">LONG</span><span>Score 58.9 · rank 7 · beat next candidate by +6.2</span><span class="up">FWD WR 81.0%</span></div>
+      <div class="prow"><span class="tk">MCY.NZ</span><span>TRENDPULSE · Weekly</span><span class="badge long">LONG</span><span>Score 55.4 · rank 11 · NZ Core sleeve — outside ceiling</span><span class="up">FWD WR 76.4%</span></div>
+      <div class="prow"><span class="tk">META</span><span>TRENDPULSE · Daily</span><span class="badge long">LONG</span><span>Score 52.8 · rank 14 · Claude Shortlisted (multi-function) — size/confirmation note per spec; any ranking-boost mechanic UNDOCUMENTED, confirm with Divyanshu</span><span class="up">FWD WR 77.5%</span></div>
+    </div>
+    <div class="pdetail" id="pd-ex">
+      <div class="pdt">NEW EXITS — TODAY · same rows as Signals → New Exits (below Claude Shortlisted)</div>
+      <div class="prow"><span class="tk">BABA</span><span>DELTADRIFT · Daily</span><span class="badge sigx">SIGNAL EXIT</span><span>Exit @ $108.98 · CROSS-FUNCTION CONFLICT: 2 functions still long → see Live P&amp;L</span><span class="up">Closed +20.4%</span></div>
+      <div class="prow"><span class="tk">EFA</span><span>OSCILLATOR DELTA · Daily</span><span class="badge rrx">R:R EXIT</span><span>Dynamic R:R &lt; 1.0× — reward largely exhausted · rule under Ahil's Test 6/8</span><span class="dn">Closed −0.8%</span></div>
+    </div>
+
+    <div class="sec"><div class="sect">Next In / Next Out — the admission engine, live</div><div class="secr">TEST 1C · RANK-AND-EVICT BY SIGNAL QUALITY SCORE · RE-RANKED NIGHTLY</div></div>
+    <div class="evict">
+      <div class="ev in">
+        <div class="evl">NEXT IN — highest-score candidate not held</div>
+        <div class="evtk">NVDA</div>
+        <div class="evfn">BASELINE DIVERGENCE · Weekly · LONG · fired Jul 10</div>
+        <div class="evcq">SCORE <b>58.7</b> · FWD WR 65.3% · ER alpha/trade +4.1%</div>
+      </div>
+      <div class="margin">
+        <div class="mgl">EVICTION MARGIN</div>
+        <div class="mgv">+40.8</div>
+        <div class="mgs">challenger score − weakest holding score. Pure 1C evicts whenever this is &gt; 0. A minimum-margin variant (evict only if ≥ X pts, to cut churn) is UNTESTED — on Ahil's list.</div>
+      </div>
+      <div class="ev out">
+        <div class="evl">NEXT OUT — weakest holding by score</div>
+        <div class="evtk">XLV</div>
+        <div class="evfn">TRENDPULSE · Weekly · LONG · entered Jun 02</div>
+        <div class="evcq">SCORE <b>17.9</b> · R:R dynamic 1.1× · hold-time used 84%</div>
+      </div>
+    </div>
+
+
+    <div class="sec"><div class="sect">NAV since go-live</div><div class="secr">MONTHLY · DRAWDOWN SHADED · BASE GHOST LINE · SAME COMPONENT AS DASHBOARD CHART</div></div>
+    <div class="chartbox">
+      <div class="ch-head">
+        <span style="font-family:var(--mono);font-size:9px;color:var(--t3)" id="chsum">$10.0M → <span style="color:var(--em)">$10.68M</span> · max DD <span style="color:var(--ruby)">−4.6%</span> · recovered</span>
+        <div class="toggle">
+          <button class="tg on" id="tg-mtm" onclick="navmode('mtm')">INCL. MTM</button>
+          <button class="tg" id="tg-cl" onclick="navmode('cl')">CLOSED TRADES ONLY</button>
+          <button class="tg on" id="tg-bx" onclick="benchtoggle()">S&amp;P 500</button>
+        </div>
+      </div>
+      <svg id="navsvg" viewBox="0 0 900 220" width="100%" height="220" preserveAspectRatio="xMidYMid meet" role="img" aria-label="NAV line chart with drawdown shading"></svg>
+      <div class="mrets" id="mrets"></div>
+    </div>
+
+    <div class="sec"><div class="sect">Contribution — since go-live</div><div class="secr">P&amp;L CONTRIBUTION IN BPS OF STARTING NAV · FROM HOLDINGS PAYLOAD</div></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-bottom:6px">
+      <div class="wf" style="margin-bottom:0"><div style="font-family:var(--mono);font-size:8.5px;letter-spacing:1.5px;color:var(--em);margin-bottom:6px">TOP CONTRIBUTORS</div>
+        <div class="wfr"><span>NVDA · TRENDPULSE W</span><span class="v g">+86 bps</span></div>
+        <div class="wfr"><span>BYD.TO · DELTADRIFT W</span><span class="v g">+42 bps</span></div>
+        <div class="wfr"><span>SLV · DELTADRIFT W</span><span class="v g">+19 bps</span></div>
+        <div class="wfr"><span>GLD · DELTADRIFT W</span><span class="v g">+17 bps</span></div>
+        <div class="wfr"><span>WMT · DELTADRIFT D</span><span class="v g">+12 bps</span></div>
+      </div>
+      <div class="wf" style="margin-bottom:0"><div style="font-family:var(--mono);font-size:8.5px;letter-spacing:1.5px;color:var(--ruby);margin-bottom:6px">TOP DETRACTORS</div>
+        <div class="wfr"><span>ETH-USD · TRENDPULSE W</span><span class="v" style="color:var(--ruby)">−9 bps</span></div>
+        <div class="wfr"><span>CSCO · TRENDPULSE W</span><span class="v" style="color:var(--ruby)">−8 bps</span></div>
+        <div class="wfr"><span>SPY short · SIGMASHELL D</span><span class="v" style="color:var(--ruby)">−4 bps</span></div>
+        <div class="wfr"><span>EFA · OSC DELTA D (closed)</span><span class="v" style="color:var(--ruby)">−3 bps</span></div>
+        <div class="wfr"><span>XLV · TRENDPULSE W</span><span class="v" style="color:var(--ruby)">−2 bps</span></div>
+      </div>
+    </div>
+
+    <div class="sec"><div class="sect">Holdings — ranked by Signal Quality Score</div><div class="secr">CLICK ROW → DRAWER · CLICK HEADERS TO SORT ▲▼ · <button class="tg on" id="tg-grp" style="border:1px solid var(--b2);border-radius:5px" onclick="grptoggle()">GROUP SAME-ASSET: ON</button></div></div>
+    <div class="tblbox">
+      <table id="htbl">
+        <thead><tr>
+          <th data-k="tk">TICKER</th><th data-k="fn">FUNCTION · INTERVAL</th><th data-k="dir">DIR</th>
+          <th data-k="entryTs">ENTRY</th><th data-k="mtm">MTM %</th>
+          <th data-k="cq">SCORE <span class="sa">▼</span></th><th data-k="rank">RANK</th>
+          <th data-k="rr">R:R DYN</th><th data-k="win">HOLD-TIME USED</th>
+          <th data-k="cv">SIZE · <span id="sizehead" class="gdt">ENHANCED</span></th>
+          <th data-k="cvt">CONVICTION</th><th data-k="cl">CLUSTER</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══ SIZING & ALLOCATION VIEW ═══ -->
+  <div class="view" id="v-sa">
+    <div class="sec" style="margin-top:4px"><div class="sect">Sizing &amp; Allocation</div>
+      <div class="secr">ONE SIZING ENGINE · TRUE SLEEVE WEIGHTS · SCENARIOS SCALE THE CEILING ONLY</div></div>
+    <div class="modebar">
+      <span class="modelbl">SCENARIO</span>
+      <div class="modes" id="scen-tabs">
+        <button class="mode on" onclick="setScen('normal')" id="sc-normal">NORMAL</button>
+        <button class="mode" onclick="setScen('stress')" id="sc-stress">STRESS</button>
+        <button class="mode" onclick="setScen('lowvol')" id="sc-lowvol">LOW VOL</button>
+        <button class="mode" onclick="setScen('auto')" id="sc-auto">AUTO</button>
+      </div>
+      <span class="modehint" style="margin:0" id="scenhint">Ceiling 80% · deployed 76.2% · what-if preview only — never writes to the live book</span>
+    </div>
+    <div class="wf" style="max-width:760px" id="sleeves"></div>
+    <div class="tblbox" style="max-width:760px;margin-top:12px">
+      <table style="min-width:0">
+        <thead><tr><th>ASSET</th><th>SLEEVE</th><th>CONVICTION</th><th>SIZE</th></tr></thead>
+        <tbody>
+          <tr><td class="tk">NVDA</td><td>Semis</td><td><span class="cvb max">MAX</span></td><td class="gdt">$172,000</td></tr>
+          <tr><td class="tk">WMT</td><td>US Tech</td><td><span class="cvb tac">TACTICAL 75%</span></td><td class="gdt">$129,000</td></tr>
+          <tr><td class="tk">EURUSD</td><td>FX</td><td><span class="cvb na">n/a · base size</span></td><td class="gdt">$172,000</td></tr>
+          <tr><td class="tk">GDX</td><td>Commodities</td><td><span class="cvb na">n/a · base size</span></td><td class="gdt">$172,000</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <details class="devd"><summary>Developer notes</summary>
+      <p>This page no longer computes anything — it displays /portfolio/sizing output. Bars are true portfolio weights (Σ position values in sleeve ÷ NAV) vs sleeve ceiling; they cannot exceed 100% by construction. Slots line = ceiling ÷ per-slot weight. FX/ETF/commodities arrive base-sized with conviction n/a (never BLOCKED $0). Scenario buttons change only the endpoint query param — a uniformly re-scaled ceiling on the same book. SIZE here must equal SIZE on Overview for the same position, always.</p>
+    </details>
+    <span class="back" onclick="go('ov')">← BACK TO OVERVIEW</span>
+  </div>
+
+  <!-- ═══ PORTFOLIO RISK VIEW ═══ -->
+  <div class="view" id="v-pr">
+    <div class="sec" style="margin-top:4px"><div class="sect">Portfolio Risk</div>
+      <div class="secr">CONVICTION · CORRELATION · CONCENTRATION</div></div>
+
+    <div class="rt" style="margin-top:6px">CONVICTION ENGINE · EQUITY HOLDINGS</div>
+    <div class="cvsum" style="grid-template-columns:repeat(4,minmax(120px,1fr));max-width:760px">
+      <div class="cvc"><div class="cvcl">MAX ≥ +8</div><div class="cvcv" style="color:var(--em)">6</div></div>
+      <div class="cvc"><div class="cvcl">TACTICAL ≥ +5</div><div class="cvcv" style="color:var(--teal)">14</div></div>
+      <div class="cvc"><div class="cvcl">REDUCED ≥ +2</div><div class="cvcv" style="color:var(--amber)">9</div></div>
+      <div class="cvc"><div class="cvcl">YIELD TRAP</div><div class="cvcv" style="color:var(--ruby)">1</div></div>
+    </div>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--t3);margin:-8px 0 16px">MAX conviction: NVDA · BYD.TO · TCEHY · WMT · SONY · NU &nbsp;·&nbsp; Yield trap: T.TO (hard zero, no entry)</div>
+
+    <div class="rt">CORRELATION HOT ZONES <span style="color:var(--t4)">· 250-DAY · ETF PROXIES · AS OF JUL 10 (DEMO — BINDS LIVE)</span></div>
+    <div class="conf" style="border-color:rgba(255,77,109,0.4);border-left-color:var(--ruby);background:var(--ruby-dim);max-width:760px">
+      <div class="confrow" style="border-top:none"><span>Global risk-on × US Tech</span><b>ρ 0.93</b><span>pair cap 20% · action level</span></div>
+      <div class="confrow"><span>Semiconductors × US Tech</span><b>ρ 0.87</b><span>pair cap 20% · action level</span></div>
+      <div class="confnote">Proxies: Global risk-on = SPY · US Tech = QQQ · Semis = SOXX · Financials = XLF · Commodities = GLD · Canada defensive = EWC · India = INDA · Bonds = TLT. Note: QQQ is contained within SPY, so ρ ≈ 0.93 between those sleeves is partly definitional — sleeve taxonomy overlap is under review before pair-cap actions are automated.</div>
+    </div>
+    <p style="font-size:12px;color:var(--t2);max-width:720px;line-height:1.7;margin:12px 0">The full correlation matrix and the Enter-My-Portfolio analysis continue as on the live page. Sleeve weight bars return here once they read true portfolio weights from the sizing engine — the same numbers as Sizing &amp; Allocation, one source.</p>
+    <details class="devd"><summary>Developer notes</summary>
+      <p>Cluster-weight display decision: MADE — the old entitlement figures (351%/297%) retire with the sizing engine; no further decision pending. Bars and breach math re-bind to true-weight fields from /portfolio/sizing when Divyanshu ships it; until then leave the live page's bars untouched. Vocabulary: "sleeve" for budgets, "cluster" only in correlation context. Taxonomy overlap (SPY ⊃ QQQ) flagged to Rohit — options: redefine Global risk-on ex-US-Tech, or exempt that pair from the cap.</p>
+    </details>
+    <span class="back" onclick="go('ov')">← BACK TO OVERVIEW</span>
+  </div>
+
+  <!-- ═══ LIVE P&L VIEW ═══ -->
+  <div class="view" id="v-pl">
+    <div class="sec" style="margin-top:4px"><div class="sect">Live P&amp;L — open positions</div>
+      <div class="secr">CROSS-FUNCTION EXIT CONFLICTS FIRST · ALWAYS</div></div>
+
+    <div class="conf">
+      <div class="confh"><span class="x">⚠ CROSS-FUNCTION EXIT CONFLICT</span><span class="tk">BABA</span><span>· LONG EQUITY</span></div>
+      <div class="confrow" style="border-top:none"><span>Triggering exit</span><b>DELTADRIFT (Daily) @ $108.98 · 2026-07-14</b></div>
+      <div class="confrow"><span>Remaining leg 1</span><b>TRENDPULSE (Daily) · MTM +20.40%</b><span>held since Jun 05 · implied natural exit ~Jul 22 (entry + BT avg hold 47d)</span></div>
+      <div class="confrow"><span>Remaining leg 2</span><b>SIGMASHELL (Daily) · MTM +10.42%</b><span>held since Jun 18 · implied natural exit ~Aug 05 (entry + BT avg hold 48d)</span></div>
+      <div class="confrow"><span>Dynamic R:R (asset)</span><b class="rrflag">−0.55 · reward exhausted</b><span>price 112.35 past avg exit ~102.66</span></div>
+      <div class="confnote">One function says the move is over and no modeled upside remains — the remaining legs are the lemon risk the eviction + R:R machinery is designed to remove. Surfaced, not auto-acted, until the tests decide the rule.</div>
+    </div>
+    <div class="conf" style="opacity:0.85">
+      <div class="confh"><span class="x">⚠ CROSS-FUNCTION EXIT CONFLICT</span><span class="tk">GLD</span><span>· COMMODITY — FLAG PROPAGATES TO ALL LEGS</span></div>
+      <div class="confrow" style="border-top:none"><span>Triggering exit</span><b>TRENDPULSE (Weekly) @ $312.40 · 2026-07-13</b></div>
+      <div class="confrow"><span>Remaining leg</span><b>DELTADRIFT (Weekly) · MTM +6.1%</b><span>held since Jun 24 · implied natural exit ~Aug 18 (entry + BT avg hold 55d) · carries ⚑ badge on every surface</span></div>
+    </div>
+
+    <div class="rt" style="margin-top:18px">OPEN POSITIONS · 58</div>
+    <div class="tblbox" style="max-width:760px">
+      <table style="min-width:0">
+        <thead><tr><th>ASSET</th><th>FUNCTION</th><th>MTM</th><th>STATUS</th></tr></thead>
+        <tbody>
+          <tr><td class="tk">NVDA</td><td>TRENDPULSE · Weekly</td><td class="up">+21.4%</td><td>active</td></tr>
+          <tr><td class="tk">GLD <span style="color:var(--amber);font-size:8px;border:1px solid rgba(224,165,45,0.4);border-radius:3px;padding:1px 4px">⚑ CROSS-FN EXIT</span></td><td>DELTADRIFT · Weekly</td><td class="up">+6.1%</td><td>conflict — see card above</td></tr>
+          <tr><td class="tk">BYD.TO</td><td>DELTADRIFT · Weekly</td><td class="up">+17.6%</td><td>active</td></tr>
+          <tr><td class="tk">CSCO</td><td>TRENDPULSE · Weekly</td><td class="dn">−1.2%</td><td>reward exhausted — same-asset check</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:11.5px;color:var(--t3);max-width:720px;line-height:1.7;margin:10px 0">Full open-positions table continues as on the live page.</p>
+    <details class="devd"><summary>Developer notes</summary>
+      <p>Conflict cards render FIRST, before positions — never a footnote. The live page's conflict list is cut off with no scroll: same container overflow bug as the Signals signal-detail popup and the shared drawer; one fix, three surfaces, and the full list (17 assets last week) must render. Implied natural exit dates arrive in the /signals/exits payload — never computed in the frontend.</p>
+    </details>
+    <span class="back" onclick="go('ov')">← BACK TO OVERVIEW</span>
+  </div>
+
+  </div>
+
+  <!-- RIGHT RAIL -->
+  <div class="rail">
+    <div class="rt">DEPLOYMENT WATERFALL · SSI <span class="offtag" id="off-ssi">OVERLAY OFF</span></div>
+    <div class="wf" id="rail-ssi">
+      <div class="wfr"><span>VIX regime max</span><span class="v">80%</span></div>
+      <div class="wfr"><span>× VIX multiplier</span><span class="v">1.00</span></div>
+      <div class="wfr"><span>× trend</span><span class="v">1.00</span></div>
+      <div class="wfr"><span>× HY credit</span><span class="v">1.00</span></div>
+      <div class="wfr"><span>× SSI multiplier</span><span class="v">1.00</span></div>
+      <div class="wfr final"><span>Final ceiling</span><span class="v gd">80.0%</span></div>
+      <div class="wfr"><span>Deployed</span><span class="v g">76.2%</span></div>
+      <div class="wfr"><span>Cash</span><span class="v t">23.8%</span></div>
+      <div class="bar"><i style="width:76.2%"></i><u style="left:80%"></u></div>
+      <div style="font-family:var(--mono);font-size:7.5px;color:var(--t4);letter-spacing:1px;margin-top:4px">DEPLOYED ▮ &nbsp;·&nbsp; CEILING |</div>
+    </div>
+
+    <div class="stance">RUNIC · STRATEGIC BULLISH<small>Combo A: EASY MONEY · nightly agent · NFCI −0.52</small></div>
+
+    <div class="rt">CONVICTION ENGINE · EQUITY HOLDINGS <span class="offtag" id="off-cv">OVERLAY OFF</span></div>
+    <div class="cvsum" id="rail-cv">
+      <div class="cvc"><div class="cvcl">MAX ≥ +8</div><div class="cvcv" style="color:var(--em)">6</div></div>
+      <div class="cvc"><div class="cvcl">TACTICAL ≥ +5</div><div class="cvcv" style="color:var(--teal)">14</div></div>
+      <div class="cvc"><div class="cvcl">REDUCED ≥ +2</div><div class="cvcv" style="color:var(--amber)">9</div></div>
+      <div class="cvc"><div class="cvcl">YIELD TRAP</div><div class="cvcv" style="color:var(--ruby)">1</div></div>
+    </div>
+
+    <div class="rt">RISK SNAPSHOT · SINCE GO-LIVE</div>
+    <div class="cvsum">
+      <div class="cvc"><div class="cvcl">REALIZED VOL (ANN.)</div><div class="cvcv" style="font-size:17px;color:var(--t1)">8.9%</div></div>
+      <div class="cvc"><div class="cvcl">BETA VS S&amp;P</div><div class="cvcv" style="font-size:17px;color:var(--t1)">0.58</div></div>
+      <div class="cvc"><div class="cvcl">BEST MONTH</div><div class="cvcv" style="font-size:17px;color:var(--em)">+2.3%</div></div>
+      <div class="cvc"><div class="cvcl">WORST MONTH</div><div class="cvcv" style="font-size:17px;color:var(--ruby)">−2.3%</div></div>
+    </div>
+    <div class="rt">RISK</div>
+    <div class="chip" onclick="go('pr')"><span class="ic">⚠</span><span><b>2 correlation hot zones</b> — Global risk-on × US Tech ρ 0.93 · Semis × US Tech ρ 0.87<span class="goto">→ PORTFOLIO RISK</span></span></div>
+    <div class="chip" onclick="go('pr')"><span class="ic">◌</span><span><b>Cluster weights: mechanics confirmed, display decision open</b> — bars sum independently-sized positions vs a single-line ceiling (Divyanshu, 14 Jul). Split budget vs cap display: Rohit to decide.<span class="goto">→ PORTFOLIO RISK · DETAILS</span></span></div>
+    <div class="chip" onclick="go('pl')"><span class="ic">⚠</span><span><b>Cross-function exits: 2 conflicts</b> — BABA (2 legs still long), GLD (commodity auto-flag)<span class="goto">→ LIVE P&amp;L · CONFLICT CARDS</span></span></div>
+  </div>
+</div>
+
+<footer>
+  <span>● OPEN · 58</span><span>NEW ENTRIES · 4</span><span>NEW EXITS · 2</span><span>CONFLICTS · 2</span>
+  <span class="r">● CEILING · 80% · MOCKUP v5 · 4 BOOKS · SAME-ASSET · BENCHMARK · 15 JUL 2026 · ALL NUMBERS ILLUSTRATIVE UNLESS TAGGED</span>
+</footer>
+
+<button class="agentbtn" id="agentbtn" onclick="toggleAgent()" aria-label="AI Analyst">💬<span class="bdg"></span></button>
+<div class="agent" id="agent">
+  <div class="agh"><span class="pulse"></span>OVERWATCH · AUTO-TRIGGERED<span class="x" onclick="dismissAgent()">✕</span></div>
+  <div class="agb"><b>Regime &amp; portfolio watch.</b> VAL REGIME remains EXTREME (Combo E CONFIRMED, bearish valuation) — deployment ceiling unchanged at 80%. New since last visit: <b>cross-function exit conflict on BABA</b> — DeltaDrift exited while 2 functions remain long, asset R:R negative (reward exhausted).<br><span class="act" onclick="go('pl');dismissAgent()">REVIEW LIVE P&amp;L →</span></div>
+  <div class="agf">alerts.json · target_page=portfolio · auto-opened 1.5s · dismissed alerts never re-open this session</div>
+</div>
+<button class="devbtn" onclick="document.getElementById('dev').classList.toggle('show')">DEV NOTES · PARTH / DIVYANSHU / AHIL</button>
+<div class="devnotes" id="dev">
+  <div class="dn-h">FOUR-BOOK ARCHITECTURE</div>
+  <ul>
+    <li><b>One ledger, four valuations:</b> BASE / BASE+SSI / BASE+CONVICTION / ENHANCED — same trades, four sizing vectors. Endpoint: <code>/portfolio/nav?book=base|ssi|cv|enhanced</code></li>
+    <li><b>AHIL — new test item:</b> replay the four books historically on the axiom-compliant 1C base (N=60 &amp; 120). Deliver the attribution identity per period and per regime bucket (Axiom 6). BASE + SSI effect + Conviction effect must equal ENHANCED with zero residual — residual = bug.</li>
+    <li>Conviction hard-blocks = size 0 in the book, never removed from the ledger — keeps membership identical so deltas are pure sizing.</li>
+    <li>NZ Core sleeve excluded from overlay math (fixed allocation, outside ceiling).</li>
+  </ul>
+  <div class="dn-h">NEW IN V5 (15 JUL NIGHT)</div>
+  <ul>
+    <li>Payload additions (Divyanshu): <code>pnl_contribution</code> per position; <code>benchmark</code> (S&P 500) series + realized vol / beta / best-worst month on <code>/portfolio/nav</code>; <code>same_asset_siblings</code> now populates for ALL rows both directions (drives ⊕ NEW / ◔ HELD chips); <code>multi_sig[]</code> agreeing-signals array (drives clickable MULTI-SIG); <code>exit_ref</code> single nearest exit reference string per position (elegant one-liner, replaces the rejected full ladder). Outstanding Signals report (Signals page) gains the same exit_ref as an extra column.</li>
+    <li>GROUP SAME-ASSET toggle: clusters rows of the same ticker (gold inner edge marks grouped rows); default ON.</li>
+    <li>FX: Block E disclosure text ("All assets are US-listed, USD-denominated") is inconsistent with the live multi-currency book (.NS/.TO/.NZ/.HK) — Divyanshu to confirm FX source + conversion timing; disclosure needs a multi-currency variant.</li>
+    <li>Conviction score audit open (surprisingly negative BQ on several names) — confirm daily_update ran, inputs fresh, spot-check 3 names.</li>
+  </ul>
+  <div class="dn-h">MOVED OFF USER SURFACES (15 JUL)</div>
+  <ul>
+    <li>Attribution units: cumulative contribution to total return since go-live, pp of starting NAV — illustrative pending Ahil replay</li>
+    <li>Sync map: New Entries / New Exits = renamed Signals-page feeds; one ledger, two windows</li>
+    <li>Negative R:R banner → replaced by amber flag + SAME-ASSET CHECK section in the drawer (Rohit rule 15 Jul: show negative value; on any negative R:R, check other live/recent signals on the same asset from other function/interval whose longer avg hold may leave scope)</li>
+  </ul>
+  <div class="dn-h">NEGATIVE R:R — SEMANTICS LOCKED (14 JUL)</div>
+  <ul>
+    <li>Negative dynamic R:R = price past backtest avg exit = reward exhausted. By design; ~19% of latest run. NOT a data error.</li>
+    <li>Product treatment: surfaces as exit/eviction candidate; Tests 6/8 quantify. Open display choice: show negative vs cap at 0 on cards.</li>
+  </ul>
+  <div class="dn-h">ENDPOINTS (DIVYANSHU)</div>
+  <ul>
+    <li><code>/portfolio/nav</code> (4 books, daily, closed-only + MTM variants)</li>
+    <li><code>/portfolio/holdings</code> — score, rank, rr_dynamic, hold_time_used_pct, conviction, cluster, size per book</li>
+    <li><code>/signals/entries</code> + <code>/signals/exits</code> (exit_type: signal | rr | eviction; conflict payload per F6: trigger fn, exit price/date, remaining legs + MTM + implied natural exit date (entry + BT avg hold))</li>
+  </ul>
+  <div class="dn-h">FRONTEND (PARTH)</div>
+  <ul>
+    <li>Signals left menu: New Signals → <code>New Entries</code>; add <code>New Exits</code> below Claude Shortlisted</li>
+    <li>Drawer = shared component with Signals popup; fix overflow/scroll once for both. Conflict-list scroll bug on Live P&amp;L shares the same fix</li>
+    <li>ENTRY column sorts on true date (timestamp), both directions. All headers toggle ▲▼</li>
+    <li>Responsive: tested layout targets — left nav becomes horizontal chips &lt;1150px; table scrolls horizontally; masthead wraps. Safari iOS + Chrome</li>
+  </ul>
+  <div class="dn-h">TERMINOLOGY LOCKED</div>
+  <ul>
+    <li>Signal Quality Score / composite_score v4 (UI short label: SCORE) · DRIFT not Degradation · STRATEGIC BULLISH · EASY MONEY / TIGHT MONEY (Combo A only) · "Overwatch · auto-triggered"</li>
+  </ul>
+</div>
+
+<script>
+/* ── view switcher ── */
+function go(v){
+  ['ov','sa','pr','pl'].forEach(k=>{
+    document.getElementById('v-'+k).classList.toggle('show',k===v);
+    document.getElementById('nav-'+k).classList.toggle('on',k===v);
+  });
+  window.scrollTo({top:0});
+}
+
+/* ── pipeline detail toggle ── */
+function pipe(k){
+  const en=document.getElementById('pd-en'), ex=document.getElementById('pd-ex');
+  const cen=document.getElementById('pc-en'), cho=document.getElementById('pc-ho'), cex=document.getElementById('pc-ex');
+  [cen,cho,cex].forEach(c=>c.classList.remove('sel'));
+  if(k==='en'){ const s=en.classList.contains('show'); en.classList.toggle('show',!s); ex.classList.remove('show'); if(!s)cen.classList.add('sel'); }
+  else if(k==='ex'){ const s=ex.classList.contains('show'); ex.classList.toggle('show',!s); en.classList.remove('show'); if(!s)cex.classList.add('sel'); }
+  else { en.classList.remove('show'); ex.classList.remove('show');
+    document.querySelector('#htbl').scrollIntoView({behavior:'smooth',block:'start'}); cho.classList.add('sel'); }
+}
+
+/* ── model books: one ledger, four parallel valuations ── */
+const MODES={
+ base:{label:'BASE', navlbl:'PORTFOLIO VALUE · NAV · BASE',
+   nav:'$10,598,400', day:'+$58,900', days:'+0.56% today', inc:'+5.98%',
+   dep:'96.0%', deps:'fully deployed · no ceiling · cash 4.0% frictional', sh:'1.92',
+   chs:'$10.0M → <span style="color:var(--em)">$10.60M</span> · max DD <span style="color:var(--ruby)">−5.1%</span> · recovered',
+   hint:'<b>BASE</b> — pure model: macro-gated signals + Quality-Score construction (1C), equal weight 1/N, fully deployed. No SSI, no Conviction. The benchmark every overlay must beat.',
+   mtm:[10.00,10.13,10.28,10.17,9.91,10.06,10.29,10.43,10.53,10.60],
+   cl:[10.00,10.08,10.20,10.14,9.97,10.03,10.19,10.31,10.40,10.46],
+   size:()=> '$183k · 1/N', ssi:false, cv:false, hi:['at-base']},
+ ssi:{label:'BASE+SSI', navlbl:'PORTFOLIO VALUE · NAV · BASE + SSI',
+   nav:'$10,567,300', day:'+$60,100', days:'+0.57% today', inc:'+5.67%',
+   dep:'76.2%', deps:'vs SSI ceiling 80% · cash 23.8% at 3.5%', sh:'1.88',
+   chs:'$10.0M → <span style="color:var(--em)">$10.57M</span> · max DD <span style="color:var(--ruby)">−4.4%</span> · recovered',
+   hint:'<b>BASE + SSI</b> — same trades, SSI deployment ceiling applied. Isolates what regime-scaled capital deployment adds or costs, before any per-stock view.',
+   mtm:[10.00,10.12,10.26,10.16,9.94,10.07,10.27,10.40,10.50,10.57],
+   cl:[10.00,10.07,10.19,10.13,9.99,10.04,10.17,10.28,10.37,10.43],
+   size:()=> '$172k · 1/N scaled', ssi:true, cv:false, hi:['at-base','at-ssi']},
+ cv:{label:'BASE+CONVICTION', navlbl:'PORTFOLIO VALUE · NAV · BASE + CONVICTION',
+   nav:'$10,715,000', day:'+$62,000', days:'+0.58% today', inc:'+7.15%',
+   dep:'96.0%', deps:'fully deployed · conviction-tiered equities', sh:'1.95',
+   chs:'$10.0M → <span style="color:var(--em)">$10.72M</span> · max DD <span style="color:var(--ruby)">−4.9%</span> · recovered',
+   hint:'<b>BASE + CONVICTION</b> — same trades, fully deployed, but equity slots resized by Conviction Engine BQ tiers (blocks = size 0). Isolates the per-stock fundamental view.',
+   mtm:[10.00,10.14,10.30,10.20,9.95,10.11,10.36,10.51,10.64,10.72],
+   cl:[10.00,10.09,10.22,10.17,10.01,10.08,10.26,10.39,10.49,10.57],
+   size:r=>{ if(r.cvt==='MAX')return'$183k · 100%'; if(r.cvt==='TAC')return'$137k · 75%';
+             if(r.cvt==='RED')return'$73k · 40%'; return'$183k · n/a'; }, ssi:false, cv:true, hi:['at-base','at-cv']},
+ enh:{label:'ENHANCED', navlbl:'PORTFOLIO VALUE · NAV · ENHANCED',
+   nav:'$10,684,220', day:'+$63,400', days:'+0.60% today', inc:'+6.84%',
+   dep:'76.2%', deps:'vs SSI ceiling 80% · cash 23.8%', sh:'1.92',
+   chs:'$10.0M → <span style="color:var(--em)">$10.68M</span> · max DD <span style="color:var(--ruby)">−4.6%</span> · recovered',
+   hint:'<b>ENHANCED</b> — full production book: SSI deployment ceiling + Conviction Engine sizing together. Same trades in every book — overlays resize, never re-select.',
+   mtm:[10.00,10.14,10.31,10.22,9.98,10.12,10.35,10.49,10.61,10.68],
+   cl:[10.00,10.09,10.22,10.18,10.02,10.08,10.24,10.36,10.45,10.52],
+   size:r=>{ if(r.cvt==='MAX')return'$172k · 100%'; if(r.cvt==='TAC')return'$129k · 75%';
+             if(r.cvt==='RED')return'$69k · 40%'; return'$172k · n/a'; }, ssi:true, cv:true, hi:['at-base','at-ssi','at-cv','at-enh']}
+};
+let mode='enh', navview='mtm', showBench=true;
+const BENCH=[10.00,10.18,10.32,10.25,10.02,10.20,10.41,10.55,10.70,10.79];
+function benchtoggle(){showBench=!showBench;document.getElementById('tg-bx').classList.toggle('on',showBench);drawChart();}
+function setMode(m){
+  mode=m; const M=MODES[m];
+  ['base','ssi','cv','enh'].forEach(k=>document.getElementById('m-'+k).classList.toggle('on',k===m));
+  document.getElementById('navlbl').textContent=M.navlbl;
+  document.getElementById('navval').textContent=M.nav;
+  document.getElementById('ms-day').textContent=M.day;
+  document.getElementById('ms-days').textContent=M.days;
+  document.getElementById('ms-inc').textContent=M.inc;
+  document.getElementById('ms-dep').textContent=M.dep;
+  document.getElementById('ms-deps').textContent=M.deps;
+  document.getElementById('ms-sh').textContent=M.sh;
+  document.getElementById('modehint').innerHTML=M.hint;
+  document.getElementById('sizehead').textContent=M.label;
+  document.getElementById('chsum').innerHTML=M.chs;
+  document.getElementById('rail-ssi').classList.toggle('railoff',!M.ssi);
+  document.getElementById('off-ssi').classList.toggle('show',!M.ssi);
+  document.getElementById('rail-cv').classList.toggle('railoff',!M.cv);
+  document.getElementById('off-cv').classList.toggle('show',!M.cv);
+  ['at-base','at-ssi','at-cv','at-enh'].forEach(id=>document.getElementById(id).classList.remove('active'));
+  M.hi.forEach(id=>document.getElementById(id).classList.add('active'));
+  drawChart(); render();
+}
+
+/* ── NAV chart ── */
+const months=['OCT','NOV','DEC','JAN','FEB','MAR','APR','MAY','JUN','JUL'];
+function drawChart(){
+  const M=MODES[mode];
+  const series=navview==='mtm'?M.mtm:M.cl;
+  const ghost=mode!=='base'?(navview==='mtm'?MODES.base.mtm:MODES.base.cl):null;
+  const svg=document.getElementById('navsvg'); svg.innerHTML='';
+  const W=900,H=220,padL=46,padR=10,padT=14,padB=26;
+  let all=ghost?series.concat(ghost):series.slice(); if(showBench)all=all.concat(BENCH);
+  const min=Math.min.apply(null,all)*0.995, max=Math.max.apply(null,all)*1.005;
+  const x=i=>padL+(W-padL-padR)*i/(series.length-1);
+  const y=v=>padT+(H-padT-padB)*(1-(v-min)/(max-min));
+  let hwm=series[0];
+  const hwms=series.map(v=>hwm=Math.max(hwm,v));
+  let shade='M'+x(0)+','+y(hwms[0]);
+  series.forEach((v,i)=>{shade+=' L'+x(i)+','+y(hwms[i]);});
+  for(let i=series.length-1;i>=0;i--){shade+=' L'+x(i)+','+y(series[i]);}
+  shade+=' Z';
+  const p1=document.createElementNS('http://www.w3.org/2000/svg','path');
+  p1.setAttribute('d',shade); p1.setAttribute('fill','rgba(255,77,109,0.10)'); svg.appendChild(p1);
+  [0.25,0.5,0.75].forEach(f=>{
+    const gy=padT+(H-padT-padB)*f;
+    const l=document.createElementNS('http://www.w3.org/2000/svg','line');
+    l.setAttribute('x1',padL);l.setAttribute('x2',W-padR);l.setAttribute('y1',gy);l.setAttribute('y2',gy);
+    l.setAttribute('stroke','#1e1b16');l.setAttribute('stroke-width','1');svg.appendChild(l);
+  });
+  let dHwm='M'+x(0)+','+y(hwms[0]); hwms.forEach((v,i)=>{dHwm+=' L'+x(i)+','+y(v);});
+  const ph=document.createElementNS('http://www.w3.org/2000/svg','path');
+  ph.setAttribute('d',dHwm);ph.setAttribute('fill','none');ph.setAttribute('stroke','#6b6355');
+  ph.setAttribute('stroke-width','1');ph.setAttribute('stroke-dasharray','2 4');svg.appendChild(ph);
+  if(showBench){
+    let db='M'+x(0)+','+y(BENCH[0]); BENCH.forEach(function(v,i){db+=' L'+x(i)+','+y(v);});
+    const pb=document.createElementNS('http://www.w3.org/2000/svg','path');
+    pb.setAttribute('d',db);pb.setAttribute('fill','none');pb.setAttribute('stroke','#6b6355');
+    pb.setAttribute('stroke-width','1.2');pb.setAttribute('stroke-dasharray','6 3');svg.appendChild(pb);
+    const lb=document.createElementNS('http://www.w3.org/2000/svg','text');
+    lb.setAttribute('x',x(BENCH.length-1)-4);lb.setAttribute('y',y(BENCH[BENCH.length-1])-6);
+    lb.setAttribute('text-anchor','end');lb.setAttribute('fill','#6b6355');lb.setAttribute('font-size','8');
+    lb.setAttribute('font-family','DM Mono,monospace');lb.textContent='S&P 500';svg.appendChild(lb);
+  }
+  if(ghost){
+    let dg='M'+x(0)+','+y(ghost[0]); ghost.forEach((v,i)=>{dg+=' L'+x(i)+','+y(v);});
+    const pg=document.createElementNS('http://www.w3.org/2000/svg','path');
+    pg.setAttribute('d',dg);pg.setAttribute('fill','none');pg.setAttribute('stroke','#4fd8d0');
+    pg.setAttribute('stroke-width','1.2');pg.setAttribute('stroke-dasharray','4 4');
+    pg.setAttribute('opacity','0.65');svg.appendChild(pg);
+    const lg=document.createElementNS('http://www.w3.org/2000/svg','text');
+    lg.setAttribute('x',x(ghost.length-1)-4);lg.setAttribute('y',y(ghost[ghost.length-1])+14);
+    lg.setAttribute('text-anchor','end');lg.setAttribute('fill','#4fd8d0');lg.setAttribute('font-size','8');
+    lg.setAttribute('font-family','DM Mono,monospace');lg.textContent='BASE';svg.appendChild(lg);
+  }
+  let d='M'+x(0)+','+y(series[0]); series.forEach((v,i)=>{d+=' L'+x(i)+','+y(v);});
+  const p=document.createElementNS('http://www.w3.org/2000/svg','path');
+  p.setAttribute('d',d);p.setAttribute('fill','none');p.setAttribute('stroke','#C5A059');
+  p.setAttribute('stroke-width','2');p.setAttribute('stroke-linejoin','round');svg.appendChild(p);
+  series.forEach((v,i)=>{
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx',x(i));c.setAttribute('cy',y(v));c.setAttribute('r',2.4);
+    c.setAttribute('fill',i===series.length-1?'#2de08a':'#C5A059');svg.appendChild(c);
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',x(i));t.setAttribute('y',H-8);t.setAttribute('text-anchor','middle');
+    t.setAttribute('fill','#453f35');t.setAttribute('font-size','8');t.setAttribute('font-family','DM Mono,monospace');
+    t.textContent=months[i];svg.appendChild(t);
+  });
+  [min,max].forEach((v,i)=>{
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',6);t.setAttribute('y',i===0?H-padB:padT+8);
+    t.setAttribute('fill','#6b6355');t.setAttribute('font-size','8.5');t.setAttribute('font-family','DM Mono,monospace');
+    t.textContent='$'+v.toFixed(1)+'M';svg.appendChild(t);
+  });
+  const mr=document.getElementById('mrets'); mr.innerHTML='';
+  series.forEach((v,i)=>{
+    const r=i===0?0:(v/series[i-1]-1)*100;
+    const div=document.createElement('div'); div.className='mr';
+    div.innerHTML='<div class="mrv '+(r>=0?'up':'dn')+'">'+(i===0?'—':(r>=0?'+':'')+r.toFixed(1)+'%')+'</div><div class="mrl">'+months[i]+'</div>';
+    mr.appendChild(div);
+  });
+}
+function navmode(m){
+  navview=m;
+  document.getElementById('tg-mtm').classList.toggle('on',m==='mtm');
+  document.getElementById('tg-cl').classList.toggle('on',m==='cl');
+  drawChart();
+}
+
+/* ── holdings ── */
+const H=[
+ {tk:'AMZN',fn:'DELTADRIFT · Daily',dir:'L',entry:'Jun 09 · $244.19',entryTs:20260609,mtm:5.3,cq:49.2,rank:18,rr:-0.55,win:118,cvt:'TAC',cl:'US Tech',rrflag:true,chipNew:true,
+  exitref:'avg-gain target $257.25 — HIT · max exit date Jul 16 (tomorrow)',
+  sib:'NEW same-direction signal on this asset: TRENDPULSE · Daily · LONG fired Jul 14. Repeat-signal case — Part III FIRST vs REPEAT test decides the extension rule.',
+  ms:['DELTADRIFT · Daily · LONG · Jun 09 · FWD 75.3%','TRENDPULSE · Daily · LONG · Jul 14 · FWD 77.5%']},
+ {tk:'AMZN',fn:'TRENDPULSE · Daily',dir:'L',entry:'Jul 14 · $247.49',entryTs:20260714,mtm:3.8,cq:57.5,rank:9,rr:2.9,win:2,cvt:'TAC',cl:'US Tech',chipHeld:true,
+  exitref:'avg-gain target $286.40 · +11.4% away',
+  sib:'Same asset already HELD via DELTADRIFT · Daily since Jun 09 — that leg is past its average exit (hold-time 118%).',
+  ms:['DELTADRIFT · Daily · LONG · Jun 09 · FWD 75.3%','TRENDPULSE · Daily · LONG · Jul 14 · FWD 77.5%']},
+ {tk:'HDFCBANK.NS',fn:'TRENDPULSE · Daily',dir:'L',entry:'Jul 10 · ₹824.95',entryTs:20260710,mtm:0.9,cq:63.1,rank:4,rr:2.8,win:6,cvt:'TAC',cl:'India'},
+ {tk:'NVDA',fn:'TRENDPULSE · Weekly',dir:'L',entry:'May 28 · $204.12',entryTs:20260528,mtm:21.4,cq:71.3,rank:1,rr:1.9,win:52,cvt:'MAX',cl:'Semis',exitref:'F-Stack 1 $248.90 · +2.1% away',ms:['TRENDPULSE · Weekly · LONG · May 28 · FWD 76.4%','BASELINEDIVERGENCE · Weekly · LONG · Jul 10 · FWD 65.3%']},
+ {tk:'GDX',fn:'OSCILLATOR DELTA · Daily',dir:'L',entry:'Jul 10 · $51.20',entryTs:20260710,mtm:1.7,cq:58.9,rank:7,rr:3.1,win:8,cvt:'—',cl:'Commodities'},
+ {tk:'BYD.TO',fn:'DELTADRIFT · Weekly',dir:'L',entry:'Apr 14 · C$298.40',entryTs:20260414,mtm:17.6,cq:66.0,rank:2,rr:1.6,win:71,cvt:'MAX',cl:'Canada def.'},
+ {tk:'WMT',fn:'DELTADRIFT · Daily',dir:'L',entry:'Jun 19 · $101.35',entryTs:20260619,mtm:4.2,cq:60.5,rank:5,rr:2.2,win:34,cvt:'TAC',cl:'US Tech'},
+ {tk:'TCEHY',fn:'TRENDPULSE · Daily',dir:'L',entry:'Jun 30 · $62.10',entryTs:20260630,mtm:3.1,cq:59.7,rank:6,rr:2.4,win:21,cvt:'TAC',cl:'Global risk-on'},
+ {tk:'SLV',fn:'DELTADRIFT · Weekly',dir:'L',entry:'Jun 24 · $34.88',entryTs:20260624,mtm:6.8,cq:57.2,rank:8,rr:2.0,win:26,cvt:'—',cl:'Commodities'},
+ {tk:'GLD',fn:'DELTADRIFT · Weekly',dir:'L',entry:'Jun 24 · $308.10',entryTs:20260624,mtm:6.1,cq:55.8,rank:10,rr:1.7,win:31,cvt:'—',cl:'Commodities',xflag:true},
+ {tk:'ETH-USD',fn:'TRENDPULSE · Weekly',dir:'L',entry:'Jul 03 · $4,120',entryTs:20260703,mtm:-2.1,cq:54.6,rank:12,rr:-0.4,win:14,cvt:'—',cl:'Other',rrflag:true,sib:'No other live signals on ETH-USD — pure exit / eviction candidate.'},
+ {tk:'EWJ',fn:'TRENDPULSE · Daily',dir:'L',entry:'Jul 08 · $82.44',entryTs:20260708,mtm:1.2,cq:53.0,rank:13,rr:2.6,win:9,cvt:'—',cl:'Global risk-on'},
+ {tk:'SPY',fn:'SIGMASHELL · Daily',dir:'S',entry:'Jul 07 · $702.30',entryTs:20260707,mtm:-0.6,cq:41.2,rank:31,rr:1.4,win:18,cvt:'—',cl:'Global risk-on'},
+ {tk:'CSCO',fn:'TRENDPULSE · Weekly',dir:'L',entry:'Apr 05 · $63.90',entryTs:20260405,mtm:-1.2,cq:24.8,rank:52,rr:-0.9,win:96,cvt:'RED',cl:'US Tech',rrflag:true,sib:'DELTADRIFT · Monthly · LONG live on CSCO — avg hold 96d, 41d elapsed, R:R 1.6× — scope remains via the longer-hold signal. Review before exiting the asset.'},
+ {tk:'XLV',fn:'TRENDPULSE · Weekly',dir:'L',entry:'Jun 02 · $148.20',entryTs:20260602,mtm:0.4,cq:17.9,rank:58,rr:1.1,win:84,cvt:'—',cl:'Financials',next:true,exitref:'avg-gain target $151.10 · +2.0% away'}
+];
+let sortK='cq', sortAsc=false, openRow=null, groupSame=true;
+function grptoggle(){groupSame=!groupSame;const b=document.getElementById('tg-grp');b.textContent='GROUP SAME-ASSET: '+(groupSame?'ON':'OFF');b.classList.toggle('on',groupSame);render();}
+function fmt(x){return (x>=0?'+':'')+x.toFixed(1)+'%';}
+function cvb(c){
+  if(c==='MAX')return'<span class="cvb max">MAX</span>';
+  if(c==='TAC')return'<span class="cvb tac">TACTICAL 75%</span>';
+  if(c==='RED')return'<span class="cvb red">REDUCED 40%</span>';
+  return'<span class="cvb na">N/A · non-equity</span>';
+}
+function render(){
+  const tb=document.querySelector('#htbl tbody'); tb.innerHTML='';
+  const M=MODES[mode];
+  const cmp=function(a,b){
+    let va=a[sortK],vb=b[sortK];
+    if(typeof va==='string'){va=va.toLowerCase();vb=vb.toLowerCase();return sortAsc?va.localeCompare(vb):vb.localeCompare(va);}
+    return sortAsc?va-vb:vb-va;
+  };
+  let rows=H.slice().sort(cmp);
+  if(groupSame){
+    const best={}; rows.forEach(function(r,i){ if(!(r.tk in best)) best[r.tk]=i; });
+    rows=rows.slice().sort(function(a,b){ return best[a.tk]-best[b.tk] || cmp(a,b); });
+  }
+  const counts={}; H.forEach(function(r){counts[r.tk]=(counts[r.tk]||0)+1;});
+  rows.forEach(function(r){
+    const tr=document.createElement('tr'); tr.className='h';
+    if(groupSame && counts[r.tk]>1){ tr.style.boxShadow='inset 2px 0 0 var(--gold)'; }
+    const rrHtml = r.rrflag
+      ? '<span class="rrflag" title="Negative dynamic R:R — reward exhausted: price past backtest avg exit. By design; surfaces as exit/eviction candidate.">'+r.rr.toFixed(1)+'× ◍</span>'
+      : r.rr.toFixed(1)+'×';
+    tr.innerHTML='<td class="tk">'+r.tk+(r.next?' <span style="color:var(--ruby);font-size:8px">· NEXT OUT</span>':'')+(r.chipNew?' <span style="color:var(--em);font-size:8px;border:1px solid rgba(45,224,138,0.4);border-radius:3px;padding:1px 4px">⊕ NEW SIGNAL</span>':'')+(r.chipHeld?' <span style="color:var(--teal);font-size:8px;border:1px solid rgba(79,216,208,0.4);border-radius:3px;padding:1px 4px">◔ HELD</span>':'')+(r.ms?' <span class="mschip" style="color:var(--teal);font-size:8px;border:1px solid rgba(79,216,208,0.5);border-radius:3px;padding:1px 4px;cursor:pointer">MULTI-SIG '+r.ms.length+'</span>':'')+(r.xflag?' <span style="color:var(--amber);font-size:8px;border:1px solid rgba(224,165,45,0.4);border-radius:3px;padding:1px 4px">⚑ CROSS-FN EXIT</span>':'')+'</td>'+
+      '<td>'+r.fn+'</td>'+
+      '<td>'+(r.dir==='L'?'<span class="badge long">LONG</span>':'<span class="badge short">SHORT</span>')+'</td>'+
+      '<td>'+r.entry+'</td>'+
+      '<td class="'+(r.mtm>=0?'up':'dn')+'">'+fmt(r.mtm)+'</td>'+
+      '<td class="gdt">'+r.cq.toFixed(1)+'</td>'+
+      '<td>'+r.rank+'</td>'+
+      '<td>'+rrHtml+'</td>'+
+      '<td>'+r.win+'%</td>'+
+      '<td class="gdt">'+(typeof M.size==='function'?M.size(r):M.size)+'</td>'+
+      '<td>'+cvb(r.cvt)+'</td>'+
+      '<td>'+r.cl+'</td>';
+    tr.onclick=function(){drawer(tr,r);};
+    tb.appendChild(tr);
+  });
+}
+function drawer(tr,r){
+  const existing=document.querySelector('tr.drawer');
+  const wasOpen = openRow===r.tk+r.fn;
+  if(existing)existing.remove();
+  document.querySelectorAll('tr.h').forEach(function(t){t.classList.remove('open');});
+  openRow=null;
+  if(wasOpen)return;
+  openRow=r.tk+r.fn; tr.classList.add('open');
+  const d=document.createElement('tr'); d.className='drawer';
+  d.innerHTML='<td colspan="12"><div class="dwrap">'+
+    '<div class="dcol"><div class="dh">SIGNAL</div>'+
+      '<div class="dl"><span>Function</span><b>'+r.fn+'</b></div>'+
+      '<div class="dl"><span>Direction</span><b>'+(r.dir==='L'?'LONG':'SHORT')+'</b></div>'+
+      '<div class="dl"><span>Entry</span><b>'+r.entry+'</b></div>'+
+      '<div class="dl"><span>MTM</span><b class="'+(r.mtm>=0?'up':'dn')+'">'+fmt(r.mtm)+'</b></div></div>'+
+    '<div class="dcol"><div class="dh">SIGNAL QUALITY SCORE · composite_score v4</div>'+
+      '<div class="dl"><span>Score</span><b class="gdt">'+r.cq.toFixed(1)+'</b></div>'+
+      '<div class="dl"><span>Rank in book</span><b>'+r.rank+' of 58</b></div>'+
+      '<div class="dl"><span>Components</span><b>E[R] · alpha · Sharpe · CAGR diff</b></div>'+
+      '<div class="dl"><span>Eviction buffer</span><b>'+(r.cq-17.9).toFixed(1)+' pts above weakest</b></div></div>'+
+    '<div class="dcol"><div class="dh">EXIT FRAMING</div>'+
+      '<div class="dl"><span>R:R dynamic</span><b>'+r.rr.toFixed(1)+'×'+(r.rrflag?' ◍ reward exhausted':'')+'</b></div>'+
+      '<div class="dl"><span>Hold-time used</span><b>'+r.win+'% of BT avg hold (time, not price — Gate A3)</b></div>'+
+      '<div class="dl"><span>Gate A3 alerts</span><b>120 / 130 / 150%</b></div>'+
+      '<div class="dl"><span>Exit paths</span><b>signal · R:R · eviction</b></div>'+(r.exitref?'<div class="dl"><span>Nearest exit ref</span><b class="gdt">'+r.exitref+'</b></div>':'')+'</div>'+
+    (r.ms?'<div class="dcol"><div class="dh">MULTI-SIG · AGREEING SIGNALS (SIZE ONLY, NEVER ENTRY)</div><div style="font-family:var(--mono);font-size:9px;color:var(--t2);line-height:1.9">'+r.ms.join('<br>')+'</div></div>':'')+
+    (r.sib?'<div class="dcol"><div class="dh">SAME-ASSET CHECK</div><div style="font-family:var(--mono);font-size:9px;color:var(--t2);line-height:1.7">'+r.sib+'</div></div>':'')+
+    '<div class="dnote">SHARED COMPONENT — identical drawer on Signals page rows. One overflow/scroll fix covers both pages.</div>'+
+    '</div></td>';
+  tr.after(d);
+}
+document.querySelectorAll('#htbl th').forEach(function(th){
+  th.onclick=function(){
+    const k=th.dataset.k;
+    if(k==='cv'){return;} /* SIZE column: mode-driven, not sortable */
+    if(sortK===k)sortAsc=!sortAsc; else{sortK=k;sortAsc=(k==='tk'||k==='fn'||k==='cl');}
+    document.querySelectorAll('#htbl th .sa').forEach(function(s){s.remove();});
+    const base=th.textContent.replace(/[▲▼]/g,'').trim();
+    th.innerHTML=(k==='cv'?th.innerHTML:base+' <span class="sa">'+(sortAsc?'▲':'▼')+'</span>');
+    render();
+  };
+});
+
+/* ── Sizing & Allocation: true sleeve weights, scenario scales ceiling only ── */
+const SLEEVES=[
+ ['Global risk-on',16.7,18,10],['US Tech',11.7,12,7],['Financials',10.0,12,6],['Semis',8.3,10,5],
+ ['Commodities',6.7,10,4],['India',6.7,8,4],['Canada defensive',5.0,8,3],['Bonds',3.3,5,2],['Other',7.8,10,5]];
+const SCEN={normal:{k:1.00,lbl:'Ceiling 80% · deployed 76.2%'},stress:{k:0.625,lbl:'Ceiling 50% · deployed scales to 47.6%'},
+            lowvol:{k:1.125,lbl:'Ceiling 90% · deployed 76.2% (headroom rises)'},auto:{k:1.00,lbl:'AUTO → live regime chain · currently = NORMAL'}};
+let scen='normal';
+function setScen(x){
+  scen=x;
+  ['normal','stress','lowvol','auto'].forEach(k=>document.getElementById('sc-'+k).classList.toggle('on',k===x));
+  document.getElementById('scenhint').textContent=SCEN[x].lbl+' · what-if preview only — never writes to the live book';
+  drawSleeves();
+}
+function drawSleeves(){
+  const k=SCEN[scen].k, box=document.getElementById('sleeves'); if(!box)return; box.innerHTML='';
+  SLEEVES.forEach(function(sl){
+    const w=(sl[1]*(scen==='stress'?k:1)).toFixed(1), c=(sl[2]*k).toFixed(1);
+    const full=sl[3]>=Math.floor(sl[2]*k/1.67);
+    const row=document.createElement('div');
+    row.innerHTML='<div class="wfr"><span>'+sl[0]+'</span><span class="v">'+w+'% / '+c+'% ceiling</span></div>'+
+      '<div class="bar"><i style="width:'+Math.min(100,(w/c)*100)+'%"></i><u style="left:100%"></u></div>'+
+      '<div style="font-family:var(--mono);font-size:7.5px;color:'+(full?'var(--amber)':'var(--t4)')+';margin:2px 0 8px">'+sl[3]+'/'+Math.max(sl[3],Math.floor(sl[2]*k/1.67))+' SLOTS'+(full?' · FULL — NEXT SIGNAL WAITS':'')+'</div>';
+    box.appendChild(row);
+  });
+}
+drawSleeves();
+
+/* ── Overwatch agent slide-in (v7 S8 mechanic) ── */
+let agentDismissed=false;
+setTimeout(function(){ if(!agentDismissed)document.getElementById('agent').classList.add('show'); },1500);
+function dismissAgent(){ agentDismissed=true; document.getElementById('agent').classList.remove('show');
+  document.getElementById('agentbtn').classList.add('hasalert'); }
+function toggleAgent(){ const a=document.getElementById('agent');
+  if(a.classList.contains('show')){a.classList.remove('show');}
+  else{a.classList.add('show');document.getElementById('agentbtn').classList.remove('hasalert');} }
+
+setMode('enh');
+</script>
+</body>
+</html>

@@ -1,8 +1,8 @@
 # MindWealth API
 
-FastAPI backend for MindWealth services (Conviction Engine + Chatbot). Canonical documentation: **[docs/api/README.md](../docs/api/README.md)**.
+FastAPI backend for MindWealth services (Conviction Engine + Chatbot). Canonical documentation: **[docs/mindwealth-api-docs/README.md](../docs/mindwealth-api-docs/README.md)**.
 
-Chatbot uses **async jobs** — see [docs/api/services/chatbot/async-jobs.md](../docs/api/services/chatbot/async-jobs.md).
+Chatbot uses **async jobs** — see [docs/mindwealth-api-docs/services/chatbot/async-jobs.md](../docs/mindwealth-api-docs/services/chatbot/async-jobs.md).
 
 ## Production (systemd)
 

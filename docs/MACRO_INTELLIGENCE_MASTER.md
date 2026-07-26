@@ -872,7 +872,7 @@ SSI uses a different set of inputs from Runic — deliberately, to avoid double-
 | **NAAIM Exposure** | 1 | Weekly survey of registered investment advisors |
 | **McClellan Oscillator** | 2 | Breadth indicator: advancing minus declining stocks |
 | **% above 200-day MA** | 2 | What fraction of S&P 500 stocks are in uptrends |
-| **NH/NL Ratio** | 2 | Ratio of new highs to new lows |
+| **NH/NL Ratio** | 2 | New highs as a share of new highs + new lows (`highs / (highs + lows)`, bounded 0–1) |
 | **SKEW** | 2 | Options market tail-risk pricing |
 | **DBMF** | 3 | CTA proxy (Layer 3 = positioning) |
 | **CFTC FM + RM** | 3 | Same source as Runic CFTC, but SSI splits Fast Money and Real Money separately |
@@ -1629,9 +1629,9 @@ The SSI `load_all_series()` in `src/sentiment_superindex/data/pull_all.py` assem
 | `aaii_spread` | `aaii_pull.fetch_aaii_spread()` | **Primary:** `https://www.aaii.com/sentimentsurvey/sent_results` (HTML scrape). **Fallback 1:** `https://www.aaii.com/files/surveys/sentiment.xls` (XLS download). **Fallback 2:** manually placed `aaii_sentiment.csv` | XLS URL returns HTTP 403 on AWS (AAII blocks datacenter IPs). Required adding HTML scrape of the public results page as the primary path |
 | `naaim_exposure` | `naaim_pull.fetch_naaim_exposure()` | `https://www.naaim.org/programs/naaim-exposure-index/` (HTML table scrape) | Column name for the mean value varies across scrapes: `"NAAIM Number Mean/Average"`, `"NAAIM Number Mean Average"`, underscored variants. Fallback column finder needed |
 | `pct_above_200dma` | `pct_200dma_pull.fetch_pct_above_200dma()` + `sp500_breadth.py` | Yahoo Finance (`yfinance`) — ~500 S&P 500 constituent tickers, downloaded in chunks of 40 | No external API provides this pre-computed. Must download all ~500 tickers, compute 200-day MA for each, count how many close above it per day |
-| `mcclellan` | `mcclellan_pull.fetch_mcclellan_oscillator()` + `sp500_breadth.py` | Same yfinance bulk download (shares `_BREADTH_CACHE` with `pct_above_200dma` and `nh_nl_ratio`) | No API provides the McClellan oscillator. Must derive: cumulative sum of net advances → EMA(19) − EMA(39) |
+| `mcclellan` | `mcclellan_pull.fetch_mcclellan_oscillator()` + `sp500_breadth.py` | Same yfinance bulk download (shares `_BREADTH_CACHE` with `pct_above_200dma` and `nh_nl_ratio`) | No API provides the McClellan oscillator. Must derive: EMA(19) − EMA(39) of **daily** net advances (see 2026-07-16 cumsum bug fix in Hard part 4) |
 | `skew` | `skew_pull.fetch_skew()` | Yahoo Finance (`yfinance`) — ticker `^SKEW` (CBOE SKEW Index) | Straightforward single-ticker pull. CBOE publishes SKEW daily; Yahoo carries it reliably |
-| `nh_nl_ratio` | `nh_nl_pull.fetch_nh_nl_ratio()` + `sp500_breadth.py` | Same yfinance bulk download (shares `_BREADTH_CACHE`) | Spec referenced Yahoo tickers `^NAHGH`/`^NALOW` (NYSE new highs/lows) which Yahoo serves unreliably. Used S&P 500 52-week high/low flags from the in-process breadth frame instead |
+| `nh_nl_ratio` | `nh_nl_pull.fetch_nh_nl_ratio()` + `sp500_breadth.py` | Same yfinance bulk download (shares `_BREADTH_CACHE`) | Spec referenced Yahoo tickers `^NAHGH`/`^NALOW` (NYSE new highs/lows) which Yahoo serves unreliably. Used S&P 500 52-week high/low flags from the in-process breadth frame instead. Formula is `highs / (highs + lows)`, bounded 0–1 (see 2026-07-16 bug fix in Hard part 5) — an earlier version used `highs / lows` unbounded |
 
 The key engineering constraint: all 10 series had to be loadable in one `load_all_series()` call, with caching so the daily job does not re-download on repeated calls, and with every individual pull silently degrading (returning an empty Series) rather than crashing the whole pipeline.
 
@@ -1697,17 +1697,18 @@ The McClellan oscillator is a market breadth momentum indicator. It measures whe
 
 **Formula:**
 1. Compute daily `net_advances = advancers − decliners` for the S&P 500 universe.
-2. Build the `AD line = cumulative sum of net_advances`.
-3. Compute `EMA(19)` and `EMA(39)` of the AD line.
-4. McClellan oscillator = `EMA(19) − EMA(39)`.
+2. Compute `EMA(19)` and `EMA(39)` **directly on the daily `net_advances` series** (no cumulative sum).
+3. McClellan oscillator = `EMA(19) − EMA(39)`.
 
 ```python
 def _classic_mcclellan(net_advances: pd.Series) -> pd.Series:
-    ad_line = net_advances.fillna(0).cumsum()
-    ema19 = ad_line.ewm(span=19, adjust=False).mean()
-    ema39 = ad_line.ewm(span=39, adjust=False).mean()
+    net = net_advances.fillna(0)
+    ema19 = net.ewm(span=19, adjust=False).mean()
+    ema39 = net.ewm(span=39, adjust=False).mean()
     return (ema19 - ema39).dropna()
 ```
+
+**2026-07-16 bug fix:** an earlier version of this function ran the EMAs on `net_advances.cumsum()` (the cumulative advance-decline line) instead of the daily series. That inflates the oscillator far outside its normal ±150 band — it produced **217.10** on 2026-07-16 (matching the dashboard's raw float `217.09514599086106`) against a correct value of **+12.16** for the same date. The classic McClellan formula EMAs the *daily* net-advances series, not its cumulative sum; a separate "Summation Index" (cumulative sum of the oscillator itself, not used here) is the indicator that legitimately operates on a running total. Fixed by dropping `.cumsum()`; `mcclellan_oscillator.csv` was rebuilt from scratch and `positioning.json` / API responses now round the display value to 2 decimals via `_round_display()` in `positioning.py`.
 
 The input `net_advances` comes from `sp500_breadth.series_from_breadth("net_advances")` — which triggers the full S&P 500 breadth computation (see Hard part 5 below). The `mcclellan_oscillator.csv` cache means this full computation only runs once per day.
 
@@ -1731,7 +1732,9 @@ Then for every qualifying symbol (those with ≥220 days of history), `compute_d
 - `pct_above_200dma`: `(close > close.rolling(200).mean()).sum() / count`
 - `new_highs` / `new_lows`: 52-week high/low flags
 - `advancers` / `decliners`: daily up/down flags for the McClellan net_advances input
-- `nh_nl_ratio`: new_highs / new_lows (with zero guard)
+- `nh_nl_ratio`: `new_highs / (new_highs + new_lows)`, bounded 0–1, `NaN` when both are 0
+
+**2026-07-16 bug fix:** an earlier version computed `nh_nl_ratio = new_highs / new_lows` — a straight highs-over-lows ratio with no upper bound. When lows are small (e.g. 46 highs vs 1 low on 2026-07-16), that ratio blows up to **46.0** and reads like a raw high-count instead of a ratio. The correct formula, matching the spec's intent, is `highs / (highs + lows)`, which stays bounded in **[0, 1]** — the same date now correctly reads **0.979** (97.9% of highs+lows activity was new highs). Fixed in `compute_daily_breadth_stats()`; `nh_nl_ratio.csv` was rebuilt from scratch.
 
 The result is a single `pd.DataFrame` with all breadth columns, cached as a module-level `_BREADTH_CACHE` so that `pct_200dma_pull`, `mcclellan_pull`, and `nh_nl_pull` all call `load_breadth_frame()` once and each extract their own column — one download, three outputs.
 

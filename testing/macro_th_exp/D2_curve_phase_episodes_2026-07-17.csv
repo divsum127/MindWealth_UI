@@ -1,0 +1,6 @@
+episode_id,inversion_start,inversion_end,phase_on,phase_off,off_reason,weeks_inverted,weeks_phase_active,min_spread_bps,max_spread_bps,trough_bps
+1,2000-02-04,2000-12-22,2000-12-29,2001-04-06,normalized_spread>=80.0bps,47,15,1.0,82.0,-52.0
+2,2006-02-03,2006-03-03,2006-03-10,2006-03-31,reflattened_<30.0bps_for_4wk,5,4,-5.0,4.0,-16.0
+3,2006-06-09,2006-07-21,2007-03-23,2007-04-13,reflattened_<30.0bps_for_4wk,7,4,0.0,7.000000000000001,-4.0
+4,2006-08-18,2007-03-16,2007-03-23,2007-04-13,reflattened_<30.0bps_for_4wk,31,4,0.0,7.000000000000001,-18.0
+5,2022-07-08,2024-08-23,2024-08-30,2024-09-20,reflattened_<30.0bps_for_4wk,112,4,0.0,18.0,-106.0

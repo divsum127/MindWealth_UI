@@ -1,0 +1,81 @@
+{
+  "chat": "d2",
+  "recommended_spec": "A",
+  "inversion_episodes": 5,
+  "phase_episodes_on": 5,
+  "total_weeks_phase_active": 165,
+  "pct_weeks": 8.65,
+  "may_2025_05_23": {
+    "date": "2025-05-23",
+    "spread_bps": 51.0,
+    "steepen_post_trough_bps": 157.0,
+    "steepen_simple_bps": -4.0,
+    "curve_regime_v2_post": "STEEPENING",
+    "curve_regime_v2_simple": "NORMAL",
+    "post_inversion_steepening": true
+  },
+  "weeks_phase_on_simple_NORMAL": 90,
+  "combo_a_e_impact": {
+    "A": {
+      "total_fires": 174,
+      "fires_during_phase": 3
+    },
+    "E": {
+      "total_fires": 514,
+      "fires_during_phase": 115
+    },
+    "phase_flag_alone_changes_A_E_legs": false
+  },
+  "episodes": [
+    {
+      "id": 1,
+      "inversion_start": "2000-02-04",
+      "inversion_end": "2000-12-22",
+      "phase_on": "2000-12-29",
+      "phase_off": "2001-04-06",
+      "off_reason": "normalized>=80bps",
+      "weeks_phase_active": 15,
+      "trough_bps": -52.0
+    },
+    {
+      "id": 2,
+      "inversion_start": "2006-02-03",
+      "inversion_end": "2006-03-03",
+      "phase_on": "2006-03-10",
+      "phase_off": "2006-06-30",
+      "off_reason": "re_inverted_4wk",
+      "weeks_phase_active": 17,
+      "trough_bps": -16.0
+    },
+    {
+      "id": 3,
+      "inversion_start": "2006-06-09",
+      "inversion_end": "2006-07-21",
+      "phase_on": "2007-03-23",
+      "phase_off": "2007-11-09",
+      "off_reason": "normalized>=80bps",
+      "weeks_phase_active": 34,
+      "trough_bps": -4.0
+    },
+    {
+      "id": 4,
+      "inversion_start": "2006-08-18",
+      "inversion_end": "2007-03-16",
+      "phase_on": "2007-03-23",
+      "phase_off": "2007-11-09",
+      "off_reason": "normalized>=80bps",
+      "weeks_phase_active": 34,
+      "trough_bps": -18.0
+    },
+    {
+      "id": 5,
+      "inversion_start": "2022-07-08",
+      "inversion_end": "2024-08-23",
+      "phase_on": "2024-08-30",
+      "phase_off": null,
+      "off_reason": "ongoing",
+      "weeks_phase_active": 99,
+      "trough_bps": -106.0
+    }
+  ]
+}

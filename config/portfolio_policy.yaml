@@ -1,0 +1,113 @@
+# Portfolio policy — single config surface for every currently-open Rohit decision
+# (see instruction_docs/portfolio_page/OPEN_QUESTIONS_FOR_ROHIT.md, Asks 1-5).
+#
+# Every value below is read by api/services/policy_service.py:get_policy(). Nothing in the
+# engines (sizing_engine, eviction_engine, four_book_engine, ahil_nav_engine_core) hardcodes
+# these numbers — flipping a decision here flips it everywhere in one edit.
+#
+# status: interim  → best-guess default from the spec docs; Rohit has not formally confirmed.
+# status: confirmed → Rohit (or resolved research direction) has signed off; safe to treat as final.
+
+notional:
+  status: interim
+  # Same resolution as api.services.portfolio_service.get_portfolio_notional():
+  # env PORTFOLIO_NOTIONAL > PORTFOLIO_USE_RESEARCH_NOTIONAL flag > this default.
+  usd: 100000000
+  research_usd: 10000000  # Ahil/v5 mock ($10M) — used when PORTFOLIO_USE_RESEARCH_NOTIONAL=1
+  source_note: "spec_15July.md L12 ($100M) vs Ahil_portfolio_page_docs.md L29 ($10M) — Ask 1"
+
+n_slots:
+  status: interim
+  value: 60
+  candidates: [60, 80, 120]
+  source_note: "D1 worked example uses N=60; Ahil Test 1A Sharpe-max picks N=80 — Ask 1"
+
+rebalance_mode:
+  status: interim
+  # hold_original = Axiom 2 (no reset-to-1/N on entry, no redistribution on exit — resolved
+  #                 research direction per Ahil's Jul 2026 consolidated report)
+  # legacy_rebalance = current ahil_nav_engine_core.py behavior (1/N reset on every entry)
+  value: hold_original
+  source_note: "14July_axioms_and_specs.md Axiom 2 vs Ahil_portfolio_page_docs.md L268-270 — Ask 2"
+
+eviction:
+  status: interim
+  # A2 churn softener: challenger only evicts weakest holding if
+  # challenger_score - weakest_score >= margin_m. 0 = pure 1C baseline.
+  margin_m: 0
+  candidates_m: [0, 5, 10, 15, 20]
+  # f5_freeze_at_n: A3 mode — freeze at N, admit by Signal Quality Score rank, never evict.
+  # Backend validation flag only; not user-facing.
+  f5_freeze_at_n: false
+
+same_asset_siblings:
+  status: confirmed
+  # v5 L601 / spec_15July.md L33-35 rule already implemented in
+  # api/services/portfolio_pipeline_service.py:_same_asset_siblings — populate on every row
+  # with a sibling, not only when rr_dynamic < 0 (D4's original, narrower rule).
+  scope: all_rows
+
+sleeves:
+  status: interim
+  source_note: "v5 SLEEVES table (MindWealth_Portfolio_Unified_v5.html L918-938) — Ask 4"
+  # ceiling_pct is the sleeve's share of the deployed cap (equity ceiling), matching the
+  # existing _CLUSTERS budget_pct convention in portfolio_service.py.
+  # max_slots = floor(ceiling_pct / (100 / n_slots)) at the active n_slots value.
+  list:
+    - id: global_risk_on
+      label: "Global risk-on"
+      ceiling_pct: 18.0
+    - id: semiconductors
+      label: "Semiconductors"
+      ceiling_pct: 10.0
+    - id: financials
+      label: "Financials"
+      ceiling_pct: 12.0
+    - id: commodities
+      label: "Commodities"
+      ceiling_pct: 10.0
+    - id: canada_def
+      label: "Canada defensive"
+      ceiling_pct: 8.0
+    - id: us_tech
+      label: "US Tech"
+      ceiling_pct: 12.0
+    - id: india
+      label: "India"
+      ceiling_pct: 8.0
+    - id: bonds
+      label: "Bonds"
+      ceiling_pct: 5.0
+    - id: other
+      label: "Other"
+      ceiling_pct: 17.0
+  # NZ Core is a fixed allocation outside the ceiling — excluded from overlay math (v5 L597).
+  excluded_from_overlay: ["nz_core"]
+  # Stress / low-vol scale factors on the ceiling_pct above (until Ahil confirms per-sleeve values).
+  scenario_scale:
+    normal: 1.00
+    stress: 0.80
+    lowvol: 1.05
+
+auto_scenario:
+  status: interim
+  # First-pass heuristic behind scenario=auto (D4) — resolve_auto_scenario() in
+  # api/services/portfolio_service.py. Not yet Rohit-confirmed; kept alongside the other four
+  # open decisions so a future threshold tweak is a config edit, not a code change.
+  # STRESS if VIX 3y-percentile > vix_pctile_stress, OR HY spread (%) > hy_pct_stress,
+  #        OR SSI ceiling multiplier < ssi_multiplier_stress_below.
+  vix_pctile_stress: 70.0
+  hy_pct_stress: 4.0
+  ssi_multiplier_stress_below: 0.9
+  # LOWVOL if VIX 3y-percentile < vix_pctile_lowvol AND SSI multiplier >= ssi_multiplier_lowvol_at_least.
+  vix_pctile_lowvol: 30.0
+  ssi_multiplier_lowvol_at_least: 1.0
+  # Otherwise: normal.
+
+conviction_history:
+  # conviction_store/daily/ archive starts 2026-05-15 — do not fabricate state before this date.
+  earliest_reliable_date: "2026-05-15"
+
+data_status_labels:
+  live_from_today: "live_from_today"
+  live_from_conviction_start: "live_from_2026-05-15"

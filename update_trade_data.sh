@@ -308,8 +308,10 @@ else:
 "
 
 # Conviction Engine: fundamentals + conviction on daily signal reports + dated archive
+# Include VT books so portfolio sizer overlay stays in sync with open positions.
 echo "📈 Running Conviction Engine daily pipeline..."
-python3 scripts/run_conviction_engine_daily.py --fundamentals-mode daily
+python3 scripts/run_conviction_engine_daily.py --fundamentals-mode daily \
+  --overlay-reports virtual_trading_long.csv,virtual_trading_short.csv,new_signal.csv,outstanding_signal.csv
 echo "✅ Conviction Engine daily pipeline completed (see conviction_store/daily/)"
 
 echo "✅ All done! Trade data updated locally (no git commit/push)."

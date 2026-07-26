@@ -21,7 +21,7 @@ from prompts.ui_buttons import (
 
 from api.jobs.runner import enqueue_chatbot_job
 from api.jobs.store import get_job_store
-from api.schemas.chatbot import ChatMessageRequest, PresetType
+from api.schemas.chatbot import ChatMessageRequest, PageContext, PresetType
 
 API_PREFIX = "/api/v1/chatbot"
 
@@ -41,10 +41,37 @@ def _resolve_dates(body: ChatMessageRequest) -> tuple[str, str]:
     return _default_dates(body.preset)
 
 
+def _merge_page_context(body: ChatMessageRequest) -> str | None:
+    """Combine explicit additional_context with structured Overwatch page context."""
+    parts: list[str] = []
+    if body.additional_context:
+        parts.append(body.additional_context.strip())
+    ctx: PageContext | None = body.page_context
+    if ctx is not None:
+        lines = ["[Overwatch panel context]"]
+        if ctx.route:
+            lines.append(f"Route: {ctx.route}")
+        if ctx.page_title:
+            lines.append(f"Page: {ctx.page_title}")
+        if ctx.active_tab:
+            lines.append(f"Active tab: {ctx.active_tab}")
+        if ctx.panel_open is not None:
+            lines.append(f"Panel open: {ctx.panel_open}")
+        if ctx.dominant_combo:
+            lines.append(f"Dominant combo: {ctx.dominant_combo}")
+        if ctx.alert_ids:
+            lines.append(f"Visible alert ids: {', '.join(ctx.alert_ids)}")
+        parts.append("\n".join(lines))
+    if not parts:
+        return None
+    return "\n\n".join(parts)
+
+
 def build_followup_kwargs(body: ChatMessageRequest) -> dict[str, Any]:
     """Map API request to smart_followup_query kwargs."""
     from_date, to_date = _resolve_dates(body)
     preset = body.preset
+    merged_context = _merge_page_context(body)
 
     if preset == "analyze_asset":
         if not body.asset and not (body.assets and len(body.assets) == 1):
@@ -58,7 +85,7 @@ def build_followup_kwargs(body: ChatMessageRequest) -> dict[str, Any]:
             "from_date": from_date,
             "to_date": to_date,
             "functions": body.functions,
-            "additional_context": body.additional_context,
+            "additional_context": merged_context,
             "auto_extract_tickers": False,
             "signal_type_reasoning": "API preset: analyze_asset",
             "query_kind": "deep_dive",
@@ -74,7 +101,7 @@ def build_followup_kwargs(body: ChatMessageRequest) -> dict[str, Any]:
             "from_date": from_date,
             "to_date": to_date,
             "functions": body.functions,
-            "additional_context": body.additional_context,
+            "additional_context": merged_context,
             "auto_extract_tickers": True,
             "signal_type_reasoning": "API preset: signal_insights",
             "query_kind": body.query_kind,
@@ -90,7 +117,7 @@ def build_followup_kwargs(body: ChatMessageRequest) -> dict[str, Any]:
             "from_date": from_date,
             "to_date": to_date,
             "functions": body.functions,
-            "additional_context": body.additional_context,
+            "additional_context": merged_context,
             "auto_extract_tickers": body.auto_extract_tickers,
             "signal_type_reasoning": "API preset: breadth_analysis",
             "query_kind": body.query_kind,
@@ -107,7 +134,7 @@ def build_followup_kwargs(body: ChatMessageRequest) -> dict[str, Any]:
         "from_date": from_date,
         "to_date": to_date,
         "functions": body.functions,
-        "additional_context": body.additional_context,
+        "additional_context": merged_context,
         "auto_extract_tickers": body.auto_extract_tickers,
         "signal_type_reasoning": None,
         "query_kind": body.query_kind,

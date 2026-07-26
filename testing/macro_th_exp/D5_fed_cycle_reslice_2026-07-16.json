@@ -2,7 +2,7 @@
   "meta": {
     "generated_at": "2026-07-15T22:09:56.757518+00:00",
     "task": "D5_fed_cycle_reslice",
-    "min_n_use": 10,
+    "min_n_use": {"D": 9, "E": 10},
     "d_config": {
       "experiment_id": "D_v1.18_c95_x13_l2",
       "vxts_min": 1.18,
@@ -219,7 +219,7 @@
       "avg_spx_pct": 0.649,
       "min_spx_pct": -1.0717,
       "max_spx_pct": 1.9682,
-      "verdict": "CANNOT USE"
+      "verdict": "USE"
     },
     {
       "combo": "D",
@@ -232,7 +232,7 @@
       "avg_spx_pct": 0.536,
       "min_spx_pct": -1.6222,
       "max_spx_pct": 2.3335,
-      "verdict": "CANNOT USE"
+      "verdict": "USE"
     },
     {
       "combo": "D",

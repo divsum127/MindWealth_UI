@@ -1,0 +1,251 @@
+{
+  "combo": "B",
+  "validated_horizon": "spx_3m",
+  "direction": "bullish",
+  "current_gates": {
+    "all_required": [
+      "VIX",
+      "HY",
+      "CFTC"
+    ],
+    "vix_min": 25,
+    "hy_bps_min": 400,
+    "cftc_max_pctile": 15
+  },
+  "note": "Leg replay on daily_readings; HY leg uses CONFIG OR (OAS\u2265threshold OR pctile\u226580); VIX uses AND (level+pctile)",
+  "tests": [
+    {
+      "test_id": "CB_VIX_20",
+      "param": "vix_min",
+      "value": 20,
+      "hy_bps_min": 400,
+      "cftc_max_pctile": 15,
+      "legs_required": 3,
+      "n": 9,
+      "pw_3m": {
+        "n": 9,
+        "hit_rate": 0.8888888888888888,
+        "avg_win": 7.82700886387941,
+        "avg_loss": -4.756212972335782,
+        "pw_expected": 6.428873104299944,
+        "benchmark_pct": 2.5,
+        "excess_pct": 3.928873104299944,
+        "avg": 6.428873104299943,
+        "median": 6.9355429319480955,
+        "worst": -4.756212972335782
+      }
+    },
+    {
+      "test_id": "CB_VIX_25",
+      "param": "vix_min",
+      "value": 25,
+      "hy_bps_min": 400,
+      "cftc_max_pctile": 15,
+      "legs_required": 3,
+      "n": 7,
+      "pw_3m": {
+        "n": 7,
+        "hit_rate": 1.0,
+        "avg_win": 8.691105420485437,
+        "avg_loss": 0.0,
+        "pw_expected": 8.691105420485437,
+        "benchmark_pct": 2.5,
+        "excess_pct": 6.191105420485437,
+        "avg": 8.691105420485437,
+        "median": 7.941737264287915,
+        "worst": 3.49720739819679
+      }
+    },
+    {
+      "test_id": "CB_VIX_30",
+      "param": "vix_min",
+      "value": 30,
+      "hy_bps_min": 400,
+      "cftc_max_pctile": 15,
+      "legs_required": 3,
+      "n": 7,
+      "pw_3m": {
+        "n": 7,
+        "hit_rate": 1.0,
+        "avg_win": 10.731426019229248,
+        "avg_loss": 0.0,
+        "pw_expected": 10.731426019229248,
+        "benchmark_pct": 2.5,
+        "excess_pct": 8.231426019229248,
+        "avg": 10.731426019229248,
+        "median": 9.61798266606053,
+        "worst": 6.9355429319480955
+      }
+    },
+    {
+      "test_id": "CB_HY_350",
+      "param": "hy_bps_min",
+      "value": 350,
+      "vix_min": 25,
+      "cftc_max_pctile": 15,
+      "legs_required": 3,
+      "n": 7,
+      "pw_3m": {
+        "n": 7,
+        "hit_rate": 1.0,
+        "avg_win": 8.691105420485437,
+        "avg_loss": 0.0,
+        "pw_expected": 8.691105420485437,
+        "benchmark_pct": 2.5,
+        "excess_pct": 6.191105420485437,
+        "avg": 8.691105420485437,
+        "median": 7.941737264287915,
+        "worst": 3.49720739819679
+      }
+    },
+    {
+      "test_id": "CB_HY_400",
+      "param": "hy_bps_min",
+      "value": 400,
+      "vix_min": 25,
+      "cftc_max_pctile": 15,
+      "legs_required": 3,
+      "n": 7,
+      "pw_3m": {
+        "n": 7,
+        "hit_rate": 1.0,
+        "avg_win": 8.691105420485437,
+        "avg_loss": 0.0,
+        "pw_expected": 8.691105420485437,
+        "benchmark_pct": 2.5,
+        "excess_pct": 6.191105420485437,
+        "avg": 8.691105420485437,
+        "median": 7.941737264287915,
+        "worst": 3.49720739819679
+      }
+    },
+    {
+      "test_id": "CB_HY_450",
+      "param": "hy_bps_min",
+      "value": 450,
+      "vix_min": 25,
+      "cftc_max_pctile": 15,
+      "legs_required": 3,
+      "n": 6,
+      "pw_3m": {
+        "n": 6,
+        "hit_rate": 1.0,
+        "avg_win": 9.57419280895447,
+        "avg_loss": 0.0,
+        "pw_expected": 9.57419280895447,
+        "benchmark_pct": 2.5,
+        "excess_pct": 7.07419280895447,
+        "avg": 9.57419280895447,
+        "median": 8.779859965174223,
+        "worst": 6.941423847321102
+      }
+    },
+    {
+      "test_id": "CB_CFTC_10",
+      "param": "cftc_max_pctile",
+      "value": 10,
+      "vix_min": 25,
+      "hy_bps_min": 400,
+      "legs_required": 3,
+      "n": 5,
+      "pw_3m": {
+        "n": 5,
+        "hit_rate": 1.0,
+        "avg_win": 9.419921249886704,
+        "avg_loss": 0.0,
+        "pw_expected": 9.419921249886704,
+        "benchmark_pct": 2.5,
+        "excess_pct": 6.919921249886704,
+        "avg": 9.419921249886704,
+        "median": 7.941737264287915,
+        "worst": 6.941423847321102
+      }
+    },
+    {
+      "test_id": "CB_CFTC_15",
+      "param": "cftc_max_pctile",
+      "value": 15,
+      "vix_min": 25,
+      "hy_bps_min": 400,
+      "legs_required": 3,
+      "n": 7,
+      "pw_3m": {
+        "n": 7,
+        "hit_rate": 1.0,
+        "avg_win": 8.691105420485437,
+        "avg_loss": 0.0,
+        "pw_expected": 8.691105420485437,
+        "benchmark_pct": 2.5,
+        "excess_pct": 6.191105420485437,
+        "avg": 8.691105420485437,
+        "median": 7.941737264287915,
+        "worst": 3.49720739819679
+      }
+    },
+    {
+      "test_id": "CB_CFTC_20",
+      "param": "cftc_max_pctile",
+      "value": 20,
+      "vix_min": 25,
+      "hy_bps_min": 400,
+      "legs_required": 3,
+      "n": 7,
+      "pw_3m": {
+        "n": 7,
+        "hit_rate": 1.0,
+        "avg_win": 9.440554637223626,
+        "avg_loss": 0.0,
+        "pw_expected": 9.440554637223626,
+        "benchmark_pct": 2.5,
+        "excess_pct": 6.9405546372236255,
+        "avg": 9.440554637223626,
+        "median": 9.61798266606053,
+        "worst": 3.49720739819679
+      }
+    },
+    {
+      "test_id": "CB_2of3_legs",
+      "param": "legs_required",
+      "value": 2,
+      "vix_min": 25,
+      "hy_bps_min": 400,
+      "cftc_max_pctile": 15,
+      "legs_required": 2,
+      "n": 40,
+      "pw_3m": {
+        "n": 40,
+        "hit_rate": 0.75,
+        "avg_win": 7.983458365453293,
+        "avg_loss": -5.699554125726032,
+        "pw_expected": 4.562705242658462,
+        "benchmark_pct": 2.5,
+        "excess_pct": 2.0627052426584616,
+        "avg": 4.5627052426584624,
+        "median": 5.602453583449957,
+        "worst": -15.279157624681883
+      }
+    }
+  ],
+  "current_baseline": {
+    "test_id": "CB_VIX_25",
+    "param": "vix_min",
+    "value": 25,
+    "hy_bps_min": 400,
+    "cftc_max_pctile": 15,
+    "legs_required": 3,
+    "n": 7,
+    "pw_3m": {
+      "n": 7,
+      "hit_rate": 1.0,
+      "avg_win": 8.691105420485437,
+      "avg_loss": 0.0,
+      "pw_expected": 8.691105420485437,
+      "benchmark_pct": 2.5,
+      "excess_pct": 6.191105420485437,
+      "avg": 8.691105420485437,
+      "median": 7.941737264287915,
+      "worst": 3.49720739819679
+    }
+  },
+  "run_date": "2026-07-17"
+}

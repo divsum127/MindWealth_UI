@@ -48,6 +48,17 @@ MINDWEALTH_TRADE_STORE = Path(
     os.getenv("MINDWEALTH_TRADE_STORE", str(MINDWEALTH_ROOT / "trade_store" / "US"))
 )
 
+# Portfolio book-state daily snapshot store (started capturing 2026-07 forward — see
+# src/portfolio_nav/book_snapshot_store.py). No history exists before its first run date;
+# that gap is disclosed via data_status fields, never backfilled/fabricated.
+PORTFOLIO_STORE_DIR = BASE_DIR / os.getenv("PORTFOLIO_STORE_DIR", "portfolio_store")
+BOOK_SNAPSHOTS_DB = Path(
+    os.getenv("BOOK_SNAPSHOTS_DB", str(PORTFOLIO_STORE_DIR / "book_snapshots.db"))
+)
+PERSONAL_HOLDINGS_JSON = Path(
+    os.getenv("PERSONAL_HOLDINGS_JSON", str(BASE_DIR / "config" / "personal_holdings.json"))
+)
+
 # Additional data paths
 DATA_FETCH_DATETIME_JSON = TRADE_STORE_US_DIR / "data_fetch_datetime.json"
 VIRTUAL_TRADING_LONG_CSV = TRADE_STORE_US_DIR / "virtual_trading_long.csv"  
@@ -76,3 +87,4 @@ MACRO_INTEL_DATA_DIR.mkdir(parents=True, exist_ok=True)
 MACRO_INTEL_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 SSI_DATA_DIR.mkdir(parents=True, exist_ok=True)
 SSI_ANALYSIS_DIR.mkdir(parents=True, exist_ok=True)
+PORTFOLIO_STORE_DIR.mkdir(parents=True, exist_ok=True)

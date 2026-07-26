@@ -86,6 +86,26 @@ Deploy workflow reference: `.cursor/skills/prod-pull-and-details/SKILL.md`
 
 ---
 
+## API documentation (canonical path)
+
+**When the user says "update API docs", "API documentation", "api docs", or similar — always use:**
+
+`/home/ubuntu/uiv2/git/MindWealth_UI/docs/mindwealth-api-docs/`
+
+| What | Path |
+|------|------|
+| Main index | `docs/mindwealth-api-docs/README.md` |
+| Changelog | `docs/mindwealth-api-docs/changelog.md` |
+| Service pages | `docs/mindwealth-api-docs/services/<service>/` |
+| OpenAPI snapshot | `docs/mindwealth-api-docs/openapi/mindwealth-v1.json` |
+| Export script | `scripts/export_openapi.py` → writes directly to the path above |
+
+**Do not** create or edit `docs/api/` — that clone was removed to prevent drift. If the user names `docs/api`, redirect to `docs/mindwealth-api-docs`.
+
+The separate git repo `mindwealth-api-docs` (GitHub `divsum127/mindwealth-api-docs`) mirrors this folder for published docs; commit there when pushing API doc releases.
+
+---
+
 ## Job Status Tracking
 
 All tasks, jobs, features, bug fixes, investigations, and implementations are tracked in two files:

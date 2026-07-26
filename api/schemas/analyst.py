@@ -45,6 +45,19 @@ class HistoricalAnalogsBlock(BaseModel):
     summary: HistoricalAnalogSummary = Field(default_factory=HistoricalAnalogSummary)
 
 
+PanelAlertType = Literal[
+    "degradation",
+    "runic",
+    "runic_watch",
+    "regime_warning",
+    "sentiment_warning",
+    "persistence",
+    "system",
+]
+PanelChannel = Literal["signals", "macro", "system"]
+PanelTabId = Literal["all", "signals", "macro", "system"]
+
+
 class OverwatchPanelMacroDetail(BaseModel):
     model_config = ConfigDict(extra="allow")
 
@@ -52,15 +65,34 @@ class OverwatchPanelMacroDetail(BaseModel):
     reason: str | None = None
     narrative: str | None = None
     brave_fearful: str | None = None
-    variant: Literal["ssi", "dominant"] = "dominant"
+    variant: Literal[
+        "ssi",
+        "dominant",
+        "watch",
+        "regime_warning",
+        "sentiment",
+        "persistence",
+    ] = "dominant"
     historical_analogs: HistoricalAnalogsBlock | None = None
+
+
+class OverwatchPanelWarningDetail(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    reasons: list[str] = Field(default_factory=list)
+    regime: dict[str, Any] | None = None
+    ssi_level: float | None = None
+    ssi_posture: str | None = None
+    signal_name: str | None = None
+    var_id: str | None = None
 
 
 class OverwatchPanelAlert(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     id: str
-    type: Literal["degradation", "runic", "system"]
+    type: PanelAlertType
+    channel: PanelChannel
     label: str
     html: str
     recommendation: str | None = None
@@ -71,6 +103,24 @@ class OverwatchPanelAlert(BaseModel):
     severity: Literal["watch", "breach"] | None = None
     signal: OverwatchPanelSignalDetail | None = None
     macro: OverwatchPanelMacroDetail | None = None
+    warning: OverwatchPanelWarningDetail | None = None
+
+
+class AnalystTabBadge(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    count: int = 0
+    badge: str = ""
+
+
+class AnalystTabsMeta(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    all: AnalystTabBadge
+    signals: AnalystTabBadge
+    macro: AnalystTabBadge
+    system: AnalystTabBadge
+    active_combo: str | None = None
 
 
 class AnalystAlertsMeta(BaseModel):
@@ -82,6 +132,7 @@ class AnalystAlertsMeta(BaseModel):
     next_signal_check: str | None = None
     next_macro_scan: str | None = None
     stale_reason: str | None = None
+    tabs: AnalystTabsMeta | None = None
 
 
 class AnalystAlertsResponse(BaseModel):
@@ -90,6 +141,51 @@ class AnalystAlertsResponse(BaseModel):
     meta: AnalystAlertsMeta
     count: int
     panel_alerts: list[OverwatchPanelAlert]
+
+
+class AnalystRegimeSnapshot(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    date: str | None = None
+    regime: dict[str, Any] = Field(default_factory=dict)
+    brave_fearful: str | None = None
+    brave_fearful_display: str | None = None
+    dominant_signal: str | None = None
+    dominant_reason: str | None = None
+    macro_override: dict[str, Any] = Field(default_factory=dict)
+
+
+class AnalystSentimentSnapshot(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    ssi_level: float | None = None
+    ssi_percentile_5y: float | None = None
+    ssi_multiplier: float | None = None
+    layer2_status: str | None = None
+    posture: str | None = None
+    long_signal_active: bool = False
+    short_signal_active: bool = False
+    date: str | None = None
+
+
+class AnalystChatIntegration(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    create_session_path: str = "/api/v1/chatbot/sessions"
+    messages_path_template: str = "/api/v1/chatbot/sessions/{session_id}/messages"
+    history_path_template: str = "/api/v1/chatbot/sessions/{session_id}/history"
+    supports_page_context: bool = True
+
+
+class AnalystPanelContextResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    meta: AnalystAlertsMeta
+    count: int
+    panel_alerts: list[OverwatchPanelAlert]
+    regime: AnalystRegimeSnapshot
+    sentiment: AnalystSentimentSnapshot
+    chat: AnalystChatIntegration
 
 
 class AnalystBriefResponse(BaseModel):

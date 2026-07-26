@@ -186,8 +186,16 @@ def fed_cycle_at_date(as_of: str, walcl_mom: float | None = None) -> tuple[str, 
     sl = series.loc[:as_of_ts]
     if not sl.empty and direction == "PAUSE":
         label = str(sl.iloc[-1])
-        if label.startswith("HIKING") or label.startswith("CUTTING"):
+        # T-01 fix (2026-07-22 audit): once the freshly-computed direction is PAUSE, trust the
+        # series' own classification for this date — it already ran the same _direction() logic
+        # week-by-week and correctly emits "PAUSING" (or QE/QT) once a hike/cut cycle ends. The
+        # historical HIKE/CUT rescan below must NOT run here — it would resurrect a stale
+        # HIKING_LATE/CUTTING_LATE label from a cycle that already ended (e.g. reporting
+        # CUTTING_LATE during a 5-month post-cut pause with rising hike risk).
+        if not (label.startswith("HIKING") or label.startswith("CUTTING")):
             return label, "FRED_DFF"
+        # series hasn't caught up to the current pause yet (e.g. very stale cache) — only in
+        # that edge case do we fall through to re-derive from history below.
 
     hike_start = cut_start = None
     for dt in series.loc[:as_of_ts].index:

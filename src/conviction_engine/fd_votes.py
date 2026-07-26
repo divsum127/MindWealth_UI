@@ -22,14 +22,12 @@ def compute_fd_votes(fundamentals: dict[str, Any], record: dict[str, Any] | None
     record = record or {}
     votes: dict[str, dict[str, Any]] = {}
 
-    # Vote 1 — Revenue acceleration
+    # Vote 1 — Revenue acceleration (YoY quarterly sequence improving)
     rev_accel = fundamentals.get("revenue_accelerating")
     if rev_accel is True:
         votes["revenue"] = {"vote": "positive", "rationale": "revenue_accelerating=True"}
-    elif rev_accel is False:
-        votes["revenue"] = {"vote": "negative", "rationale": "revenue not accelerating"}
     else:
-        votes["revenue"] = {"vote": "stable", "rationale": "revenue_accelerating unknown"}
+        votes["revenue"] = {"vote": "stable", "rationale": "revenue not accelerating or unknown"}
 
     # Vote 2 — Margins YoY (gross margin trend as proxy)
     margin_trend = _float_or_none(fundamentals.get("gross_margin_trend"))
@@ -44,21 +42,30 @@ def compute_fd_votes(fundamentals: dict[str, Any], record: dict[str, Any] | None
         votes["margins"] = {"vote": "stable", "rationale": "gross_margin_trend missing"}
 
     # Vote 3 — FCF YoY + margin expanding
-    fcf_growth = _float_or_none(fundamentals.get("fcf_growth_yoy"))
+    fcf_ttm = _float_or_none(fundamentals.get("fcf_ttm") or record.get("fcf_ttm"))
+    fcf_prior = _float_or_none(fundamentals.get("fcf_prior_year"))
     fcf_margin = _float_or_none(fundamentals.get("fcf_margin"))
     fcf_margin_prior = _float_or_none(fundamentals.get("fcf_margin_prior"))
-    fcf_pos = fcf_growth is not None and fcf_growth > 0
     margin_exp = (
         fcf_margin is not None
         and fcf_margin_prior is not None
         and fcf_margin > fcf_margin_prior
     )
-    if fcf_pos and (margin_exp or fcf_margin is None):
-        votes["fcf"] = {"vote": "positive", "rationale": "FCF growing YoY"}
-    elif fcf_growth is not None and fcf_growth < 0:
-        votes["fcf"] = {"vote": "negative", "rationale": "FCF declining YoY"}
+    if fcf_ttm is not None and fcf_prior is not None:
+        if fcf_ttm > fcf_prior and (margin_exp or fcf_margin is None):
+            votes["fcf"] = {"vote": "positive", "rationale": "FCF growing YoY"}
+        elif fcf_ttm < fcf_prior * 0.95:
+            votes["fcf"] = {"vote": "negative", "rationale": "FCF down >5% YoY"}
+        else:
+            votes["fcf"] = {"vote": "stable", "rationale": "FCF flat YoY"}
     else:
-        votes["fcf"] = {"vote": "stable", "rationale": "FCF flat or unknown"}
+        fcf_growth = _float_or_none(fundamentals.get("fcf_growth_yoy"))
+        if fcf_growth is not None and fcf_growth > 0 and (margin_exp or fcf_margin is None):
+            votes["fcf"] = {"vote": "positive", "rationale": "FCF growing YoY"}
+        elif fcf_growth is not None and fcf_growth < -0.05:
+            votes["fcf"] = {"vote": "negative", "rationale": "FCF declining YoY"}
+        else:
+            votes["fcf"] = {"vote": "stable", "rationale": "FCF flat or unknown"}
 
     # Vote 4 — EPS revisions vs stored prior
     eps_est = _float_or_none(fundamentals.get("eps_estimate_current") or record.get("eps_estimate_current"))

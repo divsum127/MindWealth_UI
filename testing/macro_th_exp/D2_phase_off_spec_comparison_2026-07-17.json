@@ -1,0 +1,206 @@
+{
+  "A_persist_until_80_or_reinvert": {
+    "episodes_on": 5,
+    "total_phase_weeks": 165,
+    "pct_weeks": 8.65,
+    "may_2025_phase_active": true,
+    "may_2025_momentum_tier": "STEEPENING",
+    "may_2025_simple_tier": "NORMAL",
+    "mismatch_phase_on_tier_NORMAL": 8,
+    "episodes": [
+      {
+        "id": 1,
+        "inv": "2000-02-04\u21922000-12-22",
+        "on": "2000-12-29",
+        "off": "2001-04-06",
+        "reason": "normalized>=80",
+        "weeks": 15
+      },
+      {
+        "id": 2,
+        "inv": "2006-02-03\u21922006-03-03",
+        "on": "2006-03-10",
+        "off": "2006-06-30",
+        "reason": "re_inverted_4wk",
+        "weeks": 17
+      },
+      {
+        "id": 3,
+        "inv": "2006-06-09\u21922006-07-21",
+        "on": "2007-03-23",
+        "off": "2007-11-09",
+        "reason": "normalized>=80",
+        "weeks": 34
+      },
+      {
+        "id": 4,
+        "inv": "2006-08-18\u21922007-03-16",
+        "on": "2007-03-23",
+        "off": "2007-11-09",
+        "reason": "normalized>=80",
+        "weeks": 34
+      },
+      {
+        "id": 5,
+        "inv": "2022-07-08\u21922024-08-23",
+        "on": "2024-08-30",
+        "off": null,
+        "reason": "ongoing",
+        "weeks": 99
+      }
+    ]
+  },
+  "B_literal_reflatten_30_4wk": {
+    "episodes_on": 5,
+    "total_phase_weeks": 27,
+    "pct_weeks": 1.42,
+    "may_2025_phase_active": false,
+    "may_2025_momentum_tier": "STEEPENING",
+    "may_2025_simple_tier": "NORMAL",
+    "mismatch_phase_on_tier_NORMAL": 1,
+    "episodes": [
+      {
+        "id": 1,
+        "inv": "2000-02-04\u21922000-12-22",
+        "on": "2000-12-29",
+        "off": "2001-04-06",
+        "reason": "normalized>=80",
+        "weeks": 15
+      },
+      {
+        "id": 2,
+        "inv": "2006-02-03\u21922006-03-03",
+        "on": "2006-03-10",
+        "off": "2006-03-31",
+        "reason": "reflatten<30 for 4wk",
+        "weeks": 4
+      },
+      {
+        "id": 3,
+        "inv": "2006-06-09\u21922006-07-21",
+        "on": "2007-03-23",
+        "off": "2007-04-13",
+        "reason": "reflatten<30 for 4wk",
+        "weeks": 4
+      },
+      {
+        "id": 4,
+        "inv": "2006-08-18\u21922007-03-16",
+        "on": "2007-03-23",
+        "off": "2007-04-13",
+        "reason": "reflatten<30 for 4wk",
+        "weeks": 4
+      },
+      {
+        "id": 5,
+        "inv": "2022-07-08\u21922024-08-23",
+        "on": "2024-08-30",
+        "off": "2024-09-20",
+        "reason": "reflatten<30 for 4wk",
+        "weeks": 4
+      }
+    ]
+  },
+  "C_reflatten_30_and_neg_steepen_4wk": {
+    "episodes_on": 5,
+    "total_phase_weeks": 52,
+    "pct_weeks": 2.73,
+    "may_2025_phase_active": false,
+    "may_2025_momentum_tier": "STEEPENING",
+    "may_2025_simple_tier": "NORMAL",
+    "mismatch_phase_on_tier_NORMAL": 5,
+    "episodes": [
+      {
+        "id": 1,
+        "inv": "2000-02-04\u21922000-12-22",
+        "on": "2000-12-29",
+        "off": "2001-04-06",
+        "reason": "normalized>=80",
+        "weeks": 15
+      },
+      {
+        "id": 2,
+        "inv": "2006-02-03\u21922006-03-03",
+        "on": "2006-03-10",
+        "off": "2006-06-09",
+        "reason": "reflatten<30+neg_steepen 4wk",
+        "weeks": 14
+      },
+      {
+        "id": 3,
+        "inv": "2006-06-09\u21922006-07-21",
+        "on": "2007-03-23",
+        "off": "2007-05-18",
+        "reason": "reflatten<30+neg_steepen 4wk",
+        "weeks": 9
+      },
+      {
+        "id": 4,
+        "inv": "2006-08-18\u21922007-03-16",
+        "on": "2007-03-23",
+        "off": "2007-05-18",
+        "reason": "reflatten<30+neg_steepen 4wk",
+        "weeks": 9
+      },
+      {
+        "id": 5,
+        "inv": "2022-07-08\u21922024-08-23",
+        "on": "2024-08-30",
+        "off": "2024-11-29",
+        "reason": "reflatten<30+neg_steepen 4wk",
+        "weeks": 14
+      }
+    ]
+  },
+  "D_momentum_stall_8wk_above_30": {
+    "episodes_on": 5,
+    "total_phase_weeks": 202,
+    "pct_weeks": 10.59,
+    "may_2025_phase_active": true,
+    "may_2025_momentum_tier": "STEEPENING",
+    "may_2025_simple_tier": "NORMAL",
+    "mismatch_phase_on_tier_NORMAL": 11,
+    "episodes": [
+      {
+        "id": 1,
+        "inv": "2000-02-04\u21922000-12-22",
+        "on": "2000-12-29",
+        "off": "2001-04-06",
+        "reason": "normalized>=80",
+        "weeks": 15
+      },
+      {
+        "id": 2,
+        "inv": "2006-02-03\u21922006-03-03",
+        "on": "2006-03-10",
+        "off": "2007-11-09",
+        "reason": "normalized>=80",
+        "weeks": 88
+      },
+      {
+        "id": 3,
+        "inv": "2006-06-09\u21922006-07-21",
+        "on": "2007-03-23",
+        "off": "2007-11-09",
+        "reason": "normalized>=80",
+        "weeks": 34
+      },
+      {
+        "id": 4,
+        "inv": "2006-08-18\u21922007-03-16",
+        "on": "2007-03-23",
+        "off": "2007-11-09",
+        "reason": "normalized>=80",
+        "weeks": 34
+      },
+      {
+        "id": 5,
+        "inv": "2022-07-08\u21922024-08-23",
+        "on": "2024-08-30",
+        "off": null,
+        "reason": "ongoing",
+        "weeks": 99
+      }
+    ]
+  }
+}

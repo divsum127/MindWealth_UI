@@ -227,6 +227,7 @@ def system_checks_to_panel_alerts(checks: list[dict[str, Any]], checked_at: str)
         alerts.append({
             "id": f"system-{name.lower().replace(' ', '-')}",
             "type": "system",
+            "channel": "system",
             "label": "SYSTEM HEALTH · INTERNAL MONITOR",
             "html": f"{name}: {check.get('detail', '')}",
             "created_at": checked_at,

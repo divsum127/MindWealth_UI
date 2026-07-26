@@ -1,4 +1,4 @@
-"""Signal degradation detection service — Layer 1 Degradation Alerts (AI Analyst spec)."""
+"""Forward win-rate drift alerts — Layer 1 DRIFT ALERT (AI Analyst / email spec 5D)."""
 
 from __future__ import annotations
 
@@ -11,12 +11,16 @@ from api.services import degradation_cache as deg_cache
 from src.config_paths import VIRTUAL_TRADING_LONG_CSV, VIRTUAL_TRADING_SHORT_CSV
 
 FWD_WR_FLOOR = 60.0
+DRIFT_WATCH_CEILING = 61.0
+DRIFT_BREACH_CEILING = 60.0
+DRIFT_WATCH_FALLING_MONTHS = 2
+DRIFT_BREACH_FALLING_MONTHS = 3
 _MTM_LOSS_THRESHOLD = -10.0
 _MIN_EXITS_FOR_ANALYSIS = 3
 _BORDER_COLOR = "#ff4d6d"
-_LABEL_WATCH = "AI ANALYST · OVERWATCH AUTO-TRIGGERED · DEGRADATION WATCH"
-_LABEL_BREACH = "AI ANALYST · OVERWATCH AUTO-TRIGGERED · DEGRADATION BREACH"
-_LABEL_PORTFOLIO = "AI ANALYST · OVERWATCH AUTO-TRIGGERED · DEGRADATION BREACH"
+_LABEL_WATCH = "AI ANALYST · OVERWATCH AUTO-TRIGGERED · DRIFT ALERT WATCH"
+_LABEL_BREACH = "AI ANALYST · OVERWATCH AUTO-TRIGGERED · DRIFT ALERT BREACH"
+_LABEL_PORTFOLIO = "AI ANALYST · OVERWATCH AUTO-TRIGGERED · DRIFT ALERT BREACH"
 
 
 def _parse_profit(val: Any) -> float | None:
@@ -94,15 +98,51 @@ def _monthly_win_rates(group_df: pd.DataFrame) -> list[float]:
     return [float(v) for v in monthly.values]
 
 
-def _is_declining_toward_floor(rates: list[float], floor: float = FWD_WR_FLOOR) -> bool:
-    if len(rates) < 2:
+def _cumulative_fwd_win_rate(group_df: pd.DataFrame) -> float | None:
+    """Overall forward win rate across all closed trades (not a single week/month)."""
+    closed = group_df[
+        group_df["Exit Date"].notna()
+        & (group_df["Exit Date"].astype(str).str.strip().str.lower() != "")
+    ]
+    if closed.empty or "Profit [%]" not in closed.columns:
+        return None
+    profits = closed["Profit [%]"].apply(_parse_profit).dropna()
+    if profits.empty:
+        return None
+    return float((profits > 0).sum()) / len(profits) * 100
+
+
+def _is_falling_streak(rates: list[float], months: int) -> bool:
+    """True when win rate fell month-over-month for `months` consecutive months."""
+    if months < 1 or len(rates) < months + 1:
         return False
-    current = rates[-1]
-    if current < floor:
-        return False
-    tail = rates[-4:] if len(rates) >= 4 else rates
-    declines = sum(1 for i in range(1, len(tail)) if tail[i] < tail[i - 1])
-    return declines >= 1 and current >= floor
+    tail = rates[-(months + 1) :]
+    return all(tail[i] < tail[i - 1] for i in range(1, len(tail)))
+
+
+def _classify_drift_severity(
+    cumulative_fwd_rate: float,
+    monthly_rates: list[float],
+) -> Literal["watch", "breach"] | None:
+    """
+    DRIFT ALERT rules (email spec 5D):
+    - Orange: FWD win rate below 61% AND falling 2 months in a row.
+    - Red: FWD win rate below 60% AND falling 3 months in a row.
+    BT vs FWD gap is irrelevant — only live forward rate and its monthly trend matter.
+    """
+    if cumulative_fwd_rate >= DRIFT_WATCH_CEILING:
+        return None
+    if (
+        cumulative_fwd_rate < DRIFT_BREACH_CEILING
+        and _is_falling_streak(monthly_rates, DRIFT_BREACH_FALLING_MONTHS)
+    ):
+        return "breach"
+    if (
+        cumulative_fwd_rate < DRIFT_WATCH_CEILING
+        and _is_falling_streak(monthly_rates, DRIFT_WATCH_FALLING_MONTHS)
+    ):
+        return "watch"
+    return None
 
 
 def _last_n_weekly(rates: list[float], n: int = 4) -> list[float]:
@@ -147,22 +187,29 @@ def _classify_loss_pattern(symbol: str, function: str, full_df: pd.DataFrame) ->
     }
 
 
-def _format_degradation_message(
+def _format_drift_message(
     function: str,
     direction: str,
     interval: str,
     fwd_rate: float,
-    floor: float,
     severity: Literal["watch", "breach"],
     weekly_trend: list[float],
+    monthly_trend: list[float],
     recommendation: str,
 ) -> str:
-    floor_word = "approaching" if severity == "watch" else ("above" if fwd_rate >= floor else "below")
-    trend_str = " → ".join(f"{v:.1f}" for v in weekly_trend) if weekly_trend else "n/a"
+    ceiling = DRIFT_WATCH_CEILING if severity == "watch" else DRIFT_BREACH_CEILING
+    falling_months = (
+        DRIFT_WATCH_FALLING_MONTHS
+        if severity == "watch"
+        else DRIFT_BREACH_FALLING_MONTHS
+    )
+    weekly_str = " → ".join(f"{v:.1f}" for v in weekly_trend) if weekly_trend else "n/a"
+    monthly_str = " → ".join(f"{v:.1f}" for v in monthly_trend) if monthly_trend else "n/a"
     return (
         f"{function} / {direction} / {interval}: FWD win rate {fwd_rate:.1f}% — "
-        f"{floor_word} {floor:.0f}% floor.<br>"
-        f"Trend: {trend_str} (last 4 weeks).<br>"
+        f"below {ceiling:.0f}% with {falling_months} consecutive monthly declines.<br>"
+        f"Weekly trend: {weekly_str} (last 4 weeks).<br>"
+        f"Monthly trend: {monthly_str}.<br>"
         f"Recommend: {recommendation}."
     )
 
@@ -275,17 +322,13 @@ def _compute_degradation(fwd_df: pd.DataFrame, floor_pct: float) -> dict[str, An
 
             checked_combos += 1
             weekly_rates = _weekly_win_rates(group)
-            if not weekly_rates:
+            monthly_rates = _monthly_win_rates(group)
+            cumulative_fwd_rate = _cumulative_fwd_win_rate(group)
+            if cumulative_fwd_rate is None:
                 continue
 
-            current_fwd_rate = weekly_rates[-1]
-            severity: Literal["watch", "breach"] | None = None
-
-            if current_fwd_rate < floor_pct:
-                severity = "breach"
-            elif _is_declining_toward_floor(weekly_rates, floor_pct):
-                severity = "watch"
-            else:
+            severity = _classify_drift_severity(cumulative_fwd_rate, monthly_rates)
+            if severity is None:
                 continue
 
             bt_rate: float | None = None
@@ -300,15 +343,22 @@ def _compute_degradation(fwd_df: pd.DataFrame, floor_pct: float) -> dict[str, An
 
             pattern_info = _classify_loss_pattern(symbol, function, fwd_df)
             fwd_trend = _last_n_weekly(weekly_rates, 4)
+            monthly_trend = [round(r, 1) for r in monthly_rates[-6:]]
             label = _LABEL_WATCH if severity == "watch" else _LABEL_BREACH
             recommendation = pattern_info["recommendation"]
-            message = _format_degradation_message(
-                function, direction, interval, current_fwd_rate, floor_pct,
-                severity, fwd_trend, recommendation,
+            message = _format_drift_message(
+                function,
+                direction,
+                interval,
+                cumulative_fwd_rate,
+                severity,
+                fwd_trend,
+                monthly_trend,
+                recommendation,
             )
 
             signal_alerts.append({
-                "trigger_type": "fwd_degradation",
+                "trigger_type": "fwd_drift",
                 "severity": severity,
                 "strategy": function,
                 "combo": {
@@ -318,9 +368,9 @@ def _compute_degradation(fwd_df: pd.DataFrame, floor_pct: float) -> dict[str, An
                     "direction": direction,
                 },
                 "bt_rate": round(bt_rate, 1) if bt_rate is not None else None,
-                "fwd_rate": round(current_fwd_rate, 1),
+                "fwd_rate": round(cumulative_fwd_rate, 1),
                 "weekly_trend": fwd_trend,
-                "monthly_trend": [round(r, 1) for r in _monthly_win_rates(group)[-6:]],
+                "monthly_trend": monthly_trend,
                 "pattern": pattern_info["pattern"],
                 "recommendation": recommendation,
                 "message": message,

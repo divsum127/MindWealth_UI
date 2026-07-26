@@ -11,12 +11,14 @@ from __future__ import annotations
 
 import json
 import math
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
 
+from api.services import policy_service, reports_service, sizing_engine
 from api.utils import dataframe_to_records
 from src.config_paths import (
     CONVICTION_OUTPUT_DIR,
@@ -36,8 +38,28 @@ _CORRELATIONS_MAX_AGE_DAYS = 7
 # Constants
 # ─────────────────────────────────────────────────────────────────────────────
 
-PORTFOLIO_NOTIONAL: int = 100_000_000
+PORTFOLIO_NOTIONAL_DEFAULT: int = 100_000_000
+# Backward-compatible alias — prefer get_portfolio_notional() for runtime resolution.
+PORTFOLIO_NOTIONAL: int = PORTFOLIO_NOTIONAL_DEFAULT
 IDLE_CASH_YIELD_PCT: float = 3.5
+
+
+def get_portfolio_notional() -> int:
+    """Resolve live sizer notional — delegates to policy_service (config/portfolio_policy.yaml).
+
+    Priority:
+    1. ``PORTFOLIO_NOTIONAL`` env (explicit USD integer)
+    2. ``PORTFOLIO_USE_RESEARCH_NOTIONAL=1`` → policy ``notional.research_usd`` ($10M)
+    3. Policy ``notional.usd`` default ($100M, unchanged until Rohit flips research flag)
+    """
+    notional, _source = policy_service.get_notional()
+    return notional
+
+
+def portfolio_notional_source() -> str:
+    """How get_portfolio_notional() was resolved — for API transparency."""
+    _notional, source = policy_service.get_notional()
+    return source
 
 # Scenario → base regime_max_pct
 _SCENARIO_REGIME_MAX: dict[str, float] = {
@@ -45,6 +67,46 @@ _SCENARIO_REGIME_MAX: dict[str, float] = {
     "stress": 65.0,
     "lowvol": 85.0,
 }
+
+# D4: AUTO/MANUAL are meta-scenarios layered on top of the three regime scenarios above —
+# AUTO resolves to one of them from the live ceiling chain; MANUAL runs "normal" then applies
+# persisted user overrides (manual_overrides_service.py).
+_META_SCENARIOS: frozenset[str] = frozenset({"auto", "manual"})
+
+
+def resolve_auto_scenario(runic: dict[str, Any], ssi: dict[str, Any]) -> tuple[str, str]:
+    """Regime-driven auto-pick of normal/stress/lowvol from the live ceiling chain (D4 AUTO).
+
+    Mirrors ``scripts/run_portfolio_book_snapshot_daily.py``'s regime_bucket classification —
+    same VIX/HY/SSI reasoning, one source for "what regime are we in" language. Thresholds live
+    in ``config/portfolio_policy.yaml`` (``auto_scenario`` block, ``status: interim`` — not yet
+    Rohit-confirmed) via ``policy_service.get_auto_scenario_thresholds()``, so tuning them is a
+    config edit, not a code change.
+    """
+    thresholds = policy_service.get_auto_scenario_thresholds()
+
+    variables = runic.get("variables_dashboard", [])
+    var_map: dict[str, Any] = {v.get("variable", ""): v for v in variables if isinstance(v, dict)}
+    vix_var = var_map.get("VIX", {})
+    vix_pct: float | None = vix_var.get("pctile_3yr") or vix_var.get("percentile") or vix_var.get("pct")
+    hy_var = var_map.get("HY", {})
+    hy_pct: float | None = hy_var.get("current")
+    ssi_multiplier = float(ssi.get("ssi_multiplier") or 1.0)
+
+    hy_stress = hy_pct is not None and hy_pct > thresholds["hy_pct_stress"]
+    if (
+        (vix_pct is not None and vix_pct > thresholds["vix_pctile_stress"])
+        or hy_stress
+        or ssi_multiplier < thresholds["ssi_multiplier_stress_below"]
+    ):
+        return "stress", f"VIX pctile {vix_pct} / HY {hy_pct}% / SSI {ssi_multiplier} indicate stress"
+    if (
+        vix_pct is not None
+        and vix_pct < thresholds["vix_pctile_lowvol"]
+        and ssi_multiplier >= thresholds["ssi_multiplier_lowvol_at_least"]
+    ):
+        return "lowvol", f"VIX pctile {vix_pct} low, SSI {ssi_multiplier} >= 1.0"
+    return "normal", "No stress/low-vol regime signal — default normal"
 
 # BQ tier → share of cluster budget (fraction)
 _BQ_TIERS: list[tuple[float, str, float]] = [
@@ -395,15 +457,60 @@ def _assign_cluster(
     return "other"
 
 
+_ASSET_CLASS_LABELS: dict[str, str] = {
+    "ETF": "ETF",
+    "INDEX": "Index",
+    "EQUITY": "Equity",
+    "CRYPTOCURRENCY": "Cryptocurrency",
+    "CURRENCY": "Currency",
+    "COMMODITY": "Commodity",
+    "FUTURE": "Future",
+    "FUTURES": "Future",
+    "BOND": "Bond",
+}
+
+
+def _asset_class_label(asset_type: str) -> str:
+    """Human asset-class label for sizer pnl_rows/positions (HANDOFF §7 gap).
+
+    Same vocabulary as ``portfolio_pipeline_service.py``'s holdings builder — raw
+    ``asset_type`` values are the VT book's own tag; default to "Equity" (the
+    overwhelming majority of the book) when the tag is missing, matching the
+    holdings endpoint's fallback so the two endpoints agree per HANDOFF §12.
+    """
+    at = str(asset_type or "").strip().upper()
+    return _ASSET_CLASS_LABELS.get(at, "Equity")
+
+
+def _cross_function_conflict_tickers() -> set[str]:
+    """Tickers currently flagged in a cross-function exit conflict (HANDOFF §7 gap).
+
+    Sourced from the same ``cross_function_conflicts.json`` blob that backs
+    ``/signals/reports/portfolio-risk/latest`` — one conflict source of truth,
+    just projected onto sizer pnl_rows/positions too so badges are consistent
+    across Sizing/Risk pages and the conflict panel (HANDOFF §4 "propagated to
+    surviving affected legs").
+    """
+    try:
+        blob = reports_service._load_cross_function_conflicts()
+    except Exception:
+        return set()
+    tickers: set[str] = set()
+    for conflict in blob.get("conflicts", []):
+        sym = str(conflict.get("symbol") or "").upper().strip()
+        if sym and conflict.get("conflict", True):
+            tickers.add(sym)
+    return tickers
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Sizing helpers
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _bq_tier(bq: float | None) -> tuple[str, float]:
     """Return (tier_label, share_fraction) for a BQ score."""
-    if bq is None:
-        # None means NOT_APPLICABLE (ETF/INDEX) — not unscored equities.
-        # Default to REDUCED tier; caller applies further adjustments.
+    if bq is None or (isinstance(bq, float) and math.isnan(bq)):
+        # None/NaN means missing BQ — caller applies NOT_APPLICABLE or unscored rules.
         return "REDUCED", 0.40
     for threshold, label, share in _BQ_TIERS:
         if bq >= threshold:
@@ -562,7 +669,8 @@ def _compute_ceiling(
         "hy_bps": hy_bps,
         "final_ceiling_pct": final_ceiling_pct,
         "formula_text": formula_text,
-        "portfolio_notional": PORTFOLIO_NOTIONAL,
+        "portfolio_notional": get_portfolio_notional(),
+        "portfolio_notional_source": portfolio_notional_source(),
         "idle_cash_yield_pct": IDLE_CASH_YIELD_PCT,
         "note": hy_note,
         "steps": [
@@ -602,21 +710,9 @@ def _combo_c_active(runic: dict[str, Any]) -> bool:
 
 
 def _macro_override(runic: dict[str, Any]) -> dict[str, Any]:
-    regime = runic.get("regime", {})
-    reasons = []
-    # Actual key is 'val_regime' in runic_output.json
-    val = (regime.get("val_regime") or regime.get("valuation") or "").upper()
-    if "EXTREME" in val:
-        cape_val = None
-        for v in runic.get("variables_dashboard", []):
-            if isinstance(v, dict) and v.get("variable") == "CAPE":
-                cape_val = v.get("current")
-        reasons.append(f"Valuation extreme: CAPE {cape_val:.1f}×" if cape_val else "Valuation extreme")
-    # Actual key is 'geo_overlay' in runic_output.json
-    geo = (regime.get("geo_overlay") or regime.get("geo") or "").upper()
-    if geo and geo != "NEUTRAL":
-        reasons.append(f"Geopolitical: {geo}")
-    return {"active": bool(reasons), "reasons": reasons}
+    from api.services.macro_override import compute_macro_override
+
+    return compute_macro_override(runic)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -626,11 +722,61 @@ def _macro_override(runic: dict[str, Any]) -> dict[str, Any]:
 def get_portfolio_sizer(scenario: str = "normal") -> dict[str, Any]:
     """Build full PortfolioResponse for a given scenario.
 
-    scenario: 'normal' | 'stress' | 'lowvol'
+    scenario: 'normal' | 'stress' | 'lowvol' | 'auto' | 'manual'
+
+    'auto' resolves to one of normal/stress/lowvol from the live ceiling chain (D4).
+    'manual' runs 'normal' sizing then applies persisted user $ overrides on top — REFRESH
+    SIZES recomputes shares/market-value against live prices while keeping the user's $ fixed.
     """
     scenario = scenario.lower()
-    if scenario not in _SCENARIO_REGIME_MAX:
-        raise ValueError(f"Invalid scenario '{scenario}'. Use: normal, stress, lowvol")
+    if scenario not in _SCENARIO_REGIME_MAX and scenario not in _META_SCENARIOS:
+        raise ValueError("Invalid scenario. Use: normal, stress, lowvol, auto, manual")
+
+    if scenario == "auto":
+        runic0 = _load_runic_safe()
+        ssi0 = _load_ssi_safe()
+        effective, reason = resolve_auto_scenario(runic0, ssi0)
+        payload = get_portfolio_sizer(effective)
+        payload["scenario"] = "auto"
+        payload["auto_resolved_scenario"] = effective
+        payload["auto_resolution_reason"] = reason
+        return payload
+
+    if scenario == "manual":
+        payload = get_portfolio_sizer("normal")
+        payload["scenario"] = "manual"
+        payload["manual_base_scenario"] = "normal"
+        from api.services import manual_overrides_service
+
+        applied = manual_overrides_service.apply_manual_overrides(payload.get("pnl_rows", []))
+        payload["manual_overrides_applied"] = applied
+        # Roll manual $ changes back up into cluster/summary aggregates so bars stay consistent.
+        cluster_map = {c["id"]: c for c in payload.get("clusters", [])}
+        for c in cluster_map.values():
+            c["deployed_usd"] = 0
+            c["positions"] = []
+        for row in payload.get("pnl_rows", []):
+            c = cluster_map.get(row.get("cluster_id"))
+            if c is None:
+                continue
+            c["positions"].append(row)
+            if not row.get("blocked"):
+                c["deployed_usd"] += row.get("allocation_usd") or 0
+        notional_m = get_portfolio_notional()
+        for c in cluster_map.values():
+            c["deployed_pct"] = round(c["deployed_usd"] / notional_m * 100, 4) if notional_m else 0.0
+            c["true_weight_pct"] = c["deployed_pct"]
+        total_deployed = sum(c["deployed_usd"] for c in cluster_map.values())
+        cash_usd = notional_m - total_deployed
+        payload["summary"] = {
+            "deployed_usd": total_deployed,
+            "deployed_pct": round(total_deployed / notional_m * 100, 2) if notional_m else 0.0,
+            "cash_usd": cash_usd,
+            "cash_pct": round(cash_usd / notional_m * 100, 2) if notional_m else 0.0,
+            "idle_income_usd": round(cash_usd * IDLE_CASH_YIELD_PCT / 100, 0),
+            "open_position_count": sum(1 for r in payload.get("pnl_rows", []) if not r.get("blocked")),
+        }
+        return payload
 
     runic = _load_runic_safe()
     ssi = _load_ssi_safe()
@@ -643,7 +789,7 @@ def get_portfolio_sizer(scenario: str = "normal") -> dict[str, Any]:
         spx_trend_meta=spx_meta,
     )
     final_pct = ceiling["final_ceiling_pct"]
-    notional = PORTFOLIO_NOTIONAL
+    notional = get_portfolio_notional()
     deployed_cap_usd = round(notional * final_pct / 100)
 
     # Load VT book (open positions)
@@ -673,6 +819,7 @@ def get_portfolio_sizer(scenario: str = "normal") -> dict[str, Any]:
         for r in all_rows
     } - {""}
     name_map = _refresh_ticker_names_cache(unique_tickers, max_fetch=0)
+    conflict_tickers = _cross_function_conflict_tickers()
 
     # Assign clusters and compute sizing
     budget_scale = _SCENARIO_BUDGET_SCALE.get(scenario, 1.0)
@@ -702,30 +849,16 @@ def get_portfolio_sizer(scenario: str = "normal") -> dict[str, Any]:
         cluster_id = _assign_cluster(ticker, business_type, asset_type)
         cluster = cluster_map[cluster_id]
 
-        bq = row.get("bq_raw")
-        if bq is not None:
-            try:
-                bq = float(bq)
-            except (TypeError, ValueError):
-                bq = None
+        bq = _safe_float(row.get("bq_raw"))
 
         verdict = str(row.get("verdict") or "")
         not_applicable = verdict.upper() == "NOT_APPLICABLE"
         unscored = bq is None and not not_applicable and not verdict
         tier_label, base_share = _bq_tier(bq)
 
-        # For NOT_APPLICABLE (ETFs/Indexes): use conviction_score as guidance if available
-        if not_applicable and bq is None:
-            cscore = _safe_float(row.get("conviction_score"))
-            if cscore is not None:
-                # Map conviction_score (typically −10 to +10) to tier
-                if cscore >= 5:
-                    tier_label, base_share = "TACTICAL", 0.75
-                elif cscore >= 2:
-                    tier_label, base_share = "REDUCED", 0.40
-                elif cscore < 0:
-                    tier_label, base_share = "BLOCKED", 0.00
-                # else keep REDUCED default
+        # D2: ETF/FX/index/commodity — conviction N/A → base size, never BLOCKED/$0
+        if not_applicable:
+            tier_label, base_share = "N/A", 1.00
 
         flags = _detect_flags(row, multi_sig_tickers)
         direction = str(row.get("Signal") or row.get("direction") or "Long")
@@ -751,28 +884,59 @@ def get_portfolio_sizer(scenario: str = "normal") -> dict[str, Any]:
             "rank_weight": rank_weight,
         })
 
-    # Pass 2 — split each cluster budget proportionally by ranking weight.
+    # Pass 2 — allocate USD per position.
+    # legacy: proportional split of each cluster's % budget of the deployed cap (pre-D1).
+    # d1_slots: NAV/N admission slots per sleeve, D1's replacement — see sizing_engine.py.
+    sizing_version = sizing_engine.sizing_engine_version()
+    if sizing_version == "d1_slots":
+        n_slots_active, _n_source = policy_service.get_n_slots()
+        cluster_map, _ = sizing_engine.compute_d1_sizing(
+            pending_by_cluster,
+            notional=notional,
+            final_ceiling_pct=final_pct,
+            n_slots=n_slots_active,
+            scenario=scenario,
+        )
+        for pending in pending_by_cluster.values():
+            for p in pending:
+                p["allocation_usd"] = p.get("_d1_allocation_usd", 0)
+                p["waiting"] = p.get("_d1_waiting", False)
+                p["wait_reason"] = p.get("_d1_wait_reason")
+                p["slot_index"] = p.get("_d1_slot_index")
+    else:
+        for cluster_id, pending in pending_by_cluster.items():
+            cluster = cluster_map[cluster_id]
+            eligible_indices = [
+                i for i, p in enumerate(pending)
+                if not p["blocked"] and p["rank_weight"] > 0
+            ]
+            total_weight = sum(pending[i]["rank_weight"] for i in eligible_indices)
+            allocation_by_idx: dict[int, int] = {}
+            remaining = cluster["budget_usd"]
+            for j, idx in enumerate(eligible_indices):
+                if j == len(eligible_indices) - 1:
+                    allocation_by_idx[idx] = remaining
+                else:
+                    share_usd = round(
+                        cluster["budget_usd"] * pending[idx]["rank_weight"] / total_weight
+                    )
+                    allocation_by_idx[idx] = share_usd
+                    remaining -= share_usd
+            for i, p in enumerate(pending):
+                if p["blocked"] or total_weight <= 0:
+                    p["allocation_usd"] = 0
+                else:
+                    p["allocation_usd"] = allocation_by_idx.get(i, 0)
+                # D3 interim guard — legacy engine is already capped by cluster budget_usd
+                # (proportional split of a fixed pool), so this is defensive, not corrective.
+                p["waiting"] = False
+                p["wait_reason"] = None
+                p["slot_index"] = None
+
     sized_rows: list[dict[str, Any]] = []
     for cluster_id, pending in pending_by_cluster.items():
         cluster = cluster_map[cluster_id]
-        eligible_indices = [
-            i for i, p in enumerate(pending)
-            if not p["blocked"] and p["rank_weight"] > 0
-        ]
-        total_weight = sum(pending[i]["rank_weight"] for i in eligible_indices)
-        allocation_by_idx: dict[int, int] = {}
-        remaining = cluster["budget_usd"]
-        for j, idx in enumerate(eligible_indices):
-            if j == len(eligible_indices) - 1:
-                allocation_by_idx[idx] = remaining
-            else:
-                share_usd = round(
-                    cluster["budget_usd"] * pending[idx]["rank_weight"] / total_weight
-                )
-                allocation_by_idx[idx] = share_usd
-                remaining -= share_usd
-
-        for i, p in enumerate(pending):
+        for p in pending:
             row = p["row"]
             ticker = p["ticker"]
             blocked = p["blocked"]
@@ -785,11 +949,10 @@ def get_portfolio_sizer(scenario: str = "normal") -> dict[str, Any]:
             bq = p["bq"]
             verdict = p["verdict"]
 
-            if blocked or total_weight <= 0:
-                allocation_usd = 0
-            else:
-                allocation_usd = allocation_by_idx.get(i, 0)
-            allocation_pct = round(allocation_usd / notional * 100, 4) if notional else 0.0
+            allocation_usd = p["allocation_usd"]
+            allocation_pct = sizing_engine.clamp_display_pct(
+                round(allocation_usd / notional * 100, 4) if notional else 0.0
+            )
 
             win_rate_val = _safe_float(row.get("Backtested Win Rate [%]"))
 
@@ -830,6 +993,8 @@ def get_portfolio_sizer(scenario: str = "normal") -> dict[str, Any]:
                 "not_applicable": not_applicable,
                 "unscored": unscored,
                 "size_tier": f"{tier_label} {int(adj_share*100)}%" if not blocked else "BLOCKED",
+                # Conviction multiplier applied to this position's slot (D1: size = NAV/N × conviction × SSI).
+                "conviction_multiplier": 0.0 if blocked else adj_share,
                 "allocation_usd": allocation_usd,
                 "allocation_pct": allocation_pct,
                 "flags": flags,
@@ -838,24 +1003,40 @@ def get_portfolio_sizer(scenario: str = "normal") -> dict[str, Any]:
                     "YIELD TRAP" if "YIELD TRAP" in flags
                     else "No conviction score — run conviction engine" if unscored and blocked
                     else "No conviction score — conservative REDUCED tier" if unscored
-                    else "conviction_score < 0" if not_applicable and blocked
                     else "BQ < 2" if tier_label == "BLOCKED" and not not_applicable
                     else None
                 ),
                 "win_rate": win_rate_val,
                 "backtested_win_rate_pct": win_rate_val,
                 "win_rate_label": "Backtested Win Rate",
+                # D1 slot fields — populated only when SIZING_ENGINE_VERSION=d1_slots.
+                "true_weight_pct": allocation_pct,
+                "waiting": p.get("waiting", False),
+                "wait_reason": p.get("wait_reason"),
+                "slot_index": p.get("slot_index"),
+                # HANDOFF §7 / DATA_ISSUES §6 gap — cross_function_exit/asset_class/status
+                # now present on pnl_rows and cluster positions (was missing on live API).
+                "cross_function_exit": ticker in conflict_tickers,
+                "asset_class": _asset_class_label(row.get("asset_type") or row.get("Asset Type")),
+                "status": "Blocked" if blocked else "Open",
             }
 
-            if not blocked:
+            # d1_slots already accumulated cluster["deployed_usd"] inside compute_d1_sizing —
+            # accumulating again here would double-count (D7: one computation, not two).
+            if sizing_version != "d1_slots" and not blocked:
                 cluster["deployed_usd"] += allocation_usd
 
             cluster["positions"].append(sized_row)
             sized_rows.append(sized_row)
 
-    # Compute deployed_pct per cluster
+    # Compute deployed_pct per cluster (idempotent for d1_slots — engine already set this).
     for c in cluster_map.values():
         c["deployed_pct"] = round(c["deployed_usd"] / notional * 100, 4) if notional else 0.0
+        c.setdefault("true_weight_pct", c["deployed_pct"])
+        c.setdefault("slots_max", None)
+        c.setdefault("slots_used", None)
+        c.setdefault("slots_available", None)
+        c.setdefault("full", None)
 
     # Summary
     total_deployed = sum(c["deployed_usd"] for c in cluster_map.values())
@@ -878,6 +1059,7 @@ def get_portfolio_sizer(scenario: str = "normal") -> dict[str, Any]:
     # Active combos
     active_combos = _active_combos_payload(runic)
 
+    n_slots_active, n_slots_source = policy_service.get_n_slots()
     return {
         "date": runic.get("date") or datetime.now(timezone.utc).strftime("%Y-%m-%d"),
         "as_of": datetime.now(timezone.utc).isoformat(),
@@ -890,6 +1072,9 @@ def get_portfolio_sizer(scenario: str = "normal") -> dict[str, Any]:
         "constraints": constraints,
         "active_combos": active_combos,
         "macro_override": _macro_override(runic),
+        "sizing_engine_version": sizing_version,
+        "n_slots": n_slots_active if sizing_version == "d1_slots" else None,
+        "policy_source": policy_service.policy_meta(),
         "risk": {
             "available": True,
             "message": "Use GET /api/v1/portfolio/risk for full correlation matrix.",
@@ -928,33 +1113,47 @@ def _merge_conviction(vt_df: pd.DataFrame, conv_df: pd.DataFrame, side: str) -> 
     """Merge VT rows with conviction overlay on Symbol/ticker.
 
     Handles duplicate tickers by taking the first conviction row per ticker.
+    When a ticker is missing from the overlay (stale CSV), scores on demand via
+    Conviction Engine so portfolio sizing does not show unscored rows.
     """
     if vt_df.empty:
         return []
     rows = dataframe_to_records(vt_df)
-    if conv_df.empty:
-        return rows
-    conv_df = conv_df.copy()
-    # Normalise key column name
-    if "ticker" not in conv_df.columns and "Symbol" in conv_df.columns:
-        conv_df = conv_df.rename(columns={"Symbol": "ticker"})
-    if "ticker" not in conv_df.columns:
-        return rows
-
-    conv_df["ticker"] = conv_df["ticker"].astype(str).str.upper()
-    # Drop duplicates — keep first occurrence per ticker to avoid orient='index' error
-    conv_dedup = conv_df.drop_duplicates(subset=["ticker"], keep="first")
     conv_index: dict[str, dict[str, Any]] = {}
-    for rec in dataframe_to_records(conv_dedup):
-        t = str(rec.get("ticker") or "").upper()
-        if t:
-            conv_index[t] = rec
+    if not conv_df.empty:
+        conv_df = conv_df.copy()
+        if "ticker" not in conv_df.columns and "Symbol" in conv_df.columns:
+            conv_df = conv_df.rename(columns={"Symbol": "ticker"})
+        if "ticker" in conv_df.columns:
+            conv_df["ticker"] = conv_df["ticker"].astype(str).str.upper()
+            conv_dedup = conv_df.drop_duplicates(subset=["ticker"], keep="first")
+            for rec in dataframe_to_records(conv_dedup):
+                t = str(rec.get("ticker") or "").upper()
+                if t:
+                    conv_index[t] = rec
+
+    overlay_cache: dict[str, dict[str, Any]] = dict(conv_index)
+
+    def _overlay_on_demand(sym: str, row: dict[str, Any]) -> dict[str, Any]:
+        if sym in overlay_cache:
+            return overlay_cache[sym]
+        try:
+            from src.conviction_engine.engine import apply_to_signal
+            from src.conviction_engine.signals import normalize_signal_row
+
+            mod = apply_to_signal(normalize_signal_row(row), persist=False)
+            overlay_cache[sym] = mod
+        except Exception:
+            overlay_cache[sym] = {}
+        return overlay_cache[sym]
 
     merged = []
     for row in rows:
         sym = str(row.get("Symbol") or "").upper()
         extra = conv_index.get(sym, {})
-        merged.append({**extra, **row})  # VT fields take priority for price/date cols
+        if sym and sym not in conv_index:
+            extra = _overlay_on_demand(sym, row)
+        merged.append({**extra, **row})
     return merged
 
 
@@ -993,19 +1192,20 @@ def _build_constraints(
 def get_portfolio_risk(scenario: str = "normal") -> dict[str, Any]:
     """Cluster correlation matrix + breach list + cluster weight bars."""
     scenario = scenario.lower()
-    if scenario not in _SCENARIO_REGIME_MAX:
-        raise ValueError(f"Invalid scenario '{scenario}'. Use: normal, stress, lowvol")
+    if scenario not in _SCENARIO_REGIME_MAX and scenario not in _META_SCENARIOS:
+        raise ValueError("Invalid scenario. Use: normal, stress, lowvol, auto, manual")
 
     labels, matrix, corr_meta = _load_correlation_matrix()
 
     # Cluster weights from sizer for requested scenario
+    sizer: dict[str, Any] = {"pnl_rows": []}
     try:
         sizer = get_portfolio_sizer(scenario)
         clusters = sizer.get("clusters", [])
-        notional = PORTFOLIO_NOTIONAL
+        notional = get_portfolio_notional()
     except Exception:
         clusters = []
-        notional = PORTFOLIO_NOTIONAL
+        notional = get_portfolio_notional()
 
     # Build weight map by cluster id
     weight_map: dict[str, float] = {}
@@ -1069,6 +1269,35 @@ def get_portfolio_risk(scenario: str = "normal") -> dict[str, Any]:
         "breach_threshold_watch": _BREACH_RHO_WARN,
         "breach_threshold_action": _BREACH_RHO_ACTION,
         "cluster_weights": weight_bars,
+        "conviction_summary": build_conviction_summary({"pnl_rows": sizer.get("pnl_rows", [])}),
+    }
+
+
+def build_conviction_summary(sizer: dict[str, Any]) -> dict[str, Any]:
+    """Conviction tier counts from sizer pnl_rows (HANDOFF §8)."""
+    counts = {"max_count": 0, "tactical_count": 0, "reduced_count": 0, "yield_trap_count": 0}
+    max_names: list[str] = []
+    yield_trap_names: list[str] = []
+    for row in sizer.get("pnl_rows", []):
+        if row.get("blocked"):
+            continue
+        ticker = str(row.get("ticker") or "")
+        tier = str(row.get("size_tier") or "").upper()
+        flags = row.get("flags") or []
+        if "YIELD TRAP" in flags:
+            counts["yield_trap_count"] += 1
+            yield_trap_names.append(ticker)
+        if tier.startswith("MAX"):
+            counts["max_count"] += 1
+            max_names.append(ticker)
+        elif tier.startswith("TACTICAL"):
+            counts["tactical_count"] += 1
+        elif tier.startswith("REDUCED") or tier == "N/A":
+            counts["reduced_count"] += 1
+    return {
+        **counts,
+        "max_names": max_names[:10],
+        "yield_trap_names": yield_trap_names[:10],
     }
 
 

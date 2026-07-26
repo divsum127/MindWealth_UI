@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Export OpenAPI schema to docs/api/openapi/mindwealth-v1.json."""
+"""Export OpenAPI schema to docs/mindwealth-api-docs/openapi/mindwealth-v1.json."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ if str(ROOT) not in sys.path:
 
 from api.main import app  # noqa: E402
 
-OUT = ROOT / "docs" / "api" / "openapi" / "mindwealth-v1.json"
+OUT = ROOT / "docs" / "mindwealth-api-docs" / "openapi" / "mindwealth-v1.json"
 
 
 def main() -> None:

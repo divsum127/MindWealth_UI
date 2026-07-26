@@ -1,0 +1,1138 @@
+WhatsApp chat export — "All of us - Ahil, Divyanshu, Parth and I"
+Messages from the last month: 21 June 2026 - 21 July 2026
+Total messages in this period: 810
+(Exported as text only; media attachments appear as 'image/video omitted'.)
+======================================================================
+
+[22/06/26, 4:59:44 AM] Rohit Sir: image omitted
+[22/06/26, 5:00:05 AM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ please update this with any other functions that have been created since…
+[22/06/26, 5:00:17 AM] Rohit Sir: @⁨AHIL KHAN⁩ where is the porfolio function?
+[22/06/26, 5:02:26 AM] Rohit Sir: Thus - portfolio_sizer. I assume you crated this when you experimented with a non-dynamic forced portfolio which we agreed we wont go ahead with. But we want to use any applicable ideas there in for portfolio creation. In that regard I have sent an email on 18th June following up on my 18th May email. Please can you and Divyanshu get on the same page here so he is clear on what you have done/not done in this reard image omitted
+[22/06/26, 5:02:29 AM] Rohit Sir: regard
+[22/06/26, 5:04:47 AM] Rohit Sir: @⁨Parth IITB Intern⁩ on my front page of website , i want to present 1> total cagr like we already have 2> a portoflio sharpe - assuming ahil and divyanshu can understand and execute in next 2 days
+[22/06/26, 5:06:30 AM] Rohit Sir: And of course Divyanshu has to execute signal surface jsons accurately as per my reccent email and thereafter complete the pending matters on macro intelligence. @⁨Divyanshu Malu IIT B⁩ we need to speak monday 130 pm (i will call earlier if awake) IST
+[22/06/26, 5:11:52 AM] Rohit Sir: MindWealth_Composite_v4_Calibrated.docx • 3 pages document omitted
+[22/06/26, 5:12:23 AM] Rohit Sir: re SIGNALS page - shared with @divyanshu over the weekend. sharing with all
+[22/06/26, 5:36:06 AM] Rohit Sir: @⁨AHIL KHAN⁩ - are all our backtesting win rates and the data they are based on - at any point of time - based on observations at t-2 years? (assuming today t=t) .Are the most recent 2 years reserved for out of sample fwd testin only?
+[22/06/26, 6:02:15 AM] Rohit Sir: @⁨AHIL KHAN⁩ also ive asked you this a 100 times but I always want to check again. Re our FWD testing - are all trades entered and exited in this period? i e any given trade needs to have entered and exitted in this 2-year period, or is it JUST entered-trades in the 2 year period and we consider both exits within the 2 year period + mark to market value of open trades as well? I am determinging how to present a sharpe for our fwd tested trades and back tested traeds - but not an avergae sharpe but as a portfolio. i want to do this simply while ensuring we have at least 30 trades and plot the peak sharpe during this period…
+[22/06/26, 1:15:57 PM] Rohit Sir: @⁨AHIL KHAN⁩ are trades in the forward-test period fully closed (both entry and exit within the window), or does the current dataset include trades that entered within the period but have not yet exited (open at mark-to-market)?
+[22/06/26, 1:16:56 PM] AHIL KHAN: yes sir for forward testing yes open + closed both, open with mark to market
+[22/06/26, 1:17:24 PM] AHIL KHAN: earlier it was only closed, but i guess few month back i have added open as well
+[22/06/26, 1:18:03 PM] AHIL KHAN: its exluded only for forwarrd, for rest its included, means last 2 year included
+[22/06/26, 1:18:24 PM] AHIL KHAN: its in combined straetegy page sir
+[22/06/26, 1:19:06 PM] AHIL KHAN: actually its not portfolio if you remebers its mostly we are combingin teh multiple streategy
+[22/06/26, 1:26:09 PM] Rohit Sir: what led you to add open as well…?
+[22/06/26, 1:27:11 PM] Rohit Sir: isnt that a fundamental flow. the true measure of walk fwd testingor what we call Forward Testing leadin to FWD WIN RATE and otehr related data, is that it works with out of sample data…?
+[22/06/26, 1:27:15 PM] Rohit Sir: flaw
+[22/06/26, 1:29:08 PM] Rohit Sir: please read my email on portfolio sizer. i do recall you having done some of it. but read it and confirm which parts not done…and then discuss with divyanshu so he can use the funciton/alter it so save time and no errors in communication from me.
+[22/06/26, 1:29:58 PM] Rohit Sir: ahil pl read this now. is a short doc. tx
+[22/06/26, 1:30:06 PM] Rohit Sir: @⁨AHIL KHAN⁩
+[22/06/26, 1:30:55 PM] AHIL KHAN: Sir, the reason is basically let's say in a particular two-year period we create a strategy such that we only end when we have a profit for that and for loss we are not taking any exit. We are only on the exit for profit.
+
+Then what happened? In a two-year period let's say 80% of trades got exit but 20% did not exit and had high losses because we are not exiting any of the loss trades.
+
+What happened in forward testing? You will say, "Hey the forward testing is excellent; it is giving 100% results." In reality we are ignoring those 20 bad signals and that's why I have added this and an open trade as well so that we can capture those 20% as well. Obviously not accurately but at least we know that there are big losses in those areas.
+[22/06/26, 1:32:01 PM] AHIL KHAN: ok
+[22/06/26, 1:44:13 PM] Rohit Sir: Ahil thanks for confirming. Makes sense to include open trades at MTM for the portfolio Sharpe — that's standard mark-to-market accounting and is fine. The issue is specifically fwd win rate, not Sharpe — open trades at positive MTM that haven't exited yet could flip (UNLESS AS YOU SAY THEY ARE ALL STALE AND HAVE MOVED IN AN OPPOSITE DIRECTION WHICH ALONG WITH PASSAGE OF TIME HAS EXCEEDED THE AVERAGE HOLD PERIOD MEANINGFULLY ), so there is an argument for win rate to use closed trades only. Can you confirm whether the current fwd win rate figure is closed-only or includes open?
+
+On the Sharpe: can you run it both ways — Version A: closed trades only, Version B: open+closed (current) — and share the Sharpe number, trade count, and a simple plot of Sharpe vs number of simultaneously open trades for each? That will also give me a fel for portfolio sizing using our body of diverse cross asset class / cross country  assets. Starting the clock once we hit 20 and als o if we hit 30 trades open at the same time. I want to see if the two versions differ materially before we decide which one to present. Email with the exact methodology coming shortly.
+[22/06/26, 1:46:33 PM] Rohit Sir: Re benchmarks for strategy … please also note @⁨Divyanshu Malu IIT B⁩ and @⁨AHIL KHAN⁩ :
+[22/06/26, 1:46:45 PM] Rohit Sir: For Sharpe ratio — T-bill/IRX for both longs and shorts. The industry standard is clear and unanimous.
+For signal alpha / C2 in the composite — this is a separate, internal quality measure, not the Sharpe benchmark. Here the B&H-based negative random window return for shorts is the right bar. This is distinct from and doesn't affect Sharpe methodology. <This message was edited>
+[22/06/26, 1:48:09 PM] Rohit Sir: logic for signal alpha is bond yields, mean reverting assets etc ...
+[22/06/26, 1:50:46 PM] AHIL KHAN: Ahil thanks for confirming. Makes sense to include open trades at MTM for the portfolio Sharpe — that's standard mark-to-market accounting and is fine. The issue is specifically fwd win rate, not Sharpe — open trades at positive MTM that haven't exited yet could flip (UNLESS AS YOU SAY THEY ARE ALL STALE AND HAVE MOVED IN AN OPPOSITE DIRECTION WHICH ALONG WITH PASSAGE OF TIME HAS EXCEEDED THE AVERAGE HOLD PERIOD MEANINGFULLY ), so there is an argument for win rate to use closed trades only. Can you confirm whether the current fwd win rate figure is closed-only or includes open?
+
+
+
+
+
+Answer: no sir, for win rate we are including open as well so I am thinking in this direction. That is what forward testing is stating: if you start investing based on our strategy two years back, how much gain or how much benefit do you get after the end of two years? Isn't that what forward testing is, right? What exactly is the gain you get? It makes sense to also include open in the win rate as well means because we need to include all, right, all that has happened in these two years. Ideally it should be considered for both closed and open for all the parameters because that's what actually we are doing in the last two years. We should not ignore any other stuff because forward testing would be a combined thing for the last two years
+
+Also what you mentioned about flip part, I agree and that's why we are calculating this forward testing every month. Every once in a month we can also increase the frequency to twice in a month. I am saying that if that data was stale, for example if you see our win rate data, the actual win rate backtesting win rate data is stale. It doesn't change in years or so but our forward testing changes every one month. If there is some flip-flop of the trade then obviously that could be captured in the next month. It's not like we are waiting for one year or so to get the next result. I think we should include that.
+[22/06/26, 1:57:59 PM] Rohit Sir: Also my email will clarify that the Sharpe excess returns for short STOCK positions have to include rebate due to collateral which is ^IRX except for currencies where i will specify in my email
+[22/06/26, 2:05:17 PM] Rohit Sir: Ahil your reasoning makes sense and I think you're largely right — including open trades at MTM gives the most complete picture of what actually happened in those 2 years, and the monthly recalculation does handle most of the flip risk.
+
+One nuance worth being aware of: at any snapshot date, open trades that are currently positive are still running, while trades that went deeply negative may already have been stopped out under the 10% drawdown rule we're implementing. So the surviving open trades at any given moment are slightly skewed toward winners — the losers get culled, the winners keep running. This is a mild selection effect built into the win rate number, not a flaw in our approach, just something I need to be aware of when presenting it.
+
+The simplest way to handle this is to show BOTH numbers side by side — closed-only fwd win rate and all-trades fwd win rate (current). Same ask as the two-version Sharpe. If the two are within 2-3 percentage points of each other the distinction is immaterial and we go with your current approach. If they diverge meaningfully that's itself an interesting data point worth understanding.
+
+So can you add to the Sharpe deliverable:
+1. Sharpe — Version A (closed only) vs Version B (open+closed), plot of Sharpe vs N simultaneous trades starting clock at 20 and also at 30
+2. Fwd win rate — closed-only number alongside the current all-trades number
+
+These two comparisons together will tell us everything we need to decide what to present to clients.
+[23/06/26, 5:38:34 AM] Rohit Sir: hi one more thing - i think uve not used teh signals html v9 for the new signals x axis. uwhat uve used is v7b/v8 which ahd timeliness. in v9,for NEW TODAY —>> we had the below
+[23/06/26, 5:38:34 AM] Rohit Sir: image omitted
+[23/06/26, 5:38:35 AM] Rohit Sir: image omitted
+[23/06/26, 5:39:22 AM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ I am  sharing this in our group for @⁨Parth IITB Intern⁩ benefit as well.
+[23/06/26, 5:40:23 AM] Rohit Sir: x axis for OUTSTANDING view is TIME WINDOW REMAINING (%).
+[23/06/26, 5:41:14 AM] Rohit Sir: image omitted
+[23/06/26, 5:43:39 AM] Rohit Sir: Parth this hover content has to be cleaned up. Suggest take out the content on observed signal date versus theoretical entry - does not reduce - take all that out… Take out Sharpe from ALL BOXES… conviction:+1 moderate-low shd be in same line not separate lines. image omitted
+[23/06/26, 5:44:31 AM] Rohit Sir: R:R data not shown.  For now lets show the 58% of 19d avg hold window
+[23/06/26, 5:46:11 AM] Rohit Sir: then it says backtested win rate shown for combos? what does this refer topleasE?
+[23/06/26, 5:46:20 AM] Rohit Sir: image omitted
+[23/06/26, 5:46:51 AM] Rohit Sir: This message was deleted.
+[23/06/26, 5:50:32 AM] Rohit Sir: Ah I see the last sentence next to asterisk. That is accurate but shdnt be in the box… it shd be on teh front page somewhere. image omitted
+[23/06/26, 5:58:30 AM] Rohit Sir: on front page we shd have a bottotm  —>> FWD WR ≥60% is the system-level circuit breaker — a strategy must prove itself out-of-sample across the full universe before any of its signals are considered. BT WR ≥70% is the asset-level admission ticket — only the specific Function/Asset/Interval/Direction combinations that clear this historical edge threshold are accepted into the model.
+[23/06/26, 6:00:15 AM] Rohit Sir: signals_page_demo_v9.html is the one. let me know if you need teh link again as its easy ot loose this stuff
+[23/06/26, 6:00:17 AM] Rohit Sir: lose
+[23/06/26, 6:00:48 AM] Rohit Sir: basically x axis for SIGNALS TODAY surface —> PRICE WINDOW REMAINING.
+[23/06/26, 6:01:05 AM] Rohit Sir: x axis for Outsatndin and Claude Optimized — Time Window Remaining
+[23/06/26, 6:01:16 AM] Rohit Sir: [%] after each
+[23/06/26, 6:01:54 AM] Rohit Sir: @⁨Parth IITB Intern⁩ please find ways / panels whaever else o clean up macro runic page - keepinevrything clear - if you wan o reduce elemns let em mnow we cna didcuss..
+[23/06/26, 6:02:18 AM] Rohit Sir: Claude_Role_Reference_June2026.docx • 4 pages document omitted
+[23/06/26, 6:02:34 AM] Rohit Sir: Please all 3 of you read his 2 page document.
+[23/06/26, 6:02:57 AM] Rohit Sir: thank you
+[23/06/26, 6:05:10 AM] Rohit Sir: @⁨Parth IITB Intern⁩ v v umpporant... is i tpossibel o put some multipel players of protecion aroudn our code / logic etcc..... so no one can use ai even piraed version of claude mytthos/ fable 5 to access eh back end? and yet providin easy log in
+[23/06/26, 6:05:41 AM] Rohit Sir: ive sent yuou teh hostinegr access of old mindwealth website. use tha url afetr saving teh content / backing it up soemwhere in case i want to refer to it laetr for some reason
+[23/06/26, 6:05:47 AM] Rohit Sir: hostinger
+[23/06/26, 9:57:42 AM] Rohit Sir: i can see the claude report has a lot of new info i e with the new signal alpha and other terms. ill work on reviewingg it anfd cleaning up the prompt @⁨Divyanshu Malu IIT B⁩ i also owe you some feedback on the recent nightly intelligence report you sent me - will aim to do both today
+[23/06/26, 10:47:51 AM] Parth IITB Intern: Letme check on that
+[23/06/26, 3:17:37 PM] Rohit Sir: hi guys can we do a 20 minute team call please? and if yes then when?
+[23/06/26, 3:17:43 PM] Rohit Sir: i e what time today
+[23/06/26, 4:02:21 PM] Rohit Sir: Hi Divyanshu please take ahil s help if needed to save time (why reinvent thr wheel) and id like you to backtest - using whatever best practices we have -  the short and the long SBi indicator separately … specifically 1 week 2 weeks 3 weeks 1 month 2 months later i e these 5 points of time for short signals by SBI 
+
+same for long 
+
+note the baseline is that spx goes up with time as companies perform 
+
+thanks image omitted
+[23/06/26, 4:02:32 PM] Rohit Sir: april 17th message
+[23/06/26, 4:03:23 PM] Rohit Sir: Ahil pointed out that the backtest was time consuming… but am not sure if this was ever done? and how do we know how well this has performed in the past if not?
+[23/06/26, 4:09:37 PM] Rohit Sir: @⁨AHIL KHAN⁩ please remind me what is the precise difference between % Bullish assets and % Bullish Signals.
+[23/06/26, 4:09:39 PM] Rohit Sir: image omitted
+[23/06/26, 4:09:40 PM] Rohit Sir: image omitted
+[23/06/26, 4:09:57 PM] Rohit Sir: this is the SBI on streamlit
+[23/06/26, 4:10:56 PM] Rohit Sir: if each asset is just signalled once, then why are they different?
+[23/06/26, 4:11:22 PM] Rohit Sir: and if some assets are signalled more than once, assuming a high enough sample set, the difference shd be small?
+[23/06/26, 4:12:29 PM] Rohit Sir: Streamlit suggests we got a long signal on 16 June image omitted
+[23/06/26, 4:12:31 PM] Rohit Sir: Streamlit suggests we got a long signal on 16 June image omitted
+[23/06/26, 4:21:24 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ @⁨AHIL KHAN⁩ can one of you please tell me whether I should buy the s and p 100 as of 16 june/or now if it’s not materially higher? And based on what history/ discrete or otherwise probability distribution of outcomes? This is the same concept as any of the macro combos A-G firing . We always want to see for each of the past instances what happened? If there are many mroe than that data has tobe... If there are many more situations of bullish signals than those rare combos as i expect them to be then we should assess an opitmal time to exit that posiiton? do we hold till we get a sell sbi signal? but wha if our sell sbi signal is late? Or not reliable as of now? Then we hould relaly be able to see the 1 week, 2 week, 3 we3ek, 1 m, 2 m, 3 m data here... To realize when to exit and if indeed these are valid outperformancer points or minima, we need to evaluate this info @⁨Divyanshu Malu IIT B⁩
+[23/06/26, 4:21:32 PM] Rohit Sir: for now though —>
+[23/06/26, 4:22:59 PM] Rohit Sir: We should report this on the website in the same format that we shoe other tables image omitted
+[23/06/26, 4:23:00 PM] Rohit Sir: We should report this on the website in the same format that we shoe other tables image omitted
+[23/06/26, 4:23:04 PM] Rohit Sir: @⁨Parth IITB Intern⁩
+[23/06/26, 4:23:38 PM] Rohit Sir: The buy decision is made based on the today Long Signal Percentile from top (last 6 months) being below 10 percentile
+[23/06/26, 4:24:45 PM] Rohit Sir: Similarly to trigger an s and p 500 sell signal (even more important for this to be tested), we want the bottom row and rightmost column’s cell to be below 10 percentile
+[23/06/26, 4:28:00 PM] Rohit Sir: @⁨AHIL KHAN⁩ @⁨Divyanshu Malu IIT B⁩ can you please discuss how best to test and present this
+[23/06/26, 4:29:13 PM] Rohit Sir: i dont think we shd show this chart @⁨Parth IITB Intern⁩
+[23/06/26, 4:29:26 PM] Rohit Sir: or even this…
+[23/06/26, 4:31:16 PM] Rohit Sir: just this - if SBI fires, it should show up as a macro signal in the global overwatch/macro/chatbot agent and should also show up as SBI triggered Long S&P at xyz level
+[23/06/26, 4:31:20 PM] Rohit Sir: somehting liek hat
+[23/06/26, 4:32:07 PM] Rohit Sir: shown at same level here
+[23/06/26, 4:32:31 PM] Rohit Sir: In the same row as Sentiment. Outstanding New etc image omitted
+[23/06/26, 4:32:32 PM] Rohit Sir: In the same row as Sentiment. Outstanding New etc image omitted
+[23/06/26, 4:33:50 PM] Rohit Sir: Please note it should be SSI Composite not SBI Composite.
+[23/06/26, 4:34:56 PM] Rohit Sir: SSI is the Super Sentiment Index derived from the SSI page
+[23/06/26, 4:37:59 PM] Rohit Sir: @⁨Parth IITB Intern⁩ FUNCTIONS
+4
+as of 2026-06-17
+[23/06/26, 4:38:13 PM] Rohit Sir: is this the functions that are involbed in new signals today?
+[23/06/26, 4:39:13 PM] Parth IITB Intern: On which page?
+[23/06/26, 4:39:28 PM] Rohit Sir: SIGNALS
+[23/06/26, 4:40:19 PM] Rohit Sir: also we don t have any structured JSON based bubble graph yet?
+[23/06/26, 4:40:33 PM] Rohit Sir: I am sharing feedback here so its easier for Divyanshu to be on the same page
+[23/06/26, 4:40:36 PM] Parth IITB Intern: Missing data at backend
+[23/06/26, 4:40:50 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩
+[23/06/26, 4:40:56 PM] Parth IITB Intern: Can you dhare a screen shot?
+[23/06/26, 4:42:25 PM] Rohit Sir: i have the answer to my q - that is under SBI-Breadth tab tho i suspect its counting incorrectly?
+[23/06/26, 4:42:43 PM] Rohit Sir: image omitted
+[23/06/26, 4:42:45 PM] Rohit Sir: image omitted
+[23/06/26, 4:46:59 PM] Parth IITB Intern: The code I have written to display these functions receives data from backend and displays whatever functions are available in the csv file reported by the backend and the data gets displayed.
+[23/06/26, 4:48:44 PM] Parth IITB Intern: If its shows 4 it means it has 3 functions and the final combined is for the composite score
+[23/06/26, 4:53:56 PM] Rohit Sir: guys my meeting is tomorrow afternoon with a hedge fund - so hope all of can pull overnighters so i am not embarassed at my meeting :)
+[23/06/26, 4:54:05 PM] Rohit Sir: just got confirmed two minutes ago
+[23/06/26, 7:15:35 PM] Rohit Sir: @⁨Parth IITB Intern⁩ in order to make 61.3% =77.3% the average fwd win ratet on the dashboard, the function/interval/direction combos listed here should only the >= 60% FWD testing win rate ones. @⁨AHIL KHAN⁩ you and i had discussed this as well and i had asked you to meniton ot @divyanshu when you downloaded our call with him. Anyway since i remembered i am mentuoning it while reviewing the link for website @parth sent me now
+[23/06/26, 7:15:39 PM] Rohit Sir: image omitted
+[23/06/26, 7:15:40 PM] Rohit Sir: image omitted
+[23/06/26, 7:36:25 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ or @⁨AHIL KHAN⁩or @⁨Parth IITB Intern⁩ Please let me know what the 77.3% comprises of exactly - i e which combinations of function/interval/direction, which set of assets were tested, eg is is the 188 assets or something else, REconfirm t🙂 that it includes all trade signals in the two years prior, regardless of whether the trade was closed within 2 years or remained open at the end of 2 years.Any special feature in this calculation?
+[23/06/26, 7:39:14 PM] Rohit Sir: image omitted
+[23/06/26, 7:39:15 PM] Rohit Sir: image omitted
+[23/06/26, 7:49:16 PM] Rohit Sir: @⁨Parth IITB Intern⁩ while it looks great and i personally like it, please remove the gold lines showing FT trail BT by >=10pp. The reason is that we dont cnsider this gap as a degraded signal. As per one of the documents i shared with you guys, function degradation (lets call it DRIFT thats a more formal and a nicer word than DEGRADE :)) has been defined DIFFERENTLY as FWD rate falling 3 consecutive month ends( It is calculated once a month I understand -- on the last trading day of the month) + falling below 60%. A DRIFT ALERT - on the global overwatch / macro intelligence/ AI chatbot / error correction Alert Agent - will show up -- on the Alert Agent and it will also show up near the menu bar on the relevant pages in or near the same row where the Combo A-G shows up  -- when FWD testing for some Function/Interval/Direction falls below 61% and >= 2 consecutive months of successively lower FWD Rate. @⁨Divyanshu Malu IIT B⁩ clear?
+[23/06/26, 8:07:31 PM] Rohit Sir: the STATUS Column comment ON new SIGNALS and Outstanding signals will accordingly change to Active (and if ever warranted to Drift)
+[23/06/26, 8:08:10 PM] Rohit Sir: I notice you have captured the latest signal date I e yesterday close of business. But the system date is still June 17? image omitted
+[23/06/26, 8:29:14 PM] Rohit Sir: Remind me >15 is extreme? . @digvya image omitted
+[23/06/26, 8:30:20 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ i trust the euphoria recovery and whatever other words summarize each comb are tagged ot suitabley appear. Are these combo states valid as of June 17th or June 22nd?
+[23/06/26, 8:36:05 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩Why is 0 shortlisted? How is that defined? Shortlisting is not based solely on crossconfirmation... i assume by cross ocriamttion you refer to signals on the same asse t/direction from a different functiojn/inerval combo? image omitted
+[23/06/26, 8:36:07 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩Why is 0 shortlisted? How is that defined? Shortlisting is not based solely on crossconfirmation... i assume by cross ocriamttion you refer to signals on the same asse t/direction from a different functiojn/inerval combo? image omitted
+[23/06/26, 8:36:37 PM] Rohit Sir: see top right in bLUE.
+[23/06/26, 8:39:45 PM] Rohit Sir: same commens as earlier - no need ofr comment on gold line at bottom, ttha shdnt be there, no need for gold line, Satus should be ACTIVE or DRIFT as per drift rule i have shared earlier in past and tweaked a bitt today (>= 2 consec month falls in FT win rates AND below 61)
+[23/06/26, 8:39:48 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ and @⁨Parth IITB Intern⁩
+[23/06/26, 8:44:40 PM] Rohit Sir: Great SSI page @⁨Parth IITB Intern⁩
+[23/06/26, 8:46:58 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ afer i reurn to canada, tthings like, is our SSI formula the best? how do we kknow - i have ideas on 1-2 new funcitons etc…
+[23/06/26, 8:47:11 PM] Rohit Sir: i need a response on my questions on SBI by the way
+[23/06/26, 8:47:42 PM] Rohit Sir: tthat is importamt for tomorrow and needs to be clear, wha we are doing, why? wha are our backtests
+[23/06/26, 8:48:42 PM] Rohit Sir: @⁨AHIL KHAN⁩ had said tha fwd testing 500 s and p assets would be too time consuming. what if we use “box method” even then i guess hard ot do efficiently?
+[23/06/26, 8:51:06 PM] Rohit Sir: @⁨Parth IITB Intern⁩ when i click on super sentiment page left side/menu bar tabs it clicksbu tnohing happens. is something intended to happen?
+[23/06/26, 8:51:13 PM] Rohit Sir: image omitted
+[23/06/26, 8:51:54 PM] Rohit Sir: I mean these Layer tabs image omitted
+[23/06/26, 8:59:18 PM] Rohit Sir: @⁨Parth IITB Intern⁩ please take out then entire note on pulse gauae its not needed. It was put by me as a note for you thanks
+[23/06/26, 9:06:13 PM] Rohit Sir: I am looking at the macro runic page now… i need to sleep a couple of hours as i didn sleepo last nightt and then need to step out for dinner wiht my daughter.
+[23/06/26, 9:06:39 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ @⁨Parth IITB Intern⁩ wha is the process ot generaet this sentence— 
+DOMINANT
+F
+REASON
+Combo F active (week 12, MEDIUM (started 2026-04-03)). 79% 6M hit rate. Outranks Combo E (19% 12M) on PRIORITY and horizon fit.
+[23/06/26, 9:07:09 PM] Rohit Sir: image omitted
+[23/06/26, 9:07:09 PM] Rohit Sir: image omitted
+[23/06/26, 9:07:41 PM] Rohit Sir: and @⁨Divyanshu Malu IIT B⁩ are you confident we will get the right sentence for each of other states? i cant recall if i gav e you this stuff or if you did it?
+[23/06/26, 9:09:23 PM] Rohit Sir: Combo F Week 12 MEDIUM. MEDIUM is determined by the week number as i recall. But do we use the variable MEDIUM for anything thereafter? @⁨Divyanshu Malu IIT B⁩
+[23/06/26, 9:12:47 PM] Rohit Sir: @⁨Parth IITB Intern⁩ in the macro runic page, i need to unnaturally pull and stretch my window to thd right…to read the text…
+[23/06/26, 9:12:55 PM] Rohit Sir: so i start off with the below view
+[23/06/26, 9:13:23 PM] Rohit Sir: As the exreme end of an already stretched page and I then need ot stretch more and more to get to the end image omitted
+[23/06/26, 9:14:10 PM] Rohit Sir: 1. we shouldbe able to scrll horizontally with our mouse 2> better still we shdnt even need to scroll / the ux shd be differemt
+[23/06/26, 9:14:15 PM] Rohit Sir: minorpoint
+[23/06/26, 9:14:22 PM] Rohit Sir: but affects being able o know whats wha
+[23/06/26, 9:14:24 PM] Rohit Sir: what
+[23/06/26, 9:21:15 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ @⁨Parth IITB Intern⁩ some comments on the top data / text
+[23/06/26, 9:21:24 PM] Rohit Sir: for the same macr intelligence oage
+[23/06/26, 9:21:25 PM] Rohit Sir: https://www.loom.com/share/75d1367cb06a4b63a730978bf6692620
+[23/06/26, 9:30:57 PM] Divyanshu Malu IIT B: The generation process for the reason and the sentence is using a build reason function, which uses sources like a dominant combo letter from the priority ranking and Active Combo Dict fields. Apart from this it uses DB Query and Config Horizon for the percentage and hit rates across the Horizon values. It then uses the second rank active combo and details for that.
+[23/06/26, 9:31:15 PM] Rohit Sir: thanks
+[23/06/26, 9:31:33 PM] Divyanshu Malu IIT B: yes sir Medium comes from the number of weeks. Medium is for 6 to 16 weeks. From 0 to 6 weeks it's short and after 16 weeks it's long.
+[23/06/26, 9:31:58 PM] Rohit Sir: yeah but i wondered is it used thereafter and was there a reason i defined it
+[23/06/26, 9:35:02 PM] Divyanshu Malu IIT B: currently we dont have any decision flow based on this classification
+[23/06/26, 9:45:00 PM] Rohit Sir: ok
+[23/06/26, 9:54:51 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩please talk to ahil. he is doing an analysis of forward testing (for gated 60/70 assets only naturally) sharpe I expect that to be well over 3 for say 30 assets or so assuming that after initial population of portfolio, the assets are always replaced when they expire. he likes fractal track / longer held positions. There is a rationale for that. however want to go for the best quality signals which will be determined by the signal score. 
+
+I also want to do some sharpe comparisons for a few scenario i discussed he tested at with each scenario varying / evolving sharpe as the number of assets N increases … from 0 to say 40. 
+
+@⁨AHIL KHAN⁩ we will perfect this stuff later and continue our discussion, for right now we need something that looks great to present and is as dynamic as our platform which is low frequency trading. low frequency means a few days or even a few months but not really more than 1-1.5 year or so. the idea is that when a signal has optimized its reward - risk and / or has met its backtested price / time target (or just use backtested average exit rule for win trades (but check for all trades also), it exits and is immediately replaced by the best available from outstanding signals report (mostly new but occasionally slightly old signals). 
+
+i still need to 
+- update claude prompt - @⁨Divyanshu Malu IIT B⁩ please  read the latest claude report … and let me know your thoughts 
+- ⁠explain issues pending with nightly intelligence report
+[23/06/26, 11:19:45 PM] Rohit Sir: this had some comments re the top of the macro page. @⁨Divyanshu Malu IIT B⁩ @⁨Parth IITB Intern⁩
+[23/06/26, 11:22:55 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ -- for how long do we show combos that are resolved? did we spec that in the code base eg 1 week, 2 weeks? or 1 year, 2 years? or do we just show the last few to the extent here is space eg like in the current page example that Parth shared?
+[23/06/26, 11:23:41 PM] Rohit Sir: also the code should say 2/3 for combo D below <This message was edited>
+[23/06/26, 11:24:41 PM] Rohit Sir: image omitted
+[23/06/26, 11:25:58 PM] Rohit Sir: Combo G looks like it is us looking gback now and typing stuff, versus it having come when it was resolved and continuing? The reason i say tha is the language “Led Apr 2025 spike by nearly 3 weeks”… wha is intended you feel guys? and what shd we do?
+[23/06/26, 11:28:26 PM] Rohit Sir: i refer only to the first sentence of Combo G. Is the language smart enough to shift from present tense , when combo G fired to past tense as per first sentence once it was resolved?
+[23/06/26, 11:29:21 PM] Rohit Sir: same commen fr Combo B sentence “CRITICAL” If B fires again -> Combo F 26wk window cancels immediately” Does this come on as soon as Combo F is active?
+[23/06/26, 11:29:28 PM] Rohit Sir: i e this sentence?
+[23/06/26, 11:30:00 PM] Rohit Sir: i am trying to separate what is dynamic text versus what is a presentation/recorded stuff fone today with look-back knowledge?
+[23/06/26, 11:30:34 PM] Rohit Sir: @⁨AHIL KHAN⁩ i am getting nervous since u haven shared wha shd be logically a v high sharpe bu am sure you will do so
+[23/06/26, 11:33:18 PM] Rohit Sir: “CFTC 3-DAY LAG · TFF published each Friday reflects prior Tuesday's positions. Combos B, D, E, F all require CFTC. Last available (Tue May 26): est. 5th pctile net long. Flag any Combo D or B fire this week as PENDING CFTC CONFIRM until Friday report posts (~15:30 ET). Combo D is 2/3 confirmed — one leg pending Friday TFF.”
+[23/06/26, 11:35:30 PM] Rohit Sir: This says FLAG AS “pending CFTC confirm” - is thsi sticker ink orange always there? And how come the flag language w e currently have under D is not PENDING CFTC CONFIRM? Is this all as of June 17 or June 22? image omitted
+[23/06/26, 11:35:31 PM] Rohit Sir: This says FLAG AS “pending CFTC confirm” - is thsi sticker ink orange always there? And how come the flag language w e currently have under D is not PENDING CFTC CONFIRM? Is this all as of June 17 or June 22? image omitted
+[23/06/26, 11:40:08 PM] Rohit Sir: q for all of you
+[23/06/26, 11:42:28 PM] Rohit Sir: 1> should I show all this? from perspective of secrecy? I guess ok to - this part? I will be at a coffee shop with my laptop.. IN ANY CASE - Please remove “BACKTEST DECIDES. No zscore. Percentile rank” as I dont think they add anything ha arent obvious or tha are actively needed. @⁨Divyanshu Malu IIT B⁩ you agreed? image omitted
+[23/06/26, 11:44:07 PM] Rohit Sir: 2> same q re he oart below this. for now keep i bu le me know ure view
+[23/06/26, 11:44:40 PM] Rohit Sir: WATCH B
+0/3 legs · CFTC
+WATCH D
+0/3 legs —> CORRECT 0 to i guess 2 if WATCH is shown
+[23/06/26, 11:45:59 PM] Rohit Sir: is this live? @⁨Parth IITB Intern⁩ image omitted
+[23/06/26, 11:46:01 PM] Rohit Sir: is this live? @⁨Parth IITB Intern⁩ image omitted
+[23/06/26, 11:47:43 PM] Rohit Sir: @⁨Parth IITB Intern⁩ data missing image omitted
+[23/06/26, 11:47:44 PM] Rohit Sir: @⁨Parth IITB Intern⁩ data missing image omitted
+[23/06/26, 11:47:47 PM] Parth IITB Intern: Yes this is live but some of what you are seeing is outdated as of the present version of the web. The end points for this page were missing earlier now they will be working once I get the new page live and working
+[23/06/26, 11:49:50 PM] Rohit Sir: ok - give me a login i can use else anyone can see the link and recall i and use it… also give thought ot wha shd be shown / not shown… q for me i know but asking u to think abt i tand any suggestions on how bes to deal wiht it… some people i mee may be decent some may be less so
+[23/06/26, 11:50:27 PM] Rohit Sir: earlier comment super senimen abs on lef do nthg
+[23/06/26, 11:50:31 PM] Rohit Sir: on SSI page
+[23/06/26, 11:51:05 PM] Rohit Sir: conviciron engine, portolfio and overwach ill go thro my nigh ttime oday. i have to run now…
+[23/06/26, 11:51:15 PM] Rohit Sir: Ahil bhai 🙂 SHARPE bhai?
+[23/06/26, 11:52:25 PM] Rohit Sir: i ma in a dark room - with brightness two below max i am quie happy withg readibility - in coffee shop am not sure 😃@⁨Parth IITB Intern⁩ can yoy ry it in a bright settin g and le me know?
+[23/06/26, 11:52:30 PM] Rohit Sir: ciao 4 now
+[24/06/26, 1:04:41 AM] Rohit Sir: Guys is here any reason we use CONFIRMED for E and ACTIVE for F? Lets just call any of the A-G active combos,, if triggered, ACTIVE image omitted
+[24/06/26, 4:35:12 AM] Rohit Sir: DEGRADATION ALERTS
+28
+ALTITUDE ALPHA long degradation— o ovewatch page. shd be DRIFT ALTERS basically DRIFT imstead of degradaiton. alsoonly those funcion.interval/direcitkjn combvos above60% shd be gated inot these pages
+[24/06/26, 4:35:33 AM] Rohit Sir: MindWealth API connected — trade store CSVs loaded via conviction overlay-file.
+2026-06-23 18:20
+[24/06/26, 4:35:36 AM] Rohit Sir: we shd no have this
+[24/06/26, 4:36:36 AM] Rohit Sir: image omitted
+[24/06/26, 4:37:00 AM] Rohit Sir: remove forced portfolio. nthg in life shd be forced.
+[24/06/26, 4:37:14 AM] Rohit Sir: change degradaion o DRIF
+[24/06/26, 4:37:17 AM] Rohit Sir: DRIFT
+[24/06/26, 4:37:42 AM] Rohit Sir: remoge tyhe text no tlower than backes thast always expdcted those were just my words ot you
+[24/06/26, 4:38:12 AM] Rohit Sir: when i click on DRIFT ALERTS on eft tab nothing happens
+[24/06/26, 4:39:03 AM] Rohit Sir: Nothing happens if I click o degradation alerts aka drift alerts image omitted
+[24/06/26, 4:39:47 AM] Rohit Sir: similarly layer 2 - nthg happens if i click on  Data ppeline, auot correcitonlog, veison monitor
+[24/06/26, 4:41:15 AM] Rohit Sir: renove forced portfolio
+[24/06/26, 4:41:29 AM] Rohit Sir: image omitted
+[24/06/26, 4:41:31 AM] Rohit Sir: image omitted
+[24/06/26, 4:43:13 AM] Rohit Sir: @⁨Parth IITB Intern⁩ @⁨Divyanshu Malu IIT B⁩unlike teh portolfio page example i shared with you, here its not claer where the portfolio is to be entered - i had provided mulipe portolfio view s/ setup methodogies ot analyze, in my recent communicaiotn... bu ti can see any place ot enetr the porfolio, I the exmpla ei jhad provdied i had provided. thjis
+[24/06/26, 4:49:42 AM] Rohit Sir: @divyanshu lets at 1:30 pm. wednesday. IST. i trust the ignals bbble chats endpoints etc are asorted with parth i e you habve given him? and i hoep all else is going well
+[24/06/26, 4:49:47 AM] Rohit Sir: :)?
+[24/06/26, 4:50:17 AM] Rohit Sir: This is not critical for tomorrow but of course nice ot develop if now if all else is done image omitted
+[24/06/26, 4:50:56 AM] Rohit Sir: i was looking at parth’s oetfolio page and i noticed that a lot of stuff - correlaiton maric etc was missing
+[24/06/26, 4:51:39 AM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ i russy u have seen teh portfolio size.py htha ahilhad properaed and see wha else is needed
+[24/06/26, 4:52:09 AM] Rohit Sir: @⁨AHIL KHAN⁩ please i will call you when i wake up please ytake teh call. ive been waiitn las 40 min bu tnowneed to see as i am brain deaed and exhaused.
+[24/06/26, 4:54:03 AM] Rohit Sir: alo teh regime budget control buttons dont work - @⁨Divyanshu Malu IIT B⁩ please if all else is done can you work on this , be clear omn. logic  ask me any qs needed and provdie parh he end points
+[24/06/26, 4:58:53 AM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ please try complete workof macro intelligence agent - u have commented omn a par of teh documentr we haev been discussing bu a lot of i tseems uncommented on. As discussed wehnwe speaok lastym please look at my co,emnts. id like o see comments when iwake up… i e by 1 om is wednesday. what else is pendign at your end?
+[24/06/26, 4:58:55 AM] Rohit Sir: hanks
+[24/06/26, 5:01:00 AM] Rohit Sir: @divyanshu are yiu saying ha the  cheatsheet stats I oriignally shared was wrong? At hasnt come across in ure document feedback ? image omitted
+[24/06/26, 5:02:41 AM] Rohit Sir: Runic_Agent_Combo_Cheatsheet_v2.pdf • 4 pages document omitted
+[24/06/26, 5:04:02 AM] Rohit Sir: are you saying that my shee had the wrong data - possible as claude clauclaed i t- and that 38.5% and 18% for D andf E are teh right hresholds?
+[24/06/26, 5:05:13 AM] Rohit Sir: image omitted
+[24/06/26, 5:14:51 AM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ these 38% nd 18% numbers --- i didnt see this in your macro intelligence document tess . in act, you told me that everuhing was - or nearly everything was wha we expected in ers of conbos threhols etc... but now u aer saying that teh hit rae is very low for D and E. alos the june 06 report you sen had 70% hit rae which seems more likely... so what you sen now is wtrong?? in which case why didnt yu nenon. i in teh document oron macro intel ests or whenw e speak o dsucus hat? alernaively if hie is righr and past was wronfm what has changedin teh rues? was the past june 06 report evr right for this cok,bo D an dE stuff?
+[24/06/26, 5:16:14 AM] Rohit Sir: runic_briefing_2026-06-06_2.pdf • 3 pages document omitted
+[24/06/26, 5:18:43 AM] Rohit Sir: runic_briefing_2026-06-16.pdf • 3 pages document omitted
+[24/06/26, 5:21:44 AM] Rohit Sir: @divyanshu did you do the opiton pricing for cancellation per eh note
+[24/06/26, 5:21:50 AM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩
+[24/06/26, 5:24:10 AM] Rohit Sir: CONFIRMED (bearish, 18.9% (12M)).— i find this strange… 18.9%…send me the table please showign 1m 2 m 3m 6m 9m and 12 m for eacdh instance this co,bo E fired in hisory
+[24/06/26, 5:28:16 AM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ ive no real issues with teh briefing - eh big issue is the two number for D and E 38.5% hit rate and 18% hit rate - le me see both those tables for eahc instance in ast and subsewuent spx % change... how come we didnt see these numbers in june 06 document also pasted above
+[24/06/26, 6:07:24 AM] Rohit Sir: sbi long and short backtesting data and forward testing data - i have mentioned this in the last 24 hours . need to see this and incorporate it potentially at least for long if its reliable
+[24/06/26, 1:16:38 PM] Parth IITB Intern: the gold line is just a marker for any fwd degrading function as when you try clicking on any function a sidepanel with all the signal ticker details will open up to, in order to make space for that I have to get rid of some columns at sight. hence the gold line can easily let one know if the function is fwd degrading or not.
+[24/06/26, 1:22:51 PM] Rohit Sir: hi those are not degrades as per how i defined degrades
+[24/06/26, 1:24:18 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ did you see al my feedback
+[24/06/26, 1:24:48 PM] Parth IITB Intern: I am just getting data from the backend and whatever the status says.
+[24/06/26, 1:24:54 PM] Rohit Sir: fwds by definiiotn will always be somewhat lower than back tested win rate.
+[24/06/26, 1:25:06 PM] Rohit Sir: @divyanshu this is important
+[24/06/26, 1:25:15 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ are you there?
+[24/06/26, 1:26:48 PM] Divyanshu Malu IIT B: yes sir I am looking into all, please give me some time
+[24/06/26, 1:26:54 PM] Rohit Sir: i had defined degrade / or drift as a reduction in FWD WIN RATE over 3 consecutive months + fwd win rate falling below (i forget) 61 or 60%.. yesterday i just fine tuned that a bit. thanks
+[24/06/26, 1:29:19 PM] Rohit Sir: sure thanks… so long as you both are around for next 7 hours please… for today. i will leave for my meeting at 9pm IST. but i need the final website / with access and also an unlocked one like this in case there is some screw up @⁨Divyanshu Malu IIT B⁩ ideally in the next 2 hours so i can then review, do a v quick next round of feedback
+[24/06/26, 1:29:25 PM] Rohit Sir: @⁨Parth IITB Intern⁩
+[24/06/26, 1:29:48 PM] Parth IITB Intern: on it.
+[24/06/26, 1:31:37 PM] Rohit Sir: so none of this shd be in the alerts - see image.
+[24/06/26, 1:31:41 PM] Rohit Sir: image omitted
+[24/06/26, 1:32:04 PM] Divyanshu Malu IIT B: sir the differences are because of two things (bullish vs bearish, different horizons for different combos) horizon One is the sixth June report had combo D at bullish three M Horizon and 16 June report had combo D at bearish 5D Horizon. So we updated two things, the horizon and the nature of combodia from bullish to Barish that change the heat rate from the sixth June to 16 June report, so earlier we had uniform horizons for all the combos, and later we modified the horizon to different values for different combos.
+[24/06/26, 1:32:13 PM] Rohit Sir: also only those function/interval/direction combos that are >60% gate should show up on the website pages
+[24/06/26, 1:33:17 PM] Divyanshu Malu IIT B: sir the numbers presented by Claude are likely curated by Claude and not based on back tested Data. We also had talked once in the meet regarding the Low hit rate of combo E, and you said something regarding that.
+[24/06/26, 1:34:50 PM] Rohit Sir: was there ANY horizon at which the hit rate was maximized for D and E?
+[24/06/26, 1:37:00 PM] Rohit Sir: i said claude used approximations but most were correct and made sense. It also provided dates etc. i think both u and i are correct, we just need to be clear what is an appropriate optimum window to show. and a wha horizon does the hit rate underperform versus our/claude expectations?
+[24/06/26, 1:37:29 PM] Rohit Sir: t in my keyboard doesnt work well 🙂
+[24/06/26, 1:39:47 PM] Divyanshu Malu IIT B: sir, the horizons we are using currently get the max hit rate according to tbe horizon sweep backtest
+[24/06/26, 1:40:02 PM] Rohit Sir: @⁨AHIL KHAN⁩ is it a good idea to clarify the Interval here. we only have FUNCTION/DIRECTION but some funcitton/direciton/intervals make he gae and others do not. eg for altitude alpha as i recall yearly and weekly may make teh gae... also same comments on degradde applicable to FUNCITON HEALTH LAYER 1 as i made for SYSTEM HEALTH LAYER 2 image omitted
+[24/06/26, 1:40:04 PM] Rohit Sir: @⁨AHIL KHAN⁩ is it a good idea to clarify the Interval here. we only have FUNCTION/DIRECTION but some funcitton/direciton/intervals make he gae and others do not. eg for altitude alpha as i recall yearly and weekly may make teh gae... also same comments on degradde applicable to FUNCITON HEALTH LAYER 1 as i made for SYSTEM HEALTH LAYER 2 image omitted
+[24/06/26, 1:40:26 PM] Divyanshu Malu IIT B: yes sir the timeframe and sample set matters and both are correct depending on the analysis period <This message was edited>
+[24/06/26, 1:44:42 PM] Rohit Sir: @divyanshu can you pull up tables where these conditions were valid — i dont wan u to spend ttime on this but somehting seems off… how many instances , can you ell me satisfied he conditions for D and E. Also note E is slow burn…
+[24/06/26, 1:44:45 PM] Rohit Sir: image omitted
+[24/06/26, 1:45:50 PM] Rohit Sir: lets spend 5-6 min more on this and then move on to giving @⁨Parth IITB Intern⁩ all the corrected endopoints @⁨Divyanshu Malu IIT B⁩
+[24/06/26, 1:48:22 PM] Rohit Sir: i wan to see the 1w 2 w 3w, 4 w, 1m and 2 m for combo D and the 1m, 2m, 3m, 6, 9m, 12 m for combo E - i e a table of spx%change foreach combo at these times post Combo Trigger
+[24/06/26, 1:48:48 PM] Rohit Sir: and each row header is the date of trigger.
+[24/06/26, 1:49:20 PM] Rohit Sir: each columnheader is the speccd end period post trigger…
+[24/06/26, 1:49:40 PM] Rohit Sir: u must already have this data when u did testing @⁨Divyanshu Malu IIT B⁩ ?
+[24/06/26, 1:52:07 PM] Rohit Sir: is this change hard o do/time consuming? i dont want u to waste time today
+[24/06/26, 1:52:11 PM] Rohit Sir: @⁨Parth IITB Intern⁩
+[24/06/26, 1:52:27 PM] Parth IITB Intern: yeah the portfolio page is totally changed now i will show it to you on the newer version.
+[24/06/26, 1:52:55 PM] Rohit Sir: i am talking about signals page
+[24/06/26, 1:52:58 PM] Rohit Sir: image omitted
+[24/06/26, 1:53:00 PM] Rohit Sir: image omitted
+[24/06/26, 2:39:08 PM] Divyanshu Malu IIT B: combo_d_per_fire_returns.csv document omitted
+[24/06/26, 2:39:08 PM] Divyanshu Malu IIT B: combo_e_per_fire_returns.csv document omitted
+[24/06/26, 2:49:29 PM] Rohit Sir: thanks - so basically these are not rare extreme events with that many readings / triggers and as such the excess bullishness observed on trigger date just persists . we can investigate further another day 
+
+for now please continue to focus on all outstanding matters
+
+only q re macro runic agent is should we even have D and E then . i thought these were rare events evidently they are not at all rare
+[24/06/26, 3:41:44 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ please don’t forget to test the sbi so that we can decide how much to emphasise that for now . can you run that test in the background now ? as it will take time
+[24/06/26, 3:41:54 PM] Rohit Sir: even as you work on other endpoints and changes
+[24/06/26, 3:43:46 PM] Rohit Sir: sbi works on 500 assets as we know so test it for longs first and then also for shorts. and we are interested to know if in top 10 percentile frequency of long signals (versus prior 6 months) on any day do we succeed when we go long . and similar for other side / when we go short
+[24/06/26, 3:44:04 PM] Rohit Sir: please confirm seen thanks
+[24/06/26, 4:15:42 PM] Rohit Sir: image omitted
+[24/06/26, 4:15:42 PM] Rohit Sir: image omitted
+[24/06/26, 4:15:43 PM] Rohit Sir: When you mix Delta Drift (88.9% win rate, high per-trade Sharpe) with lower-quality signals from other functions, the portfolio mean return per day falls faster than the variance falls. Net effect: Sharpe drops.
+[24/06/26, 4:15:43 PM] Rohit Sir: WHAT DOES THE SHARPE PROFILE look like if we take only the top quartile of signals by signal. quality c1-c4 composite score? Signal quality composite score — C1 through C4, the four-component formula. Not the conviction engine or SSI.
+Specifically, the hypothesis is: if you rank all 5,831 closed trades by their composite score (computed at signal fire date using E[R], signal alpha, Sharpe, CAGR_diff) and take only the top quartile — roughly the top 1,450 trades — does the portfolio Sharpe recover toward the 1.17 you saw with Delta Drift alone?
+This would demonstrate that the composite score is doing real work as a filter.  IS IT EASY FOR YOU OT DO THIS OR EASIER FOR DIVYANSHU IF I WANT AN ANSWER IN 5-10 MIN?
+[24/06/26, 4:19:27 PM] Rohit Sir: basically first chart = delta drift fwd testing.
+[24/06/26, 4:19:55 PM] Rohit Sir: next is ALL GATED FUNCTION/INTERVALS
+[24/06/26, 4:25:45 PM] Rohit Sir: What Ahil just confirmed offline: the all-functions analysis WITH THE LOWER SHARPE includes every interval and direction for every gated function — including the bad ones. So for example Altitude Alpha monthly (poor), quarterly (poor), and weekly (good) are all in together, dragging the aggregate down.
+[24/06/26, 4:25:53 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩
+[24/06/26, 4:26:27 PM] Rohit Sir: @⁨Parth IITB Intern⁩ lets clearly mention the interval here.
+[24/06/26, 4:26:32 PM] Divyanshu Malu IIT B: okay sir, can also please tell more about the output format you want for the results?
+[24/06/26, 4:30:09 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ if you fix this, then Ahil can easily test this and @⁨Parth IITB Intern⁩ can represent it. ONLY SPECIFIC FUNCTION/INTERVAL/DIRECTION combos of asset signals that, for any given combo of FUNC/INTERV/DIREC, have FWD WIN RATE of >=60% should show up on all our website data, our win rates should be based on that, our sharpe shd be based on tthat, Ahil's N asset sharpe graph shd be based on EXACTLY THAT - Not more and not less
+[24/06/26, 4:30:16 PM] Parth IITB Intern: Sorry to ask but can you tell me exactly where?
+[24/06/26, 4:33:06 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ it is the bottom part of what we see on streamlit
+[24/06/26, 4:33:10 PM] Rohit Sir: i had shared
+[24/06/26, 4:33:29 PM] Rohit Sir: i tried going to streamlit to show u again bu streamlit is glitching and not loading that page
+[24/06/26, 4:33:49 PM] Divyanshu Malu IIT B: so sir the gating condition here that we would use would just be the fwd testing >= 60 right? no sharpe based gating?
+[24/06/26, 4:34:01 PM] Divyanshu Malu IIT B: which page?
+[24/06/26, 4:34:16 PM] Rohit Sir: Is this done?
+[24/06/26, 4:34:29 PM] Rohit Sir: Signals Breadth Indicator SBI
+[24/06/26, 4:36:14 PM] Rohit Sir: Hi Divyanshu please take ahil s help if needed to save time (why reinvent thr wheel) and id like you to backtest - using whatever best practices we have -  the short and the long SBi indicator separately … specifically 1 week 2 weeks 3 weeks 1 month 2 months later i e these 5 points of time for short signals by SBI 
+
+same for long 
+
+note the baseline is that spx goes up with time as companies perform 
+
+thanks image omitted
+[24/06/26, 4:36:16 PM] Rohit Sir: april 17th message
+[24/06/26, 4:36:18 PM] Rohit Sir: Ahil pointed out that the backtest was time consuming… but am not sure if this was ever done? and how do we know how well this has performed in the past if not?
+[24/06/26, 4:36:24 PM] Divyanshu Malu IIT B: got it the table that we have there
+[24/06/26, 4:36:40 PM] Rohit Sir: @⁨AHIL KHAN⁩ please remind me what is the precise difference between % Bullish assets and % Bullish Signals.
+[24/06/26, 4:36:40 PM] Rohit Sir: image omitted
+[24/06/26, 4:36:40 PM] Rohit Sir: this is the SBI on streamlit
+[24/06/26, 4:36:41 PM] Rohit Sir: if each asset is just signalled once, then why are they different?
+[24/06/26, 4:36:41 PM] Rohit Sir: and if some assets are signalled more than once, assuming a high enough sample set, the difference shd be small?
+[24/06/26, 4:36:41 PM] Rohit Sir: Streamlit suggests we got a long signal on 16 June image omitted
+[24/06/26, 4:36:41 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ @⁨AHIL KHAN⁩ can one of you please tell me whether I should buy the s and p 100 as of 16 june/or now if it’s not materially higher? And based on what history/ discrete or otherwise probability distribution of outcomes? This is the same concept as any of the macro combos A-G firing . We always want to see for each of the past instances what happened? If there are many mroe than that data has tobe... If there are many more situations of bullish signals than those rare combos as i expect them to be then we should assess an opitmal time to exit that posiiton? do we hold till we get a sell sbi signal? but wha if our sell sbi signal is late? Or not reliable as of now? Then we hould relaly be able to see the 1 week, 2 week, 3 we3ek, 1 m, 2 m, 3 m data here... To realize when to exit and if indeed these are valid outperformancer points or minima, we need to evaluate this info @⁨Divyanshu Malu IIT B⁩
+[24/06/26, 4:36:41 PM] Rohit Sir: for now though —>
+[24/06/26, 4:36:41 PM] Rohit Sir: We should report this on the website in the same format that we shoe other tables image omitted
+[24/06/26, 4:36:41 PM] Rohit Sir: @⁨Parth IITB Intern⁩
+[24/06/26, 4:36:42 PM] Rohit Sir: The buy decision is made based on the today Long Signal Percentile from top (last 6 months) being below 10 percentile
+[24/06/26, 4:36:42 PM] Rohit Sir: Similarly to trigger an s and p 500 sell signal (even more important for this to be tested), we want the bottom row and rightmost column’s cell to be below 10 percentile
+[24/06/26, 4:36:42 PM] Rohit Sir: just this - if SBI fires, it should show up as a macro signal in the global overwatch/macro/chatbot agent and should also show up as SBI triggered Long S&P at xyz level
+[24/06/26, 4:36:42 PM] Rohit Sir: somehting liek hat
+[24/06/26, 4:36:42 PM] Rohit Sir: shown at same level here
+[24/06/26, 4:36:42 PM] Rohit Sir: image omitted
+[24/06/26, 4:36:42 PM] Rohit Sir: Streamlit suggests we got a long signal on 16 June image omitted
+[24/06/26, 4:36:43 PM] Rohit Sir: We should report this on the website in the same format that we shoe other tables image omitted
+[24/06/26, 4:36:43 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ YESTERDAY MESSAGES REFOWARDED TO U
+[24/06/26, 4:37:58 PM] Rohit Sir: PLEASE read my messages carefully. go ot yesterday group messages and read from there. because it is a bit clearer there
+[24/06/26, 5:29:46 PM] Rohit Sir: @⁨AHIL KHAN⁩ which was the function for which you had changed 2-3 things to inmprve shjor signal? was yhat code pushed - this was for TRENDPULSE where you reduced the number of trendlines of a certain nature ... URGEN
+[24/06/26, 5:29:51 PM] Rohit Sir: T
+[24/06/26, 5:34:19 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ @⁨Parth IITB Intern⁩ Could not compute for avergae 10 year cagr on the new url
+[24/06/26, 5:34:25 PM] Rohit Sir: http://51.20.53.218:8512/
+[24/06/26, 5:53:04 PM] Rohit Sir: ON THE MAIN PAGE… Guys what functions are included here a> for the short and b> for the long? image omitted
+[24/06/26, 6:02:35 PM] Rohit Sir: Stagflation / Energy Shock
+INACTIVE
+BEARISH
+66.7% (6M)
+cancelled 2026-07-03
+WTI >+10% rolling 28-day AND CPI not hot AND WALCL flat. 83% bearish 1–6m. ~4–5 instances since 2005.
+WTI
+CPI
+WALCL
+Avg return -4.6% (6M
+[24/06/26, 6:03:08 PM] Rohit Sir: is this the average return of spx? or average return of being short the s and p?i  think former but checking?
+[24/06/26, 6:05:14 PM] Rohit Sir: Stagflation / Energy Shock
+INACTIVE
+BEARISH
+66.7% (6M)
+cancelled 2026-07-03—> cancelled on 03 july or 07 march? or?
+[24/06/26, 6:05:49 PM] Rohit Sir: please check the date format used as i want to make sure it is no htinking 03 july
+[24/06/26, 6:06:10 PM] Rohit Sir: under E - 
+Valuation Extreme / Slow Burn Top
+CONFIRMED
+BEARISH STRUCTURAL
+18.9% (12M)
+— · legs CAPE, NFCI
+[24/06/26, 6:06:16 PM] Rohit Sir: some text is mising in the last line
+[24/06/26, 6:06:31 PM] Rohit Sir: this is all on macro runic page
+[24/06/26, 6:07:27 PM] Rohit Sir: WATCH
+B 0/3
+[24/06/26, 6:07:54 PM] Rohit Sir: watch shsd be only if we are at n-1 on count where n is teh minimum number of legs of the rule that are needed to be triggered
+[24/06/26, 6:08:03 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩
+[24/06/26, 6:09:10 PM] Rohit Sir: C CANCEL
+CANCELLED- wha is tthe logic beingused here? ot show the most recent cancel of any siugnal? or just for C? and if so, why just for C?
+[24/06/26, 6:10:17 PM] Rohit Sir: CFTC
+PENDING CFTC
+CPI
+PENDING
+VIX
+BYPASS
+we should always show the most recent data from he most recen data frield. no tpending
+[24/06/26, 6:22:08 PM] Rohit Sir: how do you cannulae cancel probability @⁨Divyanshu Malu IIT B⁩ - using options formulae I shared? @⁨Parth IITB Intern⁩ ihad asjed you to remove yhe tezt BACKTEST DECIDES in tellow and the stuff below that.. upto and iclided “empirically validated" image omitted
+[24/06/26, 6:22:09 PM] Rohit Sir: how do you cannulae cancel probability @⁨Divyanshu Malu IIT B⁩ - using options formulae I shared? @⁨Parth IITB Intern⁩ ihad asjed you to remove yhe tezt BACKTEST DECIDES in tellow and the stuff below that.. upto and iclided “empirically validated" image omitted
+[24/06/26, 6:23:32 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ JUST TO REPEAT
+[24/06/26, 6:25:54 PM] Rohit Sir: B shouldn’t be on watch - B has 3 legs/conditions needed to FIRE. So watch threshold is 2 and if that ha[pens then I shoudl show WATCH 2/3. For now cftc is around 5th percentile I believe so its is less than 16% so I is 1/3 . So there are two errors here image omitted
+[24/06/26, 6:26:24 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ to keep it sipel for now just shw it as 1/3 where it counts teh cftc as 1...
+[24/06/26, 6:26:30 PM] Rohit Sir: ok?
+[24/06/26, 6:26:41 PM] Rohit Sir: but confirm i am right about teh cftc percentile
+[24/06/26, 6:28:51 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ before pushing any changes call me and run them by me on phone or whats app, only push wjen i give go ahead…
+[24/06/26, 6:28:58 PM] Rohit Sir: i am reviewingg what parth has shared now
+[24/06/26, 6:30:16 PM] Rohit Sir: Guys why sis veryhtign TBD this looks bad... image omitted
+[24/06/26, 6:30:18 PM] Rohit Sir: Guys why sis veryhtign TBD this looks bad... image omitted
+[24/06/26, 6:31:34 PM] Rohit Sir: i think 03 july is menioned beacsue ist the next week after 26 june...
+[24/06/26, 6:33:07 PM] Rohit Sir: we are saying watch b nu t… can i just explain i taas syaing this is in development? bu tthe A,B,C =-G tec already work so then shd i say it works for defined cases but not for teh udnefined as yet.. i e undefined combos
+[24/06/26, 6:33:20 PM] Rohit Sir: i httink what we have done is just use these as placeholders for tthe true analog tables rightt?
+[24/06/26, 6:33:43 PM] Rohit Sir: bu tthen combo B shd show some data if it is on wathc no?
+[24/06/26, 6:34:15 PM] Rohit Sir: also any active combo shd indicate the date that i tfired - next to it
+[24/06/26, 6:34:18 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩
+[24/06/26, 6:34:20 PM] Rohit Sir: @⁨Parth IITB Intern⁩
+[24/06/26, 6:35:35 PM] Rohit Sir: tthis —>high-fived part shdnt be seen/shdnt be there image omitted
+[24/06/26, 6:35:36 PM] Rohit Sir: tthis —>high-fived part shdnt be seen/shdnt be there image omitted
+[24/06/26, 6:35:40 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ @⁨Parth IITB Intern⁩
+[24/06/26, 6:35:55 PM] Parth IITB Intern: Ok got it
+[24/06/26, 6:36:29 PM] Rohit Sir: tje nighttly brief also shows status flags… shdnt be BRAVE/FEARFUL - we had changed BRAVE to EASY and fearful ot ITGHT
+[24/06/26, 6:36:48 PM] Rohit Sir: sorry BULLISH/BEARISH
+[24/06/26, 6:36:57 PM] Rohit Sir: i/o BRAVE/FEARFUL
+[24/06/26, 6:39:27 PM] Rohit Sir: BOTTOM of same page… B WATCH should be 1/3 if @⁨Divyanshu Malu IIT B⁩ cnfirms tha cfc is below 15th percenile i believe cftc is now 5th percenttile.,.. image omitted
+[24/06/26, 6:43:46 PM] Rohit Sir: image omitted
+[24/06/26, 6:43:49 PM] Rohit Sir: image omitted
+[24/06/26, 6:44:17 PM] Rohit Sir: @⁨Parth IITB Intern⁩ once opened , how do we close the drop down…? clicking again is. no worjing... and BVSP didn open when clciked
+[24/06/26, 6:44:35 PM] Rohit Sir: oh i see teh x sign on rigght
+[24/06/26, 6:44:55 PM] Rohit Sir: oh ad bvs has no score bec not equity…
+[24/06/26, 6:46:12 PM] Rohit Sir: Five votes no showing up? So no Fundamental direction FD calculated? image omitted
+[24/06/26, 6:46:13 PM] Rohit Sir: Five votes no showing up? So no Fundamental direction FD calculated? image omitted
+[24/06/26, 6:48:02 PM] Rohit Sir: VIX
+18.709999084472656
+[24/06/26, 6:48:08 PM] Rohit Sir: portfolio page
+[24/06/26, 6:48:32 PM] Rohit Sir: This message was deleted.
+[24/06/26, 6:49:19 PM] Rohit Sir: This message was deleted.
+[24/06/26, 6:49:31 PM] Rohit Sir: This message was deleted.
+[24/06/26, 6:54:06 PM] Rohit Sir: image omitted
+[24/06/26, 6:54:28 PM] Rohit Sir: portfolio cluster siuzes are wrng . they have to all be a fraction of 80,000,000
+[24/06/26, 6:54:35 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩
+[24/06/26, 6:54:44 PM] Rohit Sir: parth calll div for this as he needs to know this right away
+[24/06/26, 6:54:48 PM] Rohit Sir: @parth\
+[24/06/26, 6:54:52 PM] Rohit Sir: @⁨Parth IITB Intern⁩
+[24/06/26, 6:59:23 PM] Rohit Sir: audio omitted
+[24/06/26, 7:00:45 PM] Rohit Sir: image omitted
+[24/06/26, 7:00:46 PM] Rohit Sir: image omitted
+[24/06/26, 7:00:47 PM] Rohit Sir: ok v important
+[24/06/26, 7:01:11 PM] Rohit Sir: please remove this forced portfolio - minus 59%… i odnt know what this is or where it gets valie from and we shdnt have it
+[24/06/26, 7:01:15 PM] Rohit Sir: i had mentioned earlier as well
+[24/06/26, 7:01:19 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩
+[24/06/26, 7:01:22 PM] Rohit Sir: @⁨Parth IITB Intern⁩
+[24/06/26, 7:02:04 PM] Rohit Sir: at the bottom of tha page also we have
+[24/06/26, 7:02:06 PM] Rohit Sir: LIVE PORTFOLIO · FORCED MODEL (AHIL)
+YTD Return
++-59.44%
+Active alerts
+28
+[24/06/26, 7:02:09 PM] Rohit Sir: we dont wan t all this
+[24/06/26, 7:03:09 PM] Rohit Sir: image omitted
+[24/06/26, 7:03:21 PM] Rohit Sir: we son want a gap. it is not something we wiah ot highlight
+[24/06/26, 7:03:26 PM] Rohit Sir: its understood this will be lower
+[24/06/26, 7:03:31 PM] Rohit Sir: dont want this
+[24/06/26, 7:03:32 PM] Rohit Sir: REMOVE
+[24/06/26, 7:05:19 PM] Rohit Sir: ai analyst i clicked on plus sign and once i did so i wans not able to use it any longer
+[24/06/26, 7:06:20 PM] Rohit Sir: also am not sure its working. i ried sumarize today outstanding signals but nothing happened. or maybe it was taking long.. so i tabbed o ALTERS. i then TABBED back cto CHAT…and clicked on + box…
+[24/06/26, 7:06:25 PM] Rohit Sir: image omitted
+[24/06/26, 7:06:33 PM] Rohit Sir: @⁨Parth IITB Intern⁩ please checj it out
+[24/06/26, 7:07:25 PM] Rohit Sir: what is FORCED YTD +- 59.44%
+[24/06/26, 7:08:55 PM] Rohit Sir: ON overwatch page
+[24/06/26, 7:09:34 PM] Rohit Sir: We have it in two places +-59.44%… please remove forced portfolio image omitted
+[24/06/26, 7:10:49 PM] Rohit Sir: Forward test - is different from last 6 m testing… so why do we say “last 6 months” ? Specifically FWD testing is over the last 2 years not 6 months image omitted
+[24/06/26, 7:10:49 PM] Rohit Sir: Forward test - is different from last 6 m testing… so why do we say “last 6 months” ? Specifically FWD testing is over the last 2 years not 6 months image omitted
+[24/06/26, 7:12:26 PM] Rohit Sir: This doesn’t respond. Should it?> I dont care for now but fyi image omitted
+[24/06/26, 7:12:36 PM] Rohit Sir: what i do care about - A LOT - is
+[24/06/26, 7:13:07 PM] Rohit Sir: wha we discussed earlier…
+[24/06/26, 7:14:18 PM] Rohit Sir: This should even if it’ss an APPROVED FUNCTION/INTERVAL/DIRECTION - should specify what tha is. Eg BAND MATRIX WEEKLY LONG - DRIFT ALERT image omitted
+[24/06/26, 7:14:28 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩
+[24/06/26, 7:15:23 PM] Rohit Sir: ALL THIS SHOULD BE GEALTHY. AND THE COMMENT ON forward vs backtest shdnt be there… image omitted
+[24/06/26, 7:15:56 PM] Rohit Sir: ok the ai analyst chatbox is active and usable again… not sure why it froze
+[24/06/26, 7:17:42 PM] Rohit Sir: the chatbot should have as defaults what we aleady had on sreamlit -
+[24/06/26, 7:17:44 PM] Rohit Sir: image omitted
+[24/06/26, 7:17:45 PM] Parth IITB Intern: its working fine at my end let me see why there is an issue
+[24/06/26, 7:17:49 PM] Rohit Sir: signal insihts breadth analysus
+[24/06/26, 7:19:29 PM] Rohit Sir: anyway thast not importan. for now
+[24/06/26, 7:19:41 PM] Rohit Sir: GE RID OF FORCED PORTFOLIO. -
+[24/06/26, 7:19:51 PM] Rohit Sir: FIX THE PORTFOLI PAGE AMOUNTS
+[24/06/26, 7:20:07 PM] Rohit Sir: CHANGE DEGRADATION TTO DRIFY
+[24/06/26, 7:20:13 PM] Rohit Sir: CORRECT DRIFT DEFINIITON
+[24/06/26, 7:20:47 PM] Rohit Sir: GIVE ME AN AVERAGE CAGR OF ALL GATED FUNCTION/DIRECTION/INTERVAL COMBOS
+[24/06/26, 7:23:20 PM] Rohit Sir: REMOVE THIS BULLISH SIGNALS AND BULLISH ASSETS - I dont even know what I means image omitted
+[24/06/26, 7:23:22 PM] Rohit Sir: REMOVE THIS BULLISH SIGNALS AND BULLISH ASSETS - I dont even know what I means image omitted
+[24/06/26, 7:23:28 PM] Rohit Sir: this is the dashboard
+[24/06/26, 7:25:09 PM] Rohit Sir: in the same pop. up and anywahhere else you may have used it
+[24/06/26, 7:25:48 PM] Rohit Sir: This is Worst Mtm ????? image omitted
+[24/06/26, 7:27:34 PM] Parth IITB Intern: image omitted
+[24/06/26, 7:27:34 PM] Parth IITB Intern: the change in prices might be due to the change in scenarios, normal and stress are different. Suggest if they should not be different. image omitted
+[24/06/26, 7:27:39 PM] Rohit Sir: REMOVE THESE COLUMNS UNTIL I CAN VERIFY WHAT THIS IS - I AM PRETTY SURE I NEVER HAD ANY THING CALLED WORST PROFIT image omitted
+[24/06/26, 7:28:01 PM] Rohit Sir: I never asked fro this pop up in this way
+[24/06/26, 7:28:17 PM] Rohit Sir: id rather show emails on my pgone or laptop as ipposed to tthis
+[24/06/26, 7:29:04 PM] Rohit Sir: this can be looked at at indiv signals page level
+[24/06/26, 7:29:09 PM] Rohit Sir: as we already have it
+[24/06/26, 7:29:33 PM] Rohit Sir: we dnt want to show wha is our best functiton and say tha our best orifut is 5% and wors 50%…. wtf man!!!!
+[24/06/26, 7:31:10 PM] Rohit Sir: dyde how can flobal risk in be 430 m when eh deployed abount is 80 million1!!!!!!!
+[24/06/26, 7:31:30 PM] Rohit Sir: that dine but all the nubers are wrong
+[24/06/26, 7:32:08 PM] Rohit Sir: remove it - CLEARRRRR -????
+[24/06/26, 7:32:58 PM] Parth IITB Intern: removed them all.
+[24/06/26, 7:36:43 PM] Rohit Sir: ANOTEHR BIG ERRIR
+[24/06/26, 7:37:21 PM] Rohit Sir: SIGNALS PAGE SHORTLISTED… This should be the tier A claude signals
+[24/06/26, 7:37:23 PM] Rohit Sir: image omitted
+[24/06/26, 7:38:28 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ can you fix this?
+[24/06/26, 7:38:52 PM] Rohit Sir: also @⁨Parth IITB Intern⁩ i thoughtt divyanshu said you had the structuired json values for the signals surface??
+[24/06/26, 7:40:22 PM] Parth IITB Intern: Surface is available
+[24/06/26, 7:40:51 PM] Parth IITB Intern: at the left bottom you get to toggle between surface table and ranked card views.
+[24/06/26, 7:41:26 PM] Rohit Sir: ok tjis shd be at top… else one may miss it
+[24/06/26, 7:41:30 PM] Rohit Sir: for now ok
+[24/06/26, 7:41:52 PM] Rohit Sir: make a not of my points cal divyansu i cant reach him. tell hm wha to fix
+[24/06/26, 7:41:59 PM] Rohit Sir: claude shortlistyed showing as 0 tha is tubbish
+[24/06/26, 7:48:47 PM] Rohit Sir: https://www.loom.com/share/8c513788bb764696b5c453fb8ef8ed47
+[24/06/26, 7:48:57 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ @⁨Parth IITB Intern⁩ please hear
+[24/06/26, 7:49:08 PM] Rohit Sir: re claude shortlisted signals
+[24/06/26, 7:58:29 PM] Rohit Sir: just realized my screen wasn’t picked up properly
+[24/06/26, 7:58:30 PM] Rohit Sir: fuck
+[24/06/26, 7:58:37 PM] Parth IITB Intern: yeah
+[24/06/26, 7:58:40 PM] Rohit Sir: ok claude shortlisted need to pick up the A list
+[24/06/26, 7:58:51 PM] Parth IITB Intern: but i got most of it.
+[24/06/26, 7:58:57 PM] Parth IITB Intern: fixing right away. <This message was edited>
+[24/06/26, 7:59:08 PM] Rohit Sir: emailed the latest claude report
+[24/06/26, 8:15:23 PM] Rohit Sir: CAGR?
+[24/06/26, 8:15:34 PM] Rohit Sir: SHARPE
+[24/06/26, 8:16:03 PM] Rohit Sir: Both using the gated strategies of combos of function/interval/direction
+[24/06/26, 8:31:56 PM] Rohit Sir: do i have a new url @⁨Parth IITB Intern⁩
+[24/06/26, 8:32:02 PM] Rohit Sir: i have to leave homenow to go to he meetin
+[24/06/26, 8:32:27 PM] Rohit Sir: or is it ythe esame itl refreshed?
+[24/06/26, 8:33:10 PM] Parth IITB Intern: it will be the same url.
+[24/06/26, 8:33:27 PM] Parth IITB Intern: as you are using right now.
+[24/06/26, 8:36:43 PM] Rohit Sir: ok
+[24/06/26, 8:52:53 PM] Rohit Sir: i think the version hasn’t picked up changes!??
+[24/06/26, 8:53:20 PM] Rohit Sir: the pop up is still shoot worst profit best profit eyc eyc
+[24/06/26, 8:53:35 PM] Parth IITB Intern: pushing in 5 min
+[24/06/26, 8:53:42 PM] Parth IITB Intern: changes have been made.
+[24/06/26, 8:53:42 PM] Rohit Sir: the portfolio still has global risk ok 420 mill etc
+[24/06/26, 8:53:44 PM] Rohit Sir: ok cool
+[24/06/26, 8:53:54 PM] Rohit Sir: fingers crosssed haha
+[24/06/26, 8:54:20 PM] Rohit Sir: it’s ok i’ll chat for 5-10 min about it and then show on computer giving you a bit more time :)
+[24/06/26, 8:55:02 PM] Parth IITB Intern: I am really sorry.
+[24/06/26, 8:55:09 PM] Parth IITB Intern: But anyways All the best.
+[24/06/26, 8:55:12 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ did you crack this image omitted
+[24/06/26, 8:55:37 PM] Rohit Sir: no you guys have done well, any fault is mine and mine alome
+[24/06/26, 8:55:39 PM] Rohit Sir: alone
+[24/06/26, 9:04:59 PM] Rohit Sir: urgent something has gone wrong the average forward win date has collapse
+[24/06/26, 9:05:09 PM] Rohit Sir: can you go back to earlier version pre hating
+[24/06/26, 9:05:34 PM] Rohit Sir: or rather the display is wrong ??
+[24/06/26, 9:05:54 PM] Rohit Sir: image omitted
+[24/06/26, 9:06:25 PM] Parth IITB Intern: this is now completely coming from the backend nothing to worry
+[24/06/26, 9:06:53 PM] Rohit Sir: but after removing bad functions it should go up not down
+[24/06/26, 9:07:00 PM] Rohit Sir: it was 77.3 earlier
+[24/06/26, 9:07:32 PM] Parth IITB Intern: that was a glitch I suppose as Divyanshu just provided me with this.
+[24/06/26, 9:07:48 PM] Rohit Sir: what do you see
+[24/06/26, 9:07:50 PM] Rohit Sir: send me url
+[24/06/26, 9:07:53 PM] Rohit Sir: i’ll check on phone
+[24/06/26, 9:08:10 PM] Rohit Sir: i saw on dashboard 61 percent or soemthing it was 77 percent earlier
+[24/06/26, 9:09:02 PM] Rohit Sir: what glitch ??
+[24/06/26, 9:09:05 PM] Parth IITB Intern: yes it was 77 earlier this has been calculated by divyanshu just now and he is not replying.
+[24/06/26, 9:09:55 PM] Rohit Sir: just rework to what was earlier in this aspect of it
+[24/06/26, 9:10:00 PM] Rohit Sir: i can’t show this
+[24/06/26, 9:10:31 PM] Rohit Sir: if the worst forward testing function interval direction combos are gone it should fk up obviously not down that’s common sense ?!!!!!?
+[24/06/26, 9:10:45 PM] Rohit Sir: divyanshu come on don’t let me down
+[24/06/26, 9:12:34 PM] Rohit Sir: send me url
+[24/06/26, 9:12:36 PM] Rohit Sir: again
+[24/06/26, 9:12:54 PM] Parth IITB Intern: http://51.20.53.218:8512/
+[24/06/26, 9:15:47 PM] Rohit Sir: image omitted
+[24/06/26, 9:16:05 PM] Rohit Sir: how can the a we’ve be 61 just look at the fucking graphs man
+[24/06/26, 9:16:23 PM] Rohit Sir: green and red  average has to be above 77
+[24/06/26, 9:16:51 PM] Rohit Sir: it was 77 earlier 
+
+we took off function interval combos which were model not approved …
+[24/06/26, 9:16:57 PM] Rohit Sir: because they hadn’t made the cut
+[24/06/26, 9:17:11 PM] Rohit Sir: so it should be like 81-82 percent now obviously
+[24/06/26, 9:17:31 PM] Rohit Sir: wtf man :) you’ve screwed me !!
+[24/06/26, 9:18:29 PM] Rohit Sir: sbi is garbage
+[24/06/26, 9:18:33 PM] Rohit Sir: you haven’t changed that
+[24/06/26, 9:18:35 PM] Rohit Sir: wtf
+[24/06/26, 9:18:43 PM] Rohit Sir: disaster
+[24/06/26, 9:21:10 PM] Rohit Sir: also so many things are not ok sbi composite instead do ssi despite me mentioning thrice
+[24/06/26, 9:21:10 PM] Rohit Sir: why do we still have long signal long asset on sbi
+[24/06/26, 9:21:10 PM] Rohit Sir: rubbish
+[24/06/26, 9:21:10 PM] Rohit Sir: come on man
+[24/06/26, 10:00:31 PM] Divyanshu Malu IIT B: that was on the older version sir I guess the latest version has that fixed
+[24/06/26, 11:41:13 PM] Rohit Sir: chatbot - not seeing conversational conext well..? @divyanshu…
+[24/06/26, 11:41:17 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩
+[24/06/26, 11:41:19 PM] Rohit Sir: --|----------------|-----------------|-------------------|
+
+◆
+YOU
+07:08 PM
+so did i not get short signals in these asset classes?
+💬
+AI ANALYST
+07:08 PM
+No Signal in the Specified date duration choosen, Please choose different date duration.
+[24/06/26, 11:43:10 PM] Rohit Sir: and @⁨Parth IITB Intern⁩ some minor formating issue for long message response see vid
+[24/06/26, 11:43:11 PM] Rohit Sir: https://www.loom.com/share/fd49f7e3e9ec41679c4bf6009106355d
+[24/06/26, 11:48:58 PM] Parth IITB Intern: is there voice in the video?
+[24/06/26, 11:53:52 PM] Rohit Sir: Thanks all for your help today. The meeting went well. They deffy want access ot the model and also had some specific questions on wanting tto see speecific asset classes such as yields paricularly, fx, gold etc and wondered whether we had captured thjose well i checked GLD and we had multtipke lonhg outstanding signals all of them long — bu we did have one exi ina imely way as per he chatbot… i shd be able ot go o ALL SIGNALS and search for GLD and see all recent signals right?
+[24/06/26, 11:54:07 PM] Rohit Sir: no voice am in a noisy bar so wouldn help
+[25/06/26, 12:19:28 AM] Rohit Sir: ok i have a meeting 5 pm london time tomorrow with one of my ex-bosses - he advises the qutari royal family - and has in the past helped invest funds in sofbank to tune of 100 bln usd… so we need tot do but more work friday - sorry guys… AHIL - Need you o give me some better shorts and performance now… any chance by tomorrow we can get good signals - focus on ^TNX, HYG, LQD, GLD, SLV, EUR=X,
+[25/06/26, 12:20:49 AM] Rohit Sir: Today he uy i me cares more abou tusd yield curve, slope etc tec amnd wants ot see mroe acion from our regimes, so getting the discrete reuimes shgowign value - eg do hey help boos  he sharpe of a belwether sinle day porfolio ?> ps can i see car and sharpe for the porfolip incorporaed omorrow as a prioroity @divyanshu @⁨AHIL KHAN⁩ how best o find signals showing shott tnx as of june 15/16 or so...
+[25/06/26, 12:30:14 AM] Rohit Sir: when i see online i don’t see this ratio as 1.06 i see it as 1.01 i see vix as higher than the vix we record on yahoo finance
+
+is this a date / data integrity issue . it flashed in red suggesting backwardatioj so that was a bit embarrassing . he checked levels on his phone and divided . tho i think he took spread by mistake so i checked but feels wrong? image omitted
+[25/06/26, 12:38:09 AM] Rohit Sir: @⁨AHIL KHAN⁩ currently i get a sense of short signals more from exit signals  og existing longs and not so much as real shorts … except for delta drift which is a nice short term long and short signal … 
+
+expecting yoh will help develop more / newer and better short signals .
+[25/06/26, 12:38:34 AM] Rohit Sir: image omitted
+[25/06/26, 12:38:36 AM] Rohit Sir: meeting tom
+[25/06/26, 12:46:24 AM] Rohit Sir: would like to amend one thing in model - for commodities like gld and slv if exit coming in any signal then all other signals should give an exit in exit report and portfolio management report and any report where exits are showing - add a column close to the main exit rule exit column . this column may be called “Cross-Function Exit” and would show Exit based on xyz function / “exit price” … “
+
+@⁨Divyanshu Malu IIT B⁩ can you do that, talk to Ahil
+
+Ahil please find me some good rules long and short that work with  TNX and also FX?
+[25/06/26, 3:31:08 AM] Rohit Sir: macro runic page, lets use/display latest data available. eg CFTC
+PENDING CFTC
+CPI
+PENDING
+[25/06/26, 3:32:12 AM] Rohit Sir: assuming this “CFTC.gov TFF · Lev Money net · data as of 2026-06-16, 8d lag vs report, expected Tue 2026-06-16 · Lag 8d · Expected 2026-06-16” is generated by code, we can alter it to say data as of - and pick the date it was published”
+[25/06/26, 3:33:51 AM] Rohit Sir: ttoday is the 24 june. So how can we have this saying “….expected Tue 2026-06-16 · Lag 8d · Expected 2026-06-16/…” Why are we repeating exdcted 16 june twice? And how can we be execting somehting in th epast ??
+[25/06/26, 3:33:54 AM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩
+[25/06/26, 3:34:41 AM] Rohit Sir: notung this error, and the other saleness i jus pointed out, please check and validate he exact date for each element
+[25/06/26, 3:35:15 AM] Rohit Sir: please fix hrehsolds for combos D and E as discussed @⁨Divyanshu Malu IIT B⁩
+[25/06/26, 3:37:51 AM] Rohit Sir: please make headway on 1> macro runic page 291 combos, selecdting, developing economic ratitonale around combos as per the process laid out 2> reacting to all my comments o the macro runic ageint feedback document (i e the google doc based on the pdf you had shared originally). If i recall there is a fair bit of incomplete stuff there.
+[25/06/26, 4:06:53 AM] Rohit Sir: claude sonnet 4.6 “11:36 PMClaude responded: No — my knowledge cutoff is end of August 2025.No — my knowledge cutoff is end of August 2025. So anything after that (including Warsh's appointment) I won't know unless you tell me or I search for it. Today's date is June 24, 2026, so there's roughly a 10-month gap.”
+[25/06/26, 4:07:07 AM] Rohit Sir: Is this new? i am surprised
+[25/06/26, 4:07:39 AM] Rohit Sir: i have tthe pro plan. Ahil you will know as you know whast happening in this space
+[25/06/26, 4:48:16 AM] Rohit Sir: Claude Sonnet 4.6's training cutoff is end of August 2025. I DID NOT KNOW THAT OR HAS MY SUBSCRIPTION JUST BEEN DOWNGRADED? It did not know about us fed CHAIRMAN Warsh's appointment or anything post-August 2025 unless told or given web search. For the chatbot embedded, DOES THIS MEAN THAT any regime commentary referencing post-August 2025 events needs to either be injected via context (the nightly JSON) or handled via web search tool — and the model won't know independently???? @⁨Divyanshu Malu IIT B⁩ please check and advise how the Claude API calls in the nightly briefing will work, how will geopolitical agent work - is this a scraper and so ok? could the chatbot Tavela suffer? how will the api get recent event context explicitly wihtout relying on the model's background knowledge??
+[25/06/26, 5:11:33 AM] Rohit Sir: Hi Ahil, Divyanshu,
+Had a strong meeting today — the fund was very interested in our Regime framework and its predictive power. A specific question came up that I want us to be able to answer properly.
+The example I used was June 17, 2026 — Kevin Warsh's first FOMC meeting as Fed Chair. He was widely expected to be dovish, given the political context. My read was different: based on his prior voting history, I believed he was a closet hawk. That proved correct — he was hawkish on short-end rates and surprised the market.
+The 2-year yield jumped ~16bps. Critically, the 10-year was roughly flat and the 30-year actually fell slightly — so the curve bear-flattened. The long end didn't sell off; it held because the market read Warsh's credibility as disinflationary for the long run.
+The fund's question: could our model have predicted or reacted to this?
+
+Predictive — could the Regime framework have flagged the likely direction of the short end and long end before Warsh spoke?
+Reactive — could the model have captured the move the day after via momentum signals, and did it?
+
+Please check whether any signals fired around June 16–18 — pre-event or in the days following — and what the model would have done on both the short end (^TNX 2yr equivalent, SHY) and long end (TLT, ^TNX ). This is a key proof-of-concept moment for our fund narrative and I want a clean answer ready.
+Rohit
+[25/06/26, 5:11:41 AM] Rohit Sir: @⁨AHIL KHAN⁩ @⁨Divyanshu Malu IIT B⁩
+[25/06/26, 5:11:49 AM] Rohit Sir: i want to get back to him soon <This message was edited>
+[25/06/26, 4:07:24 PM] Rohit Sir: @⁨Parth IITB Intern⁩ 
+
+There are a few things in the email i sent late last night which you may be able to deal with on own - please see / example chatbot formatting , something in upper panel i forget… also talk to @⁨Divyanshu Malu IIT B⁩ to see if there is anything further he has done from my email which is relevant for you / you can connect with him. I believe he had been away this afternoon for some personal stuff but check with him so you can  amend before my meeting today where i’ll be presenting this again… 
+
+Maybe add an FAQ on last page with the relevant scatter plots AFTeR either ahil or divyanshu confirm which final sharpe / portfolio / scatter plot we will go for to get a 2.5-3 at 30 assets style sharpe across our functions
+[25/06/26, 4:07:46 PM] Rohit Sir: @⁨AHIL KHAN⁩ the guy am meeting is brilliant and he will catch this so please fix
+[25/06/26, 4:30:57 PM] Parth IITB Intern: Any updates on backend Only then I can start working on frontend.
+[25/06/26, 8:21:34 PM] AHIL KHAN: image omitted
+[25/06/26, 8:42:47 PM] Rohit Sir: hi should’ve Model - Approved
+[25/06/26, 8:42:50 PM] Rohit Sir: not improved :)
+[25/06/26, 8:55:12 PM] Rohit Sir: parth you have 30 min to load this… and anythign else u want to
+[25/06/26, 8:55:16 PM] Rohit Sir: also image omitted
+[25/06/26, 8:55:39 PM] Parth IITB Intern: How can I ? Is this up and ready in the backend?
+[25/06/26, 8:56:06 PM] Rohit Sir: we are now actually gating this but divyanshu hasnt been theer ot do tthe back end so alk to ahil. this has to jus be pu tin the mode. no link/live itll divyanshu sets up
+[25/06/26, 8:56:48 PM] Parth IITB Intern: Ok so just have to have these graphs on the website?
+[25/06/26, 8:57:27 PM] Rohit Sir: this we are now gaing so this earlier daa was acually wrong as divyanshu discovered and based on recent esing of 6 monthd and not fwd testign howver eh numbers are simialr as we get around 76% number ill give you exact num,ber so hat when divyansghu colmmetxe s iow will look he same. teh red graph shd be fully above 60% as we are wlakign wih fewer model approved functitons
+[25/06/26, 8:57:43 PM] Rohit Sir: yes jus change Improved to Approved
+[25/06/26, 8:58:36 PM] AHIL KHAN: ok i am sending new one
+[25/06/26, 8:59:13 PM] Parth IITB Intern: Can you quickly tell exactly where to show these graphs. And where to change improved to approved? Sorry.
+[25/06/26, 8:59:39 PM] Rohit Sir: If you take unique combos with fwd WR **>60%** and **simple-average** them, you get **75.92%**, not 72%.
+
+**72% matches a different calculation:**
+
+| **Method** | **Result** |
+| --- | --- |
+| **Trade-weighted pool of ALL forward testing trades** | **72.15%** |
+| Median of combos >60% | 72.66% |
+| Simple avg of combos >60% | **75.92%** |
+
+So **72% ≈ trade-weighted aggregate** across all forward-tested trades (high-volume combos like TRENDPULSE Daily Long at 80.18% with 757 trades pull the pool up). It is **not** the equal-weight average of the 22 passing combos.
+
+If you intended simple average of passing combos, the answer is **~76%**, not 72%.
+[25/06/26, 8:59:52 PM] Rohit Sir: https://dramatic-danger-3eb.notion.site/Analysis-thread-38aa85728eeb80678682fd099a3c21ef
+[25/06/26, 8:59:55 PM] Rohit Sir: see in his
+[25/06/26, 8:59:58 PM] Rohit Sir: this
+[25/06/26, 9:02:38 PM] Rohit Sir: avergae fwd xtested win rate chane ot 75.92%
+[25/06/26, 9:02:52 PM] Rohit Sir: acually just focus on the graphs
+[25/06/26, 9:03:49 PM] Rohit Sir: top of tyhis graph Model-Improved - see second line; paste it on he frontt page neatly somewhere so i can click and i fills most of fron page /easy o open and cloise
+[25/06/26, 9:03:51 PM] Rohit Sir: or whaever
+[25/06/26, 9:03:53 PM] Parth IITB Intern: I still have little idea on where to put the graphs.  On which page
+[25/06/26, 9:06:08 PM] Parth IITB Intern: Should I add it on dashboard?
+[25/06/26, 9:08:03 PM] Parth IITB Intern: and should I add it as an image? or make these graphs ? if image then 4 different images or just one?
+[25/06/26, 9:09:37 PM] AHIL KHAN: image omitted
+[25/06/26, 9:09:48 PM] AHIL KHAN: image omitted
+[25/06/26, 9:09:50 PM] AHIL KHAN: add both
+[25/06/26, 9:09:54 PM] AHIL KHAN: in frontend <This message was edited>
+[25/06/26, 9:10:15 PM] AHIL KHAN: add as a image
+[25/06/26, 9:23:03 PM] Parth IITB Intern: these are the two buttons on the dashboard. image omitted
+[25/06/26, 9:23:58 PM] Parth IITB Intern: an dpushed the repo
+[25/06/26, 9:24:19 PM] Parth IITB Intern: https://github.com/D-ParthChauhan/MindwealthUI_Vue
+[25/06/26, 9:41:40 PM] Rohit Sir: can you remove the sharpe ratio bars
+[25/06/26, 9:42:59 PM] Rohit Sir: i don’t see the charts with portfolio reports
+[25/06/26, 9:43:35 PM] Rohit Sir: also the platform date is june 23 01:00 why?
+[25/06/26, 9:45:11 PM] Parth IITB Intern: Backend again. I can change only on frontend it won't react properly
+[26/06/26, 3:30:09 AM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ why is this stuck on 23rd? I is now 6 pm EST on thee 25th and a thursday I thought it was set for 5 pm es chron? image omitted
+[26/06/26, 1:28:41 PM] Rohit Sir: This message was deleted.
+[26/06/26, 1:41:57 PM] Rohit Sir: i’ve requested Ahil to show the virtual trading/fwd testing for all the gated func/interv/direction combos… and to test if we stop at 60-80 assets, what the cagr and sharpe with just those 80 assets held for the 2 year period and exitted as per the exit rule looks like. Then, once we are clear whether we should stop at 60-80 or go on to the full 198 that the stake list has, to calculate for natural function exits and mtm both, what the overall portfolio mtm is at the end of each month. Then - I’ve asked him to
+clarify if there leverage in this graph, and if so what is the peak leverage and when does it exist (can we have a leverage graph on y axis? 
+
+Let’s assume we buy each asset for an equal amount of money and work the numbers as i mention… what do we do if we have to buy the asset a second time via another signal - is that CURRENTLY treated in this graph as leverage on the same asset or is it treated as a new signal? a What does this sharpe and cagr assume? What is the peak leverage for both the tests 1) stop at 60,70,80 and then just hold or exit… 2) Use full 198 open for asset selection even after 60-80…
+
+Divyanshu if Ahil can’t do this today, can you please, because i’ll need to demonstrate this so it’s better if we have an actual web object, please in any case give Ahil the Signal Quality Score endpoint so he can assess for the scenario where we select up to 60 or 70 or 80  assets is there a way to use this QS to assess if our portfolio would do better if we selected assets above a certain QS? Is there any other way to assess if it adds value from a cagr and sharpe standpoint ?
+[26/06/26, 1:42:16 PM] Rohit Sir: mindwealth_prospectus_corrected with full signal logic summary.docx • 15 pages document omitted
+[26/06/26, 1:56:26 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ can you update the gated graphs on the website
+[26/06/26, 1:58:50 PM] Rohit Sir: KEEP (19 combos, avg FWD win rate ~72%):
+  DeltaDrift Weekly Long (86.6%), TrendPulse Daily Long (80.2%), OscillatorDelta Daily Long (79.5%),
+  TrendPulse Weekly Long (77.2%), DeltaDrift Daily Long (76.0%), PulseGauge Weekly Long (73.7%),
+  AltitudeAlpha Yearly Long (73.1%), TrendPulse Monthly Long (72.8%), OscillatorDelta Daily Short (72.5%),
+  PulseGauge Weekly Short (72.2%), DeltaDrift Weekly Short (71.4%), BandMatrix Daily Long (71.0%),
+  BaselineDivergence Weekly Long (70.5%), SigmaShell Daily Long (69.4%), FractalTrack Monthly Short (68.0%),
+  BandMatrix Weekly Long (67.3%), AltitudeAlpha Weekly Long (64.5%), DeltaDrift Daily Short (62.7%),
+  FractalTrack Weekly Long (61.6%)
+[26/06/26, 2:00:12 PM] Rohit Sir: I saw your numbers @⁨Divyanshu Malu IIT B⁩ ill share the document here so its in one place. 75.92% as i recall with average of gaed function/interval/direciton combos and 72% as the weighted average of trade.combis
+[26/06/26, 2:01:48 PM] Rohit Sir: i notice that the graph on website which earlier had interval on x axis now has funciton type on x axis i htink this - funcion type - makes more sense BUT if we are now showing oNLY MODEL APPROVED combos performance
+[26/06/26, 2:02:48 PM] Rohit Sir: eg the same MODEL APPROVED as per below
+[26/06/26, 2:02:52 PM] Rohit Sir: image omitted
+[26/06/26, 2:05:33 PM] Rohit Sir: am wondering whetther to take a weighted averga ea simple average of say delta drinj weekly long 86.6% and delta dribt daily long 76% for the long point on that webside front page graph
+[26/06/26, 2:13:41 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ lets no use the last 6m - aka most recent backtesting - data anymore. Lets only use VIRTUAL TRADING win rates / FWD testing win rates… 72% then will be the average model-approved trade win ratet right Divyanshu? and i guess we take a weighted average of trades across intervals withtin each of the x axix funcion points ot populate the green, red and yellow line. Do you agree? image omitted
+[26/06/26, 2:28:25 PM] Rohit Sir: guys - esp @⁨Divyanshu Malu IIT B⁩ and @⁨Parth IITB Intern⁩ why did the website stop updating…
+[26/06/26, 2:28:29 PM] Rohit Sir: image omitted
+[26/06/26, 7:36:52 PM] Rohit Sir: Is the recent 300–400 day window Sharpe (i.e. last year of performance) materially lower than the early period? If so, is that because:
+
+	1.	More assets entering late are lower-quality combos (the best ones came in first???)
+	2.	Recent market regime has been unfavourable to the signal mix??
+	3.	The rolling calculation itself mathematically compresses toward a lower long-run mean??
+[26/06/26, 7:37:00 PM] Rohit Sir: @⁨AHIL KHAN⁩ q for you
+[26/06/26, 7:38:07 PM] Rohit Sir: But @⁨Divyanshu Malu IIT B⁩ you also please note and ahil can share methodology with you so you can help when needed next week for any analysis that pops up next week
+[26/06/26, 9:07:02 PM] Rohit Sir: i dont see these reports yet
+[26/06/26, 9:41:05 PM] Parth IITB Intern: They are online you should be able to see them once you click the button. Maybe just wait a few seconds.
+[26/06/26, 10:01:20 PM] Rohit Sir: chatbot formatting output …
+[26/06/26, 10:01:20 PM] Rohit Sir: which button ,,, sorry i know you told me but i couldn’t find it
+[26/06/26, 10:01:33 PM] Rohit Sir: am out and will see if i can check on phone
+[26/06/26, 10:02:06 PM] Rohit Sir: found this on my phone
+[26/06/26, 10:02:08 PM] Rohit Sir: https://github.com/D-ParthChauhan/MindwealthUI_Vue
+[26/06/26, 10:04:25 PM] Rohit Sir: please can you share url for website
+[26/06/26, 10:12:53 PM] Rohit Sir: hi ?
+[26/06/26, 10:16:19 PM] Parth IITB Intern: http://51.20.53.218:8512/dashboard
+[26/06/26, 10:16:40 PM] Parth IITB Intern: maybe not ready for phone
+[26/06/26, 10:30:25 PM] Rohit Sir: ok
+[26/06/26, 10:30:33 PM] Rohit Sir: i’ll avoid looking on phone then
+[26/06/26, 10:51:11 PM] Rohit Sir: hi Parth - i am happy with the pop-up viewability in the outstanding signals report. It’s a relief to not have to scroll to the end of th e page… :). Nice one.
+[26/06/26, 10:53:09 PM] Rohit Sir: image omitted
+[27/06/26, 2:23:20 AM] Rohit Sir: @⁨AHIL KHAN⁩ please remind me why is it we no longer have the interval choice available here?
+[27/06/26, 2:23:44 AM] Rohit Sir: and what does setting 20% as the Upmove mean or do?
+[27/06/26, 2:23:47 AM] Rohit Sir: in our old UI
+[27/06/26, 2:23:50 AM] Rohit Sir: image omitted
+[27/06/26, 2:23:50 AM] Rohit Sir: image omitted
+[27/06/26, 2:25:48 AM] Rohit Sir: I am also curious as to two things
+[27/06/26, 2:26:19 AM] Rohit Sir: 1. Why is the cancellation level above the fractal track? image omitted
+[27/06/26, 2:26:24 AM] Rohit Sir: and
+[27/06/26, 2:27:55 AM] Rohit Sir: Did we, once in the past, really take 14 years to exit a weekly fractal track trade? What was the trade?
+[27/06/26, 2:28:00 AM] Rohit Sir: image omitted
+[27/06/26, 2:28:09 AM] Rohit Sir: same GDX signal data
+[27/06/26, 2:29:55 AM] Rohit Sir: While one wouldnt use this often, is there a quick way to access past signal history for a specific asset/funcion/interval/direction combo or a combo of fewer of these variables?
+[27/06/26, 3:40:26 AM] Rohit Sir: One of the things the guy I met yesterday asked was about these gaps in the dots — the same question I asked you a while ago. I gave him some explanation about multiple assets on one day etc., but I’m wondering how we can see the end-of-state rolling CAGR more clearly. Does this diagram mean that we should have 60–100 assets in the portfolio? Are these assets in the portfolio, or assets available for selection? Something seems “off” here, as the 180 number is the maximum number of assets available for selection. It can’t be that we have 180 assets added into the portfolio — maybe 180 trades, but not 180 assets. 180 assets would mean that, in 2 years, by the end, we miraculously had all 180 assets in it — that’s an impossibility. So I think we need to clarify the x-axis further. The title says “cumulative unique assets ever traded up to day t.” I still can’t believe that there is some t at which every asset was traded in the 2-year period. Something is wrong.
+[27/06/26, 6:11:33 AM] Rohit Sir: MindWealth_Ahil_NAV_Template.xlsx • 4 sheets document omitted
+[27/06/26, 6:11:53 AM] Rohit Sir: @⁨AHIL KHAN⁩ some more details to help what we discussed.
+[28/06/26, 7:31:25 PM] Rohit Sir: @⁨Parth IITB Intern⁩ hey - seems there has been an attack on the website / probably through url .. Talk to Divyanshu / Ahil and they are trying to figure out the source. But please be careful if brainstorming the url / display (which is normal to do) with any one / especially someone working … thanks
+[28/06/26, 7:46:49 PM] Parth IITB Intern: Sure
+[29/06/26, 4:47:34 AM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ please confirm seen hanks
+[29/06/26, 4:57:57 AM] Rohit Sir: SBI function backtesting - @⁨Divyanshu Malu IIT B⁩ or @⁨AHIL KHAN⁩ whoever has time please do … i really need to know this as i can finalize portfolio logic till I’m clear about this, till I’m clear on whether signal score quality adds cagr/sharpe value, and till we clarify info in the sheets in the above excel sheet (@⁨AHIL KHAN⁩ ) / 4.1 to 4.3 in this attachment
+[29/06/26, 4:58:16 AM] Rohit Sir: mindwealth_prospectus_corrected with full signal logic summary.docx • 15 pages document omitted
+[29/06/26, 4:58:23 AM] Rohit Sir: can’t finalize
+[29/06/26, 5:18:47 AM] Rohit Sir: How long/short funds work with $100:
+Two conventions exist:
+Gross exposure basis: $70 long + $30 short = $100 gross exposure. This is "fully invested" in the sense that total capital at risk = $100. Net exposure = $70 - $30 = $40 long. No borrowed money. This is the conservative interpretation and what you want.
+Notional basis: $140 long + $40 short = $180 gross, funded by $100 equity + $80 borrowed. This IS leverage — you borrowed $80 to run a larger book. MW runs this way (228% gross). You do not want this.
+For MindWealth: $100 gross total, split between longs and shorts. Long notional + short notional = $100 at all times. Net exposure floats between fully long and fully short depending on signal mix. No borrowed money, no leverage.
+[29/06/26, 5:26:26 AM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ when u get a chance after dealing witth current mess, please help with —0>
+[29/06/26, 5:26:31 AM] Rohit Sir: 11. CROSS-FUNCTION EXIT FLAGGING (Divyanshu, coordinate with Ahil)
+
+For GLD, SLV and all commodities: if any signal function triggers an exit, flag this across all other functions holding a long position in the same asset. Ahil to advise IF NEEDED on the exact implementation.
+
+Specifically:
+- In the Exit Report and Portfolio Management Report, add a “Cross-Function Exit” column showing: exit price and which function triggered it
+- For other assets (not just commodities): where there is an existing long position AND an exit signal from any function, highlight this in a CONFLICT LIST and a  mark-to-market (MTM) of each existing long position per asset in the Portfolio Management Report
+- This should be flagged as a conflict, similar to how the Claude report currently handles conflicting signals — make it visually prominent, not a footnote
+[29/06/26, 5:43:24 AM] Rohit Sir: The compression from teal to yellow - trying to understand the reason.
+One — mathematical: the rolling Sharpe is calculated from day 1, so as more days accumulate the denominator grows and early strong performance gets diluted by later average performance. This would happen even if recent performance is fine.
+Two — genuine recent underperformance: recent market regime (2025–2026) has been less favourable for the signal mix, dragging the rolling number down.
+If it's explanation one (mathematical dilution), the recent trailing Sharpe (say last 252 days only) may still be strong. If it's explanation two, is there a genuine regime problem to investigate?
+[29/06/26, 5:54:34 AM] Rohit Sir: how did we get all 180 assets in the 2 year period… its not making sense 🙂
+[29/06/26, 6:00:08 AM] Rohit Sir: The x-axis is cumulative unique assets ever traded. It increments by 1 every time a brand new asset fires its first ever signal. It does NOT mean 179 assets are simultaneously held. It means over the entire 2-year forward simulation period, signals fired on 179 different assets at some point (DID THA REALLY HAPPEN… SURPRISING…) . Some of those assets may have entered, exited, and never returned. It tells us almost nothing about the actual portfolio composition on any given day. This may be a misleading x-axis for portfolio analysis purposes?
+[29/06/26, 6:01:29 AM] Rohit Sir: Can we try this —>>>> X AXIS = number of assets simultaneously held on day t. That would show the true portfolio size at each point and make the Sharpe/CAGR story meaningful. Please can you regenerate the chart with simultaneous active assets on x-axis, not cumulative unique assets ever traded.
+[29/06/26, 6:03:12 AM] Rohit Sir: Then we test building with a Signal score threshold v/s building witth whatever assets show up; replacing with a threshold v/s replacing with whatever assets show up
+[29/06/26, 4:37:38 PM] Rohit Sir: just to compare like for like before we change the x axis, can you please do this without any non-US-lised assets. i e remove the .IN, ,TO and .NZ assets as also the hk listed assets which have numbers in them and the korea listed assets which have numbers in them.
+[29/06/26, 4:38:16 PM] Rohit Sir: I state this because in reality us/uk people would prefer that and ive been advised to stick to us listed assets
+[29/06/26, 4:38:38 PM] Rohit Sir: that way we also avoid fx carry calculations and so on
+[29/06/26, 4:38:52 PM] Rohit Sir: and i can state the below - for now - more accurately
+[29/06/26, 4:39:04 PM] Rohit Sir: “The forward simulation record does not model transaction costs or short rebate income. All assets are US-listed, USD-denominated — no FX carry or commodity roll costs apply. ETF management fees are embedded in market prices and therefore captured in the simulation. At a conservative average hold period of one month, estimated net transaction cost drag is approximately 0.90–1.00% p.a., partially offset by short rebate income of ~0.25–0.30% p.a. at current Fed Funds rate of 3.63%. At the portfolio's actual average hold period — estimated above one month given the dominance of weekly and monthly signal functions — these costs are likely to net to approximately zero or be net positive. No adjustment has been made to stated CAGR or Sharpe figures.”
+[29/06/26, 4:39:41 PM] Rohit Sir: i think we just have one commodity futures contract CL=X or something liek hat for wit / oil futures ...
+[29/06/26, 4:40:35 PM] Rohit Sir: For today, i need various kinds of analytical numbers / clarifications as per my earlier messages as meeting someone at 5 pm uk time…
+[29/06/26, 4:42:13 PM] Rohit Sir: MindWealth Layer 1 — Portfolio Construction Process
+
+Starting assumptions:
+
+Total capital: $100
+Target portfolio size: N assets (e.g. 60)
+Each asset always gets $100/N regardless of direction
+Long and short positions treated identically in sizing
+No leverage — no borrowed money beyond normal short mechanics
+Universe: gated signals only (>60% FWD WR combos)
+
+
+PHASE 1 — BUILD
+
+Portfolio starts empty. $100 sits in cash.
+As signals fire from the gated universe, admit each new asset chronologically.
+Each new asset entered gets $100/N allocation from cash.
+Remaining cash reduces by $100/N with each new entry.
+Continue until N assets held — portfolio fully deployed.
+During build: gross exposure = number of assets held × $100/N. Net exposure = (longs − shorts) × $100/N. Both grow toward $100 as portfolio fills.
+
+
+PHASE 2 — STEADY STATE
+Portfolio holds exactly N assets at all times once fully built. Each position = $100/N. No rebalancing of existing positions — they keep their original allocation until they exit naturally.
+
+REPLACING A LONG EXIT
+
+Long signal exits as per exit rule → position closes → $100/N cash freed.
+Scan all currently available gated signals not already in portfolio.
+Rank by signal quality score (C1–C4 composite).
+Admit highest scoring signal — long or short, whichever scores highest.
+Deploy $100/N into new position.
+Net exposure shifts slightly depending on whether replacement is long or short.
+If no signal available → hold cash temporarily until next signal fires.
+
+
+REPLACING A SHORT EXIT
+
+Short position exits → close position → return borrowed stock → receive back cash collateral → $100/N freed.
+Same process as long replacement — scan available signals, take highest quality score.
+If replacement is long → net exposure increases slightly (more net long).
+If replacement is short → net exposure unchanged directionally.
+If no signal available → hold cash, gross exposure temporarily below $100.
+
+
+NET AND GROSS EXPOSURE — LIVE TRACKING
+At any point in time:
+
+Gross exposure = (number of long positions + number of short positions) × $100/N — tells you total capital at risk
+Net exposure = (number of long positions − number of short positions) × $100/N — tells you directional bias
+Cash = $100 minus gross exposure — only exists during build phase or brief gaps between exit and replacement
+
+Given current signal mix (~90% long, ~10% short), expected steady state:
+
+Gross ≈ $100
+Net ≈ +$80 long
+This is a net long systematic fund, not market neutral — must be stated explicitly in all presentations
+
+
+WHAT HAPPENS IF SAME ASSET GETS A NEW SIGNAL WHILE ALREADY HELD:
+
+Already held long, new long signal fires → ignore, position already open
+Already held long, new short signal fires → EXIT the long, treat as exit signal, free the slot, replace as per replacement process above
+Already held short, new short signal fires → ignore, position already open
+Already held short, new long signal fires → EXIT the short, free the slot, replace as per replacement process above
+
+
+WHAT THIS ACHIEVES:
+
+Equal dollar investment per asset at all times ✓
+No leverage — gross never exceeds $100 of own capital ✓
+Quality score drives replacements — best available signal always fills vacant slot ✓
+Net long bias reflects signal engine's natural output honestly ✓
+Simple enough to implement, audit, and explain to an institutional allocator ✓
+[29/06/26, 4:42:35 PM] Rohit Sir: keep it as 100 million.
+[29/06/26, 8:13:50 PM] Rohit Sir: hi the website is not live?
+[29/06/26, 8:14:04 PM] Rohit Sir: Jun 26, 01:00 AM
+[29/06/26, 8:15:32 PM] Rohit Sir: SBI still not showing up as p3r bottom part of streamlit / as discussed.. fyi
+[29/06/26, 8:16:00 PM] Rohit Sir: image omitted
+[29/06/26, 8:16:02 PM] Rohit Sir: image omitted
+[29/06/26, 8:26:16 PM] Rohit Sir: new signals on signals page . if one looks at SURFACE - iy shows Tier A, Best Available etc - this seems ot have mixed up the claude shortlisted…? please check as i cant reclal if we categorized New Signals as Tier A, etc but i do recall we had that for claude’s shortlisted signals
+[29/06/26, 8:29:29 PM] Rohit Sir: Repeating my message - One of the things the guy I met LAST WEEK was about these gaps in the dots — the same question I asked you a while ago. I gave him some explanation about multiple assets on one day etc., but I’m wondering how we can see the end-of-state rolling CAGR more clearly. Does this diagram mean that we should have 60–100 assets in the portfolio? Are these assets in the portfolio, or assets available for selection? Something seems “off” here, as the 180 number is the maximum number of assets available for selection. It can’t be that we have 180 assets added into the portfolio — maybe 180 trades, but not 180 assets. 180 assets would mean that, in 2 years, by the end, we miraculously had all 180 assets in it — that’s an impossibility. So I think we need to clarify the x-axis further. The title says “cumulative unique assets ever traded up to day t.” I still can’t believe that there is some t at which every asset was traded in the 2-year period. Something is wrong.
+[29/06/26, 8:30:12 PM] Rohit Sir: it would still be good to understand the earlier graph before we tried this thanks
+[29/06/26, 8:31:00 PM] Rohit Sir: did openai support reply?
+[30/06/26, 8:59:54 PM] Rohit Sir: hey Parth is the url more viewable on the phone now?
+[30/06/26, 9:00:10 PM] Rohit Sir: i wondered if i could show a close and trusted friend
+[30/06/26, 9:00:22 PM] Rohit Sir: (someone who won’t hack me !! :))
+[30/06/26, 9:00:25 PM] Parth IITB Intern: Making it better haven't got anything online
+[30/06/26, 9:00:32 PM] Rohit Sir: ok cool no sweat at all
+[30/06/26, 9:00:47 PM] Parth IITB Intern: Yeah since then haven't pushed anything new online
+[30/06/26, 9:01:24 PM] Rohit Sir: please share link here
+[01/07/26, 2:45:30 AM] Rohit Sir: hi - Divyanshu please check this discrepancy of sorts
+
+i saw this signal and went long . i saw it on the app. 
+
+however i was looking for it on email reports and i can’t find it 
+
+can you clarify?
+[01/07/26, 2:45:35 AM] Rohit Sir: image omitted
+[01/07/26, 2:46:58 AM] Rohit Sir: furthermore this has stop loss levels which are quite far from the market level.., specifically f track supports are shown as 559 and 631
+[01/07/26, 2:48:35 AM] Rohit Sir: However when i looked at F track somewhere else in the F stack analyzer report i saw a different f track support level for QQQ
+
+The reason this is important is i want to know where the support is. and Wonder if we are missing out on using the f stack analyzer report support . ?
+
+Maybe easier for Ahil to answer this q ;) But leave to you to decide
+[01/07/26, 2:48:43 AM] Rohit Sir:
+[01/07/26, 2:48:45 AM] Rohit Sir: image omitted
+[01/07/26, 2:48:45 AM] Rohit Sir: image omitted
+[01/07/26, 2:48:45 AM] Rohit Sir: image omitted
+[01/07/26, 3:22:11 AM] Rohit Sir: QQQ F track based support shown as 10.59 percent below current price as per this report .
+
+So what are we missing?
+[01/07/26, 3:25:12 AM] Rohit Sir: unless 10.59 percent of 716 implies 631 . it’s not massively off off by around 1 percent : anyway . i guess not the end of world
+[01/07/26, 5:28:47 PM] Rohit Sir: link @parth
+[01/07/26, 5:28:56 PM] Rohit Sir: url i mean i want to try on phone :)
+[01/07/26, 5:29:04 PM] Rohit Sir: @⁨Parth IITB Intern⁩
+[01/07/26, 5:36:49 PM] Parth IITB Intern: http://51.20.53.218:8512/
+[01/07/26, 5:44:27 PM] Rohit Sir: how do i go to other pages from front page :)
+[01/07/26, 5:45:50 PM] Parth IITB Intern: Are you on sign in or dashboard?
+[01/07/26, 6:59:22 PM] Rohit Sir: sign in
+[01/07/26, 7:02:44 PM] Divyanshu Malu IIT B: please use these credentials
+[01/07/26, 7:02:47 PM] Divyanshu Malu IIT B: admin@mindwealth.co
+[01/07/26, 7:03:01 PM] Divyanshu Malu IIT B: Hg7GbDaZcqzcXQjM
+[01/07/26, 7:48:20 PM] Rohit Sir: doesn’t work
+[01/07/26, 7:50:52 PM] Divyanshu Malu IIT B: what is happening? are you not able to login?
+[01/07/26, 8:24:49 PM] Rohit Sir: yeah 
+
+and now the front page is hanging 
+
+could be my network
+[01/07/26, 8:25:07 PM] Rohit Sir: image omitted
+[01/07/26, 8:25:53 PM] Rohit Sir: ok worker
+[01/07/26, 8:25:56 PM] Rohit Sir: worked
+[01/07/26, 8:27:05 PM] Rohit Sir: by the way this 77.3 is some wrong number of most recent testing right? 
+
+i thought we were going with the trade weighted gated function/direction/ interval i e 19 combos backtested number which was 72.x % ?
+[01/07/26, 8:27:39 PM] Rohit Sir: image omitted
+[01/07/26, 8:58:45 PM] Rohit Sir: image omitted
+[01/07/26, 8:59:32 PM] Rohit Sir: @⁨Parth IITB Intern⁩ i know you are working on this so not complaining :) 
+
+please see if can scroll down the “ details popup” som my iphone i tried but can’t
+[02/07/26, 5:50:24 AM] Rohit Sir: hi ahil please help with this . i need to make a presentation based on the answers … my call with the hedge fund is 11 a m tomorrow morning uk time
+[02/07/26, 5:50:40 AM] Rohit Sir: rest - as we discussed yesterday
+[02/07/26, 3:09:57 PM] Rohit Sir: parth - ill be using the websie on my mlaptio for a call
+[02/07/26, 3:12:02 PM] Rohit Sir: cant believe afer all; these days and my endless feedback - we still have 77/3% a 6m backested numebr on the websiet divyanshu????????
+[02/07/26, 3:12:05 PM] Rohit Sir: image omitted
+[02/07/26, 3:12:18 PM] Rohit Sir: we sitll haev the garbage non gaed graphs
+[02/07/26, 3:12:22 PM] Rohit Sir: in-fucking-credible
+[02/07/26, 3:12:52 PM] Rohit Sir: can his be sorted????? now oin next 15 min??????????????????????????????????/
+[02/07/26, 3:12:54 PM] Rohit Sir: wha the fcuk
+[02/07/26, 3:13:04 PM] Rohit Sir: divyanshu uve done all hese calculations for me -
+[02/07/26, 3:13:16 PM] Rohit Sir: 77.3 is no teh avergae fwd win rate
+[02/07/26, 3:13:52 PM] Rohit Sir: each funciotn shd only have used eh gaetd combos of interval/direciton/function
+[02/07/26, 3:14:10 PM] Rohit Sir: we shdn be seeing a red curve falling below 60% we cant!!!!!!
+[02/07/26, 3:14:14 PM] Rohit Sir: why is this so poor
+[02/07/26, 3:15:22 PM] AHIL KHAN: @⁨Parth IITB Intern⁩
+[02/07/26, 3:15:51 PM] Rohit Sir: wha do i show anyone…
+[02/07/26, 4:38:35 PM] Rohit Sir: image omitted
+[02/07/26, 4:38:42 PM] Rohit Sir: looks fine now @⁨Divyanshu Malu IIT B⁩ tthanks
+[02/07/26, 4:39:02 PM] Rohit Sir: now @⁨AHIL KHAN⁩ has to get more of the red line across functions…
+[03/07/26, 3:17:06 AM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ PLEASE ADVISE thanks
+[03/07/26, 3:45:47 AM] Rohit Sir: @⁨AHIL KHAN⁩
+[03/07/26, 3:50:41 AM] Rohit Sir: All this above Portfolio Construction Process is pretty comprehensive.
+[03/07/26, 3:51:02 AM] Rohit Sir: https://docs.google.com/document/d/1Yu2LZxYKf8nJDI6rwfYkf2PYD51JuuXICH_bTu7xShw/edit?usp=sharing
+[03/07/26, 3:51:26 AM] Rohit Sir: @⁨AHIL KHAN⁩ this is nothing new but go through - we have discussed all this anyway
+[03/07/26, 5:19:28 AM] Rohit Sir: hi Ahl in our website, do you think it is a good idea to have Portfolio managemen report so we can daily look at exits…
+[03/07/26, 5:22:30 AM] Rohit Sir: and if so shd it be shown in portfolio report or shd we show i in all signals repor eg
+[03/07/26, 5:22:37 AM] Rohit Sir: image omitted
+[03/07/26, 5:22:39 AM] Rohit Sir: image omitted
+[03/07/26, 5:22:50 AM] Rohit Sir: eg next to cross funcction exit?
+[03/07/26, 5:31:36 AM] Rohit Sir: 📊 Recent Signal Activity
+1. OSCILLATOR DELTA - Long Entry Signal
+Entry Details:
+
+Signal Date: June 29, 2026
+Signal Price: $509.64
+Entry Price (Open): $502.50
+Confirmation: Confirmed on June 29, 2026
+Interval: Daily
+[03/07/26, 5:31:54 AM] Rohit Sir: @⁨AHIL KHAN⁩ should we care about the open price?
+[03/07/26, 4:18:50 PM] Rohit Sir: i am considering instead of flying to vancouver from london on monday -  going to mumbai instead … i think in same time zone would like everything completed and working well
+[03/07/26, 5:08:20 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩
+[03/07/26, 5:08:59 PM] Rohit Sir: i took a position on basis of this signal. so please reply URGENLY @⁨Divyanshu Malu IIT B⁩
+[03/07/26, 5:30:33 PM] Divyanshu Malu IIT B: sir it was present in the qqq long signal in the 25 June report @716 in the outstanding and all signals report
+[03/07/26, 5:30:50 PM] Rohit Sir: oh ok
+[03/07/26, 5:31:20 PM] Divyanshu Malu IIT B: the weekly signals was unconfirmed at that time so I think that's why you didn't see it in the new signals report
+[03/07/26, 5:31:36 PM] Rohit Sir: ok
+[03/07/26, 5:32:51 PM] Rohit Sir: tell me something - 1> do we see unconfirmed weekly signals or do we only see confirmed ones? 2> i note the cancellation column so i am assuming since we wanted to see cancellation info, we wanted the unconfirmed early warning signals as well…?
+[05/07/26, 5:13:14 AM] Rohit Sir: is this output based on gated combos only per function? or all combos per function ? image omitted
+[06/07/26, 8:53:26 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩
+[06/07/26, 11:21:51 PM] Rohit Sir: image omitted
+[06/07/26, 11:29:00 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ we have taken average FWD win rate here. I think trade-weighted is more honest as the default tassumption is always per trade.
+[06/07/26, 11:29:11 PM] Rohit Sir: https://dramatic-danger-3eb.notion.site/Analysis-thread-38aa85728eeb80678682fd099a3c21ef
+[06/07/26, 11:29:34 PM] Rohit Sir: from point 2 in this document, we have 74.33%
+[06/07/26, 11:29:46 PM] Rohit Sir: how is the cagr calculated?
+[06/07/26, 11:30:05 PM] Rohit Sir: Is that for gated trades only? please check
+[06/07/26, 11:33:38 PM] Rohit Sir: or for - as i suspect - all trades
+[06/07/26, 11:49:51 PM] Rohit Sir: I understand that the 10 year cagr pertains to only those asset/function/interval/direction combos that enter the model i e back test > 70% so ASSUMING THI S CAGRE is computed from all these >70% 4-variable-combos, how is it computed?  eg is it a simple average of the gains opf trades trades entered and exitted witthin past 10 years, or JUST entered within last 10 years and so includes closed trades + mtm trades? What is teh forward tested cagr out of interest? for closed trades only and for closed=+ mtm trades? at the end of the 2 year fwd testing period? How do these numbers change when we use the > 60% 19 3-variable-combos - wuith each combo covering all assets - versus all the > 70% 4 variable combos trades…
+[06/07/26, 11:49:58 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩
+[07/07/26, 12:04:12 AM] Rohit Sir: 72.15%(Trade-weighted pool of ALL forward testing trades) of 3 and 74.33 % (Trade-weighted average of passing combos) of 2. Given that we want to focus only on Model Approved combos, our relevant number is 74.33%. Please also confirm that the trendline code usefd to gerenate trendline signals counted in this data ia  te modified trendline code where certain hort signals have been modified in the last cod echange ahil had done?
+[07/07/26, 12:04:15 AM] Rohit Sir: @divy
+[07/07/26, 12:04:16 AM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩
+[07/07/26, 12:05:38 AM] Rohit Sir: In 2 in the dramatic danger  link you sent, it is mentioned 22 out of 35 combos pass but i think we have 19 approved combos. So why the discrepancy veteeen 22 and 19?
+[07/07/26, 12:06:37 AM] Rohit Sir: unless you considered sbi as a function or unless some function/interval/ direction combo ‘s forward testing fell below 60 percent?
+[07/07/26, 7:32:54 PM] Divyanshu Malu IIT B: 1. Do we see unconfirmed weekly signals, or only confirmed ones?
+Ans : Both, but not everywhere.
+
+Outstanding Signals and All Signal Report (website and email) show confirmed and unconfirmed weekly signals. A weekly signal like QQQ on 25 June"will be confirmed at the end of this week"  belongs there. That’s why you saw it on the website Outstanding page.
+
+New Signal (email and website) is different: confirmed only, and only when the signal date is that report day. Unconfirmed weekly signals are not included. QQQ on 25 June was unconfirmed, so it would not appear in New Signal , that’s by design, not a missing row
+
+2. Does the cancellation column mean we wanted unconfirmed early-warning signals?
+
+Yes
+Cancellation applies mainly while a signal is still unconfirmed. It states what would invalidate the setup before the interval closes, eg for a long, price must stay above a level through week-end, or the signal is cancelled and never confirms.
+
+Once confirmed, that field becomes "Already confirmed" (or similar), the pre-confirmation rule no longer applies.
+
+So the cancellation column exists because the system surfaces unconfirmed early warnings, not only confirmed trades. It tells you the risk window and invalidation level before you treat the signal as fully valid.
+[07/07/26, 7:49:11 PM] Rohit Sir: yes i am clear on cancellation :). and reason. i should clarify my message … do we see On the Website
+[07/07/26, 8:11:09 PM] Rohit Sir: i mean i wanted the cancellation thing to get “ pre signals “ - but i’ve realized i don’t see them .. we can discuss later
+[07/07/26, 8:11:10 PM] Rohit Sir: or not seeing in a usable way
+[07/07/26, 8:40:20 PM] Rohit Sir: hi Divyanshu - am sure am missing something obvious :) but why two signals on same day image omitted
+[07/07/26, 11:11:09 PM] Rohit Sir: i mean two short signals for 000660.ks
+[07/07/26, 11:11:10 PM] Rohit Sir: argentina 😢
+[07/07/26, 11:17:56 PM] Parth IITB Intern: Argentina ☺️
+[08/07/26, 12:47:54 AM] Rohit Sir: @⁨AHIL KHAN⁩ any progress since June 25 on signals?
+[08/07/26, 1:06:51 AM] Rohit Sir: @⁨AHIL KHAN⁩ I had requested you to take the relevant end points from Divyanshu and do this. Please set up the portfolio selection sheet very systematcally using various different types of portfolio build methodologies we have already discussed 3 week ago and subseqwuently. Please kindly do that so that it becomes easy for @⁨Divyanshu Malu IIT B⁩ or anyone else to run sharpe, cagr, and so on, with x axis being simultaneously hekd independent assets
+[08/07/26, 1:10:57 AM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ please check this tx
+[08/07/26, 1:26:55 AM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ When Mr Khan gets time, tries various end points/macro variables etc, and other ideas, and generates some high quality short signals based on some of he existing function/interval combos, so far he has generated one short signal approx in Mid June. This was based on a trendline discussion we had many months ago about eliminating certain types of trendlines and reducing signal quantity but improving quality. He also tweaked two other variables but it was really this trendline reducton that generated most of the improvement in fwd rate … I'd like to evidence that this fwd rate data on which this upgardede signal was based was basedmon all portfolio assets and not only based on Ahil's preferred portfolio of 15-20 assets :). Please can you do that. Or get Ahil to do this by tomorrrow. I asked earlier but asking again - is this already uploaded/pushed to website? i e this amended trednline short signal that met the fwd teting win rate gate of >60%?
+[08/07/26, 1:29:05 AM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ Once we have better short signals / OR EVEN NOW, we need an API to connect to a brokerage account. The API should automatically execute buy and sell transactions as per the portfolio methodology - some of which Ahil will offer to me for consideration, hopefully by today/tom. This is what i wanted when i first got to London on 18 June and have been waiting for. thanks.
+[08/07/26, 1:33:44 AM] Rohit Sir: @⁨AHIL KHAN⁩ id like to see a> a summary table with all the test outputs of the many things that were su[posed to have been tested. b> sheets showing all. tests done in detail, with teh key assumptions and intermediate output displayed.
+[08/07/26, 1:34:51 AM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ thanks for doing this - so far not seen any signal fire but ill keep an eye out. Do we need the last column to the right?
+[08/07/26, 1:42:45 AM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ please advise max loss on gated altitude alpha signals - looking at various timeframes - eg fwd testing last 2 years, other periods in time…@⁨AHIL KHAN⁩ as i mentioned earlier, did you look at this as part of signal enhancement? And as requested earlier, what were the takeaways? Please reply here so the group knows…
+[08/07/26, 1:48:25 AM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩
+[08/07/26, 1:49:55 AM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ i think u did this already but dbl checking if was fully done?
+[08/07/26, 1:52:04 AM] Rohit Sir: this and in sync with the word file i shared and the excel sheet i shared, should form part of output, tested across all the lenses we wish to test and that i have specified earlier @⁨AHIL KHAN⁩
+[08/07/26, 1:52:37 AM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ @⁨Parth IITB Intern⁩
+[08/07/26, 1:53:27 AM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ please advise
+[08/07/26, 1:55:16 AM] Rohit Sir: hi this is now showing some error - image omitted
+[08/07/26, 1:56:03 AM] Rohit Sir: @⁨Parth IITB Intern⁩ thanks for fixing this (i think u did as later when i tried i didnt experience this issue)
+[08/07/26, 2:25:58 AM] Rohit Sir: This message was deleted.
+[11/07/26, 1:00:53 AM] Rohit Sir: DEGRADATION ALERTS
+28
+ALTITUDE ALPHA long degradation— o ovewatch page. shd be DRIFT ALTERS basically DRIFT imstead of degradaiton. alsoonly those funcion.interval/direcitkjn combvos above60% shd be gated inot these pages
+[11/07/26, 1:00:54 AM] Rohit Sir: image omitted
+[11/07/26, 1:00:54 AM] Rohit Sir: DRIFT
+[11/07/26, 1:00:54 AM] Rohit Sir: Nothing happens if I click o degradation alerts aka drift alerts image omitted
+[11/07/26, 1:00:55 AM] Rohit Sir: fwds by definiiotn will always be somewhat lower than back tested win rate.
+[11/07/26, 1:00:55 AM] Rohit Sir: @divyanshu this is important
+[11/07/26, 1:00:55 AM] Rohit Sir: yes sir I am looking into all, please give me some time
+[11/07/26, 1:00:55 AM] Rohit Sir: i had defined degrade / or drift as a reduction in FWD WIN RATE over 3 consecutive months + fwd win rate falling below (i forget) 61 or 60%.. yesterday i just fine tuned that a bit. thanks
+[11/07/26, 1:01:02 AM] Rohit Sir: some older messages.
+[11/07/26, 1:03:05 AM] Rohit Sir: Guys - i am kicking the tires of the website to see what is pending  - in some cases, its because backend apis not been given… I will send systematic feedback as soon as possible.  I want to make sure we can give @⁨Parth IITB Intern⁩ feedback once and for all so he can complete pending tasks nst of which are straightforward (i think).
+[11/07/26, 1:06:15 AM] Rohit Sir: Function health should 1> only pertain to gated function/interval/direction combos 2> be consistent with our understanding of DRIFT and DRIFT Alerts. Drift Alert is when fwd testing win rate falls in consecutive months and moves below 61%. (Divyanshu I discussed with you in detail so you may have noted what I said 60 or 61 , 2 043or 3 months consul reduction etc0… this has to be changed and reflected accordingly here image omitted
+[11/07/26, 1:06:16 AM] Rohit Sir: Function health should 1> only pertain to gated function/interval/direction combos 2> be consistent with our understanding of DRIFT and DRIFT Alerts. Drift Alert is when fwd testing win rate falls in consecutive months and moves below 61%. (Divyanshu I discussed with you in detail so you may have noted what I said 60 or 61 , 2 043or 3 months consul reduction etc0… this has to be changed and reflected accordingly here image omitted
+[11/07/26, 1:07:05 AM] Rohit Sir: Ahil teh overwatch agent - lets discuss see left menubar layer - 2 sustem… i dont think much needs to vchaneg on teh page here this is purely ahil/divyanshu
+[11/07/26, 1:07:27 AM] Rohit Sir: but i did spec that i would call it DRIFT not Degradation. and across eh website
+[11/07/26, 11:56:37 AM] Rohit Sir: @⁨AHIL KHAN⁩ this clarifies risk-reward - its already in our output and codebase.Now that we have a development and production version each, please check. the development vesrsion if you want to look at the code safely. @⁨Divyanshu Malu IIT B⁩ On R_ref please let me know what code is used at the moment - i believe i had sent updated formula per asset class. So i want to check it. thanks
+[11/07/26, 2:51:07 PM] Rohit Sir: the code safely. @⁨Divyanshu Malu IIT B⁩ —> i mean what formula / grid to define it
+[11/07/26, 2:51:17 PM] Rohit Sir: for R_ref
+[11/07/26, 2:52:23 PM] Rohit Sir: @⁨AHIL KHAN⁩
+[11/07/26, 2:52:41 PM] Rohit Sir: found while looking for something else
+[11/07/26, 2:54:35 PM] AHIL KHAN: because interval is automacly calucalted based on from and to date duration, if duration large then montlly , else wekkly
+
+20% means what is the mini mum upmove % to be considered it fractal tractal upmove
+[12/07/26, 1:03:33 AM] Rohit Sir: @⁨AHIL KHAN⁩ ill talk to u offline
+[12/07/26, 11:07:43 PM] Rohit Sir: hi this password is no longer working… as of today… please check asap and advise… did someone change it?
+[12/07/26, 11:10:55 PM] Rohit Sir: also the delta drift short FWD Testing WR has fallen below 60% both weekly and daily,… thats v disappointing… fractal track weekly long dropped below 60%…@⁨AHIL KHAN⁩ lets discuss…
+[13/07/26, 12:47:52 AM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ can @⁨AHIL KHAN⁩ access the production environemnt for testing so he can use live datat safely without any risk of problems in teh deployed version i gues sthas one kkey advantage of having the two versions right?
+[14/07/26, 1:39:23 AM] Rohit Sir: MindWealth portfolio page demo exists with Signal Quality Score API-based eviction — NOT FINALIZED, methodology still being locked with Ahil, so treat this as a design reference only, not a build request yet. From Parth's standpoint the key addition is small and bounded: two left-menu changes on the Signals page (rename 'New Signals' to 'New Entries', add 'New Exits' directly below 'Claude Shortlisted') plus one new Portfolio Overview section — NAV (Net Asset Value) masthead, an Entries → Holdings → Exits strip, and a holdings table with Signal Quality Score / rank / Reward-to-Risk columns — nearly all of it re-composing components that already exist (the signal-detail drawer and the front-page chart are reused as-is), with the genuinely new work sitting in Divyanshu's three or four endpoints (NAV series, holdings with score and rank, entries/exits feeds), which the demo's DEV NOTES button lists exactly. PENDING Ahil and I to lock the portfolio methodology.
+[14/07/26, 1:39:28 AM] Rohit Sir: image omitted
+[14/07/26, 1:39:56 AM] Rohit Sir: MindWealth_Portfolio_Unified_v1.html document omitted
+[15/07/26, 1:34:42 AM] Rohit Sir: MindWealth_Portfolio_Unified_v4.html document omitted
+[15/07/26, 1:35:01 AM] Rohit Sir: email will follow in IST morning
+[15/07/26, 1:35:20 AM] Rohit Sir: feel free to play with this all 3 of you.
+[18/07/26, 7:19:13 AM] Rohit Sir: Nawfal & Axios on X: China just torched the U.S. AI lead in a single afternoon.
+
+Moonshot AI, a little-known Beijing startup, dropped Kimi K3 on Thursday and it instantly kicked into the top tier of global models.
+
+It beat Anthropic's Fable 5 and OpenAI's GPT-5.6 Sol on coding tests, then edged out Opus 4.8 on a broader ranking while costing 40% less.
+
+Now the knockout blow. On July 27, Moonshot is giving Kimi away as open-weight, so any company or government on Earth can download it and run it on their own machines. No subscription, no permission slip.
+
+For months U.S. labs slept fine telling themselves China was 6 to 12 months behind. That head start just evaporated.
+
+And Kimi doesn't even need to be the best model to win. Near the top, 40% cheaper, and yours to keep is what most buyers actually want.
+
+That's the nightmare in Silicon Valley. The trillion-dollar valuations and hundred-billion-dollar data centers all rest on one bet: U.S. stays ahead. 
+
+Kimi just kicked that out from under them.
+
+Source: The AI Rankings, Axios / Writer: Daniyal
+[18/07/26, 7:19:24 AM] Rohit Sir: curious to get your views guys
+[18/07/26, 9:47:11 AM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ please respond.
+[18/07/26, 9:49:39 AM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ A few things I wanted to flag for you to check, as they may be intentional on your end or may point to something worth looking at:
+
+1. SSI composite vs layer scores
+The composite SSI is showing +0.2, but if we do the weighted average of the three displayed layer scores (Layer 1 +1.0 × 40%, Layer 2 +0.5 × 35%, Layer 3 +0.2 × 25%), we get +0.625. Can you check whether the composite is being calculated from the normalised z-score outputs of each layer function, or from the raw fetched values? or from somewhere else? The display can show raw values for readability, but the weighted average going into build_superindex() should be using the z-score outputs of build_layer1(), build_layer2(), build_layer3().
+
+2. McClellan Oscillator reading of 217
+The normal range for the McClellan Oscillator is roughly −150 to +150. The dashboard is showing 217.09514599086106 — the 14 decimal places also suggest the raw Yahoo Finance float may be going straight to display without rounding? Could you double-check how this value is being computed and displayed? It may be fine on your end if you're using a different calculation method, just wanted to flag it. Also lets not show more than two decimal places for this kinda stuff in general. we need 4 decimal places for any currency pair values but apart from that we don’t need more than 2 places anywhere.
+
+3. NH/NL Ratio showing +46
+The ratio as defined in the code is highs / (highs + lows), which should produce a value between 0.0 and 1.0. A display value of 46 looks like it may be showing the raw New Highs count rather than the ratio?  — worth a quick check.
+*Minor display note: CBOE SKEW is also showing to 12 decimal places (145.720001220...) — a round(value, 2) before rendering would clean that up.
+
+As I said, some of these may be deliberate choices on your end — just wanted to flag them so we can confirm the numbers flowing into the composite are correct. Happy to jump on a call if easier.
+
+Thanks
+Rohit <This message was edited>
+[18/07/26, 10:07:49 AM] Rohit Sir: i will email you separately offline on conviction engine.
+[18/07/26, 10:26:57 AM] Rohit Sir: i am just validating whether each of the variables here-in is using a good source and so on -strtfwd stuff, no rocket science. Ill send you this stuff tom afternoon. let’s finish all the other stuff first, then we can clean up minor stuff in the api’s for ssi and conviction engine. that shd be super quick, and it’s purely formulaic back-end stuff which doesn’t affect Parth.
+[19/07/26, 10:41:31 AM] Rohit Sir: image omitted
+[19/07/26, 10:42:27 AM] Rohit Sir: hi @⁨Divyanshu Malu IIT B⁩ why is the system date currently not showing July 17, 5 pm ? and instead showing July 16 05 pm?
+[19/07/26, 10:32:19 PM] Rohit Sir: @⁨Divyanshu Malu IIT B⁩ please ensure you answer all my outstanding messages before teh world cup match starts today
+[19/07/26, 10:32:24 PM] Rohit Sir: eg 24 June
+[19/07/26, 10:32:29 PM] Rohit Sir: image omitted
+[19/07/26, 11:05:41 PM] Rohit Sir: please of course do watch the world cup 🙂

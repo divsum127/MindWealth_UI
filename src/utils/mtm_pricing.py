@@ -384,3 +384,60 @@ def enrich_row_current_prices(
     mtm_cell = format_mtm_holding_cell(mtm_pct, holding_days)
     td_cell = format_trading_days_cell(holding_days)
     return today_cell, mtm_cell, td_cell
+
+
+def refresh_dataframe_current_prices(
+    df: pd.DataFrame,
+    stock_data_dir: Optional[Union[str, Path]] = None,
+) -> pd.DataFrame:
+    """
+    Recompute Today / MTM / trading-days columns from latest ``stock_data`` CSVs.
+
+    Used when serving reports (e.g. Claude shortlist) whose trade_store CSV is only
+    written at generation time and is not refreshed by the nightly converter.
+  """
+    if df is None or df.empty:
+        return df
+
+    out = normalize_today_price_column_names(df.copy())
+    symbol_col = "Symbol, Signal, Signal Date/Price[$]"
+    if symbol_col not in out.columns:
+        return out
+
+    row_symbols: List[str] = []
+    sym_by_idx: Dict[int, str] = {}
+    for idx, row in out.iterrows():
+        symbol_data = row.get(symbol_col)
+        if pd.isna(symbol_data):
+            continue
+        parsed_symbol, _, _, _ = parse_symbol_signal_column(symbol_data)
+        if not parsed_symbol:
+            continue
+        ns = normalize_symbol(parsed_symbol)
+        sym_by_idx[idx] = ns
+        row_symbols.append(ns)
+
+    if not row_symbols:
+        return out
+
+    price_map = batch_latest_prices(row_symbols, Path(stock_data_dir) if stock_data_dir else None)
+
+    for idx, row in out.iterrows():
+        sym = sym_by_idx.get(idx)
+        if not sym:
+            continue
+        latest = price_map.get(sym)
+        if latest is None:
+            continue
+        latest_price, latest_date = latest
+        if latest_price is None or latest_date is None:
+            continue
+
+        today_cell, mtm_cell, td_cell = enrich_row_current_prices(row, latest_price, latest_date)
+        out.at[idx, TODAY_PRICE_COLUMN] = today_cell
+        if MTM_HOLDING_COLUMN in out.columns and mtm_cell is not None:
+            out.at[idx, MTM_HOLDING_COLUMN] = mtm_cell
+        if TRADING_DAYS_COLUMN in out.columns and td_cell is not None:
+            out.at[idx, TRADING_DAYS_COLUMN] = td_cell
+
+    return out
