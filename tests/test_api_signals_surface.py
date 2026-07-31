@@ -160,6 +160,41 @@ def test_shortlist_structured_records():
     assert "direction" in rec
 
 
+def test_shortlist_mtm_not_stale_zero_for_aged_signals():
+    """Guard: signals older than 2 days must not show 0% MTM with 0 holding days."""
+    import re
+    from datetime import date, datetime
+
+    r = client.get(f"{BASE}/signals/shortlist")
+    if r.status_code != 200:
+        pytest.skip("shortlist endpoint unavailable")
+    records = r.json().get("records", [])
+    if not records:
+        pytest.skip("no shortlist records")
+    today = date.today()
+    checked = 0
+    for rec in records:
+        compound = str(rec.get("Symbol, Signal, Signal Date/Price[$]", "") or rec.get("symbol", ""))
+        m = re.search(r"(\d{4}-\d{2}-\d{2})", compound)
+        if not m:
+            continue
+        sig_date = datetime.strptime(m.group(1), "%Y-%m-%d").date()
+        age_days = (today - sig_date).days
+        if age_days < 3:
+            continue
+        checked += 1
+        days_elapsed = rec.get("days_elapsed")
+        mtm_pct = rec.get("mtm_pct")
+        assert days_elapsed is not None and days_elapsed > 0, (
+            f"{rec.get('symbol')} signal age {age_days}d but days_elapsed={days_elapsed}"
+        )
+        assert not (mtm_pct == 0 and days_elapsed == 0), (
+            f"{rec.get('symbol')} stale MTM snapshot (0% / 0 days) for {age_days}d-old signal"
+        )
+    if checked == 0:
+        pytest.skip("no shortlist signals older than 2 days to validate")
+
+
 def test_strategy_health():
     r = client.get(f"{BASE}/signals/strategy-health")
     assert r.status_code == 200

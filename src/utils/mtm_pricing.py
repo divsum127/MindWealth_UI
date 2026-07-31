@@ -441,3 +441,51 @@ def refresh_dataframe_current_prices(
             out.at[idx, TRADING_DAYS_COLUMN] = td_cell
 
     return out
+
+
+def _default_trade_store_us_dir() -> Path:
+    return _project_root() / "trade_store" / "US"
+
+
+def refresh_claude_shortlist_trade_store_csv(
+    trade_store_us_dir: Optional[Union[str, Path]] = None,
+    stock_data_dir: Optional[Union[str, Path]] = None,
+) -> tuple[Optional[Path], int]:
+    """
+    Refresh Today / MTM / holding-days on the latest ``claude_signals_report.csv``.
+
+    Called from the nightly converter so the trade_store file stays current between
+    weekly Claude report generations (API also refreshes in-memory on each request).
+    """
+    from src.utils.atomic_io import read_csv_optional_locked, write_dataframe_csv_atomic_guarded
+    from src.utils.file_discovery import get_latest_csv_file
+
+    us_dir = Path(trade_store_us_dir) if trade_store_us_dir else _default_trade_store_us_dir()
+    latest = get_latest_csv_file("claude_signals_report.csv", str(us_dir))
+    if not latest:
+        return None, 0
+
+    path = Path(latest)
+    df = read_csv_optional_locked(path)
+    if df is None or df.empty:
+        return path, 0
+
+    before_mtm = (
+        df[MTM_HOLDING_COLUMN].astype(str).tolist()
+        if MTM_HOLDING_COLUMN in df.columns
+        else []
+    )
+    refreshed = refresh_dataframe_current_prices(df, stock_data_dir)
+    after_mtm = (
+        refreshed[MTM_HOLDING_COLUMN].astype(str).tolist()
+        if MTM_HOLDING_COLUMN in refreshed.columns
+        else []
+    )
+    rows_updated = sum(1 for a, b in zip(before_mtm, after_mtm) if a != b)
+
+    if rows_updated > 0 or not refreshed.equals(df):
+        if TODAY_PRICE_COLUMN_LEGACY in refreshed.columns:
+            refreshed = refreshed.drop(columns=[TODAY_PRICE_COLUMN_LEGACY])
+        write_dataframe_csv_atomic_guarded(refreshed, path)
+
+    return path, rows_updated
