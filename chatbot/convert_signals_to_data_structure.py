@@ -34,6 +34,7 @@ from src.utils.mtm_pricing import (
     normalize_symbol,
     normalize_today_price_column_names,
     parse_symbol_signal_column,
+    refresh_claude_shortlist_trade_store_csv,
 )
 
 # Import configuration
@@ -1214,6 +1215,18 @@ def main():
         data_base_dir=str(CHATBOT_DATA_DIR),
         stock_data_dir=str(STOCK_DATA_DIR)
     )
+
+    print("\n" + "-" * 80)
+    print("Refreshing CLAUDE SHORTLIST CSV (trade_store)")
+    print("-" * 80)
+    claude_csv_path, claude_rows = refresh_claude_shortlist_trade_store_csv(
+        trade_store_us_dir=trade_store_us,
+        stock_data_dir=str(STOCK_DATA_DIR),
+    )
+    if claude_csv_path:
+        print(f"✓ {claude_csv_path.name}: {claude_rows} row(s) MTM/today updated")
+    else:
+        print("⚠ No claude_signals_report.csv found in trade_store/US")
     
     print("\n" + "="*80)
     print("✓ Conversion Complete!")
@@ -1224,6 +1237,7 @@ def main():
     print("  - chatbot/data/portfolio_target_achieved.csv (target achievements)")
     print("  - chatbot/data/breadth.csv (market breadth)")
     print("  - chatbot/data/claude_report.txt (Claude signals analysis)")
+    print("  - trade_store/US/*_claude_signals_report.csv (shortlist MTM/today refresh)")
     print("\n✓ Today prices updated from live stock data")
     print()
 

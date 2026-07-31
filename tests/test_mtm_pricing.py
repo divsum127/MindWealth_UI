@@ -15,6 +15,7 @@ from src.utils.mtm_pricing import (
     get_latest_price_from_stock_data,
     parse_mtm_holding_cell,
     parse_symbol_signal_column,
+    refresh_claude_shortlist_trade_store_csv,
     refresh_dataframe_current_prices,
     resolve_signal_basis,
 )
@@ -115,6 +116,40 @@ class TestRefreshDataframeCurrentPrices(unittest.TestCase):
             self.assertNotEqual(mtm, "-0.0%")
             self.assertGreater(days or 0, 0)
             self.assertIn("2026-07-21", str(refreshed.iloc[0][TODAY_PRICE_COLUMN]))
+
+
+class TestRefreshClaudeShortlistTradeStore(unittest.TestCase):
+    def test_writes_refreshed_csv_to_trade_store(self):
+        with TemporaryDirectory() as td:
+            root = Path(td)
+            us_dir = root / "US"
+            stock_dir = root / "stock_data"
+            us_dir.mkdir()
+            stock_dir.mkdir()
+            pd.DataFrame({"Date": ["2026-07-21"], "Close": [54.0]}).to_csv(
+                stock_dir / "MCHI.csv", index=False
+            )
+            sym_col = "Symbol, Signal, Signal Date/Price[$]"
+            csv_path = us_dir / "2026-06-26_claude_signals_report.csv"
+            pd.DataFrame(
+                [
+                    {
+                        sym_col: "MCHI, Short, 2026-06-26 (Price: 50.48)",
+                        "Signal Open Price": "55.18",
+                        MTM_HOLDING_COLUMN: "-0.0%, 0 days",
+                        TODAY_PRICE_COLUMN: "2026-06-26 (Price: 50.48), 0.0% below",
+                        TRADING_DAYS_COLUMN: "0 days",
+                    }
+                ]
+            ).to_csv(csv_path, index=False)
+
+            out_path, rows = refresh_claude_shortlist_trade_store_csv(us_dir, stock_dir)
+            self.assertEqual(out_path, csv_path)
+            self.assertGreaterEqual(rows, 1)
+            saved = pd.read_csv(csv_path)
+            mtm, days = parse_mtm_holding_cell(saved.iloc[0][MTM_HOLDING_COLUMN])
+            self.assertGreater(days or 0, 0)
+            self.assertNotIn(mtm, ("0.0%", "-0.0%"))
 
 
 class TestParseSymbolSignal(unittest.TestCase):

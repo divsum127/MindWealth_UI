@@ -17,6 +17,7 @@ from ..components.quality_bubble_chart import render_quality_bubble_chart
 from ..utils.file_discovery import extract_date_from_filename
 from ..utils.surface_json_parser import parse_surface_json
 from ..utils.signal_quality import quality_rows_from_parsed_df
+from ..utils.mtm_pricing import refresh_dataframe_current_prices
 
 
 def find_latest_gpt_file(base_path, extension='txt'):
@@ -122,9 +123,9 @@ def create_text_file_page():
         return
     
     try:
-        # Read raw CSV first
-        raw_df = pd.read_csv(csv_path)
-        
+        # Read raw CSV; refresh MTM/today from stock_data (same as shortlist API)
+        raw_df = refresh_dataframe_current_prices(pd.read_csv(csv_path))
+
         if raw_df.empty:
             st.info("No signal data available in Claude signals CSV.")
             return
