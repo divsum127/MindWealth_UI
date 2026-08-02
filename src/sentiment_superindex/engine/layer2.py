@@ -1,4 +1,4 @@
-"""Layer 2 confirmation — 4 inputs, CONFIRMED / PARTIAL / UNCONFIRMED."""
+"""Layer 2 confirmation — legacy 4-input votes + 6-input gate checks for UI."""
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ import pandas as pd
 
 from src.sentiment_superindex.config import load_config
 from src.sentiment_superindex.data.pull_all import load_all_series, values_as_of
+from src.sentiment_superindex.engine.superindex import DEFAULT_LAYER_INPUTS
 
 
 def _pctile_in_history(value: float, history: pd.Series) -> float:
@@ -79,3 +80,55 @@ def evaluate_layer2(as_of: str) -> tuple[str, int, list[dict[str, Any]], float]:
         mult = float(mult_map.get("UNCONFIRMED", 0.8))
 
     return status, confirmed, vote_details, mult
+
+
+def evaluate_layer2_gates(
+    layer2_components: dict[str, Any],
+    *,
+    legacy_votes: list[dict[str, Any]] | None = None,
+) -> tuple[int, list[dict[str, Any]]]:
+    """Gate votes for every Layer 2 superindex input (6 gates shown in the UI).
+
+    ``hyg_lqd`` and ``vix_ratio`` reuse the legacy percentile/ratio vote logic from
+    ``evaluate_layer2()``. Breadth/vol inputs (``mcclellan``, ``nh_nl_ratio``,
+    ``skew``, ``pct_above_200dma``) confirm when |z-score norm| >= ``gate_z_min``.
+    """
+    cfg = load_config()
+    l2 = cfg.get("layer2", {})
+    gate_z_min = float(l2.get("gate_z_min", 0.5))
+    layer2_keys = cfg.get("ssi_score", {}).get("layers", {}).get(
+        "layer2", DEFAULT_LAYER_INPUTS["layer2"]
+    )
+    legacy_by_key = {str(v["input"]): v for v in (legacy_votes or []) if v.get("input")}
+
+    gate_votes: list[dict[str, Any]] = []
+    confirmed = 0
+
+    for key in layer2_keys:
+        if key in legacy_by_key:
+            vote = dict(legacy_by_key[key])
+            gate_votes.append(vote)
+            if vote.get("vote"):
+                confirmed += 1
+            continue
+
+        comp = layer2_components.get(key) or {}
+        raw = comp.get("raw")
+        norm = comp.get("norm")
+        active = norm is not None and abs(float(norm)) >= gate_z_min
+        if active:
+            confirmed += 1
+        signal = "neutral"
+        if active and norm is not None:
+            signal = "bullish" if float(norm) > 0 else "bearish"
+        gate_votes.append(
+            {
+                "input": key,
+                "raw": raw,
+                "norm": norm,
+                "vote": active,
+                "signal": signal,
+            }
+        )
+
+    return confirmed, gate_votes

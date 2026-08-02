@@ -646,6 +646,23 @@ def load_positioning() -> dict[str, Any]:
     return json.loads(SSI_POSITIONING_JSON.read_text(encoding="utf-8"))
 
 
+def _ensure_layer2_gate_votes(inputs: dict[str, Any]) -> dict[str, Any]:
+    """Backfill six-gate vote rows when positioning.json predates layer2_gate_votes."""
+    if not inputs or inputs.get("layer2_gate_votes"):
+        return inputs
+    layer2_components = inputs.get("layer2_components") or {}
+    if not layer2_components:
+        return inputs
+    from src.sentiment_superindex.engine.layer2 import evaluate_layer2_gates
+
+    legacy_votes = inputs.get("layer2_votes") or []
+    confirmed, gate_votes = evaluate_layer2_gates(layer2_components, legacy_votes=legacy_votes)
+    enriched = dict(inputs)
+    enriched["layer2_gate_votes"] = gate_votes
+    enriched["layer2_gate_confirmed_count"] = confirmed
+    return enriched
+
+
 def sentiment_layers() -> dict[str, Any]:
     positioning = load_positioning() if SSI_POSITIONING_JSON.exists() else {}
     signals = latest_sentiment_signals()
@@ -657,11 +674,14 @@ def sentiment_layers() -> dict[str, Any]:
         "ssi_multiplier": positioning.get("ssi_multiplier"),
         "layers": layers,
     }
+    layer_inputs = _ensure_layer2_gate_votes(positioning.get("inputs", {}) or {})
     return {
         "positioning": positioning,
         "composite": composite,
-        "layer_inputs": positioning.get("inputs", {}),
-        "layer2_votes": (positioning.get("inputs") or {}).get("layer2_votes", []),
+        "layer_inputs": layer_inputs,
+        "layer2_votes": layer_inputs.get("layer2_votes", []),
+        "layer2_gate_votes": layer_inputs.get("layer2_gate_votes", []),
+        "layer2_gate_confirmed_count": layer_inputs.get("layer2_gate_confirmed_count"),
         "signal_rows": signals.get("records", []),
         "signal_report_date": signals.get("report_date"),
     }

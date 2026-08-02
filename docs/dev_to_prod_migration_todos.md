@@ -23,6 +23,157 @@ Reference deploy skill: `.cursor/skills/prod-pull-and-details/SKILL.md`
 
 ---
 
+## 2026-08-02 — Layer 2 gate votes (McClellan confirm badge)
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`; `scripts/run_ssi_daily.py`; Nuxt rebuild + restart `mindwealth-ui-dev`.
+
+| Path | Notes |
+|------|-------|
+| `src/sentiment_superindex/engine/layer2.py` | `evaluate_layer2_gates()` — 6-input gate votes |
+| `src/sentiment_superindex/engine/positioning.py` | `inputs.layer2_gate_votes`, `layer2_gate_confirmed_count` |
+| `api/services/reports_service.py` | `_ensure_layer2_gate_votes()` backfill when positioning.json stale |
+| `macro_intelligence/SSI_CONFIG.yaml` | `layer2.gate_z_min: 0.5` |
+| `tests/test_ssi_layer2.py` | Gate vote regression (McClellan included) |
+| `tests/test_sentiment_layers_gate_votes.py` | API backfill regression |
+| `MindwealthUI_Vue/server/utils/sentiment-mapper.ts` | Inline ✓/✗ on all 6 Layer 2 rows; NH label → `NH Share (NH/(NH+NL))` |
+| `docs/mindwealth-api-docs/services/analytics/endpoints/get-sentiment-layers.md` | Field reference for gate votes |
+
+**Smoke:** `[PENDING]` `GET /analytics/sentiment/layers` → `layer2_gate_votes` length 6, `nh_nl_ratio` entry has `vote` + `signal`; Sentiment page Layer 2 shows NH Share row with ✓ or ✗.
+
+---
+
+## 2026-08-02 — AAII weekly cadence metadata (Sentiment Layer 1)
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`; deploy Vue `ui-dev` for label change.
+
+| Path | Notes |
+|------|-------|
+| `src/sentiment_superindex/engine/positioning.py` | New `inputs_meta.layer1` (`cadence`, `as_of`, `schedule_et`, `stale_days`, AAII `source`) |
+| `tests/test_ssi_display_rounding.py` | Regression for AAII weekly `as_of` |
+| `MindwealthUI_Vue/server/utils/sentiment-mapper.ts` | Layer 1 sub-label: `Weekly (Thu) · as of YYYY-MM-DD` instead of `Live` |
+
+**`[PROD-ACTION]`** After deploy: `python scripts/run_ssi_daily.py` to refresh `positioning.json` with `inputs_meta`.
+
+**Smoke test `[PENDING]`:** `GET /api/v1/analytics/sentiment/layers` → `positioning.inputs_meta.layer1.aaii_spread.cadence == "weekly"`, `as_of` is latest Thursday; Sentiment page AAII row sub-label shows `Weekly`, not `Live`.
+
+---
+
+## 2026-08-02 — Move % Above 200DMA to SSI Layer 2
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`. SSI layer grouping fix; rerun SSI daily job after deploy so `positioning.json` reflects new layer components.
+
+| Path | Notes |
+|------|-------|
+| `macro_intelligence/SSI_CONFIG.yaml` | `pct_above_200dma` moved layer1 → layer2 |
+| `src/sentiment_superindex/engine/superindex.py` | `DEFAULT_LAYER_INPUTS` layer assignment |
+| `src/sentiment_superindex/engine/positioning.py` | Display inputs bucket `inputs.layer2` |
+| `macro_intelligence/DATA_SOURCES.yaml` | `PCT_ABOVE_200DMA.system` → `ssi_layer2` |
+| `docs/mindwealth-api-docs/services/analytics/endpoints/get-sentiment-layers.md` | Example payload |
+| `tests/test_ssi_superindex.py` | Layer assignment regression |
+| `tests/test_ssi_display_rounding.py` | Display bucket regression |
+
+**`[PROD-ACTION]`** After deploy: `python scripts/run_ssi_daily.py` (or wait for cron) to refresh `macro_intelligence/output/positioning.json`.
+
+**Smoke test `[PENDING]`:** `GET /api/v1/analytics/sentiment/layers` — `pct_above_200dma` present under `positioning.inputs.layer2`, absent from `positioning.inputs.layer1`; `positioning.layers.layer2.components.pct_above_200dma` populated.
+
+---
+
+## 2026-07-31 — Fix: chatbot pulls in wrong web "resistance" levels for signal queries
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`. Chatbot/prompt-only; no new `.env` keys, no systemd or API route changes.
+
+| Path | Notes |
+|------|-------|
+| `chatbot/agents/llm_router.py` | New `_INTERNAL_LEVEL_QUERY_RE` / `_WEB_ONLY_SIGNAL_RE` regexes + `apply_internal_level_override()` pure function; wired into `LLMRouter.route()` to force `needs_web_search=False` for entry/exit/target/stop/resistance/pivot/F-Stack queries unless genuine web-only wording (news/earnings/macro) is also present |
+| `prompts/engine.py` | `ROUTER_SYSTEM` rule 8 added (internal-only for level/resistance/take-profit/stop-loss questions); new `SYNTHESIS_INSTRUCTIONS_LEVELS_GUARD` block, unconditionally wired into `build_synthesis_instructions()` |
+| `chatbot/chatbot_engine.py` | `_TARGETS_STOP_QUERY_RE` widened (adds `resistance`, `support level`, `entry level`, `exit level`, `recent entry`, `recent exit`, `pivot`) |
+| `chatbot/smart_data_fetcher.py` | Duplicate `_TARGETS_STOP_QUERY_RE` widened identically (kept in sync with the copy above) |
+| `tests/test_llm_router_guardrails.py` | **new** — 13 tests (6 with subtests) covering the override, non-override cases, and both widened regex copies |
+
+**`[DEV-ONLY]` / config note:** none — pure logic/prompt change, no dev-only shortcuts or hardcoded `:8507`-style URLs introduced.
+
+**Prod runtime action needed:** none beyond the standard git merge + `prod-pull-and-restart.sh` (no new secrets, no DB/CSV migration).
+
+**Smoke test `[DONE 2026-07-31, dev only]`:** Replayed Rohit's exact query "recent exit levels and entry levels for Google and NVDA" directly against `ChatbotEngine.smart_followup_query` on dev (real OpenAI + Tavily clients). Router log showed `conv=False internal=True web=False`, `route=INTERNAL`; response metadata `web_search_used=false`, `web_sources=[]` — no web search executed, so no web "Resistance Levels Context" section can appear. Fetched entry columns included `Targets (...)` and `Stop Loss (...)`. **`[PENDING]` re-run same smoke test on prod after this merge + restart** to confirm identical routing behavior there.
+
+**Known unrelated blocker found during this smoke test (separate from this fix, also needs prod verification before/at cutover):** dev's `.env` `ANTHROPIC_API_KEY` / `CLAUDE_API_KEY` currently point at an Anthropic account with insufficient credit (`Your credit balance is too low to access the Anthropic API`), which blocks all chatbot final-answer generation in dev right now. Confirm prod's Anthropic key/account has available credit before relying on prod smoke-test output; if prod shares the same billing account this will also block prod chatbot answers until a human tops up/rotates the key.
+
+---
+
+## 2026-07-30 — Chatbot Signal Data Source labels on entry rows
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`. Chatbot-only; no API route or systemd changes.
+
+| Path | Notes |
+|------|-------|
+| `chatbot/smart_data_fetcher.py` | `Signal Data Source` column on entry rows; `build_signal_data_source_legend()` |
+| `chatbot/chatbot_engine.py` | Legend injected into smart_query prompt |
+| `chatbot/agents/synthesis_agent.py` | Legend injected into synthesis prompt |
+| `tests/test_smart_data_fetcher_dates.py` | Updated tests |
+
+**Smoke test `[PENDING]`:** Ask chatbot "outstanding signals for NVDA" — JSON context rows should include `Signal Data Source` field; legend block should state only `outstanding` = UI page.
+
+---
+
+## 2026-07-29 — Macro Regime System Fix-to-Spec Plan (HY OAS recalibration, CNN F&G evaluation, regime-history bridge)
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`. All-code/docs/data-recalibration change; no new runtime secrets or `.env` keys required. Safe to bundle with other pending `chatbot-dev` entries below.
+
+**Context:** full plan implementation — see job status 2026-07-29 entry #7 and job status details same date for the complete breakdown. Three in-scope items: HY OAS proxy recalibration, HY-consumer proxy-tier audit, and a new historical regime-history API bridge for Ahil's backtest engine.
+
+| Path | Notes |
+|------|-------|
+| `scripts/recalibrate_hy_oas_proxy.py` | **new** — one-off/rerunnable script that recalibrated all `PROXY`-tier `HY` rows in `runic.db` (`daily_readings` table) to the new VIX-amplified Model v2. **Already run against dev's `runic.db`** — this is a data-layer change, not a git-file merge in the usual sense. Prod's `runic.db` (or equivalent nightly-refreshed DB) needs this script run once against it too, or needs to inherit the recalibrated rows via whatever the normal `runic.db` sync/copy mechanism is — confirm with whoever owns the prod nightly-data refresh path before assuming a plain `git merge` covers this (the DB itself is very likely **not** tracked in git). |
+| `src/macro_intelligence/output/regime_feed_export.py` | **new** — maintained regime feed module backing the new API endpoint |
+| `api/routers/macro.py` | new `GET /macro/regime/history` route |
+| `api/services/portfolio_service.py` | `_compute_ceiling` now returns `hy_tier`/`hy_is_proxy`; `hy_note` gets a `[PROXY: ...]` suffix when applicable — **additive fields only, no existing response field changed shape**, safe non-breaking merge |
+| `src/macro_intelligence/engine/combo_detector.py` | docstring-only changes (documents 2 known HY-PROXY blind spots), **zero logic change** — trivially safe to merge |
+| `src/portfolio_nav/four_book_engine.py` | 4 new standalone functions (`load_vix_mult_series`, `load_spx_trend_mult_series`, `load_hy_mult_series`, `load_full_ceiling_chain_series`) + docstring update; **not wired into any existing endpoint**, so zero behavior change to anything currently live |
+| `tests/test_api_macro.py` | 2 new tests (`test_regime_history`, `test_regime_history_empty_range`) |
+| `docs/ssi_validation/*.md` (4 new files), `docs/plans/*.md` (3 new files), `docs/MACRO_INTELLIGENCE_MASTER.md`, `docs/ssi_validation/data_gap_report_2026-06-06.md` | docs only |
+| `docs/mindwealth-api-docs/services/macro/endpoints/get-regime-history.md`, `services/macro/README.md`, `changelog.md` (`v1.10.0`) | API docs — also mirrored to the separate `mindwealth-api-docs` GitHub repo per that repo's own publish step, not yet pushed there (only committed/updated in this working copy so far) |
+
+**`[DEV-ONLY]` / config note:** none — no dev-only shortcuts, feature flags, or hardcoded `:8507`-style URLs introduced by this change.
+
+**Two items intentionally NOT deployed anywhere yet (awaiting Rohit sign-off, tracked separately, not a deploy blocker for the rest):**
+- `docs/plans/regime_source_of_truth_decision_2026-07-29.md` — `macro_regime_log_v2` is not yet designated the production regime source; new code ships tagged `regime_source="macro_regime_log_v2"` so this is safe to deploy either way.
+- `docs/plans/multiplier_signoff_request_2026-07-29.md` — dimension-multiplier table ships tagged `multiplier_version="v1_illustrative_unsigned"`; no production code path consumes it yet (only the new history endpoint and the pre-existing Test 5 script), so this is also safe to deploy pending sign-off.
+
+**Smoke tests** `[PENDING]`:
+- `GET /api/v1/macro/regime/history?start=2020-01-01&end=2020-01-10` on prod returns 200 with 5-10 rows, each tagged `regime_source`/`multiplier_version`.
+- `GET /api/v1/portfolio/nav` (or any endpoint touching `_compute_ceiling`) on prod still returns 200 with the existing response shape plus the new `hy_tier`/`hy_is_proxy` keys — confirm nothing downstream (Nuxt BFF) chokes on the two new keys.
+- Confirm prod's `runic.db` `daily_readings` HY rows reflect the Model v2 recalibration (spot-check a known PROXY-era date, e.g. `2022-06-13`, for a wider/more-stressed raw value than the old flat-linear proxy) — **only after** the data-layer question above (script rerun vs DB sync) is resolved with the DB owner.
+
+---
+
+## 2026-07-31 — New Signals SIGNAL DATE timezone display fix (Nuxt BFF)
+
+`[PENDING]` — rebuild + restart Nuxt UI on host (`MindwealthUI_Vue` separate repo)
+
+| Path | Notes |
+|------|--------|
+| `MindwealthUI_Vue/utils/signals.ts` | `formatSignalDate()` — parse YYYY-MM-DD as calendar date, not UTC midnight |
+
+**Smoke tests** `[PENDING]`:
+- New Signals: header report date and SIGNAL DATE column show same trading day (e.g. both Jul 28 in US Eastern)
+- Outstanding / All Signal tables show correct signal dates
+
+---
+
+## 2026-07-29 — Conviction page timestamp alignment (Nuxt BFF)
+
+`[PENDING]` — rebuild + restart Nuxt UI on host (`MindwealthUI_Vue` separate repo)
+
+| Path | Notes |
+|------|--------|
+| `MindwealthUI_Vue/server/utils/mindwealth-data.ts` | `loadConviction()` `asOf` now uses `loadMeta().data_updated_at.date` (matches top bar) instead of `max(last_daily_update, overlay date)` |
+
+**Smoke tests** `[PENDING]`:
+- On `/conviction`, top-bar date and regime-strip `SOURCE … as of YYYY-MM-DD` refer to the same trading day
+- After conviction daily cron runs mid-day, strip date does not jump ahead of header until trade-store batch updates
+
+---
+
 ## 2026-07-27 — Sizer `cross_function_exit`/`asset_class`/`status` fields + `_parse_signal_meta` interval fix (HANDOFF §7 / DATA_ISSUES §6, §11 gaps)
 
 `[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`. Small, self-contained diff (2 service files + 2 test files) — does **not** need to be bundled with anything else, but note it lands on top of the still-`[PENDING]` 2026-07-22/24 entries below (all uncommitted on the same `chatbot-dev` tree as of this entry).
@@ -154,12 +305,118 @@ User explicitly asked for a free 20-30y solution after learning FMP's free tier 
 # (~0.5-2y) and the FMP-only 5y cap.
 ```
 
-**Universe rollout `[PENDING]` — NOT blocked on external provisioning (unlike the FMP-only plan above); just hasn't been triggered yet:**
-- Run `full_recalculation` across all ~121 US tickers. Each ticker makes at most 2-3 SEC EDGAR calls (well within SEC's ~10 req/sec fair-use guidance), plus an FMP call only for the rare ticker SEC can't cover at all (still gated on `FMP_API_KEY`, which remains unprovisioned per the entry above — now lower priority since SEC covers most of the universe).
-- Confirm `pe_history_meta.source == "sec_edgar"` lands across most of the US universe and `years_available` is up broadly; spot-check PYPL's `valuation_tax` stays neutral/low (the original bug this whole investigation started from).
+**Universe rollout — dev `[DONE]` 2026-07-29, prod `[PENDING — requires human/ops action, not agent-executable]`:**
+- **Dev**: ran `python scripts/update_conviction_fundamentals.py --mode full --include-existing-records --pe-history-report` — refreshed all 193 dev `conviction_store` records, zero fetch errors. 32 equities now carry ≥10y real P/E history (MSFT/ADBE/GS/JPM/MCD/NKE/ORCL/PG/UPS ~17y, AAPL 190pts, NVDA 178pts, PYPL 133pts). PYPL's original bug confirmed fixed on dev: `pe_hist_percentile` −3.0→0.0, `valuation_tax` −4.0→−1.0. One known remaining edge case: `SONY` (bare ticker misclassified as US by `is_us_ticker()`, but is a Japanese 20-F filer with no SEC XBRL EPS data — falls through to the old thin yfinance path, still shows the pre-fix bug pattern). See job-status-details 2026-07-29 entry for full root-cause.
+- **Prod**: **NOT run, and cannot be run by an agent** — `conviction_store/` writes are explicitly forbidden runtime-data edits under the prod-clone repo rule (same category as `.env`/`secrets.toml`), regardless of how routine the action is. Prod is still on stale data (171/193 records predate the fix as of the 2026-07-29 status check). **Runbook for whoever runs it (human/ops, directly on the prod host):**
+  ```bash
+  cd /home/ubuntu/uiv2/prod/MindWealth_UI
+  python scripts/update_conviction_fundamentals.py --mode full --include-existing-records --pe-history-report
+  ```
+  Sanity-check afterward: `PYPL.json`'s `pe_percentile_20y` should move off `100.0` and `valuation_tax` off `-4.0`, same shift verified on dev. Expect this to take several minutes with no console output until the batch completes (normal — network-bound on yfinance + SEC EDGAR calls per ticker, confirmed via live socket inspection during the dev run, not a hang).
 - Non-US manual entry track unchanged/still blocked on a business-prioritized ~15-20 ticker list (see FMP entry above) — SEC EDGAR is US-GAAP only, doesn't help non-US tickers.
 
 **Open caveat carried forward:** even with SEC EDGAR, most tickers will still show `insufficient_20y=True` under `PE_HISTORY_TARGET_YEARS=20` (real ceiling ~15-19y for large-caps that existed pre-2009, less for newer listings/spinoffs) — a genuine free 20-30y source does not exist for most companies (XBRL structured data simply didn't exist before ~2009). Whether to lower the threshold to better reflect what's actually achievable for free remains the same open product decision carried over from the previous two entries.
+
+**New follow-up from the 2026-07-29 rollout:** `SONY`-style bare-ticker foreign filers silently fall through `is_us_ticker()`'s suffix heuristic and keep the pre-fix bug — needs either an explicit exception list in `is_us_ticker()` or manual-entry routing via `scripts/set_manual_pe_history.py`. Only 1 instance found in the current 193-ticker universe; not fixed in this pass.
+
+---
+
+## 2026-07-29 — SEC pre-2009 legacy-filing PE-history extension (EX-27 + Selected Financial Data; extends the SEC EDGAR entry directly above, same day)
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`. **Bundle with the SEC EDGAR pivot entry directly above and the still-pending 2026-07-22 "Fundamental Agent Update"** — same `fundamentals_enriched.py`/`engine.py`/`scoring.py` insufficient-history chain, this is an additive extension to `pe_history_sec.py`'s fetch path, not a separate system.
+
+User was told even the best-covered dev tickers only reached ~17y from XBRL alone (XBRL only mandated from ~2009) and explicitly asked to research free alternatives for real 20-30y depth. Live-tested Alpha Vantage (30y depth, but free-tier ToS explicitly excludes investment-advisor/money-manager research use — rejected on legal grounds, not technical), Finnhub (paid-only for historical fundamentals), stockanalysis.com (5y free / 10y paid — worse than SEC already). User chose to invest in a pre-2009 EDGAR full-text extractor over the other 3 options (accept ceiling / pay vendor / Alpha Vantage commercial license).
+
+| Path | Notes |
+|------|--------|
+| `src/conviction_engine/pe_history_sec_legacy.py` | **new** — `parse_ex27_annual_eps()` (1994-2001 tag-delimited Financial Data Schedule exhibit), `parse_selected_financial_data()` (Item 6 5-year comparative table, bridges 2001→XBRL start), `_list_all_10k_filings()` (paginated `submissions/CIK{cik}.json`), `fetch_legacy_annual_eps()` (orchestration, 365-day disk cache, 12-filing/ticker cap) |
+| `src/conviction_engine/pe_history_core.py` | refactor: `compute_pe_history()` split into `_rolling_ttm_from_quarterly()` + `_pe_from_ttm_series()` (zero behavior change, existing tests pass unmodified); **new** `compute_pe_history_with_legacy_annual()` merges pre-2009 annual points (already TTM by construction) with the modern rolling-TTM series, legacy points restricted to strictly before modern coverage starts; **`PE_HISTORY_MAX_STORED_POINTS` raised 240→360** — needed so the deeper real coverage this extension produces isn't silently truncated back to a 20y stored/ranked window |
+| `src/conviction_engine/pe_history_sec.py` | `_try_legacy_extension()` — called only when the XBRL-only bundle is still `insufficient_20y`; broad `try/except` so a legacy-parsing failure can never regress a ticker below its already-working XBRL-only result; tags `pe_history_meta.source = "sec_edgar+legacy"` when it contributes |
+| `tests/test_pe_history_sec_legacy.py` | **new** — 32 tests (EX-27 parsing incl. zero-diluted fallback + bank-holding-co. variant, Selected Financial Data table parsing incl. accounting-change-line skip, SGML extraction, filing pagination, full orchestration — all network mocked) |
+| `tests/test_pe_history_sec.py` | `TestLegacyExtension` (+4 tests) — gating logic in isolation |
+| `tests/test_conviction_engine.py` | `TestPeHistoryWithLegacyAnnual` (+4 tests) — core merge function, incl. empty-series tz edge case and overlap dedup |
+
+**`[DEV-ONLY]` / runtime — not in git:** no new env vars. New cache files `conviction_store/pe_history_cache/{TICKER}_sec_legacy.json` alongside the existing `{TICKER}_sec.json` (XBRL) cache files, created lazily, 365-day TTL (legacy filings never change). Not tracked in git; safe to delete individually to force a re-fetch for one ticker (relevant if a stale/empty cache is ever suspected — hit exactly this during development for MSFT, see job-status-details for the debugging story).
+
+**`[PROD-ACTION]` at cutover:** none beyond the code merge — no new env vars, no systemd/service changes.
+
+**Regression `[DONE]` 2026-07-29:**
+```bash
+.venv/bin/python3 -m pytest tests/test_conviction_engine.py tests/test_api_conviction.py tests/test_pe_history_fmp.py tests/test_pe_history_sec.py tests/test_pe_history_sec_legacy.py tests/test_set_manual_pe_history.py -q
+.venv/bin/python3 -m pytest tests/ -q
+# 627 passed, 2 skipped, 1 failed (pre-existing/unrelated: test_d6_smoke.py's
+# git-conflict-marker SyntaxError in /home/ubuntu/MindWealth/testing.py, a different repo,
+# first documented 2026-07-24/27)
+```
+
+**Live smoke test `[DONE]` 2026-07-29 (manual, real network against real SEC filings):**
+```bash
+# fetch_pe_history_sec() with the legacy extension active, real data.sec.gov + yfinance:
+#   MSFT 18.08y -> 32.08y   JPM 17.06y -> 31.57y   GS 17.07y -> 26.67y (correctly stops
+#   at GS's 1999 IPO)   PG 17.06y -> 32.08y   NKE 17.14y -> 31.16y
+# PYPL (2015 spinoff, no pre-2009 filings exist): unchanged, no legacy contribution --
+#   expected, not an error.
+# Spot-checked MSFT FY1997 EX-27 EPS-DILUTED=2.63 against Microsoft's own contemporaneous
+# IR figures -- exact match. Apparent EPS discontinuity across the 1996 2-for-1 split
+# boundary confirmed to be the known split adjustment, not a parsing bug.
+```
+
+**Universe rollout — dev `[DONE]` 2026-07-29 (corrected after catching a stale-cache bug on the first pass), prod `[PENDING — requires human/ops action, not agent-executable]`:**
+- **Dev**: ran `update_conviction_fundamentals.py --mode full --include-existing-records --pe-history-report`. **First pass reported only 5 extended tickers** (MSFT/JPM/GS/PG/NKE) — investigated because that suspiciously matched exactly the 5 tickers manually re-fetched during live validation minutes earlier, not a fresh universe-wide result. **Root cause**: `fetch_pe_history_sec()`'s on-disk XBRL cache (`{TICKER}_sec.json`, 80-day TTL) returns early on a cache hit, *before* reaching the new `insufficient_20y` → legacy-extension gate — 42 tickers still had valid unexpired caches from the 2026-07-24 rollout above, so the brand-new legacy code silently never ran for them (no error, identical `"status": "updated"` either way). **Fix**: `rm -f conviction_store/pe_history_cache/*_sec.json` (all 42; left `*_sec_legacy.json` alone, those cache immutable historical filing content) then reran the same command. **Corrected result**: 193/193 updated, 0 errors, **18 tickers** now `sec_edgar+legacy` — AAPL 31.83y, ADBE 31.67y, BAC 31.57y, CSCO 31.0y, CVS 31.57y, GS 26.67y, JPM 31.57y, MAR 25.58y, MCD 31.57y, MSFT 32.08y, MU 31.91y, NKE 31.16y, NVDA 27.49y, PFE 31.57y, PG 32.08y, SBUX 29.83y, UPS 26.58y, WMT 31.49y. `sufficient_20y_count` 0→18 (13.5%), `insufficient_20y_count` 133→115 (86.5%), "15-20y" bucket 22→9. `pe_percentile_20y` now populated for all 18 for the first time (e.g. AAPL 100.0, WMT 97.22, NVDA 95.39). PYPL unaffected as expected (`source=yfinance`, `0.57y`, `valuation_tax=-1.0` — already-fixed neutral value, unrelated SEC-empty-facts quirk documented above).
+- **MANDATORY pre-step for prod, learned from the dev bug above**: before running prod's `full_recalculation`, run `rm -f conviction_store/pe_history_cache/*_sec.json` first if prod's `pe_history_cache/` directory already has any XBRL-era cache files in it (e.g. from a previous partial/earlier rollout) — otherwise prod will silently repeat the exact same false-negative first pass dev just hit. If prod has never run any PE-history rollout before, this is a no-op (empty/nonexistent dir) and can be skipped.
+- **Prod**: **NOT run, and cannot be run by an agent** — same `conviction_store/` runtime-write restriction as the entry above. Full runbook:
+  ```bash
+  cd /home/ubuntu/uiv2/prod/MindWealth_UI
+  rm -f conviction_store/pe_history_cache/*_sec.json   # see mandatory pre-step above
+  python scripts/update_conviction_fundamentals.py --mode full --include-existing-records --pe-history-report
+  ```
+  Should run **after** this code is merged to `chatbot-prod`, in the same pass as (or immediately after) the still-pending XBRL-only rollout from the entry above — no need for prod to do two separate `full_recalculation` passes if both merges land together. Sanity-check: `sufficient_20y_count` in the `--pe-history-report` output should land near dev's 18/193 (13.5%), not 0 or 5 (the two "looks-plausible-but-wrong" numbers dev hit before the fix).
+
+**Open caveat carried forward, refined:** the pre-2009 legacy extension helps specifically large-cap tickers that (a) existed and filed with the SEC before 2001-06-15 (EX-27 era) or before ~2009 (Selected Financial Data bridge), and (b) are already close to the 20y bar from XBRL alone — confirmed on dev at 18/193 tickers (13.5%), roughly in line with the ~20-30 candidate estimate from the previous entry. It does **not** help newer listings/spinoffs (PYPL, and most of the universe) — those remain capped at whatever their own IPO/spinoff date + XBRL start allows. A handful of long-tenured filers that intuitively should have qualified (AMD 15.59y, ORCL 17.16y, AVGO 8.74y) did not extend on this pass — not investigated further, flagged as a genuine open item (possibly the 12-filing/ticker cap in `fetch_legacy_annual_eps()`, possibly real gaps in their indexed filing history) rather than a repeat of the cache bug above (their caches were fresh-fetched in the corrected pass, same as the 18 that did extend). The "lower the 20y threshold" product decision from the previous two entries is now less urgent for the 18 tickers this extension reaches, but remains fully open for everyone else (86.5% of the dev universe is still `insufficient_20y`).
+
+**New hard operational rule, added 2026-07-29 (applies to all future PE-history code changes, not just this one):** on-disk PE-history caches (`conviction_store/pe_history_cache/*_sec.json` and any future equivalents) are keyed only on data age (80-day TTL), not code version. Any change to fetch/computation *logic* must be paired with purging the relevant cache files before the next `full_recalculation`, or stale caches will silently serve results computed under the old logic with zero visible signal that anything is wrong (identical `"status": "updated"` in the output either way) — exactly what happened on this rollout's first pass.
+
+---
+
+## 2026-07-29 — Canada MJDS/IFRS PE-history extension for dual-listed TSX names (extends the two SEC EDGAR entries directly above, same day)
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`. **Bundle with the two SEC EDGAR entries directly above** — same `pe_history_sec.py`/`fundamentals_enriched.py` chain, purely additive (a new allowlist-gated code path, zero change to existing US-ticker behavior). No new env vars, no new runtime secrets.
+
+User asked for a solution to close the PE-history gap for the ~86.5%-still-insufficient dev universe, most of which is non-US. Live research found 6 major TSX names (TD, RY, BNS, CNQ, TRI, BN) are dual-listed on a US exchange and file `40-F`/`6-K` with the SEC under the MJDS regime, with real `ifrs-full`-taxonomy EPS data SEC's API already serves — just never previously checked by this codebase (which only looked at `us-gaap` + `10-K`/`10-Q`).
+
+| Path | Notes |
+|------|--------|
+| `src/conviction_engine/pe_history_sec.py` | **new**: `FOREIGN_PRIVATE_ISSUER_ALIASES` (manually-verified `{"TD.TO": {"sec_ticker": "TD", "currency": "CAD"}, ...}` allowlist — 4 entries: TD.TO/RY.TO/BNS.TO/CNQ.TO), `_fetch_foreign_private_issuer()`, `_build_annual_only_eps_series()` (for CNQ, which has zero quarter-duration facts), currency-aware `_fetch_concept_facts(..., taxonomy=, currency=)`, `_FPI_VALID_FORMS = {"40-F","40-F/A","6-K"}`, `_FPI_EPS_TAXONOMY_CONCEPTS` (ifrs-full diluted/basic). Checked *before* the `is_us_ticker()` gate in `fetch_pe_history_sec()` since `.TO` tickers otherwise fail that check immediately. |
+| `src/conviction_engine/pe_history_core.py` | Minor: filter empty series before `pd.concat` in `compute_pe_history_with_legacy_annual()` (fixes a `FutureWarning` surfaced during this work's live validation; zero behavior change) |
+| `src/conviction_engine/fundamentals_enriched.py` | Call-site gate: `if pe_bundle["meta"].get("insufficient_20y") and ticker and (is_us_ticker(ticker) or is_fpi_alias):` — without this, the alias list in `pe_history_sec.py` would exist but never be reached from the real pipeline (only from tests calling `fetch_pe_history_sec()` directly) |
+| `tests/test_pe_history_sec.py` | **+11 tests**: `TestForeignPrivateIssuerAlias` (8 — quarterly path, annual-only path, diluted→basic fallback, currency-mismatch-returns-None, cache round-trip, non-aliased-`.TO`-ticker regression guard), `TestBuildAnnualOnlyEpsSeries` (3) |
+
+**Deliberately NOT a blanket "any bare foreign ticker" rule** — SEC's ticker→CIK map has real collisions (bare "NA"/"SJ" resolve to unrelated OTC shell companies, not National Bank of Canada/Stella-Jones); every allowlist entry was individually name-verified via a live `companyconcept` fetch before being added. **TRI.TO/BN.TO deliberately excluded** despite having real SEC IFRS data — both report EPS in USD only but trade in CAD on the TSX, and this codebase has no FX-conversion capability yet (see PE-05 in job-status TODO for the follow-up if pursued).
+
+**Regression `[DONE]` 2026-07-29:**
+```bash
+.venv/bin/python3 -m pytest tests/test_pe_history_sec.py -q   # 34 passed
+.venv/bin/python3 -m pytest tests/ -q
+# 637 passed, 2 skipped, 1 failed (pre-existing/unrelated: test_d6_smoke.py,
+# passes standalone, zero references to pe_history/conviction_engine in that file)
+```
+
+**Live smoke test `[DONE]` 2026-07-29 (manual, real network against real SEC + yfinance):**
+```bash
+# fetch_pe_history_sec() with the Canada MJDS alias active:
+#   TD.TO/RY.TO/BNS.TO: 0.48-0.83y -> 7.74y each (source=sec_edgar_40f)
+#   CNQ.TO: 0.57y -> 8.57y (source=sec_edgar_40f, annual-only path)
+```
+
+**Universe rollout — dev `[DONE]` 2026-07-29, prod `[PENDING — requires human/ops action, not agent-executable]`:**
+- **Dev**: ran `update_conviction_fundamentals.py --mode full --tickers "TD.TO,RY.TO,BNS.TO,CNQ.TO" --include-existing-records --pe-history-report`. **Gotcha**: `--include-existing-records` reprocesses the *entire* store regardless of `--tickers` (confirmed by reading `discover_universe()`'s call site) — this run touched all 193 records, not just the 4 named. Harmless here (verified via before/after distribution-bucket counts matching the expected ±4 shift exactly, spot-checked AAPL/MSFT/PYPL unchanged) but worth knowing for future targeted reruns — omit `--include-existing-records` if you want to touch *only* the named tickers. On-disk confirmed: TD.TO/RY.TO/BNS.TO/CNQ.TO all now `source=sec_edgar_40f` with the expected years.
+- **Prod**: **NOT run, cannot be run by an agent** — same restriction as the entries above. Bundle into the same prod `full_recalculation` pass as PE-01b (no need for a separate rollout — this is additive to the same script/command).
+
+**Not pursued this pass (see job-status TODO PE-05/PE-06/PE-07 for the decision points):**
+- TRI.TO/BN.TO (Canada, FX conversion needed)
+- SEDAR+ for the other ~24 Canada-only names — **researched and ruled out**: SEDAR+ is PDF-only, no XBRL, no official API; would need a bespoke per-issuer PDF parser with no structured schedule to lean on, worse effort/value than the SEC EX-27 extractor. Manual entry (PE-03) is the realistic path for these.
+- India NSE/BSE — **researched, decision deferred to user**: NSE's real XBRL data sits behind Akamai bot-protection needing manual cookie refresh (same risk class that ruled out Macrotrends) and only covers 2024+ even if bypassed; BSE's structured data is paid-only via Deutsche Börse.
+- New Zealand NZX — **researched in an earlier pass, decision deferred to user**: NZXplorer has real structured data but its free-tier ToS bars the bulk/production use this integration would need; paid tier (~$29/mo) or manual entry (PE-03) are the options.
 
 ---
 
@@ -456,17 +713,23 @@ curl -s -o /dev/null -w "%{http_code}\n" -H "X-API-Key: $API_KEY" "http://127.0.
 
 ## 2026-07-22 — Claude shortlist live MTM refresh
 
-`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`
+`[DONE]` — deployed 2026-07-31 via local merge + prod fetch (remote push blocked; see deploy note)
 
 | Path | Notes |
 |------|--------|
-| `src/utils/mtm_pricing.py` | `refresh_dataframe_current_prices()` |
+| `src/utils/mtm_pricing.py` | `refresh_dataframe_current_prices()`, `refresh_claude_shortlist_trade_store_csv()` |
 | `api/services/reports_service.py` | `get_shortlist_report()` calls refresh before enrich |
-| `tests/test_mtm_pricing.py` | Unit test for stale→live MTM |
+| `chatbot/convert_signals_to_data_structure.py` | Nightly refresh of latest `claude_signals_report.csv` |
+| `src/pages/text_file_page.py` | Streamlit Claude page refreshes MTM on load |
+| `tests/test_mtm_pricing.py` | Unit tests for in-memory + trade_store refresh |
+| `tests/test_api_signals_surface.py` | Guard: aged shortlist signals must not show 0d / 0% MTM |
 
-**Smoke tests** `[PENDING]`:
+**Smoke tests** `[DONE]` (API, 2026-07-22):
 - `GET /api/v1/signals/shortlist` — MCHI/TLT/BRK-B `mtm_pct` non-zero; `days_elapsed` > 0
-- Nuxt Claude Shortlisted cards show live MTM (not `0.0%` from report date)
+
+**Smoke tests** `[PENDING]` (after next prod deploy):
+- Nightly `convert_signals_to_data_structure.py` updates `*_claude_signals_report.csv` on disk
+- Streamlit Claude page shows live MTM
 
 ---
 

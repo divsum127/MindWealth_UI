@@ -13,8 +13,8 @@ from src.sentiment_superindex.data.pull_all import load_all_series
 DEFAULT_LAYER_WEIGHTS = {"layer1": 0.40, "layer2": 0.35, "layer3": 0.25}
 
 DEFAULT_LAYER_INPUTS = {
-    "layer1": ["aaii_spread", "naaim_exposure", "cnn_fg", "pct_above_200dma"],
-    "layer2": ["mcclellan", "nh_nl_ratio", "hyg_lqd", "skew", "vix_ratio"],
+    "layer1": ["aaii_spread", "naaim_exposure", "cnn_fg"],
+    "layer2": ["mcclellan", "nh_nl_ratio", "hyg_lqd", "skew", "vix_ratio", "pct_above_200dma"],
     "layer3": ["dbmf_beta", "cftc_fm_net", "cftc_rm_net", "gross_net"],
 }
 
