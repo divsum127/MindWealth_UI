@@ -21,6 +21,48 @@ Reference deploy skill: `.cursor/skills/prod-pull-and-details/SKILL.md`
 | `[PROD-ACTION]` | Manual step on server after git merge (secrets, systemd, bootstrap) |
 | `[DONE]` | Completed on prod (date in notes) |
 
+## 2026-08-02 — Conviction Engine Fixes v2 (bank/hardware business types, coverage-incomplete gate, FS-score slice rebuild, CRM bug fix)
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`. Pure application code, **no new `.env`/secrets/config needed**. After merge, prod's existing `conviction_store/*.json` records will keep using their old `business_type`/`fs_score`/`valuation_tax` values until each ticker's next full recalculation — run the classification-only pass (cheap) or a full universe recalc (thorough) as a `[PROD-ACTION]` follow-up:
+
+```bash
+cd /home/ubuntu/uiv2/prod/MindWealth_UI
+# Cheap option: classify-only, auto-queues full recalc ONLY for tickers that flip into
+# bank / high_margin_hardware / coverage_incomplete (see item 12 of the plan):
+.venv/bin/python scripts/run_universe_classification_pass.py
+# Thorough option: full recalc for every ticker (also picks up the FS-score-slice
+# rebuild, the growth-fragility/floor bugfix, and adjusted-EPS for ALL tickers, not
+# just the 3 flipped buckets — recommended once, to fully retire the pre-fix formulas
+# universe-wide; the classification pass alone leaves non-flipped tickers on the old
+# FS-score/valuation-tax numbers until their own natural recalc cadence):
+.venv/bin/python scripts/update_conviction_fundamentals.py --mode full --include-existing-records
+```
+
+| Path | Notes |
+|------|-------|
+| `src/conviction_engine/models.py` | **modified** — `BANK`/`HIGH_MARGIN_HARDWARE` business types, `KNOWN_BUSINESS_TYPES`, new record fields, `SignalModification.coverage_incomplete` |
+| `src/conviction_engine/scoring.py` | **modified** — bank/hardware detection + valuation-tax substitutions, universal floor/fragility bugfixes, rebuilt `fs_score_breakdown()`, `coverage_incomplete` hard gate, KR/JP/CN undefined yield-trap thresholds |
+| `src/conviction_engine/engine.py` | **modified** — wires all of the above into `daily_update()`/`full_recalculation()`/`modify_signal()`/`run_daily_universe()` |
+| `src/conviction_engine/agent_dims.py` | **modified** — G2 source exclusion for hardware/semi sector, new deal-delay agent, TAM three-tier sourcing prompt |
+| `src/conviction_engine/capital_allocation.py` | **modified** — standalone buyback-suspension/dividend-cut tiered penalty flags |
+| `src/conviction_engine/fundamentals_enriched.py` | **modified** — bank/hardware fundamentals fetch, capital-return flags wiring, adjusted-EPS wiring, Tier 2 non-US PE-history fallback wiring |
+| `src/conviction_engine/fundamentals.py` | **modified** — new classification-only universe diff pass (`classify_universe_diff`/`run_universe_classification_pass`) |
+| `src/conviction_engine/bq_scoring.py` | **modified** — `score_deal_delay_risk()` prefers live agent detail over legacy binary flag |
+| `src/conviction_engine/pe_history_core.py` | **modified** — `reconstruct_quarterly_eps_from_net_income()` Tier 2 fallback |
+| `src/conviction_engine/bank_valuation.py` | **new** — efficiency-ratio margin quality, equity/assets balance sheet, P/TBV-vs-ROE valuation tax + FS slice |
+| `src/conviction_engine/adjusted_eps.py` | **new** — trailing effective-tax-rate adjusted EPS + materiality-gated adjusted PE |
+| `src/conviction_engine/tam_sourcing.py` | **new** — SEC XBRL `RevenueRemainingPerformanceObligation` Tier 1 TAM fetch |
+| `scripts/run_universe_classification_pass.py` | **new** CLI — see prod-action commands above |
+| `src/pages/conviction_engine_page.py` | **modified** — FS-cap/yield-trap breakdown display + agentic-dimension sourcing transparency (Streamlit UI, dev-only tool, no prod-user-facing impact) |
+| `api/schemas/conviction.py` | **modified** — `SignalModificationResponse.coverage_incomplete` field |
+| `instruction_docs/conviction_engine_issues/conviction_fixes_decisions.md` | **new** — decisions/rationale log, docs only |
+| `tests/test_conviction_engine_v2_fixes.py` | **new** — 49 tests |
+| `tests/test_conviction_engine.py` | **modified** — 1-field fixture fix (`test_fs_cap_differs_by_timeframe`) |
+
+**Parth's Vue frontend (separate repo, not in this migration's scope but flagged for him):** new `COVERAGE INCOMPLETE` verdict string needs a color/label case; `yield_trap_breakdown.fired` vs `.watching` and `run_daily_universe()`'s `yield_trap_watching` alert-map flag are now available to reconcile the Yield-Traps panel's count-vs-list display; `fs_cap_breakdown`/`valuation_tax_breakdown` are on every record returned by `GET /conviction/tickers/{ticker}` for the Engine Layers click-through panels shown in `engine_layers_spec.html`.
+
+**Smoke test `[PENDING]`:** after merge + recalc, spot-check one known bank ticker (e.g. a `.NS`/US regional bank in the universe) shows `business_type: "bank"` and a `bank_ptbv_detail` in its `valuation_tax_breakdown`; spot-check CRM shows `fs_class` consistent between `GET /conviction/tickers/CRM` and the Streamlit scorecard (the bug this pass fixed); confirm no ticker outside the 6 calibrated types shows a `CANCEL BUY`/normal verdict — it should show `COVERAGE INCOMPLETE` instead.
+
 ---
 
 ## 2026-08-02 — Layer 2 gate votes (McClellan confirm badge)

@@ -114,10 +114,77 @@ def _v6_scorecard(record: dict) -> None:
     elif record.get("valuation_tax") is not None:
         st.caption(f"Valuation tax total: {record.get('valuation_tax')} (component breakdown not stored on record).")
 
-    macro = record.get("macro_tailwind_detail") or (record.get("manual_overrides") or {}).get("macro_tailwind_detail")
-    if macro and isinstance(macro, dict):
-        with st.expander("Macro tailwind (agent)", expanded=False):
-            st.json(macro)
+    fs_breakdown = record.get("fs_cap_breakdown") or {}
+    fs_components = fs_breakdown.get("components") if isinstance(fs_breakdown, dict) else None
+    if fs_components:
+        fs_df = pd.DataFrame(
+            [{"component": k, "points": v} for k, v in sorted(fs_components.items(), key=lambda x: x[0])]
+        )
+        st.markdown(
+            f"**FS-cap valuation slice** (total **{fs_breakdown.get('total', record.get('fs_score', 'N/A'))}**, class **{record.get('fs_class', 'N/A')}**)"
+        )
+        st.dataframe(fs_df, use_container_width=True, hide_index=True)
+
+    yt_breakdown = record.get("yield_trap_breakdown") or {}
+    if isinstance(yt_breakdown, dict) and yt_breakdown:
+        fired = yt_breakdown.get("fired")
+        watching = yt_breakdown.get("watching")
+        status = "FIRED" if fired else ("watching" if watching else "clear")
+        st.markdown(f"**Yield trap** (status **{status}**)")
+        yt_df = pd.DataFrame(
+            [
+                {"field": "dividend_yield_current", "value": yt_breakdown.get("dividend_yield_current")},
+                {"field": "dividend_yield_zscore", "value": yt_breakdown.get("dividend_yield_zscore")},
+                {"field": "market_threshold", "value": yt_breakdown.get("market_threshold")},
+                {"field": "market_threshold_defined", "value": yt_breakdown.get("market_threshold_defined")},
+            ]
+        )
+        st.dataframe(yt_df, use_container_width=True, hide_index=True)
+
+    # UI transparency (item 20, carried forward): every agentic BQ dimension shows
+    # confidence / sources / evidence_against, not just the score, matching the
+    # source-label pattern in ce_developer_spec_latest.html's drawer mock.
+    manual_overrides = record.get("manual_overrides") or {}
+    agent_dims = [
+        ("macro_tailwind_detail", "Macro tailwind"),
+        ("ceo_quality_detail", "CEO quality"),
+        ("competitive_moat_detail", "Competitive moat"),
+        ("deal_delay_detail", "Deal delay / supply constraint"),
+        ("reinvestment_runway_detail", "Reinvestment runway / TAM"),
+    ]
+    any_agent_dim = any(record.get(key) or manual_overrides.get(key) for key, _ in agent_dims)
+    if any_agent_dim:
+        st.markdown("**Agentic dimensions — sourcing transparency**")
+    for key, label in agent_dims:
+        detail = record.get(key) or manual_overrides.get(key)
+        if not isinstance(detail, dict):
+            continue
+        confidence = detail.get("confidence")
+        low_confidence = confidence is not None and float(confidence) < 0.7
+        badge = " ⚠️ low confidence — defaulted" if low_confidence else ""
+        with st.expander(f"{label}{badge}", expanded=False):
+            cols = st.columns(3)
+            score_val = detail.get("score_0_10", detail.get("score", detail.get("tam_usd")))
+            cols[0].metric("Score", str(score_val) if score_val is not None else "N/A")
+            cols[1].metric("Confidence", _fmt_pct(confidence) if confidence is not None else "N/A")
+            sources = detail.get("sources") or []
+            cols[2].metric("Sources cited", str(len(sources)))
+            if detail.get("rationale"):
+                st.caption(f"Rationale: {detail['rationale']}")
+            if detail.get("evidence_for"):
+                st.caption(f"Evidence for: {detail['evidence_for']}")
+            if detail.get("evidence_against"):
+                st.caption(f"Evidence against: {detail['evidence_against']}")
+            if detail.get("supply_constraint_detail"):
+                st.caption(f"Supply constraint detail: {detail['supply_constraint_detail']}")
+            if detail.get("revenue_backlog_detail"):
+                st.caption(f"Revenue backlog (SEC XBRL, Tier 1): {detail['revenue_backlog_detail']}")
+            if detail.get("independent_tam_usd"):
+                st.caption(f"Independent TAM estimate: {detail['independent_tam_usd']} ({detail.get('independent_tam_source', 'N/A')})")
+            if sources:
+                st.caption("Sources: " + ", ".join(str(s) for s in sources))
+            else:
+                st.caption("No sources cited — confidence forced below 0.4 per anchored-confidence rule.")
 
 
 def _yield_trap_diagnostics(record: dict, ticker: str) -> None:

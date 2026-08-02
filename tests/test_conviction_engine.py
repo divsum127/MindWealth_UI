@@ -307,6 +307,7 @@ class TestScoringAndVerdicts(unittest.TestCase):
             record.update(
                 {
                     "asset_type": "EQUITY",
+                    "business_type": "compounder",
                     "bq_raw": 8,
                     "fs_quality_base": 20,
                     "valuation_tax": 0,
@@ -670,6 +671,78 @@ class TestPeHistory(unittest.TestCase):
         pe_hist = pe_bundle["values"]
         self.assertEqual(len(pe_hist), 2)
         self.assertNotAlmostEqual(pe_hist[0], pe_hist[1], places=3)
+
+
+class TestPeHistoryWithLegacyAnnual(unittest.TestCase):
+    """compute_pe_history_with_legacy_annual — the merge point for pe_history_sec_legacy.py's
+    pre-2009 annual EPS extension (see that module's docstring for the EX-27/Selected
+    Financial Data sourcing)."""
+
+    def _modern_quarterly_eps(self) -> pd.Series:
+        dates = pd.date_range("2019-03-31", periods=32, freq="QE")  # 2019-2026, stays current
+        return pd.Series([1.0 + 0.02 * i for i in range(32)], index=dates)
+
+    def _long_price_series(self) -> pd.Series:
+        return pd.Series(
+            [10.0 + i * 0.05 for i in range(320)],
+            index=pd.date_range("2001-01-31", periods=320, freq="ME"),
+        )
+
+    def test_extends_years_available_and_flips_insufficient_flag(self):
+        from src.conviction_engine.pe_history_core import compute_pe_history, compute_pe_history_with_legacy_annual
+
+        modern_eps = self._modern_quarterly_eps()
+        prices = self._long_price_series()
+        legacy_eps = pd.Series(
+            [0.2 + 0.02 * i for i in range(18)],
+            index=pd.date_range("2000-12-31", periods=18, freq="YE"),
+        )
+
+        plain = compute_pe_history(prices, modern_eps)
+        extended = compute_pe_history_with_legacy_annual(prices, modern_eps, legacy_eps)
+
+        self.assertTrue(plain["meta"]["insufficient_20y"])
+        self.assertFalse(extended["meta"]["insufficient_20y"])
+        self.assertGreater(extended["meta"]["years_available"], plain["meta"]["years_available"])
+        self.assertEqual(extended["meta"]["start_date"], "2001-01-31")
+
+    def test_empty_or_none_legacy_series_matches_plain_compute(self):
+        from src.conviction_engine.pe_history_core import compute_pe_history, compute_pe_history_with_legacy_annual
+
+        modern_eps = self._modern_quarterly_eps()
+        prices = self._long_price_series()
+        plain = compute_pe_history(prices, modern_eps)
+
+        self.assertEqual(compute_pe_history_with_legacy_annual(prices, modern_eps, pd.Series(dtype=float)), plain)
+        self.assertEqual(compute_pe_history_with_legacy_annual(prices, modern_eps, None), plain)
+
+    def test_legacy_points_overlapping_modern_coverage_are_dropped(self):
+        """A legacy point landing on/after the modern series' earliest TTM date must
+        never override or duplicate it — only strictly-older legacy points are used."""
+        from src.conviction_engine.pe_history_core import compute_pe_history_with_legacy_annual
+
+        modern_eps = self._modern_quarterly_eps()
+        prices = self._long_price_series()
+        legacy_eps = pd.Series(
+            [0.2, 0.25, 99.0],  # last point deliberately overlaps modern coverage
+            index=[pd.Timestamp("2010-12-31"), pd.Timestamp("2011-12-31"), modern_eps.index[3]],
+        )
+        bundle = compute_pe_history_with_legacy_annual(prices, modern_eps, legacy_eps)
+        # earliest *usable* legacy point is 2010-12-31 (the 99.0 point is dropped as an
+        # overlap, so it can't push coverage back to an earlier or corrupted start)
+        self.assertEqual(bundle["meta"]["start_date"], "2010-12-31")
+        # and the modern-era point that 99.0 tried to duplicate keeps its correct value
+        without_overlap = compute_pe_history_with_legacy_annual(
+            prices, modern_eps, legacy_eps.iloc[:2]  # same series minus the overlapping point
+        )
+        self.assertEqual(bundle["values"], without_overlap["values"])
+
+    def test_price_series_none_returns_empty_bundle(self):
+        from src.conviction_engine.pe_history_core import compute_pe_history_with_legacy_annual
+
+        bundle = compute_pe_history_with_legacy_annual(None, self._modern_quarterly_eps(), pd.Series([0.5], index=[pd.Timestamp("2005-01-01")]))
+        self.assertEqual(bundle["values"], [])
+        self.assertTrue(bundle["meta"]["insufficient_20y"])
 
 
 class TestPeHistoryDistribution(unittest.TestCase):

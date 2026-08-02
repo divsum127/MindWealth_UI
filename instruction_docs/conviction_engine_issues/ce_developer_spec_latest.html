@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Conviction Engine · Developer Spec v2</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;font-family:'Inter',sans-serif;background:#0C0C0C;overflow:hidden}
+
+/* ── NAV BAR ── */
+#topnav{position:fixed;top:0;left:0;right:0;height:42px;background:#0B0D11;border-bottom:1px solid rgba(201,168,76,.2);display:flex;align-items:center;padding:0 14px;gap:10px;z-index:1000}
+.nav-logo{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;color:#C9A84C;flex-shrink:0}
+.nav-div{width:1px;height:14px;background:rgba(255,255,255,.1)}
+.spills{display:flex;gap:3px}
+.spill{font-family:'JetBrains Mono',monospace;font-size:9px;padding:3px 9px;border-radius:3px;border:1px solid rgba(255,255,255,.1);color:#555;cursor:pointer;white-space:nowrap;transition:all .15s;background:none}
+.spill:hover{border-color:rgba(201,168,76,.4);color:#C9A84C}
+.spill.on{background:rgba(201,168,76,.12);border-color:rgba(201,168,76,.35);color:#C9A84C}
+.spill.dark-spill{color:#333}
+.spill.dark-spill.on{background:rgba(201,168,76,.08);border-color:rgba(201,168,76,.25);color:#C9A84C}
+#ann-btn{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:9px;padding:3px 9px;border-radius:3px;border:1px solid rgba(255,255,255,.12);color:#444;cursor:pointer;display:flex;align-items:center;gap:4px;background:none}
+#ann-btn.on{border-color:rgba(96,165,250,.4);color:#60A5FA;background:rgba(96,165,250,.06)}
+#scrn-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;color:#333;padding:0 6px;flex-shrink:0}
+
+/* ── SCREENS ── */
+.screen{display:none;position:fixed;inset:42px 0 0 0;flex-direction:column;overflow:hidden}
+.screen.on{display:flex}
+
+/* ══════════ LIGHT THEME ══════════ */
+.page-wrap{display:flex;flex-direction:column;height:100%;background:#0C0C0C;color:#E8E8E8}
+
+/* MindWealth main nav sits at top of page — conviction sub-tabs sit BELOW it */
+.mw-topnav{display:flex;align-items:center;padding:0 14px;height:40px;background:#0C0C0C;border-bottom:.5px solid #1E1E1E;flex-shrink:0;gap:0}
+.mw-logo{font-size:14px;font-weight:600;color:#E8E8E8;margin-right:18px;font-family:'Inter',sans-serif}
+.mw-logo em{font-style:normal;color:#C9A84C}
+.mw-tabs{display:flex;gap:0}
+.mw-tab{font-size:9px;padding:0 10px;height:40px;display:flex;align-items:center;color:#444;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;font-family:'JetBrains Mono',monospace;letter-spacing:.4px}
+.mw-tab.on{color:#E8E8E8;border-bottom-color:#C9A84C;font-weight:500}
+
+/* Conviction sub-tabs sit BELOW the main nav */
+.conv-subtabs{display:flex;padding:0 14px;border-bottom:.5px solid #1E1E1E;background:#0C0C0C;flex-shrink:0}
+.csub{font-size:10px;padding:6px 12px;cursor:pointer;color:#555;border-bottom:2px solid transparent;white-space:nowrap;font-family:'Inter',sans-serif;display:flex;align-items:center;gap:5px}
+.csub.on{color:#E8E8E8;border-bottom-color:#C9A84C;font-weight:500}
+.csub .badge{background:#FEF2F2;color:#7F1D1D;font-size:8px;padding:1px 5px;border-radius:2px}
+
+.topbar-row{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-bottom:.5px solid #1E1E1E;background:#0C0C0C;flex-shrink:0}
+.page-title{font-size:14px;font-weight:500;color:#E8E8E8;display:flex;align-items:center;gap:7px}
+.page-sub{font-size:10px;color:#555;margin-top:1px}
+.live-badge{font-size:9px;padding:2px 7px;border-radius:4px;border:.5px solid rgba(39,174,96,.3);color:#27AE60;background:rgba(39,174,96,.08);display:flex;align-items:center;gap:3px}
+
+.alert-bar{margin:7px 14px;padding:7px 11px;background:rgba(192,57,43,.08);border-radius:6px;border:.5px solid rgba(192,57,43,.3);display:flex;align-items:center;gap:7px;font-size:10px;color:#c0392b;flex-shrink:0}
+
+/* Scoring flow */
+.flow-toggle{display:flex;align-items:center;justify-content:space-between;padding:6px 14px;cursor:pointer;border-bottom:.5px solid #1E1E1E;background:#111;flex-shrink:0}
+.flow-label{font-size:10px;font-weight:500;color:#666;display:flex;align-items:center;gap:5px}
+.flow-panel{overflow:hidden;max-height:0;transition:max-height .3s,opacity .2s;opacity:0;flex-shrink:0}
+.flow-panel.open{max-height:300px;opacity:1}
+.flow-inner{padding:10px 14px 12px;background:#111;border-bottom:.5px solid #1E1E1E}
+.flow-row{display:flex;align-items:center;gap:0;overflow-x:auto;padding-bottom:3px}
+.flow-box{border-radius:5px;padding:6px 8px;min-width:86px;border:.5px solid #2A2A2A;background:#0C0C0C;text-align:center;flex-shrink:0}
+.flow-box-lbl{font-size:7px;letter-spacing:.5px;text-transform:uppercase;color:#555;margin-bottom:2px}
+.flow-box-val{font-size:11px;font-weight:500;color:#C9A84C}
+.flow-box-sub{font-size:7px;color:#444;margin-top:1px}
+.flow-box.tax{background:#1A1400;border-color:#3D3000}
+.flow-box.gate{background:#1A0000;border-color:#3D0000}
+.flow-box.ok{background:#001A08;border-color:#003D18}
+.flow-arrow{font-size:13px;color:#333;padding:0 3px;margin-top:-8px;flex-shrink:0}
+.flow-op{font-size:12px;font-weight:500;color:#555;padding:0 2px;margin-top:-8px;flex-shrink:0}
+.flow-tiers{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:6px}
+.flow-tier{padding:4px 6px;border-radius:4px;font-size:8px;text-align:center;border:.5px solid transparent}
+.ft-g{background:#001A08;color:#27AE60;border-color:#003D18}
+.ft-a{background:#1A1400;color:#C9A84C;border-color:#3D3000}
+.ft-am{background:#1A0D00;color:#EF9F27}
+.ft-r{background:#1A0000;color:#c0392b;border-color:#3D0000}
+.tier-score{font-weight:600;font-size:10px;display:block;margin-bottom:1px}
+.flow-formula{font-size:8px;color:#444;margin-top:5px;padding-top:5px;border-top:.5px solid #1E1E1E;line-height:1.7}
+
+/* Section label */
+.sec-label{font-size:8px;letter-spacing:.7px;text-transform:uppercase;color:#444;padding:6px 14px 3px;flex-shrink:0;background:#0C0C0C;border-bottom:.5px solid #1E1E1E}
+
+/* Table */
+.tbl-scroll{flex:1;overflow-y:auto;min-height:0;background:#0C0C0C}
+.tbl-wrap{overflow-x:auto}
+table.sig{width:100%;border-collapse:collapse;font-size:11px}
+table.sig th{font-size:8px;letter-spacing:.5px;color:#555;text-align:left;padding:5px 8px;border-bottom:.5px solid #1E1E1E;background:#111;text-transform:uppercase;white-space:nowrap}
+table.sig td{padding:6px 8px;border-bottom:.5px solid #1A1A1A;vertical-align:middle;white-space:nowrap;color:#B8B8B8}
+table.sig tr.sel td{background:#1A1400}
+table.sig tr.clickable:hover td{background:#161616;cursor:pointer}
+table.sig tr.clickable{cursor:pointer}
+.td-name{font-weight:500;color:#E8E8E8;font-size:12px}
+.td-dim{font-size:9px;color:#555}
+.vb{display:inline-block;font-size:8px;padding:2px 6px;border-radius:3px;font-weight:500}
+.vb-max{background:#001A08;color:#27AE60}
+.vb-tac{background:#001A08;color:#27AE60}
+.vb-red{background:#1A1400;color:#C9A84C}
+.vb-cnc{background:#1A0000;color:#c0392b}
+.vb-yld{background:#1A0000;color:#c0392b;border:.5px solid rgba(192,57,43,.4)}
+.vb-na{background:#1A1A1A;color:#444}
+.cs{font-weight:600;font-size:12px}
+.cs-hi{color:#15803D}.cs-md{color:#92400E}.cs-lo{color:#B91C1C}.cs-na{color:#9CA3AF}
+.fsb{display:inline-block;font-size:8px;padding:2px 5px;border-radius:3px}
+.fsb-str{background:#001A08;color:#27AE60}
+.fsb-mh{background:#001020;color:#3B82F6}
+.fsb-mo{background:#1A1A1A;color:#888}
+.fsb-ml{background:#1A1400;color:#C9A84C}
+.fsb-wk{background:#1A0000;color:#c0392b}
+.fd-pos{color:#15803D;font-size:9px}
+.fd-neg{color:#B91C1C;font-size:9px}
+.fd-sta{color:#6B7280;font-size:9px}
+
+/* Actions */
+.row-acts{display:flex;gap:4px}
+.actn{font-size:8px;padding:2px 7px;border-radius:3px;border:.5px solid #2A2A2A;background:#0C0C0C;color:#555;cursor:pointer;white-space:nowrap;font-family:'Inter',sans-serif}
+.actn:hover{background:#1A1A1A}
+.actn.prim{border-color:rgba(39,174,96,.4);color:#27AE60}
+.actn.prim.open{background:rgba(39,174,96,.1)}
+.actn.warn{border-color:rgba(192,57,43,.4);color:#c0392b}
+.actn.ext{border-color:#2A2A2A;color:#555}
+
+/* Drawer */
+.drawer-tr td{padding:0;border-bottom:none}
+.drawer-wrap{overflow:hidden;max-height:0;transition:max-height .35s ease,opacity .25s;opacity:0}
+.drawer-wrap.open{max-height:600px;opacity:1}
+.drawer-card{background:#111;border:.5px solid #222;border-radius:8px;margin:0 4px 7px;box-shadow:0 4px 16px rgba(0,0,0,.4);overflow:hidden}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:.5px solid #1E1E1E}
+.dh-left .dh-title{font-size:12px;font-weight:500;color:#E8E8E8}
+.dh-left .dh-sub{font-size:9px;color:#555;margin-top:2px}
+.dh-right{display:flex;align-items:center;gap:7px}
+.dtabs{display:flex;gap:3px;padding:7px 14px;border-bottom:.5px solid #1E1E1E}
+.dtab{font-size:9px;padding:3px 9px;border-radius:3px;border:.5px solid #2A2A2A;background:none;color:#555;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
+.dtab.on{background:#1A1A1A;color:#E8E8E8;border-color:#555}
+.dbody{padding:12px 14px;background:#111}
+.bq-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px}
+.bq-row{display:flex;align-items:center;gap:6px;padding:3px 0;border-bottom:.5px solid #1A1A1A}
+.bq-n{font-size:8px;color:#333;width:12px;text-align:right;flex-shrink:0}
+.bq-name{font-size:9px;color:#888;flex:1;font-family:'JetBrains Mono',monospace;overflow:hidden;text-overflow:ellipsis}
+.bq-bar-wrap{width:48px;height:4px;background:#222;border-radius:2px;position:relative;flex-shrink:0}
+.bq-bar-fill{height:4px;border-radius:2px;position:absolute;top:0}
+.bq-score{font-size:10px;font-weight:500;width:20px;text-align:right;flex-shrink:0;font-family:'JetBrains Mono',monospace}
+.bq-src{font-size:7px;color:#2A2A2A;width:80px;text-align:right;flex-shrink:0;font-family:'JetBrains Mono',monospace}
+.tax-note{font-size:9px;color:#555;line-height:1.6;padding:7px 9px;background:#0C0C0C;border-radius:5px;margin-top:7px;border:.5px solid #1E1E1E}
+
+/* FS+Val tab */
+.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:7px}
+.mg{background:#0C0C0C;border-radius:5px;padding:7px 9px;border:.5px solid #1E1E1E}
+.mg-l{font-size:7px;color:#888;letter-spacing:.5px;text-transform:uppercase;margin-bottom:2px}
+.mg-v{font-size:15px;font-weight:500;color:#E8E8E8}
+.mg-v.g{color:#15803D}.mg-v.r{color:#B91C1C}.mg-v.a{color:#92400E}
+.mg-sub{font-size:8px;color:#9CA3AF;margin-top:2px}
+.score-ring{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;border:3px solid;flex-shrink:0;background:#111}
+.pe-track{height:7px;background:#222;border-radius:4px;position:relative;margin:4px 0 2px}
+.pe-fill{height:7px;border-radius:4px;position:absolute;left:0}
+.pe-marker{position:absolute;width:2px;height:12px;background:#374151;top:-2px;border-radius:1px}
+
+/* fd tab */
+.fd-vote-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:.5px solid #1A1A1A;font-size:10px}
+.fd-vote-label{flex:1;color:#888}
+.fd-vote-val{font-weight:500;font-size:10px;width:60px;text-align:right}
+.fd-summary{padding:9px;background:rgba(39,174,96,.08);border-radius:5px;margin-top:7px;font-size:10px;color:#27AE60;font-weight:500;border:.5px solid rgba(39,174,96,.2)}
+.fd-summary.neg{background:rgba(192,57,43,.08);color:#c0392b;border:.5px solid rgba(192,57,43,.2)}
+.fd-summary.sta{background:#111;color:#555;border:.5px solid #222}
+
+/* Portfolio tab mock */
+.port-row{display:flex;align-items:center;justify-content:space-between;padding:7px 11px;border-bottom:.5px solid #1A1A1A;font-size:11px}
+.port-ticker{font-weight:500;color:#E8E8E8;width:70px}
+.port-val{color:#555;font-size:10px}
+
+/* Contradictions mock */
+.contra-row{padding:9px 11px;border-bottom:.5px solid #F3F4F6}
+.contra-title{font-size:11px;font-weight:500;color:#E8E8E8}
+.contra-body{font-size:9px;color:#555;margin-top:3px;line-height:1.5}
+
+/* Kicker stats */
+.kicker-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:8px 14px;flex-shrink:0;border-bottom:.5px solid #E5E7EB}
+.kc{background:#111;border-radius:5px;padding:8px 10px;border:.5px solid #1E1E1E}
+.kc-l{font-size:8px;color:#444;letter-spacing:.5px;text-transform:uppercase;margin-bottom:3px}
+.kc-v{font-size:20px;font-weight:500;color:#E8E8E8}
+.kc-d{font-size:8px;margin-top:2px;color:#9CA3AF}
+.kc-d.g{color:#15803D}.kc-d.r{color:#B91C1C}
+
+/* ══════════ DARK THEME ══════════ */
+.dark-page{background:#040404;color:#F0F0F0;display:flex;flex-direction:column;height:100%}
+:root{--gold:#C9A84C;--green:#27ae60;--red:#c0392b;--bg:#040404;--s1:#080808;--s2:#0d0d0d;--b1:#131313;--b2:#1d1d1d;--t1:#f0f0f0;--t2:#b8b8b8;--t3:#555;--t4:#2a2a2a}
+.d-tb{display:flex;align-items:center;padding:0 18px;height:44px;border-bottom:1px solid var(--b1);background:var(--bg);flex-shrink:0;gap:0}
+.d-logo{font-size:15px;font-weight:700;color:var(--gold);margin-right:18px;font-family:'JetBrains Mono',monospace;white-space:nowrap}
+.d-logo span{font-size:8px;color:#2a2a2a;letter-spacing:2px;margin-left:7px;vertical-align:middle}
+.d-tabs{display:flex;gap:0;flex:1}
+.d-tab{padding:5px 10px;font-size:9px;letter-spacing:.6px;color:#333;border-radius:3px;font-family:'JetBrains Mono',monospace;white-space:nowrap}
+.d-tab.on{color:var(--gold);background:rgba(201,168,76,.07)}
+.d-rs{display:flex;align-items:center;padding:0 18px;height:32px;border-bottom:1px solid var(--b2);background:#080808;gap:12px;flex-shrink:0;overflow-x:auto}
+.d-rsd{width:6px;height:6px;border-radius:50%;flex-shrink:0;animation:pu 2s infinite}
+.d-rsd.g{background:var(--green)}.d-rsd.warn{background:var(--gold)}.d-rsd.r{background:var(--red)}
+.d-rsl{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--gold);font-weight:600;flex-shrink:0}
+.d-sep{width:1px;height:14px;background:#1a1a1a;flex-shrink:0}
+.d-ri{font-family:'JetBrains Mono',monospace;font-size:9px;color:#555;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.d-ri span{color:#f0f0f0;font-weight:500}
+.d-ri.g span{color:var(--green)}.d-ri.r span{color:var(--red)}.d-ri.warn span{color:var(--gold)}
+.d-body{display:flex;flex:1;overflow:hidden;min-height:0}
+.d-sidebar{width:180px;flex-shrink:0;border-right:1px solid var(--b1);padding:10px 0;overflow-y:auto}
+.d-sg{padding:6px 11px 4px}
+.d-sgl{font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:2px;color:#222;text-transform:uppercase;margin-bottom:4px}
+.d-si{display:flex;align-items:flex-start;gap:6px;padding:5px 7px;border-radius:3px;margin:0 3px 1px;border:1px solid transparent}
+.d-si.on{background:rgba(201,168,76,.06);border-color:rgba(201,168,76,.1)}
+.d-si.on .d-sn{color:var(--gold)}
+.d-sd{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.d-sd.g{background:var(--green)}.d-sd.gold{background:var(--gold)}.d-sd.r{background:var(--red)}
+.d-sn{font-size:10px;color:#666;font-weight:500}
+.d-ss{font-family:'JetBrains Mono',monospace;font-size:8px;color:#2a2a2a;margin-top:1px}
+.d-main{flex:1;padding:14px 16px;display:flex;flex-direction:column;gap:8px;overflow-y:auto}
+.d-main::-webkit-scrollbar{width:2px}.d-main::-webkit-scrollbar-thumb{background:#1a1a1a}
+.d-bq-row{display:flex;align-items:center;gap:8px;padding:5px 8px;background:#0d0d0d;border:1px solid #131313;border-radius:4px;margin-bottom:2px;font-family:'JetBrains Mono',monospace}
+.d-bq-num{font-size:8px;color:#333;width:14px;text-align:right}
+.d-bq-name{font-size:9px;color:#777;flex:1}
+.d-bq-s{font-size:10px;font-weight:600;width:26px;text-align:right}
+.d-bq-s.pos{color:var(--green)}.d-bq-s.neg{color:var(--red)}.d-bq-s.zero{color:#333}
+.d-bq-src{font-size:7px;color:#2a2a2a;width:80px;text-align:right}
+.d-total{display:flex;justify-content:space-between;padding:5px 8px;background:#080808;border:1px solid #1a1a1a;border-radius:4px;margin-top:3px;font-family:'JetBrains Mono',monospace;font-size:9px}
+.d-conv{display:flex;justify-content:space-between;padding:5px 8px;border-radius:4px;margin-top:2px;font-family:'JetBrains Mono',monospace;font-size:9px;background:rgba(39,174,96,.06);border:1px solid rgba(39,174,96,.15)}
+.d-infopanel{width:220px;flex-shrink:0;border-left:1px solid var(--b1);padding:11px;overflow-y:auto}
+.d-ip-title{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1.5px;color:var(--gold);margin-bottom:7px;text-transform:uppercase}
+.d-ip-body{font-family:'JetBrains Mono',monospace;font-size:9px;color:#444;line-height:1.7}
+.d-ip-body .g{color:var(--green)}.d-ip-body .gold{color:var(--gold)}
+.d-ip-sep{height:1px;background:#111;margin:8px 0}
+.d-sb{height:22px;border-top:1px solid #0d0d0d;display:flex;align-items:center;padding:0 14px;gap:12px;background:var(--bg);flex-shrink:0}
+.d-sb-item{display:flex;align-items:center;gap:4px;font-family:'JetBrains Mono',monospace;font-size:8px;color:#2a2a2a}
+.d-sb-dot{width:4px;height:4px;border-radius:50%}
+.d-sb-dot.on{background:var(--green);animation:pu 2s infinite}
+.d-sb-dot.wa{background:var(--gold);animation:pu 2.5s infinite}
+.d-chip{display:flex;align-items:center;gap:4px;font-family:'JetBrains Mono',monospace;font-size:8px;padding:2px 8px;border-radius:3px;cursor:pointer;border:1px solid;transition:all .15s;white-space:nowrap;position:relative;user-select:none}
+.d-chip.g{color:var(--green);background:rgba(39,174,96,.07);border-color:rgba(39,174,96,.18)}
+.d-chip.g:hover{background:rgba(39,174,96,.15);border-color:rgba(39,174,96,.35)}
+.d-chip.warn{color:var(--gold);background:rgba(201,168,76,.07);border-color:rgba(201,168,76,.2)}
+.d-chip.r{color:var(--red);background:rgba(192,57,43,.07);border-color:rgba(192,57,43,.18)}
+.d-chip-tooltip{display:none;position:absolute;bottom:26px;left:0;background:#1a1a1a;border:1px solid rgba(201,168,76,.25);border-radius:4px;padding:4px 8px;font-size:8px;color:var(--gold);white-space:nowrap;pointer-events:none;z-index:50}
+.d-chip:hover .d-chip-tooltip{display:block}
+.d-chip.warn:hover .d-chip-tooltip{border-color:rgba(192,57,43,.3);color:#c0392b}
+
+/* ── ANNOTATIONS ── */
+.ann-layer{display:none;position:absolute;inset:0;pointer-events:none;z-index:300}
+body.ann-on .ann-layer{display:block}
+.ann-box::before{content:"FOR CODER ONLY";font-size:7px;letter-spacing:1px;display:block;color:rgba(96,165,250,.5);margin-bottom:3px}
+.ann-box{display:none;position:absolute;background:#1D3461;border:1px solid #3B82F6;border-radius:5px;padding:5px 8px;font-family:'JetBrains Mono',monospace;font-size:9px;color:#93C5FD;max-width:170px;line-height:1.5;z-index:400}
+body.ann-on .ann-box{display:block}
+.ann-box strong{color:#60A5FA;display:block;margin-bottom:2px}
+.ann-box.dev{background:#1A2B1A;border-color:#22C55E;color:#86EFAC}
+.ann-box.dev strong{color:#4ADE80}
+
+/* ── DEV NOTE ── */
+.dev-note::before{content:"FOR CODER ONLY — REMOVE BEFORE DEPLOY";font-size:7px;letter-spacing:1px;display:block;color:rgba(74,222,128,.4);margin-bottom:4px}
+.dev-note{display:none;position:absolute;bottom:8px;left:10px;right:10px;background:rgba(13,20,13,.97);border:1px solid rgba(34,197,94,.2);border-radius:6px;padding:8px 12px;font-family:'JetBrains Mono',monospace;font-size:9px;color:#86EFAC;line-height:1.7;z-index:200;pointer-events:none}
+body.ann-on .dev-note{display:block}
+.dev-note strong{color:#4ADE80}
+.dev-note .url{color:#67E8F9}
+
+@keyframes pu{0%,100%{opacity:1}50%{opacity:.15}}
+</style>
+</head>
+<body>
+
+<!-- ══ TOP NAV ══ -->
+<div id="topnav">
+  <div class="nav-logo">CONVICTION ENGINE · UI SPEC v2</div>
+  <div class="nav-div"></div>
+  <div class="spills" id="spills">
+    <button class="spill on"   onclick="goS(1,this)">1 · Breadth default</button>
+    <button class="spill"      onclick="goS(2,this)">2 · Row expanded</button>
+    <button class="spill"      onclick="goS(3,this)">3 · FS + val tab</button>
+    <div class="nav-div"></div>
+    <button class="spill dark-spill" onclick="goS(4,this)">4 · Depth view (dark)</button>
+    <button class="spill dark-spill" onclick="goS(5,this)">5 · Status chips</button>
+  </div>
+  <div id="scrn-lbl">SCREEN 1 OF 5</div>
+  <button id="ann-btn" onclick="toggleAnn(this)"><i class="ti ti-tags"></i>annotations off</button>
+</div>
+
+<!-- ════════════════════════════════════════════
+     DATA — all ticker drawer content here
+════════════════════════════════════════════ -->
+<script>
+const TICKERS = {
+  'KXS.TO': {
+    name:'Kinaxis', type:'saas / compounder', biz:'saas', bq:12, tax:-2, conv:10,
+    verdict:'TACTICAL BUY', vClass:'vb-tac', sizing:'75%', sizeColor:'#15803D',
+    fs:'strong', fsClass:'fsb-str', fd:'positive', conv_display:'+10',
+    note:'BQ +12 · tax −2 · conviction +10',
+    dims:[
+      [1,'Revenue quality',2,'auto (yfinance)'],
+      [2,'Growth trajectory',2,'auto (yfinance)'],
+      [3,'Margin quality (Rule of 40 · R40=68)',2,'auto (yfinance)'],
+      [4,'Balance sheet (Altman Z strong)',1,'auto (yfinance)'],
+      [5,'ROIC / WACC spread (ROIC 22% vs WACC 10% = +12%)',2,'auto (yfinance)'],
+      [6,'Gross margin trend (expanding)',1,'auto (yfinance)'],
+      [7,'Debt maturity risk',0,'auto (yfinance)'],
+      [8,'CEO quality (Wadsworth · tenure 8yr)',1,'auto (agent search)'],
+      [9,'Capital allocation (buybacks active)',1,'auto (agent + EDGAR)'],
+      [10,'Competitive moat (supply chain software — AI disruption risk)',1,'auto (agent search)'],
+      [11,'Macro tailwind (tariff chaos = demand driver · partial AI risk)',1,'auto (Claude API + web)'],
+      [12,'Divergence signal (price −50% from high · >60 days)',2,'auto (yfinance)'],
+      [13,'Deal delay risk',0,'auto (agent search)'],
+      [14,'Insider ownership (founder-level · >15%)',1,'auto (SEC EDGAR)'],
+      [15,'Reinvestment runway (TAM 6×)',-1,'auto (agent search)'],
+    ],
+    oey: 5.8, pe: 48, pePctile: 62, pePctileColor:'#15803D',
+    taxNote:'EV/rev 6.2× → SaaS tier 2 (−2). Min penalty trigger at ≥4× fires → total tax min −2. PE at 62nd pctile — no extra penalty. Total tax: −2.',
+    verdictNote:'Rule of 40 = 68 (strong). ROIC/WACC spread +12%. Divergence signal firing on 50% price drop with stable fundamentals. Conviction +10 → Tactical Buy 75%.',
+    fdVotes:[
+      ['Revenue (accelerating)',  'positive'],
+      ['Margins (expanding >100bp)', 'positive'],
+      ['FCF (growing YoY)', 'positive'],
+      ['EPS revisions (+4% in 90d)', 'positive'],
+      ['Buybacks (>1% shares retired)', 'positive'],
+    ],
+    fdResult:'positive', fdNote:'5 / 5 votes positive → fd_direction = positive → sizing bumped from 75% → 85%'
+  },
+  'NVDA': {
+    name:'Nvidia', type:'compounder', biz:'compounder', bq:16, tax:-6, conv:10,
+    verdict:'TACTICAL BUY', vClass:'vb-tac', sizing:'85%', sizeColor:'#15803D',
+    fs:'strong', fsClass:'fsb-str', fd:'positive', conv_display:'+10',
+    note:'BQ +16 · tax −6 · conviction +10',
+    dims:[
+      [1,'Revenue quality',2,'auto (yfinance)'],
+      [2,'Growth trajectory',2,'auto (yfinance)'],
+      [3,'Margin quality (Rule of 40 · R40=119)',2,'auto (yfinance)'],
+      [4,'Balance sheet (net cash · D/E 0.06)',2,'auto (yfinance)'],
+      [5,'ROIC / WACC spread (ROIC 117% vs WACC 7.5% = +109%)',2,'auto (yfinance)'],
+      [6,'Gross margin trend (65→75%+ expanding)',1,'auto (yfinance)'],
+      [7,'Debt maturity risk',0,'auto (yfinance)'],
+      [8,'CEO quality (Jensen Huang · founder · 30yr)',2,'auto (agent search)'],
+      [9,'Capital allocation ($50B buyback · no M&A waste)',2,'auto (agent + EDGAR)'],
+      [10,'Competitive moat (CUDA ecosystem · data center lock-in)',2,'auto (agent search)'],
+      [11,'Macro tailwind (AI capex supercycle · hyperscaler demand)',2,'auto (Claude API + web)'],
+      [12,'Divergence signal',0,'auto (yfinance)'],
+      [13,'Deal delay risk',0,'auto (agent search)'],
+      [14,'Insider ownership (Jensen ~3.5% · between thresholds)',0,'auto (SEC EDGAR)'],
+      [15,'Reinvestment runway (AI chip TAM >> 10×)',-1,'auto (agent search)'],
+    ],
+    oey: 1.9, pe: 33, pePctile: 52, pePctileColor:'#15803D',
+    taxNote:'EV/rev ~30× → compounder tier 4 (−4). Min penalty trigger at ≥3× fires (total tax min −5). PE at 52nd pctile — no extra penalty. Total tax: −6 (fragility: revenue still accelerating so no fragility penalty — entry mult already at min trigger).',
+    verdictNote:'Outstanding Business Quality at an expensive price. Conviction +10 despite high valuation due to exceptional Business Quality. fd_positive bumps sizing 75% → 85%.',
+    fdVotes:[
+      ['Revenue (accelerating +66% YoY)', 'positive'],
+      ['Margins (expanding)', 'positive'],
+      ['FCF (growing strongly)', 'positive'],
+      ['EPS revisions (raised multiple times)', 'positive'],
+      ['Buybacks ($50B programme active)', 'positive'],
+    ],
+    fdResult:'positive', fdNote:'5 / 5 votes positive → fd_direction = positive → sizing bumped 75% → 85%'
+  },
+  'CSCO': {
+    name:'Cisco', type:'compounder / tech infrastructure', biz:'compounder', bq:5, tax:-2, conv:3,
+    verdict:'REDUCED BUY', vClass:'vb-red', sizing:'40%', sizeColor:'#92400E',
+    fs:'moderate', fsClass:'fsb-mo', fd:'stable', conv_display:'+3',
+    note:'BQ +5 · tax −2 · conviction +3',
+    dims:[
+      [1,'Revenue quality',1,'auto (yfinance)'],
+      [2,'Growth trajectory',0,'auto (yfinance)'],
+      [3,'Margin quality (Rule of 40 · R40=36)',1,'auto (yfinance)'],
+      [4,'Balance sheet',2,'auto (yfinance)'],
+      [5,'ROIC / WACC spread (ROIC 13% vs WACC 7.5%)',1,'auto (yfinance)'],
+      [6,'Gross margin trend',0,'auto (yfinance)'],
+      [7,'Debt maturity risk',0,'auto (yfinance)'],
+      [8,'CEO quality (Chuck Robbins · 9yr tenure)',1,'auto (agent search)'],
+      [9,'Capital allocation (steady buybacks)',1,'auto (agent + EDGAR)'],
+      [10,'Competitive moat (networking OS · switching costs)',1,'auto (agent search)'],
+      [11,'Macro tailwind (AI networking mild tailwind)',1,'auto (Claude API + web)'],
+      [12,'Divergence signal',0,'auto (yfinance)'],
+      [13,'Deal delay risk',0,'auto (agent search)'],
+      [14,'Insider ownership (~0.5% · below 1%)',-1,'auto (SEC EDGAR)'],
+      [15,'Reinvestment runway (mature networking market)',-1,'auto (agent search)'],
+    ],
+    oey: 3.8, pe: 17, pePctile: 44, pePctileColor:'#15803D',
+    taxNote:'EV/rev ~3.1× → compounder tier 2 (−2). Min penalty trigger at ≥3× just fires → total tax min −2. PE at 44th pctile → no extra penalty. Total tax: −2.',
+    verdictNote:'Solid cash-generative business at a fair price. Rule of 40 = 36 (just under). Conviction +3 → Reduced Buy 40%.',
+    fdVotes:[
+      ['Revenue (flat · not accelerating)', 'stable'],
+      ['Margins (within ±100bp)', 'stable'],
+      ['FCF (positive but flat)', 'stable'],
+      ['EPS revisions (within ±3%)', 'stable'],
+      ['Buybacks (programme active · marginal)', 'stable'],
+    ],
+    fdResult:'stable', fdNote:'0 positive, 0 negative → fd_direction = stable → no sizing adjustment'
+  },
+  'T.TO': {
+    name:'TELUS', type:'income · telecom', biz:'income', bq:-5, tax:-1, conv:-6,
+    verdict:'YIELD TRAP', vClass:'vb-yld', sizing:'0%', sizeColor:'#B91C1C',
+    fs:'moderate_low', fsClass:'fsb-ml', fd:'negative', conv_display:'−6',
+    note:'BQ −5 · tax −1 · conviction −6 · YIELD TRAP ACTIVE',
+    dims:[
+      [1,'Revenue quality',1,'auto (yfinance)'],
+      [2,'Growth trajectory',0,'auto (yfinance)'],
+      [3,'Margin quality (INCOME TYPE: distribution coverage 0.87×)',-1,'auto (yfinance)'],
+      [4,'Balance sheet (net debt/EBITDA 3.28× · Altman Z 1.4)',-1,'auto (yfinance)'],
+      [5,'ROIC / WACC spread (ROIC 5.5% vs income WACC 5.5% = 0%)',0,'auto (yfinance)'],
+      [6,'Gross margin trend (compressing)',-1,'auto (yfinance)'],
+      [7,'Debt maturity risk',0,'auto (yfinance)'],
+      [8,'CEO quality (4/10 · new CEO transition penalty)',-1,'auto (agent search)'],
+      [9,'Capital allocation (aggressive leverage · 5G ROI uncertain)',-1,'auto (agent + EDGAR)'],
+      [10,'Competitive moat (regulated duopoly · weak loyalty)',0,'auto (agent search)'],
+      [11,'Macro tailwind (rate sensitive · $27B debt)',-1,'auto (Claude API + web)'],
+      [12,'Divergence signal',0,'auto (yfinance)'],
+      [13,'Deal delay risk',0,'auto (agent search)'],
+      [14,'Insider ownership (~1% · treating it as a job)',0,'auto (SEC EDGAR)'],
+      [15,'Reinvestment runway (3× mature market)',0,'auto (agent search)'],
+    ],
+    oey: 6.4, pe: 34, pePctile: 82, pePctileColor:'#B91C1C',
+    taxNote:'EV/rev 2.5× → income type · below tier 1 (4×) → no entry penalty. +1 relief (income below tier 1). PE at 82nd pctile → −2 penalty. Total tax: −1.',
+    verdictNote:'YIELD TRAP ACTIVE: dividend yield 7.3% > TSX threshold 7% AND z-score 2.0 > 1.5. Hard gate → CANCEL BUY regardless of score. Also conviction −6 = HARD EXIT.',
+    fdVotes:[
+      ['Revenue (+3.2% · flat · not accelerating)', 'stable'],
+      ['Margins (structurally compressing)', 'negative'],
+      ['FCF (dividend coverage 0.87× · deteriorating)', 'negative'],
+      ['EPS revisions (cut)', 'negative'],
+      ['Buybacks (none · dividend consuming all FCF)', 'negative'],
+    ],
+    fdResult:'negative', fdNote:'4 / 5 votes negative → fd_direction = negative → sizing would be cut 75% → 60% (irrelevant as yield trap = CANCEL BUY)'
+  }
+};
+
+function renderBQRows(dims, dark) {
+  return dims.map(([n,name,s,src]) => {
+    if (dark) {
+      const cls = s>0?'pos':s<0?'neg':'zero';
+      const ss = s>0?`+${s}`:String(s);
+      return `<div class="d-bq-row"><div class="d-bq-num">${n}</div><div class="d-bq-name">${name}</div><div class="d-bq-s ${cls}">${ss}</div><div class="d-bq-src">${src}</div></div>`;
+    } else {
+      const color = s>0?'#15803D':s<0?'#B91C1C':'#9CA3AF';
+      const ss = s>0?`+${s}`:String(s);
+      const barFill = s!==0 ? `<div class="bq-bar-fill" style="background:${color};width:${Math.abs(s)/2*36}px;left:${s>=0?50:50-Math.abs(s)/2*36/48*100}%"></div>` : '';
+      return `<div class="bq-row"><div class="bq-n">${n}</div><div class="bq-name">${name}</div><div class="bq-bar-wrap">${barFill}</div><div class="bq-score" style="color:${color}">${ss}</div><div class="bq-src">${src}</div></div>`;
+    }
+  }).join('');
+}
+
+function renderFDTab(t) {
+  const d = TICKERS[t];
+  const vRows = d.fdVotes.map(([label, val]) => {
+    const color = val==='positive'?'#15803D':val==='negative'?'#B91C1C':'#6B7280';
+    const icon = val==='positive'?'▲':val==='negative'?'▼':'→';
+    return `<div class="fd-vote-row"><div class="fd-vote-label">${label}</div><div class="fd-vote-val" style="color:${color}">${icon} ${val}</div></div>`;
+  }).join('');
+  const sumCls = d.fdResult==='positive'?'':'fd-summary '+(d.fdResult==='negative'?'neg':'sta');
+  const sumClass = d.fdResult==='positive'?'fd-summary':d.fdResult==='negative'?'fd-summary neg':'fd-summary sta';
+  return `<div style="font-size:8px;color:#555;margin-bottom:6px">5 votes: revenue · margins · FCF · EPS revisions · buybacks · majority wins</div>${vRows}<div class="${sumClass}" style="margin-top:7px">${d.fdNote}</div>`;
+}
+
+function renderFSTab(t) {
+  const d = TICKERS[t];
+  const ringColor = d.conv>=8?'#15803D':d.conv>=5?'#92400E':'#B91C1C';
+  const oeyColor = d.oey>=4?'#15803D':d.oey>=1?'#92400E':'#B91C1C';
+  const peFill = Math.min(100,d.pePctile);
+  return `<div style="display:flex;align-items:flex-start;gap:12px">
+    <div class="score-ring" style="border-color:${ringColor}"><div style="font-size:16px;font-weight:500;color:#E8E8E8">${d.conv_display}</div><div style="font-size:7px;color:#555;margin-top:1px">conviction</div></div>
+    <div style="flex:1">
+      <div class="meta-grid">
+        <div class="mg"><div class="mg-l">Fundamental Strength class</div><div class="mg-v"><span class="${d.fsClass}" style="font-size:12px;padding:3px 8px">${d.fs}</span></div><div class="mg-sub" style="color:#555">Long signal cap: ${d.fs==='strong'||d.fs==='moderate_high'||d.fs==='moderate'?'none':d.fs==='moderate_low'?'min(conv, +4)':'min(conv, +1)'}</div></div>
+        <div class="mg"><div class="mg-l">Owner Earnings Yield (FCF / mkt cap)</div><div class="mg-v ${d.oey>=4?'g':d.oey>=1?'a':'r'}">${d.oey}%</div><div class="mg-sub" style="color:#555">${d.biz==='saas'?'SaaS threshold ≥5%':d.biz==='income'?'Income threshold ≥3%':'Compounder threshold ≥4%'} ${d.oey>=(d.biz==='saas'?5:d.biz==='income'?3:4)?'✓ above':'✗ below'}</div></div>
+      </div>
+      <div class="mg"><div class="mg-l">PE history — 20Y own percentile (contemporaneous trailing-4Q EPS)</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:4px"><div style="flex:1"><div class="pe-track"><div class="pe-fill" style="width:${peFill}%;background:${d.pePctileColor}"></div><div class="pe-marker" style="left:${peFill}%"></div></div><div style="display:flex;justify-content:space-between;font-size:8px;color:#444"><span>0th (cheap)</span><span>50th</span><span>100th (expensive)</span></div></div>
+        <div style="font-size:16px;font-weight:500;color:${d.pePctileColor};flex-shrink:0">${d.pePctile}th</div></div>
+        <div style="font-size:8px;color:#555;margin-top:3px">Current PE: ${d.pe}× · Source: Macrotrends (US) or Gurufocus (non-US)</div></div>
+    </div></div>
+    <div class="tax-note" style="margin-top:8px"><strong style="color:#C9A84C">Valuation tax breakdown:</strong> ${d.taxNote}</div>
+    <div class="tax-note" style="margin-top:5px;background:rgba(39,174,96,.06);border-left:3px solid #27AE60"><strong style="color:#27AE60">Verdict note:</strong> ${d.verdictNote}</div>`;
+}
+
+// Active drawer state
+let openDrawer = null;
+let openDrawerTicker = null;
+
+function toggleDrawer(ticker, rowEl) {
+  // Find which screen this row is in
+  let screen = rowEl.closest('.screen');
+  const sid = screen ? screen.id : 's1';
+  const drawerId = sid + '-dr-' + ticker.replace('.','');
+  const wrapEl = document.getElementById(drawerId);
+  if (!wrapEl) { console.log('Drawer not found:', drawerId); return; }
+  
+  // If same row clicked again — close it
+  if (openDrawer === drawerId) {
+    wrapEl.classList.remove('open');
+    rowEl.classList.remove('sel');
+    openDrawer = null;
+    openDrawerTicker = null;
+    // Reset BQ drill button
+    const btn = rowEl.querySelector('.bq-drill-btn');
+    if (btn) btn.classList.remove('open');
+    return;
+  }
+  
+  // Close any currently open drawer
+  if (openDrawer) {
+    const prev = document.getElementById(openDrawer);
+    if (prev) prev.classList.remove('open');
+    // Remove sel from all rows
+    document.querySelectorAll('table.sig tr.sel').forEach(r => r.classList.remove('sel'));
+    document.querySelectorAll('.bq-drill-btn.open').forEach(b => b.classList.remove('open'));
+  }
+  
+  openDrawer = drawerId;
+  openDrawerTicker = ticker;
+  
+  // Populate content
+  populateDrawer(ticker, drawerId);
+  wrapEl.classList.add('open');
+  rowEl.classList.add('sel');
+  const btn = rowEl.querySelector('.bq-drill-btn');
+  if (btn) btn.classList.add('open');
+}
+
+function populateDrawer(ticker, drawerId) {
+  const d = TICKERS[ticker];
+  if (!d) { console.log('No ticker data for:', ticker); return; }
+  const wrap = document.getElementById(drawerId);
+  
+  // Build BQ rows in two columns
+  const dims = d.dims;
+  const left = dims.slice(0,7);
+  const right = dims.slice(7);
+  
+  const bodyBQ = `<div style="font-size:8px;color:#9CA3AF;margin-bottom:5px">All 15 dimensions · auto = computed from yfinance / EDGAR · agent = Claude API web search</div><div class="bq-grid"><div>${renderBQRows(left,false)}</div><div>${renderBQRows(right,false)}</div></div><div class="tax-note" style="margin-top:7px"><strong>Valuation tax:</strong> ${d.taxNote}</div>`;
+  
+  wrap.innerHTML = `<div class="drawer-card" id="${drawerId}-card">
+    <div class="drawer-head">
+      <div class="dh-left"><div class="dh-title">${ticker} · ${d.name} · ${d.type}</div><div class="dh-sub">Business Quality ${d.bq>0?'+':''}${d.bq} &nbsp;+&nbsp; tax ${d.tax} &nbsp;= conviction ${d.conv_display} &nbsp;·&nbsp; <span style="color:${d.fd==='positive'?'#15803D':d.fd==='negative'?'#B91C1C':'#6B7280'};font-weight:500">${d.verdict} · ${d.sizing}</span></div></div>
+      <div class="dh-right"><button class="actn ext" onclick="goS(4,document.querySelectorAll('.spill')[3])"><i class="ti ti-external-link" style="font-size:9px;margin-right:3px"></i>Full depth view →</button><button class="actn" onclick="closeDrawer('${drawerId}')"><i class="ti ti-x" style="font-size:11px"></i></button></div>
+    </div>
+    <div class="dtabs">
+      <button class="dtab on" id="dt-bq-${drawerId}" onclick="switchTab('${drawerId}','bq')">Business Quality breakdown</button>
+      <button class="dtab" id="dt-fs-${drawerId}" onclick="switchTab('${drawerId}','fs')">Fundamental Strength + valuation</button>
+      <button class="dtab" id="dt-fd-${drawerId}" onclick="switchTab('${drawerId}','fd')">Fundamental Direction</button>
+    </div>
+    <div class="dbody" id="dbody-${drawerId}">${bodyBQ}</div>
+  </div>`;
+}
+
+function switchTab(drawerId, tab) {
+  const ticker = openDrawerTicker;
+  if (!ticker) return;
+  const d = TICKERS[ticker];
+  const body = document.getElementById('dbody-' + drawerId);
+  if (!body) return;
+  
+  // Update tab buttons
+  ['bq','fs','fd'].forEach(t => {
+    const btn = document.getElementById(`dt-${t}-${drawerId}`);
+    if (btn) btn.classList.toggle('on', t===tab);
+  });
+  
+  if (tab==='bq') {
+    const left = d.dims.slice(0,7);
+    const right = d.dims.slice(7);
+    body.innerHTML = `<div style="font-size:8px;color:#9CA3AF;margin-bottom:5px">All 15 dimensions · auto = yfinance / EDGAR · agent = Claude API web search</div><div class="bq-grid"><div>${renderBQRows(left,false)}</div><div>${renderBQRows(right,false)}</div></div><div class="tax-note" style="margin-top:7px"><strong>Valuation tax:</strong> ${d.taxNote}</div>`;
+  } else if (tab==='fs') {
+    body.innerHTML = renderFSTab(ticker);
+  } else if (tab==='fd') {
+    body.innerHTML = renderFDTab(ticker);
+  }
+}
+
+function closeDrawer(drawerId) {
+  const el = document.getElementById(drawerId);
+  if (el) el.classList.remove('open');
+  document.querySelectorAll('table.sig tr.sel').forEach(r => r.classList.remove('sel'));
+  document.querySelectorAll('.bq-drill-btn.open').forEach(b => b.classList.remove('open'));
+  openDrawer = null;
+  openDrawerTicker = null;
+}
+
+function goS(n, btn) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
+  document.getElementById('s' + n).classList.add('on');
+  document.querySelectorAll('.spill').forEach(b => b.classList.remove('on'));
+  if (btn) btn.classList.add('on');
+  document.getElementById('scrn-lbl').textContent = 'SCREEN ' + n + ' OF 5';
+  // Reset open drawer tracking on screen change (each screen manages its own drawers)
+  openDrawer = null; openDrawerTicker = null;
+  // Re-init pre-opened drawers for s2 and s3
+  if (n === 2 || n === 3) {
+    setTimeout(() => {
+      const screenEl = document.getElementById('s' + n);
+      const firstRow = screenEl ? screenEl.querySelector('table.sig tr.clickable') : null;
+      if (firstRow && openDrawer === null) {
+        toggleDrawer('KXS.TO', firstRow);
+        if (n === 3) {
+          setTimeout(() => {
+            const scopedDrId = 's3-dr-KXSTO';
+            const drEl = document.getElementById(scopedDrId);
+            if (drEl && drEl.classList.contains('open')) {
+              switchTab(scopedDrId, 'fs');
+            }
+          }, 80);
+        }
+      }
+    }, 50);
+  }
+}
+
+
+function switchSubtab(screenId, tab, btnEl) {
+  // Update button highlight states
+  const subtabs = document.getElementById(screenId + '-subtabs');
+  if (subtabs) subtabs.querySelectorAll('.csub').forEach(b => b.classList.remove('on'));
+  if (btnEl) btnEl.classList.add('on');
+  
+  // Works for s1, s2, s3 — all have the same 3-panel structure
+  const panels = ['signals', 'portfolio', 'contradictions'];
+  panels.forEach(p => {
+    const el = document.getElementById(screenId + '-' + p + '-panel');
+    if (el) el.style.display = (p === tab) ? 'block' : 'none';
+  });
+  
+  // Update sec-label and pagesub if they exist
+  const sl = document.getElementById(screenId + '-seclabel');
+  const ps = document.getElementById(screenId + '-pagesub');
+  if (sl) sl.style.display = (tab === 'signals') ? 'block' : 'none';
+  if (ps) ps.textContent = tab==='signals' 
+    ? 'New signals · 2026-05-23 · click any row to expand Business Quality breakdown' 
+    : tab==='portfolio' 
+    ? 'Portfolio positions · 3 held positions · conviction scores live' 
+    : 'Contradictions · 2 signals flagged';
+}
+
+function toggleFlow(n) {
+  const p = document.getElementById('fl' + n);
+  const c = document.getElementById('fc' + n);
+  const h = document.getElementById('fh' + n);
+  const isOpen = p.classList.contains('open');
+  p.classList.toggle('open', !isOpen);
+  if (c) c.style.transform = isOpen ? '' : 'rotate(180deg)';
+  if (h) h.textContent = isOpen ? 'click to expand' : 'click to collapse';
+}
+
+function toggleAnn(btn) {
+  document.body.classList.toggle('ann-on');
+  const on = document.body.classList.contains('ann-on');
+  btn.classList.toggle('on', on);
+  btn.innerHTML = `<i class="ti ti-tags"></i>annotations ${on ? 'on' : 'off'}`;
+}
+</script>
+
+<!-- ════════════════════════════════════════════
+     SHARED TABLE COMPONENT (used in screens 1, 2, 3)
+════════════════════════════════════════════ -->
+<script>
+function buildTableHTML(openTicker, screenId) {
+  const sid = screenId || 's1';
+  const rows = [
+    { ticker:'KXS.TO', dir:'LONG', fn:'DeltaDrift M',  date:'2026-05-12', conv:'+10', convCls:'cs-hi', verdict:'MAX CONVICTION', vClass:'vb-tac', size:'85%', sizeCls:'#15803D', bq:'+12', fs:'strong', fsClass:'fsb-str', fdCls:'fd-pos', fdTxt:'▲ pos', yt:'—' },
+    { ticker:'NVDA',   dir:'LONG', fn:'TrendPulse D',  date:'2026-05-14', conv:'+10', convCls:'cs-hi', verdict:'TACTICAL',       vClass:'vb-tac', size:'85%', sizeCls:'#15803D', bq:'+16', fs:'strong', fsClass:'fsb-str', fdCls:'fd-pos', fdTxt:'▲ pos', yt:'—' },
+    { ticker:'CSCO',   dir:'LONG', fn:'TrendPulse W',  date:'2026-05-15', conv:'+3',  convCls:'cs-md', verdict:'REDUCED',        vClass:'vb-red', size:'40%', sizeCls:'#92400E', bq:'+5',  fs:'moderate',fsClass:'fsb-mo', fdCls:'fd-sta', fdTxt:'→ sta', yt:'—' },
+    { ticker:'T.TO',   dir:'LONG', fn:'TrendPulse D',  date:'2026-05-15', conv:'−6',  convCls:'cs-lo', verdict:'YIELD TRAP',     vClass:'vb-yld', size:'0%',  sizeCls:'#B91C1C', bq:'−5',  fs:'mod-low', fsClass:'fsb-ml', fdCls:'fd-neg', fdTxt:'▼ neg', yt:'ACTIVE' },
+    { ticker:'SPY',    dir:'LONG', fn:'TrendPulse W',  date:'2026-05-15', conv:'N/A', convCls:'cs-na', verdict:'N/A — ETF',     vClass:'vb-na',  size:'—',   sizeCls:'#9CA3AF', bq:'N/A', fs:'N/A', fsClass:'', fdCls:'fd-sta', fdTxt:'—', yt:'—', isEtf:true },
+  ];
+  
+  let html = `<div class="tbl-scroll"><div class="tbl-wrap"><table class="sig"><thead><tr>
+    <th style="width:72px">Ticker</th>
+    <th style="width:44px">Direction</th>
+    <th style="width:88px">Function</th>
+    <th style="width:70px">Signal date</th>
+    <th style="width:60px">Conviction</th>
+    <th style="width:100px">Verdict</th>
+    <th style="width:52px">Size</th>
+    <th style="width:52px">Bus.Qual.</th>
+    <th style="width:80px">Fund. Strength</th>
+    <th style="width:100px">Fund. Direction</th>
+    <th style="width:55px">Yield trap</th>
+    <th>Actions</th>
+  </tr></thead><tbody>`;
+  
+  rows.forEach(r => {
+    const isOpen = openTicker === r.ticker;
+    const selCls = isOpen ? ' sel' : '';
+    const bqDrillOpen = isOpen ? ' open' : '';
+    if (r.isEtf) {
+      html += `<tr><td class="td-name" style="color:#9CA3AF">${r.ticker}</td><td class="td-dim" style="color:#15803D">${r.dir}</td><td class="td-dim">${r.fn}</td><td class="td-dim">${r.date}</td><td><span class="cs cs-na">${r.conv}</span></td><td><span class="vb vb-na">N/A — ETF</span></td><td colspan="6" class="td-dim" style="color:#9CA3AF">non-equity · engine returns NOT_APPLICABLE · quoteType=ETF</td></tr>`;
+    } else {
+      html += `<tr class="clickable${selCls}" onclick="toggleDrawer('${r.ticker}',this)">
+        <td class="td-name">${r.ticker}</td>
+        <td class="td-dim" style="color:#15803D">${r.dir}</td>
+        <td class="td-dim">${r.fn}</td>
+        <td class="td-dim">${r.date}</td>
+        <td><span class="cs ${r.convCls}">${r.conv}</span></td>
+        <td><span class="vb ${r.vClass}">${r.verdict}</span></td>
+        <td class="td-dim" style="color:${r.sizeCls};font-weight:500">${r.size}</td>
+        <td class="td-dim" style="font-weight:500">${r.bq}</td>
+        <td><span class="fsb ${r.fsClass}">${r.fs}</span></td>
+        <td class="${r.fdCls}">${r.fdTxt}</td>
+        <td class="td-dim" style="color:${r.yt==='ACTIVE'?'#B91C1C':'#9CA3AF'};font-weight:${r.yt==='ACTIVE'?600:400}">${r.yt}</td>
+        <td onclick="event.stopPropagation()"><div class="row-acts">
+          <button class="actn prim bq-drill-btn${bqDrillOpen}" onclick="toggleDrawer('${r.ticker}',this.closest('tr'))">Bus. Quality drill</button>
+          <button class="actn ext" onclick="goS(4,document.querySelectorAll('.spill')[3])">Depth view <i class="ti ti-external-link" style="font-size:9px"></i></button>
+        </div></td>
+      </tr>
+      <tr class="drawer-tr"><td colspan="12"><div class="drawer-wrap" id="${sid}-dr-${r.ticker.replace('.','')}">${r.ticker==='T.TO'?yieldTrapContent():'<!-- populated by JS -->'}</div></td></tr>`;
+    }
+  });
+  
+  html += `</tbody></table></div></div>`;
+  return html;
+}
+
+function yieldTrapContent() {
+  return `<div class="drawer-card"><div class="drawer-head"><div class="dh-left"><div class="dh-title">T.TO · TELUS · income · telecom</div><div class="dh-sub" style="color:#B91C1C">YIELD TRAP ACTIVE · Business Quality −5 · conviction −6 · CANCEL BUY / HARD EXIT</div></div><div class="dh-right"><button class="actn warn">Yield trap detail</button></div></div><div class="dbody"><div style="padding:9px;background:#FEF2F2;border-radius:5px;border:.5px solid #FCA5A5;font-size:9px;color:#7F1D1D;line-height:1.7"><strong>Yield trap fired — two conditions both true:</strong><br>1. Dividend yield 7.3% exceeds TSX market threshold (7%) ✓<br>2. Yield z-score 2.0 exceeds 1.5 std deviations above own 5Y mean ✓<br><br>Hard gate: BUY → CANCEL BUY · SELL → HARD EXIT · No conviction score can override this.</div></div></div>`;
+}
+
+// Build table content in screens
+function initScreens() {
+  document.getElementById('s1-table').innerHTML = buildTableHTML(null, 's1');
+  document.getElementById('s2-table').innerHTML = buildTableHTML('KXS.TO', 's2');
+  document.getElementById('s3-table').innerHTML = buildTableHTML('KXS.TO', 's3');
+}
+
+// After DOM ready: pre-open KXS.TO in s2 (BQ tab) and s3 (FS tab)
+function initDrawers() {
+  // Screen 2: open KXS drawer, BQ tab (default)
+  const s2rows = document.querySelectorAll('#s2 table.sig tr.clickable');
+  if (s2rows.length > 0) {
+    toggleDrawer('KXS.TO', s2rows[0]);
+  }
+  // Screen 3: open KXS drawer, switch to FS tab
+  const s3rows = document.querySelectorAll('#s3 table.sig tr.clickable');
+  if (s3rows.length > 0) {
+    toggleDrawer('KXS.TO', s3rows[0]);
+    setTimeout(() => {
+      const s3dr = document.getElementById('s3-dr-KXSTO');
+      if (s3dr && s3dr.classList.contains('open')) {
+        switchTab('s3-dr-KXSTO', 'fs');
+      }
+    }, 100);
+  }
+}
+</script>
+
+<!-- ════════════════════════════════════════
+     SCREEN 1 — BREADTH DEFAULT
+════════════════════════════════════════ -->
+<div class="screen on" id="s1">
+  <div class="page-wrap">
+    <div class="mw-topnav">
+      <div class="mw-logo">Mind<em>Wealth</em></div>
+      <div class="mw-tabs">
+        <div class="mw-tab">DASHBOARD</div><div class="mw-tab">SIGNALS</div>
+        <div class="mw-tab">MACRO</div><div class="mw-tab">SENTIMENT</div>
+        <div class="mw-tab on">CONVICTION</div><div class="mw-tab">PORTFOLIO</div>
+      </div>
+    </div>
+    <div class="conv-subtabs" id="s1-subtabs">
+      <div class="csub on" onclick="switchSubtab('s1','signals',this)">New signals (Claude report)</div>
+      <div class="csub" onclick="switchSubtab('s1','portfolio',this)">Portfolio positions</div>
+      <div class="csub" onclick="switchSubtab('s1','contradictions',this)">Contradictions <span class="badge">2</span></div>
+    </div>
+    <div class="topbar-row">
+      <div><div class="page-title"><i class="ti ti-brain" style="font-size:15px"></i>Conviction Engine</div><div class="page-sub" id="s1-pagesub">New signals · 2026-05-23 · click any row to expand Business Quality breakdown</div></div>
+      <div class="live-badge" title="Data freshness indicator — not a button. Shows conviction_store was last updated at 06:00 this morning."><i class="ti ti-circle-check" style="font-size:10px"></i>conviction_store live · 06:00</div>
+    </div>
+    <div class="alert-bar"><i class="ti ti-alert-triangle" style="font-size:14px;flex-shrink:0"></i><strong>1 yield trap active:</strong>&nbsp;TELUS (T.TO) — dividend yield 7.3% exceeds TSX 7% threshold. BUY cancelled hard regardless of signal. Click row for detail.</div>
+    <div class="flow-toggle" onclick="toggleFlow(1)"><div class="flow-label"><i class="ti ti-git-branch" style="font-size:12px"></i>Scoring flow — how conviction_score is computed</div><div style="display:flex;align-items:center;gap:6px"><span id="fh1" style="font-size:9px;color:#9CA3AF">click to expand</span><i class="ti ti-chevron-down" id="fc1" style="font-size:12px;color:#9CA3AF;transition:transform .25s"></i></div></div>
+    <div class="flow-panel" id="fl1">
+      <div class="flow-inner">
+        <div class="flow-row">
+          <div class="flow-box"><div class="flow-box-lbl">Business Quality</div><div class="flow-box-val">−14 → +22</div><div class="flow-box-sub">15 dims · quarterly</div></div>
+          <div class="flow-op">+</div>
+          <div class="flow-box tax"><div class="flow-box-lbl">Valuation tax</div><div class="flow-box-val" style="color:#92400E">−10 → 0</div><div class="flow-box-sub">EV/rev · PE pctile · daily</div></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-box"><div class="flow-box-lbl">Conviction raw</div><div class="flow-box-val">−12 → +10</div><div class="flow-box-sub">BQ + tax</div></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-box tax"><div class="flow-box-lbl">Fund. Strength cap</div><div class="flow-box-val" style="color:#92400E">if weak / mod-low</div><div class="flow-box-sub">long: ≤+1 or ≤+4</div></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-box gate"><div class="flow-box-lbl">Yield trap gate</div><div class="flow-box-val" style="color:#B91C1C">hard gate</div><div class="flow-box-sub">overrides all scores</div></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-box ok"><div class="flow-box-lbl">Verdict + sizing</div><div class="flow-box-val" style="color:#15803D">Fund. Direction adjusts</div><div class="flow-box-sub">fd+ bumps % · fd− cuts %</div></div>
+        </div>
+        <div class="flow-tiers">
+          <div class="flow-tier ft-g"><span class="tier-score">≥ +8</span>MAX CONVICTION · 100%</div>
+          <div class="flow-tier ft-a"><span class="tier-score">≥ +5</span>TACTICAL BUY · 75% → 85% fd+</div>
+          <div class="flow-tier ft-am"><span class="tier-score">≥ +2</span>REDUCED BUY · 40% → 50% fd+</div>
+          <div class="flow-tier ft-r"><span class="tier-score">&lt; +2</span>CANCEL BUY · 0%</div>
+        </div>
+        <div class="flow-formula"><strong>Formula:</strong> conviction = Business Quality + valuation tax → Fundamental Strength cap → yield trap gate → verdict &nbsp;·&nbsp; <strong>All 15 Business Quality dimensions auto-computed</strong> (yfinance / SEC EDGAR / Claude API web search) &nbsp;·&nbsp; <strong>Fundamental Direction</strong> = 5 votes: revenue / margins / FCF / EPS revisions / buybacks</div>
+      </div>
+    </div>
+    <div class="sec-label">Click any row to expand Business Quality drilldown · all 15 dimensions + Fundamental Strength + Fundamental Direction inline below row</div>
+    <div id="s1-content"><div id="s1-signals-panel"><div id="s1-table"><!-- populated by JS --></div></div>
+      <div id="s1-portfolio-panel" style="display:none">
+        <div class="tbl-scroll" style="padding:0 14px 14px">
+          <div style="font-size:8px;color:#444;letter-spacing:.5px;text-transform:uppercase;padding:8px 0 4px;border-bottom:.5px solid #1E1E1E;margin-bottom:6px">Held positions · 30 assets in universe · live conviction scores · source: portfolio_store + Google Sheets feed</div>
+          <div class="port-row"><span class="port-ticker" style="color:#27AE60">KXS.TO</span><span class="port-val">Core 75% · Tactical 10% · Opened 2026-03-10 · DeltaDrift M</span><span class="vb vb-tac" style="margin:0 8px">TACTICAL BUY</span><span style="font-size:10px;color:#27AE60;font-weight:500">+10</span><span style="font-size:9px;color:#555;margin-left:8px">P&amp;L: +8.3%</span><span style="font-size:8px;color:#333;margin-left:8px">Fundamental Direction ▲ pos</span></div>
+          <div class="port-row"><span class="port-ticker" style="color:#27AE60">NVDA</span><span class="port-val">Core 85% · Tactical 0% · Opened 2026-01-22 · TrendPulse M</span><span class="vb vb-tac" style="margin:0 8px">TACTICAL BUY</span><span style="font-size:10px;color:#27AE60;font-weight:500">+10</span><span style="font-size:9px;color:#555;margin-left:8px">P&amp;L: +21.4%</span><span style="font-size:8px;color:#333;margin-left:8px">Fundamental Direction ▲ pos</span></div>
+          <div class="port-row"><span class="port-ticker" style="color:#C9A84C">CSCO</span><span class="port-val">Core 40% · Tactical 0% · Opened 2026-04-05 · TrendPulse W</span><span class="vb vb-red" style="margin:0 8px">REDUCED BUY</span><span style="font-size:10px;color:#C9A84C;font-weight:500">+3</span><span style="font-size:9px;color:#555;margin-left:8px">P&amp;L: −1.2%</span><span style="font-size:8px;color:#333;margin-left:8px">Fundamental Direction → sta</span></div>
+          <div class="port-row" style="opacity:.5"><span class="port-ticker" style="color:#555">MSFT</span><span class="port-val">Core 60% · Tactical 0% · Opened 2025-11-14 · DeltaDrift M</span><span class="vb vb-tac" style="margin:0 8px">TACTICAL BUY</span><span style="font-size:10px;color:#27AE60;font-weight:500">+8</span><span style="font-size:9px;color:#555;margin-left:8px">P&amp;L: +4.1%</span></div>
+          <div class="port-row" style="opacity:.5"><span class="port-ticker" style="color:#555">AAPL</span><span class="port-val">Core 40% · Tactical 0% · Opened 2026-02-08 · TrendPulse W</span><span class="vb vb-red" style="margin:0 8px">REDUCED BUY</span><span style="font-size:10px;color:#C9A84C;font-weight:500">+5</span><span style="font-size:9px;color:#555;margin-left:8px">P&amp;L: −0.8%</span></div>
+          <div style="padding:8px 0;font-size:8px;color:#2A2A2A;font-family:'JetBrains Mono',monospace">+ 25 more positions · Full list in portfolio_store · Google Sheets feed updates on each portfolio management report</div>
+        </div>
+      </div>
+      <div id="s1-contradictions-panel" style="display:none">
+        <div class="tbl-scroll" style="padding:0 14px 14px">
+          <div style="font-size:8px;color:#444;letter-spacing:.5px;text-transform:uppercase;padding:8px 0 4px;border-bottom:.5px solid #1E1E1E;margin-bottom:6px">Signals conflicting with current conviction scores or open position layers · 2 flagged</div>
+          <div class="contra-row">
+            <div class="contra-title"><span style="color:#c0392b;margin-right:6px">⚠</span>CSCO — short-interval BUY signal firing while long conviction has deteriorated</div>
+            <div class="contra-body">TrendPulse W fired short-term BUY on 2026-05-15. But conviction has dropped from +6 (when core was opened on 2026-04-05) to +3. Engine flags TACTICAL_ADD_WARNING. Tactical sizing automatically halved from 25% to 12.5%. Analyst should review whether core thesis still holds.</div>
+          </div>
+          <div class="contra-row">
+            <div class="contra-title"><span style="color:#C9A84C;margin-right:6px">⚡</span>T.TO — BUY signal firing on yield-trapped stock</div>
+            <div class="contra-body">TrendPulse D fired BUY on 2026-05-15. Yield trap hard gate is active (dividend yield 7.3% exceeds TSX 7% threshold). Signal cancelled regardless of quant output. No position action taken. Hard gate cannot be overridden by any score.</div>
+          </div>
+          <div style="padding:8px 0;font-size:8px;color:#2A2A2A;font-family:'JetBrains Mono',monospace">Generated by comparing signallist[] vs stored conviction_score and position_layers per ticker on each daily run.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- annotations -->
+  <div class="ann-box" style="top:145px;right:16px"><strong>① Alert bar</strong>Auto-generated from yield_trap_warning flag in daily store. Driven by 2-condition check: yield z-score AND market threshold.</div>
+  <div class="ann-box" style="top:195px;right:16px"><strong>② Scoring flow</strong>Collapsed by default. One click expands. Shows full formula chain with all 4 verdict tiers and Fundamental Direction sizing adjustments.</div>
+  <div class="ann-box" style="top:270px;right:16px"><strong>③ All rows clickable</strong>Click any row → drawer opens inline below. Click same row again → drawer closes. Only one drawer open at a time.</div>
+  <div class="ann-box dev" style="top:345px;right:16px"><strong>Dev: data source</strong>TICKERS{} object in JS. In production: API call to conviction_store per ticker. All 15 Business Quality dimensions stored individually — not as aggregate.</div>
+  <div class="dev-note"><strong>SCREEN 1 · BREADTH DEFAULT</strong> &nbsp;·&nbsp; White theme · Entry point for daily workflow &nbsp;·&nbsp; MindWealth main nav at top, conviction sub-tabs BELOW it &nbsp;·&nbsp; URL: <span class="url">/conviction</span> &nbsp;·&nbsp; All rows clickable via toggleDrawer(ticker, rowEl) &nbsp;·&nbsp; Portfolio positions + Contradictions tabs need content wired from backend</div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SCREEN 2 — ROW EXPANDED (KXS pre-open)
+════════════════════════════════════════ -->
+<div class="screen" id="s2">
+  <div class="page-wrap">
+    <div class="mw-topnav">
+      <div class="mw-logo">Mind<em>Wealth</em></div>
+      <div class="mw-tabs"><div class="mw-tab">DASHBOARD</div><div class="mw-tab">SIGNALS</div><div class="mw-tab">MACRO</div><div class="mw-tab">SENTIMENT</div><div class="mw-tab on">CONVICTION</div><div class="mw-tab">PORTFOLIO</div></div>
+    </div>
+    <div class="conv-subtabs" id="s2-subtabs">
+      <div class="csub on" onclick="switchSubtab('s2','signals',this)">New signals (Claude report)</div>
+      <div class="csub" onclick="switchSubtab('s2','portfolio',this)">Portfolio positions</div>
+      <div class="csub" onclick="switchSubtab('s2','contradictions',this)">Contradictions <span class="badge">2</span></div>
+    </div>
+    <div class="topbar-row">
+      <div><div class="page-title"><i class="ti ti-brain" style="font-size:15px"></i>Conviction Engine</div><div class="page-sub">KXS.TO row expanded — Business Quality drilldown · click same row to collapse · click another row to switch</div></div>
+      <div class="live-badge" title="Data freshness indicator — not a button. Shows conviction_store was last updated at 06:00 this morning."><i class="ti ti-circle-check" style="font-size:10px"></i>conviction_store live · 06:00</div>
+    </div>
+    <div class="alert-bar"><i class="ti ti-alert-triangle" style="font-size:14px;flex-shrink:0"></i><strong>1 yield trap active:</strong>&nbsp;TELUS (T.TO)</div>
+    <div class="sec-label">KXS.TO selected · Business Quality breakdown tab active · click "Fundamental Strength + valuation" or "Fundamental Direction" tabs to switch</div>
+    <div id="s2-content">
+      <div id="s2-signals-panel"><div id="s2-table"><!-- populated by JS --></div></div>
+      <div id="s2-portfolio-panel" style="display:none"><div class="tbl-scroll" style="padding:0 14px">
+        <div class="sec-label" style="padding:8px 0 4px">Current held positions with live conviction scores</div>
+        <div class="port-row"><span class="port-ticker" style="color:#27AE60;font-weight:600">KXS.TO</span><span class="port-val">Core: 75% · Tactical: 10% · Entry 2026-03-10</span><span><span class="vb vb-tac">TACTICAL BUY</span></span><span style="font-size:10px;color:#27AE60;padding:0 8px">conviction +10</span><span style="font-size:9px;color:#555">P&amp;L: +8.3%</span></div>
+        <div class="port-row"><span class="port-ticker" style="color:#27AE60;font-weight:600">NVDA</span><span class="port-val">Core: 85% · Tactical: 0% · Entry 2026-01-22</span><span><span class="vb vb-tac">TACTICAL BUY</span></span><span style="font-size:10px;color:#27AE60;padding:0 8px">conviction +10</span><span style="font-size:9px;color:#555">P&amp;L: +21.4%</span></div>
+        <div class="port-row"><span class="port-ticker" style="color:#C9A84C;font-weight:600">CSCO</span><span class="port-val">Core: 40% · Tactical: 0% · Entry 2026-04-05</span><span><span class="vb vb-red">REDUCED BUY</span></span><span style="font-size:10px;color:#C9A84C;padding:0 8px">conviction +3</span><span style="font-size:9px;color:#555">P&amp;L: −1.2%</span></div>
+        <div style="padding:10px 0;font-size:9px;color:#333;font-family:'JetBrains Mono',monospace">Loads from portfolio_store: core_fraction, tactical_fraction, entry date, live conviction, P&amp;L per position.</div>
+      </div></div>
+      <div id="s2-contradictions-panel" style="display:none"><div class="tbl-scroll" style="padding:0 14px">
+        <div class="sec-label" style="padding:8px 0 4px">Signals conflicting with current conviction scores or position layers</div>
+        <div class="contra-row"><div class="contra-title"><span style="color:#c0392b">⚠</span> CSCO — short-interval BUY signal while long conviction deteriorated to +3</div><div class="contra-body">TrendPulse W fired short-term BUY 2026-05-15. Conviction dropped from +6 (when core opened) to +3. Engine flags TACTICAL_ADD_WARNING. Tactical sizing automatically halved to 20%. Review core thesis.</div></div>
+        <div class="contra-row"><div class="contra-title"><span style="color:#C9A84C">⚡</span> T.TO — LONG signal firing on yield-trapped stock</div><div class="contra-body">TrendPulse D fired BUY 2026-05-15. Yield trap hard gate active → signal CANCELLED regardless of quant output. No action taken. Hard gate cannot be overridden.</div></div>
+        <div style="padding:10px 0;font-size:9px;color:#333;font-family:'JetBrains Mono',monospace">Generated by comparing signallist[] output vs stored conviction and position_layers per ticker.</div>
+      </div></div>
+    </div>
+  </div>
+  <div class="ann-box" style="top:140px;right:16px"><strong>① Row highlight</strong>Amber background on selected row (.sel class). BQ drill button shows .open state (green background).</div>
+  <div class="ann-box" style="top:230px;right:16px"><strong>② Drawer tabs</strong>3 tabs inside drawer: Business Quality breakdown / Fundamental Strength + valuation / Fundamental Direction. Switching tabs updates .dbody content without closing drawer.</div>
+  <div class="ann-box dev" style="top:320px;right:16px"><strong>Dev: toggle logic</strong>toggleDrawer(ticker, rowEl): if same drawer open → close. If different → close old, open new. populateDrawer() fills content from TICKERS object. switchTab() swaps .dbody innerHTML.</div>
+  <div class="ann-box" style="top:410px;right:16px"><strong>④ "Depth view" button</strong>Opens dark depth view for this ticker. In production: navigate('/conviction/KXS.TO'). URL param pattern shown in Screen 5.</div>
+  <div class="dev-note"><strong>SCREEN 2 · ROW EXPANDED · BUSINESS QUALITY TAB</strong> &nbsp;·&nbsp; toggleDrawer('KXS.TO', rowEl) called on row click &nbsp;·&nbsp; Re-click same row → closes (checks openDrawer === drawerId) &nbsp;·&nbsp; All 15 dims shown in 2-column grid · bar chart center-anchored · source label right-aligned &nbsp;·&nbsp; "Depth view" button → navigate to Screen 4</div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SCREEN 3 — FS + VALUATION TAB
+════════════════════════════════════════ -->
+<div class="screen" id="s3">
+  <div class="page-wrap">
+    <div class="mw-topnav">
+      <div class="mw-logo">Mind<em>Wealth</em></div>
+      <div class="mw-tabs"><div class="mw-tab">DASHBOARD</div><div class="mw-tab">SIGNALS</div><div class="mw-tab">MACRO</div><div class="mw-tab">SENTIMENT</div><div class="mw-tab on">CONVICTION</div><div class="mw-tab">PORTFOLIO</div></div>
+    </div>
+    <div class="conv-subtabs" id="s3-subtabs"><div class="csub on" onclick="switchSubtab('s3','signals',this)">New signals (Claude report)</div><div class="csub" onclick="switchSubtab('s3','portfolio',this)">Portfolio positions</div><div class="csub" onclick="switchSubtab('s3','contradictions',this)">Contradictions <span class="badge">2</span></div></div>
+    <div class="topbar-row">
+      <div><div class="page-title"><i class="ti ti-brain" style="font-size:15px"></i>Conviction Engine</div><div class="page-sub">KXS.TO · Fundamental Strength + valuation tab</div></div>
+      <div class="live-badge" title="Data freshness indicator — not a button. Shows conviction_store was last updated at 06:00 this morning."><i class="ti ti-circle-check" style="font-size:10px"></i>conviction_store live · 06:00</div>
+    </div>
+    <div class="alert-bar"><i class="ti ti-alert-triangle" style="font-size:14px;flex-shrink:0"></i><strong>1 yield trap active:</strong>&nbsp;TELUS (T.TO)</div>
+    <div class="sec-label">KXS.TO drawer · Fundamental Strength + valuation tab active</div>
+    <div id="s3-content">
+      <div id="s3-signals-panel"><div id="s3-table"><!-- populated by JS --></div></div>
+      <div id="s3-portfolio-panel" style="display:none"><div class="tbl-scroll" style="padding:0 14px">
+        <div class="sec-label" style="padding:8px 0 4px">Current held positions with live conviction scores</div>
+        <div class="port-row"><span class="port-ticker" style="color:#27AE60;font-weight:600">KXS.TO</span><span class="port-val">Core: 75% · Tactical: 10% · Entry 2026-03-10</span><span><span class="vb vb-tac">TACTICAL BUY</span></span><span style="font-size:10px;color:#27AE60;padding:0 8px">conviction +10</span><span style="font-size:9px;color:#555">P&amp;L: +8.3%</span></div>
+        <div class="port-row"><span class="port-ticker" style="color:#27AE60;font-weight:600">NVDA</span><span class="port-val">Core: 85% · Tactical: 0% · Entry 2026-01-22</span><span><span class="vb vb-tac">TACTICAL BUY</span></span><span style="font-size:10px;color:#27AE60;padding:0 8px">conviction +10</span><span style="font-size:9px;color:#555">P&amp;L: +21.4%</span></div>
+        <div class="port-row"><span class="port-ticker" style="color:#C9A84C;font-weight:600">CSCO</span><span class="port-val">Core: 40% · Tactical: 0% · Entry 2026-04-05</span><span><span class="vb vb-red">REDUCED BUY</span></span><span style="font-size:10px;color:#C9A84C;padding:0 8px">conviction +3</span><span style="font-size:9px;color:#555">P&amp;L: −1.2%</span></div>
+        <div style="padding:10px 0;font-size:9px;color:#333;font-family:'JetBrains Mono',monospace">Loads from portfolio_store: core_fraction, tactical_fraction, entry date, live conviction, P&amp;L per position.</div>
+      </div></div>
+      <div id="s3-contradictions-panel" style="display:none"><div class="tbl-scroll" style="padding:0 14px">
+        <div class="sec-label" style="padding:8px 0 4px">Signals conflicting with current conviction scores or position layers</div>
+        <div class="contra-row"><div class="contra-title"><span style="color:#c0392b">⚠</span> CSCO — short-interval BUY signal while long conviction deteriorated to +3</div><div class="contra-body">TrendPulse W fired short-term BUY 2026-05-15. Conviction dropped from +6 (when core opened) to +3. Engine flags TACTICAL_ADD_WARNING. Tactical sizing automatically halved to 20%. Review core thesis.</div></div>
+        <div class="contra-row"><div class="contra-title"><span style="color:#C9A84C">⚡</span> T.TO — LONG signal firing on yield-trapped stock</div><div class="contra-body">TrendPulse D fired BUY 2026-05-15. Yield trap hard gate active → signal CANCELLED regardless of quant output. No action taken. Hard gate cannot be overridden.</div></div>
+        <div style="padding:10px 0;font-size:9px;color:#333;font-family:'JetBrains Mono',monospace">Generated by comparing signallist[] output vs stored conviction and position_layers per ticker.</div>
+      </div></div>
+    </div>
+  </div>
+  <div class="ann-box" style="top:130px;right:16px"><strong>① Conviction ring</strong>Border color: green ≥+5, amber ≥+2, red &lt;+2. Sits alongside Fundamental Strength class and Owner Earnings Yield block.</div>
+  <div class="ann-box" style="top:220px;right:16px"><strong>② Owner Earnings Yield</strong>FCF / market cap. Sector threshold shown inline. Updates daily with live price. Color: green = above threshold, red = below 1% danger zone.</div>
+  <div class="ann-box" style="top:310px;right:16px"><strong>③ PE 20Y percentile bar</strong>Marker moves daily. Green &lt;60th pctile, amber 60–80th, red &gt;80th. Source: Macrotrends (US) or Gurufocus (non-US). Contemporaneous trailing-4Q EPS only.</div>
+  <div class="ann-box dev" style="top:400px;right:16px"><strong>Dev: tab switch</strong>switchTab(drawerId, 'fs') called on tab click. Replaces dbody innerHTML with renderFSTab(ticker). Conviction ring, OEY, PE percentile all from stored data.</div>
+  <div class="dev-note"><strong>SCREEN 3 · FUNDAMENTAL STRENGTH + VALUATION TAB</strong> &nbsp;·&nbsp; Same drawer as Screen 2, different tab active &nbsp;·&nbsp; renderFSTab(ticker) generates content from TICKERS data &nbsp;·&nbsp; Conviction ring border color coded by tier &nbsp;·&nbsp; PE percentile: pePctile% from stored pe_20y_array percentileofscore()</div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SCREEN 4 — DEPTH VIEW (DARK)
+════════════════════════════════════════ -->
+<div class="screen" id="s4">
+  <div class="dark-page">
+    <div class="d-tb">
+      <div class="d-logo">MindWealth<span>ALPHA TERMINAL</span></div>
+      <div class="d-tabs"><div class="d-tab">DASHBOARD</div><div class="d-tab">SIGNALS</div><div class="d-tab">MACRO</div><div class="d-tab">SENTIMENT</div><div class="d-tab on">CONVICTION</div><div class="d-tab">PORTFOLIO</div></div>
+      <div style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:9px;color:#2a2a2a;flex-shrink:0">AWS · LIVE</div>
+    </div>
+    <div class="d-rs">
+      <div class="d-rsd g"></div><div class="d-rsl">CONVICTION ENGINE v5</div>
+      <div class="d-sep"></div>
+      <div class="d-ri g"><span>KXS.TO +10</span>&nbsp;·&nbsp;TACTICAL BUY · 85%</div>
+      <div class="d-sep"></div>
+      <div class="d-ri r"><span>T.TO −6</span>&nbsp;·&nbsp;CANCEL BUY · YIELD TRAP</div>
+      <div class="d-sep"></div>
+      <div class="d-ri warn"><span>YIELD TRAP</span>&nbsp;2-condition hard gate · T.TO</div>
+    </div>
+    <div class="d-body">
+      <div class="d-sidebar">
+        <div class="d-sg"><div class="d-sgl">Scoring layers</div>
+          <div class="d-si on"><div class="d-sd gold"></div><div><div class="d-sn">Business Quality · 15 dims</div><div class="d-ss">all auto-computed</div></div></div>
+          <div class="d-si"><div class="d-sd g"></div><div><div class="d-sn">Valuation tax</div><div class="d-ss">sector-calibrated</div></div></div>
+          <div class="d-si"><div class="d-sd g"></div><div><div class="d-sn">Fund. Strength cap</div><div class="d-ss">graduated sizing</div></div></div>
+          <div class="d-si"><div class="d-sd r"></div><div><div class="d-sn">Yield trap gate</div><div class="d-ss">2-condition hard gate</div></div></div>
+        </div>
+        <div class="d-sg" style="margin-top:10px"><div class="d-sgl">Sizing output</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;line-height:2;padding:0 7px">
+            <div style="color:#27ae60">≥+8 = MAX 100%</div>
+            <div style="color:#27ae60">≥+5 = TACTICAL 75%</div>
+            <div style="color:#C9A84C">≥+2 = REDUCED 40%</div>
+            <div style="color:#c0392b">&lt;+2 = CANCEL 0%</div>
+            <div style="color:#27ae60;margin-top:4px;font-size:8px">fd positive = +10pp</div>
+            <div style="color:#c0392b;font-size:8px">fd negative = −15pp</div>
+          </div>
+        </div>
+        <div class="d-sg" style="margin-top:10px"><div class="d-sgl">Business types</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;line-height:1.9;padding:0 7px;color:#444">
+            saas · WACC 10%<br>compounder · 7.5%<br>income · 5.5%<br>cyclical · 9%
+          </div>
+        </div>
+      </div>
+      <div class="d-main">
+        <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#333;letter-spacing:1px">BUSINESS QUALITY SCORE · 15 DIMENSIONS · KXS.TO (saas · WACC 10%)</div>
+          <button style="font-family:'JetBrains Mono',monospace;font-size:8px;padding:2px 8px;border-radius:3px;border:1px solid #222;background:none;color:#555;cursor:pointer" onclick="goS(1,document.querySelectorAll('.spill')[0])">← Back to breadth view</button>
+        </div>
+        <div id="dark-bq-rows"><!-- populated --></div>
+        <div class="d-total"><span style="color:#777">Business Quality raw</span><span style="color:#27ae60;font-weight:600">+12</span><span style="color:#333;margin-left:12px">Valuation tax</span><span style="color:#C9A84C">−2</span></div>
+        <div class="d-conv"><span style="color:#777">conviction_score</span><span style="color:#27ae60;font-weight:600">+10</span><span style="color:#333">Fundamental Strength: <span style="color:#27ae60">strong</span></span><span style="color:#27ae60;font-weight:600">TACTICAL BUY · 85% (fd+ bump)</span></div>
+      </div>
+      <div class="d-infopanel">
+        <div class="d-ip-title">Signal Timeframe</div>
+        <div class="d-ip-body"><span class="g">Daily/Weekly interval → tactical layer</span><br><span class="gold">Monthly/Quarterly interval → core layer</span><br><br>Same function, different timeframe → different position layer.</div>
+        <div class="d-ip-sep"></div>
+        <div class="d-ip-title">All 15 Dims Auto</div>
+        <div class="d-ip-body">Dims 1–7, 12: yfinance<br>Dims 8–10, 13, 15: Claude API web search<br>Dim 11: Claude API + web<br>Dim 14: SEC EDGAR<br><br>No manual input. Agent-computed quarterly.</div>
+        <div class="d-ip-sep"></div>
+        <div class="d-ip-title">Status Bar Chips</div>
+        <div class="d-ip-body">Each chip below is clickable.<br>Click → navigate to<br><span class="gold">/conviction?ticker=KXS.TO</span><br><br>Breadth page reads URL param on mount, pre-selects row, auto-opens drawer.</div>
+      </div>
+    </div>
+    <div class="d-sb">
+      <div class="d-sb-item"><div class="d-sb-dot on"></div>CONVICTION ENGINE · daily run</div>
+      <div class="d-sb-item"><div class="d-sb-dot wa"></div>YIELD TRAP · T.TO</div>
+      <div class="d-chip g" onclick="goS(1,document.querySelectorAll('.spill')[0])" title="Click → breadth view, KXS.TO pre-selected"><span>KXS.TO +10 · TACTICAL 85%</span><i class="ti ti-arrow-right" style="font-size:9px;margin-left:3px"></i><div class="d-chip-tooltip">→ Go to KXS.TO in breadth view</div></div>
+      <div class="d-chip warn" onclick="goS(1,document.querySelectorAll('.spill')[0])" title="Click → breadth view, T.TO pre-selected (CANCEL BUY)"><span>T.TO −6 · YIELD TRAP</span><div class="d-chip-tooltip" style="border-color:rgba(192,57,43,.3);color:#c0392b">→ T.TO · yield trap active · CANCEL BUY</div></div>
+      <div class="d-chip g" onclick="goS(1,document.querySelectorAll('.spill')[0])" title="Click → breadth view, NVDA pre-selected"><span>NVDA +10 · TACTICAL 85%</span><i class="ti ti-arrow-right" style="font-size:9px;margin-left:3px"></i><div class="d-chip-tooltip">→ Go to NVDA in breadth view</div></div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#1a1a1a;margin-left:8px;padding:1px 7px;border-radius:3px;border:1px dashed #1A1A1A;color:#2A2A2A;cursor:default" title="FOR CODER: In production each chip calls navigate('/conviction?ticker=TICKER'). Breadth page reads URL param on mount → setSelected → scrollIntoView → toggleDrawer">📋 coder note</div>
+      <div style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:8px;color:#1a1a1a">AWS · live</div>
+    </div>
+  </div>
+  <div class="ann-box" style="top:140px;right:16px" style="background:#1a1508;border-color:#C9A84C;color:#FDE68A"><strong>① Regime strip</strong>Always visible. Live signal summary. Shows top signals and active gates regardless of which section is open.</div>
+  <div class="ann-box" style="top:240px;right:16px"><strong>② All 15 dims · all auto</strong>Source label shows yfinance / agent search / SEC EDGAR per dim. No "manual" labels remain. Agent-computed quarterly.</div>
+  <div class="ann-box dev" style="top:370px;right:16px"><strong>③ Status bar chips</strong>onclick: navigate('/conviction?ticker=KXS.TO'). Breadth view reads ?ticker param on mount → setSelected → scrollIntoView → toggleDrawer.</div>
+  <div class="ann-box" style="top:480px;right:16px"><strong>④ "← Back to breadth"</strong>Button in content area header. Navigates to breadth view. In production: navigate('/conviction?ticker=KXS.TO') so row is pre-selected.</div>
+  <div class="dev-note"><strong>SCREEN 4 · DEPTH VIEW (DARK)</strong> &nbsp;·&nbsp; URL: <span class="url">/conviction/KXS.TO</span> &nbsp;·&nbsp; Dark theme: --bg #040404 · gold #C9A84C · JetBrains Mono &nbsp;·&nbsp; Status chips clickable → navigate('/conviction?ticker=[TICKER]') &nbsp;·&nbsp; "Back to breadth" → navigate('/conviction?ticker=KXS.TO') &nbsp;·&nbsp; Right info panel: static reference, same across all tickers</div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SCREEN 5 — STATUS CHIP STATES + NOTES
+════════════════════════════════════════ -->
+<div class="screen" id="s5">
+  <div class="dark-page">
+    <div class="d-tb">
+      <div class="d-logo">MindWealth<span>ALPHA TERMINAL</span></div>
+      <div class="d-tabs"><div class="d-tab">DASHBOARD</div><div class="d-tab">SIGNALS</div><div class="d-tab">MACRO</div><div class="d-tab">SENTIMENT</div><div class="d-tab on">CONVICTION</div><div class="d-tab">PORTFOLIO</div></div>
+    </div>
+    <div class="d-rs"><div class="d-rsd g"></div><div class="d-rsl">CONVICTION ENGINE v5</div><div class="d-sep"></div><div class="d-ri g"><span>KXS.TO +10</span>&nbsp;·&nbsp;TACTICAL BUY</div><div class="d-sep"></div><div class="d-ri r"><span>T.TO −6</span>&nbsp;·&nbsp;YIELD TRAP</div></div>
+    <div class="d-body">
+      <div class="d-main" style="justify-content:center;align-items:center">
+        <div style="max-width:500px;text-align:center">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#C9A84C;letter-spacing:1.5px;margin-bottom:6px">STATUS BAR CHIPS · HOVER + CLICK STATES</div><div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#444;margin-bottom:14px">All chips below are clickable → takes you to breadth view (Screen 1)</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#444;line-height:1.8;margin-bottom:24px">Each chip = one live signal. Hover → tooltip. Click → breadth view with that ticker pre-selected and drawer auto-opened.</div>
+          <div style="display:flex;flex-direction:column;gap:20px;align-items:flex-start">
+            <div style="width:100%">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#333;margin-bottom:8px">STATE 1 · default</div>
+              <div style="display:flex;gap:8px">
+                <div class="d-chip g" onclick="goS(1,document.querySelectorAll('.spill')[0])" title="Click → breadth view, KXS.TO pre-selected">KXS.TO +10 · TACTICAL 85%<i class="ti ti-arrow-right" style="font-size:9px;margin-left:4px"></i><div class="d-chip-tooltip">→ Go to KXS.TO in breadth view</div></div>
+                <div class="d-chip warn" onclick="goS(1,document.querySelectorAll('.spill')[0])" title="Click → breadth view, T.TO pre-selected">T.TO −6 · YIELD TRAP<div class="d-chip-tooltip" style="border-color:rgba(192,57,43,.3);color:#c0392b">→ T.TO · CANCEL BUY · yield trap active</div></div>
+                <div class="d-chip g" onclick="goS(1,document.querySelectorAll('.spill')[0])" title="Click → breadth view, NVDA pre-selected">NVDA +10 · TACTICAL 85%<i class="ti ti-arrow-right" style="font-size:9px;margin-left:4px"></i><div class="d-chip-tooltip">→ Go to NVDA in breadth view</div></div>
+              </div>
+            </div>
+            <div style="width:100%">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#333;margin-bottom:8px">STATE 2 · hover (background lightens + glow ring)</div>
+              <div style="display:flex;gap:8px">
+                <div class="d-chip g" onclick="goS(1,document.querySelectorAll('.spill')[0])" style="background:rgba(39,174,96,.18);border-color:rgba(39,174,96,.4);box-shadow:0 0 0 2px rgba(39,174,96,.2)" title="Hover state — click to navigate">KXS.TO +10 · TACTICAL 85%<i class="ti ti-arrow-right" style="font-size:9px;margin-left:4px"></i><div class="d-chip-tooltip">→ Go to KXS.TO in breadth view</div></div>
+              </div>
+            </div>
+            <div style="width:100%">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#333;margin-bottom:8px">STATE 3 · tooltip visible on hover</div>
+              <div style="position:relative;display:inline-block">
+                <div class="d-chip g" onclick="goS(1,document.querySelectorAll('.spill')[0])" style="background:rgba(39,174,96,.16);border-color:rgba(39,174,96,.35)" title="Click → breadth view, NVDA pre-selected">NVDA +10 · TACTICAL 85%<i class="ti ti-arrow-right" style="font-size:9px;margin-left:4px"></i></div>
+                <div style="position:absolute;bottom:30px;left:0;background:#1a1a1a;border:1px solid rgba(201,168,76,.25);border-radius:4px;padding:4px 8px;font-family:'JetBrains Mono',monospace;font-size:8px;color:#C9A84C;white-space:nowrap">→ Go to NVDA in breadth view ↗</div>
+              </div>
+            </div>
+          </div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#2a2a2a;margin-top:28px;line-height:1.9;text-align:left;background:#0d0d0d;border:1px solid #131313;border-radius:5px;padding:10px 12px">
+            <span style="color:#C9A84C">onClick:</span> navigate('/conviction?ticker=KXS.TO')<br>
+            <span style="color:#C9A84C">On breadth mount:</span> read ?ticker param → setSelected → scrollIntoView → toggleDrawer<br>
+            <span style="color:#C9A84C">Freeze/unfreeze:</span> chip click freezes tooltip (stays visible). Second click unfreezes.<br>
+            <span style="color:#C9A84C">Amber chip:</span> yield trap / cancel signals — tooltip shows CANCEL BUY context
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="d-sb">
+      <div class="d-sb-item"><div class="d-sb-dot on"></div>CONVICTION ENGINE · daily run</div>
+      <div class="d-sb-item"><div class="d-sb-dot wa"></div>YIELD TRAP · T.TO</div>
+      <div class="d-chip g" onclick="goS(1,document.querySelectorAll('.spill')[0])" style="box-shadow:0 0 0 2px rgba(39,174,96,.3)">KXS.TO +10 · TACTICAL 85%<i class="ti ti-arrow-right" style="font-size:9px;margin-left:3px"></i><div class="d-chip-tooltip">→ Go to KXS.TO in breadth view</div></div>
+      <div class="d-chip warn" onclick="goS(1,document.querySelectorAll('.spill')[0])">T.TO −6 · YIELD TRAP<div class="d-chip-tooltip" style="border-color:rgba(192,57,43,.3);color:#c0392b">→ T.TO · CANCEL BUY · yield trap active</div></div>
+      <div class="d-chip g" onclick="goS(1,document.querySelectorAll('.spill')[0])" style="box-shadow:0 0 0 2px rgba(39,174,96,.2)">NVDA +10 · TACTICAL 85%<i class="ti ti-arrow-right" style="font-size:9px;margin-left:3px"></i><div class="d-chip-tooltip">→ Go to NVDA in breadth view</div></div>
+    </div>
+  </div>
+  <div class="ann-box dev" style="top:480px;right:16px"><strong>Chip click spec</strong>navigate('/conviction?ticker=KXS.TO') · Breadth reads ?ticker param on mount · auto-scrolls + auto-opens drawer · "filtered: KXS.TO" badge in page title</div>
+  <div class="dev-note"><strong>SCREEN 5 · STATUS CHIP STATES</strong> &nbsp;·&nbsp; 3 visual states: default / hover (bg + glow) / tooltip visible &nbsp;·&nbsp; Freeze tooltip: mousedown sets frozen flag, mouseleave only clears if not frozen, second click clears frozen &nbsp;·&nbsp; Amber chip: yield trap / cancel context &nbsp;·&nbsp; Note: "Filtered return" is NOT a separate page — it is just Screen 1 breadth with URL param ?ticker=KXS.TO, which auto-selects the row and opens the drawer. No separate page needed.</div>
+</div>
+
+<script>
+// init all screens
+window.onload = function() {
+  initScreens();
+  const darkBQ = document.getElementById('dark-bq-rows');
+  if (darkBQ) darkBQ.innerHTML = renderBQRows(TICKERS['KXS.TO'].dims, true);
+  setTimeout(initDrawers, 150);
+};
+</script>
+</body>
+</html>

@@ -34,6 +34,7 @@ class SignalModificationResponse(BaseModel):
     fs_score: float | None = None
     fs_class: str | None = None
     yield_trap_warning: bool = False
+    coverage_incomplete: bool = False
     business_type: str | None = None
     bq_raw: float | None = None
     valuation_tax: float | None = None

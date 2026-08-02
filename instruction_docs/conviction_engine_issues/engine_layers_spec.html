@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Engine Layers — click-through spec (BQ / Valuation Tax / FS Cap / Yield Trap)</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;font-family:'Inter',sans-serif;background:#040404;overflow:hidden}
+
+:root{--gold:#C9A84C;--green:#27ae60;--red:#c0392b;--bg:#040404;--s1:#080808;--s2:#0d0d0d;--b1:#131313;--b2:#1d1d1d;--t1:#f0f0f0;--t2:#b8b8b8;--t3:#555;--t4:#2a2a2a}
+
+.dark-page{background:var(--bg);color:var(--t1);display:flex;flex-direction:column;height:100vh}
+.d-tb{display:flex;align-items:center;padding:0 18px;height:44px;border-bottom:1px solid var(--b1);background:var(--bg);flex-shrink:0;gap:0}
+.d-logo{font-size:15px;font-weight:700;color:var(--gold);margin-right:18px;font-family:'JetBrains Mono',monospace;white-space:nowrap}
+.d-logo span{font-size:8px;color:#2a2a2a;letter-spacing:2px;margin-left:7px;vertical-align:middle}
+.d-tabs{display:flex;gap:0;flex:1}
+.d-tab{padding:5px 10px;font-size:9px;letter-spacing:.6px;color:#333;border-radius:3px;font-family:'JetBrains Mono',monospace;white-space:nowrap}
+.d-tab.on{color:var(--gold);background:rgba(201,168,76,.07)}
+.d-rs{display:flex;align-items:center;padding:0 18px;height:32px;border-bottom:1px solid var(--b2);background:#080808;gap:12px;flex-shrink:0;overflow-x:auto}
+.d-rsd{width:6px;height:6px;border-radius:50%;flex-shrink:0;animation:pu 2s infinite}
+.d-rsd.g{background:var(--green)}.d-rsd.warn{background:var(--gold)}.d-rsd.r{background:var(--red)}
+.d-rsl{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--gold);font-weight:600;flex-shrink:0}
+.d-sep{width:1px;height:14px;background:#1a1a1a;flex-shrink:0}
+.d-ri{font-family:'JetBrains Mono',monospace;font-size:9px;color:#555;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.d-ri span{color:#f0f0f0;font-weight:500}
+.d-ri.g span{color:var(--green)}.d-ri.r span{color:var(--red)}.d-ri.warn span{color:var(--gold)}
+.d-body{display:flex;flex:1;overflow:hidden;min-height:0}
+.d-sidebar{width:190px;flex-shrink:0;border-right:1px solid var(--b1);padding:10px 0;overflow-y:auto}
+.d-sg{padding:6px 11px 4px}
+.d-sgl{font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:2px;color:#222;text-transform:uppercase;margin-bottom:4px}
+.d-si{display:flex;align-items:flex-start;gap:6px;padding:6px 7px;border-radius:3px;margin:0 3px 1px;border:1px solid transparent;cursor:pointer;transition:all .12s}
+.d-si:hover{background:rgba(255,255,255,.03)}
+.d-si.on{background:rgba(201,168,76,.06);border-color:rgba(201,168,76,.15)}
+.d-si.on .d-sn{color:var(--gold)}
+.d-sd{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.d-sd.g{background:var(--green)}.d-sd.gold{background:var(--gold)}.d-sd.r{background:var(--red)}
+.d-sn{font-size:10px;color:#888;font-weight:500}
+.d-ss{font-family:'JetBrains Mono',monospace;font-size:8px;color:#2a2a2a;margin-top:1px}
+.d-main{flex:1;padding:16px 20px;display:flex;flex-direction:column;gap:8px;overflow-y:auto}
+.d-main::-webkit-scrollbar{width:3px}.d-main::-webkit-scrollbar-thumb{background:#1a1a1a}
+.d-infopanel{width:230px;flex-shrink:0;border-left:1px solid var(--b1);padding:12px;overflow-y:auto}
+.d-ip-title{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1.5px;color:var(--gold);margin-bottom:7px;text-transform:uppercase}
+.d-ip-body{font-family:'JetBrains Mono',monospace;font-size:9px;color:#555;line-height:1.7}
+.d-ip-body .g{color:var(--green)}.d-ip-body .gold{color:var(--gold)}.d-ip-body .r{color:var(--red)}
+.d-ip-sep{height:1px;background:#111;margin:9px 0}
+
+/* BQ rows — copied verbatim from ce_developer_spec_latest.html so this tab matches what already exists */
+.d-bq-row{display:flex;align-items:center;gap:8px;padding:5px 8px;background:#0d0d0d;border:1px solid #131313;border-radius:4px;margin-bottom:2px;font-family:'JetBrains Mono',monospace}
+.d-bq-num{font-size:8px;color:#333;width:14px;text-align:right}
+.d-bq-name{font-size:10px;color:#888;flex:1}
+.d-bq-s{font-size:11px;font-weight:600;width:26px;text-align:right}
+.d-bq-s.pos{color:var(--green)}.d-bq-s.neg{color:var(--red)}.d-bq-s.zero{color:#333}
+.d-bq-src{font-family:'JetBrains Mono',monospace;font-size:7px;color:#2a2a2a;width:70px;text-align:right}
+.d-total{display:flex;justify-content:space-between;padding:6px 9px;background:#080808;border:1px solid #1a1a1a;border-radius:4px;margin-top:3px;font-family:'JetBrains Mono',monospace;font-size:10px}
+
+/* ── preview / lookup bar (spec-only chrome, remove before deploy) ── */
+.preview-bar{display:flex;align-items:center;gap:8px;padding:8px 18px;background:#0a0700;border-bottom:1px solid rgba(201,168,76,.15);flex-shrink:0;flex-wrap:wrap}
+.preview-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1px;color:#665420;text-transform:uppercase;margin-right:2px}
+.pv-pill{font-family:'JetBrains Mono',monospace;font-size:9px;padding:4px 10px;border-radius:3px;border:1px solid rgba(255,255,255,.1);color:#666;cursor:pointer;background:none;transition:all .12s}
+.pv-pill:hover{border-color:rgba(201,168,76,.4);color:var(--gold)}
+.pv-pill.on{background:rgba(201,168,76,.12);border-color:rgba(201,168,76,.4);color:var(--gold)}
+.pv-note{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:8px;color:#3a3a3a}
+.lookup-bar{display:flex;align-items:center;gap:8px;padding:7px 18px;background:#050505;border-bottom:1px solid var(--b1);flex-shrink:0}
+.lookup-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1px;color:#3a3a3a;text-transform:uppercase}
+#lookupInput{font-family:'JetBrains Mono',monospace;font-size:10px;background:#0d0d0d;border:1px solid #1d1d1d;color:#ccc;padding:5px 9px;border-radius:3px;width:200px}
+#lookupInput:focus{outline:none;border-color:rgba(201,168,76,.4)}
+#lookupBtn{font-family:'JetBrains Mono',monospace;font-size:9px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);color:var(--gold);padding:5px 12px;border-radius:3px;cursor:pointer}
+#lookupBtn:hover{background:rgba(201,168,76,.18)}
+.lookup-note{font-family:'JetBrains Mono',monospace;font-size:8px;color:#3a3a3a;margin-left:4px}
+
+/* ── panel content ── */
+.panel-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.panel-title{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.5px;color:var(--t1);font-weight:600}
+.panel-sub{font-family:'JetBrains Mono',monospace;font-size:9px;color:#444}
+.type-flag{font-family:'JetBrains Mono',monospace;font-size:8px;padding:2px 7px;border-radius:3px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);color:var(--gold);letter-spacing:.4px}
+
+.ledger{border:1px solid var(--b1);border-radius:6px;overflow:hidden;margin-top:4px}
+.ledger-row{display:grid;grid-template-columns:1.3fr 1.15fr 1.5fr 60px;gap:10px;padding:8px 12px;border-bottom:1px solid #0d0d0d;align-items:center}
+.ledger-row:last-child{border-bottom:none}
+.ledger-row.head{background:#080808}
+.ledger-row.head span{font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:1px;color:#3a3a3a;text-transform:uppercase}
+.ledger-row.flagged{background:rgba(201,168,76,.03)}
+.lc-label{font-size:10px;color:#999}
+.lc-raw{font-family:'JetBrains Mono',monospace;font-size:10px;color:#aaa}
+.lc-tier{font-family:'JetBrains Mono',monospace;font-size:8.5px;color:#555}
+.lc-tier.flag{color:var(--gold)}
+.lc-pts{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;text-align:right}
+.lc-pts.pos{color:var(--green)}.lc-pts.neg{color:var(--red)}.lc-pts.zero{color:#333}
+.lc-pts.pending{color:#665420;font-size:8px;text-align:right}
+
+.total-row{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;background:#080808;border:1px solid #1a1a1a;border-radius:6px;margin-top:6px;font-family:'JetBrains Mono',monospace}
+.total-row .lbl{font-size:9px;color:#777}
+.total-row .val{font-size:14px;font-weight:700}
+.val.pos{color:var(--green)}.val.neg{color:var(--red)}
+
+.callout{border-radius:6px;padding:10px 12px;font-size:10px;line-height:1.6;margin-top:4px}
+.callout.warn{background:rgba(192,57,43,.08);border:1px solid rgba(192,57,43,.3);color:#e8a19a}
+.callout.info{background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.2);color:#c9b98a}
+.callout.grey{background:#0a0a0a;border:1px solid #1a1a1a;color:#555}
+.callout b{color:inherit}
+
+.cap-table{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+.cap-box{border:1px solid var(--b1);border-radius:6px;padding:9px 11px}
+.cap-box .k{font-family:'JetBrains Mono',monospace;font-size:8px;color:#444;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px}
+.cap-box .v{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t1);font-weight:600}
+.cap-box .v.nocap{color:var(--green)}
+.cap-box .v.capped{color:var(--gold)}
+
+.cond-row{display:flex;align-items:center;gap:10px;border:1px solid var(--b1);border-radius:6px;padding:10px 12px;margin-top:6px}
+.cond-icon{width:16px;height:16px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace}
+.cond-icon.pass{background:rgba(192,57,43,.18);color:var(--red)}
+.cond-icon.fail{background:rgba(39,174,96,.15);color:var(--green)}
+.cond-icon.undef{background:rgba(201,168,76,.15);color:var(--gold)}
+.cond-body .cl1{font-size:10px;color:#bbb}
+.cond-body .cl2{font-family:'JetBrains Mono',monospace;font-size:9px;color:#555;margin-top:2px}
+
+.empty-state{margin-top:30px;text-align:center;padding:30px}
+.empty-state .es-title{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);letter-spacing:.5px;margin-bottom:8px}
+.empty-state .es-body{font-size:11px;color:#555;max-width:340px;margin:0 auto;line-height:1.7}
+
+@keyframes pu{0%,100%{opacity:1}50%{opacity:.15}}
+</style>
+</head>
+<body>
+
+<div class="dark-page">
+
+  <div class="d-tb">
+    <div class="d-logo">MindWealth<span>ALPHA TERMINAL</span></div>
+    <div class="d-tabs">
+      <div class="d-tab">DASHBOARD</div><div class="d-tab">SIGNALS</div><div class="d-tab">MACRO</div>
+      <div class="d-tab">SENTIMENT</div><div class="d-tab on">CONVICTION</div><div class="d-tab">PORTFOLIO</div>
+    </div>
+    <div style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:9px;color:#2a2a2a;flex-shrink:0">AWS · LIVE</div>
+  </div>
+
+  <div class="d-rs" id="regimeStrip"><!-- populated by JS --></div>
+
+  <div class="preview-bar">
+    <span class="preview-lbl">Preview ticker</span>
+    <button class="pv-pill on" data-t="CRM" onclick="switchTicker('CRM',this)">CRM · saas</button>
+    <button class="pv-pill" data-t="HDFCBANK.NS" onclick="switchTicker('HDFCBANK.NS',this)">HDFCBANK.NS · bank</button>
+    <button class="pv-pill" data-t="005930.KS" onclick="switchTicker('005930.KS',this)">005930.KS · cyclical/hardware</button>
+    <button class="pv-pill" data-t="UNMAPPED-1" onclick="switchTicker('UNMAPPED-1',this)">UNMAPPED-1 · coverage_incomplete</button>
+    <span class="pv-note">spec-only — remove this bar before deploy, real page reads the selected ticker</span>
+  </div>
+
+  <div class="lookup-bar">
+    <span class="lookup-lbl">New feature — look up any asset</span>
+    <input id="lookupInput" type="text" placeholder="e.g. AAPL, RELIANCE.NS, or any of the 193 tracked assets" />
+    <button id="lookupBtn" onclick="doLookup()">Look up</button>
+    <span class="lookup-note" id="lookupResult"></span>
+  </div>
+
+  <div class="d-body">
+    <div class="d-sidebar">
+      <div class="d-sg">
+        <div class="d-sgl">Scoring layers</div>
+        <div class="d-si" id="si-bq" onclick="switchLayer('bq',this)">
+          <div class="d-sd gold"></div>
+          <div><div class="d-sn">Business Quality · 15 dims</div><div class="d-ss">all auto-computed</div></div>
+        </div>
+        <div class="d-si" id="si-valtax" onclick="switchLayer('valtax',this)">
+          <div class="d-sd g"></div>
+          <div><div class="d-sn">Valuation tax</div><div class="d-ss">sector-calibrated</div></div>
+        </div>
+        <div class="d-si" id="si-fscap" onclick="switchLayer('fscap',this)">
+          <div class="d-sd g"></div>
+          <div><div class="d-sn">Fund. Strength cap</div><div class="d-ss">graduated sizing</div></div>
+        </div>
+        <div class="d-si" id="si-yieldtrap" onclick="switchLayer('yieldtrap',this)">
+          <div class="d-sd r"></div>
+          <div><div class="d-sn">Yield trap gate</div><div class="d-ss">2-condition hard gate</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-main" id="mainPanel"><!-- populated by JS --></div>
+
+    <div class="d-infopanel" id="infoPanel"><!-- populated by JS --></div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════
+// SPEC-ONLY DATA. In production this comes from conviction_store/{TICKER}.json.
+// All totals below (valuation_tax, conviction) are computed FROM the row-level
+// data, never hardcoded separately — that's the fix for the CRM/005930.KS
+// arithmetic mismatch caught in review.
+//
+// Two row types are marked `flagged: true` — growth_multiple_fragility and
+// floor_trigger. Neither has a general numeric threshold anywhere in the v5
+// spec (only one worked example each, for different tickers), and the floor
+// trigger numbers in Section 5.4 don't self-consistently make sense as written
+// (saas floor ≥4× is LESS than its own Tier 2/3/4 boundaries). Both render as
+// neutral/0 with an explicit "not yet defined" tag rather than a fake precise
+// number, until Divyanshu/Rohit lock in real ones.
+// ════════════════════════════════════════════════════════════
+const TICKERS = {
+  'CRM': {
+    businessType: 'saas', typeLabel: 'saas · WACC 10%',
+    coverageIncomplete: false,
+    bqRows: [
+      { name: 'Revenue Quality', score: 2, src: 'yfinance' },
+      { name: 'Growth Trajectory', score: 1, src: 'yfinance' },
+      { name: 'Margin Quality (Rule of 40)', score: 2, src: 'yfinance' },
+      { name: 'Balance Sheet', score: -1, src: 'yfinance' },
+      { name: 'ROIC/WACC Spread', score: 2, src: 'yfinance' },
+      { name: 'Gross Margin Trend', score: 0, src: 'yfinance' },
+      { name: 'Debt Maturity Risk', score: 0, src: 'yfinance' },
+      { name: 'CEO Quality', score: 0, src: 'agent search' },
+      { name: 'Mgmt Capital Allocation', score: 2, src: 'agent+EDGAR' },
+      { name: 'Competitive Moat', score: 0, src: 'agent search' },
+      { name: 'Macro Tailwind', score: 0, src: 'agent search' },
+      { name: 'Divergence Signal', score: 0, src: 'yfinance' },
+      { name: 'Deal Delay Risk', score: 0, src: 'agent search' },
+      { name: 'Insider Ownership', score: 0, src: 'SEC EDGAR' },
+      { name: 'Reinvestment Runway', score: 0, src: 'agent search' },
+    ],
+    valTaxRows: [
+      { label: 'Entry multiple (EV/fwd rev)', raw: '9.2×', tier: 'saas tier 3 ≥8×', pts: -3 },
+      { label: 'PE historical percentile', raw: '91st pctile', tier: '>80th = expensive', pts: -2 },
+      { label: 'Growth multiple fragility', raw: 'growth 11% vs 9.2× EV/rev', tier: '⚠ not yet defined', pts: 0, flagged: true },
+      { label: 'Business type relief', raw: 'saas — below-tier-1 bonus n/a here', tier: 'n/a, EV/rev above tier 1', pts: 0 },
+      { label: 'Floor trigger', raw: '9.2×', tier: '⚠ Section 5.4 numbers inconsistent — see note', pts: 0, flagged: true },
+    ],
+    slice: [
+      { label: 'OEY', raw: '1.8%', threshold: 'saas strong ≥5% / expensive <1%', pts: -8 },
+      { label: 'PE percentile', raw: '91st pctile', threshold: '>80th = expensive', pts: -15 },
+      { label: 'EV/fwd rev', raw: '9.2×', threshold: 'saas tier 3 ≥8×', pts: -25 },
+    ],
+    peHistoryYears: 20,
+    fsClassComputed: 'weak', fsClassDisplayedElsewhere: 'strong', capMismatch: true,
+    capLong: 'min(conviction, +1)', capShort: 'min(conviction, +2)',
+    buggyDisplayedVerdict: 'CANCEL BUY · 0% (currently shown — bug)',
+    yieldTrap: { divYield: '0.0%', zScore: 'n/a', market: 'US', base: 6, adj: 0, defined: true },
+  },
+  'HDFCBANK.NS': {
+    businessType: 'bank', typeLabel: 'bank · WACC 9%',
+    coverageIncomplete: false,
+    bqRows: [
+      { name: 'Revenue Quality', score: 1, src: 'yfinance' },
+      { name: 'Growth Trajectory', score: 1, src: 'yfinance' },
+      { name: 'Margin Quality (efficiency ratio — bank subst.)', score: 2, src: 'yfinance' },
+      { name: 'Balance Sheet (equity/assets — bank subst.)', score: 1, src: 'yfinance' },
+      { name: 'ROIC/WACC Spread (ROE vs cost of equity — bank subst.)', score: 1, src: 'yfinance' },
+      { name: 'Gross Margin Trend', score: 0, src: 'n/a for banks' },
+      { name: 'Debt Maturity Risk', score: 0, src: 'yfinance' },
+      { name: 'CEO Quality', score: 0, src: 'agent search' },
+      { name: 'Mgmt Capital Allocation', score: 1, src: 'agent+EDGAR/SEDI' },
+      { name: 'Competitive Moat', score: 0, src: 'agent search' },
+      { name: 'Macro Tailwind', score: 0, src: 'agent search' },
+      { name: 'Divergence Signal', score: 0, src: 'yfinance' },
+      { name: 'Deal Delay Risk', score: 0, src: 'agent search' },
+      { name: 'Insider Ownership', score: 0, src: '⚠ no non-US source named' },
+      { name: 'Reinvestment Runway', score: -1, src: 'agent search' },
+    ],
+    valTaxRows: [
+      { label: 'Price/Book tier (bank substitute)', raw: '2.6×', tier: 'bank tier 3 ≥2.5×', pts: -2 },
+      { label: 'PE historical percentile', raw: '58th pctile', tier: '40–80th = fair', pts: 0 },
+      { label: 'Growth multiple fragility', raw: 'n/a for banks', tier: '⚠ not yet defined', pts: 0, flagged: true },
+      { label: 'Business type relief', raw: 'bank — no relief tier hit', tier: 'n/a, above tier 1', pts: 0 },
+      { label: 'Floor trigger', raw: '2.6×', tier: '⚠ not yet defined for bank type', pts: 0, flagged: true },
+    ],
+    slice: [
+      { label: 'Earnings yield = 1/PE (bank substitute for OEY)', raw: '8.1%', threshold: 'proposed: ≥10% strong / <6% expensive — not yet confirmed', pts: 5 },
+      { label: 'PE percentile', raw: '58th pctile', threshold: '40–80th = fair', pts: 0 },
+      { label: 'Price/Book (bank substitute for EV/rev)', raw: '2.6×', threshold: 'bank tier 3 ≥2.5×', pts: -6 },
+    ],
+    peHistoryYears: 20,
+    fsClassComputed: 'moderate_high', fsClassDisplayedElsewhere: 'moderate_high', capMismatch: false,
+    capLong: 'no cap', capShort: 'no cap',
+    yieldTrap: { divYield: '1.1%', zScore: '0.4', market: 'India', base: 6, adj: 2, defined: true },
+  },
+  '005930.KS': {
+    businessType: 'cyclical', typeLabel: 'cyclical · hardware below 40% margin threshold',
+    coverageIncomplete: false,
+    bqRows: [
+      { name: 'Revenue Quality', score: 1, src: 'yfinance' },
+      { name: 'Growth Trajectory', score: 1, src: 'yfinance' },
+      { name: 'Margin Quality (FCF margin vs cycle)', score: 1, src: 'yfinance' },
+      { name: 'Balance Sheet', score: 0, src: 'yfinance' },
+      { name: 'ROIC/WACC Spread', score: 1, src: 'yfinance' },
+      { name: 'Gross Margin Trend', score: 0, src: 'yfinance' },
+      { name: 'Debt Maturity Risk', score: 0, src: 'yfinance' },
+      { name: 'CEO Quality', score: 0, src: '⚠ DEF14A n/a — no KR source named' },
+      { name: 'Mgmt Capital Allocation', score: 1, src: 'agent search' },
+      { name: 'Competitive Moat', score: 0, src: 'Gartner + patents (G2 excluded — hardware)' },
+      { name: 'Macro Tailwind', score: 0, src: 'agent search' },
+      { name: 'Divergence Signal', score: 0, src: 'yfinance' },
+      { name: 'Deal Delay Risk', score: 0, src: 'agent search' },
+      { name: 'Insider Ownership', score: 0, src: '⚠ no KR source named' },
+      { name: 'Reinvestment Runway', score: 0, src: 'agent search' },
+    ],
+    valTaxRows: [
+      { label: 'Entry multiple (EV/fwd rev)', raw: '2.1×', tier: 'cyclical tier 1 ≥1×', pts: -1 },
+      { label: 'PE historical percentile ⚠ 6yr synthetic history, not 20yr', raw: '52nd pctile', tier: '40–80th = fair', pts: 0 },
+      { label: 'Growth multiple fragility', raw: 'growth 9% vs 2.1× EV/rev', tier: '⚠ not yet defined', pts: 0, flagged: true },
+      { label: 'Business type relief', raw: 'cyclical — no relief tier hit', tier: 'n/a', pts: 0 },
+      { label: 'Floor trigger', raw: 'n/a', tier: 'cyclical has no floor (confirmed in spec)', pts: 0 },
+    ],
+    slice: [
+      { label: 'OEY', raw: '4.4%', threshold: 'cyclical strong ≥4% (mid-cycle)', pts: 5 },
+      { label: 'PE percentile ⚠ Tier-2 fallback: 6yr synthetic, not 20yr', raw: '52nd pctile', threshold: '40–80th = fair', pts: 0 },
+      { label: 'EV/fwd rev', raw: '2.1×', threshold: 'cyclical tier 1 ≥1×', pts: -3 },
+    ],
+    peHistoryYears: 6,
+    fsClassComputed: 'moderate_high', fsClassDisplayedElsewhere: 'moderate_high', capMismatch: false,
+    capLong: 'no cap', capShort: 'no cap',
+    yieldTrap: { divYield: '2.4%', zScore: 'n/a', market: 'Korea', base: null, adj: null, defined: false },
+  },
+  'UNMAPPED-1': {
+    businessType: null, typeLabel: 'business_type unresolved',
+    coverageIncomplete: true,
+  },
+};
+
+let currentTicker = 'CRM';
+let currentLayer = 'bq';
+
+function sumPts(rows) { return rows.reduce((a, r) => a + r.pts, 0); }
+function verdictFor(conv) {
+  if (conv >= 8) return 'MAX CONVICTION · 100%';
+  if (conv >= 5) return 'TACTICAL BUY · 75%';
+  if (conv >= 2) return 'REDUCED BUY · 40%';
+  return 'CANCEL BUY · 0%';
+}
+
+function fmtPts(r) {
+  if (r.flagged) return `<span class="lc-pts pending">not yet<br>defined</span>`;
+  if (r.pts === 0) return '<span class="lc-pts zero">0</span>';
+  const cls = r.pts > 0 ? 'pos' : 'neg';
+  const sign = r.pts > 0 ? '+' : '';
+  return `<span class="lc-pts ${cls}">${sign}${r.pts}</span>`;
+}
+
+function bqRowScoreClass(s) { return s > 0 ? 'pos' : (s < 0 ? 'neg' : 'zero'); }
+
+function renderRegimeStrip(t) {
+  const d = TICKERS[t];
+  const el = document.getElementById('regimeStrip');
+  if (d.coverageIncomplete) {
+    el.innerHTML = `
+      <div class="d-rsd warn"></div><div class="d-rsl">CONVICTION ENGINE v5</div>
+      <div class="d-sep"></div>
+      <div class="d-ri warn"><span>${t}</span>&nbsp;·&nbsp;COVERAGE INCOMPLETE · business_type unresolved</div>`;
+    return;
+  }
+  const bqRaw = sumPts(d.bqRows.map(r => ({ pts: r.score })));
+  const valTax = sumPts(d.valTaxRows);
+  const conviction = bqRaw + valTax;
+  const verdict = verdictFor(conviction);
+  const verdictClass = conviction >= 2 ? 'g' : 'r';
+  let bugNote = '';
+  if (d.capMismatch) {
+    bugNote = `<div class="d-sep"></div><div class="d-ri warn"><span>⚠ ${d.buggyDisplayedVerdict}</span></div>`;
+  }
+  el.innerHTML = `
+    <div class="d-rsd g"></div><div class="d-rsl">CONVICTION ENGINE v5</div>
+    <div class="d-sep"></div>
+    <div class="d-ri ${verdictClass}"><span>${t} ${conviction >= 0 ? '+' : ''}${conviction}</span>&nbsp;·&nbsp;${verdict}</div>
+    <div class="d-sep"></div>
+    <div class="d-ri" style="color:#444">${d.typeLabel}</div>
+    ${bugNote}`;
+}
+
+function renderInfoPanel(layer) {
+  const el = document.getElementById('infoPanel');
+  const notes = {
+    bq: `<div class="d-ip-title">Wiring</div><div class="d-ip-body">Already built elsewhere in the app — included here so this is one complete reference page, not a partial demo.<br><br>Dimension 3 (margin_quality) and dimension 5 (roic_wacc_spread) branch on <span class="gold">business_type</span> — bank substitutes shown here (efficiency ratio, ROE vs cost of equity).<br><br>Rows with <span class="r">⚠</span> in the source column are the CEO-tenure / insider-ownership sourcing gaps flagged for non-US markets — shown here so they're visible in context, not just in the write-up.</div>`,
+    valtax: `<div class="d-ip-title">Wiring</div><div class="d-ip-body">Branch on <span class="gold">business_type</span> before rendering rows. saas/compounder/income/cyclical/high_margin_hardware → EV/fwd rev tiers (Section 5.4). bank → Price/Book tiers.<br><br>Total is <span class="gold">always computed from the rows</span>, never stored separately — that's the fix for the arithmetic mismatch caught in review.<br><br>Two rows show "not yet defined" — growth_multiple_fragility and floor_trigger have no confirmed general threshold. Render them neutral (0) with the flag visible, not a guessed number.</div>`,
+    fscap: `<div class="d-ip-title">Wiring</div><div class="d-ip-body">fs_score = fs_quality_base + daily valuation slice, same business_type branching as Valuation Tax.<br><br><span class="gold">pe_history_years</span> renders next to the PE percentile row — flag if &lt;20.<br><br>fs_class computed here is authoritative at cap-time. If it disagrees with any cached/displayed fs_class elsewhere, <span class="r">that mismatch is the bug</span> — show both values.</div>`,
+    yieldtrap: `<div class="d-ip-title">Wiring</div><div class="d-ip-body">Both conditions must be true to fire — show pass/fail independently.<br><br>Threshold = base country threshold + business_type adjustment. Show the arithmetic.<br><br>If market has no threshold defined yet (KR/JP/CN today), say so explicitly.</div>`,
+  };
+  el.innerHTML = notes[layer] || '';
+}
+
+function coverageEmptyState(labelForLayer) {
+  return `
+    <div class="empty-state">
+      <div class="es-title">COVERAGE INCOMPLETE</div>
+      <div class="es-body">business_type could not be resolved for this ticker, so no ${labelForLayer} has been computed. This isn't a "no" — it's "not yet calibrated." Sizing is forced to 0% at the verdict level regardless of what any individual layer would otherwise show.</div>
+    </div>`;
+}
+
+function renderBQ(t) {
+  const d = TICKERS[t];
+  if (d.coverageIncomplete) return coverageEmptyState('Business Quality score');
+  const rows = d.bqRows.map((r, i) => `
+    <div class="d-bq-row">
+      <div class="d-bq-num">${i + 1}</div>
+      <div class="d-bq-name">${r.name}</div>
+      <div class="d-bq-s ${bqRowScoreClass(r.score)}">${r.score > 0 ? '+' : ''}${r.score}</div>
+      <div class="d-bq-src">${r.src}</div>
+    </div>`).join('');
+  const bqRaw = sumPts(d.bqRows.map(r => ({ pts: r.score })));
+  return `
+    <div class="panel-head">
+      <div class="panel-title">BUSINESS QUALITY — ${t}</div>
+      <div class="panel-sub">15 dimensions · all auto-computed</div>
+    </div>
+    ${rows}
+    <div class="d-total"><span style="color:#777">BQ_RAW total</span><span style="color:${bqRaw >= 0 ? 'var(--green)' : 'var(--red)'};font-weight:700">${bqRaw > 0 ? '+' : ''}${bqRaw}</span></div>
+  `;
+}
+
+function renderValTax(t) {
+  const d = TICKERS[t];
+  if (d.coverageIncomplete) return coverageEmptyState('valuation tax');
+  const rowsHtml = d.valTaxRows.map(r => `
+    <div class="ledger-row ${r.flagged ? 'flagged' : ''}">
+      <div class="lc-label">${r.label}</div>
+      <div class="lc-raw">${r.raw}</div>
+      <div class="lc-tier ${r.flagged ? 'flag' : ''}">${r.tier}</div>
+      ${fmtPts(r)}
+    </div>`).join('');
+  const total = sumPts(d.valTaxRows);
+  const typeNote = d.businessType === 'bank'
+    ? `<div class="type-flag">bank branch active — Price/Book tiers, not EV/Revenue</div>`
+    : `<div class="type-flag">${d.businessType} branch — standard EV/Revenue tiers</div>`;
+  const hasFlagged = d.valTaxRows.some(r => r.flagged);
+  const flagNote = hasFlagged
+    ? `<div class="callout info">Rows marked <b>not yet defined</b> have no confirmed threshold in the spec — scored as neutral (0) rather than guessed, pending Divyanshu/Rohit sign-off.</div>`
+    : '';
+  return `
+    <div class="panel-head">
+      <div class="panel-title">VALUATION TAX — ${t}</div>
+      <div class="panel-sub">sector-calibrated</div>
+    </div>
+    ${typeNote}
+    <div class="ledger">
+      <div class="ledger-row head"><span>Component</span><span>Raw input</span><span>Tier boundary</span><span style="text-align:right">Points</span></div>
+      ${rowsHtml}
+    </div>
+    <div class="total-row"><span class="lbl">valuation_tax total (sum of rows above)</span><span class="val ${total < 0 ? 'neg' : ''}">${total}</span></div>
+    ${flagNote}
+  `;
+}
+
+function renderFsCap(t) {
+  const d = TICKERS[t];
+  if (d.coverageIncomplete) return coverageEmptyState('FS cap');
+  const bqRaw = sumPts(d.bqRows.map(r => ({ pts: r.score })));
+  const fsQualityBase = 50 + bqRaw * 2.5;
+  const sliceRows = d.slice.map(r => `
+    <div class="ledger-row">
+      <div class="lc-label">${r.label}</div>
+      <div class="lc-raw">${r.raw}</div>
+      <div class="lc-tier">${r.threshold}</div>
+      ${fmtPts(r)}
+    </div>`).join('');
+  const sliceSum = d.slice.reduce((a, r) => a + r.pts, 0);
+  const fsScore = fsQualityBase + sliceSum;
+  const historyFlag = d.peHistoryYears < 20
+    ? `<div class="callout warn"><b>⚠ PE history depth: ${d.peHistoryYears} years</b>, not the full 20 — Tier-2 synthetic fallback in use (price history ÷ trailing-4Q EPS built in code, same pattern as the PYPL fix). This fs_score's PE-percentile input carries less confidence than a fully-covered US/UK name.</div>`
+    : `<div class="callout grey">PE history depth: ${d.peHistoryYears} years (full window).</div>`;
+  const mismatchBlock = d.capMismatch
+    ? `<div class="callout warn"><b>⚠ MISMATCH DETECTED</b><br>fs_class computed here at cap-time: <b>${d.fsClassComputed}</b>. fs_class shown elsewhere in this UI for the same ticker: <b>${d.fsClassDisplayedElsewhere}</b>. These disagree — this is the CRM +1-vs-+3 discrepancy from the live audit. This view surfacing both values side by side is what would have caught it on sight.</div>`
+    : `<div class="callout grey">fs_class computed here (${d.fsClassComputed}) matches what's displayed elsewhere. No discrepancy.</div>`;
+  return `
+    <div class="panel-head">
+      <div class="panel-title">FUNDAMENTAL STRENGTH CAP — ${t}</div>
+      <div class="panel-sub">graduated sizing · caps how high conviction can count, not a minimum</div>
+    </div>
+    <div class="total-row"><span class="lbl">fs_quality_base = 50 + (BQ_RAW × 2.5) = 50 + (${bqRaw} × 2.5)</span><span class="val">${fsQualityBase}</span></div>
+    <div class="ledger" style="margin-top:2px">
+      <div class="ledger-row head"><span>Daily valuation slice</span><span>Raw input</span><span>Threshold / bucket</span><span style="text-align:right">Points</span></div>
+      ${sliceRows}
+    </div>
+    <div class="total-row"><span class="lbl">fs_score = fs_quality_base + slice</span><span class="val ${fsScore >= fsQualityBase ? 'pos' : 'neg'}">${fsScore.toFixed(1)} → ${d.fsClassComputed}</span></div>
+    ${historyFlag}
+    ${mismatchBlock}
+    <div class="panel-sub" style="margin-top:6px">Cap applied to conviction_score:</div>
+    <div class="cap-table">
+      <div class="cap-box"><div class="k">Long signal</div><div class="v ${d.capLong === 'no cap' ? 'nocap' : 'capped'}">${d.capLong}</div></div>
+      <div class="cap-box"><div class="k">Short signal</div><div class="v ${d.capShort === 'no cap' ? 'nocap' : 'capped'}">${d.capShort}</div></div>
+    </div>
+  `;
+}
+
+function renderYieldTrap(t) {
+  const d = TICKERS[t];
+  if (d.coverageIncomplete) return coverageEmptyState('yield trap check');
+  const yt = d.yieldTrap;
+  const zPass = yt.zScore !== 'n/a' && parseFloat(yt.zScore) > 1.5;
+  let yieldBlock;
+  let overall = false;
+  if (!yt.defined) {
+    yieldBlock = `
+      <div class="cond-row">
+        <div class="cond-icon undef">?</div>
+        <div class="cond-body">
+          <div class="cl1">Yield vs. market-absolute threshold — <b>no threshold defined for ${yt.market} yet</b></div>
+          <div class="cl2">actual yield ${yt.divYield} · nothing to compare it against · not counted as fired, not counted as cleared</div>
+        </div>
+      </div>`;
+  } else {
+    const total = yt.base + yt.adj;
+    const yPass = parseFloat(yt.divYield) > total;
+    overall = zPass && yPass;
+    yieldBlock = `
+      <div class="cond-row">
+        <div class="cond-icon ${yPass ? 'pass' : 'fail'}">${yPass ? '✓' : '✕'}</div>
+        <div class="cond-body">
+          <div class="cl1">Yield vs. market-absolute threshold — ${yPass ? 'condition met' : 'condition not met'}</div>
+          <div class="cl2">actual ${yt.divYield} vs. ${yt.base}% (${yt.market} base)${yt.adj ? ` + ${yt.adj}pp (bank adj.) = ${total}%` : ` = ${total}%`} applied</div>
+        </div>
+      </div>`;
+  }
+  const zBlock = `
+    <div class="cond-row">
+      <div class="cond-icon ${zPass ? 'pass' : 'fail'}">${zPass ? '✓' : '✕'}</div>
+      <div class="cond-body">
+        <div class="cl1">Dividend z-score vs. 5Y own history — ${zPass ? 'condition met' : 'condition not met'}</div>
+        <div class="cl2">actual ${yt.zScore} vs. &gt;1.5 threshold</div>
+      </div>
+    </div>`;
+  return `
+    <div class="panel-head">
+      <div class="panel-title">YIELD TRAP GATE — ${t}</div>
+      <div class="panel-sub">2-condition hard gate — both must be true to fire</div>
+    </div>
+    ${zBlock}
+    ${yieldBlock}
+    <div class="total-row" style="margin-top:8px"><span class="lbl">yield_trap result</span><span class="val" style="color:${overall ? 'var(--red)' : 'var(--green)'}">${overall ? 'FIRES — hard gate engaged' : 'does not fire'}</span></div>
+  `;
+}
+
+function renderLayer(layer) {
+  const el = document.getElementById('mainPanel');
+  if (layer === 'bq') el.innerHTML = renderBQ(currentTicker);
+  if (layer === 'valtax') el.innerHTML = renderValTax(currentTicker);
+  if (layer === 'fscap') el.innerHTML = renderFsCap(currentTicker);
+  if (layer === 'yieldtrap') el.innerHTML = renderYieldTrap(currentTicker);
+  renderInfoPanel(layer);
+}
+
+function switchLayer(layer, btn) {
+  currentLayer = layer;
+  document.querySelectorAll('.d-si').forEach(e => e.classList.remove('on'));
+  if (btn) btn.classList.add('on');
+  renderLayer(layer);
+}
+
+function switchTicker(t, btn) {
+  currentTicker = t;
+  document.querySelectorAll('.pv-pill').forEach(e => e.classList.remove('on'));
+  if (btn) btn.classList.add('on');
+  document.getElementById('lookupResult').textContent = '';
+  renderRegimeStrip(t);
+  renderLayer(currentLayer);
+}
+
+function doLookup() {
+  const val = document.getElementById('lookupInput').value.trim().toUpperCase();
+  const resultEl = document.getElementById('lookupResult');
+  if (!val) return;
+  if (TICKERS[val]) {
+    switchTicker(val, document.querySelector(`.pv-pill[data-t="${val}"]`));
+    return;
+  }
+  resultEl.innerHTML = `"${val}" not in today's signal universe — would call <span style="color:var(--gold)">full_recalculation('${val}')</span> on demand (~1–2s, same cost as onboarding any new ticker), then open the depth view exactly like the four above. Not simulated here — needs the live backend endpoint described in chat.`;
+}
+document.getElementById('lookupInput').addEventListener('keydown', e => { if (e.key === 'Enter') doLookup(); });
+
+// init
+renderRegimeStrip(currentTicker);
+switchLayer('bq', document.getElementById('si-bq'));
+</script>
+</body>
+</html>
