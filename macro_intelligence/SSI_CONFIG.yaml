@@ -1,7 +1,7 @@
 version: "1.0"
 
 schedules:
-  daily_cron: "0 8 * * 1-5"  # 08:00 ET Mon-Fri
+  daily_cron: "0 8 * * 1-5"  # 08:00 UTC Mon-Fri (host cron; ~04:00 ET)
 
 paths:
   ssi_data_dir: "macro_intelligence/data/ssi"
@@ -28,13 +28,13 @@ ssi_score:
       - aaii_spread
       - naaim_exposure
       - cnn_fg
-      - pct_above_200dma
     layer2:
       - mcclellan
       - nh_nl_ratio
       - hyg_lqd
       - skew
       - vix_ratio
+      - pct_above_200dma
     layer3:
       - dbmf_beta
       - cftc_fm_net
@@ -49,6 +49,7 @@ ssi_score:
 
 layer2:
   min_confirmed: 2
+  gate_z_min: 0.5  # |z| on layer2 component norm → gate confirms (mcclellan, nh_nl, skew, %200dma)
   multipliers:
     CONFIRMED: 1.20
     PARTIAL: 1.00

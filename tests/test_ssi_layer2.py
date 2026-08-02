@@ -11,7 +11,7 @@ _ROOT = Path(__file__).resolve().parent.parent
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-from src.sentiment_superindex.engine.layer2 import evaluate_layer2
+from src.sentiment_superindex.engine.layer2 import evaluate_layer2, evaluate_layer2_gates
 
 
 class TestSSILayer2(unittest.TestCase):
@@ -46,6 +46,39 @@ class TestSSILayer2(unittest.TestCase):
         self.assertEqual(count, 0)
         self.assertEqual(status, "UNCONFIRMED")
         self.assertAlmostEqual(mult, 0.8)
+
+
+class TestSSILayer2Gates(unittest.TestCase):
+    def test_all_six_gates_include_mcclellan_vote(self):
+        layer2_components = {
+            "mcclellan": {"raw": -12.0, "norm": -0.6},
+            "nh_nl_ratio": {"raw": 0.73, "norm": -0.1},
+            "hyg_lqd": {"raw": 0.75, "norm": 1.2},
+            "skew": {"raw": 150.0, "norm": -0.8},
+            "vix_ratio": {"raw": 1.09, "norm": -0.2},
+            "pct_above_200dma": {"raw": 66.0, "norm": 0.3},
+        }
+        legacy_votes = [
+            {"input": "hyg_lqd", "raw": 0.75, "vote": True, "signal": "risk_on", "pctile": 100.0},
+            {"input": "vix_ratio", "raw": 1.09, "vote": True, "signal": "stress"},
+        ]
+        confirmed, gates = evaluate_layer2_gates(layer2_components, legacy_votes=legacy_votes)
+        inputs = [g["input"] for g in gates]
+        self.assertEqual(
+            inputs,
+            [
+                "mcclellan",
+                "nh_nl_ratio",
+                "hyg_lqd",
+                "skew",
+                "vix_ratio",
+                "pct_above_200dma",
+            ],
+        )
+        mcc = next(g for g in gates if g["input"] == "mcclellan")
+        self.assertTrue(mcc["vote"])
+        self.assertEqual(mcc["signal"], "bearish")
+        self.assertGreaterEqual(confirmed, 3)
 
 
 if __name__ == "__main__":

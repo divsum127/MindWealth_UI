@@ -8,7 +8,7 @@ from typing import Any
 import pandas as pd
 
 from src.sentiment_superindex.config import load_config
-from src.sentiment_superindex.engine.layer2 import evaluate_layer2
+from src.sentiment_superindex.engine.layer2 import evaluate_layer2, evaluate_layer2_gates
 from src.sentiment_superindex.data.pull_all import layer3_for_date, load_all_series, values_as_of
 from src.sentiment_superindex.engine.superindex import build_superindex
 from src.sentiment_superindex.engine.ssi_score import compute_ssi_at_date
@@ -23,6 +23,14 @@ from src.sentiment_superindex.engine.ssi_score import compute_ssi_at_date
 _CURRENCY_PAIR_KEYS = frozenset(
     {"usdcnh", "eurusd", "gbpusd", "usdjpy", "audusd", "usdcad", "usdchf", "nzdusd"}
 )
+
+# Layer-1 display keys → series keys + publication cadence (DATA_SOURCES.yaml).
+_LAYER1_INPUT_META: dict[str, dict[str, str]] = {
+    "aaii_spread": {"series_key": "aaii_spread", "cadence": "weekly", "schedule_et": "Thu"},
+    "naaim_exposure": {"series_key": "naaim_exposure", "cadence": "weekly", "schedule_et": "Wed"},
+    "cnn_fg_raw": {"series_key": "cnn_fg", "cadence": "daily"},
+    "pct_above_200dma": {"series_key": "pct_above_200dma", "cadence": "daily"},
+}
 
 
 def _display_decimals(key: str | None) -> int:
@@ -41,6 +49,37 @@ def _round_display(
     return round(float(value), decimals)
 
 
+def _layer1_inputs_meta(
+    series: dict[str, pd.Series],
+    as_of: pd.Timestamp,
+) -> dict[str, dict[str, Any]]:
+    """Per Layer-1 input: cadence, as-of survey/print date, staleness vs dashboard date."""
+    out: dict[str, dict[str, Any]] = {}
+    as_of_norm = as_of.normalize()
+    for display_key, spec in _LAYER1_INPUT_META.items():
+        series_key = spec["series_key"]
+        s = series.get(series_key)
+        as_of_date: str | None = None
+        stale_days: int | None = None
+        if s is not None and not s.empty:
+            sl = s.loc[:as_of].dropna()
+            if not sl.empty:
+                last_ts = sl.index[-1]
+                as_of_date = pd.Timestamp(last_ts).strftime("%Y-%m-%d")
+                stale_days = int((as_of_norm - pd.Timestamp(last_ts).normalize()).days)
+        entry: dict[str, Any] = {
+            "cadence": spec["cadence"],
+            "as_of": as_of_date,
+            "stale_days": stale_days,
+        }
+        if spec.get("schedule_et"):
+            entry["schedule_et"] = spec["schedule_et"]
+        if series_key == "aaii_spread" and s is not None:
+            entry["source"] = s.attrs.get("aaii_source")
+        out[display_key] = entry
+    return out
+
+
 def build_positioning_payload(as_of: str | None = None) -> dict[str, Any]:
     as_of = as_of or datetime.now().strftime("%Y-%m-%d")
     cfg = load_config()
@@ -50,7 +89,10 @@ def build_positioning_payload(as_of: str | None = None) -> dict[str, Any]:
     level = float(superindex["ssi_level"])
     _, pctile, _ = compute_ssi_at_date(as_of)
     layer2_status, layer2_count, votes, ssi_mult = evaluate_layer2(as_of)
-    raw_inputs = values_as_of(load_all_series(), pd.Timestamp(as_of))
+    as_of_ts = pd.Timestamp(as_of)
+    all_series = load_all_series()
+    raw_inputs = values_as_of(all_series, as_of_ts)
+    layer1_inputs_meta = _layer1_inputs_meta(all_series, as_of_ts)
 
     long_th = float(th.get("long_entry", -0.6))
     short_th = float(th.get("short_entry", 0.85))
@@ -74,6 +116,7 @@ def build_positioning_payload(as_of: str | None = None) -> dict[str, Any]:
     layer1 = superindex["layers"].get("layer1", {}).get("components", {})
     layer2 = superindex["layers"].get("layer2", {}).get("components", {})
     layer3 = superindex["layers"].get("layer3", {}).get("components", {})
+    gate_confirmed_count, gate_votes = evaluate_layer2_gates(layer2, legacy_votes=votes)
 
     return {
         "date": as_of,
@@ -95,14 +138,18 @@ def build_positioning_payload(as_of: str | None = None) -> dict[str, Any]:
                 "active": short_active,
             },
         },
+        "inputs_meta": {
+            "layer1": layer1_inputs_meta,
+        },
         "inputs": {
             "layer2_votes": votes,
+            "layer2_gate_votes": gate_votes,
+            "layer2_gate_confirmed_count": gate_confirmed_count,
             "layer3_cftc": layer3_for_date(as_of),
             "layer1": {
                 "aaii_spread": _round_display(raw_inputs.get("aaii_spread"), key="aaii_spread"),
                 "naaim_exposure": _round_display(raw_inputs.get("naaim_exposure"), key="naaim_exposure"),
                 "cnn_fg_raw": _round_display(raw_inputs.get("cnn_fg"), key="cnn_fg"),
-                "pct_above_200dma": _round_display(raw_inputs.get("pct_above_200dma"), key="pct_above_200dma"),
             },
             "layer2": {
                 "mcclellan": _round_display(raw_inputs.get("mcclellan"), key="mcclellan"),
@@ -110,6 +157,7 @@ def build_positioning_payload(as_of: str | None = None) -> dict[str, Any]:
                 "hyg_lqd": _round_display(raw_inputs.get("hyg_lqd"), key="hyg_lqd"),
                 "skew": _round_display(raw_inputs.get("skew"), key="skew"),
                 "vix_ratio": _round_display(raw_inputs.get("vix_ratio"), key="vix_ratio"),
+                "pct_above_200dma": _round_display(raw_inputs.get("pct_above_200dma"), key="pct_above_200dma"),
             },
             "layer3": {
                 "dbmf_beta": _round_display(layer3.get("dbmf_beta", {}).get("raw"), key="dbmf_beta"),

@@ -162,7 +162,7 @@ variables:
     pull: cnn_scrape
   - id: 16
     var_id: PCT_ABOVE_200DMA
-    system: ssi_layer1
+    system: ssi_layer2
     frequency: daily
     schedule_et: EOD
     source: computed

@@ -75,6 +75,9 @@ class TestSSISuperindex(unittest.TestCase):
 
         l1 = build_layer1("2021-06-01")
         self.assertIsNotNone(l1["score"])
+        self.assertNotIn("pct_above_200dma", l1["components"])
+        l2 = build_layer2("2021-06-01")
+        self.assertIn("pct_above_200dma", l2["components"])
         for comp in l1["components"].values():
             self.assertIn("norm", comp)
             self.assertIn("raw", comp)

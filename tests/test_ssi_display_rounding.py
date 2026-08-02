@@ -119,6 +119,44 @@ class TestPositioningPayloadRounding(unittest.TestCase):
         self.assertEqual(layer2_display["mcclellan"], 217.1)
         self.assertEqual(layer2_display["nh_nl_ratio"], 0.98)
         self.assertEqual(layer2_display["skew"], 147.28)
+        self.assertEqual(layer2_display["pct_above_200dma"], 66.07)
+        self.assertNotIn("pct_above_200dma", layer1_display)
+
+    @patch("src.sentiment_superindex.engine.positioning.values_as_of")
+    @patch("src.sentiment_superindex.engine.positioning.load_all_series")
+    @patch("src.sentiment_superindex.engine.positioning.layer3_for_date")
+    @patch("src.sentiment_superindex.engine.positioning.evaluate_layer2")
+    @patch("src.sentiment_superindex.engine.positioning.compute_ssi_at_date")
+    @patch("src.sentiment_superindex.engine.positioning.build_superindex")
+    def test_layer1_inputs_meta_includes_aaii_weekly_as_of(
+        self, mock_build_si, mock_compute, mock_layer2, mock_layer3, mock_load_all, mock_values_as_of
+    ):
+        from src.sentiment_superindex.engine.positioning import build_positioning_payload
+
+        mock_build_si.return_value = {"ssi_level": 0.1, "layers": {}}
+        mock_compute.return_value = (0.1, 50.0, {})
+        mock_layer2.return_value = ("UNCONFIRMED", 0, [], 1.0)
+        mock_layer3.return_value = {}
+        idx = pd.to_datetime(["2026-07-23", "2026-07-30"])
+        mock_load_all.return_value = {
+            "aaii_spread": pd.Series([-12.75, -11.11], index=idx),
+            "naaim_exposure": pd.Series([90.0, 91.0], index=idx),
+            "cnn_fg": pd.Series([40.0, 41.0], index=idx),
+            "pct_above_200dma": pd.Series([60.0, 61.0], index=idx),
+        }
+        mock_values_as_of.return_value = {
+            "aaii_spread": -11.11,
+            "naaim_exposure": 91.0,
+            "cnn_fg": 41.0,
+            "pct_above_200dma": 61.0,
+        }
+
+        payload = build_positioning_payload("2026-08-02")
+        aaii_meta = payload["inputs_meta"]["layer1"]["aaii_spread"]
+        self.assertEqual(aaii_meta["cadence"], "weekly")
+        self.assertEqual(aaii_meta["as_of"], "2026-07-30")
+        self.assertEqual(aaii_meta["schedule_et"], "Thu")
+        self.assertEqual(aaii_meta["stale_days"], 3)
 
 
 if __name__ == "__main__":
