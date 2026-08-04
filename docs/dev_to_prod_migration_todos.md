@@ -190,6 +190,8 @@ cd /home/ubuntu/uiv2/prod/MindWealth_UI
 
 **Smoke test `[PENDING]`:** `GET /api/v1/analytics/sentiment/layers` → `positioning.layers.layer1.components.put_call_ema.raw` populated; `signal_coverage.available_count == 4`; Sentiment Layer 1 header not "3 weekly inputs".
 
+**Smoke test `[DONE]`** 2026-08-04 dev `:8507` — `put_call_ema.raw` ≈ 0.766; `signal_coverage.configured_count=4`; `nominal_weights` 30/35/20/15; `pytest tests/test_ssi_superindex.py tests/test_put_call_pull.py tests/test_ssi_staleness.py` 20/20; full `pytest tests/` 753 passed; `smoke-test-apis.sh` PASS (dev v1.10.5). NAAIM may show `expired` when `stale_days > 5` (weekly cap) — separate staleness policy, not Put/Call fetch failure.
+
 ---
 
 ## 2026-08-02 — AAII weekly cadence metadata (Sentiment Layer 1)
