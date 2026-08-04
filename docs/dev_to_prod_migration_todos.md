@@ -87,7 +87,7 @@ Reference deploy skill: `.cursor/skills/prod-pull-and-details/SKILL.md`
 
 **`[PROD-ACTION]`** After API deploy: `python scripts/run_ssi_daily.py` so `positioning.json` includes `layers.*.signal_coverage`.
 
-**Smoke test `[PENDING]`:** `GET /api/v1/analytics/sentiment/layers` → `positioning.layers.layer1.signal_coverage.weights_renormalized` is `true` when `put_call_ema` missing; Sentiment page Layer 1 header shows `Running on 3 of 4 signals · weights renormalised`; Put/Call row shows `unavailable` + effective weight note on other rows.
+**Smoke test `[DONE]`** 2026-08-04 dev `:8507` — `GET /analytics/sentiment/layers` → `positioning.layers.layer1.signal_coverage.weights_renormalized=true`, `available_count=3`, `configured_count=4` (today `naaim_exposure` expired, not put/call); `run_ssi_daily.py` refreshed `positioning.json`; `pytest` SSI/sentiment 17/17 + API 174/174; `smoke-test-apis.sh` PASS; Nuxt `:8514` rebuilt + `mindwealth-ui-dev` active.
 
 ---
 
