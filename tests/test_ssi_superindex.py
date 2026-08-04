@@ -33,6 +33,7 @@ class TestSSISuperindex(unittest.TestCase):
         mock_load.return_value = {
             "aaii_spread": _flat_series(10.0),
             "naaim_exposure": _flat_series(80.0),
+            "put_call_ema": _flat_series(0.85),
             "cnn_fg": _flat_series(50.0),
             "pct_above_200dma": _flat_series(55.0),
             "mcclellan": _flat_series(5.0),
@@ -60,6 +61,7 @@ class TestSSISuperindex(unittest.TestCase):
         mock_load.return_value = {
             "aaii_spread": _flat_series(12.0),
             "naaim_exposure": _flat_series(75.0),
+            "put_call_ema": _flat_series(0.85),
             "cnn_fg": _flat_series(40.0),
             "pct_above_200dma": _flat_series(60.0),
             "mcclellan": _flat_series(8.0),
@@ -76,11 +78,50 @@ class TestSSISuperindex(unittest.TestCase):
         l1 = build_layer1("2021-06-01")
         self.assertIsNotNone(l1["score"])
         self.assertNotIn("pct_above_200dma", l1["components"])
+        self.assertIn("put_call_ema", l1["components"])
         l2 = build_layer2("2021-06-01")
         self.assertIn("pct_above_200dma", l2["components"])
         for comp in l1["components"].values():
             self.assertIn("norm", comp)
             self.assertIn("raw", comp)
+
+    @patch("src.sentiment_superindex.engine.superindex.load_all_series")
+    def test_layer1_missing_put_call_renormalizes_spec_weights(self, mock_load):
+        """Without put/call, AAII/NAAIM/CNN weights rescale from 30/35/15 → 37.5/43.75/18.75%."""
+        mock_load.return_value = {
+            "aaii_spread": _flat_series(10.0),
+            "naaim_exposure": _flat_series(80.0),
+            "cnn_fg": _flat_series(50.0),
+            "pct_above_200dma": _flat_series(55.0),
+            "mcclellan": _flat_series(5.0),
+            "nh_nl_ratio": _flat_series(0.6),
+            "hyg_lqd": _flat_series(0.72),
+            "skew": _flat_series(130.0),
+            "vix_ratio": _flat_series(1.0),
+            "dbmf_beta": _flat_series(0.4),
+            "cftc_fm_net": _flat_series(100_000.0),
+            "cftc_rm_net": _flat_series(200_000.0),
+            "gross_net": _flat_series(300_000.0),
+        }
+
+        l1 = build_layer1("2021-06-01")
+        cov = l1["signal_coverage"]
+        self.assertEqual(cov["configured_count"], 4)
+        self.assertEqual(cov["available_count"], 3)
+        self.assertTrue(cov["weights_renormalized"])
+        self.assertEqual(cov["missing"], ["put_call_ema"])
+        self.assertAlmostEqual(cov["effective_weights"]["aaii_spread"], 0.375, places=3)
+        self.assertAlmostEqual(cov["effective_weights"]["naaim_exposure"], 0.4375, places=3)
+        self.assertAlmostEqual(cov["effective_weights"]["cnn_fg"], 0.1875, places=3)
+        self.assertEqual(cov["effective_weights"]["put_call_ema"], 0.0)
+
+        norms = {k: v["norm"] for k, v in l1["components"].items() if v.get("norm") is not None}
+        expected = (
+            0.375 * norms["aaii_spread"]
+            + 0.4375 * norms["naaim_exposure"]
+            + 0.1875 * norms["cnn_fg"]
+        )
+        self.assertAlmostEqual(l1["score"], expected, places=6)
 
     @patch("src.sentiment_superindex.engine.superindex.load_all_series")
     def test_composite_uses_norm_not_raw(self, mock_load):
@@ -90,6 +131,7 @@ class TestSSISuperindex(unittest.TestCase):
         mock_load.return_value = {
             "aaii_spread": _flat_series(5.0),
             "naaim_exposure": _flat_series(70.0),
+            "put_call_ema": _flat_series(0.85),
             "cnn_fg": _flat_series(45.0),
             "pct_above_200dma": _flat_series(50.0),
             "mcclellan": _flat_series(3.0),
@@ -107,6 +149,34 @@ class TestSSISuperindex(unittest.TestCase):
         hyg_norm = result["layers"]["layer2"]["components"]["hyg_lqd"]["norm"]
         hyg_raw = result["layers"]["layer2"]["components"]["hyg_lqd"]["raw"]
         self.assertNotAlmostEqual(hyg_norm, hyg_raw, places=2)
+
+    @patch("src.sentiment_superindex.engine.superindex.load_all_series")
+    def test_layer_signal_coverage_when_input_missing(self, mock_load):
+        series = {
+            "aaii_spread": _flat_series(12.0),
+            "naaim_exposure": _flat_series(75.0),
+            "cnn_fg": _flat_series(40.0),
+            "pct_above_200dma": _flat_series(60.0),
+            "mcclellan": _flat_series(8.0),
+            "nh_nl_ratio": _flat_series(0.7),
+            "hyg_lqd": _flat_series(0.71),
+            "skew": _flat_series(125.0),
+            "vix_ratio": _flat_series(0.98),
+            "dbmf_beta": _flat_series(0.35),
+            "cftc_fm_net": _flat_series(90_000.0),
+            "cftc_rm_net": _flat_series(180_000.0),
+            "gross_net": _flat_series(270_000.0),
+        }
+        mock_load.return_value = series
+
+        l1 = build_layer1("2021-06-01")
+        coverage = l1["signal_coverage"]
+        self.assertEqual(coverage["configured_count"], 4)
+        self.assertEqual(coverage["available_count"], 3)
+        self.assertTrue(coverage["weights_renormalized"])
+        self.assertEqual(coverage["missing"], ["put_call_ema"])
+        self.assertEqual(coverage["effective_weights"]["aaii_spread"], round(0.30 / 0.80, 4))
+        self.assertEqual(coverage["effective_weights"]["put_call_ema"], 0.0)
 
 
 if __name__ == "__main__":
