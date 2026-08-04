@@ -34,7 +34,6 @@ _LAYER1_INPUT_META: dict[str, dict[str, str]] = {
     "naaim_exposure": {"series_key": "naaim_exposure", "cadence": "weekly", "schedule_et": "Wed"},
     "cnn_fg_raw": {"series_key": "cnn_fg", "cadence": "daily"},
     "put_call_ema": {"series_key": "put_call_ema", "cadence": "daily"},
-    "pct_above_200dma": {"series_key": "pct_above_200dma", "cadence": "daily"},
 }
 
 

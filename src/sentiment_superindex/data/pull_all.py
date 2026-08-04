@@ -17,7 +17,9 @@ from src.sentiment_superindex.data.mcclellan_pull import fetch_mcclellan_oscilla
 from src.sentiment_superindex.data.naaim_pull import fetch_naaim_exposure
 from src.sentiment_superindex.data.nh_nl_pull import fetch_nh_nl_ratio
 from src.sentiment_superindex.data.pct_200dma_pull import fetch_pct_above_200dma
+from src.sentiment_superindex.data.put_call_pull import fetch_put_call_ema
 from src.sentiment_superindex.data.skew_pull import fetch_skew
+from src.sentiment_superindex.data.staleness import observation_as_of
 from src.sentiment_superindex.data.yahoo_inputs import dbmf_beta_vs_spy, hyg_lqd_ratio, vix_ratio_series
 
 _CACHE: dict[str, pd.Series] = {}
@@ -45,6 +47,7 @@ def load_all_series(force: bool = False) -> dict[str, pd.Series]:
             "vix_ratio": vix_ratio_series("2007-01-01"),
             "aaii_spread": fetch_aaii_spread(),
             "naaim_exposure": fetch_naaim_exposure(),
+            "put_call_ema": fetch_put_call_ema(),
             "pct_above_200dma": fetch_pct_above_200dma("2015-01-01"),
             "mcclellan": fetch_mcclellan_oscillator("2010-01-01"),
             "skew": fetch_skew("1990-01-01"),
@@ -58,13 +61,11 @@ def load_all_series(force: bool = False) -> dict[str, pd.Series]:
 
 
 def values_as_of(series: dict[str, pd.Series], as_of: pd.Timestamp) -> dict[str, float | None]:
+    """Point-in-time values with cadence-aware max-stale drop (see observation_as_of)."""
     out: dict[str, float | None] = {}
     for key, s in series.items():
-        if s is None or s.empty:
-            out[key] = None
-            continue
-        sl = s.loc[:as_of].dropna()
-        out[key] = float(sl.iloc[-1]) if not sl.empty else None
+        raw, _, _ = observation_as_of(s, as_of, series_key=key)
+        out[key] = raw
     return out
 
 

@@ -648,18 +648,24 @@ def load_positioning() -> dict[str, Any]:
 
 def _ensure_layer2_gate_votes(inputs: dict[str, Any]) -> dict[str, Any]:
     """Backfill six-gate vote rows when positioning.json predates layer2_gate_votes."""
-    if not inputs or inputs.get("layer2_gate_votes"):
+    if not inputs:
+        return inputs
+    if inputs.get("layer2_gate_conf_long") is not None and inputs.get("layer2_gate_votes"):
         return inputs
     layer2_components = inputs.get("layer2_components") or {}
-    if not layer2_components:
+    if not layer2_components and not inputs.get("layer2_gate_votes"):
         return inputs
     from src.sentiment_superindex.engine.layer2 import evaluate_layer2_gates
 
     legacy_votes = inputs.get("layer2_votes") or []
-    confirmed, gate_votes = evaluate_layer2_gates(layer2_components, legacy_votes=legacy_votes)
+    gate_summary = evaluate_layer2_gates(layer2_components, legacy_votes=legacy_votes)
     enriched = dict(inputs)
-    enriched["layer2_gate_votes"] = gate_votes
-    enriched["layer2_gate_confirmed_count"] = confirmed
+    enriched["layer2_gate_votes"] = gate_summary.votes
+    enriched["layer2_gate_confirmed_count"] = gate_summary.confirmed_count
+    enriched["layer2_gate_conf_long"] = gate_summary.conf_long
+    enriched["layer2_gate_conf_short"] = gate_summary.conf_short
+    enriched["layer2_gate_direction"] = gate_summary.direction
+    enriched["layer2_gate_label"] = gate_summary.label
     return enriched
 
 
@@ -682,6 +688,11 @@ def sentiment_layers() -> dict[str, Any]:
         "layer2_votes": layer_inputs.get("layer2_votes", []),
         "layer2_gate_votes": layer_inputs.get("layer2_gate_votes", []),
         "layer2_gate_confirmed_count": layer_inputs.get("layer2_gate_confirmed_count"),
+        "layer2_gate_conf_long": layer_inputs.get("layer2_gate_conf_long"),
+        "layer2_gate_conf_short": layer_inputs.get("layer2_gate_conf_short"),
+        "layer2_gate_direction": layer_inputs.get("layer2_gate_direction")
+        or positioning.get("layer2_gate_direction"),
+        "layer2_gate_label": layer_inputs.get("layer2_gate_label") or positioning.get("layer2_gate_label"),
         "signal_rows": signals.get("records", []),
         "signal_report_date": signals.get("report_date"),
     }

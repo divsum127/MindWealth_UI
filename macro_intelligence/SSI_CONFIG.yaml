@@ -15,6 +15,15 @@ tickers:
   vix: "^VIX"
   vix3m: "^VIX3M"
 
+staleness:
+  # Calendar days a carried-forward print remains eligible; beyond max → dropped.
+  max_stale_days:
+    weekly: 5
+    daily: 1
+    monthly: 25
+  # Multiplier on nominal weight when stale_days > 0 (residual redistributed).
+  weight_penalty: 0.8
+
 ssi_score:
   history_years: 5
   design_percentile: 20  # ~20th percentile of 5y distribution by design intent
@@ -23,10 +32,17 @@ ssi_score:
     layer1: 0.40
     layer2: 0.35
     layer3: 0.25
+  # Within-layer weights for Layer 1 composite (renormalized when a signal is missing).
+  layer1_input_weights:
+    aaii_spread: 0.30
+    naaim_exposure: 0.35
+    put_call_ema: 0.20
+    cnn_fg: 0.15
   layers:
     layer1:
       - aaii_spread
       - naaim_exposure
+      - put_call_ema
       - cnn_fg
     layer2:
       - mcclellan
