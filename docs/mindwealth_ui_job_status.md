@@ -111,6 +111,91 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
 
 ---
 
+### 2026-08-04
+
+1. **Investigate [SIGNALS CRITICAL]: new signals not loading timely; SSI Layer 1 `as_of` Aug 03 while rest of site showed Jul 31** — SUCCESSFUL (investigation only, no code changes)
+   - Summary: Confirmed not a sync/cache failure — architectural date-source split + long nightly batch latency. SSI (`run_ssi_daily.py` 08:00 UTC) advances `positioning.json` to calendar today and Layer 1 `inputs_meta.*.as_of` can show today's daily prints (e.g. CNN F&G) while trade-store signals stay on last batch report date until `emailscript.sh` (22:00 UTC) finishes (~3h to CSV write, ~5.5h to full `update_trade_data.sh` + conviction). On Mon 2026-08-03 that meant Jul 31 signals vs Aug 03 SSI for ~17h. After batch, prod API now serves `report_date=2026-08-03` (13 new signals). UI has no post-batch auto-refresh (useFetch keyed cache; BFF GET cache 30s only). Recommended: align SSI `as_of` to last trade-store report date for display, move/parallelize signal batch earlier, add freshness banner + optional poll after 22:00 UTC.
+   - Files inspected (no code changes): `api/services/meta_service.py`, `api/services/reports_service.py`, `src/sentiment_superindex/engine/positioning.py`, `scripts/run_ssi_daily.py`, `/home/ubuntu/MindWealth/emailscript.sh`, `update_trade_data.sh`, `MindwealthUI_Vue/server/utils/mindwealth-data.ts`, `sentiment-mapper.ts`, `mindwealth-client.ts`, prod/dev trade_store + cron logs
+   - Prod impact: none this session (investigation only). Operational/process fixes recommended.
+
+2. **Investigate [SSI HIGH]: Layer 1 header "3 weekly inputs" vs documented 4 signals (Put/Call missing on prod)** — SUCCESSFUL
+   - Summary: **Not a fetch failure** — CBOE Put/Call EMA fetches successfully on dev (`put_call_pull.py`: 5,537 raw rows, 5,528 EMA through 2026-08-03). **Prod never wired:** `chatbot-prod` `SSI_CONFIG.yaml` layer1 = AAII+NAAIM+CNN only; `pull_all.py` has no `put_call_ema`; prod `positioning.json` has 3 components. Dev has full wiring (uncommitted `put_call_pull.py` + cache CSVs). Layer 1 score used equal-weight mean of available norms; fixed to **spec weights 30/35/20/15** with renormalization when a signal is missing (`signal_coverage.effective_weights`). Vue mapper already renders all 4 Layer 1 rows (Put/Call shows `unavailable` on prod); header fallback changed from "weekly inputs" to "N of 4 Layer 1 signals" + renormalization note when `signal_coverage.weights_renormalized`.
+   - Files changed: `macro_intelligence/SSI_CONFIG.yaml`, `src/sentiment_superindex/engine/superindex.py`, `tests/test_ssi_superindex.py`, `MindwealthUI_Vue/server/utils/sentiment-mapper.ts`
+   - Prod impact: merge `chatbot-dev` → `chatbot-prod`, deploy, run `scripts/run_ssi_daily.py`; rebuild Nuxt UI. Layer 1 score will shift slightly vs prod 3-input equal-weight runs.
+
+2. **[SSI HIGH] Surface partial layer signal coverage — header + effective weights when inputs missing** — SUCCESSFUL
+   - Summary: When a layer composite runs on fewer than its configured signals (e.g. Layer 1 missing `put_call_ema` on 2026-08-03), the Sentiment page now flags it explicitly instead of only showing a generic redistribution footnote. Backend `build_superindex()` already emitted `signal_coverage` per layer (`configured_count`, `available_count`, `weights_renormalized`, `nominal_weights`, `effective_weights`, `missing`); `build_positioning_payload()` now passes it through `layers.*.signal_coverage`. Vue mapper uses fixed configured key order (all 4 Layer-1 inputs including unavailable), KPI delta label + panel header show `3 of 4 signals · weights renormalised`, and each detail row sub-label shows effective vs nominal weight (e.g. `37.5% effective (nominal 30%)`). Missing inputs render as `unavailable` instead of a bogus `0` value.
+   - Files changed: `src/sentiment_superindex/engine/positioning.py`, `tests/test_ssi_superindex.py`, `MindwealthUI_Vue/server/utils/sentiment-mapper.ts`, `MindwealthUI_Vue/pages/sentiment.vue`, `MindwealthUI_Vue/types/api.ts`
+   - Prod impact: requires merge + `run_ssi_daily.py` to refresh `positioning.json` with `signal_coverage`; Nuxt rebuild/restart for UI.
+
+3. **[SSI CRITICAL] Layer 2 header blended vote count — show long/short split, gate only when same direction** — SUCCESSFUL
+   - Summary: Fixed misleading `3/6 confirmation votes` / `L2 CONFIRMED` when ticked gates pointed different ways (e.g. bearish + risk on + stress). `evaluate_layer2_gates()` now tallies `layer2_gate_conf_long` / `layer2_gate_conf_short` separately; direction confirmed only when ≥2 of 6 share the same side (`LONG_CONFIRMED` / `SHORT_CONFIRMED` / `CONTESTED` / `UNCONFIRMED`). API exposes `layer2_gate_label` (e.g. `L2: 1 long / 1 short of 6 - no direction confirmed`). Sentiment composite header + Layer 2 KPI use directional label instead of legacy blended count. Legacy 4-input `layer2_status` / `ssi_multiplier` unchanged for sizing.
+   - Files changed: `src/sentiment_superindex/engine/layer2.py`, `src/sentiment_superindex/engine/positioning.py`, `api/services/reports_service.py`, `tests/test_ssi_layer2.py`, `tests/test_sentiment_layers_gate_votes.py`, `MindwealthUI_Vue/server/utils/sentiment-mapper.ts`
+   - Prod impact: merge + `run_ssi_daily.py` (or API backfill via `_ensure_layer2_gate_votes`); Nuxt rebuild/restart.
+
+3. **Investigate [SSI CRITICAL]: Layer 2 column mixes raw vs z-score; confirm test on raw values?** — SUCCESSFUL (investigation only, no code changes)
+   - Summary: **Not a raw-vs-z bug in gate logic.** UI value column always shows `inputs.layer2` raw prints (all 6 rows). Gate ✓/✗ uses `layer2_components.*.norm` for mcclellan/nh_nl/skew/%200dma (`|norm| ≥ gate_z_min` 0.5); hyg_lqd/vix_ratio reuse legacy percentile/ratio votes from `evaluate_layer2()`. Live 2026-08-04: mcclellan raw −5.99 but norm −0.285 → ✗ (correct; no dropped short vote); skew 141.23 norm −0.065 → ✗; %200dma 67.86 norm 0.458 → ✗ (just below 0.5); nh_nl 0.57 raw but norm −0.598 → ✓. HYG/LQD 0.75 and VIX 0.91 ticks are legacy votes, not displayed z-scores. Real issue: **UX confusion** — raw display + hidden norm/legacy logic.
+   - Files inspected: `src/sentiment_superindex/engine/layer2.py`, `superindex.py`, `positioning.py`, `macro_intelligence/output/positioning.json`
+   - Prod impact: none (investigation). Optional follow-up: show `norm` beside raw for z-gated rows or label confirm basis per input.
+
+4. **[SSI HIGH] CFTC `fm_pctile` / `rm_pctile` — confirm true percentile rank vs min–max range scaling** — SUCCESSFUL
+   - Summary: Reviewer flagged `rolling_percentile()` as min–max scaling; **no such function exists** and live path already uses true rank via `percentile_rank()` → `_rolling_pctile()` in `cftc_pull.py`. Dashboard label "3yr pct" is semantically correct (fraction of 156-week window ≤ current signed net). **Direction confirmed:** low FM rank = most net short; high = least net short (SQUEEZE `fm_pct < 30` consistent). Live window (2026-07-28): `fm_net` n=157, min=−523,882, max=−184,892, **100% negative**; rank=67.5 vs min–max=65.3. Added explicit docstrings, `describe_cftc_pctile_window()` diagnostic helper, and regression tests proving rank ≠ min–max under outliers.
+   - Files changed: `src/macro_intelligence/engine/percentiles.py`, `src/macro_intelligence/data/cftc_pull.py`, `tests/test_macro_percentiles.py`
+   - Prod impact: merge `chatbot-dev` → `chatbot-prod` (docstrings + diagnostic helper only; no formula change).
+
+5. **[SSI HIGH] Confirm forward-fill limit units; document at every call site** — SUCCESSFUL
+   - Summary: `forward_fill_weekly()` / `align_to_daily()` did not exist (referenced in Rohit staleness spec but never implemented). Added canonical helpers in `src/sentiment_superindex/data/alignment.py` with `max_ffill_business_days` vs `max_ffill_calendar_days` and module docstring explaining pandas `limit` counts rows of `ref_index`. Audited all 11 production ffill/reindex call sites — annotated index type (calendar `D`, business `B`, sparse trading-day union) and capped vs unlimited. SSI live path (`_value_as_of` / `values_as_of`) remains unlimited implicit forward-fill; `inputs_meta.stale_days` is calendar days (Layer 1 only). Tests: `tests/test_series_alignment.py` (5 pass).
+   - Files changed: `src/sentiment_superindex/data/alignment.py` (new), `tests/test_series_alignment.py` (new), `src/macro_intelligence/output/regime_feed_export.py`, `src/portfolio_nav/four_book_engine.py`, `src/macro_intelligence/data/yahoo_pull.py`, `src/macro_intelligence/data/fred_pull.py`, `src/sentiment_superindex/analysis/layer2_zscore_sweep.py`, `src/sentiment_superindex/engine/superindex.py`, `src/sentiment_superindex/data/pull_all.py`, `src/sentiment_superindex/engine/positioning.py`, `testing/5_regime_uplift/run_regime_sharpe_uplift.py`
+   - Prod impact: none until SSI pipeline wired to `alignment.py` (comments + new module only).
+
+6. **Investigate [SSI HIGH]: `compute_layer3()` contrarian FM inversion — validation + Jul 2026 CFTC cross-check + SPX regression** — SUCCESSFUL (investigation only, no code changes)
+   - Summary: **`compute_layer3()` does not exist** — live path is `build_layer3()` (`superindex.py`), which z-scores raw `cftc_fm_net` with **no invert** (high net → positive layer score). FM percentiles are display-only. Contrarian inversion exists only in Combo B (`cftc_max_pctile ≤ 15`) and offline tail studies (Test 18 FM&lt;X sweep) — not continuous layer scoring. **Jul 2026:** dashboard −329,314 / 930,906 = **2026-07-21** report exactly; public −359,456 / +941,123 ≈ Jul 14 (−370,589 / 943,022). **Regression (815 weekly obs):** FM pctile vs SPX 1/2/4/8w — all R² &lt; 0.001, p &gt; 0.46. Contrarian inversion not validated for continuous use; hedging-blindness caveat valid.
+   - Files inspected (no code changes): `src/sentiment_superindex/engine/superindex.py`, `src/macro_intelligence/data/cftc_pull.py`, `src/macro_intelligence/engine/combo_detector.py`, `src/sentiment_superindex/analysis/cot_fm_long_gate.py`, `docs/ssi_validation/SIGNOFF.md`
+   - Prod impact: none (investigation only)
+
+7. **[SSI HIGH] NH Share +0.57 shows bearish badge — raw vs norm display mismatch** — SUCCESSFUL
+   - Summary: **Badge/sign convention correct; display was wrong.** Live: NH Share raw `0.57` but z-scored `norm` `−0.60` (weak vs 5y history mean ~0.79) → gate confirms short (`|norm| ≥ 0.5`, `signal: bearish`). UI showed raw `+0.57` while badge used norm — looked inverted. Fixed `sentiment-mapper.ts` to display `norm` for norm-gated Layer 2 rows (`mcclellan`, `nh_nl_ratio`, `skew`, `pct_above_200dma`). Added regression tests. **Dev smoke `[DONE]` 2026-08-04:** Nuxt rebuild + `mindwealth-ui-dev` restart; `mapSentimentLayers()` on live API → NH Share **`-0.60 ✓ bearish`**.
+   - Files changed: `MindwealthUI_Vue/server/utils/sentiment-mapper.ts`, `tests/test_ssi_layer2.py`, `docs/dev_to_prod_migration_todos.md`
+   - Prod impact: Nuxt rebuild/restart on prod UI host when promoting (dev smoke passed).
+
+8. **Investigate [SSI CRITICAL]: CFTC series index date (Tuesday vs Friday) + Layer 3 dropout on holiday weeks** — SUCCESSFUL (investigation only, no code changes)
+   - Summary: **Indexed to Tuesday position date** (`Report_Date_as_YYYY-MM-DD` in `parse_cftc_pair()` — 99% Tuesday, 0 Friday rows in live series). **Not Friday release date.** Live SSI uses unlimited carry-forward via `_value_as_of()` / `values_as_of()` — **no 5-day fill cap** (`alignment.forward_fill_weekly()` exists but is not wired to scoring). Empirical scan 2015–2026: **0/3019** trading days with Layer 3 `score=None`; **0** superindex renormalizations (40/35/25 → 53/47). Wed/Thu do **not** drop Layer 3 — prior Tuesday CFTC carries forward. Six holiday gaps >7d (e.g. 2023-07-03→07-11): Layer 3 still scores with stale CFTC. Full layer dropout + silent 53/47 renorm only if **all** Layer 3 inputs missing (incl. `dbmf_beta`); CFTC-only fetch failure leaves Layer 3 active on DBMF alone (within-layer renorm). No `cot_tff` symbol — equivalent is `fetch_cftc_fast_money_net()` / `cftc_fm_net`.
+   - Files inspected (no code changes): `src/macro_intelligence/data/cftc_pull.py`, `src/sentiment_superindex/data/pull_all.py`, `src/sentiment_superindex/engine/superindex.py`, `src/sentiment_superindex/data/alignment.py`, `src/macro_intelligence/data/source_freshness.py`
+   - Prod impact: none (investigation only). Optional follow-up: wire CFTC through `forward_fill_weekly(max_ffill_business_days=5)` + surface superindex-level dropout in header when `wsum < 1.0`.
+
+9. **CFTC SQUEEZE / LIQUIDITY EXIT threshold experiments — fresh grid re-run + Rohit sign-off report** — SUCCESSFUL
+   - Summary: Re-ran Tests 3–4 (`cftc_grid.py`, backtest from 2006-01-01, COT through **2026-07-28**). Produced 36 squeeze + 42 liquidity grid rows (`03_squeeze_grid_20260804.json`, `04_liquidity_exit_grid_20260804.json`). Compiled `docs/ssi_validation/CFTC_PATTERN_THRESHOLD_REPORT_FOR_ROHIT_20260804.md` via `scripts/compile_cftc_pattern_threshold_report.py` with heatmaps, top cells, PDF-default stats, and spot-check (FM 67.3 / RM 60.9 — neither pattern fires today). **Key finding:** SQUEEZE best Sharpe (n≥50) = FM<20/RM>45 (Sharpe 1.18); PDF default FM<30/RM>50 weaker (Sharpe 0.88). LIQUIDITY EXIT RM<30/FM>60: n=116, 4w SPX-down 35% — modest stress flag. Awaiting Rohit sign-off before wiring display flags.
+   - Files changed: `macro_intelligence/analysis/ssi_validation/03_squeeze_grid_20260804.json`, `04_liquidity_exit_grid_20260804.json`, `docs/ssi_validation/CFTC_PATTERN_THRESHOLD_REPORT_FOR_ROHIT_20260804.md`, `docs/ssi_validation/_generated/03_04_cftc_grid_20260804.md`, `docs/ssi_validation/03_squeeze_grid.md`, `docs/ssi_validation/04_liquidity_exit_grid.md`, `scripts/compile_cftc_pattern_threshold_report.py`
+   - Prod impact: none until thresholds signed off and Q2 implementation (display flags only).
+
+10. **Claude API billing/auth error messaging — clear logs + operator email alert** — SUCCESSFUL
+   - Summary: Replaced misleading "Failed to connect to Claude API. Please check your API key" with classified errors (`billing`, `auth`, `rate_limit`, `connection`, `server`). Billing/credit exhaustion now logs `CLAUDE_API_ERROR [BILLING]` with action hint. When Claude report generation fails, `send_email.py` sends a dedicated alert email to receivers instead of silently skipping or crashing on `None` output.
+   - Files changed: `/home/ubuntu/MindWealth/claudeai_agent.py`, `/home/ubuntu/MindWealth/send_email.py`
+   - Prod impact: MindWealth core deploy (not MindWealth_UI merge). Takes effect on next `emailscript.sh` run. Top up Anthropic credits to restore normal Claude report.
+
+11. **Export CFTC threshold report + grid JSONs to PDF for Rohit email** — SUCCESSFUL
+   - Summary: Added `scripts/export_cftc_threshold_report_pdfs.py` (markdown→PDF via WeasyPrint; JSON grids→tabular PDF). Outputs: `docs/ssi_validation/pdf/CFTC_PATTERN_THRESHOLD_REPORT_FOR_ROHIT_20260804.pdf`, `03_squeeze_grid_20260804.pdf`, `04_liquidity_exit_grid_20260804.pdf`.
+   - Files changed: `scripts/export_cftc_threshold_report_pdfs.py`, `docs/ssi_validation/pdf/*.pdf`
+   - Prod impact: none (email artifacts only).
+
+12. **Default MindWealth todos Google Sheet — MCP alias + Cursor rule** — SUCCESSFUL
+   - Summary: Registered spreadsheet `1a60p0E4D1w4X3xayV65UOvk9dz4b2q9bKLBPPnrHQKg` (gid `1916178694`) as canonical **mindwealth todos**. Renamed MCP server to `mindwealth-todos`; added always-on Cursor rule so todo reads/writes use this sheet unless user names another explicitly.
+   - Files changed: `.cursor/rules/mindwealth-todos-sheet.mdc`
+   - Host config (not in git): `~/.cursor/mcp.json`, `~/.google-sheets-mcp/sheet-config.json`
+   - Prod impact: none (local Cursor/MCP only). **Pending:** enable Google Sheets API on GCP project `mindwealth-gmail-mcp` if not done yet.
+
+13. **SSI VERIFY pointers 1–5 — completion plan (L2 sizing unify, CFTC split, stale-dating, neg-zero, NH Share)** — SUCCESSFUL
+   - Summary: **Pointer 1:** `derive_layer2_sizing()` + `hyg_vix_legacy_votes()` — `layer2_status` / `ssi_multiplier` now from 6-gate `evaluate_layer2_gates()` (legacy 4-input `evaluate_layer2()` off hot path). MacroSsiPanel + RunicBriefPanel show `layer2_gate_label` and 6-gate rows. **Pointer 5:** CONFIG pattern thresholds (Squeeze FM&lt;20/RM&gt;45, Liquidity Exit RM&lt;30/FM&gt;60); `cftc_patterns.py`; Friday heuristic replaced with `check_cftc_freshness()`; Sentiment COT two-line UI + Overwatch CFTC pattern banner. **Pointer 4:** shared `formatSignedValue`; `_round_display` normalizes −0.0. **Pointer 3:** `inputs_meta.layer3_cftc` + `utils/signal-freshness.ts` wired to Layer 1/COT sub-labels + macro-variables. **Pointer 2:** NH Share dev smoke PASS when `nh_nl` data present; prod Nuxt rebuild pending merge.
+   - Files changed: `src/sentiment_superindex/engine/layer2.py`, `positioning.py`, `data/cftc_patterns.py`, `data/cftc_ssi.py`, `macro_intelligence/data/cftc_pull.py`, `macro_intelligence/CONFIG.yaml`, `api/services/macro_service.py`, `api/services/analyst_service.py`, `api/main.py` (version bump), tests, Nuxt files, API docs
+   - Prod impact: merge `chatbot-dev` → `chatbot-prod`, `prod-pull-and-restart.sh`, `run_ssi_daily.py`, Nuxt prod rebuild. Google Sheet rows C67–C71 update pending explicit user OK.
+
+14. **Robust test + dev deploy — SSI VERIFY pointers 1–5** — SUCCESSFUL
+   - Summary: Full robust-test-and-dev-deploy skill run. Targeted pytest 64 pass; full suite **753 passed**. Mock audit clean on changed SSI paths. API bumped to **v1.10.5**; OpenAPI exported. `mindwealth-api-dev` + `mindwealth-ui-dev` restarted; `smoke-test-apis.sh` PASS. Live dev curls: sentiment layers (6 gates, CFTC freshness/meta), macro SSI summary (`layer2_gate_label`, 6-gate inputs). `run_ssi_daily.py` refreshed positioning + ssi.db.
+   - Files changed: `api/main.py`, `docs/mindwealth-api-docs/openapi/mindwealth-v1.json`, `docs/dev_to_prod_migration_todos.md`
+   - Prod impact: none (dev deploy only). **Note:** live `nh_nl_ratio` null on 2026-08-04 — upstream data gap, not deploy regression.
+
+---
+
 ### 2026-08-03
 
 1. **API docs v1.10.4 — Put/Call Layer 1 + VIX/VIX3M changelog and sentiment-layers doc refresh** — SUCCESSFUL

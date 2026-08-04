@@ -21,6 +21,76 @@ Reference deploy skill: `.cursor/skills/prod-pull-and-details/SKILL.md`
 | `[PROD-ACTION]` | Manual step on server after git merge (secrets, systemd, bootstrap) |
 | `[DONE]` | Completed on prod (date in notes) |
 
+## 2026-08-04 — SSI VERIFY pointers 1–5 (completion plan)
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`; rebuild/restart Nuxt prod.
+
+| Area | Files |
+|------|--------|
+| API / SSI | `src/sentiment_superindex/engine/layer2.py`, `positioning.py`, `data/cftc_patterns.py`, `data/cftc_ssi.py`, `macro_intelligence/data/cftc_pull.py`, `macro_intelligence/CONFIG.yaml`, `api/services/macro_service.py`, `api/services/analyst_service.py`, `tests/test_ssi_layer2.py`, `tests/test_cftc_patterns.py`, `tests/test_positioning_cftc_meta.py`, `tests/test_ssi_display_rounding.py` |
+| Nuxt (separate repo) | `MindwealthUI_Vue/server/utils/sentiment-mapper.ts`, `utils/signal-freshness.ts`, `utils/macro-variables.ts`, `components/runic/MacroSsiPanel.vue`, `components/runic/RunicBriefPanel.vue`, `types/api.ts`, `server/utils/runic-mappers.ts` |
+| API docs | `docs/mindwealth-api-docs/changelog.md`, `services/analytics/endpoints/get-sentiment-layers.md` |
+
+**`[PROD-ACTION]`** `python scripts/run_ssi_daily.py` after API deploy (refreshes `ssi_multiplier` from 6-gate sizing + CFTC pattern fields in `positioning.json` / `ssi.db`).
+
+**Smoke tests `[DONE]` 2026-08-04 (dev):**
+- pytest targeted SSI: 64 pass; **full suite: 753 passed, 2 skipped**
+- `smoke-test-apis.sh`: PASS (dev `:8507` version **1.10.5**, conviction_store isolated)
+- Live `GET /analytics/sentiment/layers`: 6 gate keys (no dbmf/cnn); `layer3_cftc.data_freshness` + `inputs_meta.layer3_cftc` present; L2 `UNCONFIRMED` / mult `0.8` from 6-gate sizing
+- Live `GET /macro/ssi/summary`: `layer2_gate_label` + 6-gate `inputs` keys
+- `run_ssi_daily.py` refreshed `positioning.json` + `ssi.db`
+- Nuxt: `mindwealth-ui-dev` restarted (prior `npm run build` OK)
+- **Note:** `nh_nl_ratio` raw/norm `null` on 2026-08-04 live payload (upstream series gap — pre-existing data, not deploy regression)
+
+**Smoke tests `[PENDING]` (prod):** Sentiment page COT two lines; MacroSsiPanel `layer2_gate_label`; `GET /analytics/sentiment/layers` JSON shape on `:8506`.
+
+**Google Sheet:** rows C67–C71 — update to Completed pending explicit user OK to write sheet.
+
+---
+
+## 2026-08-04 — SSI Layer 2 directional gate counts (CRITICAL)
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`; rebuild/restart Nuxt.
+
+| Area | Files |
+|------|--------|
+| API / SSI | `src/sentiment_superindex/engine/layer2.py`, `positioning.py`, `api/services/reports_service.py`, `tests/test_ssi_layer2.py`, `tests/test_sentiment_layers_gate_votes.py` |
+| Nuxt (separate repo) | `MindwealthUI_Vue/server/utils/sentiment-mapper.ts` |
+
+**`[PROD-ACTION]`** `python scripts/run_ssi_daily.py` (or rely on API `_ensure_layer2_gate_votes` backfill on next `GET /analytics/sentiment/layers`).
+
+**Smoke test `[PENDING]`:** `GET /api/v1/analytics/sentiment/layers` returns `layer2_gate_conf_long`, `layer2_gate_conf_short`, `layer2_gate_direction`, `layer2_gate_label`; Sentiment composite header shows e.g. `L2: 1 long / 1 short of 6 - no direction confirmed` (not `L2 CONFIRMED` when directions split); Layer 2 KPI delta matches directional label.
+
+---
+
+## 2026-08-04 — NH Share gate row shows z-score not raw share
+
+`[DONE]` 2026-08-04 — Nuxt rebuild + `mindwealth-ui-dev` restart (`MindwealthUI_Vue`). Backend gate logic unchanged.
+
+| Area | Files |
+|------|--------|
+| Nuxt | `MindwealthUI_Vue/server/utils/sentiment-mapper.ts` — norm-gated Layer 2 rows display `norm` (aligned z) so badge direction matches printed value |
+| Tests | `tests/test_ssi_layer2.py` — nh_nl raw-high/norm-negative → bearish gate |
+
+**Smoke test `[DONE]` 2026-08-04:** Live API `nh_nl_ratio` gate `raw=0.571`, `norm=-0.598`, `signal=bearish`. Post-rebuild `mapSentimentLayers()` → NH Share row **`-0.60 ✓ bearish`** (not `+0.57 ✓ bearish`). Build `.output/server/index.mjs` 2026-08-04T09:33:30Z; `mindwealth-ui-dev` active on `:8514`.
+
+---
+
+## 2026-08-04 — SSI partial layer signal coverage UI
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`; rebuild/restart Nuxt (`mindwealth-ui-dev` or prod UI service).
+
+| Area | Files |
+|------|--------|
+| API / SSI | `src/sentiment_superindex/engine/positioning.py`, `tests/test_ssi_superindex.py` |
+| Nuxt (separate repo) | `MindwealthUI_Vue/server/utils/sentiment-mapper.ts`, `pages/sentiment.vue`, `types/api.ts` |
+
+**`[PROD-ACTION]`** After API deploy: `python scripts/run_ssi_daily.py` so `positioning.json` includes `layers.*.signal_coverage`.
+
+**Smoke test `[PENDING]`:** `GET /api/v1/analytics/sentiment/layers` → `positioning.layers.layer1.signal_coverage.weights_renormalized` is `true` when `put_call_ema` missing; Sentiment page Layer 1 header shows `Running on 3 of 4 signals · weights renormalised`; Put/Call row shows `unavailable` + effective weight note on other rows.
+
+---
+
 ## 2026-08-02 — Conviction Engine Fixes v2 (bank/hardware business types, coverage-incomplete gate, FS-score slice rebuild, CRM bug fix)
 
 `[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`. Pure application code, **no new `.env`/secrets/config needed**. After merge, prod's existing `conviction_store/*.json` records will keep using their old `business_type`/`fs_score`/`valuation_tax` values until each ticker's next full recalculation — run the classification-only pass (cheap) or a full universe recalc (thorough) as a `[PROD-ACTION]` follow-up:
@@ -61,7 +131,7 @@ cd /home/ubuntu/uiv2/prod/MindWealth_UI
 
 **Parth's Vue frontend (separate repo, not in this migration's scope but flagged for him):** new `COVERAGE INCOMPLETE` verdict string needs a color/label case; `yield_trap_breakdown.fired` vs `.watching` and `run_daily_universe()`'s `yield_trap_watching` alert-map flag are now available to reconcile the Yield-Traps panel's count-vs-list display; `fs_cap_breakdown`/`valuation_tax_breakdown` are on every record returned by `GET /conviction/tickers/{ticker}` for the Engine Layers click-through panels shown in `engine_layers_spec.html`.
 
-**Smoke test `[PENDING]`:** after merge + recalc, spot-check one known bank ticker (e.g. a `.NS`/US regional bank in the universe) shows `business_type: "bank"` and a `bank_ptbv_detail` in its `valuation_tax_breakdown`; spot-check CRM shows `fs_class` consistent between `GET /conviction/tickers/CRM` and the Streamlit scorecard (the bug this pass fixed); confirm no ticker outside the 6 calibrated types shows a `CANCEL BUY`/normal verdict — it should show `COVERAGE INCOMPLETE` instead.
+**Smoke test `[DONE]` 2026-08-02:** dev `:8507` — `smoke-test-apis.sh` all PASS; `GET /conviction/tickers/JPM` shows `business_type=bank` + `bank_ptbv_detail`; `POST /conviction/signals/evaluate` on `BRK-B` returns `COVERAGE INCOMPLETE` + `coverage_incomplete=true`; `GET /conviction/alerts/daily` includes `coverage_incomplete`/`yield_trap_watching` flags. Full dev recalc already run: 195/195, 0 errors.
 
 ---
 
@@ -80,7 +150,45 @@ cd /home/ubuntu/uiv2/prod/MindWealth_UI
 | `MindwealthUI_Vue/server/utils/sentiment-mapper.ts` | Inline ✓/✗ on all 6 Layer 2 rows; NH label → `NH Share (NH/(NH+NL))` |
 | `docs/mindwealth-api-docs/services/analytics/endpoints/get-sentiment-layers.md` | Field reference for gate votes |
 
-**Smoke:** `[PENDING]` `GET /analytics/sentiment/layers` → `layer2_gate_votes` length 6, `nh_nl_ratio` entry has `vote` + `signal`; Sentiment page Layer 2 shows NH Share row with ✓ or ✗.
+**Smoke:** `[DONE]` 2026-08-02 dev `:8507` — `GET /analytics/sentiment/layers` returns `layer2_gate_votes` length 6 (`mcclellan` … `pct_above_200dma`), `layer2_gate_confirmed_count=3`; `pytest tests/test_sentiment_layers_gate_votes.py` 4/4; `smoke-test-apis.sh` PASS; Nuxt `:8514` rebuilt + `mindwealth-ui-dev` active.
+
+---
+
+## 2026-08-04 — SSI staleness policy wired to live scoring (MAX_STALE_DAYS / STALE_WEIGHT_PENALTY)
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`; rerun `scripts/run_ssi_daily.py`.
+
+| Path | Notes |
+|------|-------|
+| `macro_intelligence/SSI_CONFIG.yaml` | New `staleness.max_stale_days` (weekly 5 / daily 1 / monthly 25) + `weight_penalty: 0.8` |
+| `src/sentiment_superindex/config.py` | `MAX_STALE_DAYS`, `STALE_WEIGHT_PENALTY`, `SSI_INPUT_CADENCE`, `staleness_policy()` |
+| `src/sentiment_superindex/data/staleness.py` | **new** — `observation_as_of`, `effective_input_weights` |
+| `src/sentiment_superindex/engine/superindex.py` | Live scoring uses staleness caps + weight penalty |
+| `src/sentiment_superindex/data/alignment.py` | Cadence-aware default ffill limits from config |
+| `src/sentiment_superindex/data/pull_all.py` | `values_as_of` aligned to staleness policy |
+| `tests/test_ssi_staleness.py` | **new** regression (monthly 25d, AAII penalty renorm) |
+
+**Smoke test `[PENDING]`:** `build_superindex(today)` → stale AAII mid-week shows `signal_coverage.stale` includes `aaii_spread` and `effective_weights.aaii_spread` < nominal 0.30; monthly `align_to_daily(..., cadence="monthly")` carries 25 rows not 5.
+
+---
+
+## 2026-08-04 — Put/Call Layer 1 restore + spec weights (30/35/20/15)
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`; rerun SSI daily; rebuild Nuxt UI.
+
+| Path | Notes |
+|------|-------|
+| `src/sentiment_superindex/data/put_call_pull.py` | **new** — CBOE total P/C CSV + CNN gap fill; 10-week EMA |
+| `macro_intelligence/data/ssi/put_call_ema.csv` | **new** runtime cache (commit or bootstrap on deploy host) |
+| `macro_intelligence/data/ssi/put_call_ratio_raw.csv` | **new** raw cache |
+| `macro_intelligence/SSI_CONFIG.yaml` | `put_call_ema` in layer1; `layer1_input_weights` 30/35/20/15 |
+| `src/sentiment_superindex/data/pull_all.py` | `fetch_put_call_ema()` |
+| `src/sentiment_superindex/engine/superindex.py` | Spec-weight Layer 1 composite + `signal_coverage` |
+| `macro_intelligence/DATA_SOURCES.yaml` | `PUT_CALL_EMA` var |
+| `tests/test_put_call_pull.py`, `tests/test_ssi_superindex.py` | Regression incl. missing-P/C renormalization |
+| `MindwealthUI_Vue/server/utils/sentiment-mapper.ts` | Layer 1 header "N of 4 signals"; Put/Call row always shown |
+
+**Smoke test `[PENDING]`:** `GET /api/v1/analytics/sentiment/layers` → `positioning.layers.layer1.components.put_call_ema.raw` populated; `signal_coverage.available_count == 4`; Sentiment Layer 1 header not "3 weekly inputs".
 
 ---
 
@@ -114,9 +222,13 @@ cd /home/ubuntu/uiv2/prod/MindWealth_UI
 | `tests/test_ssi_superindex.py` | Layer assignment regression |
 | `tests/test_ssi_display_rounding.py` | Display bucket regression |
 
+| `api/main.py` | `API_VERSION` → `1.10.3` |
+| `docs/mindwealth-api-docs/changelog.md` | v1.10.3 layer-assignment fix note |
+| `docs/mindwealth-api-docs/openapi/mindwealth-v1.json` | Regenerated |
+
 **`[PROD-ACTION]`** After deploy: `python scripts/run_ssi_daily.py` (or wait for cron) to refresh `macro_intelligence/output/positioning.json`.
 
-**Smoke test `[PENDING]`:** `GET /api/v1/analytics/sentiment/layers` — `pct_above_200dma` present under `positioning.inputs.layer2`, absent from `positioning.inputs.layer1`; `positioning.layers.layer2.components.pct_above_200dma` populated.
+**Smoke test `[DONE]`** 2026-08-02 dev `:8507` — `GET /analytics/sentiment/layers`: `pct_above_200dma` under `positioning.inputs.layer2` only (value 67.86); `positioning.layers.layer2.components.pct_above_200dma` populated; `pytest tests/test_ssi_superindex.py tests/test_ssi_display_rounding.py tests/test_sentiment_layers_gate_votes.py` 14/14; full `pytest tests/` 721 passed; `smoke-test-apis.sh` PASS (dev version 1.10.3).
 
 ---
 

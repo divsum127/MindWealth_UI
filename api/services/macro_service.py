@@ -826,18 +826,23 @@ def _round2(value: Any) -> float | None:
     return round(float(value), 2) if value is not None else None
 
 
-def _parse_layer2_votes(payload_json: str | None) -> list[dict[str, Any]]:
-    """Extract layer2_votes list from the stored payload_json column."""
+def _parse_payload_json(payload_json: str | None) -> dict[str, Any]:
     if not payload_json:
-        return []
+        return {}
     try:
         data = json.loads(payload_json)
-        inputs = data.get("inputs", {})
-        votes = inputs.get("layer2_votes")
-        if isinstance(votes, list):
-            return votes
+        return data if isinstance(data, dict) else {}
     except Exception:
-        pass
+        return {}
+
+
+def _parse_layer2_votes(payload_json: str | None) -> list[dict[str, Any]]:
+    """Extract layer2 gate votes from the stored payload_json column."""
+    data = _parse_payload_json(payload_json)
+    inputs = data.get("inputs", {})
+    votes = inputs.get("layer2_gate_votes") or inputs.get("layer2_votes")
+    if isinstance(votes, list):
+        return votes
     return []
 
 
@@ -862,14 +867,33 @@ def get_ssi_summary() -> dict[str, Any]:
 
     votes = _parse_layer2_votes(row["payload_json"])
     vote_map = {v["input"]: v for v in votes}
+    payload = _parse_payload_json(row["payload_json"])
+    gate_label = payload.get("layer2_gate_label")
+    gate_total = len(votes) if votes else 6
+    min_confirmed = 2
+    layer3_cftc = (payload.get("inputs") or {}).get("layer3_cftc") or {}
 
     def _vote(key: str) -> dict[str, Any]:
         v = vote_map.get(key, {})
         return {
-            "raw": _round2(row[key]),
+            "raw": _round2(v.get("raw") if v.get("raw") is not None else row[key] if key in row.keys() else None),
             "vote": v.get("vote"),
             "signal": v.get("signal"),
             "pctile": v.get("pctile"),
+            "norm": v.get("norm"),
+        }
+
+    gate_inputs: dict[str, dict[str, Any]] = {}
+    for v in votes:
+        key = v.get("input")
+        if not key:
+            continue
+        gate_inputs[str(key)] = {
+            "raw": _round2(v.get("raw")),
+            "vote": v.get("vote"),
+            "signal": v.get("signal"),
+            "pctile": v.get("pctile"),
+            "norm": _round2(v.get("norm")) if v.get("norm") is not None else None,
         }
 
     return {
@@ -879,7 +903,11 @@ def get_ssi_summary() -> dict[str, Any]:
         "ssi_multiplier": row["ssi_multiplier"],
         "layer2_status": row["layer2_status"],
         "layer2_confirmed_count": row["layer2_confirmed_count"],
-        "layer2_required": 3,
+        "layer2_required": min_confirmed,
+        "layer2_gate_total": gate_total or 6,
+        "layer2_gate_label": gate_label,
+        "layer2_gate_direction": payload.get("layer2_gate_direction"),
+        "layer3_cftc": layer3_cftc,
         "posture": (
             "RISK_ON" if row["ssi_level"] < -0.6
             else "RISK_OFF" if row["ssi_level"] > 0.85
@@ -887,10 +915,10 @@ def get_ssi_summary() -> dict[str, Any]:
         ),
         "long_signal_active": row["ssi_level"] < -0.6,
         "short_signal_active": row["ssi_level"] > 0.85,
-        "inputs": {
-            "hyg_lqd":   _vote("hyg_lqd"),
+        "inputs": gate_inputs or {
+            "hyg_lqd": _vote("hyg_lqd"),
             "dbmf_beta": _vote("dbmf_beta"),
-            "cnn_fg":    _vote("cnn_fg"),
+            "cnn_fg": _vote("cnn_fg"),
             "vix_ratio": _vote("vix_ratio"),
         },
     }

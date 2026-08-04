@@ -326,6 +326,13 @@ cftc:
   rm_classification: "Asset Mgr|Asset Manager"
   pending_status: PENDING_CFTC_CONFIRM
   pctile_window_weeks: 156
+  positioning_patterns:
+    squeeze: { fm_pctile_max: 20, rm_pctile_min: 45 }
+    liquidity_exit: { rm_pctile_max: 30, fm_pctile_min: 60 }
+  pattern_templates:
+    squeeze: "Fast money very short; real money less short"
+    liquidity_exit: "Real money exiting; fast money still crowded long"
+    none: ""
 
 regime:
   min_regime_days_for_pctile: 50

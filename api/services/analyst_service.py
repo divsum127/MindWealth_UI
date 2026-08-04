@@ -342,16 +342,34 @@ def _build_persistence_alerts(persistence: list[dict[str, Any]]) -> list[dict[st
 
 
 def _build_sentiment_warning_alerts(ssi: dict[str, Any]) -> list[dict[str, Any]]:
+    alerts: list[dict[str, Any]] = []
+    cftc = ssi.get("layer3_cftc") or {}
+    pattern = cftc.get("positioning_pattern")
+    if pattern:
+        label = cftc.get("pattern_label") or str(pattern).replace("_", " ").title()
+        plain = cftc.get("plain_english") or ""
+        alerts.append({
+            "id": "sentiment-cftc-pattern",
+            "type": "sentiment_warning",
+            "channel": "macro",
+            "label": "AI ANALYST · OVERWATCH · CFTC POSITIONING",
+            "html": f"CFTC pattern: {label}<br>{plain}" if plain else f"CFTC pattern: {label}",
+            "created_at": _utc_now_iso(),
+            "border_color": "#C5A059",
+            "macro": {"variant": "sentiment", "reason": f"CFTC {label}"},
+            "warning": {"cftc_pattern": pattern},
+        })
+
     level = ssi.get("ssi_level")
     if level is None:
-        return []
+        return alerts
     posture = ssi.get("posture") or "NEUTRAL"
     long_active = bool(ssi.get("long_signal_active"))
     short_active = bool(ssi.get("short_signal_active"))
     if not long_active and not short_active:
         layer2 = (ssi.get("layer2_status") or "").upper()
         if layer2 not in {"CONFIRMED", "EXTREME"}:
-            return []
+            return alerts
 
     if short_active:
         headline = f"SSI {level:.2f} — Fear / risk-off zone ({posture})"
@@ -363,7 +381,7 @@ def _build_sentiment_warning_alerts(ssi: dict[str, Any]) -> list[dict[str, Any]]
         headline = f"SSI layer-2 status: {ssi.get('layer2_status')}"
         note = "Layer-2 sentiment confirmation active."
 
-    return [{
+    alerts.append({
         "id": "sentiment-ssi-warning",
         "type": "sentiment_warning",
         "channel": "macro",
@@ -373,7 +391,8 @@ def _build_sentiment_warning_alerts(ssi: dict[str, Any]) -> list[dict[str, Any]]
         "border_color": "#C5A059",
         "macro": {"variant": "sentiment", "reason": headline},
         "warning": {"ssi_level": level, "ssi_posture": posture},
-    }]
+    })
+    return alerts
 
 
 def _load_runic_safe() -> dict[str, Any]:

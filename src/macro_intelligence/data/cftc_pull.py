@@ -286,6 +286,11 @@ def parse_cftc_rm_dataframe(df: pd.DataFrame) -> pd.Series:
 
 
 def _rolling_pctile(series: pd.Series, as_of: pd.Timestamp, weeks: int = 156) -> float | None:
+    """3-year rolling percentile **rank** of the latest value (dashboard ``fm_pctile`` / ``rm_pctile``).
+
+    Uses ``percentile_rank`` (fraction of window readings <= current), not min–max
+    range position. Low FM rank = most net short in the window; high = least net short.
+    """
     hist = series.loc[:as_of].dropna()
     if hist.empty:
         return None
@@ -294,6 +299,50 @@ def _rolling_pctile(series: pd.Series, as_of: pd.Timestamp, weeks: int = 156) ->
     if len(window) < 10:
         window = hist
     return percentile_rank(float(hist.iloc[-1]), window)
+
+
+def describe_cftc_pctile_window(
+    series: pd.Series,
+    as_of: str | pd.Timestamp,
+    *,
+    weeks: int | None = None,
+) -> dict[str, Any]:
+    """Diagnostic: min/max and sign mix for the CFTC rolling percentile window."""
+    ts = pd.Timestamp(as_of)
+    weeks = weeks if weeks is not None else load_config().get("cftc", {}).get("pctile_window_weeks", 156)
+    hist = series.loc[:ts].dropna()
+    if hist.empty:
+        return {"as_of": str(ts.date()), "weeks": weeks, "n": 0}
+    cutoff = ts - pd.DateOffset(weeks=weeks)
+    window = hist[hist.index >= cutoff]
+    if len(window) < 10:
+        window = hist
+    current = float(hist.iloc[-1])
+    n = len(window)
+    n_neg = int((window < 0).sum())
+    n_pos = int((window > 0).sum())
+    n_zero = int((window == 0).sum())
+    roll_min = float(window.min())
+    roll_max = float(window.max())
+    minmax_pct = (
+        (current - roll_min) / (roll_max - roll_min) * 100 if roll_max != roll_min else 50.0
+    )
+    rank_pct = percentile_rank(current, window)
+    return {
+        "as_of": str(ts.date()),
+        "weeks": weeks,
+        "n": n,
+        "current": current,
+        "min": roll_min,
+        "max": roll_max,
+        "sign_negative": n_neg,
+        "sign_zero": n_zero,
+        "sign_positive": n_pos,
+        "sign_negative_pct": round(100.0 * n_neg / n, 1),
+        "sign_positive_pct": round(100.0 * n_pos / n, 1),
+        "minmax_range_pct": round(minmax_pct, 2) if minmax_pct is not None else None,
+        "percentile_rank": round(rank_pct, 2) if rank_pct is not None else None,
+    }
 
 
 def fetch_cftc_fast_money_net(start_year: int = 2006) -> pd.Series:
@@ -345,9 +394,11 @@ def persist_cftc_snapshot(as_of: str) -> CftcSnapshot | None:
     weeks = load_config().get("cftc", {}).get("pctile_window_weeks", 156)
     fm_pct = _rolling_pctile(fm, ts, weeks)
     rm_pct = _rolling_pctile(rm, ts, weeks) if rm_net is not None else None
-    status = load_config().get("cftc", {}).get("pending_status", "PENDING_CFTC_CONFIRM")
-    if datetime.now().weekday() == 4:
-        status = "CONFIRMED"
+    from src.macro_intelligence.data.source_freshness import check_cftc_freshness
+
+    freshness = check_cftc_freshness(as_of, fm)
+    pending_status = load_config().get("cftc", {}).get("pending_status", "PENDING_CFTC_CONFIRM")
+    status = pending_status if freshness.stale else "CONFIRMED"
     with get_connection() as conn:
         conn.execute(
             """
