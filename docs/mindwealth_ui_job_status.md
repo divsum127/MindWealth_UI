@@ -194,6 +194,11 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
    - Files changed: `api/main.py`, `docs/mindwealth-api-docs/openapi/mindwealth-v1.json`, `docs/dev_to_prod_migration_todos.md`
    - Prod impact: none (dev deploy only). **Note:** live `nh_nl_ratio` null on 2026-08-04 — upstream data gap, not deploy regression.
 
+15. **[SSI HIGH] Layer 1 `pct_above_200dma` contamination — fix metadata, rebuild history, purge stale rows** — SUCCESSFUL
+   - Summary: Confirmed Aug 2 config fix removed `% Above 200DMA` from Layer 1 composite but `inputs_meta.layer1` still listed it and **3,865 historical `ssi.db` rows** retained contaminated `layer1.score` (equal-weight 4-input mean incl. 200DMA z-score). Jul 31 → Aug 3 drop (+0.156 → +0.008, 95%) was **~84% config** (200DMA norm +0.529 removed) + **~12% CNN F&G drift**; AAII/NAAIM unchanged. Fixed `positioning.py` to drop `pct_above_200dma` from `inputs_meta.layer1`. Rebuilt dev `ssi.db` (3,173 dates recomputed, ~32 min); deleted 694 pre-rebuild stale rows that `build_ssi_history` no longer covers. `run_ssi_daily.py` refreshed `positioning.json`. Live dev: Layer 1 = AAII+NAAIM+Put/Call+CNN only; 200DMA under Layer 2 only. Mean |Δ| historical layer1 (4-input vs 3-input formula): **0.1011** over 2,627 trading days.
+   - Files changed: `src/sentiment_superindex/engine/positioning.py`, `tests/test_ssi_display_rounding.py`, `docs/mindwealth_ui_job_status.md`, `docs/mindwealth_ui_repo_job_status_details.md`, `docs/dev_to_prod_migration_todos.md`
+   - Prod impact: **`[PROD-ACTION]`** merge + `python scripts/rebuild_ssi_history.py` (~32 min) + delete stale contaminated rows + `run_ssi_daily.py` (runtime `ssi.db` / `positioning.json` not in git).
+
 ---
 
 ### 2026-08-03

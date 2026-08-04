@@ -21,6 +21,32 @@ Reference deploy skill: `.cursor/skills/prod-pull-and-details/SKILL.md`
 | `[PROD-ACTION]` | Manual step on server after git merge (secrets, systemd, bootstrap) |
 | `[DONE]` | Completed on prod (date in notes) |
 
+## 2026-08-04 — Layer 1 `pct_above_200dma` history contamination fix
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`.
+
+| Area | Files |
+|------|--------|
+| SSI metadata | `src/sentiment_superindex/engine/positioning.py` |
+| Tests | `tests/test_ssi_display_rounding.py` |
+
+**`[PROD-ACTION]`** After deploy on prod host:
+```bash
+cd /home/ubuntu/uiv2/prod/MindWealth_UI
+python scripts/rebuild_ssi_history.py          # ~32 min; recomputes 3,173 dates
+sqlite3 macro_intelligence/data/ssi/ssi.db \
+  "DELETE FROM ssi_daily WHERE json_extract(payload_json, '\$.layers.layer1.components.pct_above_200dma') IS NOT NULL;"
+python scripts/run_ssi_daily.py
+```
+
+**Smoke test `[PENDING]`:**
+- `GET /api/v1/analytics/sentiment/layers` → `inputs_meta.layer1` has no `pct_above_200dma`; `inputs.layer2.pct_above_200dma` populated.
+- `ssi.db`: zero rows with `pct_above_200dma` in `layers.layer1.components`.
+
+**Retroactive warning:** All `layer1_score` / composite percentiles derived from pre-fix `ssi.db` history were inflated by 200DMA in Layer 1 (~mean |Δ| 0.10 on layer1).
+
+---
+
 ## 2026-08-04 — SSI VERIFY pointers 1–5 (completion plan)
 
 `[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`; rebuild/restart Nuxt prod.

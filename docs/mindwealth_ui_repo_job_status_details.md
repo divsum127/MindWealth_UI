@@ -15,7 +15,36 @@ This file captures minute-level implementation context for each completed task:
 
 ---
 
-### 2026-08-04 — CFTC SQUEEZE / LIQUIDITY EXIT threshold experiments (Tests 3–4)
+### 2026-08-04 — Layer 1 `pct_above_200dma` contamination fix + history rebuild
+
+**Ask:** Jul 31 Layer 1 +0.156 → Aug 3 +0.008 (95% drop) while AAII/NAAIM unchanged; confirm 200DMA was in composite not just display; rebuild corrected history.
+
+**Root cause:** `pct_above_200dma` was in `ssi_score.layers.layer1` until 2026-08-02 (`a7f0b0afa`). Stored `ssi.db` payloads through 2026-07-31 included 200DMA in `layers.layer1.components` and inflated equal-weight means. `inputs_meta.layer1` still listed 200DMA after the config move.
+
+**Changes**
+- Removed `pct_above_200dma` from `_LAYER1_INPUT_META` in `positioning.py`.
+- Rebuilt dev `macro_intelligence/data/ssi/ssi.db` via `scripts/rebuild_ssi_history.py` (3,173 dates).
+- Deleted 694 stale rows with old 4-input layer1 payloads that rebuild did not overwrite (dates outside current `build_ssi_history` index).
+- `run_ssi_daily.py` refreshed `positioning.json`.
+
+**Attribution (prod stored Jul 31 → Aug 3)**
+- Config (drop 200DMA from L1): ~−0.124 (~84% of drop).
+- CNN F&G norm drift: ~−0.017 (~12%).
+- Mean |Δ| layer1 (old 4-input vs corrected 3-input formula): **0.1011** (2,627 trading days).
+
+**Assumptions**
+- Current Layer 1 spec = AAII + NAAIM + Put/Call + CNN with weights 30/35/20/15 (not equal-weight 3-input).
+- `ssi.db` is runtime data — not committed to git.
+
+**Deferred**
+- Prod `ssi.db` rebuild (human/ops on prod host after merge).
+- Optional: teach `rebuild_ssi_history.py` to prune rows not in recomputed index automatically.
+
+**Caveats**
+- Historical layer1 scores before fix were contaminated for backtests reading `ssi.db` `payload_json`.
+- Rebuild runtime ~32 min for full history on this host.
+
+---
 
 **Ask:** Complete all threshold experiments for Rohit sign-off on SQUEEZE and LIQUIDITY EXIT production display flags (2 Aug email Q3 — grid results before locking thresholds).
 

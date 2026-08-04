@@ -182,6 +182,7 @@ class TestPositioningPayloadRounding(unittest.TestCase):
         self.assertEqual(aaii_meta["as_of"], "2026-07-30")
         self.assertEqual(aaii_meta["schedule_et"], "Thu")
         self.assertEqual(aaii_meta["stale_days"], 3)
+        self.assertNotIn("pct_above_200dma", payload["inputs_meta"]["layer1"])
 
 
 if __name__ == "__main__":
