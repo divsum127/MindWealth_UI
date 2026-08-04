@@ -85,7 +85,7 @@ python scripts/run_ssi_daily.py
 
 **`[PROD-ACTION]`** `python scripts/run_ssi_daily.py` (or rely on API `_ensure_layer2_gate_votes` backfill on next `GET /analytics/sentiment/layers`).
 
-**Smoke test `[PENDING]`:** `GET /api/v1/analytics/sentiment/layers` returns `layer2_gate_conf_long`, `layer2_gate_conf_short`, `layer2_gate_direction`, `layer2_gate_label`; Sentiment composite header shows e.g. `L2: 1 long / 1 short of 6 - no direction confirmed` (not `L2 CONFIRMED` when directions split); Layer 2 KPI delta matches directional label.
+**Smoke test `[DONE]`** 2026-08-04 dev `:8507` — `GET /analytics/sentiment/layers` returns `layer2_gate_conf_long=3`, `layer2_gate_conf_short=0`, `layer2_gate_direction=LONG_CONFIRMED`, `layer2_gate_label` set; `pytest tests/test_ssi_layer2.py tests/test_sentiment_layers_gate_votes.py` 8/8; full suite 753 passed; `smoke-test-apis.sh` PASS; Nuxt `:8514` rebuilt + `mindwealth-ui-dev` active.
 
 ---
 
