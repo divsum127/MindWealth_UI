@@ -21,6 +21,22 @@ Reference deploy skill: `.cursor/skills/prod-pull-and-details/SKILL.md`
 | `[PROD-ACTION]` | Manual step on server after git merge (secrets, systemd, bootstrap) |
 | `[DONE]` | Completed on prod (date in notes) |
 
+## 2026-08-04 — CFTC fm_pctile true rank audit (docstrings + tests)
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`.
+
+| Area | Files |
+|------|--------|
+| Percentile engine | `src/macro_intelligence/engine/percentiles.py` |
+| CFTC pull (diagnostic helper + docstrings) | `src/macro_intelligence/data/cftc_pull.py` |
+| Tests | `tests/test_macro_percentiles.py` |
+
+**Notes:** No formula change — `_rolling_pctile()` already used true `percentile_rank()`. This batch adds explicit docstrings, `describe_cftc_pctile_window()` diagnostic, and regression tests (rank ≠ min–max under outliers).
+
+**Smoke tests:** `[DONE]` 2026-08-07 — `pytest tests/test_macro_percentiles.py` 11 passed; full suite 753 passed; `smoke-test-apis.sh` PASS on `:8507`.
+
+---
+
 ## 2026-08-04 — Layer 1 `pct_above_200dma` history contamination fix
 
 `[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`.
@@ -180,13 +196,28 @@ cd /home/ubuntu/uiv2/prod/MindWealth_UI
 
 ---
 
+## 2026-08-04 — Weekly staleness cap 5→10 (Super Sentiment unavailable fix)
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`; rerun `scripts/run_ssi_daily.py`.
+
+| Path | Notes |
+|------|-------|
+| `macro_intelligence/SSI_CONFIG.yaml` | `staleness.max_stale_days.weekly` **5 → 10** |
+| `src/sentiment_superindex/config.py` | Default `MAX_STALE_DAYS["weekly"]` **10** |
+| `src/sentiment_superindex/engine/positioning.py` | `_layer3_display_value()` CFTC snapshot fallback |
+| `tests/test_ssi_staleness.py` | CFTC 7d carry regression; align weekly ffill 10d |
+
+**Smoke test `[DONE]`** 2026-08-04 dev `:8507` — `GET /analytics/sentiment/layers` → `layer3.cftc_fm_net=-302372`, `naaim_exposure=79.7`; `mapSentimentLayers()` 0 unavailable; `pytest test_ssi_staleness test_sentiment_layers_gate_votes` 13/13; `smoke-test-apis.sh` PASS; `mindwealth-api-dev` restarted.
+
+---
+
 ## 2026-08-04 — SSI staleness policy wired to live scoring (MAX_STALE_DAYS / STALE_WEIGHT_PENALTY)
 
 `[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`; rerun `scripts/run_ssi_daily.py`.
 
 | Path | Notes |
 |------|-------|
-| `macro_intelligence/SSI_CONFIG.yaml` | New `staleness.max_stale_days` (weekly 5 / daily 1 / monthly 25) + `weight_penalty: 0.8` |
+| `macro_intelligence/SSI_CONFIG.yaml` | New `staleness.max_stale_days` (weekly **10** / daily 1 / monthly 25) + `weight_penalty: 0.8` |
 | `src/sentiment_superindex/config.py` | `MAX_STALE_DAYS`, `STALE_WEIGHT_PENALTY`, `SSI_INPUT_CADENCE`, `staleness_policy()` |
 | `src/sentiment_superindex/data/staleness.py` | **new** — `observation_as_of`, `effective_input_weights` |
 | `src/sentiment_superindex/engine/superindex.py` | Live scoring uses staleness caps + weight penalty |
