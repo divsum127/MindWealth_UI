@@ -40,7 +40,7 @@ Reference deploy skill: `.cursor/skills/prod-pull-and-details/SKILL.md`
 - [ ] Verify: `jq '{date,vix_bypass,active: [.active_combos[].combo]}' macro_intelligence/output/runic_output.json`
 - [ ] Verify API: `GET /api/v1/macro/status` → `vix_bypass: false`, `vix_bypass_banner: null` (current prod state: F+E active, B inactive)
 
-**Smoke test `[PENDING]`** — after prod nightly: confirm nightly brief + 12-variables banner absent; Regime Grid SSI matches narrative 1.20× when Layer2 CONFIRMED and bypass false.
+**Smoke test `[DONE]`** 2026-08-07 dev `:8507` — API v1.10.7; `GET /macro/status` → `vix_bypass: false`, `vix_bypass_banner: null`; `pytest` 761 passed; `smoke-test-apis.sh` PASS. **Prod `[PENDING]`** — merge + nightly + API restart.
 
 ---
 
