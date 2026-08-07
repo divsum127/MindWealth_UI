@@ -10,6 +10,7 @@ from xml.sax.saxutils import escape
 
 from src.macro_intelligence.config import load_config
 from src.macro_intelligence.engine.combo_metadata import format_hit_rate_display, posture_display
+from src.macro_intelligence.engine.vix_bypass import VIX_BYPASS_BANNER
 
 logger = logging.getLogger(__name__)
 
@@ -353,6 +354,7 @@ def build_briefing_sections(payload: dict[str, Any]) -> dict[str, Any]:
         "variable_rows": build_variable_rows(payload),
         "system_recommendation": build_system_recommendation(payload),
         "footer": "Runic Agent v2.2 | Macro Intelligence Agent | Internal use only",
+        "vix_bypass_banner": VIX_BYPASS_BANNER if payload.get("vix_bypass") else None,
     }
 
 
@@ -422,6 +424,14 @@ def render_html(payload: dict[str, Any]) -> str:
 
     narrative_html = (s["narrative"] or "Narrative pending.").replace("\n\n", "</p><p>").replace("\n", "<br/>")
 
+    bypass_html = ""
+    if s.get("vix_bypass_banner"):
+        bypass_html = (
+            f'<div style="background:#7D1A1A;color:#fff;padding:10px 16px;border-radius:4px;'
+            f'margin-bottom:14px;font-size:11px;font-weight:700;letter-spacing:.3px">'
+            f'{escape(s["vix_bypass_banner"])}</div>'
+        )
+
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -465,6 +475,7 @@ td{{border:1px solid {_BORDER};padding:5px 8px;font-size:10px;vertical-align:top
   </div>
 
   <div class="body">
+    {bypass_html}
     <!-- DOMINANT SIGNAL -->
     <div class="dominant">
       <div class="signal-label">COMBO {s['dominant_signal']} &mdash; {s['dominant_label']}</div>

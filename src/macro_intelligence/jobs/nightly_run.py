@@ -35,7 +35,6 @@ from src.macro_intelligence.output.briefing_renderer import (
 from src.macro_intelligence.output.json_writer import (
     build_payload,
     read_ssi_layer2_status,
-    ssi_confirmed_for_combo_f,
     write_runic_json,
 )
 from src.macro_intelligence.db.connection import get_connection
@@ -174,7 +173,7 @@ def run_nightly(as_of: str | None = None, use_claude: bool = True) -> dict[str, 
 
     f_active = any(c.get("combo") == "F" and c.get("status") == "ACTIVE" for c in active)
     f_weeks = next((c.get("duration_weeks") for c in active if c.get("combo") == "F"), None)
-    vix_bypass = compute_vix_bypass(active, ssi_confirmed_f=ssi_confirmed_for_combo_f())
+    vix_bypass = compute_vix_bypass(active)
     pre_catalyst = compute_pre_catalyst_fragility(as_of, readings)
     post_event_regime = detect_post_event_transition(as_of)
 

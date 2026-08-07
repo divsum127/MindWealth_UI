@@ -21,6 +21,29 @@ Reference deploy skill: `.cursor/skills/prod-pull-and-details/SKILL.md`
 | `[PROD-ACTION]` | Manual step on server after git merge (secrets, systemd, bootstrap) |
 | `[DONE]` | Completed on prod (date in notes) |
 
+## 2026-08-07 — vix_bypass A6 fix (Combo B only)
+
+**Git files to merge** (`chatbot-dev` → `chatbot-prod`):
+- `src/macro_intelligence/engine/vix_bypass.py`
+- `src/macro_intelligence/output/json_writer.py`
+- `src/macro_intelligence/jobs/nightly_run.py`
+- `macro_intelligence/CONFIG.yaml`
+- `api/services/macro_service.py`
+- `src/macro_intelligence/output/briefing_renderer.py`
+- `src/pages/runic_page.py`
+- `tests/test_ssi_vix_regime_oct_2022.py`
+
+**Runtime (prod host, not git):**
+- [ ] `cd /home/ubuntu/uiv2/prod/MindWealth_UI && git pull origin chatbot-prod`
+- [ ] `.venv/bin/python scripts/run_macro_nightly.py` (regenerates `macro_intelligence/output/runic_output.json` with `vix_bypass: false` when Combo B inactive)
+- [ ] `sudo systemctl restart mindwealth-api.service`
+- [ ] Verify: `jq '{date,vix_bypass,active: [.active_combos[].combo]}' macro_intelligence/output/runic_output.json`
+- [ ] Verify API: `GET /api/v1/macro/status` → `vix_bypass: false`, `vix_bypass_banner: null` (current prod state: F+E active, B inactive)
+
+**Smoke test `[PENDING]`** — after prod nightly: confirm nightly brief + 12-variables banner absent; Regime Grid SSI matches narrative 1.20× when Layer2 CONFIRMED and bypass false.
+
+---
+
 ## 2026-08-07 — Sentiment Layer 1–4 sidebar detail panels + regime block
 
 `[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`; re-run `run_ssi_daily.py`; Nuxt rebuild.

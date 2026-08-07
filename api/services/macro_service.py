@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from src.config_paths import MACRO_INTEL_JSON_PATH
+from src.macro_intelligence.engine.vix_bypass import VIX_BYPASS_BANNER, combo_b_is_active
 
 # ─────────────────────────────────────────────────────────────────────────────
 # JSON helpers
@@ -21,6 +22,14 @@ def _load_runic() -> dict[str, Any]:
 
 def _safe(d: dict[str, Any], key: str, default: Any = None) -> Any:
     return d.get(key, default)
+
+
+def _effective_vix_bypass(data: dict[str, Any]) -> bool:
+    """Runtime guard: vix_bypass only when Combo B is ACTIVE (A6)."""
+    if not _safe(data, "vix_bypass", False):
+        return False
+    active = _safe(data, "active_combos", [])
+    return combo_b_is_active(active)
 
 
 def _watch_combo_map(watch_list: list[Any]) -> dict[str, dict[str, Any]]:
@@ -343,7 +352,8 @@ def get_status_bar() -> dict[str, Any]:
         "active_combos": [c.get("combo") for c in active if c.get("combo")],
         "watch_combos": watch if isinstance(watch, list) else list(watch),
         "cftc_status": _safe(data, "cftc_status"),
-        "vix_bypass": _safe(data, "vix_bypass", False),
+        "vix_bypass": _effective_vix_bypass(data),
+        "vix_bypass_banner": VIX_BYPASS_BANNER if _effective_vix_bypass(data) else None,
         "combo_c_cancel_week": c_cancel.get("wti_potential_week", 0),
         "combo_c_cancelled": bool(c_cancel.get("cancelled")),
         "pending_cpi_release": _safe(data, "pending_cpi_release", False),
@@ -419,7 +429,8 @@ def get_regime() -> dict[str, Any]:
         "dominant_reason": _safe(data, "dominant_reason"),
         "narrative": _safe(data, "narrative"),
         "system_recommendation": _safe(data, "system_recommendation"),
-        "vix_bypass": _safe(data, "vix_bypass", False),
+        "vix_bypass": _effective_vix_bypass(data),
+        "vix_bypass_banner": VIX_BYPASS_BANNER if _effective_vix_bypass(data) else None,
         "ssi_layer2_status": _safe(data, "ssi_layer2_status"),
         "ssi_multiplier": _safe(data, "ssi_multiplier"),
         "regime_grid": _safe(data, "regime_grid"),

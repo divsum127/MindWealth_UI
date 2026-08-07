@@ -4944,6 +4944,27 @@ The on-disk XBRL cache (`{TICKER}_sec.json`, 80-day TTL) has no concept of *code
 
 ---
 
+### 2026-08-07 — vix_bypass false positive (Combo F+SSI vs A6)
+
+**Task:** Live sizing path — `vix_bypass` was true without Combo B ACTIVE.
+
+**Root cause:** `compute_vix_bypass(active, ssi_confirmed_f=True)` fired on Combo F ACTIVE + SSI CONFIRMED. A6 allows bypass only when Combo B `status=='ACTIVE'`.
+
+**Implementation:**
+- `vix_bypass.py`: Combo B only; `assert_vix_bypass_consistency()`; `VIX_BYPASS_BANNER` constant.
+- `json_writer.build_payload`: assertion before write.
+- `macro_service._effective_vix_bypass()`: API guard for stale JSON until nightly rerun.
+- Banner: `VIX REGIME MULTIPLIER BYPASSED - Combo B active. Full size in effect.`
+- `CONFIG.yaml`: `ssi_confirmed_combo_f: false`.
+
+**Assumptions:** Combo F+SSI bypass was intentional in older docs but superseded by signed A6 C++ contract.
+
+**Deferred:** Prod `runic_output.json` on disk until merge + nightly; VIX/HY stale prints on variables page (separate data-lag issue — VIX 15.36 vs user-quoted 16.5 close).
+
+**Edge cases:** `ESCALATION_ALERT` on Combo E does not affect bypass. WATCH Combo B with 0/3 legs correctly leaves bypass false.
+
+---
+
 ### 2026-08-04 — SSI VERIFY pointers 1–5 completion
 
 **Task:** Close all five SSI VERIFY pointers per approved completion plan.

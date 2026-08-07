@@ -153,6 +153,11 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
    - Files changed: `src/sentiment_superindex/engine/regime_block.py`, `src/sentiment_superindex/engine/positioning.py`, `api/services/reports_service.py`, `tests/test_ssi_regime_block.py`, `tests/test_sentiment_spark_data.py`, `MindwealthUI_Vue/pages/sentiment.vue`, `MindwealthUI_Vue/components/sentiment/SentimentLayerDetail.vue`, `MindwealthUI_Vue/components/sentiment/SparkLine.vue`, `MindwealthUI_Vue/server/utils/sentiment-mapper.ts`, `MindwealthUI_Vue/types/api.ts`
    - Prod impact: merge + `run_ssi_daily.py`; Nuxt rebuild/restart.
 
+9. **[RUNIC CRITICAL] vix_bypass false positive — Combo F+SSI path violated Addendum A6** — SUCCESSFUL
+   - Summary: Prod `runic_output.json` (2026-08-06) had `vix_bypass: true` while Combo B was INACTIVE (only F ACTIVE + E ESCALATION_ALERT). Root cause: `compute_vix_bypass()` returned true for Combo F + SSI Layer2 CONFIRMED — not allowed under A6 (Combo B ACTIVE only). Fixed bypass logic, added `assert_vix_bypass_consistency()` in `build_payload`, API runtime guard `_effective_vix_bypass()`, A6 banner text, briefing HTML banner. Regenerated dev JSON: `vix_bypass: false` on 2026-08-07. **C++ reads JSON on disk** — prod needs merge + nightly rerun + API restart for full fix.
+   - Files changed: `src/macro_intelligence/engine/vix_bypass.py`, `src/macro_intelligence/output/json_writer.py`, `src/macro_intelligence/jobs/nightly_run.py`, `macro_intelligence/CONFIG.yaml`, `api/services/macro_service.py`, `src/macro_intelligence/output/briefing_renderer.py`, `src/pages/runic_page.py`, `tests/test_ssi_vix_regime_oct_2022.py`
+   - Prod impact: merge `chatbot-dev` → `chatbot-prod`, `run_macro_nightly.py`, restart `mindwealth-api.service`; C++ picks up corrected `runic_output.json` at next market open.
+
 ### 2026-08-04
 
 1. **Investigate [SIGNALS CRITICAL]: new signals not loading timely; SSI Layer 1 `as_of` Aug 03 while rest of site showed Jul 31** — SUCCESSFUL (investigation only, no code changes)

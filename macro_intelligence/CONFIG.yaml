@@ -275,11 +275,11 @@ persistence_rules:
 
 vix_bypass:
   combos: [B]
-  ssi_confirmed_combo_f: true
+  ssi_confirmed_combo_f: false
   docstring: |
-    CRITICAL RULE: VIX_REGIME_BYPASS
-    When runic_combo = 'B' (Maximum Capitulation) is confirmed active,
-    the VIX regime size multiplier is BYPASSED.
+    CRITICAL RULE: VIX_REGIME_BYPASS (Addendum A6)
+    vix_bypass is set ONLY when runic_combo = 'B' is confirmed ACTIVE.
+    Combo F + SSI confirmation does NOT set vix_bypass.
 
 dominant:
   PRIORITY:

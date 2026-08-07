@@ -12,6 +12,7 @@ from src.config_paths import SSI_POSITIONING_JSON
 from src.macro_intelligence.config import json_output_path
 from src.macro_intelligence.data.bls_pull import fetch_ppi_cooling_flag
 from src.macro_intelligence.db.connection import get_connection
+from src.macro_intelligence.engine.vix_bypass import assert_vix_bypass_consistency
 
 
 def read_positioning_data() -> dict[str, Any] | None:
@@ -181,6 +182,7 @@ def build_payload(
     pre_catalyst: dict[str, Any] | None = None,
     post_event_regime: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    assert_vix_bypass_consistency(active_combos, vix_bypass)
     pos = read_positioning_data()
     historical_analogs = build_historical_analogs_block(dominant_signal)
     payload = {
