@@ -21,6 +21,92 @@ Reference deploy skill: `.cursor/skills/prod-pull-and-details/SKILL.md`
 | `[PROD-ACTION]` | Manual step on server after git merge (secrets, systemd, bootstrap) |
 | `[DONE]` | Completed on prod (date in notes) |
 
+## 2026-08-07 — Sentiment Layer 1–4 sidebar detail panels + regime block
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`; re-run `run_ssi_daily.py`; Nuxt rebuild.
+
+| Area | Files |
+|------|--------|
+| Regime block (Layer 4) | `src/sentiment_superindex/engine/regime_block.py`, `src/sentiment_superindex/engine/positioning.py` |
+| Spark history API | `api/services/reports_service.py` |
+| Tests | `tests/test_ssi_regime_block.py`, `tests/test_sentiment_spark_data.py` |
+| Nuxt UI | `MindwealthUI_Vue/pages/sentiment.vue`, `components/sentiment/SentimentLayerDetail.vue`, `components/sentiment/SparkLine.vue`, `server/utils/sentiment-mapper.ts`, `types/api.ts` |
+
+**`[PROD-ACTION]`** `python scripts/run_ssi_daily.py` after merge so `positioning.json` includes `regime`.
+
+**Smoke test `[PENDING]`:** Sentiment sidebar L1–L4 switches detail panel; L4 shows VIX/trend/credit/size mult; L1–L3 show 60d sparkline; `GET /analytics/sentiment/layers` returns `spark_data.layer1` length 60.
+
+---
+
+## 2026-08-07 — SSI staleness calibration (MAX_STALE_DAYS 8/3/30 + Test 21)
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`; re-run `run_ssi_daily.py`.
+
+| Area | Files |
+|------|--------|
+| Staleness caps | `macro_intelligence/SSI_CONFIG.yaml`, `src/sentiment_superindex/config.py` |
+| Test 21 study | `src/sentiment_superindex/analysis/staleness_decay_study.py`, `scripts/run_ssi_validation_suite.py` |
+| Tests / docs | `tests/test_ssi_staleness.py`, `docs/ssi_validation/21_staleness_decay.md` |
+
+**`[PROD-ACTION]`** `python scripts/run_ssi_daily.py` after merge so live scoring uses weekly=8, daily=3, monthly=30.
+
+**Smoke test `[PENDING]`:** AAII 6d stale still carries (penalty); 9d dropped. CFTC 7d stale carries. CNN missing &gt;3d dropped.
+
+**Deferred `[PENDING]`:** Per-signal `weight_penalty` overrides (COT ~0.2–0.3 vs global 0.8) — Rohit sign-off after Test 21 review.
+
+---
+
+## 2026-08-07 — SSI as-of freshness annotations (Sentiment tiles)
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`; Nuxt rebuild.
+
+| Area | Files |
+|------|--------|
+| Staleness meta | `src/sentiment_superindex/engine/positioning.py`, `src/sentiment_superindex/data/cftc_patterns.py` |
+| Shared freshness util + component | `MindwealthUI_Vue/utils/signal-freshness.ts`, `MindwealthUI_Vue/components/SignalFreshnessAnnotation.vue` |
+| Sentiment mapper + page | `MindwealthUI_Vue/server/utils/sentiment-mapper.ts`, `MindwealthUI_Vue/pages/sentiment.vue`, `MindwealthUI_Vue/types/api.ts` |
+| Runic variables notes | `MindwealthUI_Vue/utils/macro-variables.ts` |
+
+**`[PROD-ACTION]`** `python scripts/run_ssi_daily.py` so `inputs_meta.*` includes `max_stale_days` and `layer3_cftc.release_date`.
+
+**Smoke test `[PENDING]`:** Sentiment Layer 1 AAII/NAAIM/CNN show no date when `as_of === positioning.date`; older within 8d shows grey `as of …`; COT row shows positions/released/next-release triple when waiting for Friday.
+
+---
+
+## 2026-08-07 — SSI layer detail scoring transparency (z / weight / contribution)
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`; Nuxt rebuild.
+
+| Area | Files |
+|------|--------|
+| Superindex scoring | `src/sentiment_superindex/engine/superindex.py` |
+| Tests | `tests/test_ssi_superindex.py` |
+| Vue mapper | `MindwealthUI_Vue/server/utils/sentiment-mapper.ts` |
+| API docs | `docs/mindwealth-api-docs/services/analytics/endpoints/get-sentiment-layers.md` |
+
+**`[PROD-ACTION]`** `python scripts/run_ssi_daily.py` so `positioning.json` includes `contribution` + `effective_weight` on each component.
+
+**Smoke test `[DONE]`** 2026-08-07 dev `:8507` — `GET /analytics/sentiment/layers` → `aaii_spread.contribution=0.0374`, `effective_weight=0.4364`, contributions sum to `layer1.score=0.0177`; API v1.10.6; `pytest` SSI/sentiment 29/29; full suite 759 passed (1 flaky `test_ssi_regime_block` in full run, passes isolated); `smoke-test-apis.sh` PASS; `run_ssi_daily.py` refreshed `positioning.json`; Nuxt `:8514` rebuilt + `mindwealth-ui-dev` active.
+
+---
+
+## 2026-08-07 — Layer 3 CFTC pattern flags (display + Overwatch, not sizing)
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`; Nuxt rebuild.
+
+| Area | Files |
+|------|--------|
+| CFTC patterns | `src/sentiment_superindex/data/cftc_patterns.py`, `gross_net_flag.py`, `cftc_ssi.py` |
+| Positioning + API | `src/sentiment_superindex/engine/positioning.py`, `api/services/reports_service.py`, `api/services/analyst_service.py` |
+| Tests | `tests/test_cftc_patterns.py`, `tests/test_layer3_flags.py` |
+| Nuxt | `MindwealthUI_Vue/server/utils/sentiment-mapper.ts`, `pages/sentiment.vue`, `constants/regime-strip.ts`, `server/api/overwatch.get.ts`, `composables/useOverwatch.ts`, `components/analyst/*`, `types/api.ts` |
+
+**`[PROD-ACTION]`** `python scripts/run_ssi_daily.py` so `positioning.json` / `ssi.db` include `squeeze_setup`, `liquidity_exit`, `gross_net_divergence_active` on `layer3_cftc`.
+
+**Smoke test `[PENDING]`:** `GET /analytics/sentiment/layers` → `layer3_flags.liquidity_exit` true when RM&lt;30 &amp; FM&gt;60; Sentiment page shows gold banner + Layer 3 ACTIVE rows; Overwatch MACRO tab shows `sentiment_warning` CFTC alert. Thresholds unvalidated until Rohit grid sign-off.
+
+---
+
 ## 2026-08-04 — CFTC fm_pctile true rank audit (docstrings + tests)
 
 `[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`.

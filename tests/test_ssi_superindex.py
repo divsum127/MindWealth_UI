@@ -84,6 +84,39 @@ class TestSSISuperindex(unittest.TestCase):
         for comp in l1["components"].values():
             self.assertIn("norm", comp)
             self.assertIn("raw", comp)
+            self.assertIn("contribution", comp)
+
+    @patch("src.sentiment_superindex.engine.superindex.load_all_series")
+    def test_component_contributions_sum_to_layer_score(self, mock_load):
+        mock_load.return_value = {
+            "aaii_spread": _flat_series(12.0),
+            "naaim_exposure": _flat_series(75.0),
+            "put_call_ema": _flat_series(0.85),
+            "cnn_fg": _flat_series(40.0),
+            "pct_above_200dma": _flat_series(60.0),
+            "mcclellan": _flat_series(8.0),
+            "nh_nl_ratio": _flat_series(0.7),
+            "hyg_lqd": _flat_series(0.71),
+            "skew": _flat_series(125.0),
+            "vix_ratio": _flat_series(0.98),
+            "dbmf_beta": _flat_series(0.35),
+            "cftc_fm_net": _flat_series(90_000.0),
+            "cftc_rm_net": _flat_series(180_000.0),
+            "gross_net": _flat_series(270_000.0),
+        }
+
+        l1 = build_layer1("2021-06-01")
+        contrib_sum = sum(
+            float(comp["contribution"])
+            for comp in l1["components"].values()
+            if comp.get("contribution") is not None
+        )
+        self.assertAlmostEqual(l1["score"], contrib_sum, places=4)
+        self.assertAlmostEqual(
+            l1["components"]["aaii_spread"]["effective_weight"],
+            l1["signal_coverage"]["effective_weights"]["aaii_spread"],
+            places=4,
+        )
 
     @patch("src.sentiment_superindex.engine.superindex.load_all_series")
     def test_layer1_missing_put_call_renormalizes_spec_weights(self, mock_load):

@@ -141,6 +141,30 @@ def _layer_signal_coverage(
     }
 
 
+def _effective_weight_sum(effective_weights: dict[str, float]) -> float:
+    return sum(weight for weight in effective_weights.values() if weight > 0)
+
+
+def _attach_component_contributions(
+    input_keys: list[str],
+    components: dict[str, Any],
+    input_weights: dict[str, float],
+) -> None:
+    """Per-signal share of the within-layer weighted mean (weight * norm / sum(weights))."""
+    effective_weights = effective_input_weights(input_keys, components, input_weights)
+    weight_sum = _effective_weight_sum(effective_weights)
+    for key in input_keys:
+        comp = components.get(key, {})
+        norm = comp.get("norm")
+        weight = effective_weights.get(key, 0.0)
+        if norm is None or weight <= 0 or weight_sum <= 0:
+            comp["contribution"] = None
+            comp["effective_weight"] = round(weight, 4) if weight > 0 else 0.0
+            continue
+        comp["effective_weight"] = round(weight, 4)
+        comp["contribution"] = round(weight * float(norm) / weight_sum, 4)
+
+
 def _weighted_layer_score(
     input_keys: list[str],
     components: dict[str, Any],
@@ -199,6 +223,7 @@ def _build_layer(
             "stale_days": stale_days,
             "weight_multiplier": weight_mult,
         }
+    _attach_component_contributions(input_keys, components, input_weights)
     score = _weighted_layer_score(input_keys, components, input_weights)
     return {
         "score": float(score) if score is not None else None,

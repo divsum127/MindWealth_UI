@@ -11,7 +11,154 @@ This file captures minute-level implementation context for each completed task:
 
 ---
 
+### 2026-08-07 — [SSI MEDIUM] Sentiment sidebar Layer 1–4 detail panels
+
+**Ask:** Sidebar Layer 1–4 items did not respond to clicks. Wire each to a per-layer detail panel. Layer 4 has no score — show `regime.vix_regime`, `regime.trend_regime`, `regime.credit_regime`, `regime.size_mult` from `positioning.json`. Composite header showed `1.2× size` with no on-page source. Layers 1–3 should show 60-day spark history.
+
+**Implementation:**
+- `build_regime_block()` in `regime_block.py` — VIX pctile → `vix_regime` (LOW_VOL/NORMAL/STRESS), SPX vs 200d MA → `trend_regime`, HY OAS → `credit_regime`, `size_mult` = Layer 2 `ssi_multiplier`. Wired into `build_positioning_payload()`.
+- `reports_service._build_spark_data(days=60)` reads `ssi_daily.payload_json` layer scores; exposed as top-level `spark_data` on `sentiment_layers()`.
+- Vue: `sentiment.vue` uses `terminal-nav-id` (`l1`–`l4`) to render one `SentimentLayerDetail` panel; `SparkLine.vue` SVG polyline for layer score history.
+
+**Assumptions:**
+- `size_mult` in Layer 4 = `ssi_multiplier` (Layer 2 gate sizing), same value appended to composite KPI label.
+- Regime labels use portfolio-ceiling-style buckets, not macro 5-dimension `runic.regime`.
+
+**Deferred:**
+- `_write_html_report()` HTML validation report (not in repo); spark builder lives in `reports_service` for API reuse.
+- Layer 4 does not affect composite score (still 40/35/25 on Layers 1–3 only).
+
+**Caveats:**
+- `build_regime_block()` may call yfinance on each `run_ssi_daily.py` run (~1s). Runic `variables_dashboard` can be stale; meta includes source tag.
+- Spark series empty when `ssi.db` missing or payloads lack `layers.*.score`.
+
 ---
+
+### 2026-08-07 — [SSI CRITICAL] COT FM long gate percentile sweep (Test 18)
+
+**Ask:** Open Questions Part 1 — `LONG_RULES['cot_fast_money_max_pct']` (long-entry condition 3) uses PDF default FM&lt;30th percentile, never validated. Sweep 15th–45th and measure hit-rate change.
+
+**Implementation:** Re-ran existing `cot_fm_long_gate.py` (no code changes). Weekly CFTC FM net → 3yr rolling percentile (`percentile_rank`, 156-week window); for each threshold X ∈ {15,20,25,30,35,40,45}, collect all weeks where FM &lt; X and compute SPX forward returns via `forward_metrics.summarize_returns()`.
+
+**Results (2010-01-01 → 2026-08-07):**
+
+| FM max pctile | n weeks | 3m avg % | 3m win % | 6m avg % | 6m win % |
+|---------------|---------|----------|----------|----------|----------|
+| &lt; 15 | 159 | +2.83 | 72.7% | +7.96 | 84.9% |
+| **&lt; 20** | **203** | **+3.13** | **73.7%** | **+8.35** | **87.7%** |
+| &lt; 25 | 234 | +2.99 | 73.7% | +7.69 | 86.0% |
+| &lt; 30 (PDF) | 274 | +2.78 | 72.8% | +7.48 | 85.0% |
+| &lt; 35 | 308 | +2.80 | 74.4% | +7.22 | 83.6% |
+| &lt; 40 | 343 | +2.85 | 74.2% | +7.12 | 83.0% |
+| &lt; 45 | 388 | +2.97 | 74.9% | +6.95 | 82.1% |
+
+**Assumptions:** Event study on all FM&lt;X weeks (not intersected with SSI long gate or Layer 2 confirmation). Same methodology as June 2026 run; +2 weeks of CFTC data vs prior artifact.
+
+**Key decisions:** FM&lt;20 is peak 3m/6m cell with adequate n (203). PDF &lt;30 is suboptimal on return but fires ~35% more often. Recommend FM&lt;20–25 pending Rohit sign-off.
+
+**Deferred:** Intersection study (FM&lt;X **and** SSI pctile ≤20); wiring `cot_fast_money_max_pct` into `macro_intelligence/CONFIG.yaml` or Runic `LONG_RULES`.
+
+**Caveats:** `LONG_RULES` key exists in PDF spec only — not in production CONFIG. This is macro long-confirmation research, not an SSI Layer 2/3 vote.
+
+**Artifacts:** `macro_intelligence/analysis/ssi_validation/18_cot_fm_long_gate_20260807.json`, `docs/ssi_validation/18_cot_fm_long_gate.md`.
+
+---
+
+### 2026-08-07 — [SSI HIGH] Layer 3 CFTC pattern display + Overwatch alert
+
+**Ask:** RM 28th / FM 93rd meets documented Liquidity Exit but no Layer 3 flag, headline banner, or Overwatch alert. Wire `squeeze_setup`, `liquidity_exit`, `gross_net_divergence` from `positioning.json` — display/alert only, not sizing.
+
+**Implementation:**
+- `cftc_patterns.py`: explicit `squeeze_setup` / `liquidity_exit` booleans alongside `positioning_pattern`.
+- `gross_net_flag.py`: live Test 14 flag (`gross_net_divergence_active`) — gross &gt;75th pctile, RM net falling, HYG/LQD 4w &lt; −1%.
+- `reports_service.sentiment_layers()`: top-level `layer3_flags` alias for UI banner.
+- `analyst_service`: CFTC pattern alert includes FM/RM pctiles; separate gross/net divergence alert.
+- Vue: Layer 3 flag rows, `banner` on Sentiment page, regime-strip headline, Overwatch merges `/analytics/analyst/alerts` for `sentiment_warning`.
+
+**Assumptions:** CONFIG thresholds (RM&lt;30/FM&gt;60, FM&lt;20/RM&gt;45) are provisional until grid-search sign-off. Numeric `gross_net_divergence` in JSON remains FM+RM sum; boolean is `gross_net_divergence_active`.
+
+**Deferred:** Re-validate threshold ranges after Rohit signs Aug 7 grid reports; per-signal COT weight penalty from Test 21.
+
+**Caveats:** Live COT 2026-08-07 prints FM 67 / RM 61 — Liquidity Exit does not fire (RM not &lt;30). User-reported RM 28 / FM 93 may be from a different print or manual check — detection logic confirmed in unit tests.
+
+---
+
+**Ask:** Run Open Questions Test 3 before production sign-off — 6×6 grid, count instances 2006–2026, avg SPX 4w/8w/12w forward, heatmap. Compare PDF placeholder FM&lt;30/RM&gt;50 vs grid-optimal cells.
+
+**What we did:** `run_and_report('2006-01-01')` via `cftc_grid.py`; compiled `CFTC_PATTERN_THRESHOLD_REPORT_FOR_ROHIT_20260807.md` with 4w/8w/12w heatmaps + stress-period table.
+
+**Assumptions:** 156-week rolling percentile (same as live Layer 3 COT). Weekly CFTC Tuesday positions; forward returns on ^GSPC at 20/40/60 trading days.
+
+**Key results:**
+- Best Sharpe (n≥50): FM&lt;20, RM&gt;45 — n=125, 4w +0.59%, 8w +1.71%, 12w +3.32%, Sharpe 1.18.
+- PDF placeholder FM&lt;30/RM&gt;50 — n=170, 12w +2.66%, Sharpe 0.88 (more fires, weaker edge).
+- Tighter FM threshold (20 vs 30) consistently improves 12w Sharpe across RM columns.
+
+**Stress periods:** GFC (2007–09), 2018 Q4, 2022 bear — **zero** SQUEEZE fires at FM&lt;20 (both legs move together in crises). COVID Feb–Jun 2020: 1 fire, 12w −14%. Dot-com 2000–02 not testable — COT series starts 2006 in this pipeline.
+
+**Placeholder locations:** `fm_events.py` still hardcodes `fm < 30 and rm > 50`; production draft in `CONFIG.yaml` already uses FM&lt;20/RM&gt;45; `cftc_patterns.py` reads CONFIG.
+
+**Deferred:** Portfolio-level validation (C/N60/M5/Gated Seed Sharpe/CAGR/Calmar per stress window) — assigned to Ahil; `portfolio_nav` has no SQUEEZE threshold parameter today.
+
+**Caveats:** Signal-level positive 12w averages do not guarantee portfolio uplift; Rohit Aug 4 v2 rerun flagged FM&lt;20/RM&gt;45 may track market beta not tail alpha — both reports should be read together before sign-off.
+
+---
+
+### 2026-08-07 — [SSI HIGH] Staleness calibration (MAX_STALE_DAYS + Test 21 decay study)
+
+**Ask:** Calibrate `MAX_STALE_DAYS` (weekly 8, daily 3, monthly 30) and empirically test whether the global 0.8 `STALE_WEIGHT_PENALTY` is warranted per signal at post-print ages 1–5. Run after CNN F&G + HY OAS backfill re-runs so discount factor does not confound threshold grids.
+
+**Part 1 — caps:** Updated `SSI_CONFIG.yaml` + `config.py` defaults from weekly 10 / daily 1 / monthly 25. Rationale: weekly 5 matched normal AAII Thu→Thu gap with zero margin; 8 calendar days covers Fri CFTC release through next Tue position with buffer.
+
+**Part 2 — Test 21:** New `staleness_decay_study.py` — calendar-day age since last sparse print; SPX forward returns from first session on/after each day; OLS R² + p-value + directional hit rate per (signal, age, horizon). No weight penalty in the analysis path.
+
+**Findings (4w horizon, day-1 vs day-5 R²):**
+| Signal | Day-1 R² | Day-5 R² | Penalty? |
+|--------|----------|----------|----------|
+| AAII | 0.008 | 0.011 | No — flat/slightly up |
+| NAAIM | 0.020 | 0.026 | No |
+| CNN F&G | 0.038 (age 1–2 weekend carry) | n/a | No through day-2 |
+| COT FM | 0.0017 | 0.0003 | Yes — ratio ≈ 0.18 |
+| COT RM | 0.0014 | 0.0004 | Yes — ratio ≈ 0.29 |
+| Margin debt | MDSP proxy, n≈323 | thin day-5 | Inconclusive |
+
+**CNN Test 6 re-run:** fear&lt;20 crossings n=121 (was 68 pre-backfill).
+
+**Deferred:** Wire per-signal `weight_penalty` overrides in `staleness.py` / YAML (product sign-off). `margin_debt` not in `pull_all` — study uses FRED MDSP fallback only. BOGZFL224066003Q needs FRED API key on host.
+
+**Assumptions:** Calendar-day age matches live `observation_as_of()`; weekly signals have uneven age-bucket counts on trading days (Fri/Mon/Tue after Thu print) — calendar panel fixes sparse age-2/3 buckets.
+
+### 2026-08-07 — [SSI HIGH] Per-signal z-score / weight / contribution in layer detail rows
+
+**Ask:** Sentiment layer tiles showed only raw values. Users could not verify how AAII −11.11 and NAAIM 79.7% combined into Layer 1 score +0.008 because scoring uses z-scored `norm` values with within-layer weights.
+
+**Implementation:**
+- `superindex._attach_component_contributions()` adds `effective_weight` and `contribution` to each component after norms are computed. `contribution` = `effective_weight × norm / Σ effective_weights`; sum of contributions equals `layer.score` (tested).
+- Vue `formatComponentScoringNote()` reads `components.<key>.{norm, effective_weight, contribution}` and appends to each row sub-label: `z −0.42 · 30% weight · −0.126 to layer`.
+- Layer 2 main column reverted to **raw** prints (NH Share fix had swapped z-gated rows to norm in the value column). Gate confirm basis moved to `formatLayer2GateDriver()` sub-label per `layer2_confirm_driver_ui_spec_parth.md`.
+
+**Assumptions:** `contribution` is within-layer only (not multiplied by 40/35/25 layer weights). Composite check remains `0.40×L1 + 0.35×L2 + 0.25×L3`.
+
+**Deferred:** KPI tile values still show layer score only — no per-signal breakdown on the 4-up header row (detail panel only). OpenAPI snapshot not re-exported this session.
+
+**Caveats:** Until `run_ssi_daily.py` reruns, on-disk `positioning.json` may lack `contribution` / `effective_weight`; Vue falls back to `signal_coverage.effective_weights` for weight text and omits contribution when absent.
+
+### 2026-08-04 — Super Sentiment `unavailable` (weekly staleness cap too tight)
+
+**Ask:** Super Sentiment page showed `unavailable` for NAAIM, CFTC Fast Money Net, Real Money Net, Gross Net while other rows had data.
+
+**Root cause:** `staleness.max_stale_days.weekly` was **5 calendar days**. On dashboard date 2026-08-04, last NAAIM print (2026-07-29) was **6d** stale and last CFTC position (2026-07-28) was **7d** stale → `observation_as_of()` returned `raw=None`, `weight_multiplier=0`. Vue `formatLayer1Item` / `formatLayer3InputItem` render `unavailable` when value is null. `layer3_cftc` snapshot (`fm_net`, `rm_net`) was still populated via `cftc_layer3_snapshot()` — hence FM/RM percentile rows worked but net-position rows failed.
+
+**Fix:** Weekly cap **5 → 10** (covers Tue CFTC position → Fri release gap). `_layer3_display_value()` falls back to `layer3_cftc` fields when scored components are null (display belt-and-suspenders).
+
+**Assumptions:** 10 calendar days is enough for normal weekly cadence; holiday gaps >10d may still drop until next print (intentional).
+
+**Deferred:** Per-series staleness overrides (e.g. CFTC vs NAAIM different caps); prod still on old cap until merge + `run_ssi_daily.py`.
+
+**Tests:** `test_cftc_weekly_carries_through_friday_release_gap`; staleness suite updated; live `mapSentimentLayers()` → 0 unavailable rows on dev.
+
+---
+
 
 ---
 
@@ -166,6 +313,31 @@ Inverted predictor (100 − pctile) is mathematically identical (sign flip only)
 - FM/RM percentiles could drive a discrete flag (Combo H / Liquidity Exit) per prior Aug-02 investigation; still research-only per SIGNOFF.
 
 **Prod impact:** none.
+
+---
+
+### 2026-08-07 — CFTC SQUEEZE / LIQUIDITY EXIT re-run (Rohit Aug 4 spec)
+
+**Ask:** Run all remaining CFTC grid experiments per Rohit's Aug 4 rejection email; produce results package for threshold sign-off.
+
+**Implemented:**
+- `cftc_episode_metrics.py` — episode collapse, par benchmark, excess-over-market, pos/neg return split, FM fixed distribution cuts.
+- `cftc_grid_v2.py` — SQUEEZE (75 cells) + LIQUIDITY EXIT (42 cells) + FM regression + markdown report builder.
+- `scripts/run_cftc_rohit_rerun.py` — one-shot runner (~9.5 min).
+
+**Rohit spec coverage:** §1 data range (documented 2010+ limit), §2 extended FM axis, §3 mean−median gap ranking (not Sharpe), §4 absolute cuts, §5 episode collapse, §6 full distribution + par row, §6a excess returns, §7 LIQ EXIT date lists, §8 pos/neg split (in metrics). Deferred: §9 regime conditioning, §10 UI wiring, stationary block bootstrap (subsample stability helper exists but not in report — can add).
+
+**Headline results:**
+- Par 12w: mean 2.92%, median 3.66%, excess hit 58% — market-up bias dominates unconditional.
+- Best positive-gap SQUEEZE: `FM_roll_pct<5` (any RM&gt;40): n_ep=9, 12w mean 6.15%, gap +0.48%, excess hit 86%, worst +2.0% (no left tail in sample).
+- Prior grid pick FM&lt;20/RM&gt;45: n_ep=70, gap −0.37 at 12w — not tail-driven per Rohit criteria.
+- FM_net&lt;fixed_p5: n_ep=24, gap +0.81, hit 95%, excess hit 67% — candidate absolute cut.
+- LIQUIDITY EXIT RM&lt;30 FM&gt;75: n_ep=45, 4w mean +0.68% (not short), excess hit 56% — stress marker not directional short.
+- Linear FM pctile regression: all p&gt;0.47 — confirms no continuous contrarian invert.
+
+**Deferred:** Pre-2010 COT backfill for GFC; bootstrap (used excess metrics instead); wire flags to UI pending Rohit threshold pick.
+
+**Prod impact:** none until sign-off.
 
 ---
 
@@ -4751,6 +4923,24 @@ The on-disk XBRL cache (`{TICKER}_sec.json`, 80-day TTL) has no concept of *code
 **Deferred:** Wire `margin_debt` monthly series into Layer 3 `pull_all` when data source lands. Surface `signal_coverage.stale` in Sentiment UI rows.
 
 **Caveat:** SSI level will change vs pre-fix runs on any day with stale weekly/daily inputs — rerun `run_ssi_daily.py` after merge.
+
+---
+
+### 2026-08-07 — SSI as-of freshness annotations (Sentiment tiles)
+
+**Task:** Sheet C47 three-state freshness — current = no annotation; carried = as-of date normal; stale beyond cadence = amber flag. Applies to AAII, NAAIM, CNN F&G, COT/TFF on Sentiment; not put/call or Layer 2 daily inputs.
+
+**Implementation:**
+- `signal-freshness.ts`: `resolveFreshnessState()`, `buildFreshnessAnnotation()`, `buildCotFreshnessAnnotation()` with `MAX_STALE_DAYS_BY_CADENCE` mirroring `SSI_CONFIG.yaml`.
+- `SignalFreshnessAnnotation.vue`: shared tile annotation; amber class when `state === 'stale'`.
+- `sentiment-mapper.ts`: `freshness` field on `SentimentLayerItem`; Layer 1 keys `aaii_spread`, `naaim_exposure`, `cnn_fg_raw` only.
+- Backend: `inputs_meta.*.max_stale_days`; `layer3_cftc.release_date` = position Tuesday + 3 calendar days.
+
+**Assumptions:** Page timestamp = `positioning.date` (SSI dashboard as-of), not `signal_report_date`. COT "released" = Friday of position week (Tue+3), not `expected_release` (which is expected Tuesday in data).
+
+**Deferred:** Reuse `SignalFreshnessAnnotation` in Runic variables table (still plain-text notes via `macro-variables.ts`). Wire `forward_fill_weekly()` caps into live scoring if product signs off.
+
+**Edge cases:** CNN uses `daily` cadence cap (3d) despite being on Layer 1 weekly panel. Missing `as_of` → no annotation unless explicitly stale with no date.
 
 ---
 
