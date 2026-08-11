@@ -57,7 +57,7 @@ Reference deploy skill: `.cursor/skills/prod-pull-and-details/SKILL.md`
 
 **`[PROD-ACTION]`** `python scripts/run_ssi_daily.py` after merge so `positioning.json` includes `regime`.
 
-**Smoke test `[PENDING]`:** Sentiment sidebar L1–L4 switches detail panel; L4 shows VIX/trend/credit/size mult; L1–L3 show 60d sparkline; `GET /analytics/sentiment/layers` returns `spark_data.layer1` length 60.
+**Smoke test `[DONE]`** 2026-08-07 dev `:8507` — `GET /analytics/sentiment/layers` → `regime.size_mult=1.2`, `spark_data.layer1` length 60; Nuxt `:8514` rebuilt + `mindwealth-ui-dev` active; sidebar L1–L4 panel switch pending manual UI click check.
 
 ---
 
