@@ -11,6 +11,94 @@ This file captures minute-level implementation context for each completed task:
 
 ---
 
+---
+
+### 2026-08-12 — [SSI CRITICAL] Test 22 Layer 2 gate 2-D grid (joint z × min_confirmed)
+
+**Ask:** Test `gate_z_min` and `min_confirmed` jointly on production 6-gate Layer 2 — parameters interact and were never tested together (z=0.5 chosen without test; min=2 not in Open Questions).
+
+**Implementation:**
+- `layer2_gate_grid_sweep.py`: precomputes legacy HYG/VIX long/short tallies + z-gate norms per day; vectorizes z-threshold sweep; evaluates `LONG_CONFIRMED` (conf_long ≥ N and conf_short < N).
+- Grid: z ∈ {0, 0.25, 0.5, 0.75, 1.0} × min ∈ {1,2,3,4} = 20 cells. Window: 2015-01-01, 3,872 days, long gate = SSI 5y pctile ≤ 20.
+- Metrics per cell: signal frequency, n long+gate, 3m hit %, n FP, 3m FP win %, full forward-return tables (1w–12m).
+
+**Key results (production z≥0.5, min=2):**
+| Metric | Value |
+|--------|-------|
+| Signal frequency | 1,945 days (50.2%) |
+| Long gate + confirmed | n=160 |
+| 3m hit rate | 41.25% |
+| 3m avg return (long+gate) | −1.20% |
+| False positives | n=1,785 (77.5% 3m win) |
+
+**Interaction examples (similar n_long_gate):**
+- z=0.0, min=3: 36.61% hit, n=183, 60.2% freq
+- z=0.25, min=3: 38.62% hit, n=145, 49.8% freq
+- z=0.5, min=2: 41.25% hit, n=160, 50.2% freq ← production
+
+**Assumptions:** Uses same 5y z-score norms as `build_layer2()`; HYG/VIX legacy percentile/ratio votes unchanged across z sweep.
+
+**Deferred:** Rohit sign-off on whether to change `SSI_CONFIG.yaml` `layer2.gate_z_min` / `layer2.min_confirmed`; Tests 10/20 remain archived but marked superseded.
+
+**Caveats:** Hit rates far below Tests 10/20 headline numbers because (1) 6-gate directional logic vs legacy 4-input count, (2) full 2015+ window vs subsamples. Layer 2 may be better as sizing overlay than standalone long filter.
+
+---
+
+### 2026-08-07 — [SSI HIGH] Open Questions status update, results doc, Tests 8/13/22, McClellan backfill, Test 15 SBI
+
+**Ask:** Execute completion plan — audit artifacts, write STATUS + RESULTS docs, re-run stale tests, backfill McClellan, run Test 15 SBI batch, sync SIGNOFF.
+
+**Implementation:**
+- **Docs:** `SSI_OPEN_QUESTIONS_STATUS.md` (20/22 done, 1 partial, 1 waived matrix); `SSI_EXPERIMENT_RESULTS.md` (Tests 1–22 headline metrics); `SIGNOFF.md` rewritten for Aug 2026; banner in legacy `SSI_OPEN_QUESTIONS_SUMMARY.md`.
+- **Data:** McClellan CSV extended from 2021-only to 2014-01-02 via S&P 500 breadth download (3,167 rows).
+- **Tests:** 13_stoch_mcclellan (combo n=3→13); **22_layer2_gate_grid** (6-gate joint z×min_confirmed grid, 2010→2026, 36 cells, 5,135 days — prod z≥0.5/min=2: n=180, 45% 3m hit); 08_hyg_lqd Granger block (lag-1 p=0.006).
+- **Test 15 blockers fixed:** `MindWealth/util.py` — replaced `YMD_FORMAT` default args with `'%Y-%m-%d'` (~15 functions). `MindWealth/compute.py` — `INTERVAL_DAILY/WEEKLY` literals in defaults. `sbi_breadth.py` — UI path no longer shadows `constant.py`; `--freq BMS` (~10× vs daily); `_mindwealth_quiet()` redirects MW stdout to stderr so final JSON parseable; `sbi_short_validation` timeout 14400s.
+- **Test 15 status:** BMS batch 2015-01-01 → present running in background (~3 min/month × ~128 months). `cpp_functions` missing `backtest_bb`/`is_pivot` logs per stock but breadth % still computed. Archive: `run_and_report('2015-01-01')` writes `15_sbi_short_YYYYMMDD.json`.
+
+**Deferred:**
+- Test 15 JSON until batch completes.
+- Rohit product decisions (D-1–D-6): short pctile, percentile SSI deploy, TP/SL CONFIG, FM&lt;20 gate, Bollinger overlay, SQUEEZE thresholds.
+- Test 11 full 20yr equity curve (WAIVER-VT-11).
+
+**Caveats:**
+- MindWealth `util.py`/`compute.py` fixes are on host clone, not UI git — document for anyone re-running SBI on fresh MW checkout.
+- Daily SBI freq impractical (~90+ hr); BMS is validation compromise.
+- **Test 22 vs Tests 10/20:** Legacy 4-input sweeps showed 78–90% 3m hit; **6-gate directional** `LONG_CONFIRMED` logic yields ~45% hit at production defaults — not comparable metrics. “2 of 6” is design intent, not backtest optimum (Test 22).
+- **Test 22 interaction:** z and min_confirmed trade off frequency — e.g. z=0.5/min=3 (n=141, 46% hit) ≈ z=0.75/min=2 (n=152, 43% hit). Best n≥50: z=1.25/min=2 (52% hit, n=94).
+
+---
+
+### 2026-08-07 — [CFTC CRITICAL] Reporting spec — full distribution per cell, rank on mean−median gap
+
+**Ask:** Report full distribution per cell (not just mean). Required columns: n_wk, n_ep, mean, median, gap, hit %, best, worst, dated top instances. Rank on mean−median gap, not Sharpe. Worked examples A/B demonstrate why hit rate and Sharpe mis-rank tail squeezes.
+
+**Implementation:**
+- New `cftc_report_format.py` — shared table builders, `rank_cells_by_gap()`, worked examples section, PAR block, heatmap cells.
+- `cftc_grid.py` thin delegate to v2 (episode collapse + gap metrics).
+- `compile_cftc_pattern_threshold_report.py` rewritten — no Sharpe ranking; full distribution table with dated instances; PAR row + excess columns.
+- `tests/test_cftc_episode_metrics.py` — unit tests lock worked examples A (+22%…−4%) vs B (+6%…−2%).
+
+**Key re-rank:** FM&lt;5/RM&gt;55 gap +0.48% (n_ep=9) vs FM&lt;20/RM&gt;45 gap −0.37% (n_ep=70). Sharpe had ranked the latter #1.
+
+**Deferred:** Sharpe still computed in `summarize_episode_horizon` for legacy JSON fields but excluded from ranking and sign-off tables.
+
+---
+
+### 2026-08-07 — [CFTC HIGH] Dated episode lists for tail findings (FM>70/75 discontinuity)
+
+**Ask:** Rohit requires dated episode lists before any threshold discussion — especially LIQUIDITY EXIT FM>75 column where 4w avg jumps vs FM>70 despite strict subset relationship.
+
+**Implementation:**
+- `build_tail_episode_dates_report()` in `cftc_grid_v2.py` — full episode tables for FM>70/75 at RM<20/25/30, dropped-vs-kept decomposition, cluster check, SQUEEZE positive-gap cells, top 15 LIQ EXIT |gap| cells.
+- Wired into `run_and_report()` → `cftc_tail_episode_dates_*.md`.
+- Fixed `cftc_report_format.py` indentation bug in `format_heatmap_cell()`.
+
+**Key finding:** Discontinuity is **threshold band selection**, not duplicate counting within FM>75. Episodes starting in FM 70–75 band are weak (mean 4w −1.84% RM<20); FM>75 keeps only episodes where FM already extreme. Same-month multi-starts (e.g. 2022-02-08 + 2022-02-22) are separate episode onsets after >10d gap, not consecutive-week double count.
+
+**Deferred:** GFC 2008 still excluded (TFF Consolidated FM from 2010-06-15).
+
+---
+
 ### 2026-08-07 — [SSI MEDIUM] Sentiment sidebar Layer 1–4 detail panels
 
 **Ask:** Sidebar Layer 1–4 items did not respond to clicks. Wire each to a per-layer detail panel. Layer 4 has no score — show `regime.vix_regime`, `regime.trend_regime`, `regime.credit_regime`, `regime.size_mult` from `positioning.json`. Composite header showed `1.2× size` with no on-page source. Layers 1–3 should show 60-day spark history.
@@ -335,9 +423,61 @@ Inverted predictor (100 − pctile) is mathematically identical (sign flip only)
 - LIQUIDITY EXIT RM&lt;30 FM&gt;75: n_ep=45, 4w mean +0.68% (not short), excess hit 56% — stress marker not directional short.
 - Linear FM pctile regression: all p&gt;0.47 — confirms no continuous contrarian invert.
 
-**Deferred:** Pre-2010 COT backfill for GFC; bootstrap (used excess metrics instead); wire flags to UI pending Rohit threshold pick.
+**Deferred:** Pre-2010 COT backfill for GFC; wire flags to UI pending Rohit threshold pick.
 
 **Prod impact:** none until sign-off.
+
+---
+
+### 2026-08-07 — CFTC benchmarking PAR row + excess_hit standard (CRITICAL)
+
+**Ask:** Add PAR row to every grid (unconditional, every week in sample); compute excess over market per episode; report mean/median excess and excess_hit (beat market, not merely positive). Standard output at top of all future grids.
+
+**Implementation:**
+- `analyze_par_row()` — all weeks in `weekly_index`, `collapse=False` (n_wk=1032, not episode-collapsed 412).
+- `build_market_benchmark()` — mean SPX forward return across all weeks per horizon (overlapping windows OK as centering constant).
+- `summarize_episode_horizon()` — `mean_excess`, `median_excess`, `hit_excess_pct`; short-side excess_hit uses excess &lt; 0.
+- `cftc_report_format.format_par_section()` — standard block at top of grid markdown.
+- Distribution tables include mean_ex / med_ex / ex_hit columns; heatmaps show avg / excess_hit vs PAR.
+- `_to_legacy_grid_payload()` writes `03_squeeze_grid` / `04_liquidity_exit_grid` JSON with par + benchmark for compile script.
+
+**Key numbers (12w):**
+- PAR: mean 2.30%, win 71.57%, **excess_hit 59.51%** (bench 2.30%).
+- FM&lt;40/RM&gt;40: avg 3.48%, excess_hit **69.70%**, mean_ex +1.18% (wk=326, n_ep=33).
+- FM&lt;20/RM&gt;45 (Option A): avg 1.24%, excess_hit **57.14%** — below par, tracks market.
+- Raw SQUEEZE win % ~74–78% across loose cells is mostly market-up bias; excess_hit vs PAR is decision metric.
+
+**Deferred:** Non-overlapping benchmark subsample (~85 obs) optional sanity check — not implemented (overlap centering unbiased per Rohit note).
+
+**Prod impact:** none.
+
+---
+
+### 2026-08-07 — CFTC subsample stability + block bootstrap (PRIMARY robustness)
+
+**Ask:** Run Rohit's primary robustness test — 12-offset non-overlapping weekly subsample stability for FM&lt;7.5 cells; optional Politis–Romano stationary block bootstrap (block≈12w, 10k draws).
+
+**Implementation:**
+- `subsample_stability_weekly()` — partitions `weekly_index` into 12 strides; at each offset re-filters qualifying weeks and runs episode collapse + 12w metrics.
+- `stationary_block_bootstrap()` — resamples weekly calendar with geometric block lengths; precomputes forward returns once; reports bootstrap percentile of observed mean excess and per-episode excess percentiles.
+- `run_robustness_checks()` + `build_robustness_report()` wired into `run_cftc_rohit_rerun.py` (`--robustness-only`, `--no-bootstrap` flags).
+
+**Key results (FM&lt;7.5 AND RM&gt;45, n_ep=22):**
+- Full sample: mean excess +0.57%, excess hit 57.1%.
+- **10/12 offsets** show positive mean excess (stable=True per ≥8/12 rule).
+- Weakest: offset 10 (−0.80%), offset 11 (−0.11%) — not collapse at offsets 3+7 pattern.
+- Strongest: offset 0 (+4.06%), offset 9 (+5.35%).
+- Bootstrap: observed mean excess at **44th percentile** of null — not statistically extreme vs time-series resampling.
+
+**FM&lt;7.5 AND FM_net&lt;0:** only 7/12 offsets positive (stable=False) — absolute net cut less robust than RM-conditioned squeeze.
+
+**FM&lt;5 AND RM&gt;45:** 12/12 offsets positive but n_ep=11 — high offset consistency, small sample.
+
+**Assumptions:** Stability threshold = ≥8 offsets with positive excess AND ≥67% of offsets with data. Episode collapse (10-day gap) applied within each subsample independently.
+
+**Deferred:** Regime-conditioned subsample slices; UI surfacing of robustness tables.
+
+**Prod impact:** none (validation artifact).
 
 ---
 
@@ -4950,6 +5090,27 @@ The on-disk XBRL cache (`{TICKER}_sec.json`, 80-day TTL) has no concept of *code
 
 **Root cause:** `compute_vix_bypass(active, ssi_confirmed_f=True)` fired on Combo F ACTIVE + SSI CONFIRMED. A6 allows bypass only when Combo B `status=='ACTIVE'`.
 
+### 2026-08-07 — [CFTC HIGH] FM net fixed distribution + absolute-cut recommendation (pre-grid)
+
+**Ask:** Before full absolute-cut grid, send Rohit the fixed (non-rolling) distribution of FM net position in contracts — histogram + 2.5th/5th/10th percentiles — with cut-level recommendation. Bull-run concern: rolling 20th pctile can still be net long; "short" must mean genuinely short.
+
+**Implementation:**
+- Pulled CFTC TFF S&P 500 Consolidated Lev Money via `fetch_cftc_fast_money_net(2006)`.
+- `fm_fixed_distribution_cuts()` for fixed percentiles; matplotlib histogram + ASCII histogram.
+- Overlap table: rolling pct thresholds vs net sign; proposed AND variants (roll+pct, net<0, fixed p2.5/p5/p10).
+
+**Key findings:**
+- n=1051 weeks (2006-06-13 → 2026-07-28); 96% net short, 4% net long (42 weeks).
+- Fixed cuts: 2.5th −429,091; 5th −388,363; 10th −321,801 contracts.
+- Zero weeks with roll<20 AND net>0 in sample; net-long weeks cluster at roll pctiles 87–100.
+- Recommend: baseline `FM net < 0`; primary fixed cut 5th pctile; grid combos `roll<10 AND net<0` and `roll<10 AND net<fixed_p10`.
+
+**Deferred:** Full grid re-run pending Rohit confirm on cut levels.
+
+**Artifacts:** `docs/ssi_validation/_generated/cftc_fm_net_distribution_for_rohit_20260807.md`, `cftc_fm_net_distribution_histogram_20260807.png`.
+
+**Caveats:** Distribution anchored to observed TFF parser sample; contract counts are not normalized for open interest growth over 20 years.
+
 **Implementation:**
 - `vix_bypass.py`: Combo B only; `assert_vix_bypass_consistency()`; `VIX_BYPASS_BANNER` constant.
 - `json_writer.build_payload`: assertion before write.
@@ -4983,6 +5144,40 @@ The on-disk XBRL cache (`{TICKER}_sec.json`, 80-day TTL) has no concept of *code
 **Edge cases:** `evaluate_cftc_positioning` calls `fetch_cftc_fast_money_net()` for freshness (network); tests mock `check_cftc_freshness`. Both squeeze and liquidity patterns cannot fire same week (mutually exclusive percentile bands in practice).
 
 **Caveat:** `ssi_multiplier` historical series in `ssi.db` updates only after `run_ssi_daily.py` post-deploy; pre-merge rows still reflect legacy 4-input sizing.
+
+---
+
+### 2026-08-12 — CFTC Rohit Aug 4 full experiment re-run (fresh)
+
+**Task:** Run all experiments required in Rohit's Aug 4 email and complete sign-off package.
+
+**What ran:** `scripts/run_cftc_rohit_rerun.py --start 2006-01-01` (~11 min with block bootstrap). Pipeline: SQUEEZE (72 cells incl. 6 absolute-cut rows) + LIQUIDITY EXIT (42 cells), PAR row, episode collapse, mean−median gap ranking, excess-over-market, 12-offset subsample stability, stationary block bootstrap, FM pctile→SPX regression, tail episode date tables, FM fixed distribution + PNG histogram.
+
+**Sample-start answer (Rohit row 75):**
+- Raw TFF FM/RM: **2006-06-13** → 2026-08-04 (n=1052).
+- First rolling percentile (≥20 obs): **2006-10-24**.
+- First **full 156-week** window: **2009-06-02** → grid analysis weeks 1033.
+- **GFC:** raw FM net exists for 104 weeks in 2008–09, but rolling-percentile-conditioned cells cannot fire Sep 2008–May 2009.
+- **2003 rebuild:** TFF Lev Money classification does not exist pre-2006; would need legacy COT non-commercial proxy stitch — not implemented.
+
+**Key findings (consistent with Aug 7 run):**
+- Top 12w SQUEEZE gap: FM&lt;10/RM&gt;55 (n_ep=21, gap 0.41%, excess_hit 65%).
+- PDF default FM&lt;30/RM&gt;50: negative gap (−0.57%) — market beta.
+- Extreme FM&lt;5: n_ep=6, mean 5.78%, excess_hit 80% (small n).
+- LIQ EXIT RM&lt;30/FM&gt;60: n_ep=40, 4w hit 32.5% — stress context, not short signal.
+- FM pctile linear regression: R²&lt;0.002, p&gt;0.21 all horizons.
+
+**Code change:** `build_fm_distribution_report()` wired into `run_and_report()`; `build_rohit_report()` data-coverage section documents sample start + GFC limitation (replaces incorrect "Consolidated starts 2010" note).
+
+**Artifacts:** `CFTC_PATTERN_THRESHOLD_REPORT_FOR_ROHIT_20260811.md`, `_generated/cftc_rohit_rerun_20260811.md`, `cftc_robustness_subsample_20260811.md`, `cftc_tail_episode_dates_20260811.md`, `cftc_fm_net_distribution_for_rohit_20260811.md`, JSON `*_20260811.json`.
+
+**Deferred / pending Rohit:**
+- Sign-off on thresholds before wiring display flags (Aug 4: sign-off held).
+- 2003 legacy COT proxy for pre-2006 FM history.
+- FM fixed-cut levels (5th pctile −388k) before expanded absolute-cut grid.
+- Portfolio C/N60/M5 comparison (Ahil).
+
+**Prod impact:** none (validation artifacts only).
 
 ---
 

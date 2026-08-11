@@ -8,12 +8,14 @@ from typing import Any
 import pandas as pd
 
 from src.sentiment_superindex.config import load_config
+from src.sentiment_superindex.data.alignment import max_stale_days_for_cadence
 from src.sentiment_superindex.engine.layer2 import (
     derive_layer2_sizing,
     evaluate_layer2_gates,
     hyg_vix_legacy_votes,
 )
 from src.sentiment_superindex.data.pull_all import layer3_for_date, load_all_series, values_as_of
+from src.sentiment_superindex.engine.regime_block import build_regime_block
 from src.sentiment_superindex.engine.superindex import build_superindex
 from src.sentiment_superindex.engine.ssi_score import compute_ssi_at_date
 
@@ -79,6 +81,7 @@ def _layer1_inputs_meta(
             "cadence": spec["cadence"],
             "as_of": as_of_date,
             "stale_days": stale_days,
+            "max_stale_days": max_stale_days_for_cadence(spec["cadence"]),
         }
         if spec.get("schedule_et"):
             entry["schedule_et"] = spec["schedule_et"]
@@ -88,25 +91,50 @@ def _layer1_inputs_meta(
     return out
 
 
+def _layer3_display_value(
+    layer3_components: dict[str, Any],
+    layer3_cftc: dict[str, Any],
+    component_key: str,
+    cftc_fallback_key: str | None = None,
+) -> float | None:
+    """Layer-3 display raw: prefer scored component, else CFTC snapshot for UI."""
+    raw = layer3_components.get(component_key, {}).get("raw")
+    if raw is not None:
+        return _round_display(raw, key=component_key)
+    if cftc_fallback_key and layer3_cftc:
+        fallback = layer3_cftc.get(cftc_fallback_key)
+        if fallback is not None:
+            return _round_display(float(fallback), key=component_key)
+    return None
+
+
 def _layer3_cftc_meta(as_of: pd.Timestamp, cftc: dict[str, Any]) -> dict[str, Any]:
     """COT freshness meta for UI stale-dating (mirrors layer1 inputs_meta shape)."""
     if not cftc:
         return {}
     position_date = cftc.get("position_date")
     stale_days: int | None = None
+    release_date: str | None = None
     if position_date:
-        stale_days = int((as_of.normalize() - pd.Timestamp(position_date).normalize()).days)
+        pos_ts = pd.Timestamp(position_date)
+        stale_days = int((as_of.normalize() - pos_ts.normalize()).days)
+        release_date = (pos_ts + pd.Timedelta(days=3)).strftime("%Y-%m-%d")
     return {
         "cadence": "weekly",
         "schedule_et": "Fri",
         "as_of": position_date,
         "position_date": position_date,
+        "release_date": release_date,
         "expected_release": cftc.get("expected_release"),
         "next_release": cftc.get("next_release"),
         "stale_days": stale_days,
+        "max_stale_days": max_stale_days_for_cadence("weekly"),
         "stale": bool(cftc.get("stale")),
         "data_freshness": cftc.get("data_freshness"),
         "positioning_pattern": cftc.get("positioning_pattern"),
+        "squeeze_setup": cftc.get("squeeze_setup"),
+        "liquidity_exit": cftc.get("liquidity_exit"),
+        "gross_net_divergence_active": cftc.get("gross_net_divergence_active"),
         "pattern_label": cftc.get("pattern_label"),
     }
 
@@ -163,6 +191,7 @@ def build_positioning_payload(as_of: str | None = None) -> dict[str, Any]:
         "ssi_multiplier": ssi_mult,
         "layer2_gate_direction": gate_summary.direction,
         "layer2_gate_label": gate_summary.label,
+        "regime": build_regime_block(ssi_mult),
         "layers": layers_out,
         "signals": {
             "long": {
@@ -205,9 +234,11 @@ def build_positioning_payload(as_of: str | None = None) -> dict[str, Any]:
             },
             "layer3": {
                 "dbmf_beta": _round_display(layer3.get("dbmf_beta", {}).get("raw"), key="dbmf_beta"),
-                "cftc_fm_net": _round_display(layer3.get("cftc_fm_net", {}).get("raw"), key="cftc_fm_net"),
-                "cftc_rm_net": _round_display(layer3.get("cftc_rm_net", {}).get("raw"), key="cftc_rm_net"),
-                "gross_net": _round_display(layer3.get("gross_net", {}).get("raw"), key="gross_net"),
+                "cftc_fm_net": _layer3_display_value(layer3, layer3_cftc, "cftc_fm_net", "fm_net"),
+                "cftc_rm_net": _layer3_display_value(layer3, layer3_cftc, "cftc_rm_net", "rm_net"),
+                "gross_net": _layer3_display_value(
+                    layer3, layer3_cftc, "gross_net", "gross_net_divergence"
+                ),
             },
             "layer1_components": layer1,
             "layer2_components": layer2,

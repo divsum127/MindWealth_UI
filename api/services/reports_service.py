@@ -669,6 +669,80 @@ def _ensure_layer2_gate_votes(inputs: dict[str, Any]) -> dict[str, Any]:
     return enriched
 
 
+def _layer3_flags(cftc: dict[str, Any]) -> dict[str, Any]:
+    """Top-level Layer 3 macro flags for UI banner + Overwatch (display only)."""
+    if not cftc:
+        return {}
+    pattern = cftc.get("positioning_pattern")
+    return {
+        "squeeze_setup": bool(cftc.get("squeeze_setup")),
+        "liquidity_exit": bool(cftc.get("liquidity_exit")),
+        "gross_net_divergence_active": bool(cftc.get("gross_net_divergence_active")),
+        "positioning_pattern": pattern,
+        "pattern_label": cftc.get("pattern_label"),
+        "plain_english": cftc.get("plain_english") or cftc.get("gross_net_divergence_label"),
+        "fm_pctile": cftc.get("fm_pctile"),
+        "rm_pctile": cftc.get("rm_pctile"),
+    }
+
+
+def _parse_payload_json(payload_json: str | None) -> dict[str, Any]:
+    if not payload_json:
+        return {}
+    try:
+        data = json.loads(payload_json)
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def _build_spark_data(days: int = 60) -> dict[str, Any]:
+    """60-day layer score series from ssi.db for Sentiment detail sparklines."""
+    from src.config_paths import SSI_DB
+
+    empty: dict[str, Any] = {
+        "days_requested": days,
+        "days_available": 0,
+        "layer1": [],
+        "layer2": [],
+        "layer3": [],
+    }
+    if not SSI_DB.exists():
+        return empty
+
+    import sqlite3
+
+    conn = sqlite3.connect(SSI_DB)
+    conn.row_factory = sqlite3.Row
+    try:
+        rows = conn.execute(
+            "SELECT date, payload_json FROM ssi_daily ORDER BY date DESC LIMIT ?",
+            (days,),
+        ).fetchall()
+    finally:
+        conn.close()
+
+    layer1: list[dict[str, Any]] = []
+    layer2: list[dict[str, Any]] = []
+    layer3: list[dict[str, Any]] = []
+    for row in reversed(rows):
+        payload = _parse_payload_json(row["payload_json"])
+        layers = payload.get("layers") or {}
+        date = row["date"]
+        for key, bucket in (("layer1", layer1), ("layer2", layer2), ("layer3", layer3)):
+            score = (layers.get(key) or {}).get("score")
+            if score is not None:
+                bucket.append({"date": date, "score": round(float(score), 4)})
+
+    return {
+        "days_requested": days,
+        "days_available": len(rows),
+        "layer1": layer1,
+        "layer2": layer2,
+        "layer3": layer3,
+    }
+
+
 def sentiment_layers() -> dict[str, Any]:
     positioning = load_positioning() if SSI_POSITIONING_JSON.exists() else {}
     signals = latest_sentiment_signals()
@@ -681,10 +755,16 @@ def sentiment_layers() -> dict[str, Any]:
         "layers": layers,
     }
     layer_inputs = _ensure_layer2_gate_votes(positioning.get("inputs", {}) or {})
+    layer3_cftc = layer_inputs.get("layer3_cftc") or {}
+    layer3_flags = _layer3_flags(layer3_cftc)
+    regime = positioning.get("regime") or {}
     return {
         "positioning": positioning,
         "composite": composite,
         "layer_inputs": layer_inputs,
+        "layer3_flags": layer3_flags,
+        "regime": regime,
+        "spark_data": _build_spark_data(),
         "layer2_votes": layer_inputs.get("layer2_votes", []),
         "layer2_gate_votes": layer_inputs.get("layer2_gate_votes", []),
         "layer2_gate_confirmed_count": layer_inputs.get("layer2_gate_confirmed_count"),
