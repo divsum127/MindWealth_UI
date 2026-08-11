@@ -123,6 +123,11 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
    - Files changed: `src/sentiment_superindex/analysis/cftc_grid_v2.py` (sample-start section + FM distribution wired into pipeline), `macro_intelligence/analysis/ssi_validation/*_20260811.json`, `docs/ssi_validation/CFTC_PATTERN_THRESHOLD_REPORT_FOR_ROHIT_20260811.md`
    - Prod impact: none until Rohit sign-off; display flags only (no composite wiring).
 
+3. **CFTC Rohit share package — structured report + CSV exports + PDF for external review** — SUCCESSFUL
+   - Summary: Built `docs/ssi_validation/CFTC_ROHIT_SHARE_20260811/` via `scripts/export_cftc_rohit_share_package.py`: INDEX.md landing page, REPORT.md, TAIL_EPISODES.md, ROBUSTNESS.md, FM_DISTRIBUTION.md, 11 CSVs (squeeze/liq grids, episodes, robustness, PAR, FM distribution), PDF sign-off report, FM histogram PNG. Zip: `docs/ssi_validation/CFTC_ROHIT_SHARE_20260811.zip`. Git commit on `chatbot-dev` (push pending credentials).
+   - Files changed: `scripts/export_cftc_rohit_share_package.py`, `docs/ssi_validation/CFTC_ROHIT_SHARE_20260811/**`
+   - Prod impact: none (share artifacts only).
+
 ### 2026-08-07
 
 1. **[SSI HIGH] Expose per-signal z-score, weight, and layer contribution in Sentiment layer detail rows** — SUCCESSFUL
@@ -131,9 +136,9 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
    - Prod impact: merge + `run_ssi_daily.py` to refresh `positioning.json` with `contribution` fields; Nuxt rebuild/restart.
 
 2. **[SSI MEDIUM] As-of freshness annotations on Sentiment tiles (AAII, NAAIM, CNN, COT)** — SUCCESSFUL
-   - Summary: Three-state freshness on survey/COT tiles — current (no label), carried forward within cadence (`as of Tue 28 Jul`, normal grey), stale beyond `max_stale_days` (same date, amber via shared `SignalFreshnessAnnotation` component). `stale_days` from `inputs_meta` now compared to config caps (weekly 8d, daily 3d) instead of treating any lag as stale. COT tile shows `positions as of … · released … · next release …` using `release_date` (Tue+3). Put/call and other daily Layer 2 rows excluded. Backend adds `max_stale_days` + `release_date` to `inputs_meta`.
-   - Files changed: `MindwealthUI_Vue/utils/signal-freshness.ts`, `MindwealthUI_Vue/components/SignalFreshnessAnnotation.vue`, `MindwealthUI_Vue/server/utils/sentiment-mapper.ts`, `MindwealthUI_Vue/pages/sentiment.vue`, `MindwealthUI_Vue/types/api.ts`, `MindwealthUI_Vue/utils/macro-variables.ts`, `src/sentiment_superindex/engine/positioning.py`, `src/sentiment_superindex/data/cftc_patterns.py`
-   - Prod impact: merge + `run_ssi_daily.py`; Nuxt rebuild/restart.
+   - Summary: Three-state freshness on survey/COT tiles — current (no label), carried forward within cadence (`as of Tue 28 Jul`, normal grey), stale beyond `max_stale_days` (same date, amber via shared `SignalFreshnessAnnotation`). `stale_days` vs config caps (weekly 8d, daily 3d). COT uses Rohit C47 dash format: `COT - positions as of … - released … - next release …`. Wired in `SentimentLayerDetail.vue` (post-refactor gap). Put/call and Layer 2 daily rows excluded. Backend: `max_stale_days` + `release_date` in `inputs_meta`.
+   - Files changed: `MindwealthUI_Vue/utils/signal-freshness.ts`, `MindwealthUI_Vue/components/SignalFreshnessAnnotation.vue`, `MindwealthUI_Vue/components/sentiment/SentimentLayerDetail.vue`, `MindwealthUI_Vue/server/utils/sentiment-mapper.ts`, `MindwealthUI_Vue/types/api.ts`, `MindwealthUI_Vue/utils/macro-variables.ts`, `src/sentiment_superindex/engine/positioning.py`, `src/sentiment_superindex/data/cftc_patterns.py`
+   - Prod impact: merge + `run_ssi_daily.py`; Nuxt rebuild/restart. Nuxt `npm run build` PASS. Dev deploy 2026-08-12: services restarted, smoke PASS, pushed `a76336920` / `2caf07b`.
 
 3. **[SSI HIGH] Staleness calibration — MAX_STALE_DAYS + per-signal weight-penalty study (Test 21)** — SUCCESSFUL
    - Summary: Calibrated caps weekly **8** / daily **3** / monthly **30** (was 10/1/25) so normal print gaps do not hit the limit. Re-ran CNN F&G Test 6 post-backfill (fear&lt;20 n=121 vs 68). Test 21 splits each forward-filled input by post-print age 1–5d and measures SPX 1/2/4/8w predictability (R², p-value, directional hit rate) **without** applying the 0.8 discount. **AAII / NAAIM:** no penalty warranted (day-5 R² ≥ 90% of day-1 at 4w). **COT FM / RM:** decay detected (day-5/day-1 R² ≈ 0.18 / 0.29 — per-signal penalty ~0.2–0.3, not global 0.8). **CNN:** weekend carry only (n=668 calendar days); no decay through day-2. **Margin debt:** MDSP monthly proxy — insufficient n for stable day-5 bucket (wired in study only).

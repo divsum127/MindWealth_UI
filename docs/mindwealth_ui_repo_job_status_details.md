@@ -5073,7 +5073,9 @@ The on-disk XBRL cache (`{TICKER}_sec.json`, 80-day TTL) has no concept of *code
 **Implementation:**
 - `signal-freshness.ts`: `resolveFreshnessState()`, `buildFreshnessAnnotation()`, `buildCotFreshnessAnnotation()` with `MAX_STALE_DAYS_BY_CADENCE` mirroring `SSI_CONFIG.yaml`.
 - `SignalFreshnessAnnotation.vue`: shared tile annotation; amber class when `state === 'stale'`.
-- `sentiment-mapper.ts`: `freshness` field on `SentimentLayerItem`; Layer 1 keys `aaii_spread`, `naaim_exposure`, `cnn_fg_raw` only.
+- `SentimentLayerDetail.vue`: renders `item.freshness` on Layer 1/3 signal boxes (and Layer 2 timing rows if ever set).
+- `sentiment-mapper.ts`: `freshness` field on `SentimentLayerItem`; Layer 1 keys `aaii_spread`, `naaim_exposure`, `cnn_fg_raw` only; COT data row uses `buildCotFreshnessAnnotation`.
+- COT label: `COT - positions as of Tue 28 Jul - released Fri 31 Jul - next release Fri 7 Aug` (dash separators per C47).
 - Backend: `inputs_meta.*.max_stale_days`; `layer3_cftc.release_date` = position Tuesday + 3 calendar days.
 
 **Assumptions:** Page timestamp = `positioning.date` (SSI dashboard as-of), not `signal_report_date`. COT "released" = Friday of position week (Tue+3), not `expected_release` (which is expected Tuesday in data).
@@ -5081,6 +5083,8 @@ The on-disk XBRL cache (`{TICKER}_sec.json`, 80-day TTL) has no concept of *code
 **Deferred:** Reuse `SignalFreshnessAnnotation` in Runic variables table (still plain-text notes via `macro-variables.ts`). Wire `forward_fill_weekly()` caps into live scoring if product signs off.
 
 **Edge cases:** CNN uses `daily` cadence cap (3d) despite being on Layer 1 weekly panel. Missing `as_of` → no annotation unless explicitly stale with no date.
+
+**Dev deploy (2026-08-12):** Full pytest 768 pass; `mindwealth-api-dev` + `mindwealth-ui-dev` restarted; `smoke-test-apis.sh` PASS. Live `GET /api/v1/macro/sentiment/positioning` confirms `max_stale_days` + `release_date`. Git: `chatbot-dev` `a76336920`, `ui-dev` `2caf07b` (divsum127). Browser visual on Sentiment tiles still pending human check.
 
 ---
 
