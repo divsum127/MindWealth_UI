@@ -50,6 +50,8 @@ def evaluate_cftc_positioning(
     data_freshness = "waiting_for_friday_release" if stale else "current"
     status = pending_status if stale else "CONFIRMED"
     pattern = _detect_positioning_pattern(fm_pctile, rm_pctile)
+    squeeze_setup = pattern == "squeeze"
+    liquidity_exit = pattern == "liquidity_exit"
     pattern_label = {
         "squeeze": "Squeeze",
         "liquidity_exit": "Liquidity Exit",
@@ -59,9 +61,12 @@ def evaluate_cftc_positioning(
     position_date = freshness_row.source_date
     expected_release = freshness_row.expected_source_date
     next_release: str | None = None
+    release_date: str | None = None
     if position_date and expected_release:
         import pandas as pd
 
+        pos_ts = pd.Timestamp(position_date)
+        release_date = (pos_ts + pd.Timedelta(days=3)).strftime("%Y-%m-%d")
         exp_ts = pd.Timestamp(expected_release) + pd.Timedelta(days=3)
         next_release = exp_ts.strftime("%Y-%m-%d")
     return {
@@ -72,9 +77,12 @@ def evaluate_cftc_positioning(
         "status": status,
         "data_freshness": data_freshness,
         "positioning_pattern": None if pattern == "none" else pattern,
+        "squeeze_setup": squeeze_setup,
+        "liquidity_exit": liquidity_exit,
         "pattern_label": pattern_label,
         "plain_english": plain_english,
         "position_date": position_date,
+        "release_date": release_date,
         "expected_release": expected_release,
         "next_release": next_release,
         "stale": stale,

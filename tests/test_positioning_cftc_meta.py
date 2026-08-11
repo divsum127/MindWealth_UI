@@ -67,6 +67,8 @@ class TestPositioningCftcMeta(unittest.TestCase):
         self.assertEqual(meta["data_freshness"], "waiting_for_friday_release")
         self.assertTrue(meta["stale"])
         self.assertEqual(meta["stale_days"], 6)
+        self.assertEqual(meta["max_stale_days"], 8)
+        self.assertEqual(meta["release_date"], "2026-08-01")
 
 
 if __name__ == "__main__":

@@ -31,6 +31,8 @@ class TestCftcPatterns(unittest.TestCase):
         )
         out = evaluate_cftc_positioning(67.0, 61.0, "2026-08-04")
         self.assertEqual(out["positioning_pattern"], None)
+        self.assertFalse(out["squeeze_setup"])
+        self.assertFalse(out["liquidity_exit"])
         self.assertEqual(out["pattern_label"], "None")
         self.assertEqual(out["data_freshness"], "current")
         self.assertEqual(out["status"], "CONFIRMED")
@@ -44,6 +46,8 @@ class TestCftcPatterns(unittest.TestCase):
         )
         out = evaluate_cftc_positioning(15.0, 50.0, "2026-08-04")
         self.assertEqual(out["positioning_pattern"], "squeeze")
+        self.assertTrue(out["squeeze_setup"])
+        self.assertFalse(out["liquidity_exit"])
         self.assertEqual(out["pattern_label"], "Squeeze")
         self.assertIn("Fast money", out["plain_english"])
 
@@ -56,6 +60,8 @@ class TestCftcPatterns(unittest.TestCase):
         )
         out = evaluate_cftc_positioning(65.0, 25.0, "2026-08-04")
         self.assertEqual(out["positioning_pattern"], "liquidity_exit")
+        self.assertFalse(out["squeeze_setup"])
+        self.assertTrue(out["liquidity_exit"])
         self.assertEqual(out["pattern_label"], "Liquidity Exit")
 
     @patch("src.sentiment_superindex.data.cftc_patterns.check_cftc_freshness")
@@ -68,6 +74,8 @@ class TestCftcPatterns(unittest.TestCase):
         out = evaluate_cftc_positioning(40.0, 40.0, "2026-08-04")
         self.assertEqual(out["data_freshness"], "waiting_for_friday_release")
         self.assertEqual(out["status"], "PENDING_CFTC_CONFIRM")
+        self.assertEqual(out["release_date"], "2026-07-25")
+        self.assertEqual(out["next_release"], "2026-08-01")
 
 
 if __name__ == "__main__":

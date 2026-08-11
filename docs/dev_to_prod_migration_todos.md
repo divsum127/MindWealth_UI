@@ -87,12 +87,14 @@ Reference deploy skill: `.cursor/skills/prod-pull-and-details/SKILL.md`
 |------|--------|
 | Staleness meta | `src/sentiment_superindex/engine/positioning.py`, `src/sentiment_superindex/data/cftc_patterns.py` |
 | Shared freshness util + component | `MindwealthUI_Vue/utils/signal-freshness.ts`, `MindwealthUI_Vue/components/SignalFreshnessAnnotation.vue` |
-| Sentiment mapper + page | `MindwealthUI_Vue/server/utils/sentiment-mapper.ts`, `MindwealthUI_Vue/pages/sentiment.vue`, `MindwealthUI_Vue/types/api.ts` |
+| Sentiment mapper + detail UI | `MindwealthUI_Vue/server/utils/sentiment-mapper.ts`, `MindwealthUI_Vue/components/sentiment/SentimentLayerDetail.vue`, `MindwealthUI_Vue/types/api.ts` |
 | Runic variables notes | `MindwealthUI_Vue/utils/macro-variables.ts` |
 
 **`[PROD-ACTION]`** `python scripts/run_ssi_daily.py` so `inputs_meta.*` includes `max_stale_days` and `layer3_cftc.release_date`.
 
-**Smoke test `[PENDING]`:** Sentiment Layer 1 AAII/NAAIM/CNN show no date when `as_of === positioning.date`; older within 8d shows grey `as of …`; COT row shows positions/released/next-release triple when waiting for Friday.
+**Smoke test `[DONE]` 2026-08-12:** Nuxt `npm run build` PASS; `SentimentLayerDetail` renders `SignalFreshnessAnnotation` on tiles with `freshness` from mapper.
+
+**Dev deploy `[DONE]` 2026-08-12:** `mindwealth-api-dev` + `mindwealth-ui-dev` restarted; `smoke-test-apis.sh` PASS; `GET /api/v1/macro/sentiment/positioning` returns `inputs_meta.layer1.*.max_stale_days` and `layer3_cftc.release_date`. Browser visual check on Sentiment tiles `[PENDING]` (human).
 
 ---
 
