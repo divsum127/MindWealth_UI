@@ -52,10 +52,16 @@ Consequence: `sudo systemctl restart mindwealth-ui` deploys this fix to producti
 - `[DONE 2026-08-17]` `rg "T00:00:00Z"` across `server/ components/ pages/ composables/ utils/` → no matches.
 - `[DONE 2026-08-17]` `npm run build` clean (Node 20); `mindwealth-ui-dev` restarted, active, `:8514` → 200.
 - `[DONE 2026-08-17]` Render proof in Node: old stamp → `Aug 13, 08:00 PM EDT`, new stamp → `Aug 14, 04:00 PM EDT`.
-- `[PENDING]` Logged-in browser check on `:8514` — topbar must read `Aug 14, 04:00 PM EDT`. Not scriptable: `/api/meta` needs the `mw_access_token` cookie.
-- `[PENDING]` After a prod UI restart, same check on `:8512` / `www.mindwealth.co`.
+- `[DONE 2026-08-17]` End-to-end BFF check on dev: `GET :8514/api/meta` → `datetime: 2026-08-14T16:00:00-04:00`, `data_source: live`.
+- `[DONE 2026-08-17]` `smoke-test-apis.sh` all PASS; `pytest tests/test_api_*.py` 187 passed / 1 known failure; `mindwealth-ui-dev` journal clean.
+- `[PENDING]` **Prod still serving the bug:** `GET :8512/api/meta` → `2026-08-14T00:00:00Z`. `www.mindwealth.co` will keep showing `Aug 13, 08:00 PM EDT` until `sudo systemctl restart mindwealth-ui`. Not done — needs the user's go-ahead (public deploy).
+- `[PENDING]` Logged-in browser check on `:8514` (visual confirmation of the topbar string).
 
-### Status: `[PROD-ACTION]` — dev verified; prod inherits it on the next `mindwealth-ui` restart.
+### Status: `[PROD-ACTION]` — dev verified end to end; prod fix is one restart away and awaiting go-ahead.
+
+### Related follow-up (separate task, pre-existing)
+
+`server/utils/require-auth.ts` `requireAuth()` checks only that the `mw_access_token` cookie exists, never that it is valid, while `mindwealth-client.ts` authenticates upstream with the server-side `NUXT_API_KEY`. Any fabricated cookie therefore reaches live BFF data on both `:8514` and public `:8512`. Not introduced by this change and not fixed here.
 
 ---
 
