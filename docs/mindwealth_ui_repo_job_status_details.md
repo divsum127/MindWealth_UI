@@ -15,6 +15,31 @@ This file captures minute-level implementation context for each completed task:
 
 ---
 
+### 2026-08-17 — Topbar "Aug 13, 08:00 PM EDT": Nuxt midnight-UTC stamp (repo `MindwealthUI_Vue`, `ui-dev`)
+
+**Ask:** "the website still shows Aug 13, 08:00 PM EDT" — after the macro snapshot fix (entry 13) had already landed.
+
+**Key decisions**
+- **Diagnosed from the rendered string, not from the API.** `Aug 13, 08:00 PM EDT` is exactly `2026-08-14T00:00:00Z` viewed from New York, which pointed straight at a date-only value being stamped as UTC midnight. Both APIs were already returning `2026-08-14T16:00:00-04:00`, so the backend was never in play. Worth repeating this trick: convert the displayed string back to UTC before touching any code.
+- **Fixed all three stamp sites, not just the topbar's.** `metaFromSource()` feeds 11 call sites across pages, so leaving the other two (signals list `reportDate`, shortlist `report.report_date`) would have left the same off-by-one evening on other surfaces.
+- **Reused the existing helper rather than writing a fourth formatter.** `buildMarketCloseDataUpdatedAt()` in `server/utils/data-updated-at.ts` already computes the DST-correct offset via `Intl.DateTimeFormat(..., timeZoneName: 'shortOffset')`; it was written for this exact purpose and only `sentiment-mapper.ts` was using it.
+- **`loadMeta()` now prefers the backend `/meta`.** It previously ignored the endpoint entirely and derived meta from the overlay filename. Preferring the API makes `resolve_report_date()` the single source of truth; filename derivation stays as the fallback so a `/meta` outage degrades instead of blanking the topbar.
+
+**Things left for future**
+- Weekend/Monday staleness is untouched: the topbar will still read the last trading day with no "as of" affordance (entry 11 root cause B). With this fix it reads `Aug 14, 04:00 PM EDT`, which is correct but still looks behind on a Monday morning.
+- `baseMeta()` in `server/utils/meta.ts` still hardcodes `2026-05-12` as a fallback payload. `metaFromSource()` starts from it, so a report file with no parseable date silently yields a May date rather than nothing.
+- The SYSTEM tab's hardcoded `India CSV pipeline` / `Claude API` / `Tavily` warn rows (`server/utils/overwatch-panel.ts:141-155`, logged under entry 16) are a separate untouched defect in the same file tree.
+
+**Edge cases not handled**
+- Non-US markets: the helper always stamps 16:00 America/New_York. If an India report date ever flows through `metaFromSource()`, it will be labelled with a US close.
+- `mergeApiMeta()` accepts the API payload whenever `data_updated_at.datetime` is present, without sanity-checking the date. A stale-but-well-formed backend timestamp would be trusted over a newer filename.
+
+**Caveats for the next developer**
+- Verifying this from the shell is blocked: `/api/meta` on `:8514` sits behind `bff-auth.ts`, which requires the `mw_access_token` cookie, so an unauthenticated curl returns 401 and the SSR HTML carries no timestamp (it is client-fetched). The practical check is either a logged-in browser refresh or `grep -c "T00:00:00Z" .output/server/chunks/_/mindwealth-data.mjs` on the built bundle.
+- **`npm run build` in this repo is a production action.** `mindwealth-ui-dev` (`:8514`) and `mindwealth-ui` (`:8512`, public `www.mindwealth.co`) share one `WorkingDirectory` and one `.output`. Building for dev overwrites the bundle prod serves; prod continues on the old code only until its next restart. There is no dev/prod code isolation here, only the systemd `NUXT_API_BASE_URL` split (8507 vs 8506).
+
+---
+
 ### 2026-08-17 — Cross-source experiment summary (cursor chats + Gmail MCP), detailed + simple
 
 **Ask:** "based on the latest cursor chats and the gmail mcp server get me details about the experiments that I have run recently and this I have been doing, give 2 versions 1 detailed and 1 simple"

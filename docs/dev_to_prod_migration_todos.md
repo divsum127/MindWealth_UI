@@ -21,6 +21,44 @@ Reference deploy skill: `.cursor/skills/prod-pull-and-details/SKILL.md`
 | `[PROD-ACTION]` | Manual step on server after git merge (secrets, systemd, bootstrap) |
 | `[DONE]` | Completed on prod (date in notes) |
 
+## 2026-08-17 — Nuxt stamped report dates at midnight UTC (topbar read one evening early) `[PROD-ACTION]`
+
+**Repo:** `MindwealthUI_Vue` (separate remote `D-ParthChauhan/MindwealthUI_Vue`), branch `ui-dev` @ `fe7ebf1`, author `divsum127`.
+
+**Defect:** `server/utils/mindwealth-data.ts` built `data_updated_at.datetime` as `<report-date>T00:00:00Z` in three places (`metaFromSource()`, signals-list meta, shortlist meta). Midnight UTC renders as 8:00 PM the previous evening in `America/New_York`, so a 2026-08-14 report displayed as **Aug 13, 08:00 PM EDT**. The FastAPI `/api/v1/meta` was correct throughout (`2026-08-14T16:00:00-04:00`) and simply unused — `loadMeta()` derived meta from the overlay filename instead.
+
+**Fix:** all three sites use the existing DST-safe `buildMarketCloseDataUpdatedAt()` (16:00 America/New_York); `loadMeta()` now calls the backend `/meta` and merges via `mergeApiMeta()`, keeping filename derivation as fallback.
+
+### 1. Files to merge
+
+| Path | Kind |
+|---|---|
+| `MindwealthUI_Vue/server/utils/mindwealth-data.ts` | modified — market-close stamps + backend `/meta` preference |
+
+No `MindWealth_UI` code file changed. Docs updated here: `docs/mindwealth_ui_job_status.md` (entry 17), `docs/mindwealth_ui_repo_job_status_details.md`, this file.
+
+- **Dev-only / revert:** none.
+- **Runtime artifacts:** none. `.env` / secrets / `config/users.json` unchanged.
+- **API:** no route, schema or response-shape change. No OpenAPI export, no docs-submodule commit.
+
+### 2. `[PROD-ACTION]` — already half-applied, read before restarting prod UI
+
+`mindwealth-ui-dev` (`:8514`) and `mindwealth-ui` (`:8512`, public `www.mindwealth.co`) share **one** `WorkingDirectory=/home/ubuntu/MindwealthUI_Vue` and **one** `.output`. The `npm run build` run for dev has **already replaced the bundle prod serves**; `:8512` keeps executing the previously-loaded code until it restarts, then picks this change up with no merge step.
+
+Consequence: `sudo systemctl restart mindwealth-ui` deploys this fix to production. That is the intended outcome here, but treat any future dev build in this repo as a staged prod deploy.
+
+### 3. Smoke tests
+
+- `[DONE 2026-08-17]` `rg "T00:00:00Z"` across `server/ components/ pages/ composables/ utils/` → no matches.
+- `[DONE 2026-08-17]` `npm run build` clean (Node 20); `mindwealth-ui-dev` restarted, active, `:8514` → 200.
+- `[DONE 2026-08-17]` Render proof in Node: old stamp → `Aug 13, 08:00 PM EDT`, new stamp → `Aug 14, 04:00 PM EDT`.
+- `[PENDING]` Logged-in browser check on `:8514` — topbar must read `Aug 14, 04:00 PM EDT`. Not scriptable: `/api/meta` needs the `mw_access_token` cookie.
+- `[PENDING]` After a prod UI restart, same check on `:8512` / `www.mindwealth.co`.
+
+### Status: `[PROD-ACTION]` — dev verified; prod inherits it on the next `mindwealth-ui` restart.
+
+---
+
 ## 2026-08-17 — `pytest` clobbers the live `runic_output.json` (macro page date rollback) `[PENDING]`
 
 **Fix applied on dev 2026-08-17** (see §1 below for the final shape — it differs from the originally proposed env-var monkeypatch). Dev snapshot restored and verified. Still `[PENDING]` for prod: the defective test file is in prod's tree and must be replaced by the merge.
