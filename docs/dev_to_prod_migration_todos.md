@@ -229,6 +229,66 @@ Server TZ is `Etc/UTC`. Both clones run `run_macro_nightly.py` at `0 18 * * 1-5`
 
 ---
 
+## 2026-08-17 — Dead Claude model id + permanent "CPI pending" flag `[PENDING]`
+
+**Highest-value item in this file right now.** Prod has been serving **template** macro narratives, not Claude ones, for as long as `claude-sonnet-4-20250514` has been retired. Every Claude call outside the chatbot 404s and falls back silently.
+
+**Git files to merge** (`chatbot-dev` → `chatbot-prod`), commit **`87b5f1a83`**:
+- `src/macro_intelligence/claude/_client.py` — default model
+- `macro_intelligence/CONFIG.yaml` — `claude.model` and `geo_model`
+- `src/conviction_engine/agent_dims.py` — `_DEFAULT_MODEL`
+- `api/services/analyst_copy_service.py` — `ANALYST_CLAUDE_MODEL` default
+- `src/macro_intelligence/output/json_writer.py` — `_pending_cpi_release` strictly-forward window
+- `.env.example`, `tests/test_pending_cpi_release.py` (new)
+
+`[PROD-ACTION]` **`.env` edit required on prod — the merge alone is not enough.** Prod `.env` pins `MACRO_CLAUDE_MODEL=claude-sonnet-4-20250514`; the env var beats both the YAML and the code default, so without this edit prod keeps producing template briefings even after merging:
+```
+MACRO_CLAUDE_MODEL=claude-sonnet-4-5-20250929
+```
+`[PROD-ACTION]` after the merge + `.env` edit, re-run the nightly on prod so the live snapshot carries a real Claude narrative instead of the template one currently on the page: `.venv/bin/python scripts/run_macro_nightly.py`. Then restart `mindwealth-api.service`.
+
+`[PROD-ACTION]` check for the same dead id anywhere else in the prod environment: `grep -rn "claude-sonnet-4-20250514" /home/ubuntu/uiv2/prod/MindWealth_UI --include=*.py --include=*.yaml` plus its `.env`.
+
+**Smoke tests:**
+- `[DONE]` 2026-08-17 — `call_claude()` returns a real completion (was `404 not_found_error`).
+- `[DONE]` 2026-08-17 — regenerated `runic_briefing_2026-08-17`; narrative is **7,233 chars of genuine Claude analysis**, reports CPI surprise **−0.026pp "not hot"**, and no longer claims a pending release.
+- `[DONE]` 2026-08-17 — `GET /macro/runic/nightly` on `:8507` → `date 2026-08-17`, `pending_cpi_release: false`.
+- `[DONE]` 2026-08-17 — `pytest tests/ -q` → **814 passed / 1 known Monday-only failure / 3 skipped**; `smoke-test-apis.sh` **11/11 PASS**.
+- `[PENDING]` prod: after the `.env` edit + nightly re-run, confirm the MACRO tab narrative is multi-section Claude prose and carries no "A CPI release is pending this week" sentence.
+
+**Open, needs Rohit's decision — do not silently patch:**
+- `[PENDING]` `bls_pull.try_bls_cpi_pull()` stamps `release_date = datetime.now()`, so `pending_releases` records "the day the nightly ran" rather than the real CPI release date (identical `actual` rows on 08-10, 08-11, 08-13, 08-14, 08-17). This feeds `fetch_cpi_surprise_series()` **and** `get_upcoming_event()`, which is why `pre_catalyst` reports a CPI catalyst at `days_to_event: 0` with `HIGH — REGIME SENSITIVE TO CATALYST` every single day. Fixing it changes the meaning of a table the surprise series depends on.
+- `[PENDING]` Two independent Claude model constants (`chatbot/config.py` vs the macro/conviction/analyst defaults) with no shared source of truth — the reason half the product kept working while the other half silently degraded. Consolidate.
+- `[PENDING]` **`MindwealthUI_Vue` hardcodes the SYSTEM tab** — `server/utils/overwatch-panel.ts:141-155` returns `India CSV pipeline`, `Claude API` and `Tavily` as literal `status:'warn', detail:'Could not fetch from server'`; the UI never calls `GET /system/health`. The tab has never reflected real service state. Backend endpoint is correct and ready to wire.
+- `[PENDING]` The regenerated Claude narrative contradicts itself once ("CPI came in hot" vs "−0.026pp, not hot") — prompt-level issue, newly visible now that Claude output actually reaches the page.
+
+---
+
+## 2026-08-17 — Chat history endpoint 500 (pandas metadata) + India health check casing `[PENDING]`
+
+**⚠️ Merge-ordering constraint — read before the entry below.** These two files must merge **together with** the AI Analyst entry below, never after it. Prod does not 500 on `GET /chatbot/sessions/{id}/history` today only because prod still has the history-corruption bug that hides the defect: corrupt file → `load_history` returns `[]` → nothing to serialize. Shipping the durability fix alone turns prod's **silent history wipe into a hard 500 on every chat open**.
+
+**Git files to merge** (`chatbot-dev` → `chatbot-prod`), commit **`a0e84384b`**:
+- `api/services/chatbot_service.py` — `_jsonable` / `_jsonable_message` sanitizer applied in `get_history` for both `display` modes
+- `api/services/system_health_service.py` — `_india_datetime_json()` tries `India` and `INDIA`
+- `tests/test_api_chatbot.py` — `TestHistorySerialization` regression guard
+
+`[PROD-ACTION]` restart `mindwealth-api.service` after merge. No env key, no runtime artifact, no dev-only config, **no API surface change** (same routes, same field names — only the value types inside `metadata.full_signal_tables` change from unserializable objects to JSON records, so no OpenAPI or API-doc update).
+
+**Smoke tests:**
+- `[DONE]` 2026-08-17 — `pytest tests/test_api_chatbot.py -q` → **9 passed**; `pytest tests/ -q` → **811 passed / 1 known Monday-only failure / 3 skipped**.
+- `[DONE]` 2026-08-17 — dev `:8507` restarted, `smoke-test-apis.sh` all PASS, prod `:8506` isolation intact.
+- `[DONE]` 2026-08-17 — live HTTP with a minted admin token: history **200** with `display=true` (367 KB) and **200** raw; `GET /system/health` → Tavily `ok`, Claude API `ok`, India `4503.3h ago`.
+- `[PENDING]` prod: after merge, open a chat that has fetched signals and hard-refresh — history must return 200, not 500.
+
+**Findings recorded, not fixed here:**
+- `[PROD-ACTION]` **India pipeline is 6 months stale** — `trade_store/INDIA/data_fetch_datetime.json` last written **2026-02-11**. The casing bug was masking this behind "path not found". Core-repo cron issue; needs an owner.
+- `[PENDING]` **`GET /system/health` is admin-only** (`require_admin`) — 7 of the 9 users in `config/users.json` are role `user`, so the SYSTEM tab can only render as unknown/offline for them. Needs a product decision: non-admin-safe summary endpoint, or hide the tab for non-admins.
+- `[PENDING]` **Nuxt sends no `book_id`** to `GET /portfolio/nav` and `GET /signals/reports/portfolio-risk/latest` → repeated 422s. `MindwealthUI_Vue`, out of scope.
+- `[PENDING]` 87 × `GET /auth/me` 401 in 3h — expired/missing browser token; may be a token-lifetime issue or just a stale tab.
+
+---
+
 ## 2026-08-17 — AI Analyst: recommendation routing + conviction feed + 503 + history durability
 
 **Git files to merge** (`chatbot-dev` → `chatbot-prod`):

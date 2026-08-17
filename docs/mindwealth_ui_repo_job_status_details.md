@@ -242,6 +242,68 @@ The failure then compounded: both units are `Restart=on-failure`, and a SIGTERM 
 
 ---
 
+### 2026-08-17 — Dead Claude model id (silent template fallback) + permanent "CPI pending"
+
+**Ask:** Rohit, on the macro briefing: "this report itself is dated… the reference to inflation report due and month on month usa inflation at 0.2 percent expected has to be prior to Wednesday last week, that's when the data was released… this means the report is not being updated daily? why? also means tavily not working, neither the chatbot instant nor the macro intelligence nightly briefing."
+
+**The report *was* regenerating daily.** `macro_intelligence/logs/nightly.log` shows the 18:00 cron completing, `runic_output.json` carried `date: 2026-08-17`. What was frozen was the *content*, for two unrelated reasons.
+
+**Finding 1 — every Claude call outside the chatbot was 404ing.** `call_claude()` raised `NotFoundError: model: claude-sonnet-4-20250514`. That id is retired. `generate_nightly_briefing()` wraps the call in `try/except Exception: return _template_briefing(payload)`, so the failure was invisible: the site kept showing a narrative, just a template-generated one. The tell is in the screenshot itself — the sentence Rohit quoted is a literal from `nightly_briefing.py:346`, not something a model would phrase identically every night.
+
+**How to spot this class of bug faster next time:** a bare `except Exception` around a paid API call with a plausible-looking fallback is invisible in logs and in output. Search for the fallback's literal strings in production output — if a sentence in the live product matches a hardcoded f-string in the repo, the primary path is dead. The same dead id was sitting in `conviction_engine/agent_dims.py` and `analyst_copy_service.py`, both of which will have been degrading the same silent way.
+
+**Why the chatbot was unaffected:** `chatbot/config.py` pins `claude-sonnet-4-5-20250929` independently. Two model constants, no shared source of truth — that is the underlying design fault, and it is why one half of the product worked while the other silently fell back for weeks. Worth consolidating into one config-level constant; not done here.
+
+**Finding 2 — "A CPI release is pending this week" could never turn off.** Two defects compounding:
+1. `_pending_cpi_release()` queried the **trailing** 7 days (`release_date >= as_of - 7 AND <= as_of`) despite a docstring promising "scheduled this week without finalized actual". It never looked at `actual` at all.
+2. `bls_pull.try_bls_cpi_pull()` calls `ingest_cpi_release(as_of, …)` with `as_of = datetime.now()`, so **every nightly writes a CPI row dated that day**. Evidence: rows dated 2026-08-10, 08-11, 08-13, 08-14, 08-17 all carrying the identical `actual=0.0736691…`, each `created_at` 18:00 on its own date.
+
+Together the trailing window always contained a row, so the flag was `True` forever, not merely stale. Fixed by making the window **strictly forward** — `release_date > as_of AND <= as_of + 7` — which is immune to defect 2 because today's own row can never satisfy `> as_of`.
+
+**Why strictly-forward is right and not an off-by-one:** the nightly runs 18:00 UTC = 14:00 ET, and CPI prints at 08:30 ET. At the moment the flag is evaluated on a genuine release day, the number is already public. "Pending" on that evening would be wrong.
+
+**Deliberately not fixed — needs Rohit's call:** `release_date` in `pending_releases` currently means "the day the nightly ran", not the release date. That leaks further than this flag: `fetch_cpi_surprise_series()` builds its index from these rows, and `get_upcoming_event()` (inclusive of today) picks today's synthetic row, which is why `pre_catalyst` reports a CPI catalyst at `days_to_event: 0` *every day* with `fragility_score: HIGH — REGIME SENSITIVE TO CATALYST`. Correcting it means mapping each observation to the nearest scheduled calendar release, which changes the meaning of a table Rohit's surprise series depends on. Not a late-night unilateral change.
+
+**Finding 3 — the SYSTEM tab never called the health API.** `MindwealthUI_Vue/server/utils/overwatch-panel.ts:141-155` hardcodes three rows:
+```ts
+{ name: 'India CSV pipeline', status: 'warn', detail: UNAVAILABLE_FETCH },
+{ name: 'Claude API',         status: 'warn', detail: UNAVAILABLE_FETCH },
+{ name: 'Tavily',             status: 'warn', detail: UNAVAILABLE_FETCH },
+```
+`UNAVAILABLE_FETCH` is the literal `'Could not fetch from server'` from `constants/unavailable.ts`. There is no call to `GET /system/health` anywhere in the Nuxt repo. So the tab that Rohit reads as "Tavily is down" has never once measured Tavily. The backend endpoint exists, is correct, and reports Tavily `ok` — it is simply not wired to the UI. The US CSV and Google Sheets rows *are* real but come from `meta.data_updated_at`, the same stale field behind the "date didn't update" complaint, which is why they showed `5607m ago` and `2026-08-14`.
+
+**Caveat on the regenerated briefing:** it is genuine Claude output now (7,233 chars, five sections, correctly reporting the CPI surprise as −0.026pp "not hot"), but the model still writes "Combo C fired … and CPI came in hot" in one paragraph while reporting "not hot" in another. That is a prompt-level inconsistency, pre-existing and now visible for the first time because Claude output is actually reaching the page. Worth a prompt fix; not attempted here.
+
+---
+
+### 2026-08-17 — Chat history 500 (pandas metadata) + India health check casing
+
+**Ask:** "there are still many issues in the chatbot, the chatbot is not responding, getting error, tavily and other services seem offline".
+
+**What the symptoms actually were:** none of the external services were down. `run_system_health()` in-process returned Tavily `ok` (1673ms), Claude API `ok` (267ms), Sheets `ok`, Macro `ok`, SSI `ok`. The dev log for the same window shows `WebSearchAgent: Tavily client initialized` and `POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"`, with a real answer completing in ~92s. The chat *engine* was working the whole time.
+
+**Diagnosis method worth repeating:** `journalctl -u mindwealth-api-dev --since "3 hours ago" | grep -oE '"(GET|POST) [^"]+" [0-9]{3}' | grep -v " 200" | sort | uniq -c | sort -rn`. One command separated the noise (87 × `auth/me` 401) from the single real server fault (8 × 500 on one path). Every `chatbot/jobs/*.json` in the window reported `status=completed, error=None`, which is what pointed at the *read* path rather than the answer path.
+
+**Why this bug is ours, even though the code is old:** `get_history` never sanitized. It did not fail before because history files were being corrupted by the `Timestamp` dump bug, `load_history` swallowed the `JSONDecodeError` and returned `[]`, and an empty list serializes fine. Making persistence durable meant `full_signal_tables` came back as real DataFrames on every load — and the endpoint started failing 100% of the time for any session that had ever fetched signals. A durability fix converting a silent data-loss bug into a loud 500 is the expected shape of this class of change; it should have been caught by exercising the read path after the write path was fixed.
+
+**Design decisions:**
+- **Sanitize at the API boundary, not in the engine.** The engine legitimately wants DataFrames in memory — later turns re-read `full_signal_tables`. The test asserts the engine's copy is still a `DataFrame` after `get_history` runs, so a future "simplification" that mutates in place fails the suite.
+- **Sanitize `display=False` too.** That branch returned raw engine messages and had exactly the same defect; only `display=true` appears in the logs because that is what the panel calls.
+- **`NaN`/`NaT` → `null`, not `"nan"`.** `default=str` would have been a one-liner but produces the string `"nan"` in JSON, which renders as a literal `nan` in the table. Asserted explicitly.
+- **No row cap.** The `display=true` payload is ~367 KB for a 10-message session. Capping rows would change what the UI receives, and no requirement for that exists yet; noted here as the obvious next lever if payload size becomes a problem.
+
+**India check:** the fix tries `India` then `INDIA` under both `TRADE_STORE_DIR` and `MINDWEALTH_ROOT/trade_store`, first hit wins, and falls back to the last candidate so a genuinely missing file still reports a missing path. Status is unchanged (`fail` either way) — the value is that the detail now reads `4503.3h ago` instead of `path not found`, which surfaces the real problem: **the India pipeline has not produced a stamp since 2026-02-11.** That is a core-repo cron issue, not fixed here.
+
+**Left open deliberately:**
+- `GET /system/health` sits behind `require_admin`. 7 of 9 configured users are role `user`, so for them the SYSTEM tab cannot render anything but a failure. Either the tab needs a non-admin-safe summary endpoint or the tab should be admin-only in the UI. Needs a product call, not a code call.
+- 87 × `auth/me` 401 in three hours means a browser session with a missing or expired token. Whether that is a token-lifetime problem or just a stale tab is not answerable from server logs alone.
+- The Nuxt UI calls `/portfolio/nav` and `/signals/reports/portfolio-risk/latest` without the required `book_id` and takes a 422 each time. Frontend repo, out of scope.
+- The 30s job-poll cache in `MindwealthUI_Vue` is still the true cause of the 503 banner.
+
+**Merge-ordering warning (important):** prod does not currently 500 on this endpoint only because prod still has the history-corruption bug that hides it. Merging the entry 7 durability fix **without** this commit would convert prod's silent history wipe into a hard 500 on every chat open. The two must ship together.
+
+---
+
 ### 2026-08-17 — Robust test + dev deploy for the AI Analyst fix (verification, restart, commit)
 
 **Ask:** Run the `robust-test-and-dev-deploy` skill over the AI Analyst fix recorded in the entry below. That fix had been written in an earlier Claude Code session in Cursor (session `3fbfacfc-70e7-42f4-aa74-849a140f13c8`, plan at `~/.claude/plans/help-me-with-this-woolly-naur.md`) and then left **uncommitted** in the working tree, with all verification done *before* any service restart.
