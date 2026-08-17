@@ -15,6 +15,279 @@ This file captures minute-level implementation context for each completed task:
 
 ---
 
+### 2026-08-17 — SSI threshold experiments: question-first analysis doc + per-test CSV exports
+
+**Ask:** "a concise ssi threshold experiments analysis doc … analysis of all the experiments and also gives references to all the CSV files where the stored values are."
+
+**Assumptions**
+
+- **"CSV files" was taken literally.** Experiment values are stored as JSON; only 14 experiment-value CSVs existed repo-wide (Tests 1–2, 3, 4, 18, 22). Rather than re-point the request at JSON, a generic exporter was written so every test has a real CSV. Confirmed with the user before building.
+- **Newest artifact wins, `_v2_` preferred.** Tests 3 and 4 have both a plain and a `_v2_` artifact for the same date; `_v2_` carries `par`, `sample_diagnostics`, `fm_distribution` and per-episode detail, so the exporter and the doc use it. `newest()` does an exact stem match specifically so `03_squeeze_grid` cannot swallow `03_squeeze_grid_v2`.
+- **Part→Test mapping follows the Understanding doc**, not `SSI_OPEN_QUESTIONS_STATUS.md`. STATUS lists Part 1 as "Tests 1–2, 5–10, 18–20", which omits Tests 3 and 4 entirely and files 7/8 under Part 1 instead of Part 2. The finer sub-question mapping (1.3→T3, 1.4→T4, 2.1→T8, 2.2→T7) is more accurate. The divergence is stated in the doc rather than silently resolved.
+- **Freshness tags are an interpretation, not a copy.** `STALE_BACKTESTS_AFTER_CNN_HY_FIXES.md` is treated as the authority, but two of its rows are contradicted by artifact evidence (see caveats).
+
+**Design decisions**
+
+- **Generic flattener over 22 bespoke exporters.** No two artifacts share a schema (verified by dumping every top-level key). The rule is: any top-level key holding a list of dicts becomes its own CSV; everything else lands in one long-form `__meta.csv` (`key,value`). Tests with no list at all (9, 11, 12, 13, 15) therefore get meta-only, which is correct — their JSON is named metric blocks, not rows.
+- **Metrics prefix matches the existing house convention.** `pd.json_normalize(sep="_")` then strip a leading `metrics_`, so `metrics.12w.mean` → `12w_mean`, the same column naming `export_cftc_rohit_share_package.py::_flatten_cell` produces. Column names are otherwise left exactly as the artifact spells them (`12w_mean_median_gap`, `12w_hit_excess_pct`).
+- **Nested row lists get their own CSV** rather than being JSON-blobbed into a cell: `<stem>__rows__episodes.csv`, keyed by a `parent` column carrying the condition. Non-dict lists (e.g. Test 14's `instances`, which is 20 date strings) stay in meta as a JSON string — they are not tabular.
+- **Existing bundles are indexed, not regenerated.** The 11 CFTC and 2 Layer-2 share CSVs are richer and hand-curated for Rohit; `INDEX.csv` points at them in place with `freshness=EXTERNAL`, and flags `MISSING` if a path disappears.
+- **PAR-relative scoring is the doc's spine.** The August re-runs added an unconditional PAR row; without it, "+3.32% over 12 weeks" reads as a good result when the market did +2.30% over the same windows. Every cell judgement in the doc is stated against PAR.
+
+**Deferred / left for future**
+
+- **No experiment was re-run.** `STALE_BACKTESTS_AFTER_CNN_HY_FIXES.md` explicitly holds re-runs until Rohit agrees the list — that instruction was followed. The 11 stale test families keep their June numbers, flagged provisional.
+- **No CSV export helper for the Layer 2 / Test 22 share bundle.** Its two CSVs remain untracked and script-less; the new exporter produces equivalents from the JSON but does not reproduce that bundle's layout.
+- `scripts/export_cftc_rohit_share_package.py` still has its output dir, report source and branch **date-hardcoded** (`:22-25`). Not touched here.
+- ~~`SSI_EXPERIMENT_RESULTS.md` and `SSI_OPEN_QUESTIONS_STATUS.md` were not corrected in place.~~ **Superseded same day** — user chose add-then-correct, so both were `git add`-ed and corrected inline (see below). What is still deferred: `SSI_OPEN_QUESTIONS_SUMMARY.md` (1,687 lines, internally frozen at "17 tests") and `docs/ssi_validation/README.md` ("15 tests") remain uncorrected, as do the 22 generated `docs/ssi_validation/NN_*.md` reports — `03_squeeze_grid.md` is still generated from the 08-07 run and `04_liquidity_exit_grid.md` from 08-04.
+
+**Correction pass on the two status docs (same task, after user chose "add-then-correct")**
+
+- **Surgical edits, not a rewrite.** Only the seven wrong figures plus their surrounding claims were touched, each marked `[corrected 08-17]` so a reader can see what moved. Untouched sections keep their original wording — this keeps the diff reviewable against the version Rohit may already have seen.
+- **Artifact citations were re-pointed programmatically, not by eye.** Every `` `*_YYYYMMDD.json` `` reference in both docs was extracted and compared against the newest file for its stem; the check now reports zero mismatches. Note several `_20260807` citations are **correct** and were deliberately left (Tests 8, 13, 18 genuinely have no later artifact) — do not bulk-replace them.
+- **Status labels changed, not just numbers.** Tests 3–4 DONE → **SIGN-OFF HELD** (held 2026-08-07, never released, yet `SIGNOFF.md` still says DONE — that file was not edited, it is a sign-off record). Test 15 "DONE (env caveat)" → **VOID — runnable, not blocked**. Test 6 DONE → **STALE — must re-run**. Tests 9/10 → **DONE (stale inputs)**.
+- **D-7 added to both docs' Rohit decision lists.** `min_confirmed` is unproven at its production value (Test 22) while Test 10 shows vote count materially moves hit rate — the two findings only make sense read together, which is why it became a decision rather than a note.
+- **Caveat:** the executive-summary counts in `SSI_OPEN_QUESTIONS_STATUS.md` were recomputed by hand (19/22 usable, 1 void, 1 waived, 2 held, 11 families on pre-backfill inputs). They are not derived from `INDEX.csv`, so they will drift if tests are re-run. The `freshness` column in `INDEX.csv` is the machine-readable version and is also hand-maintained in the script's `TESTS` registry — both need updating together after any re-run.
+
+**Edge cases identified, not handled**
+
+- `INDEX.csv` row counts for external bundles are computed by line count minus one; a CSV with embedded newlines inside quoted fields would be under-counted. None currently have them.
+- The exporter has no schema validation — if an artifact's shape changes, it produces differently-shaped CSVs silently rather than failing.
+- Test 14 reports `n_events=25` but ships only 20 `instances` dates. Not reconciled; the doc says "20 sampled episode dates" rather than implying they are the full set.
+- Test 13's `1m` horizon is `n=0` across all three arms (a data gap), which the export carries through as empty columns rather than flagging.
+
+**Caveats for the next developer**
+
+- **Do not quote the 2026-08-12 compiled docs.** Seven headline figures in them are contradicted by the artifacts they cite (C-1…C-7 in the new doc). The most consequential is C-5: Test 10's claim that vote count makes no difference is false, and vote count is the same `min_confirmed` parameter Test 22 found unproven.
+- **`hyg_lqd` ≠ HY OAS.** SSI's `hyg_lqd` is a Yahoo ETF price ratio (`src/sentiment_superindex/data/yahoo_inputs.py:15`); ICE BofA HY OAS lives only under `src/macro_intelligence/`. The staleness list's "Layer 2 via `hyg_lqd`" bucket rests on conflating them. Confirm before re-running Tests 8/10/20/22 on that basis — they are stale via `cnn_fg` in the composite gate instead.
+- **An August artifact date does not mean fresh data.** `06_cnn_fear_greed_20260812.json` is byte-identical to the 08-07 run across all four rules, and Test 21 sees `cnn_fg` with `n_obs_total=670` against 4,327 for AAII. The 08-12 CNN re-run did not ingest the backfilled series.
+- **Statistical significance was never established for any CFTC cell**, and `stable_across_offsets` does not provide it — it is a sign-count heuristic at `cftc_episode_metrics.py:336`. Anyone citing "10/12 offsets positive" as evidence of alpha is over-reading it.
+- Re-running the exporter is idempotent and safe; it only reads artifacts and rewrites `csv/`.
+
+---
+
+### 2026-08-17 — INCIDENT: `www.mindwealth.co` down 14m50s from a `pkill -f`, plus deployed-frontend audit
+
+**Ask:** "check the status of the deployed repo in ui-dev branch, make sure everything in the frontend is being built and working properly."
+
+**What went wrong (caused by the preceding task in this same session):**
+Cleaning up the `:3007` smoke-test server, I ran `pkill -f ".output/server/index.mjs"`. On this host that pattern matches **three** processes, not one: my test server, `mindwealth-ui-dev.service` (`:8514`), and `mindwealth-ui.service` (`:8512`) — because both systemd units run the identical command `node .output/server/index.mjs` from the identical `WorkingDirectory=/home/ubuntu/MindwealthUI_Vue`. The `pkill` returned exit code 144 and I read that as success rather than investigating it.
+
+The failure then compounded: both units are `Restart=on-failure`, and a SIGTERM producing `ExecMainStatus=0` is recorded by systemd as `Deactivated successfully` — **not** a failure. So neither service auto-restarted (`NRestarts=0` on both). nginx maps `mindwealth.co www.mindwealth.co` → `127.0.0.1:8512`, so the public site simply stopped answering. Dev came back at 12:18:57 because a **different operator** started it (not systemd, not me). Prod stayed dead until I started it at 12:28:56. **Public outage: 12:14:06 → 12:28:56 = 14m50s.**
+
+**Lessons, in priority order:**
+1. **Never `pkill -f` a generic Node/Nitro/uvicorn entrypoint on this host.** `.output/server/index.mjs` is not a unique string here. Kill test servers by PID (capture `$!`) or by port (`fuser -k <port>/tcp`).
+2. **Run `systemctl list-units --all | grep -iE 'nuxt|ui'` and `ss -ltnp` BEFORE any pattern kill**, not after. I had all the information needed to avoid this and gathered it only during the post-mortem.
+3. **`Restart=on-failure` does not protect against a stray SIGTERM.** If these units had `Restart=always`, the outage would have been ~5s. Worth proposing.
+4. Exit code 144 from `pkill` is a signal, not a success — investigate non-zero exits from cleanup commands instead of moving on.
+
+**Second, quieter mistake:** `npm run build` during the previous task wrote into `/home/ubuntu/MindwealthUI_Vue/.output` — the **live artifact directory both deployed services run from**. I treated the repo as a dev checkout; it is simultaneously the deploy target. The prior deployed build is gone and unrecoverable. Outcome was benign (the branch was already `ui-dev`, and the bundle does contain the newest commit's symbols), but the principle stands: **in this repo, `npm run build` is a production action.**
+
+**Why the artifact is "not provably any commit":** the 6 runic files were being saved 12:09:48–12:10:31 by another operator; my build finished 12:11:14. Vite reads sources progressively during the run, so some files may have been read pre-save and others post-save. Grepping `.output` for `0921dd3`'s new symbols (`mapComboPriorityOrder`, `SIGMA_SOURCE_LABELS`, `demoted_for_low_n`, `model_barrier_basis`, `min_matured_episodes`) finds all of them — so it is not stale — but that is evidence, not proof of a coherent snapshot. A clean rebuild at `0921dd3` is the fix; it needs consent because it restarts the public site.
+
+**Architecture finding worth internalising (pre-existing):** there is no separate prod frontend. Both units share one tree and one `.output`; identical SSR byte counts (115,614) on `:8512` and `:8514` prove it. So `www.mindwealth.co` serves the **`ui-dev`** branch's build, and `presentation-prod` (`ba2bcfd`) is not what the public sees. The only prod/dev separation is the systemd `NUXT_API_BASE_URL` (8506 vs 8507). Also worth knowing: the repo's tracked `.env` (which points at `:8514` and would create a self-proxy loop) is **inert** for the deployed services — `.output` does not read `.env`, and systemd `Environment=` supplies the real values. That is luck, not design.
+
+**Verification performed after restore (all green):** both ports serve all 10 page routes correctly (`/` + `/login` 200, 8 gated pages 302 → login); BFF gate 401 on both; `/api/v1` proxy 200/401 on both; `:8512` reaches prod API v1.8.1 with prod `conviction_store`, `:8514` reaches dev API v1.10.8 with git-clone `conviction_store`; SSR renders real content; `/_nuxt/DQtDe5-N.js` 200 (230 KB); `http://www.mindwealth.co` → 301 → `https://` → 200.
+
+**Still unverified (same gap as the merge task):** nothing behind the `mw_access_token` login was exercised on either deployment — the new portfolio views and conviction panels remain untested at render time.
+
+---
+
+### 2026-08-17 — `MindwealthUI_Vue`: pull + merge diverged `ui-dev`, push, post-merge verification
+
+**Ask:** Help with git pull and merge in `MindwealthUI_Vue`; then push the local commit; then "test everything properly that it is running and functioning well after this merge and push".
+
+**Repo note (scope):** `/home/ubuntu/MindwealthUI_Vue` is a **third** repo, outside CLAUDE.md's editable scope (`MindWealth` core + `MindWealth_UI` git clone). The user named it explicitly, which is the documented exception. Remote is `github.com/D-ParthChauhan/MindwealthUI_Vue` — a **different owner** from `divsum127`; the `pat-token-divsum127` PAT works because `divsum127` holds `push: true` as a collaborator (verified via `GET /repos/...` → `permissions`). Do not assume that PAT covers other `D-ParthChauhan/*` repos.
+
+**Assumptions made:**
+- The pre-fetch git status claimed "ahead 4" of `origin/ui-dev`; that was a **stale remote ref**. After `git fetch --prune` the true state was ahead 1 / behind 1. Always fetch before reasoning about divergence in this repo — the snapshot in the session header is not trustworthy for it.
+- `.output/server/index.mjs` does **not** auto-load `.env` (Nitro only reads it in dev). The smoke test exported it explicitly via `set -a; . ./.env; set +a` before booting. Without that, `apiBaseUrl` silently falls back to the `nuxt.config.ts` default `http://51.20.53.218:8506` (**prod** API, not dev `:8514`) — an easy way to accidentally smoke-test against prod.
+- `51.20.53.218` is this host's own public IP; `:8514` is the dev API listening on `0.0.0.0`. So the "remote" API in `.env` is local.
+
+**Decisions taken (user-chosen):**
+- **Merge, not rebase** (`git pull --no-rebase`) — keeps the unpushed local `73e196a refactor` intact rather than replaying it. Merge commit `0502751`, zero conflicts.
+- **Sync `ui-dev` only** — no `ui-dev` → `presentation-prod` or `ui-dev` → `main` merge, though `ui-dev` is 11 commits ahead of `main` and `presentation-prod` sits at `ba2bcfd`. Those promotions remain open.
+
+**Verification method and what it does/doesn't prove:**
+- Ran the real build (`npm run build`, exit 0) and booted the **built** output rather than `nuxt dev`, so the test exercised the same Nitro bundle a deploy would run.
+- Type errors were measured **against a baseline** instead of reported raw: 55 post-merge vs 56 at the merge's first parent `73e196a`, obtained via `git worktree add <scratch> 73e196a` + symlinked `node_modules` + `nuxt prepare`, then `git worktree remove --force`. This is the cheap way to separate "merge broke it" from "already broken" in a repo with no typecheck gate — worth reusing.
+- `vue-tsc` needs pinning: `npx -y -p vue-tsc@2.2.10 -p typescript@5.8.3 vue-tsc` . Bare `npx vue-tsc@2` fails with `ERR_PACKAGE_PATH_NOT_EXPORTED: './lib/tsc'` because npx hoists an incompatible TypeScript. The repo has no `vue-tsc` dep and no `typecheck` script, and Nitro does not typecheck on build — so type errors here have never gated anything.
+
+**Edge cases identified but NOT handled:**
+- **Authenticated rendering untested.** Auth is a `mw_access_token` httpOnly cookie minted by the upstream FastAPI `/api/v1/auth/login` and stored by the BFF proxy (`server/routes/api/v1/[...].ts:87`). `config/users.json` holds **bcrypt hashes**, so no login was possible without a plaintext dev password. Everything behind the gate — the new `PortfolioOverviewView.vue`, `PortfolioNavChart.vue`, `PortfolioActualPnlView.vue`, the rewritten conviction drawer, and the `portfolio-mappers.ts` / `mindwealth-data.ts` transforms — never executed. Contract-level proof only: all 10 upstream endpoints those mappers consume return 200 with real payloads.
+- `/api/v1/portfolio/nav` and `/api/v1/portfolio/holdings` return **422** when called bare — they require query params. Not a defect; noted so the next person doesn't chase it. The paths the code actually builds come from `mindwealthFetch()` with `API_PREFIX = '/api/v1'` prepended (`server/utils/mindwealth-client.ts:1`), so grepping for literal `/api/v1/...` strings finds nothing.
+- Two type errors that may be genuine runtime bugs were left alone (out of scope, pre-existing): `server/utils/mindwealth-data.ts:1618,1620` — `Property 'ticker'` / `Property 'direction'` do not exist on type `Signal`; and `:886` — `Cannot find name 'PerformanceRow'`.
+- `npm audit` reports 13 vulnerabilities (2 critical, 7 high) in the dependency tree. Not touched — fixing them is a separate, breaking-change decision.
+
+**Security caveat for the next developer (pre-existing, NOT introduced here):**
+`.env` with `NUXT_API_BASE_URL` and `NUXT_API_KEY` is **tracked in git**, `.gitignore` does not exclude it, and it was already published on `origin/ui-dev` by upstream commit `f99e9d4` — **in a public repo** (`private: false` via the GitHub API). The dev API key is therefore world-readable and stays in history after any plain delete. The push performed here did not add or worsen this (the file was already on the remote); it was reported and left for the user to decide. Remediation, when authorised: rotate `NUXT_API_KEY`, `git rm --cached .env` + `.gitignore` entry, then `git filter-repo`/BFG + force-push coordinated with Parth (rewrites `ui-dev`). Same commit also dumped `mindwealth-api-docs-main (2).zip` (128 KB binary) and `mindwealth-api-docs-main 7/` — a full duplicate of the API docs with a 9,498-line OpenAPI JSON — into the repo root; note this duplicates `docs/mindwealth-api-docs/` in `MindWealth_UI`, so it is a drift risk of exactly the kind CLAUDE.md's "do not create `docs/api/`" rule exists to prevent.
+
+**Concurrency caveat:** during the task, 6 files in the Vue working tree (`assets/css/main.css`, `components/runic/MacroSsiPanel.vue`, `RunicCombosPanel.vue`, `RunicTrackerPanel.vue`, `server/utils/runic-mappers.ts`, `types/api.ts`; +180 lines) went from clean to modified, mtimes minutes old — someone or something else was editing live. Nothing run here writes source files (`npm install`, `nuxt build`, `nuxt prepare`, `vue-tsc`, worktree add/remove all leave sources alone). Only committed `HEAD` was pushed, so those edits are still uncommitted. **Check `git status` in this repo before assuming you have it to yourself.**
+
+---
+
+### 2026-08-17 — AI Analyst: signals/conviction missing from recommendation answers, 503, history wipe
+
+**Ask:** Two dev chats went wrong. A NZ replacement question ("what new zealand stocks do i buy to replace fph and mft that i sold recently") returned only web market analysis — no Layer 1 signals, no conviction-style analysis. A follow-up asking for buy/exit signals plus a signal quality score showed "Could not reach the analyst", and after a hard refresh the whole exchange was gone.
+
+**Diagnosis method:** Both failures were reconstructed from on-disk artifacts rather than guesswork — `chatbot/jobs/*.json` holds the full router metadata and flow steps per request, and `journalctl -u mindwealth-api-dev` retained the save/load errors. Worth remembering: `chatbot/jobs/` is the fastest way to answer "why did the bot say that", because `result.metadata` records `route`, `intent_classified_by`, `llm_router_reasoning`, `web_search_used` and the exact Tavily queries.
+
+**Decisions taken (user-chosen):**
+- **Backend only.** The Nuxt chat UI lives in a *third* repo, `/home/ubuntu/MindwealthUI_Vue` (branch `ui-dev`, GitHub `D-ParthChauhan/MindwealthUI_Vue`), which is **not** in CLAUDE.md's editable scope. It was left untouched.
+- **Conviction over HTTP**, not by import. `api/` already imports `chatbot/`, so importing `api.services` from the engine would be a circular import. HTTP to localhost sidesteps it.
+- **HYBRID, not internal-only**, for recommendation questions — the user explicitly still wants broader internet context.
+
+**Architecture notes:**
+- `apply_recommendation_internal_override` only ever flips `internal` **on**; it deliberately leaves `web`/`queries` untouched. That is what makes `MasterRouter` pick HYBRID (`master_router.py:159-174`) rather than INTERNAL, so `SynthesisAgent`'s existing SOURCE A/B labelling (internal = primary) applies for free. It runs **after** `apply_internal_level_override` so level/ladder queries keep web suppressed per ROUTER_SYSTEM rule 8.
+- SOURCE C is injected at two points, not one: appended to the built prompt on the parallel-HYBRID path, and merged into `additional_context` on the INTERNAL/legacy path (which surfaces at `chatbot_engine.py:1433` as `=== ADDITIONAL CONTEXT ===`). WEB_RAG is intentionally *not* wired — after this change recommendation queries no longer land there.
+- The conviction fetch is gated twice: `ENABLE_CONVICTION_CONTEXT` and a wording regex, so ordinary turns pay no HTTP latency.
+- `MindWealthAPIClient` returns `None` on **every** failure by contract. It runs inside a job worker thread where an exception would fail the whole answer, and this data is enrichment, not a dependency.
+
+**Assumptions:**
+- `book_id=model` is the right book for buy/exit lists. Verified: `brokerage` 422s ("IBKR integration pending"), `personal` 422s ("no Sizer/Risk concept"). Overridable via `CONVICTION_BOOK_ID`.
+- `/signals/surface?report=outstanding-signals` is the right source for live signal-quality scores. Overlay date is taken as `dates[-1]`, assuming that list stays ascending.
+- Ticker resolution uses the *live* universe from `DataProcessor.get_available_tickers()` (197 symbols today), so it self-updates as the universe changes.
+- `API_PORT` env is set on both services, so the client's default base URL resolves correctly without extra config. If a future deploy drops it, the client falls back to `:8506` (prod) — set `MINDWEALTH_API_BASE_URL` explicitly if that is ever wrong.
+
+**Edge cases handled:**
+- Ambiguous bases are **not** guessed: `WPM` exists both bare (US) and as `WPM.TO`, so exact match wins and a genuinely ambiguous base resolves to `None` rather than silently picking one exchange.
+- Unknown symbols are returned as `unresolved` and kept in the filter list, so the answer can say "not in the MindWealth universe" instead of silently answering about nothing. `FRE` from the original chat does not exist — the real Freightways symbol is `FRW.NZ`.
+- `prefer_open_only` is relaxed **only** when the query mentions sold/closed/replaced positions, so ordinary "what are my open signals" behaviour is unchanged.
+
+**Edge cases NOT handled (deferred):**
+- **The 503 can still recur.** Raising `DEEP_RESEARCH_TOTAL_TIMEOUT_SECONDS` to 300 widens the client budget to ~330 s, but the actual defect is the 30 s GET cache applied to job polling in `MindwealthUI_Vue/server/utils/mindwealth-client.ts:13-14,50-56`. Any answer finishing within 30 s *before* the deadline can still be missed. Frontend fix is recorded in the migration todos.
+- **History still doesn't reappear on refresh by itself.** `useClaudePanel.ts:82` guards `loadSessionHistory` behind `sessionId`, and `restoreSessionFromStorage()` is only called from `toggle()` — so with the panel embedded, a hard refresh doesn't fetch history until the panel is toggled. Server-side history is now durable; the client-side restore is a separate frontend fix.
+- **Orphan sessions on first-message failure:** `persistSession()` runs only on success, so if the very first message of a new session fails, the client never learns the server-created session id. Frontend.
+- **NZX conviction is structurally weaker, not just sparse.** `pe_history_fmp.is_us_ticker` and the SEC path both exclude `.NZ`, so `pe_percentile_20y` is null and the FS/conviction score omits the P/E-percentile component (FPH.NZ / MFT.NZ show `data_coverage=0.5`). The SOURCE C legend instructs the model to say so rather than compare NZX and US conviction scores as equals — but the underlying data gap is real and unfixed.
+- **Two tier vocabularies remain.** Live data shows `best/tA/ok/watch` *and* `tierc/exit`; core `claude_lateness_metrics.py` documents `tA|best|tierc|exit`. The legend tells the model to quote the tier verbatim instead of reinterpreting it, but the pipeline still has two vocabularies.
+- `exit_fired` is `True` for **every** row in the nightly CSVs (348/348), so it is useless as a filter even though `/signals/exits` leans on it. Not touched here.
+- `closed_pnl_pct` came back `n/a` for all 14 exit rows — worth a separate look.
+- `chatbot/ticker_extractor.py` remains dead code on the chat path (never instantiated by the engine); its case-insensitive loop does exact matching only, so it was not the basis for the new resolver.
+
+**Caveats for the next developer:**
+- The per-session history lock is **process-local** (`threading.Lock`). Correct today because the API is a single uvicorn process; if it is ever run with multiple workers, this needs a file lock.
+- `chatbot/history/*.corrupt-*.json` files are now created deliberately when a history file cannot be parsed. They are diagnostic evidence, not junk — but nothing prunes them.
+- Concurrent jobs in one session were clobbering each other's whole-file writes (two overlapping jobs were visible in the failing session). The lock serialises writes but each job still holds its own in-memory copy, so a last-writer-wins loss of the *other* job's message is still theoretically possible; a read-merge-write would be needed to fully close that.
+- `chatbot/config.py`'s `DEEP_RESEARCH_TOTAL_TIMEOUT_SECONDS` is **not** just a deep-research knob any more — the UI reads it from `/chatbot/config` and derives its poll budget from it. Lowering it shortens the client's patience for *every* chat answer.
+- Prompt changes must be registered: `LLM_ROUTER_SYSTEM` is now **v3** in `chatbot/prompt_changelog.json` (hash `b62c7d0b87a2`). Registration is hash-based and automatic on engine start, so an unregistered edit still self-registers, just with the generic default reason.
+- **Unverified:** the live end-to-end LLM replay was declined (paid call). Router override, conviction block, ticker resolution and history durability were each verified independently, but no full Claude-rendered answer was produced after the fix. That is the one thing to run first when picking this up.
+
+---
+
+### 2026-08-17 — COT 2003 rebuild + Test 3/4 extended-sample re-run: completion audit
+
+**Ask:** Confirm the effective COT sample start date, rebuild history from 2003 so percentiles are valid from 2006 and forward returns include 2008, then re-run Test 3 (SQUEEZE) and Test 4 (LIQUIDITY EXIT) on the extended sample. Start-date question first — it may explain the whole LIQUIDITY EXIT result.
+
+**Answer to the start-date question (the part that mattered):**
+- Raw TFF FM/RM stitched (legacy S&P 500 STOCK INDEX → Consolidated at 2010-06) begins **2006-06-13**.
+- First rolling percentile **2006-10-24** (min-20-obs rule), first *full* 156-week window **2009-06-02**.
+- 1052 raw FM weeks, 1033 analysis weeks (2006-10-24 → 2026-08-04).
+
+**Key correction found by this audit.** The report text says "GFC Sep 2008–May 2009 excluded from rolling-percentile grids". That is **hard-coded boilerplate** (`src/sentiment_superindex/analysis/cftc_grid_v2.py:480`, `:555`, `:562`) and is wrong for the grids actually produced. `weekly_pctile_series()` (`cftc_episode_metrics.py:24-31`) ranks against `net.loc[:dt].tail(156)` with a **`len(window) < 20: continue`** guard — i.e. a *growing* window, not a require-full-156 window. So percentile cells exist from 2006-10-24 onward and 2008 is in the sample. Verified in the artifacts: `03_squeeze_grid_v2_20260811.json` and `04_liquidity_exit_grid_v2_20260811.json` both contain 2008 and Jan–May 2009 dates, and the LIQUIDITY EXIT tables in the 11 Aug report list 2008-09-16 (−17.76%), 2008-09-23 (−19.62%), 2008-10-21 (−10.04%) as top instances.
+
+**Consequence:** the hypothesis in the todo — "LIQUIDITY EXIT is weak because the sample is bull-dominated and 2008 is missing" — does **not** hold. The GFC is present and supplies the largest negative 4w instances; the pattern is weak *with* 2008 in.
+
+**Real caveat (replaces the false one):** 2008-era percentiles are ranked against a partial ~115-week lookback, not a 3-year window, so those cells are not denominator-comparable with post-2009 cells. That is a footnote-level qualification, not an exclusion.
+
+**Why the 2003 rebuild was not done (deferred, and blocked by the data source):** CFTC's TFF report — the only source with the Leveraged Money / Asset Manager split that FM and RM are defined on — starts June 2006. Extending to 2003 means substituting the legacy Commitments-of-Traders **non-commercial** category, which is a different trader definition (not a like-for-like FM proxy) and is not in the pull pipeline (`src/macro_intelligence/data/cftc_pull.py`). Recorded as deferred at `cftc_grid_v2.py:557` and in `_generated/cftc_rohit_rerun_20260811.md`.
+
+**Assumptions made in this audit:**
+- Treated the 11 Aug re-run (`run_cftc_rohit_rerun.py`, COT through 2026-08-04) as the current Test 3/4 result, since it supersedes the 4 Aug and 7 Aug runs.
+- Did not re-execute the grids; conclusions come from the committed JSON artifacts plus the percentile code path.
+
+**Left for future / not handled:**
+- `cftc_grid_v2.py:480, 555, 562` boilerplate still emits the false GFC-exclusion claim into every generated report, including the externally-shared `CFTC_ROHIT_SHARE_20260811/FM_DISTRIBUTION.md:13`. Not corrected — it changes a document already sent out, so it needs a call on whether to reissue.
+- `docs/ssi_validation/03_squeeze_grid.md` (from 20260807) and `04_liquidity_exit_grid.md` (from 20260804) were never regenerated from the 11 Aug run; the two standing docs disagree with the report.
+- No full absolute-level LIQUIDITY EXIT grid exists — only 3 fixed FM-net cut levels on the SQUEEZE side. A fixed-cut grid is the correct answer to Rohit's re-basing objection and is the remaining unbuilt piece.
+- A legacy non-commercial COT proxy back to 2003 remains buildable as a *separate, clearly-labelled* series if Rohit wants pre-2006 coverage despite the definition mismatch.
+
+**Edge case noted:** the min-20-obs rule means the earliest ~2 years of cells are ranked on windows of 20–115 weeks. Any cell whose episodes cluster in 2006–2008 carries a different effective denominator from later cells; no code flags this.
+
+---
+
+### 2026-08-17 — CFTC pattern threshold report: sign-off-hold audit (SQUEEZE / LIQUIDITY EXIT)
+
+**Ask:** Analyse the "[CFTC CRITICAL] SIGN-OFF HELD" todo (both §6 patterns; "do not wire display flags yet"; grid never tested an extreme; rolling percentile fires at its own rate; 3y window re-bases) and run the completion audit.
+
+**What the hold actually is:** Rohit's 4 Aug reasoning, mirrored in the todo sheet. It is not "pick a different cell" — it is "no cell in this grid answers the question", because a rolling-percentile cut is a *rate* by construction (FM below the 20th pctile of a 156-week window is ~20% of weeks), so the tightest grid cell still fires ~1 week in 7, while a genuine forced-cover squeeze is a handful of episodes per decade. Second leg: a 3-year rolling window re-bases, so the 20th percentile in 2021 and 2009 are different absolute positions.
+
+**Findings against the repo:**
+- §6 of `CFTC_PATTERN_THRESHOLD_REPORT_FOR_ROHIT_20260811.md` is still literally blank (`FM < ___ , RM > ___`). Sign-off correctly not taken.
+- **The forbidden wiring already exists on `chatbot-dev`** (shipped 2026-08-07, before/independent of the hold): `CONFIG.yaml:344-345` → `cftc_patterns.py::_detect_positioning_pattern()` → `positioning.py:135-136` → `layer3_cftc.squeeze_setup` / `.liquidity_exit` on `GET /analytics/sentiment/layers` → Sentiment page rows, regime-strip chip, Overwatch banner. Values wired are FM&lt;20/RM&gt;45 and RM&lt;30/FM&gt;60 — the FM&lt;20/RM&gt;45 cell is exactly the one the 11 Aug run scores at **gap −1.99% (12w)**, i.e. tracking beta.
+- Prod is clean (`cftc_patterns.py` absent from the prod clone), so nothing is user-visible in production today. The exposure is `dev_to_prod_migration_todos.md:231` — a `[PROD-ACTION]` to run `run_ssi_daily.py` so `positioning.json` carries these fields. Merging `chatbot-dev` → `chatbot-prod` without gating that action ships held thresholds.
+- **The todo text predates the 11 Aug re-run**, which already did part of what it asks for: FM axis extended to &lt;5 / &lt;7.5; 6 absolute-cut rows including `FM_net<fixed_p2.5` (n_ep=10, mean 4.2675%, gap +0.0581%, hit 88.89%, excess_hit 77.78%, worst −2.1088%) — that is a genuine ~1-episode-per-2-years extreme, and it is the only cell whose worst case is not double-digit negative.
+
+**Left for future:**
+- No expanding-window (as-known-then, non-re-basing) percentile variant — only 3 fixed full-sample cuts, which are look-ahead by construction and should be labelled as such before Rohit reads them as tradeable.
+- GFC absent from every rolling cell: raw TFF FM starts 2006-06-13 but the first full 156-week window is 2009-06-02, so Sep 2008 – May 2009 cannot fire. Pre-2006 needs a legacy COT non-commercial proxy stitch (not implemented).
+- No episodes-per-decade frequency column in the report, which is the metric the hold is actually about.
+
+**Caveat:** this was a read-only audit — no thresholds changed, no flags unwired, no report edited.
+
+**Prod impact:** none from the audit itself.
+
+---
+
+### 2026-08-17 — SSI threshold experiments: status re-check + Test 15 root cause
+
+**Ask:** "What is the status of the SSI threshold experiments?" — re-check after the 2026-08-12 status pass that was told to complete all remaining experiments.
+
+**Where the state lives:** the canonical tracker is `testing/ssi_th_exp/SSI_OPEN_QUESTIONS_STATUS.md` (not `docs/ssi_validation/README.md`); `docs/ssi_validation/SIGNOFF.md` is the Rohit-facing mirror and `testing/ssi_th_exp/SSI_EXPERIMENT_RESULTS.md` the compiled results. Ground truth for "was it actually run" is the dated JSON in `macro_intelligence/analysis/ssi_validation/` — the markdown can and did drift from it. Both tracker files are still untracked (`??`) in git.
+
+**Root cause of Test 15 n=0 (the recorded "MW `cpp_functions` missing `backtest_bb`/`is_pivot`" caveat is wrong):**
+- `/home/ubuntu/MindWealth/` contains **both** a compiled `cpp_functions.cpython-310-x86_64-linux-gnu.so` and a source directory `cpp_functions/` (module.cpp, util/, a.out — no `__init__.py`).
+- Under Python 3.12 (`${MW}/.venv`, and the UI repo `.venv`) the 3.10-ABI `.so` does not match the interpreter's extension suffixes, so the FileFinder falls through to the directory and records it as a **namespace package**. `import cpp_functions` then *succeeds* with `__file__ is None` and an empty `dir()`. No ImportError, no warning.
+- Downstream, COMBINED_STRATEGY returns 0 trades for every symbol/month → short percentile-from-top pinned at 100 → never ≤10 → 0 short entry months. The failure is silent and looks like a real empirical result, which is how it got archived as "DONE (env caveat)".
+- Under `/home/ubuntu/MindWealth/venv/bin/python` (3.10.19 — the interpreter `mindwealth-app.service` runs) the `.so` loads and exports all 38 symbols including `backtest_bb`, `is_pivot`, `calculateSTOCHD`, `runStochDivergance`.
+- Verified by smoke run (2026-06-01 BMS, 500 symbols, ~10 min/date): real long and short trades on both legs.
+
+**Caveat for whoever fixes the runner:** `scripts/run_test15_sbi_parallel.sh` hardcodes `PY="${MW}/.venv/bin/python"`. Note the leading dot — `${MW}/venv` (working, 3.10) and `${MW}/.venv` (broken here, 3.12) are two different environments in the same directory. The 3.12 env is right for the UI repo, wrong for anything that touches MindWealth C++.
+
+**Second defect (would corrupt the run if not fixed first):** `scripts/mindwealth_adapters/sbi_breadth.py` inserts `MINDWEALTH_ROOT` on `sys.path` but never calls `data.initialize_data()`. That function is the only place the module global `df_stake` is bound (`data.py:67-69`), so `load_stake()` at `data.py:79` raises `NameError: name 'df_stake' is not defined`. It is caught upstream per-symbol, so the run continues while **DELTADRIFT contributes `L0/S0` for all 500 symbols** — only BAND_MATRIX and TRENDPULSE feed the breadth number. Every other MindWealth entry point calls `initialize_data()` at import (`app.py:15`, `backtest_report.py:16`, `preprocess.py:20`, …). Fix belongs in our adapter, not in MindWealth core, so the live Dash app is untouched.
+
+**Cost estimate, deliberately not started without go-ahead:** ~10-11 min per monthly date × 140 months (2015-01 → 2026-08). The 4-shard script saturates all 4 vCPUs for ~6-7 h on a host that also runs `mindwealth-api`, `mindwealth-api-dev`, `mindwealth-app`, `mindwealth-streamlit` and both Nuxt services. More shards will not help at nproc=4.
+
+**Deferred / not done:** the adapter one-liner and the full Test 15 batch (awaiting user go-ahead); re-archiving `15_sbi_short_signal.md` + `SIGNOFF.md` + `SSI_OPEN_QUESTIONS_STATUS.md` once real numbers exist. Test 11 full 20y VIX equity curve stays waived (WAIVER-VT-11); Test 12 Bollinger rerun stays optional (combo n=1 is plausibly the true frequency). Portfolio-level passes (Ahil: C/N60/M5/Gated Seed) and Part 8 product calls are not experiments and cannot be closed from this repo.
+
+---
+
+### 2026-08-17 — Status audit: Rohit 21 Jul email ("Some feedback and priorities — additional to prior emails")
+
+**Ask:** Check the status of Rohit's 21 Jul 2026 email (Gmail thread `19f83b17bff9295b`), whose 6 Aug follow-up (`19fd9242e7219cf3`) asks *"is all this done?"* — analyse the codebase, cursor chat archive, and Gmail MCP, and answer every question in it.
+
+**How it was audited:** the `gmail-filtered` MCP server **is** available in Claude Code in this session (unlike the 6 Aug audit, which had to fall back to a direct Gmail API script) — `search_emails` located both messages. Status was then established by (a) reading source in both scoped repos, (b) **live API calls against dev `:8507` and prod `:8506`** using the `API_KEY` from `.env`, and (c) `docs/mindwealth_ui_job_status.md` + `git log`. Live calls were preferred over docs wherever both existed, because `PORTFOLIO_PAGE_AIM_AND_STATUS.md` is dated 2026-07-22 and is now stale in several rows.
+
+**Counts:** 14 done and verified · 11 partial or dev-only · 21 open · 6 answerable-now questions.
+
+**Key decisions in how items were scored:**
+- "Done" required evidence from code or a live response, not a job-status claim. Several job-status "DONE" rows (e.g. the conviction P/E fix) are true on dev and false on prod, and were scored 🟡 accordingly — the distinction matters because Rohit judges from the live site.
+- Frontend-only items (page renames, tab click handlers, chart copy) were marked unverifiable rather than guessed at, since `MindwealthUI_Vue` is outside this workspace's scope.
+- Items where the artefact exists but was never sent to Rohit (D2 curve-phase proposal, B4 window audit) were scored ✅ on the build and flagged separately as a **communication** gap — he lists both as "never answered", and he is right about that even though the work is done.
+
+**Three live prod defects surfaced (none of them on Rohit's list except by implication):**
+1. **Deploy gap.** `chatbot-dev` is 23 commits ahead of `origin/chatbot-prod`; prod's last merge is `0fb433521` (2026-07-26); prod API v1.8.1 vs dev v1.10.8. Confirmed by diffing `conviction_store/PYPL.json` across the two clones — prod still carries `valuation_tax=-4.0` / `pe_percentile_20y=100.0`, i.e. Rohit's own reported bug, unfixed on the site he looks at. Merging is the single highest-leverage action available.
+2. **`pnl_usd` is direction-blind.** `api/services/portfolio_service.py:985` is `market_value_usd - allocation_usd`; `direction` is bound at `:960` and never used. `mtm_pct` comes from the direction-aware CSV column, so the two fields disagree in sign on every short (verified on BABA, 000660.KS, ^STI, CNQ.TO). It flows into `day_mtm_usd` and the top-5 contributor lists (`portfolio_pipeline_service.py:722`, `:742-746`), so the Live P&L page's best/worst lists are inverted for shorts. Not previously recorded anywhere.
+3. **Nightly cron fires before the US close.** Server TZ is `Etc/UTC`; `run_macro_nightly.py` is scheduled `0 18 * * 1-5` = 14:00 ET, two hours before the 16:00 ET cash close and 2h15m before VIX settlement. Prod's 2026-08-14 nightly stored `VIX=14.34` against a Yahoo close of `14.25`, and `VXTS=1.288` against `1.2381`. This is a **mechanical explanation for the exact complaint Rohit raised from London** (1.06 site vs ~1.01 Yahoo) and it is unfixed. `run_ssi_daily.py` at 08:00 UTC = 04:00 ET is worse — pre-open.
+
+**Two answers that reverse a stated assumption:**
+- Rohit asked whether the live **R:R Static** field uses `compute_rr_to_nearest_support_stop`. **It does not.** That function (`MindWealth/helper_functions/claude_lateness_metrics.py:526`) feeds `rr_dynamic`; R:R Static is `compute_rr_static()` at `:755`, a different formula (`bt_avg_win_pct / stop_dist_pct`). They share only `select_nearest_support_stop()`. His "one code path, not two" instruction therefore points at `rr_dynamic`, and the real obstacle is that the function is core-repo-only with no HTTP exposure for Ahil.
+- Rohit's assumed `trade_store` path (`~/uiv2/MindWealth_UI/trade_store/`) **does not exist**. Prod is `/home/ubuntu/uiv2/prod/MindWealth_UI/trade_store/`, dev is `/home/ubuntu/uiv2/git/MindWealth_UI/trade_store/`, core is `/home/ubuntu/MindWealth/trade_store/`.
+
+**Answers that unblock other people immediately (all three of Part 10):** no Redis on the host (no binary, service inactive, no python module) **but** `GET /overwatch/stream` already serves `text/event-stream` off `overwatch_event_bus.py`, so Parth should build SSE rather than the 60-second polling fallback; and `historical_analogs` is already written into the nightly JSON (`json_writer.py:92`, attached `:217-218`). Separately, the composite-score 401 blocking Ahil is a missing `X-API-Key` header, the key is in `.env`, and it has still never been sent to him.
+
+**Positive confirmations worth recording** (asked repeatedly, now settled with evidence): the per-asset-class `R_REF` table **is** wired (`claude_lateness_metrics.py:134` → `:871` → `c1` at `:875`), not a uniform placeholder — with the honest caveat that only `equity` is calibrated and the other seven classes carry a "provisional" comment; the B4 rolling-3y window audit is genuinely fixed (HY/VIX/VXTS/CFTC all `rolling_3y` in `CONFIG.yaml`); the CFTC as-of/release display convention from Point A is implemented exactly as specified (`position_date` + `release_date` + `stale`, no interpolation); and true-weight breach maths is fixed (live breach reads "~$1,600,000" on 21.6% vs a 20% cap, replacing "$893,500,000").
+
+**Edge cases / not handled:**
+- No reply to Rohit was drafted or sent — the ask was a status check. The overdue P3 scoping reply he explicitly asked for ("tell me now rather than let me find out later") remains unsent, now ~4 weeks late.
+- Frontend rows are unverifiable from here; a visual pass on the live site is still needed to close them.
+- The CFTC pull itself is two releases behind (live `position_date 2026-08-04` when the Fri 2026-08-14 release should give as-of Tue 2026-08-12). The freshness tag correctly reports this as `stale: true` — the tag is right, the data is old. Not investigated further in this pass.
+- A second-order inconsistency was noticed but not chased: `/portfolio/risk` tags the Semiconductors × US Tech pair `level: "action"` at 15.84% combined against a 20% cap, with `recommendation: null`. Under-cap pairs should not be action-level.
+- 176 of 196 dev conviction records still have `pe_percentile_20y = null`. That is honest (only 18 tickers have real ≥20y SEC history) but means the percentile is not yet usable universe-wide; non-US coverage is blocked on the PE-03/05/06/07 source decisions already in the TODO file.
+
+**Deferred:** everything in the ❌ column of the status file, ordered there as a 10-item "do first" list. The three with the widest blast radius are the prod merge, the `pnl_usd` sign fix, and the cron reschedule — all three are small changes with client-visible consequences.
+
+---
+
 ### 2026-08-17 — Status audit: Rohit 6 Aug email, all Divyanshu-assigned tasks
 
 **Ask:** Read Rohit's 6 Aug 2026 email ("Re: regime doubts — answers on all three, plus portfolio/regime handoff (Ahil cc'd)") from the MindWealth Gmail MCP server and report the status of every task assigned to Divyanshu.
