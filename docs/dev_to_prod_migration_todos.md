@@ -52,6 +52,18 @@ Modified: `docs/mindwealth_ui_job_status.md`, `docs/mindwealth_ui_repo_job_statu
 
 `.venv/bin/python scripts/export_ssi_validation_csvs.py` → exit 0, 23 artifact families, 50 CSVs + `INDEX.csv` (64 index rows). Three values hand-checked against source JSON (Test 3 `FM<10/RM>55` n_ep=21 / gap +0.4111; Test 22 prod cell n=160 / hit 41.25; Test 15 `n_short_entries=0`). Every path cited in the analysis doc resolves.
 
+### 5. Robust test + dev deploy `[DONE]` 2026-08-17
+
+- `pytest tests/` → **809 passed, 1 failed, 3 skipped**. The single failure is the pre-existing `test_shortlist_mtm_not_stale_zero_for_aged_signals` calendar-vs-trading-day bug (see §"Known pre-existing test failure" below) — unrelated to this change.
+- `pytest tests/test_api_*.py` → 186 passed, same 1 pre-existing failure.
+- Targeted `-k "ssi or cftc or staleness or layer2"` → **124 passed**.
+- `smoke-test-apis.sh` → **all PASS**. Dev `:8507` v1.10.8, `conviction_store` = git clone, writable. Prod `:8506` v1.8.1 still isolated at the prod clone path — **prod service not restarted** (`ActiveEnterTimestamp` still 2026-08-02).
+- Mock audit on the one changed `.py`: clean — no mocks, placeholders, `temporary`/`for now` markers, or clone-specific absolute paths. **No importers**, so zero runtime blast radius.
+- Export re-run after the dev restart → byte-identical, 0-line diff vs the committed CSVs (deterministic).
+- Pushed `chatbot-dev` → `divsum127/MindWealth_UI` @ `26c4dabeb`, author `divsum127`. `upstream` (`ahiliitb/*`) untouched.
+
+**Known pre-existing test failure (not introduced here, do not treat as a regression):** `tests/test_api_signals_surface.py::test_shortlist_mtm_not_stale_zero_for_aged_signals` gates on **calendar** age (`>= 3` days) then asserts on `days_elapsed`, which is **trading** days sourced from the `Trading Days between Signal and Today Date` column in `trade_store`. All 10 failing records are dated **Fri 2026-08-14** and today is **Mon 2026-08-17**, so `days_elapsed=0` is correct. The guard's own docstring targets "0% MTM **with** 0 holding days", and `mtm_pct` is live and non-zero (1.77, 2.42, 8.04…), so the staleness it exists to catch is absent. **It will fail every Monday** for any Friday signal. Left unfixed by prior decision (`global_repo_todos.md` 2026-08-17 #2) — relaxing the assertion would weaken a genuine stale-MTM guard, so the fix needs a call on whether the gate should use trading-day age or additionally require `mtm_pct == 0`.
+
 ---
 
 ## 2026-08-17 — Nuxt frontend: prod and dev share ONE build dir; `www.mindwealth.co` outage post-mortem `[PENDING]`
