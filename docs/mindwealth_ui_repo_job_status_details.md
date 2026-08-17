@@ -126,6 +126,8 @@ Note the internal inconsistency this creates on a single page: `/macro/data/fres
 - The restore is `.venv/bin/python scripts/run_macro_nightly.py --no-claude` and takes a few minutes (live data pulls). No API restart needed — `macro_service._load_runic()` re-reads per request.
 - Verifying via HTTP needs the key: the dev API rejects unauthenticated calls with `{"detail":"Invalid or missing API key"}` and has OpenAPI disabled. Use `-H "X-API-Key: $(grep ^API_KEY= .env | cut -d= -f2-)"` against `:8507` (dev) or `:8506`. Port `:8513` on this host is an unrelated app (Navbharat Shop API) — do not use it to sanity-check MindWealth routes.
 - `--no-claude` means the narrative is template-generated, not Claude-written. That is what the cron uses too, so the restored snapshot matches a normal nightly.
+- **Two Claude sessions were editing this worktree at once during the deploy step.** Staged hunks are shared state: `git add`/`git apply --cached` here got swallowed by the other session's `git commit`, so the `persist` change is inside `e02159bb3` whose message is about an unrelated chatbot fix, and only the test file carries a matching message (`8eeb5518c`). If two agents are running, prefer `git commit -m … -- <path>` (pathspec form, bypasses the index) over `git add` followed by a separate commit, and re-check `git log` before assuming a commit failed — mine appeared to fail while the change had already landed under someone else's SHA.
+- The full-suite proof to repeat if this ever regresses: record `stat -c %y macro_intelligence/output/runic_output.json`, run `pytest tests/ -q`, then re-stat. Equal timestamps and no `runic_briefing_2024-09-18.*` in the output dir means the isolation still holds.
 
 ---
 
