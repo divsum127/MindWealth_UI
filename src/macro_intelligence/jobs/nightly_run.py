@@ -134,7 +134,19 @@ def _variables_dashboard(readings: dict[str, dict]) -> list[dict[str, Any]]:
     return rows
 
 
-def run_nightly(as_of: str | None = None, use_claude: bool = True) -> dict[str, Any]:
+def run_nightly(
+    as_of: str | None = None,
+    use_claude: bool = True,
+    persist: bool = True,
+) -> dict[str, Any]:
+    """Build the nightly runic payload.
+
+    persist=False computes the payload without touching the live
+    macro_intelligence/output/ snapshot (runic_output.json + briefing
+    HTML/PDF). Callers that only want the payload — tests, ad-hoc
+    backfills for a past as_of — must pass persist=False, otherwise the
+    live file the API serves is overwritten with that date's data.
+    """
     init_db()
     as_of = as_of or datetime.now().strftime("%Y-%m-%d")
     pull_all_series(as_of)
@@ -214,10 +226,14 @@ def run_nightly(as_of: str | None = None, use_claude: bool = True) -> dict[str, 
     payload["narrative"] = generate_nightly_briefing(payload, use_claude=use_claude)
     payload["regime_grid"] = build_regime_grid(payload)
     payload["system_recommendation"] = build_system_recommendation(payload)
-    path = write_runic_json(payload)
-    briefing_paths = write_briefing(payload)
-    payload["output_path"] = str(path)
-    payload["briefing_paths"] = {k: str(v) for k, v in briefing_paths.items()}
+    if persist:
+        path = write_runic_json(payload)
+        briefing_paths = write_briefing(payload)
+        payload["output_path"] = str(path)
+        payload["briefing_paths"] = {k: str(v) for k, v in briefing_paths.items()}
+    else:
+        payload["output_path"] = None
+        payload["briefing_paths"] = {}
     return payload
 
 
