@@ -1,0 +1,7 @@
+series_key,cadence,n_obs_total,age_buckets_count,penalty_recommendation
+aaii_spread,weekly,4327,5,no penalty warranted (day-5 R² ≥ 90% of day-1)
+naaim_exposure,weekly,4316,5,no penalty warranted (day-5 R² ≥ 90% of day-1)
+cnn_fg,daily,670,5,no penalty warranted (day-2 R² ≥ 90% of day-1)
+cftc_fm_net,weekly,4330,5,"decay detected — day-5/day-1 R² ratio=0.36 at 4w (suggest penalty ≈ 0.36, not global 0.8)"
+cftc_rm_net,weekly,4330,5,"decay detected — day-5/day-1 R² ratio=0.44 at 4w (suggest penalty ≈ 0.44, not global 0.8)"
+margin_debt,monthly,328,5,insufficient data

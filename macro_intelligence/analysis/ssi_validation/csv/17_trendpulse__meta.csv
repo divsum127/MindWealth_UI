@@ -1,0 +1,9 @@
+key,value
+test_id,17_trendpulse
+start,2010-01-01
+weekly_delta_stats.n,366
+weekly_delta_stats.mean,0.0014
+weekly_delta_stats.std,0.1673
+weekly_delta_stats.p60,0.1122
+weekly_delta_stats.p70,0.1468
+weekly_delta_stats.p80,0.184

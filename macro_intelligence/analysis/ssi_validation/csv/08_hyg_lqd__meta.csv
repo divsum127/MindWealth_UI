@@ -1,0 +1,10 @@
+key,value
+test_id,08_hyg_lqd
+granger_chg4w_to_spx.lag_1,0.0062
+granger_chg4w_to_spx.lag_2,0.0076
+granger_chg4w_to_spx.lag_3,0.0259
+granger_chg4w_to_spx.lag_4,0.0746
+granger_chg4w_to_spx.lag_5,0.0193
+granger_chg4w_to_spx.lag_6,0.0355
+granger_chg4w_to_spx.lag_7,0.0104
+granger_chg4w_to_spx.lag_8,0.0314

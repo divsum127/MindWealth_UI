@@ -1,0 +1,65 @@
+test_id,pdf_part,label,csv_file,rows,source_json,source_run_date,freshness
+01-02,1,SSI long/short threshold sweep,01_02_threshold_sweep__long_level_sweep.csv,7,macro_intelligence/analysis/ssi_validation/01_02_threshold_sweep_20260606.json,2026-06-06,STALE
+01-02,1,SSI long/short threshold sweep,01_02_threshold_sweep__long_pctile_sweep.csv,7,macro_intelligence/analysis/ssi_validation/01_02_threshold_sweep_20260606.json,2026-06-06,STALE
+01-02,1,SSI long/short threshold sweep,01_02_threshold_sweep__short_level_sweep.csv,5,macro_intelligence/analysis/ssi_validation/01_02_threshold_sweep_20260606.json,2026-06-06,STALE
+01-02,1,SSI long/short threshold sweep,01_02_threshold_sweep__short_pctile_sweep.csv,9,macro_intelligence/analysis/ssi_validation/01_02_threshold_sweep_20260606.json,2026-06-06,STALE
+01-02,1,SSI long/short threshold sweep,01_02_threshold_sweep__meta.csv,9,macro_intelligence/analysis/ssi_validation/01_02_threshold_sweep_20260606.json,2026-06-06,STALE
+03,1,CFTC SQUEEZE grid (v2),03_squeeze_grid_v2__rows.csv,72,macro_intelligence/analysis/ssi_validation/03_squeeze_grid_v2_20260811.json,2026-08-11,CURRENT
+03,1,CFTC SQUEEZE grid (v2),03_squeeze_grid_v2__rows__all_episodes.csv,2050,macro_intelligence/analysis/ssi_validation/03_squeeze_grid_v2_20260811.json,2026-08-11,CURRENT
+03,1,CFTC SQUEEZE grid (v2),03_squeeze_grid_v2__rows__episodes.csv,634,macro_intelligence/analysis/ssi_validation/03_squeeze_grid_v2_20260811.json,2026-08-11,CURRENT
+03,1,CFTC SQUEEZE grid (v2),03_squeeze_grid_v2__meta.csv,101,macro_intelligence/analysis/ssi_validation/03_squeeze_grid_v2_20260811.json,2026-08-11,CURRENT
+04,1,CFTC LIQUIDITY EXIT grid (v2),04_liquidity_exit_grid_v2__rows.csv,42,macro_intelligence/analysis/ssi_validation/04_liquidity_exit_grid_v2_20260811.json,2026-08-11,CURRENT
+04,1,CFTC LIQUIDITY EXIT grid (v2),04_liquidity_exit_grid_v2__rows__all_episodes.csv,1512,macro_intelligence/analysis/ssi_validation/04_liquidity_exit_grid_v2_20260811.json,2026-08-11,CURRENT
+04,1,CFTC LIQUIDITY EXIT grid (v2),04_liquidity_exit_grid_v2__rows__episodes.csv,378,macro_intelligence/analysis/ssi_validation/04_liquidity_exit_grid_v2_20260811.json,2026-08-11,CURRENT
+04,1,CFTC LIQUIDITY EXIT grid (v2),04_liquidity_exit_grid_v2__meta.csv,94,macro_intelligence/analysis/ssi_validation/04_liquidity_exit_grid_v2_20260811.json,2026-08-11,CURRENT
+05,1,TP/SL optimization,05_tp_sl__rows.csv,288,macro_intelligence/analysis/ssi_validation/05_tp_sl_20260606.json,2026-06-06,STALE
+05,1,TP/SL optimization,05_tp_sl__meta.csv,7,macro_intelligence/analysis/ssi_validation/05_tp_sl_20260606.json,2026-06-06,STALE
+06,"1,2",CNN Fear & Greed thresholds,06_cnn_fear_greed__rules.csv,4,macro_intelligence/analysis/ssi_validation/06_cnn_fear_greed_20260812.json,2026-08-12,STALE
+06,"1,2",CNN Fear & Greed thresholds,06_cnn_fear_greed__meta.csv,2,macro_intelligence/analysis/ssi_validation/06_cnn_fear_greed_20260812.json,2026-08-12,STALE
+07,2,DBMF beta threshold,07_dbmf_beta__rows.csv,4,macro_intelligence/analysis/ssi_validation/07_dbmf_beta_20260606.json,2026-06-06,UNAFFECTED
+07,2,DBMF beta threshold,07_dbmf_beta__meta.csv,28,macro_intelligence/analysis/ssi_validation/07_dbmf_beta_20260606.json,2026-06-06,UNAFFECTED
+08,2,HYG/LQD widening,08_hyg_lqd__rows.csv,4,macro_intelligence/analysis/ssi_validation/08_hyg_lqd_20260807.json,2026-08-07,UNAFFECTED
+08,2,HYG/LQD widening,08_hyg_lqd__meta.csv,9,macro_intelligence/analysis/ssi_validation/08_hyg_lqd_20260807.json,2026-08-07,UNAFFECTED
+09,1,Z-score vs percentile composite,09_zscore_vs_percentile__meta.csv,150,macro_intelligence/analysis/ssi_validation/09_zscore_vs_percentile_20260606.json,2026-06-06,STALE
+10,1,Layer 2 vote-count sweep,10_layer2_sweep__rows.csv,5,macro_intelligence/analysis/ssi_validation/10_layer2_sweep_20260606.json,2026-06-06,STALE
+10,1,Layer 2 vote-count sweep,10_layer2_sweep__meta.csv,1,macro_intelligence/analysis/ssi_validation/10_layer2_sweep_20260606.json,2026-06-06,STALE
+11,5,VIX regime multiplier A/B,11_vix_regime_ab__meta.csv,7,macro_intelligence/analysis/ssi_validation/11_vix_regime_ab_20260606.json,2026-06-06,UNAFFECTED
+12,9,Bollinger + SSI overlay,12_bollinger_ssi__meta.csv,77,macro_intelligence/analysis/ssi_validation/12_bollinger_ssi_20260606.json,2026-06-06,STALE
+13,9,Stochastic + McClellan,13_stoch_mcclellan__meta.csv,115,macro_intelligence/analysis/ssi_validation/13_stoch_mcclellan_20260807.json,2026-08-07,UNAFFECTED
+14,4,Gross/net divergence,14_gross_net__meta.csv,22,macro_intelligence/analysis/ssi_validation/14_gross_net_20260606.json,2026-06-06,STALE
+15,6,SBI short signal,15_sbi_short__meta.csv,23,macro_intelligence/analysis/ssi_validation/15_sbi_short_20260812.json,2026-08-12,VOID
+16,10,Friday pull checklist,16_friday_pull__items.csv,12,macro_intelligence/analysis/ssi_validation/16_friday_pull_20260817.json,2026-08-17,CURRENT
+16,10,Friday pull checklist,16_friday_pull__meta.csv,3,macro_intelligence/analysis/ssi_validation/16_friday_pull_20260817.json,2026-08-17,CURRENT
+17,7,TrendPulse deterioration,17_trendpulse__results.csv,3,macro_intelligence/analysis/ssi_validation/17_trendpulse_20260606.json,2026-06-06,UNAFFECTED
+17,7,TrendPulse deterioration,17_trendpulse__meta.csv,8,macro_intelligence/analysis/ssi_validation/17_trendpulse_20260606.json,2026-06-06,UNAFFECTED
+18,1,COT FM long gate sweep,18_cot_fm_long_gate__rows.csv,7,macro_intelligence/analysis/ssi_validation/18_cot_fm_long_gate_20260807.json,2026-08-07,CURRENT
+18,1,COT FM long gate sweep,18_cot_fm_long_gate__meta.csv,2,macro_intelligence/analysis/ssi_validation/18_cot_fm_long_gate_20260807.json,2026-08-07,CURRENT
+19,1,VIX>=35 + FM distribution,19_vix_fm_washout__bins.csv,4,macro_intelligence/analysis/ssi_validation/19_vix_fm_washout_20260607.json,2026-06-07,UNAFFECTED
+19,1,VIX>=35 + FM distribution,19_vix_fm_washout__episodes.csv,93,macro_intelligence/analysis/ssi_validation/19_vix_fm_washout_20260607.json,2026-06-07,UNAFFECTED
+19,1,VIX>=35 + FM distribution,19_vix_fm_washout__fm_threshold_sweep.csv,9,macro_intelligence/analysis/ssi_validation/19_vix_fm_washout_20260607.json,2026-06-07,UNAFFECTED
+19,1,VIX>=35 + FM distribution,19_vix_fm_washout__meta.csv,7,macro_intelligence/analysis/ssi_validation/19_vix_fm_washout_20260607.json,2026-06-07,UNAFFECTED
+20,1,Layer 2 z-score sweep,20_layer2_zscore_sweep__rows.csv,9,macro_intelligence/analysis/ssi_validation/20_layer2_zscore_sweep_20260607.json,2026-06-07,STALE
+20,1,Layer 2 z-score sweep,20_layer2_zscore_sweep__meta.csv,2,macro_intelligence/analysis/ssi_validation/20_layer2_zscore_sweep_20260607.json,2026-06-07,STALE
+21,beyond,Staleness decay calibration,21_staleness_decay__signals.csv,6,macro_intelligence/analysis/ssi_validation/21_staleness_decay_20260812.json,2026-08-12,CURRENT
+21,beyond,Staleness decay calibration,21_staleness_decay__signals__age_buckets.csv,30,macro_intelligence/analysis/ssi_validation/21_staleness_decay_20260812.json,2026-08-12,CURRENT
+21,beyond,Staleness decay calibration,21_staleness_decay__meta.csv,11,macro_intelligence/analysis/ssi_validation/21_staleness_decay_20260812.json,2026-08-12,CURRENT
+22,1,Layer 2 gate 2-D grid,22_layer2_gate_grid__rows.csv,20,macro_intelligence/analysis/ssi_validation/22_layer2_gate_grid_20260811.json,2026-08-11,CURRENT
+22,1,Layer 2 gate 2-D grid,22_layer2_gate_grid__meta.csv,8,macro_intelligence/analysis/ssi_validation/22_layer2_gate_grid_20260811.json,2026-08-11,CURRENT
+03-04-sup,1,CFTC 12-offset subsample robustness,cftc_robustness_subsample__cells.csv,4,macro_intelligence/analysis/ssi_validation/cftc_robustness_subsample_20260811.json,2026-08-11,CURRENT
+03-04-sup,1,CFTC 12-offset subsample robustness,cftc_robustness_subsample__meta.csv,3,macro_intelligence/analysis/ssi_validation/cftc_robustness_subsample_20260811.json,2026-08-11,CURRENT
+18-sup,1,CFTC FM pctile regression,cftc_fm_pctile_regression__rows.csv,4,macro_intelligence/analysis/ssi_validation/cftc_fm_pctile_regression_20260811.json,2026-08-11,CURRENT
+18-sup,1,CFTC FM pctile regression,cftc_fm_pctile_regression__meta.csv,2,macro_intelligence/analysis/ssi_validation/cftc_fm_pctile_regression_20260811.json,2026-08-11,CURRENT
+03,,pre-existing export (not regenerated),docs/ssi_validation/CFTC_ROHIT_SHARE_20260811/csv/squeeze_grid_12w.csv,66,,,EXTERNAL
+03,,pre-existing export (not regenerated),docs/ssi_validation/CFTC_ROHIT_SHARE_20260811/csv/squeeze_grid_all_horizons.csv,66,,,EXTERNAL
+03,,pre-existing export (not regenerated),docs/ssi_validation/CFTC_ROHIT_SHARE_20260811/csv/squeeze_absolute_cuts.csv,6,,,EXTERNAL
+04,,pre-existing export (not regenerated),docs/ssi_validation/CFTC_ROHIT_SHARE_20260811/csv/liquidity_exit_grid_4w.csv,42,,,EXTERNAL
+04,,pre-existing export (not regenerated),docs/ssi_validation/CFTC_ROHIT_SHARE_20260811/csv/liquidity_exit_grid_all_horizons.csv,42,,,EXTERNAL
+03-04,,pre-existing export (not regenerated),docs/ssi_validation/CFTC_ROHIT_SHARE_20260811/csv/episode_dates_top_cells.csv,811,,,EXTERNAL
+03-04,,pre-existing export (not regenerated),docs/ssi_validation/CFTC_ROHIT_SHARE_20260811/csv/par_row.csv,5,,,EXTERNAL
+03-04,,pre-existing export (not regenerated),docs/ssi_validation/CFTC_ROHIT_SHARE_20260811/csv/robustness_subsample.csv,52,,,EXTERNAL
+03-04,,pre-existing export (not regenerated),docs/ssi_validation/CFTC_ROHIT_SHARE_20260811/csv/sample_diagnostics.csv,1,,,EXTERNAL
+18,,pre-existing export (not regenerated),docs/ssi_validation/CFTC_ROHIT_SHARE_20260811/csv/fm_pctile_regression.csv,4,,,EXTERNAL
+18,,pre-existing export (not regenerated),docs/ssi_validation/CFTC_ROHIT_SHARE_20260811/csv/fm_net_distribution.csv,1,,,EXTERNAL
+22,,pre-existing export (not regenerated),docs/ssi_validation/LAYER2_GATE_GRID_ROHIT_SHARE_20260812/csv/22_layer2_gate_grid_summary.csv,20,,,EXTERNAL
+22,,pre-existing export (not regenerated),docs/ssi_validation/LAYER2_GATE_GRID_ROHIT_SHARE_20260812/csv/22_layer2_gate_grid_forward_returns.csv,240,,,EXTERNAL
+01-02,,pre-existing export (not regenerated),macro_intelligence/analysis/ssi_validation/ssi_threshold_sweep_20260604.csv,12,,,EXTERNAL

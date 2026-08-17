@@ -1,0 +1,8 @@
+key,value
+test_id,05_tp_sl
+best.tp_mult,5.0
+best.sl_mult,20.0
+best.n,430
+best.sharpe,4.0624
+best.win_pct,97.67
+best.avg_return,4.8011

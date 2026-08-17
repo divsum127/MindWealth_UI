@@ -1,0 +1,4 @@
+key,value
+test_id,cftc_robustness_subsample
+spec,rohit_subsample_stability_primary
+data_note,"TFF FM/RM stitched: legacy S&P 500 STOCK INDEX through 2010-06, then Consolidated; raw from 2006-06-13; first percentile (≥20w) 2006-10-24; first full 156w window 2009-06-02; analysis weeks 1033 (2006-10-24 → 2026-08-04)."
