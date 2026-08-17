@@ -49,6 +49,7 @@ from .unified_extractor import UnifiedExtractor
 from .smart_data_fetcher import (
     CONSOLIDATED_MTM_REPORT_COLUMN_NAMES,
     ENTRY_TARGETS_STOP_COLUMN_NAMES,
+    build_signal_data_source_legend,
     SmartDataFetcher,
     infer_date_filter_mode,
     infer_position_side_from_query,
@@ -74,7 +75,8 @@ logger = logging.getLogger(__name__)
 
 _TARGETS_STOP_QUERY_RE = re.compile(
     r"\b(stop\s*loss|stop\s*level|stops?|take\s*profit|targets?|tp\b|sl\b|"
-    r"open\s+position|deep[- ]?dive|levels?\s+vs)\b",
+    r"open\s+position|deep[- ]?dive|levels?\s+vs|resistance|support\s*level|"
+    r"entry\s+level|exit\s+level|recent\s+entry|recent\s+exit|pivot)\b",
     re.I,
 )
 
@@ -1398,6 +1400,9 @@ class ChatbotEngine:
                     complete_message += f"\n  Reasoning: {reasoning_by_signal_type.get(signal_type, '')}"
             
             complete_message += f"\n\n=== SIGNAL DATA CONTEXT ===\n{data_context}"
+            source_legend = build_signal_data_source_legend(fetched_data.get("entry"))
+            if source_legend:
+                complete_message += f"\n\n{source_legend}"
             entry_validation = build_entry_validation_section(fetched_data.get("entry"))
             if entry_validation:
                 complete_message += f"\n\n{entry_validation}"
@@ -1957,6 +1962,9 @@ class ChatbotEngine:
             "signal_types_reasoning": extraction_result.get("signal_types_reasoning", ""),
             "signal_type_reasoning": signal_type_reasoning or "",
             "rows_fetched": total_rows,
+            # Canonical tickers actually used for filtering — lets the conviction
+            # context target the same names (see chatbot/conviction_context.py).
+            "assets": assets,
         }
 
         logger.info(
@@ -2177,6 +2185,28 @@ class ChatbotEngine:
         })
         self.history_manager.add_message("assistant", assistant_message, metadata)
         return assistant_message, metadata
+
+    def _build_conviction_block(
+        self,
+        user_message: str,
+        assets: Optional[List[str]] = None,
+    ) -> Optional[str]:
+        """
+        Build the SOURCE C conviction / signal-quality block, or return ``None``.
+
+        Recommendation and quality questions need MindWealth's own ranked buy and
+        exit lists, Signal Quality Composite Scores, conviction scores and
+        fundamentals — none of which live in the chatbot CSVs. Fetched over HTTP
+        from our own API and gated on query wording, so ordinary turns pay no
+        latency. Never raises: enrichment must not fail an answer.
+        """
+        try:
+            from .conviction_context import build_conviction_context
+
+            return build_conviction_context(user_message, assets=assets)
+        except Exception as exc:
+            logger.warning(f"Conviction context skipped: {exc}")
+            return None
 
     def _get_web_agent(self):
         """Lazily build WebSearchAgent (shared by router and deep research)."""
@@ -2683,6 +2713,26 @@ class ChatbotEngine:
                     f"prompt_chars={len(synthesized_prompt)}"
                 )
 
+                # SOURCE C — conviction, fundamentals and Signal Quality Composite
+                # Scores. Appended after synthesis so it sits alongside SOURCE A
+                # (internal signals) and SOURCE B (web) without changing their
+                # reconciliation instructions.
+                conviction_assets = assets or (
+                    (orch_result.signal_metadata or {}).get("assets")
+                    if orch_result.signal_metadata else None
+                )
+                conviction_block = self._build_conviction_block(user_message, conviction_assets)
+                if conviction_block:
+                    synthesized_prompt = f"{synthesized_prompt}\n\n{conviction_block}"
+                    add_flow_step(
+                        "Conviction Overlay",
+                        "Added conviction scores, fundamentals and signal quality scores",
+                    )
+                    logger.info(
+                        f"[FLOW 6/7] Conviction context appended  |  "
+                        f"block_chars={len(conviction_block)}"
+                    )
+
                 meta = {
                     **route_meta_base,
                     "input_type": "hybrid_synthesized",
@@ -2727,6 +2777,24 @@ class ChatbotEngine:
                 add_flow_step("Web Search", "Web results gathered and merged into internal analysis context")
             elif decision.route == ROUTE_INTERNAL:
                 add_flow_step("Internal Search", "Using internal signal data pipeline")
+
+            # SOURCE C — conviction / fundamentals / signal-quality scores, merged
+            # through the existing additional_context channel so both smart_query
+            # call sites below pick it up.
+            conviction_block = self._build_conviction_block(user_message, assets)
+            if conviction_block:
+                additional_context = (
+                    f"{additional_context}\n\n{conviction_block}"
+                    if additional_context else conviction_block
+                )
+                add_flow_step(
+                    "Conviction Overlay",
+                    "Added conviction scores, fundamentals and signal quality scores",
+                )
+                logger.info(
+                    f"[ENGINE] Conviction context merged into additional_context  |  "
+                    f"block_chars={len(conviction_block)}"
+                )
 
             # ── INTERNAL (or HYBRID legacy fallback) — existing pipeline ─────
             # Get last N exchanges from history (text only, no raw data)

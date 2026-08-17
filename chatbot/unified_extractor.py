@@ -11,6 +11,7 @@ from pathlib import Path
 
 from .column_metadata_extractor import ColumnMetadataExtractor
 from .config import OPENAI_API_KEY, OPENAI_MODEL, MAX_TOKENS, TEMPERATURE
+from .ticker_resolver import resolve_tickers
 from prompts.engine import format_unified_extractor_prompt, load_chatbot_system_prompt
 
 logging.basicConfig(level=logging.INFO)
@@ -125,9 +126,11 @@ class UnifiedExtractor:
         """
         try:
             # Build comprehensive prompt
-            ticker_list = ', '.join(self.available_tickers[:100]) if self.available_tickers else "No tickers available"
-            if len(self.available_tickers) > 100:
-                ticker_list += f" ... and {len(self.available_tickers) - 100} more"
+            # Send the FULL universe. Truncating at 100 hid every symbol past
+            # that index — e.g. MFT.NZ sits at ~111, so the model could not learn
+            # its ".NZ" suffix and emitted a bare "MFT" that matched no rows.
+            # The universe is ~200 symbols; the token cost is negligible.
+            ticker_list = ', '.join(self.available_tickers) if self.available_tickers else "No tickers available"
             
             # Start with default signal types for column context
             default_signals = DEFAULT_SIGNAL_TYPES.copy()
@@ -269,7 +272,16 @@ class UnifiedExtractor:
                 tickers = [t for t in self.available_tickers if t.endswith(suffix)]
                 logger.info(f"Expanded region filter '{suffix}' to {len(tickers)} tickers")
             else:
-                tickers = [str(t).strip().upper() for t in tickers if t]
+                # Resolve bare symbols to the canonical stored spelling
+                # ("MFT" → "MFT.NZ"). Filtering downstream is an exact match, so
+                # an unresolved bare symbol silently yields zero rows.
+                resolved, unresolved = resolve_tickers(tickers, self.available_tickers)
+                if unresolved:
+                    result["unresolved_tickers"] = unresolved
+                # Keep unresolved symbols in the filter list so the caller can
+                # report "not in the universe" rather than answering as if the
+                # user had asked about nothing in particular.
+                tickers = resolved + unresolved
         result["tickers"] = tickers
 
         # position_side: short / long (short selling vs long); null when not specified

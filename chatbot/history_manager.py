@@ -4,7 +4,10 @@ History manager for maintaining conversation context.
 
 import json
 import logging
+import os
 import re
+import tempfile
+import threading
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import List, Dict, Optional
@@ -14,6 +17,24 @@ from .config import HISTORY_DIR, MAX_HISTORY_LENGTH
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Per-session write locks. Two chatbot jobs for the same session can run
+# concurrently (CHATBOT_JOB_WORKERS > 1); each holds its own in-memory copy of
+# the conversation and rewrites the whole file, so unsynchronised writes clobber
+# each other. A process-local lock is sufficient — the API runs as a single
+# uvicorn process.
+_SESSION_LOCKS: Dict[str, threading.Lock] = {}
+_SESSION_LOCKS_GUARD = threading.Lock()
+
+
+def _session_lock(session_id: str) -> threading.Lock:
+    """Return the write lock for ``session_id``, creating it on first use."""
+    with _SESSION_LOCKS_GUARD:
+        lock = _SESSION_LOCKS.get(session_id)
+        if lock is None:
+            lock = threading.Lock()
+            _SESSION_LOCKS[session_id] = lock
+        return lock
 
 
 class HistoryManager:
@@ -310,14 +331,40 @@ class HistoryManager:
                 "metadata": serializable_metadata,
                 "conversation": serializable_conversation
             }
-            
-            with open(self.history_file, 'w', encoding='utf-8') as f:
-                json.dump(data, f, indent=2, ensure_ascii=False)
-            
+
+            self._write_atomic(data)
+
             logger.info(f"Saved history for session {self.session_id}")
-            
+
         except Exception as e:
             logger.error(f"Error saving history: {e}")
+
+    def _write_atomic(self, data: Dict):
+        """
+        Write the history file atomically, serializing leftover non-JSON types.
+
+        Writing in place (``open(path, 'w')``) truncates before serializing, so a
+        mid-dump ``TypeError`` — e.g. a pandas ``Timestamp`` that survived the
+        DataFrame conversion above — used to leave the file corrupt and cost the
+        whole conversation on the next load. ``default=str`` stops that class of
+        error, and tmp-file + ``os.replace`` guarantees the live file is only ever
+        replaced by a fully written one. Same pattern as ``api/jobs/store.py``.
+        """
+        path = self.history_file
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with _session_lock(self.session_id):
+            fd, tmp = tempfile.mkstemp(prefix=".history_", suffix=".json", dir=path.parent)
+            os.close(fd)
+            tmp_path = Path(tmp)
+            try:
+                tmp_path.write_text(
+                    json.dumps(data, indent=2, ensure_ascii=False, default=str),
+                    encoding='utf-8',
+                )
+                os.replace(tmp_path, path)
+            except Exception:
+                tmp_path.unlink(missing_ok=True)
+                raise
     
     def load_history(self):
         """Load conversation history from file."""
@@ -366,10 +413,32 @@ class HistoryManager:
                 self.conversation_history.append(loaded_message)
             
             logger.info(f"Loaded history for session {self.session_id} with {len(self.conversation_history)} messages")
-            
+
+        except json.JSONDecodeError as e:
+            # Corrupt file (historically caused by a truncated in-place write).
+            # Preserve it for diagnosis instead of letting the next save silently
+            # overwrite the only copy of the conversation.
+            self._quarantine_corrupt_file(e)
+            self.conversation_history = []
         except Exception as e:
             logger.error(f"Error loading history: {e}")
             self.conversation_history = []
+
+    def _quarantine_corrupt_file(self, error: Exception):
+        """Rename an unparseable history file aside and log loudly."""
+        stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        backup = self.history_file.with_name(f"{self.session_id}.corrupt-{stamp}.json")
+        try:
+            os.replace(self.history_file, backup)
+            logger.error(
+                f"Corrupt history for session {self.session_id} ({error}); "
+                f"quarantined to {backup.name} and starting from empty history"
+            )
+        except Exception as move_error:
+            logger.error(
+                f"Corrupt history for session {self.session_id} ({error}); "
+                f"could not quarantine file: {move_error}"
+            )
     
     def clear_history(self):
         """Clear conversation history."""

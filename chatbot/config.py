@@ -210,7 +210,11 @@ DEEP_RESEARCH_INTERNAL_TIMEOUT_SECONDS = int(os.getenv("DEEP_RESEARCH_INTERNAL_T
 DEEP_RESEARCH_WEB_MAX_RESULTS = int(os.getenv("DEEP_RESEARCH_WEB_MAX_RESULTS", "8"))
 DEEP_RESEARCH_WEB_MAX_QUERIES_PER_SUBTASK = int(os.getenv("DEEP_RESEARCH_WEB_MAX_QUERIES_PER_SUBTASK", "4"))
 DEEP_RESEARCH_MAX_WEB_CHARS = int(os.getenv("DEEP_RESEARCH_MAX_WEB_CHARS", "12000"))
-DEEP_RESEARCH_TOTAL_TIMEOUT_SECONDS = int(os.getenv("DEEP_RESEARCH_TOTAL_TIMEOUT_SECONDS", "120"))
+# Also the client's job-poll budget: the UI reads this from /chatbot/config and
+# polls for (value + 30)s. At 120 a legitimate 147s answer was completed, then
+# discarded — the UI gave up 3s early and showed "Could not reach the analyst".
+# 300 → ~330s budget, comfortably clear of the UI's 30s poll granularity.
+DEEP_RESEARCH_TOTAL_TIMEOUT_SECONDS = int(os.getenv("DEEP_RESEARCH_TOTAL_TIMEOUT_SECONDS", "300"))
 DEEP_RESEARCH_PLANNER_MODEL = os.getenv("DEEP_RESEARCH_PLANNER_MODEL", "gpt-4o-mini")
 ENABLE_DEEP_RESEARCH_LOGGING = os.getenv("ENABLE_DEEP_RESEARCH_LOGGING", "true").lower() == "true"
 DEEP_RESEARCH_LOG_MAX_CONTENT_CHARS = int(os.getenv("DEEP_RESEARCH_LOG_MAX_CONTENT_CHARS", "2000"))
@@ -230,6 +234,19 @@ NZX_API_KEY = os.getenv("NZX_API_KEY", "").strip() or None
 STOOQ_REQUEST_TIMEOUT_SECONDS = float(os.getenv("STOOQ_REQUEST_TIMEOUT_SECONDS", "12"))
 NZX_PRICE_REQUEST_TIMEOUT_SECONDS = float(os.getenv("NZX_PRICE_REQUEST_TIMEOUT_SECONDS", "15"))
 CACHE_NZ_OHLC_TO_TRADE_STORE = os.getenv("CACHE_NZ_OHLC_TO_TRADE_STORE", "true").lower() == "true"
+
+# Conviction & signal-quality context (SOURCE C) — see chatbot/conviction_context.py.
+# Pulls ranked buy/exit lists, Signal Quality Composite Scores, conviction scores
+# and fundamentals from our own REST API. Only fetched for recommendation /
+# screening / quality questions, so ordinary turns take no extra latency.
+ENABLE_CONVICTION_CONTEXT = os.getenv("ENABLE_CONVICTION_CONTEXT", "true").lower() == "true"
+# Empty → derived from API_PORT at call time (chatbot/tools/mindwealth_api_client.py).
+MINDWEALTH_API_BASE_URL = os.getenv("MINDWEALTH_API_BASE_URL", "").strip()
+CONVICTION_CONTEXT_TIMEOUT_SECONDS = float(os.getenv("CONVICTION_CONTEXT_TIMEOUT_SECONDS", "8"))
+CONVICTION_CONTEXT_MAX_ROWS = int(os.getenv("CONVICTION_CONTEXT_MAX_ROWS", "25"))
+# Only the model book exposes Sizer/Risk entries and exits; brokerage is pending
+# IBKR integration and personal has no Sizer concept.
+CONVICTION_BOOK_ID = os.getenv("CONVICTION_BOOK_ID", "model").strip() or "model"
 
 # LLM Router — decides web vs internal vs conversational (gpt-4o-mini JSON)
 LLM_ROUTER_ENABLED = os.getenv("LLM_ROUTER_ENABLED", "true").lower() == "true"

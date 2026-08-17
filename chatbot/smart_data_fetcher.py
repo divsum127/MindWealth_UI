@@ -56,6 +56,38 @@ logger = logging.getLogger(__name__)
 SYMBOL_SIGNAL_COMPOUND_COL = "Symbol, Signal, Signal Date/Price[$]"
 BREADTH_REQUIRED_COLUMNS = BREADTH_SBI_COLUMNS
 
+EXIT_DATE_COL = "Exit Signal Date/Price[$]"
+SOURCE_COL = "_mw_signal_source"
+# Public column exposed to the LLM and JSON payloads (internal SOURCE_COL is dropped after mapping).
+SIGNAL_DATA_SOURCE_COL = "Signal Data Source"
+# Lower number = higher priority when deduplicating the same signal identity.
+ENTRY_SOURCE_PRIORITY = {
+    "outstanding": 0,
+    "all_signal": 1,
+    "entry_csv": 2,
+    "virtual_trading": 3,
+}
+SOURCE_DISPLAY_LABELS = {
+    "outstanding": "outstanding",
+    "all_signal": "all_signal",
+    "entry_csv": "entry_csv",
+    "virtual_trading": "virtual_trading",
+}
+SOURCE_DISPLAY_NOTES = {
+    "outstanding": (
+        "Canonical Outstanding Signals report — matches the UI Outstanding Signals page."
+    ),
+    "all_signal": (
+        "Open row from all_signal export; not in the outstanding report "
+        "(may be cross-function exited, duplicate, or filtered out)."
+    ),
+    "entry_csv": "Consolidated entry.csv supplement.",
+    "virtual_trading": (
+        "Raw virtual_trading book; often lacks full target/stop columns; "
+        "not shown on the Outstanding Signals UI."
+    ),
+}
+
 # Outstanding-signals → consolidated CSV columns (see ``src.utils.mtm_pricing``). Always merged into
 # entry / exit / portfolio_target fetches so MTM and holding period are never dropped when the LLM
 # picks a narrow column index list.
@@ -65,6 +97,7 @@ CONSOLIDATED_MTM_REPORT_COLUMN_NAMES = (
     "Today Trading Date/Price[$], Today Price vs Signal",
     "Current Mark to Market and Holding Period",
     "Trading Days between Signal and Today Date",
+    SIGNAL_DATA_SOURCE_COL,
 )
 
 ENTRY_TARGETS_COLUMN = (
@@ -78,7 +111,8 @@ ENTRY_TARGETS_STOP_COLUMN_NAMES = (ENTRY_TARGETS_COLUMN, ENTRY_STOP_COLUMN)
 
 _TARGETS_STOP_QUERY_RE = re.compile(
     r"\b(stop\s*loss|stop\s*level|stops?|take\s*profit|targets?|tp\b|sl\b|"
-    r"open\s+position|deep[- ]?dive|levels?\s+vs)\b",
+    r"open\s+position|deep[- ]?dive|levels?\s+vs|resistance|support\s*level|"
+    r"entry\s+level|exit\s+level|recent\s+entry|recent\s+exit|pivot)\b",
     re.I,
 )
 
@@ -161,17 +195,6 @@ def is_explicit_position_side_request(text: str, side: Optional[str] = None) -> 
     return False
 
 
-EXIT_DATE_COL = "Exit Signal Date/Price[$]"
-SOURCE_COL = "_mw_signal_source"
-# Lower number = higher priority when deduplicating the same signal identity.
-ENTRY_SOURCE_PRIORITY = {
-    "outstanding": 0,
-    "all_signal": 1,
-    "entry_csv": 2,
-    "virtual_trading": 3,
-}
-
-
 def infer_date_filter_mode(user_message: Optional[str]) -> str:
     """
     Return ``entry_or_exit`` for deep-dive / OR-style range queries, else ``primary``.
@@ -189,6 +212,24 @@ def infer_date_filter_mode(user_message: Optional[str]) -> str:
     return "primary"
 
 
+# Wording that means the user is talking about a position they no longer hold.
+# Entry fetches default to open-signals-only, which by construction excludes
+# every name the user has already sold.
+_CLOSED_POSITION_RE = re.compile(
+    r"\b(sold|sell|selling|exited|exit(ed)?\s+out|closed|"
+    r"replace|replaced|replacement|replacements|"
+    r"used\s+to\s+(own|hold)|no\s+longer\s+(own|hold|holding))\b",
+    re.I,
+)
+
+
+def _mentions_closed_position(user_message: Optional[str]) -> bool:
+    """True when the query references a sold / closed / replaced position."""
+    if not user_message or not str(user_message).strip():
+        return False
+    return bool(_CLOSED_POSITION_RE.search(str(user_message)))
+
+
 def _is_open_exit_value(value) -> bool:
     if value is None or (isinstance(value, float) and pd.isna(value)):
         return True
@@ -196,6 +237,27 @@ def _is_open_exit_value(value) -> bool:
     if not s or s == "nan":
         return True
     return "no exit" in s
+
+
+def build_signal_data_source_legend(df: pd.DataFrame) -> str:
+    """Prompt appendix explaining per-row Signal Data Source values in an entry fetch."""
+    if df is None or df.empty or SIGNAL_DATA_SOURCE_COL not in df.columns:
+        return ""
+    sources = [str(s) for s in df[SIGNAL_DATA_SOURCE_COL].dropna().unique().tolist()]
+    if not sources:
+        return ""
+    lines = [
+        "=== SIGNAL DATA SOURCE LEGEND ===",
+        "Each entry row includes Signal Data Source. Do NOT treat every row as a canonical "
+        "Outstanding Signal — only source=outstanding matches the UI Outstanding Signals page.",
+    ]
+    for src in sorted(sources):
+        note = SOURCE_DISPLAY_NOTES.get(src, "")
+        if note:
+            lines.append(f"- {src}: {note}")
+    counts = df[SIGNAL_DATA_SOURCE_COL].value_counts().to_dict()
+    lines.append(f"Row counts in this fetch: {counts}")
+    return "\n".join(lines)
 
 
 class SmartDataFetcher:
@@ -241,7 +303,20 @@ class SmartDataFetcher:
         out["_extracted_symbol"] = (
             out[SYMBOL_SIGNAL_COMPOUND_COL].astype(str).str.split(",").str[0].str.strip()
         )
-        out = out[out["_extracted_symbol"].isin(assets)]
+        wanted = {str(a).strip().upper() for a in assets if a}
+        symbol_upper = out["_extracted_symbol"].str.upper()
+        matched = symbol_upper.isin(wanted)
+
+        # Base-symbol fallback: a bare "MFT" must still match the stored
+        # "MFT.NZ". UnifiedExtractor normally resolves this (see
+        # chatbot/ticker_resolver.py), but this keeps every other caller —
+        # page context, API-supplied asset lists, legacy paths — from silently
+        # filtering to zero rows.
+        bare = {a for a in wanted if "." not in a}
+        if bare:
+            matched |= symbol_upper.str.split(".").str[0].isin(bare)
+
+        out = out[matched]
         return out.drop(columns=["_extracted_symbol"])
 
     def _read_consolidated_signal_csv(self, signal_type: str) -> pd.DataFrame:
@@ -317,14 +392,25 @@ class SmartDataFetcher:
         return combined.drop(columns=["_prio", "_idkey"], errors="ignore")
 
     @classmethod
+    def _finalize_signal_source_column(cls, df: pd.DataFrame) -> pd.DataFrame:
+        """Map internal _mw_signal_source to public Signal Data Source for LLM payloads."""
+        if df.empty:
+            return df
+        out = df.copy()
+        if SOURCE_COL in out.columns:
+            out[SIGNAL_DATA_SOURCE_COL] = out[SOURCE_COL].map(
+                lambda s: SOURCE_DISPLAY_LABELS.get(str(s), str(s))
+            )
+            out = out.drop(columns=[SOURCE_COL], errors="ignore")
+        return out
+
+    @classmethod
     def dedupe_single_asset_signals(cls, df: pd.DataFrame) -> pd.DataFrame:
         """Collapse duplicate identities for single-ticker fetches (keeps best MTM source)."""
         if df.empty:
             return df
         out = cls._merge_entry_frames_by_identity(pd.DataFrame(), df)
-        if SOURCE_COL in out.columns:
-            out = out.drop(columns=[SOURCE_COL], errors="ignore")
-        return out
+        return cls._finalize_signal_source_column(out)
 
     @staticmethod
     def parse_cited_entry_hints(user_message: Optional[str]) -> List[Tuple[str, Optional[float]]]:
@@ -1061,7 +1147,17 @@ class SmartDataFetcher:
         df: Optional[pd.DataFrame] = None
 
         if signal_type == "entry":
-            df = self._load_entry_source_dataframe(assets=assets, prefer_open_only=True)
+            # "Open only" is right for "what should I buy", but wrong when the
+            # user is asking about a position they already sold ("replace FPH and
+            # MFT that I sold"): those names have no open entry row by
+            # construction, so the filter guarantees zero rows.
+            open_only = not _mentions_closed_position(user_message)
+            if not open_only:
+                logger.info(
+                    "Entry fetch: including closed/exited rows — query references "
+                    "a sold/replaced position"
+                )
+            df = self._load_entry_source_dataframe(assets=assets, prefer_open_only=open_only)
             # Column indices refer to chatbot/data/entry.csv layout; outstanding export order differs.
             column_indices = None
         elif signal_type == "exit":
@@ -1174,7 +1270,9 @@ class SmartDataFetcher:
             if limit_rows and len(df) > limit_rows:
                 df = df.head(limit_rows)
 
-            if SOURCE_COL in df.columns:
+            if signal_type == "entry":
+                df = self._finalize_signal_source_column(df)
+            elif SOURCE_COL in df.columns:
                 df = df.drop(columns=[SOURCE_COL], errors="ignore")
 
             return df

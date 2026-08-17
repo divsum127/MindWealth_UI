@@ -219,8 +219,13 @@ class SynthesisAgent:
         )
         try:
             from ..signal_level_validator import build_entry_validation_section
+            from ..smart_data_fetcher import build_signal_data_source_legend
 
             entry_df = signal_data.get("entry")
+            source_legend = build_signal_data_source_legend(entry_df)
+            if source_legend:
+                lines.append("")
+                lines.append(source_legend.rstrip())
             validation_block = build_entry_validation_section(entry_df)
             if validation_block:
                 lines.append("")
