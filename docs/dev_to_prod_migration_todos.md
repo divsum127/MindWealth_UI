@@ -21,6 +21,31 @@ Reference deploy skill: `.cursor/skills/prod-pull-and-details/SKILL.md`
 | `[PROD-ACTION]` | Manual step on server after git merge (secrets, systemd, bootstrap) |
 | `[DONE]` | Completed on prod (date in notes) |
 
+## 2026-08-17 — Rohit 6 Aug email status audit (docs-only) + prod defect escalation
+
+**Git files to merge** (`chatbot-dev` → `chatbot-prod`) — documentation only, zero runtime impact:
+- `docs/mindwealth_ui_job_status.md`
+- `docs/mindwealth_ui_repo_job_status_details.md`
+- `docs/dev_to_prod_migration_todos.md` (this entry)
+
+`[PENDING]` merge only. No systemd change, no runtime artifact, no dev-only config, no API surface change, no Nuxt rebuild.
+
+**Why it is listed here anyway — the audit escalated one live prod defect:**
+
+`[PROD-ACTION]` **The 2026-08-07 `vix_bypass` A6 fix is still not on prod (see the entry immediately below).** Prod `:8506` continues to publish `vix_bypass: true` while Combo B is INACTIVE, and the C++ sizing model reads `macro_intelligence/output/runic_output.json` **from disk** — so on prod, `size_mult` is being forced to `1.0` and the SSI multiplier is discarded on ordinary days. Rohit flagged this specifically in the 6 Aug email ("we may be switching off the one overlay showing real risk value, every ordinary day") because the SSI overlay is the strongest risk contributor in Ahil's decomposition (Sharpe 0.82 → 1.04, drawdown −17.09% → −13.41%). This is now **10 days** stale on prod. Merge + nightly rerun + API restart, in that order — the checklist is in the 2026-08-07 entry below.
+
+**Also surfaced by the audit, tracked but not prod-blocking:**
+- `[PENDING]` Jun 18 spec doc still records SPX-below-200DMA as ×0.80 while both dev and prod code run ×0.90 (`instruction_docs/portfolio_page/portfolio_sizer_v2_18June.md:65`, `:257`). Rohit's instruction was "adopt ×0.90 and update the spec" — the code half is already correct on both environments, so this is a doc fix, not a cutover risk.
+- `[PENDING]` Combo dominance priority still `C(100) > B(90) > F(80) > E > D > G > A` (`testing/5_regime_uplift/README.md:30`) against Rohit's explicit "move B above C". Research-path file, not read by the live sizing chain — but D1 regime buckets derived from it will need regenerating whenever the swap lands.
+- `[PENDING]` Analog tables still served on both environments (`GET /macro/analogs/{combo_id}`, `src/pages/runic_page.py:90-95`) with stub data — Rohit asked for it pulled from the nav until rebuilt. Removing it is a prod-visible surface change and needs its own entry when done.
+- `[PROD-ACTION]` Composite-score `401` for Ahil is a credential handoff, not a deploy: `X-API-Key` against `api/dependencies.py::require_api_key`. No git change; key must be shared over a secure channel (never in git, chat or logs).
+
+**Environment drift noted for the next cutover:** dev is **22 commits ahead** of `origin/chatbot-prod` as of 2026-08-17 (dev `3a634b468`, prod clone `64e17ca26` from 2026-08-02). Nuxt `:8514` (dev, `ui-dev`) and `:8512` (prod) are therefore different builds — this is the cause of the two environments disagreeing about whether Combo C is firing, which Rohit asked about directly.
+
+**Smoke test `[DONE]`** 2026-08-17 dev `:8507` — `smoke-test-apis.sh` **PASS** (dev v1.10.8 `status=ok`, `conviction_store` isolated to the git clone and writable; prod `:8506` v1.8.1 isolation intact). `pytest tests/` → **771 passed, 1 failed, 3 skipped**. The single failure is **pre-existing and unrelated to this docs change**: `tests/test_api_signals_surface.py::test_shortlist_mtm_not_stale_zero_for_aged_signals` compares a signal's **calendar** age against `days_elapsed`, which is sourced from the CSV column `Trading Days between Signal and Today Date` (`api/services/signal_enrichment_service.py:415`). PLTR fired Fri 2026-08-14 and `chatbot/data/entry.csv` correctly records `0 days` of *trading* days as of Mon 2026-08-17, so the guard trips on any Friday signal over a weekend. Upstream data is right; the test's threshold is calendar-based. **Left unfixed pending sign-off** — making it trading-day-aware changes what the guard catches (its purpose is catching genuinely stale MTM), so it should not be relaxed silently.
+
+---
+
 ## 2026-08-07 — vix_bypass A6 fix (Combo B only)
 
 **Git files to merge** (`chatbot-dev` → `chatbot-prod`):
@@ -61,6 +86,24 @@ Reference deploy skill: `.cursor/skills/prod-pull-and-details/SKILL.md`
 
 ---
 
+## 2026-08-12 — Row 46 staleness calibration complete (per-signal penalties + margin debt)
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`; `run_ssi_daily.py`.
+
+| Area | Files |
+|------|--------|
+| Caps + per-signal penalties | `macro_intelligence/SSI_CONFIG.yaml`, `src/sentiment_superindex/config.py`, `data/staleness.py`, `engine/superindex.py` |
+| Margin debt fetch | `src/sentiment_superindex/data/margin_debt_pull.py`, `data/pull_all.py` |
+| Test 21 + tests | `analysis/staleness_decay_study.py`, `tests/test_ssi_staleness.py`, `tests/test_margin_debt_pull.py`, `docs/ssi_validation/21_staleness_decay.md` |
+
+**`[PROD-ACTION]`** `python scripts/run_ssi_daily.py` after merge.
+
+**Smoke test `[PENDING]`:** stale AAII at 2d → weight_multiplier 1.0 (no penalty); stale COT FM at 7d → 0.18; CNN &gt;3d dropped.
+
+**Ahil `[PENDING]`** rows 32/65 portfolio re-run after CNN/HY OAS (not blocking Row 46 code).
+
+---
+
 ## 2026-08-07 — SSI staleness calibration (MAX_STALE_DAYS 8/3/30 + Test 21)
 
 `[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`; re-run `run_ssi_daily.py`.
@@ -75,11 +118,11 @@ Reference deploy skill: `.cursor/skills/prod-pull-and-details/SKILL.md`
 
 **Smoke test `[PENDING]`:** AAII 6d stale still carries (penalty); 9d dropped. CFTC 7d stale carries. CNN missing &gt;3d dropped.
 
-**Deferred `[PENDING]`:** Per-signal `weight_penalty` overrides (COT ~0.2–0.3 vs global 0.8) — Rohit sign-off after Test 21 review.
+**Deferred `[DONE]` 2026-08-12:** Per-signal `weight_penalty_by_signal` wired (Test 21 values). Rohit sign-off still needed before prod cutover.
 
 ---
 
-## 2026-08-07 — SSI as-of freshness annotations (Sentiment tiles)
+## 2026-08-07 — SSI staleness calibration (MAX_STALE_DAYS 8/3/30 + Test 21) — superseded by 2026-08-12 Row 46 complete entry above
 
 `[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`; Nuxt rebuild.
 

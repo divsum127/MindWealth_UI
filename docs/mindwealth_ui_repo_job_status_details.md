@@ -13,6 +13,53 @@ This file captures minute-level implementation context for each completed task:
 
 ---
 
+---
+
+### 2026-08-17 — Status audit: Rohit 6 Aug email, all Divyanshu-assigned tasks
+
+**Ask:** Read Rohit's 6 Aug 2026 email ("Re: regime doubts — answers on all three, plus portfolio/regime handoff (Ahil cc'd)") from the MindWealth Gmail MCP server and report the status of every task assigned to Divyanshu.
+
+**How the mail was read:** the `gmail-filtered` MCP server exists only in `~/.cursor/mcp.json` (Cursor), not in Claude Code's MCP config — `claude mcp list` shows only `claude.ai Invideo`. Rather than mutate MCP config mid-session, a throwaway script in the session scratchpad read the Gmail API directly using the existing OAuth token at `/home/ubuntu/.gmail_mcp/token.json` and the server venv at `/home/ubuntu/.gmail-mcp/server/.venv`. Read-only (`messages.list` / `messages.get` / `threads.get`); no labels, drafts or sends touched.
+
+**Assumptions:**
+- Task ownership was taken from Rohit's own attribution in the mail. Where he wrote "this is Ahil's to produce" (stress cluster correlations, proportional-vs-conviction-first ceiling cut), Divyanshu's task was scored as *pass it to Ahil with the brief*, not *produce the analysis*.
+- "Accepted" items (HY OAS, CNN F&G) were scored ✅ done even though follow-on consequences remain open; the follow-ons are scored as their own separate rows.
+- Reply status was inferred from `in:sent after:2026/08/05` on this mailbox, which returned one unrelated self-forward. **Caveat:** this mailbox is filtered (`filters.yaml` allowlists `rohit.malhotra1@gmail.com` only) and the 6 Aug thread shows a single message here, so a reply sent from a different client/account would not necessarily appear. Treat "no reply sent" as high-confidence-but-not-proof.
+
+**Counts:** 43 Divyanshu-owned items — 5 done, 4 partial, 1 dev-only with prod still exposed, 32 open/not-started, 0 of 2 Ahil handoffs made.
+
+**Key findings worth carrying forward:**
+1. **Prod `vix_bypass` is the one live defect.** The A6 fix (Combo B ACTIVE only) shipped to dev 2026-08-07, but the C++ sizing model reads `runic_output.json` from disk — so prod continues to force `size_mult=1.0` and discard the SSI multiplier on ordinary days. Rohit flagged this as urgent precisely because the SSI overlay is the best risk contributor in Ahil's decomposition (Sharpe 0.82→1.04). Prod fix needs merge + nightly rerun + API restart, in that order.
+2. **A process violation, not just a gap:** Rohit asked for the list of SSI backtests invalidated by the CNN/HY fixes, *with owners*, **before** anyone re-ran a grid. That list was never sent, and the 2026-08-07 / 2026-08-12 sessions re-ran roughly six grids (Tests 3/15/18/21/22, CFTC squeeze + liquidity exit). The risk he named — two people re-running the same grid — is now live.
+3. **Two instructions were explicit and are still unexecuted:** "move B above C" in the dominance priority (still `C(100) > B(90) > F(80) > E > D > G > A` in `testing/5_regime_uplift/README.md:30`), and "pull [analog tables] from the nav until rebuilt" (still served by `GET /macro/analogs/{combo_id}` and rendered at `src/pages/runic_page.py:90-95`). Both are cheap to do and both were asked for as decisions already made, not proposals.
+4. **Cancel probability root cause is now pinned down** (Rohit only had the symptom). `combo_cancel_probability_wti()` takes `vol_annual: float = 0.35` as a hardcoded default — so his question "realised vol or implied from CL options?" has a third answer: neither, it's a constant. Compounding it: `cpi_not_hot_rate=0.52` is hardcoded at the `nightly_run.py:172` call site, `seed=42` is fixed, and the model rebuilds all four strikes as `current_wti/1.05` every run, so **Fridays already banked never reduce the remaining barrier count**. That is why P(cancel) reads 2% while the WTI leg is passing with 1 of 4 banked — exactly the "points the wrong way" behaviour he described.
+5. **Spec/code drift on the SPX overlay is one-directional:** code is already at Rohit's preferred ×0.90 (`portfolio_service.py:354`), the Jun 18 spec still says ×0.80 (`portfolio_sizer_v2_18June.md:65` and `:257`). His instruction was "adopt ×0.90 and update the spec" — the doc half is outstanding, so the authoritative spec currently contradicts production.
+6. **Environment question has a concrete answer:** 8514 = dev Nuxt (`mindwealth-ui-dev.service`, `chatbot-dev` @ `3a634b468`), 8512 = prod Nuxt (`mindwealth-ui.service`, prod clone @ `64e17ca26`, 2 Aug). Dev is 22 commits ahead of `origin/chatbot-prod`. This is why the two environments disagree about whether Combo C is firing, and it invalidates any day-over-day comparison spanning both.
+
+**Edge cases / things not handled:**
+- No attempt was made to answer any of Rohit's open questions (Michele provenance, `SSI≥2` comparand, Axiom 2 binding, D1 point-in-time data vs state). Those are content work, not status.
+- The "structured workbook" Rohit says is coming had not arrived as of 2026-08-17; several audit rows may be superseded by it.
+- Percentile finding is partial by design: the 2026-08-04 work proved SSI Layer 3 `fm_pctile`/`rm_pctile` use true rank, which does **not** explain the Runic-page CFTC percentile moving 26 points (93rd → 67th → NORMAL) on a byte-identical raw value of −302372.00. Different code path, still unexplained, and it demoted Combo E from 3-of-3 to 2-of-3 on its own.
+- No reply to Rohit was drafted or sent — the ask was a status check only.
+
+**Deferred:** everything in the ❌ column, most urgently the prod `vix_bypass` cutover, the stale-backtest list, the `X-API-Key` handoff to Ahil for the composite-score endpoint, and the two Ahil handoffs (stress cluster correlations; proportional vs conviction-first ceiling cut).
+
+---
+
+### 2026-08-12 — Row 46 staleness calibration complete (live per-signal penalties)
+
+**Ask:** Finish Row 46 — caps 8/3/30, Test 21 age-bucket study, wire per-signal penalties to live scoring, margin debt in pull_all, re-run validations.
+
+**Done:**
+- `weight_penalty_by_signal` in YAML + `weight_penalty_for()`; `observation_as_of` and `_build_layer` use per-key penalty.
+- Survey/daily Layer 1: 1.0 (no decay penalty). COT FM 0.18, RM 0.29, gross_net 0.18. Unlisted signals keep default 0.8.
+- `margin_debt_pull.py` (FRED MDSP fallback, BOGZFL with API key); registered in `load_all_series()` (86 monthly rows).
+- Test 21 + CNN Test 6 re-run; 12 staleness + 2 margin_debt + 29 related SSI tests pass.
+
+**Deferred:** margin_debt not in Layer 3 composite (study-only input). Ahil portfolio re-run rows 32/65. Prod merge pending Rohit approval.
+
+**Caveats:** MDSP is proxy if BOGZFL unavailable; margin debt Test 21 day-5 bucket still thin (inconclusive).
+
 ### 2026-08-12 — [SSI CRITICAL] Test 22 Layer 2 gate 2-D grid (joint z × min_confirmed)
 
 **Ask:** Test `gate_z_min` and `min_confirmed` jointly on production 6-gate Layer 2 — parameters interact and were never tested together (z=0.5 chosen without test; min=2 not in Open Questions).
@@ -41,6 +88,26 @@ This file captures minute-level implementation context for each completed task:
 **Deferred:** Rohit sign-off on whether to change `SSI_CONFIG.yaml` `layer2.gate_z_min` / `layer2.min_confirmed`; Tests 10/20 remain archived but marked superseded.
 
 **Caveats:** Hit rates far below Tests 10/20 headline numbers because (1) 6-gate directional logic vs legacy 4-input count, (2) full 2015+ window vs subsamples. Layer 2 may be better as sizing overlay than standalone long filter.
+
+---
+
+### 2026-08-12 — [SSI HIGH] Test 15 SBI short signal batch complete (env caveat)
+
+**Ask:** Complete Test 15 backend work — fix SBI adapter import/env, run full batch, archive JSON.
+
+**Implementation:**
+- `sbi_breadth.py`: inline SPX metrics via yfinance + pandas_market_calendars (avoids UI venv yaml / MW venv loess cross-import); `_patch_mw_breadth_quiet()` sets `save_plots=False`, `save_artifacts=False`; offline `data.online=False`; `--dates-cache` checkpointing with resume; `--end` for sharding.
+- `sbi_short_validation.py`: reads `/tmp/sbi_full_out.json` if present before re-running adapter.
+- `run_test15_sbi_parallel.sh`: 4 shards (2015–2017, 2018–2020, 2021–2023, 2024–present), merge, metrics-only pass, archive.
+- Batch wall time ~2 hr (4 parallel × ~36 months each).
+
+**Result:** `15_sbi_short_20260812.json` — n_short_entries=0 across 140 BMS months.
+
+**Root cause of n=0:** MW `.venv` `cpp_functions` module lacks `backtest_bb`, `is_pivot` — every stock in COMBINED_STRATEGY returns L0/S0 = 0 trades. Short percentile-from-top = 100% when all days have 0 short trades (never ≤10 trigger).
+
+**Deferred:** Re-run on MindWealth host with C++ extensions compiled for empirical SBI short validation.
+
+**Caveats:** BMS sampling (~monthly) is validation compromise vs daily; result documents infrastructure readiness, not SBI short efficacy.
 
 ---
 
