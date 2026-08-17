@@ -10,6 +10,7 @@ _ROOT = Path(__file__).resolve().parent.parent
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
+from src.macro_intelligence.config import json_output_path
 from src.macro_intelligence.db.connection import init_db
 from src.macro_intelligence.jobs.nightly_run import run_nightly
 
@@ -31,10 +32,20 @@ REQUIRED = {
 class TestRunicOutputSchema(unittest.TestCase):
     def test_nightly_payload_fields(self) -> None:
         init_db()
-        payload = run_nightly(as_of="2024-09-18", use_claude=False)
+        # persist=False: this test only asserts on returned keys. Without it
+        # run_nightly overwrites the live macro_intelligence/output snapshot
+        # the API serves with 2024-09-18 data.
+        payload = run_nightly(as_of="2024-09-18", use_claude=False, persist=False)
         missing = REQUIRED - set(payload.keys())
         self.assertEqual(missing, set(), f"missing keys: {missing}")
         self.assertIn("fed_cycle", payload["regime"])
+
+    def test_nightly_does_not_touch_live_snapshot(self) -> None:
+        live = json_output_path()
+        before = live.stat().st_mtime_ns if live.exists() else None
+        run_nightly(as_of="2024-09-18", use_claude=False, persist=False)
+        after = live.stat().st_mtime_ns if live.exists() else None
+        self.assertEqual(before, after, f"run_nightly(persist=False) wrote {live}")
 
 
 if __name__ == "__main__":
