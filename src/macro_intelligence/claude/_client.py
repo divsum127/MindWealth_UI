@@ -11,7 +11,7 @@ from src.macro_intelligence.config import load_config
 
 def _model() -> str:
     cfg = load_config()
-    return os.environ.get("MACRO_CLAUDE_MODEL", cfg.get("claude", {}).get("model", "claude-sonnet-4-20250514"))
+    return os.environ.get("MACRO_CLAUDE_MODEL", cfg.get("claude", {}).get("model", "claude-sonnet-4-5-20250929"))
 
 
 def parse_json_text(text: str) -> dict[str, Any]:

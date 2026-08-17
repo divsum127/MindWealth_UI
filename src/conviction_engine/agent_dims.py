@@ -11,7 +11,7 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 _AGENT_SEMAPHORE = threading.Semaphore(4)
-_DEFAULT_MODEL = "claude-sonnet-4-20250514"
+_DEFAULT_MODEL = "claude-sonnet-4-5-20250929"
 
 
 def _float_or_none(value: Any) -> float | None:
