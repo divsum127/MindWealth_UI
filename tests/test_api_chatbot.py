@@ -198,3 +198,67 @@ class TestJobStore(unittest.TestCase):
             loaded = store.get(job["job_id"])
             assert loaded is not None
             self.assertEqual(loaded["status"], "running")
+
+
+class TestHistorySerialization(unittest.TestCase):
+    """
+    Regression guard for the 500 on ``GET /chatbot/sessions/{id}/history``.
+
+    ``HistoryManager.load_history`` rebuilds ``full_signal_tables`` into pandas
+    DataFrames, and ``get_history`` used to hand those straight to the response
+    serializer: ``PydanticSerializationError: Unable to serialize unknown type:
+    <class 'pandas.core.frame.DataFrame'>``. The chat panel reads as dead when
+    that happens, so the sanitizer must survive frames, numpy scalars, NaT and
+    NaN.
+    """
+
+    def test_get_history_sanitizes_dataframes(self) -> None:
+        import json
+
+        import numpy as np
+        import pandas as pd
+
+        from api.services import chatbot_service as svc
+
+        frame = pd.DataFrame(
+            {
+                "symbol": ["FPH.NZ", "MFT.NZ"],
+                "score": [np.float64(31.8), np.nan],
+                "rank": [np.int64(1), np.int64(2)],
+                "signal_date": [pd.Timestamp("2026-08-14"), pd.NaT],
+            }
+        )
+        messages = [
+            {"role": "user", "content": "what should i buy", "metadata": {"display_prompt": "what should i buy"}},
+            {
+                "role": "assistant",
+                "content": "answer",
+                "metadata": {"full_signal_tables": {"entry": frame}, "rows_fetched": np.int64(2)},
+            },
+        ]
+
+        engine = MagicMock()
+        engine.get_conversation_history.return_value = messages
+
+        with patch.object(svc, "ensure_session_exists", return_value=None), patch.object(
+            svc, "ChatbotEngine", return_value=engine
+        ):
+            for display in (True, False):
+                out = svc.get_history("session-1", display=display)
+                json.dumps(out)  # raises TypeError if anything survived unsanitized
+
+        with patch.object(svc, "ensure_session_exists", return_value=None), patch.object(
+            svc, "ChatbotEngine", return_value=engine
+        ):
+            out = svc.get_history("session-1", display=True)
+
+        rows = out[1]["metadata"]["full_signal_tables"]["entry"]
+        self.assertIsInstance(rows, list)
+        self.assertEqual(len(rows), 2)
+        self.assertEqual(rows[0]["symbol"], "FPH.NZ")
+        self.assertEqual(rows[0]["rank"], 1)
+        self.assertEqual(rows[0]["signal_date"][:10], "2026-08-14")
+        self.assertIsNone(rows[1]["score"], "NaN must become null, not the string 'nan'")
+        self.assertIsNone(rows[1]["signal_date"], "NaT must become null")
+        # The engine's own copy must keep the DataFrame — it is used in later turns.
+        self.assertIsInstance(messages[1]["metadata"]["full_signal_tables"]["entry"], pd.DataFrame)

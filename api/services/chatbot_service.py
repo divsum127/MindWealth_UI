@@ -2,9 +2,13 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+import math
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
+
+import numpy as np
+import pandas as pd
 
 from chatbot import ChatbotEngine, SessionManager
 from chatbot.flagged_export import save_flagged_pair
@@ -225,16 +229,59 @@ def finalize_session(session_id: str) -> bool:
     return engine.finalize_session(reason="api_finalize")
 
 
+def _jsonable(value: Any) -> Any:
+    """
+    Recursively convert engine metadata into something the response serializer
+    can encode.
+
+    ``HistoryManager.load_history`` rebuilds ``full_signal_tables`` into pandas
+    ``DataFrame`` objects (that is what the engine wants in memory), and the
+    frames carry numpy scalars, ``Timestamp``s and ``NaN``. Returned as-is they
+    raise ``PydanticSerializationError: Unable to serialize unknown type:
+    <class 'pandas.core.frame.DataFrame'>`` and the whole history request 500s,
+    which reads to the user as the chat being dead.
+    """
+    if value is None or isinstance(value, (str, bool, int)):
+        return value
+    if isinstance(value, float):
+        return value if math.isfinite(value) else None
+    if isinstance(value, dict):
+        return {str(k): _jsonable(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple, set)):
+        return [_jsonable(v) for v in value]
+    if isinstance(value, pd.DataFrame):
+        return [_jsonable(row) for row in value.to_dict("records")]
+    if isinstance(value, pd.Series):
+        return _jsonable(value.to_dict())
+    if value is pd.NaT or (isinstance(value, float) and pd.isna(value)):
+        return None
+    if isinstance(value, (datetime, date, pd.Timestamp)):
+        return value.isoformat()
+    if isinstance(value, np.generic):  # numpy int64/float64/bool_ etc.
+        return _jsonable(value.item())
+    try:
+        if pd.isna(value):  # scalar NaN/NaT that slipped past the checks above
+            return None
+    except (TypeError, ValueError):
+        pass
+    return str(value)
+
+
+def _jsonable_message(msg: dict[str, Any]) -> dict[str, Any]:
+    """Sanitize one history message without mutating the engine's copy."""
+    return {str(k): _jsonable(v) for k, v in msg.items()}
+
+
 def get_history(session_id: str, *, display: bool = False) -> list[dict[str, Any]]:
     ensure_session_exists(session_id)
     engine = ChatbotEngine(session_id=session_id)
     messages = engine.get_conversation_history()
     if not display:
-        return messages
+        return [_jsonable_message(msg) for msg in messages]
     out: list[dict[str, Any]] = []
     for msg in messages:
         role = msg.get("role")
-        meta = msg.get("metadata") or {}
+        meta = _jsonable(msg.get("metadata") or {})
         if role == "user":
             content = meta.get("display_prompt") or msg.get("content", "")
         elif role == "assistant":
