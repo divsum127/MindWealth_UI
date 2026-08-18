@@ -363,6 +363,30 @@ The failure then compounded: both units are `Restart=on-failure`, and a SIGTERM 
 
 ---
 
+### 2026-08-18 — Audit gaps 5, 6, 8: the assistant could not name or reach its own data
+
+**Ask:** fix the three gaps the usage audit surfaced, then test.
+
+**Why these three belong together.** They look like separate bugs — a vocabulary miss, a meta-question, a macro question — but they are one failure: the chatbot's data surface and its routing rules were both drawn around *market* questions, so anything about MindWealth itself fell through to general knowledge or web search. That is the same defect that produced the original NZ answer.
+
+**What the first attempt got wrong, and why it matters.** Adding `_PLATFORM_VOCAB_RE` alongside the existing overrides fixed gap 5 but **not** gap 6. "What signal types exist?" was classified `conversational_only`, and every override lives inside `if not conv:` — so the safety net never ran. The lesson generalises: a deterministic override placed after a classification gate only protects the branches the gate lets through. Platform-vocab questions are now demoted out of CONVERSATIONAL *before* that gate, and SOURCE E is injected on the conversational path as well, so the taxonomy is present even when the router legitimately stays chatty.
+
+**Design decisions:**
+- **Overrides only ever turn internal ON.** Four now compose (level, recommendation, platform, macro). Only the level override suppresses web, because that is the one case where a web answer is actively wrong. The other three leave `web` alone so "mindwealth view on AAPL vs today's news" still lands on HYBRID. A test asserts the composition.
+- **Two regex copies, deliberately.** `macro_context._MACRO_RELEVANT_RE` duplicates the router's pattern rather than importing it, so the context builder still gates correctly when the router is bypassed (presets, direct engine calls). Same pattern already used by `conviction_context`. The cost is that the pair must be edited together — noted in both files.
+- **SOURCE E reads only the `Function` column.** `entry.csv` is ~22 MB and this runs inside a chat turn; the distinct function list is cached for the process lifetime.
+- **WATCH combos are explicitly labelled "NOT firing".** A model handed a list of combos will otherwise present a WATCH combo as an active signal, which is precisely the kind of confident wrongness this feed exists to prevent.
+
+**Things deliberately not done:**
+- **Gap 1 (MTM anchored on `Signal Open Price` while the answer shows `Signal Date/Price` as entry) is untouched.** It is a data-layer contract question — SOXX reads +13.55% where the displayed prices give +10.13% — and changing either the field or the label affects the site, the API and the chatbot at once. Needs Rohit's call.
+- **Gaps 2, 3, 4 and 7 remain**: ~90% duplicate rows in `entry.csv`, MTM recomputed rather than quoted, no sample-size caveat on ranked screens, stale web quotes beside live ones.
+
+**Environment findings worth keeping:**
+- `mindwealth-api-dev.service` runs uvicorn with **`--reload`**. Every file save reloads the process and kills in-flight chat answers; three live replays died mid-flight while another session edited `api/`. Prod does not use `--reload`. The new `fail_orphaned()` converted this from a silent hang into an honest 8-second error, which is how it was noticed — a good sign the earlier fix works, and a reminder that **live chat testing on dev is unreliable while anyone is editing the repo**.
+- `MINDWEALTH_API_BASE_URL` defaults empty, so SOURCE C/D derive the base URL from `API_PORT`. systemd sets it per service (dev 8507, prod 8506) but a shell invocation inherits nothing and falls back to **8506 — prod**. During testing this silently returned prod's stale macro payload and briefly looked like an API caching bug. Any script that calls these builders outside the service must set `API_PORT` explicitly.
+
+---
+
 ### 2026-08-17 — "Could not reach the analyst": root cause across two repos
 
 **Ask:** "still seeing the could not reach analyst error sometimes, figure out the root cause, create a fix plan and make sure the issue does not happen again, also make changes to the frontend repo if needed" — the first explicit authorisation to edit `MindwealthUI_Vue`.
@@ -5883,3 +5907,31 @@ The on-disk XBRL cache (`{TICKER}_sec.json`, 80-day TTL) has no concept of *code
 **Caveat:** `nh_nl_ratio` null in live 2026-08-04 payload — check `macro_intelligence/data/ssi/nh_nl_ratio.csv` freshness separately.
 
 ### 2026-08-03
+---
+
+## 2026-08-18 — Landing page hero tiles read "Could not fetch from server" (Nuxt `:8514`)
+
+**Where the change lives:** `/home/ubuntu/MindwealthUI_Vue` (branch `ui-dev`) — the separate Nuxt repo, not this one. Logged here because this file is the standing job log.
+
+**Root cause.** `server/middleware/bff-auth.ts` (from commit `7661255`) gates every Nitro `/api/*` route on the `mw_access_token` cookie, delegating exemptions to `isPublicBffPath()`. That function was committed as a permanent `return false` — the allowlist it was meant to hold was never filled in. The landing route `/` is public per `middleware/auth.global.ts`, so its two SSR fetches 401'd and `useLandingStats` rendered `UNAVAILABLE_FETCH` in all four tiles.
+
+**Decision: new narrow public route, not an allowlist entry for the existing two.**
+Adding `/api/performance` and `/api/runic/nightly` to `isPublicBffPath()` would have been a two-line fix, but those handlers return the full forward-testing row set and the complete runic nightly payload (active/watch combos, persistence signals). That is the proprietary product, on an unauthenticated marketing page. `GET /api/landing-stats` returns five scalars and nothing else; the two rich routes stay gated.
+
+**Caching.** `loadPerformance()` fans out to `/analytics/performance` + gate A2b + all signal records + shortlist, and `loadRunicNightly()` adds another upstream call. A public route with that cost is an easy amplification target, so the handler memoises in module scope: 5 min when data resolves, 30 s when upstream is down (so an outage recovers quickly without re-fanning every request). The existing per-IP BFF rate limit (100/min) is the second layer.
+
+**Assumptions.**
+- Only the five landing scalars are public. Anything else the marketing page grows must be added to `LandingStatsResponse` deliberately, not by widening the allowlist.
+- `avg_sharpe` currently resolves to `0` upstream, which `formatStat` maps to "Could not compute" — same behaviour as before this change (`/platform` had the same output when authenticated). Not a regression; the upstream aggregate is genuinely absent.
+- Mock mode (`NUXT_USE_MOCK_DATA=true`) is preserved: the route falls back to `getMockPerformance()` / `getMockRunicNightly()` exactly like `resolveApiData` does elsewhere.
+
+**Deferred / not handled.**
+- `resolveApiData` was not reused in the new handler: its `T extends Sourced` constraint does not accept `PerformanceResponse` (which has no `data_source` field), which is a *pre-existing* typecheck error in `server/api/performance.get.ts:7`. Rather than add a 50th error, the handler resolves live-vs-mock inline. The underlying type bug in `data-resolution.ts` / `types/api.ts` is untouched and still fails `nuxi typecheck`.
+- The in-process cache is per node process. Dev and prod run separate processes; there is no shared cache and no invalidation hook after a nightly run — a fresh nightly can take up to 5 min to appear on the landing tiles. Acceptable for marketing copy.
+- `isPublicBffPath()` matches exact paths only (`Set.has`), no prefixes. Fine for one route; revisit if a public sub-tree is ever needed.
+- Nothing was committed. Changes sit uncommitted on `ui-dev` alongside unrelated in-flight edits from other work (`components/analyst/*`, `composables/useOverwatch.ts`, `server/utils/overwatch-panel.ts`, `test/`, `vitest.config.ts`).
+
+**Caveat for the next developer — one build directory, two services.**
+`mindwealth-ui-dev.service` (`:8514` → API `:8507`) and `mindwealth-ui.service` (`:8512` → API `:8506`, www.mindwealth.co) both declare `WorkingDirectory=/home/ubuntu/MindwealthUI_Vue` and both run `.output/server/index.mjs` from it. They differ only in environment. So **`npm run build` for dev also replaces the prod bundle on disk** — prod keeps serving the old code purely because its node process loaded the previous build at start time, and any prod restart (including an unattended `Restart=on-failure`) silently promotes whatever dev last built. This is a real deploy hazard independent of this task; prod should get its own checkout or its own `.output`.
+
+**Files changed:** `server/api/landing-stats.get.ts` (new), `server/utils/require-auth.ts`, `composables/useLandingStats.ts`, `types/api.ts` — all under `/home/ubuntu/MindwealthUI_Vue`.

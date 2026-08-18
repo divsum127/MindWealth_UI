@@ -360,6 +360,33 @@ Server TZ is `Etc/UTC`. Both clones run `run_macro_nightly.py` at `0 18 * * 1-5`
 
 ---
 
+## 2026-08-18 — Chatbot vocabulary + macro data (audit gaps 5, 6, 8) `[PENDING]`
+
+Closes the three routing/data gaps found in the usage audit. Same defect class as the NZ complaint: the assistant could not reach or name data we already compute.
+
+**Git files to merge** (`chatbot-dev` → `chatbot-prod`), commit **`f694f73f8`**:
+- `chatbot/agents/llm_router.py` — `_PLATFORM_VOCAB_RE` + `_MACRO_QUERY_RE` overrides, and demotion of platform-vocab questions out of CONVERSATIONAL
+- `chatbot/macro_context.py` — **new**, SOURCE D (Runic regime, combos, SSI, portfolio risk)
+- `chatbot/platform_context.py` — **new**, SOURCE E (signal-type taxonomy + live function list)
+- `chatbot/chatbot_engine.py` — injects SOURCE D/E on the hybrid, internal **and** conversational paths
+- `chatbot/config.py` — `ENABLE_MACRO_CONTEXT`, `MACRO_CONTEXT_BOOK_ID`, `ENABLE_PLATFORM_CONTEXT`
+- `chatbot/tests/test_platform_and_macro_context.py` — **new**, 17 cases
+
+`[PROD-ACTION]` restart `mindwealth-api.service` after merge — config and prompt wiring are read at process start. No new env keys required (all three default on). No API surface change, so no OpenAPI or docs-submodule update.
+
+`[PROD-ACTION]` **Verify `API_PORT=8506` is set on the prod unit.** SOURCE D self-calls over HTTP and derives its base URL from `API_PORT`; the client's fallback is also `8506`, so this is a check rather than a change. Sharp edge worth knowing: any invocation *outside* the service (a shell script, a cron job) inherits no `API_PORT` and will silently query **prod** even when run from the dev clone.
+
+**Smoke tests:**
+- `[DONE]` 2026-08-18 — `pytest tests/ chatbot/tests -q` → **900 passed, 4 skipped**.
+- `[DONE]` 2026-08-18 — "give me a short summry about claude report" → INTERNAL, extractor selects `claude_report`, answer summarises the real 2026-08-17 report (VIX 15.19, 72 signals). Previously CONVERSATIONAL asking whether Claude was a ticker.
+- `[DONE]` 2026-08-18 — "What signal types exist?" → INTERNAL, `Platform Capabilities` in the flow, all five types selected, answer names TRENDPULSE / DELTADRIFT / FRACTAL TRACK / BASELINEDIVERGENCE / BAND MATRIX. Previously a textbook LONG/SHORT answer.
+- `[DONE]` 2026-08-18 — "what is the current macro regime and which combo is dominant?" → **HYBRID** with a `Macro Overlay` step, leads with Combo F week 20 of 26 and the real regime components. Previously `WEB_RAG` contradicting our own engine.
+- `[PENDING]` prod: repeat all three after merge + restart.
+
+**Dev-environment hazard found while testing (not a code defect):** `mindwealth-api-dev.service` runs uvicorn with `--reload`, so **every file save kills in-flight chat answers**. Three replays died mid-flight while another session edited `api/`. Prod does **not** use `--reload` (verified), so this is dev-only — but it makes live chat testing unreliable whenever anyone is editing. The new `fail_orphaned()` turns it into an honest 8-second error instead of a hang, which is how it was spotted.
+
+---
+
 ## 2026-08-17 — "Could not reach the analyst" — permanent fix, **two repos, ship together** `[PENDING]`
 
 **Both halves must deploy together.** The backend's 330s answer budget is only safe because the client now resumes a job by id instead of holding one socket open and 503-ing. Shipping the backend alone re-exposes the original failure.
@@ -2372,6 +2399,43 @@ curl -s -H "X-API-Key: $KEY" http://127.0.0.1:8506/api/v1/analytics/sentiment/la
 ```
 
 ### Status: `[PENDING]`
+
+---
+
+## 2026-08-18 — Landing page public BFF route (`/api/landing-stats`) — Nuxt repo
+
+**Repo:** `/home/ubuntu/MindwealthUI_Vue` (branch `ui-dev`) — **separate repo**, not `chatbot-dev` → `chatbot-prod`. No files in `MindWealth_UI` change.
+
+**Why:** the Nitro auth gate (commit `7661255`) shipped `isPublicBffPath()` as `return false`, so the public landing page's SSR calls to `/api/performance` and `/api/runic/nightly` returned 401 and all four hero tiles rendered "Could not fetch from server". **Prod `:8512` (www.mindwealth.co) is affected identically.**
+
+### Files to ship (Nuxt repo, currently uncommitted)
+
+| File | Change |
+|------|--------|
+| `server/api/landing-stats.get.ts` | **new** — public scalars-only route (5 numbers), in-process cache 5 min live / 30 s unavailable |
+| `server/utils/require-auth.ts` | `isPublicBffPath()` allowlists `/api/landing-stats` only |
+| `composables/useLandingStats.ts` | reads `/api/landing-stats` instead of `/api/performance` + `/api/runic/nightly` |
+| `types/api.ts` | adds `LandingStatsResponse` |
+
+### Deploy steps
+
+1. Commit + push on `ui-dev` (not done yet).
+2. `npm run build` in `/home/ubuntu/MindwealthUI_Vue` (Node 20 via nvm).
+3. `sudo systemctl restart mindwealth-ui.service` (prod `:8512`).
+4. Smoke: `curl -s http://127.0.0.1:8512/api/landing-stats` → 200 with `data_source":"live"`; `curl -o /dev/null -w "%{http_code}" http://127.0.0.1:8512/api/performance` → **401**; `curl -s http://127.0.0.1:8512/ | grep -c "Could not fetch from server"` → **0**.
+
+### Status
+
+- Dev `:8514` — `[DONE]` 2026-08-18. Built, restarted, verified: landing-stats 200 live (`avg_win_rate 75.92`, `avg_cagr 11.9`, `function_count 9`, `macro_combo_count 7`), gated routes still 401, landing HTML clean.
+- Prod `:8512` — `[PENDING]`. Not restarted; awaiting go-ahead.
+
+### ⚠️ Deploy hazard found while doing this
+
+`mindwealth-ui-dev.service` and `mindwealth-ui.service` share **one** `WorkingDirectory` (`/home/ubuntu/MindwealthUI_Vue`) and therefore **one `.output`**. Building for dev overwrites the prod bundle on disk; prod only keeps serving old code until its process restarts. Any restart — including systemd's `Restart=on-failure` — promotes whatever dev last built, unreviewed. Prod needs its own checkout or its own build output. `[PENDING]` — separate task.
+
+### Env / systemd / secrets
+
+None. No `.env`, no new env var, no unit-file change, no runtime file to copy.
 
 ---
 
