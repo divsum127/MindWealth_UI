@@ -48,3 +48,7 @@ config/manual_sizing_overrides.json
 /ssi.db
 /conviction_aux.db
 macro_intelligence/data/ssi.db
+
+# Claude Code local session state — machine-specific, never shared
+.claude/settings.local.json
+.claude/worktrees/
