@@ -64,17 +64,41 @@ class TestShortMtm(unittest.TestCase):
 
 
 class TestResolveSignalBasis(unittest.TestCase):
-    def test_prefers_signal_open_price_when_valid(self):
+    """
+    MTM is measured from the SIGNAL price, matching what MindWealth core computes
+    and publishes in *_outstanding_signal.csv. This used to prefer Signal Open
+    Price, which made entry.csv disagree with the export it was built from.
+    """
+
+    def test_prefers_signal_price_over_open(self):
         compound = "FOO, Long, 2025-01-01 (Price: 100.0)"
         p, sig_type, sig_date = resolve_signal_basis("95.5", compound)
-        self.assertAlmostEqual(p, 95.5, places=4)
+        self.assertAlmostEqual(p, 100.0, places=4)
         self.assertEqual(sig_type, "Long")
         self.assertEqual(sig_date, "2025-01-01")
 
-    def test_falls_back_to_compound_price(self):
+    def test_real_aapl_case_matches_core(self):
+        """The exact row that exposed the split: core says -0.11%, not -0.14%."""
+        p, sig_type, _ = resolve_signal_basis("306.028", "AAPL, Long, 2026-08-14 (Price: 305.93)")
+        self.assertAlmostEqual(p, 305.93, places=4)
+        self.assertEqual(calculate_mark_to_market(305.59, p, sig_type), "-0.11%")
+
+    def test_falls_back_to_open_when_compound_price_missing(self):
+        """Virtual-trading synthetic rows have no compound price; MTM must not collapse to 0.0%."""
+        p, _, _ = resolve_signal_basis("95.5", "FOO, Long, 2025-01-01")
+        self.assertAlmostEqual(p, 95.5, places=4)
+
+    def test_falls_back_to_open_when_compound_price_is_zero(self):
+        p, _, _ = resolve_signal_basis("95.5", "FOO, Long, 2025-01-01 (Price: 0)")
+        self.assertAlmostEqual(p, 95.5, places=4)
+
+    def test_compound_price_used_when_open_is_blank(self):
         compound = "FOO, Long, 2025-01-01 (Price: 100.0)"
         p, _, _ = resolve_signal_basis("", compound)
         self.assertAlmostEqual(p, 100.0, places=4)
+
+    def test_returns_none_when_neither_price_is_usable(self):
+        self.assertIsNone(resolve_signal_basis(None, "garbage")[0])
 
 
 class TestBatchLatestPrices(unittest.TestCase):
