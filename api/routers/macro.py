@@ -126,6 +126,67 @@ def get_regime() -> dict[str, Any]:
     return _runic_or_404(msvc.get_regime)
 
 
+@router.get("/regime/history", operation_id="get_macro_regime_history",
+            summary="Daily 5-dimension regime history (backtest feed)")
+def get_regime_history(
+    start: str | None = Query(None, description="ISO start date (inclusive), e.g. 2010-01-01"),
+    end: str | None = Query(None, description="ISO end date (inclusive)"),
+) -> dict[str, Any]:
+    """
+    Historical daily 5-dimension regime feed for backtest/strategy-engine consumption
+    (macro regime system fix-to-spec plan, work item 3) -- distinct from `GET /macro/regime`
+    (today only) and `GET /portfolio/regime-history` (accumulates only from job start, never
+    backfilled).
+
+    Source: `macro_regime_log_v2` (real 5-dimension shadow regime table), Friday-evaluated and
+    forward-filled to daily. See `src/macro_intelligence/output/regime_feed_export.py` for the
+    full point-in-time / schema documentation.
+
+    Caveats surfaced in every row so this can't be presented as more settled than it is:
+    - `regime_source`: which table this came from. Designating this as *the* production regime
+      source of truth is a pending decision, not yet signed off
+      (`docs/plans/regime_source_of_truth_decision_2026-07-29.md`).
+    - `multiplier_version`: the per-dimension multiplier table is v1 illustrative economic priors,
+      **not production-signed** (`docs/plans/multiplier_signoff_request_2026-07-29.md`).
+    - `is_forward_filled`: True on days carrying forward the prior Friday's evaluation.
+    - `regime_source`: the producer-side table name. Not to be confused with the consumer-side
+      label `regime_daily_v2` that downstream backtests are asked to stamp on their own output
+      (see docs/plans/ahil_regime_integration_guide_2026-07-29.md) -- two different naming
+      layers, deliberately.
+
+    Currency: `macro_regime_log_v2` is refreshed by the Friday pull job
+    (`jobs/friday_pull.run_friday_pull` -> `update_regime_v2_to_date`, wired 2026-08-18). Before
+    that it had no scheduled writer at all and had frozen at 2026-06-05 while this endpoint kept
+    serving it as current. `latest_evaluation_date` is returned so callers can assert freshness
+    rather than assume it.
+
+    Overlay columns (`vix_mult`, `trend_mult`, `hy_mult`, `chain_mult`) carry the daily
+    VIX / SPX-trend / HY-OAS multipliers used by the live ceiling calculation. They start later
+    than the dimensions -- see `overlay_history_start` in the response -- and are null, never
+    1.0, before that date.
+    """
+    rows = _runic_or_404(_load_regime_history_rows, start, end)
+    from src.macro_intelligence.output.regime_feed_export import overlay_history_start
+
+    return {
+        "start": start,
+        "end": end,
+        # Named explicitly because the two halves of a row have different coverage: the five
+        # dimensions run from 1990, the VIX/trend/HY overlays only from the first HY OAS print.
+        # Before this date the overlay columns are null, never 1.0.
+        "overlay_history_start": overlay_history_start(),
+        "latest_evaluation_date": rows[-1]["evaluation_date"] if rows else None,
+        "row_count": len(rows),
+        "rows": rows,
+    }
+
+
+def _load_regime_history_rows(start: str | None, end: str | None) -> list[dict[str, Any]]:
+    from src.macro_intelligence.output.regime_feed_export import regime_feed_as_records
+
+    return regime_feed_as_records(start=start, end=end)
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Scheduled macro events (pre-catalyst + post-event regime)
 # ─────────────────────────────────────────────────────────────────────────────

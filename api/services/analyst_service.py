@@ -429,8 +429,45 @@ def _build_persistence_alerts(persistence: list[dict[str, Any]]) -> list[dict[st
     return alerts
 
 
+def _build_coverage_alerts(ssi: dict[str, Any]) -> list[dict[str, Any]]:
+    """Raise an Overwatch alert when an SSI layer is below its input-coverage minimum.
+
+    A degraded feed used to be visible only in a log nobody reads. On 2026-08-18 four of Layer
+    2's six inputs were missing for most of a day and the site showed a confident
+    "UNCONFIRMED / 0.80x size" the whole time. Surfacing it here puts a data outage on the
+    same page as the market alerts it would otherwise be mistaken for.
+    """
+    if ssi.get("coverage_ok", True):
+        return []
+    unreliable = ssi.get("coverage_unreliable_layers") or {}
+    if not unreliable:
+        return []
+    detail = "<br>".join(
+        f"<b>{layer.replace('layer', 'Layer ')}</b>: {reason}"
+        for layer, reason in sorted(unreliable.items())
+    )
+    return [{
+        "id": "sentiment-coverage-incomplete",
+        "type": "sentiment_warning",
+        "channel": "system",
+        "label": "AI ANALYST · OVERWATCH · SSI COVERAGE INCOMPLETE",
+        "html": (
+            "SSI size multiplier held at 1.00× because inputs are missing, "
+            "not because the market is neutral.<br>" + detail
+        ),
+        "created_at": _utc_now_iso(),
+        "border_color": "#C5A059",
+        "macro": {
+            "combo": None,
+            "reason": "SSI layer coverage below minimum",
+            "variant": "sentiment",
+        },
+        "warning": {"reasons": sorted(unreliable), "coverage_ok": False},
+    }]
+
+
 def _build_sentiment_warning_alerts(ssi: dict[str, Any]) -> list[dict[str, Any]]:
-    alerts: list[dict[str, Any]] = []
+    alerts: list[dict[str, Any]] = _build_coverage_alerts(ssi)
     cftc = ssi.get("layer3_cftc") or {}
     pattern = cftc.get("positioning_pattern")
     if pattern:

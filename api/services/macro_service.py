@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -144,42 +144,188 @@ def _db_upcoming_releases(days: int = 14) -> list[dict[str, Any]]:
         return []
 
 
+def _analog_drawdown_stats(fire_dates: list[str], horizon_days: int = 189) -> dict[str, dict[str, Any]]:
+    """Max drawdown and days-to-trough after each fire date, from the SPX daily series.
+
+    These are the CONTEXT / MAX DD / BOTTOM TIMING columns the analog tab exists for and
+    which read blank on the page (Rohit 2026-08-06). Computed once per call over a single
+    ^GSPC fetch — never per row — and degrades to empty rather than blocking the endpoint
+    when the series is unavailable.
+    """
+    if not fire_dates:
+        return {}
+    try:
+        import pandas as pd
+
+        from src.macro_intelligence.data.yahoo_pull import fetch_yahoo_close
+
+        spx = fetch_yahoo_close("^GSPC", start="1990-01-01")
+        if spx is None or spx.empty:
+            return {}
+        spx = spx.sort_index()
+    except Exception:
+        return {}
+
+    out: dict[str, dict[str, Any]] = {}
+    for raw_date in fire_dates:
+        try:
+            start = pd.Timestamp(str(raw_date)[:10])
+            end = start + pd.Timedelta(days=horizon_days)
+            window = spx.loc[start:end]
+            if window.empty:
+                continue
+            # An un-elapsed window would report a 0% drawdown and a 0-day bottom, which
+            # reads as "no drawdown" rather than "not yet known". Report nothing instead.
+            if window.index[-1] < end - pd.Timedelta(days=5):
+                continue
+            # Peak-to-trough within the window (running max), not trough-vs-entry — a
+            # drawdown measured from entry reads 0% for any window that only rose.
+            drawdown = window / window.cummax() - 1.0
+            trough_pos = int(drawdown.values.argmin())
+            out[str(raw_date)] = {
+                "max_dd_pct": round(float(drawdown.iloc[trough_pos]) * 100, 2),
+                "bottom_timing_days": int((window.index[trough_pos] - window.index[0]).days),
+                "horizon_days": horizon_days,
+            }
+        except Exception:
+            continue
+    return out
+
+
 def _db_analog_details(combo_id: str, limit: int = 6) -> list[dict[str, Any]]:
     try:
         from src.macro_intelligence.db.connection import get_connection
         with get_connection() as conn:
+            # The regime column is `macro_regime`, not `macro_regime_json`. The wrong name
+            # made this query raise on every call, so the endpoint silently fell back to
+            # the dominant-combo JSON block for all seven combos (Rohit 2026-08-06).
+            # Only ACTIVE-class fires are analogs — a WATCH row is not a fire.
+            # A fire is only an analog once its judging horizon has matured — otherwise the
+            # row is a live fire with empty returns, which is what made 9M read TBD for a
+            # 2008 fire on the page.
+            primary = _combo_primary_horizon(combo_id)
+            matured_before = (
+                datetime.now(UTC).date() - timedelta(days=_HORIZON_DAYS.get(primary, 92))
+            ).isoformat()
             rows = conn.execute(
-                """SELECT cf.date, cf.status, cf.runic_combo,
+                f"""SELECT cf.date, cf.status, cf.runic_combo,
                           fr.spx_1m, fr.spx_3m, fr.spx_6m, fr.spx_9m, fr.spx_12m,
-                          cf.macro_regime_json
+                          cf.macro_regime
                    FROM combo_fires cf
-                   LEFT JOIN forward_returns fr ON cf.combo_id = fr.combo_id
+                   JOIN forward_returns fr ON cf.combo_id = fr.combo_id
                    WHERE cf.runic_combo = ?
+                     AND cf.status IN ('ACTIVE','PARTIAL','CONFIRMED','CONFIRMED_3_OF_3','ESCALATION_ALERT')
+                     AND fr.{primary} IS NOT NULL
+                     AND cf.date <= ?
                    ORDER BY cf.date DESC LIMIT ?""",
-                (combo_id.upper(), limit),
+                (combo_id.upper(), matured_before, limit),
             ).fetchall()
         results = []
         for r in rows:
             regime = {}
-            if r["macro_regime_json"]:
+            if r["macro_regime"]:
                 try:
-                    regime = json.loads(r["macro_regime_json"])
+                    regime = json.loads(r["macro_regime"])
                 except Exception:
                     pass
             results.append({
                 "date": r["date"],
                 "status": r["status"],
                 "combo": r["runic_combo"],
-                "spx_1m_pct": round(float(r["spx_1m"]), 2) if r["spx_1m"] is not None else None,
-                "spx_3m_pct": round(float(r["spx_3m"]), 2) if r["spx_3m"] is not None else None,
-                "spx_6m_pct": round(float(r["spx_6m"]), 2) if r["spx_6m"] is not None else None,
-                "spx_9m_pct": round(float(r["spx_9m"]), 2) if r["spx_9m"] is not None else None,
-                "spx_12m_pct": round(float(r["spx_12m"]), 2) if r["spx_12m"] is not None else None,
+                "primary_horizon": primary,
+                # Each horizon is nulled on its OWN maturity, not the primary's. A Feb 2026
+                # fire has a real 6M return but its 9M window has not closed, and the stored
+                # placeholder would otherwise render as a realised outcome.
+                "spx_1m_pct": _matured_pct(r["date"], "spx_1m", r["spx_1m"]),
+                "spx_3m_pct": _matured_pct(r["date"], "spx_3m", r["spx_3m"]),
+                "spx_6m_pct": _matured_pct(r["date"], "spx_6m", r["spx_6m"]),
+                "spx_9m_pct": _matured_pct(r["date"], "spx_9m", r["spx_9m"]),
+                "spx_12m_pct": _matured_pct(r["date"], "spx_12m", r["spx_12m"]),
                 "regime": regime,
+                "context": _analog_context(regime),
             })
+
+        dd = _analog_drawdown_stats([str(row["date"]) for row in results])
+        for row in results:
+            stats = dd.get(str(row["date"])) or {}
+            row["max_dd_pct"] = stats.get("max_dd_pct")
+            row["bottom_timing_days"] = stats.get("bottom_timing_days")
         return results
     except Exception:
         return []
+
+
+_ALLOWED_HORIZONS = frozenset({"spx_1w", "spx_2w", "spx_1m", "spx_3m", "spx_6m", "spx_9m", "spx_12m"})
+
+# Calendar length of each forward-return horizon, used to decide whether a fire's judging
+# window has actually elapsed. `forward_returns` stores 0.0 (not NULL) for horizons that
+# have not matured yet, so a NULL check alone lets un-elapsed rows through as real 0.00%
+# outcomes — which is how a July 2026 fire ended up displaying a realised 9M return.
+_HORIZON_DAYS = {
+    "spx_1w": 7,
+    "spx_2w": 14,
+    "spx_1m": 31,
+    "spx_3m": 92,
+    "spx_6m": 183,
+    "spx_9m": 274,
+    "spx_12m": 366,
+}
+
+
+def _horizon_matured(fire_date: str, horizon: str) -> bool:
+    """True when `horizon` has fully elapsed since `fire_date`."""
+    try:
+        fired = datetime.strptime(str(fire_date)[:10], "%Y-%m-%d").date()
+    except Exception:
+        return False
+    return (fired + timedelta(days=_HORIZON_DAYS.get(horizon, 92))) <= datetime.now(UTC).date()
+
+
+def _matured_pct(fire_date: str, horizon: str, value: Any) -> float | None:
+    """Forward return for a horizon, or None when that horizon has not matured yet."""
+    if value is None or not _horizon_matured(fire_date, horizon):
+        return None
+    return round(float(value), 2)
+
+
+def _combo_primary_horizon(combo_id: str, default: str = "spx_3m") -> str:
+    """The forward-return column a combo is judged on, validated against the schema.
+
+    Validated because the value is interpolated into SQL — never let an unexpected config
+    value reach the query string.
+    """
+    try:
+        from src.macro_intelligence.engine.combo_metadata import combo_primary_horizon
+
+        horizon = combo_primary_horizon(combo_id.upper()) or default
+    except Exception:
+        horizon = default
+    return horizon if horizon in _ALLOWED_HORIZONS else default
+
+
+def _min_matured_episodes(default: int = 5) -> int:
+    """Episode floor below which a combo's analog table is not a usable history."""
+    try:
+        from src.macro_intelligence.config import load_config
+
+        return int(load_config().get("dominant", {}).get("min_matured_episodes", default))
+    except Exception:
+        return default
+
+
+def _analog_context(regime: dict[str, Any]) -> str | None:
+    """Short regime description for an analog row, from the fire's stored macro regime."""
+    if not isinstance(regime, dict) or not regime:
+        return None
+    label = regime.get("label")
+    if label:
+        return str(label)
+    parts = [
+        str(regime[key])
+        for key in ("fed_cycle", "curve_regime", "val_regime", "geo_overlay", "liquidity")
+        if regime.get(key)
+    ]
+    return " · ".join(parts) if parts else None
 
 
 def _db_combo_fire_detail(combo_id: str) -> dict[str, Any] | None:
@@ -187,10 +333,14 @@ def _db_combo_fire_detail(combo_id: str) -> dict[str, Any] | None:
     try:
         from src.macro_intelligence.db.connection import get_connection
         with get_connection() as conn:
+            # Column names must match the live schema: `macro_regime`, and the leg vars are
+            # three columns (var1_id/var2_id/var3_id), not a JSON blob. The previous names
+            # (`macro_regime_json`, `var_ids_json`, `confirmed_legs_json`) do not exist, so
+            # this query raised and the caller silently got None on every request.
             row = conn.execute(
                 """SELECT cf.combo_id, cf.date, cf.status, cf.duration_weeks,
-                          cf.duration_bucket, cf.var_ids_json, cf.macro_regime_json,
-                          cf.confirmed_legs_json
+                          cf.duration_bucket, cf.macro_regime,
+                          cf.var1_id, cf.var2_id, cf.var3_id
                    FROM combo_fires cf
                    WHERE cf.runic_combo = ?
                    ORDER BY cf.date DESC LIMIT 1""",
@@ -199,23 +349,15 @@ def _db_combo_fire_detail(combo_id: str) -> dict[str, Any] | None:
         if not row:
             return None
         meta = {}
-        if row["macro_regime_json"]:
+        if row["macro_regime"]:
             try:
-                meta = json.loads(row["macro_regime_json"])
+                meta = json.loads(row["macro_regime"])
             except Exception:
                 pass
-        legs = []
-        if row["confirmed_legs_json"]:
-            try:
-                legs = json.loads(row["confirmed_legs_json"])
-            except Exception:
-                pass
-        var_ids = []
-        if row["var_ids_json"]:
-            try:
-                var_ids = json.loads(row["var_ids_json"])
-            except Exception:
-                pass
+        # `combo_fires` stores the legs as three columns, and carries no separate
+        # confirmed-legs list — that comes from the live watch payload, not this row.
+        var_ids = [row[key] for key in ("var1_id", "var2_id", "var3_id") if row[key]]
+        legs: list[str] = []
         return {
             "combo_id": row["combo_id"],
             "date": row["date"],
@@ -581,9 +723,13 @@ def get_combo_detail(combo_id: str) -> dict[str, Any]:
         hr_stats = {}
         fed_cycle_slices = None
 
-    analog_details = _safe(data, "analog_details", [])
-    if not analog_details or (analog_details and analog_details[0].get("date") is None):
-        analog_details = _db_analog_details(combo_id)
+    # Always resolve analogs per combo from the DB. The nightly JSON's `analog_details`
+    # block is written for the DOMINANT combo only, so preferring it here served the same
+    # three fire dates for all seven combos — seven different trigger conditions cannot
+    # share a fire history (Rohit 2026-08-06).
+    analog_details = _db_analog_details(combo_id)
+    matured = len([a for a in analog_details if a.get("date")])
+    min_episodes = _min_matured_episodes()
 
     return {
         "combo": combo_id,
@@ -610,6 +756,9 @@ def get_combo_detail(combo_id: str) -> dict[str, Any]:
         "fed_cycle_slices": fed_cycle_slices,
         "analog_dates": [a.get("date") for a in analog_details if a.get("date")],
         "analog_details": analog_details,
+        "matured_episodes": matured,
+        "min_matured_episodes": min_episodes,
+        "insufficient_history": matured < min_episodes,
     }
 
 
@@ -907,17 +1056,36 @@ def get_ssi_summary() -> dict[str, Any]:
             "norm": _round2(v.get("norm")) if v.get("norm") is not None else None,
         }
 
+    # The SSI multiplier appears twice on the Runic page with two different values (1.20 in
+    # the SSI panels, 1.00 in the ceiling chain) because the ceiling caps the term at 1.0
+    # while the position-sizing path uses it raw. Both are correct for their own purpose, so
+    # each is now labelled instead of two numbers sharing one name (Rohit 6 Aug).
+    ssi_mult_raw = row["ssi_multiplier"]
+    ssi_ceiling_term = min(1.0, float(ssi_mult_raw)) if ssi_mult_raw is not None else None
+
     return {
         "date": row["date"],
         "ssi_level": row["ssi_level"],
         "ssi_percentile_5y": row["ssi_percentile_5y"],
-        "ssi_multiplier": row["ssi_multiplier"],
+        "ssi_multiplier": ssi_mult_raw,
+        "ssi_multiplier_raw": ssi_mult_raw,
+        "ssi_multiplier_label": "SSI size multiplier (uncapped)",
+        "ssi_ceiling_term": ssi_ceiling_term,
+        "ssi_ceiling_term_label": "SSI ceiling term (capped at 1.00)",
+        "ssi_ceiling_term_note": (
+            "The equity-ceiling chain caps the SSI term at 1.00, so an SSI above 1.00 never "
+            "raises the ceiling. Position sizing uses the uncapped value."
+        ),
         "layer2_status": row["layer2_status"],
         "layer2_confirmed_count": row["layer2_confirmed_count"],
         "layer2_required": min_confirmed,
         "layer2_gate_total": gate_total or 6,
         "layer2_gate_label": gate_label,
         "layer2_gate_direction": payload.get("layer2_gate_direction"),
+        # Carried through so the Overwatch coverage alert and the Sentiment banner read the
+        # same fields the scoring gate acted on, rather than re-deriving them.
+        "coverage_ok": payload.get("coverage_ok", True),
+        "coverage_unreliable_layers": payload.get("coverage_unreliable_layers") or {},
         "layer3_cftc": layer3_cftc,
         "posture": (
             "RISK_ON" if row["ssi_level"] < -0.6

@@ -752,6 +752,11 @@ def sentiment_layers() -> dict[str, Any]:
         "ssi_percentile_5y": positioning.get("ssi_percentile_5y"),
         "layer2_status": positioning.get("layer2_status"),
         "ssi_multiplier": positioning.get("ssi_multiplier"),
+        # Surfaced on the composite (not just buried per-layer) so the page can say the
+        # multiplier is neutral *because inputs are missing* rather than because the market
+        # is neutral -- the distinction the 2026-08-18 audit found the UI could not make.
+        "coverage_ok": positioning.get("coverage_ok", True),
+        "coverage_unreliable_layers": positioning.get("coverage_unreliable_layers") or {},
         "layers": layers,
     }
     layer_inputs = _ensure_layer2_gate_votes(positioning.get("inputs", {}) or {})
@@ -773,6 +778,7 @@ def sentiment_layers() -> dict[str, Any]:
         "layer2_gate_direction": layer_inputs.get("layer2_gate_direction")
         or positioning.get("layer2_gate_direction"),
         "layer2_gate_label": layer_inputs.get("layer2_gate_label") or positioning.get("layer2_gate_label"),
+        "staleness_policy": positioning.get("staleness_policy") or {},
         "signal_rows": signals.get("records", []),
         "signal_report_date": signals.get("report_date"),
     }
