@@ -13,7 +13,7 @@ Environment="PYTHONPATH=/home/ubuntu/uiv2/git/MindWealth_UI"
 Environment="API_HOST=0.0.0.0"
 Environment="API_PORT=8507"
 Environment="CHATBOT_JOB_WORKERS=2"
-ExecStart=/home/ubuntu/uiv2/git/MindWealth_UI/.venv/bin/uvicorn api.main:app --host 0.0.0.0 --port 8507 --reload
+ExecStart=/home/ubuntu/uiv2/git/MindWealth_UI/.venv/bin/uvicorn api.main:app --host 0.0.0.0 --port 8507
 Restart=on-failure
 RestartSec=5
 
