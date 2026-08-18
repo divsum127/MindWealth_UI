@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+
 import io
 import zipfile
 from dataclasses import dataclass
@@ -17,15 +19,24 @@ from src.macro_intelligence.data.retry_cache import pull_with_cache
 from src.macro_intelligence.db.connection import get_connection
 from src.macro_intelligence.engine.percentiles import percentile_rank
 
+logger = logging.getLogger("macro.cftc")
+
 CFTC_TFF_YEAR_URL = "https://www.cftc.gov/files/dea/history/fut_fin_txt_{year}.zip"
 CFTC_TFF_BULK_URL = "https://www.cftc.gov/files/dea/history/fin_fut_txt_2006_2016.zip"
 CFTC_TFF_BULK_TXT = "F_TFF_2006_2016.txt"
 CFTC_LOCAL_CACHE_DIR = Path(__file__).resolve().parents[3] / "macro_intelligence" / "data_cache" / "cftc"
-_TFF_RAW_CACHE: pd.DataFrame | None = None
+# Keyed by start_year: a single global meant the first caller's window was served to
+# every later caller for the life of the process (the API server is long-lived).
+_TFF_RAW_CACHE: dict[int, pd.DataFrame] = {}
 
 # How old a cached ZIP can be before we force a re-download regardless of the day.
 # CFTC publishes every Friday — so anything older than 8 days means we missed a release.
 _CFTC_STALE_DAYS = 8
+
+# Minimum observations before a rolling percentile is publishable. A full 156-week window holds
+# ~156 weekly prints; 100 allows for the genuine ramp-up at the very start of the TFF series
+# (June 2006) while still rejecting the "only the current year was loaded" failure.
+MIN_PCTILE_WINDOW_OBS = 100
 
 
 def refresh_cftc_zip_if_stale(year: int | None = None) -> bool:
@@ -48,7 +59,6 @@ def refresh_cftc_zip_if_stale(year: int | None = None) -> bool:
 
     Returns True when a fresh file was downloaded, False otherwise.
     """
-    global _TFF_RAW_CACHE
 
     year = year or datetime.now().year
     local_path = CFTC_LOCAL_CACHE_DIR / f"fut_fin_txt_{year}.zip"
@@ -90,7 +100,7 @@ def refresh_cftc_zip_if_stale(year: int | None = None) -> bool:
             return False
         CFTC_LOCAL_CACHE_DIR.mkdir(parents=True, exist_ok=True)
         local_path.write_bytes(resp.content)
-        _TFF_RAW_CACHE = None  # force re-parse on next fetch
+        _TFF_RAW_CACHE.clear()  # force re-parse on next fetch
         return True
     except Exception:
         return False
@@ -98,7 +108,6 @@ def refresh_cftc_zip_if_stale(year: int | None = None) -> bool:
 
 def force_refresh_cftc_zip(year: int | None = None) -> bool:
     """Download current-year CFTC TFF ZIP unconditionally (nightly lag recovery)."""
-    global _TFF_RAW_CACHE
 
     year = year or datetime.now().year
     local_path = CFTC_LOCAL_CACHE_DIR / f"fut_fin_txt_{year}.zip"
@@ -109,27 +118,60 @@ def force_refresh_cftc_zip(year: int | None = None) -> bool:
             return False
         CFTC_LOCAL_CACHE_DIR.mkdir(parents=True, exist_ok=True)
         local_path.write_bytes(resp.content)
-        _TFF_RAW_CACHE = None
+        _TFF_RAW_CACHE.clear()
         return True
     except Exception:
         return False
 
 
-def _local_zip_paths(start_year: int) -> list[Path]:
-    """Prefer zips saved by scripts/download_cftc_tff_zip.py before hitting CFTC."""
+def _expected_zip_specs(start_year: int) -> list[tuple[Path, str]]:
+    """Every (local path, source URL) the requested window needs, oldest first.
+
+    Made explicit because "which files should exist" and "which files do exist" were
+    previously the same question -- see ``_download_frames``.
+    """
     cache = CFTC_LOCAL_CACHE_DIR
-    if not cache.is_dir():
-        return []
-    paths: list[Path] = []
-    bulk = cache / "fin_fut_txt_2006_2016.zip"
-    if start_year <= 2016 and bulk.is_file():
-        paths.append(bulk)
+    specs: list[tuple[Path, str]] = []
+    if start_year <= 2016:
+        specs.append((cache / "fin_fut_txt_2006_2016.zip", CFTC_TFF_BULK_URL))
     current_year = datetime.now().year
     for year in range(max(2017, start_year), current_year + 1):
-        annual = cache / f"fut_fin_txt_{year}.zip"
-        if annual.is_file():
-            paths.append(annual)
-    return paths
+        specs.append((cache / f"fut_fin_txt_{year}.zip", CFTC_TFF_YEAR_URL.format(year=year)))
+    return specs
+
+
+def _local_zip_paths(start_year: int) -> list[Path]:
+    """Zips already on disk for the requested window (saved by download_cftc_tff_zip.py)."""
+    if not CFTC_LOCAL_CACHE_DIR.is_dir():
+        return []
+    return [path for path, _ in _expected_zip_specs(start_year) if path.is_file()]
+
+
+def _fetch_missing_zips(start_year: int) -> list[Path]:
+    """Download only the window's missing zips into the local cache. Returns what was added.
+
+    This is what stops a *partial* cache being mistaken for a complete one. On prod the cache
+    held only ``fut_fin_txt_2026.zip``, so the 156-week percentile window was computed over the
+    ~31 weekly prints of the current year: identical ``fm_net`` of -333,099 ranked 87.1st on
+    prod (27/31) against 52.9th on dev (82/155). Nothing flagged it, because a short window is
+    indistinguishable from a normal one once the frames are concatenated.
+    """
+    added: list[Path] = []
+    for path, url in _expected_zip_specs(start_year):
+        if path.is_file():
+            continue
+        try:
+            resp = requests.get(url, timeout=120)
+            if resp.status_code != 200:
+                logger.warning("CFTC zip unavailable (HTTP %s): %s", resp.status_code, url)
+                continue
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(resp.content)
+            added.append(path)
+            logger.info("CFTC zip backfilled: %s (%d bytes)", path.name, len(resp.content))
+        except Exception as exc:
+            logger.warning("CFTC zip download failed for %s: %s", url, exc)
+    return added
 
 
 def _read_zip_frames(paths: list[Path]) -> list[pd.DataFrame]:
@@ -158,45 +200,37 @@ class CftcSnapshot:
 
 
 def _download_frames(start_year: int) -> pd.DataFrame:
-    """TFF futures-only files (fut_fin_txt_*.zip), not legacy deacot."""
-    global _TFF_RAW_CACHE
-    if _TFF_RAW_CACHE is not None and not _TFF_RAW_CACHE.empty:
-        return _TFF_RAW_CACHE
+    """TFF futures-only files (fut_fin_txt_*.zip), not legacy deacot.
+
+    Completeness matters more than presence here: the percentile window is only as deep as the
+    files that were loaded, so a cache holding one year silently produces a one-year rank. Any
+    zip the window needs but does not have is fetched and persisted, rather than the whole
+    network path being skipped because *some* local file was found.
+    """
+    cached = _TFF_RAW_CACHE.get(start_year)
+    if cached is not None and not cached.empty:
+        return cached
+
+    expected = _expected_zip_specs(start_year)
+    _fetch_missing_zips(start_year)
     local = _local_zip_paths(start_year)
-    if local:
-        frames = _read_zip_frames(local)
-        if frames:
-            _TFF_RAW_CACHE = pd.concat(frames, ignore_index=True)
-            return _TFF_RAW_CACHE
-    frames: list[pd.DataFrame] = []
-    if start_year <= 2016:
-        try:
-            resp = requests.get(CFTC_TFF_BULK_URL, timeout=120)
-            if resp.status_code == 200:
-                with zipfile.ZipFile(io.BytesIO(resp.content)) as zf:
-                    with zf.open(CFTC_TFF_BULK_TXT) as f:
-                        frames.append(pd.read_csv(f, low_memory=False))
-        except Exception:
-            pass
-    current_year = datetime.now().year
-    for year in range(max(2017, start_year), current_year + 1):
-        url = CFTC_TFF_YEAR_URL.format(year=year)
-        try:
-            resp = requests.get(url, timeout=90)
-            if resp.status_code != 200:
-                continue
-            with zipfile.ZipFile(io.BytesIO(resp.content)) as zf:
-                for name in zf.namelist():
-                    if name.lower().endswith(".txt"):
-                        with zf.open(name) as f:
-                            frames.append(pd.read_csv(f, low_memory=False))
-                        break
-        except Exception:
-            continue
+    if len(local) < len(expected):
+        missing = [path.name for path, _ in expected if not path.is_file()]
+        logger.warning(
+            "CFTC history incomplete for start_year=%s: %d of %d zips present, missing %s. "
+            "Rolling percentiles will be computed over a shortened window.",
+            start_year,
+            len(local),
+            len(expected),
+            missing,
+        )
+
+    frames = _read_zip_frames(local)
     if not frames:
         return pd.DataFrame()
-    _TFF_RAW_CACHE = pd.concat(frames, ignore_index=True)
-    return _TFF_RAW_CACHE
+    combined = pd.concat(frames, ignore_index=True)
+    _TFF_RAW_CACHE[start_year] = combined
+    return combined
 
 
 def _market_mask(series: pd.Series, cfg: dict[str, Any]) -> pd.Series:
@@ -258,7 +292,7 @@ def parse_cftc_pair(
     if date_col is None or long_col is None or short_col is None:
         return pd.Series(dtype=float)
 
-    sub[date_col] = pd.to_datetime(sub[date_col], errors="coerce")
+    sub[date_col] = _parse_report_dates(sub[date_col])
     sub["net"] = pd.to_numeric(sub[long_col], errors="coerce") - pd.to_numeric(sub[short_col], errors="coerce")
     # One consolidated row per date expected; use last if duplicates
     out = sub.groupby(date_col)["net"].last().sort_index()
@@ -285,6 +319,82 @@ def parse_cftc_rm_dataframe(df: pd.DataFrame) -> pd.Series:
     )
 
 
+def _parse_report_dates(values: pd.Series) -> pd.Series:
+    """Parse the TFF ``Report_Date_as_YYYY-MM-DD`` column.
+
+    The column is ISO by contract, but parsing it without an explicit format made pandas fall
+    back to per-element ``dateutil`` and emit a UserWarning for every call. Those warnings were
+    the only thing in ssi_daily.log -- hundreds of lines of noise that hid the real pull
+    failures. The explicit format is also an order of magnitude faster on a full history.
+    """
+    parsed = pd.to_datetime(values, format="%Y-%m-%d", errors="coerce")
+    if parsed.isna().all() and len(values):
+        # Older bulk files have been seen with other layouts; fall back rather than lose them.
+        parsed = pd.to_datetime(values, errors="coerce", format="mixed")
+    return parsed
+
+
+def _exact_market_net(
+    df: pd.DataFrame,
+    market_label: str,
+    *,
+    asset_manager: bool = False,
+) -> pd.Series:
+    """Parse FM or RM net for one exact TFF market line (no consolidated preference)."""
+    market_col = _find_col(df, ["Market_and_Exchange_Names", "Market and Exchange Names"])
+    if market_col is None:
+        return pd.Series(dtype=float)
+    needle = market_label.strip().lower()
+    sub = df.loc[df[market_col].astype(str).str.strip().str.lower() == needle].copy()
+    if sub.empty:
+        sub = df.loc[df[market_col].astype(str).str.contains(market_label, case=False, na=False)].copy()
+        exclude = load_config().get("cftc", {}).get("market_exclude", "E-MINI|MICRO|DIVIDEND|ADJUSTED INT RATE")
+        sub = sub.loc[~sub[market_col].astype(str).str.contains(exclude, case=False, na=False, regex=True)]
+        sub = sub.loc[sub[market_col].astype(str).str.contains(market_label, case=False, na=False)]
+    if sub.empty:
+        return pd.Series(dtype=float)
+    if asset_manager:
+        long_names = ["Asset_Mgr_Positions_Long_All", "Asset Mgr Positions-Long-All"]
+        short_names = ["Asset_Mgr_Positions_Short_All", "Asset Mgr Positions-Short-All"]
+    else:
+        long_names = ["Lev_Money_Positions_Long_All", "Lev Money Positions-Long-All"]
+        short_names = ["Lev_Money_Positions_Short_All", "Lev Money Positions-Short-All"]
+    date_col = _find_col(sub, ["Report_Date_as_YYYY-MM-DD", "Report_Date", "As of Date in Form YYYY-MM-DD"])
+    long_col = _find_col(sub, long_names)
+    short_col = _find_col(sub, short_names)
+    if date_col is None or long_col is None or short_col is None:
+        return pd.Series(dtype=float)
+    sub[date_col] = _parse_report_dates(sub[date_col])
+    sub["net"] = pd.to_numeric(sub[long_col], errors="coerce") - pd.to_numeric(sub[short_col], errors="coerce")
+    out = sub.groupby(date_col)["net"].last().sort_index()
+    out.index = pd.to_datetime(out.index)
+    return out.dropna()
+
+
+def _stitch_legacy_consolidated_net(df: pd.DataFrame, *, asset_manager: bool = False) -> pd.Series:
+    """Production Consolidated line + pre-2010 S&P 500 STOCK INDEX backfill for GFC-era tests."""
+    cfg = load_config().get("cftc", {})
+    primary = cfg.get("market_primary", "S&P 500 Consolidated")
+    legacy = cfg.get("legacy_market_backfill", "S&P 500 STOCK INDEX")
+    if not cfg.get("legacy_market_backfill_enabled", True):
+        if asset_manager:
+            return parse_cftc_rm_dataframe(df)
+        return parse_cftc_dataframe(df)
+    consolidated = _exact_market_net(df, primary, asset_manager=asset_manager)
+    if consolidated.empty:
+        if asset_manager:
+            return parse_cftc_rm_dataframe(df)
+        return parse_cftc_dataframe(df)
+    legacy_series = _exact_market_net(df, legacy, asset_manager=asset_manager)
+    if legacy_series.empty:
+        return consolidated
+    cutoff = consolidated.index.min()
+    pre = legacy_series.loc[legacy_series.index < cutoff]
+    if pre.empty:
+        return consolidated
+    return pd.concat([pre, consolidated]).sort_index().groupby(level=0).last()
+
+
 def _rolling_pctile(series: pd.Series, as_of: pd.Timestamp, weeks: int = 156) -> float | None:
     """3-year rolling percentile **rank** of the latest value (dashboard ``fm_pctile`` / ``rm_pctile``).
 
@@ -298,6 +408,21 @@ def _rolling_pctile(series: pd.Series, as_of: pd.Timestamp, weeks: int = 156) ->
     window = hist[hist.index >= cutoff]
     if len(window) < 10:
         window = hist
+    # A rank is only meaningful against the window it claims to use. Before this guard a
+    # partial zip cache produced a ~31-week window that was published as a "3yr pct" -- the
+    # same fm_net ranked 87.1st on prod and 52.9th on dev. Refusing to rank is the correct
+    # answer to "we do not have three years of history", the same way combo hit rates refuse
+    # to publish below their minimum episode count.
+    if len(window) < MIN_PCTILE_WINDOW_OBS:
+        logger.warning(
+            "CFTC percentile suppressed: window has %d observations, need %d for a %d-week "
+            "rank (history likely incomplete -- check %s)",
+            len(window),
+            MIN_PCTILE_WINDOW_OBS,
+            weeks,
+            CFTC_LOCAL_CACHE_DIR,
+        )
+        return None
     return percentile_rank(float(hist.iloc[-1]), window)
 
 
@@ -350,7 +475,7 @@ def fetch_cftc_fast_money_net(start_year: int = 2006) -> pd.Series:
         df = _download_frames(start_year)
         if df.empty:
             return pd.Series(dtype=float)
-        s = parse_cftc_dataframe(df)
+        s = _stitch_legacy_consolidated_net(df, asset_manager=False)
         from src.macro_intelligence.data.retry_cache import log_pull
 
         log_pull("cftc_fm", "OK", {"rows": len(s)})
@@ -367,7 +492,7 @@ def fetch_cftc_asset_manager_net(start_year: int = 2006) -> pd.Series:
         df = _download_frames(start_year)
         if df.empty:
             return pd.Series(dtype=float)
-        s = parse_cftc_rm_dataframe(df)
+        s = _stitch_legacy_consolidated_net(df, asset_manager=True)
         from src.macro_intelligence.data.retry_cache import log_pull
 
         log_pull("cftc_rm", "OK", {"rows": len(s)})

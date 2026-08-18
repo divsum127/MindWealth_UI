@@ -12,6 +12,7 @@ from src.macro_intelligence.data.cftc_pull import (
     persist_cftc_snapshot,
 )
 from src.sentiment_superindex.data.cftc_patterns import evaluate_cftc_positioning
+from src.sentiment_superindex.data.gross_net_flag import evaluate_gross_net_divergence
 
 
 def cftc_layer3_snapshot(as_of: str) -> dict[str, Any]:
@@ -32,4 +33,5 @@ def cftc_layer3_snapshot(as_of: str) -> dict[str, Any]:
         rm_net=snap.rm_net,
     )
     out["gross_net_divergence"] = gross
+    out.update(evaluate_gross_net_divergence(as_of))
     return out

@@ -9,10 +9,12 @@ import pandas as pd
 from src.macro_intelligence.data.cftc_pull import (
     fetch_cftc_asset_manager_net,
     fetch_cftc_fast_money_net,
+    refresh_cftc_zip_if_stale,
 )
 from src.sentiment_superindex.data.aaii_pull import fetch_aaii_spread
 from src.sentiment_superindex.data.cftc_ssi import cftc_layer3_snapshot
 from src.sentiment_superindex.data.cnn_fear_greed import load_cnn_series
+from src.sentiment_superindex.data.margin_debt_pull import fetch_margin_debt
 from src.sentiment_superindex.data.mcclellan_pull import fetch_mcclellan_oscillator
 from src.sentiment_superindex.data.naaim_pull import fetch_naaim_exposure
 from src.sentiment_superindex.data.nh_nl_pull import fetch_nh_nl_ratio
@@ -38,6 +40,14 @@ def _gross_net_series() -> pd.Series:
 def load_all_series(force: bool = False) -> dict[str, pd.Series]:
     if _CACHE and not force:
         return _CACHE
+
+    # The SSI job had no way to obtain a newer COT file: only the *macro* pull path called
+    # refresh, so SSI read whatever zip happened to be on disk. Combined with cron order --
+    # SSI 04:00 ET against a CFTC release at Friday 15:30 ET -- Layer 3 ran up to 2.5 days
+    # behind a release that had already published, then aged past its staleness cap and
+    # dropped out entirely. Refreshing here is what closes that window.
+    refresh_cftc_zip_if_stale()
+
     _CACHE.clear()
     _CACHE.update(
         {
@@ -55,6 +65,7 @@ def load_all_series(force: bool = False) -> dict[str, pd.Series]:
             "cftc_fm_net": fetch_cftc_fast_money_net(),
             "cftc_rm_net": fetch_cftc_asset_manager_net(),
             "gross_net": _gross_net_series(),
+            "margin_debt": fetch_margin_debt(),
         }
     )
     return _CACHE

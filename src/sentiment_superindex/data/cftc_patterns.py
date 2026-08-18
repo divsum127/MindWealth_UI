@@ -67,8 +67,15 @@ def evaluate_cftc_positioning(
 
         pos_ts = pd.Timestamp(position_date)
         release_date = (pos_ts + pd.Timedelta(days=3)).strftime("%Y-%m-%d")
-        exp_ts = pd.Timestamp(expected_release) + pd.Timedelta(days=3)
-        next_release = exp_ts.strftime("%Y-%m-%d")
+        # `next_release` used to be expected_release + 3 days. expected_release is the latest
+        # Tuesday whose report is already due, so +3 lands on the Friday that has ALREADY
+        # happened -- the tile advertised "next release Fri 14 Aug" on 18 Aug. CFTC publishes
+        # weekly, so the next one is the first Friday strictly after the as-of date.
+        next_ts = pd.Timestamp(release_date)
+        as_of_ts = pd.Timestamp(as_of).normalize()
+        while next_ts <= as_of_ts:
+            next_ts += pd.Timedelta(days=7)
+        next_release = next_ts.strftime("%Y-%m-%d")
     return {
         "fm_net": fm_net,
         "rm_net": rm_net,
