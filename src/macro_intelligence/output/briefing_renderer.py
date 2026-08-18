@@ -124,13 +124,26 @@ def build_system_recommendation(payload: dict[str, Any]) -> str:
     if cancel.get("active"):
         wk = cancel.get("wti_potential_week", 0)
         mc = cancel.get("model_cancel_prob")
+        # Report the banked progress and the sigma basis alongside the probability. The old
+        # line quoted a bare percentage next to a "do NOT add exposure until cancel
+        # completes" instruction, so a 2% reading read as an indefinite defensive posture
+        # even while the WTI leg was passing (Rohit 6 Aug).
+        leg_state = "passing" if cancel.get("wti_leg_ok") else "not passing"
+        cancel_bits = [f"Combo C cancel watch: WTI leg week {wk}/4 ({leg_state})"]
         if mc is not None:
-            parts.append(
-                f"Combo C cancel watch: WTI leg week {wk}/4; "
-                f"model P(cancel next 4wk)={float(mc) * 100:.0f}%."
-            )
-        else:
-            parts.append(f"Combo C cancel watch: WTI leg week {wk}/4.")
+            weeks_left = cancel.get("model_weeks_remaining")
+            horizon = f"next {weeks_left}wk" if weeks_left else "next 4wk"
+            cancel_bits.append(f"model P(cancel {horizon})={float(mc) * 100:.0f}%")
+        sigma_source = cancel.get("model_sigma_source")
+        sigma = cancel.get("model_sigma")
+        if sigma is not None and sigma_source:
+            label = {
+                "ovx_implied": "OVX option-implied",
+                "realised_60d": "60d realised",
+                "config_default": "config default (NOT measured)",
+            }.get(str(sigma_source), str(sigma_source))
+            cancel_bits.append(f"sigma {float(sigma):.0%} from {label}")
+        parts.append("; ".join(cancel_bits) + ".")
     if pending_cpi:
         parts.append("CPI release pending this week — watch inflation leg.")
     return " — ".join(parts)

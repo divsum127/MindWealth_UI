@@ -19,6 +19,7 @@ from src.macro_intelligence.engine.combo_c_cancel import run_combo_c_cancel_chec
 from src.macro_intelligence.engine.combo_cancel_probability import (
     combo_c_total_cancel_prob,
     combo_cancel_probability_wti,
+    wti_weekly_history,
 )
 from src.macro_intelligence.engine.combo_metadata import combo_bullish, combo_hit_rate_stats, posture_display
 from src.macro_intelligence.engine.post_event_transition import detect_post_event_transition
@@ -125,6 +126,26 @@ def _variables_dashboard(readings: dict[str, dict]) -> list[dict[str, Any]]:
             row["source_note"] = (
                 f"CFTC.gov TFF · Lev Money net · data as of {src}{lag_txt}{exp_txt}"
             )
+            # Rohit 6 Aug: "COMPUTE says Lev_Money + Asset_Mgr, the NOTE says Lev Money net,
+            # and the displayed value matches Lev Money alone — so tell me which series is
+            # actually percentiled, and over what window. A4b says 2006-present; the page
+            # says 3yr." Both answers are stated on the row itself now, so the three
+            # descriptions cannot drift apart again.
+            #
+            # There are also TWO different CFTC percentiles in the system and they are not
+            # interchangeable: this macro one, and the SSI Layer 3 FM/RM percentile shown on
+            # the Sentiment page. They use different windows, so quoting one under the
+            # other's label is what made the field look like it moved 26 points in two days.
+            row["series_percentiled"] = "leveraged_money_net"
+            row["series_label"] = "Leveraged Money net (NOT Lev Money + Asset Manager)"
+            row["pctile_window"] = "rolling_3y"
+            row["pctile_window_label"] = "rank within trailing 156 weeks"
+            row["pctile_source_history_start"] = "2006-01-01"
+            row["pctile_note"] = (
+                "Ranked on Leveraged Money net over a rolling 3-year (156-week) window. "
+                "Source history starts 2006 (A4b) — that is the data span, not the ranking "
+                "window. Distinct from the SSI Layer 3 FM/RM percentile on the Sentiment page."
+            )
         elif vid == "CAPE":
             src = meta.get("source_date") or "?"
             lag = meta.get("lag_days")
@@ -180,8 +201,22 @@ def run_nightly(
     wti_val = readings.get("WTI", {}).get("raw_value")
     c_active = any(c.runic_combo == "C" and c.status == "ACTIVE" for c in fires)
     cancel_result = run_combo_c_cancel_check(as_of, wti_val, c_active)
-    wti_mc = combo_cancel_probability_wti(float(wti_val or 70.0))
-    cancel_model = combo_c_total_cancel_prob(wti_mc, cpi_not_hot_rate=0.52)
+    # readings["WTI"] is the 4-WEEK % CHANGE (variables.WTI paradigm=ROC), not a price.
+    # It used to be passed straight in as `current_wti`, so the model simulated a spot of
+    # about -0.13 against a strike of -0.13/1.05 — the cancel probability was computed on a
+    # percentage masquerading as a dollar price (Rohit 6 Aug: "isn't computing").
+    wti_weekly = wti_weekly_history(weeks=5, as_of=as_of)
+    wti_spot = wti_weekly[-1] if wti_weekly else None
+    wti_mc = combo_cancel_probability_wti(
+        float(wti_spot or 70.0),
+        weeks_banked=int(cancel_result.get("wti_potential_week") or 0),
+        weekly_history=wti_weekly or None,
+        as_of=as_of,
+    )
+    cancel_model = combo_c_total_cancel_prob(
+        wti_mc,
+        cpi_leg_currently_ok=cancel_result.get("cpi_leg_ok"),
+    )
 
     f_active = any(c.get("combo") == "F" and c.get("status") == "ACTIVE" for c in active)
     f_weeks = next((c.get("duration_weeks") for c in active if c.get("combo") == "F"), None)
@@ -219,6 +254,16 @@ def run_nightly(
         "model_cancel_prob": cancel_model.get("combined_cancel_prob"),
         "model_wti_leg_prob": wti_mc.get("monte_carlo_prob_all_4"),
         "model_cpi_leg_prob": cancel_model.get("cpi_leg_prob"),
+        # Surfaced so the page can answer "which sigma is this?" without reading code.
+        "model_sigma": wti_mc.get("sigma"),
+        "model_sigma_source": wti_mc.get("sigma_source"),
+        "model_sigma_as_of": wti_mc.get("sigma_as_of"),
+        "model_weeks_remaining": wti_mc.get("weeks_remaining"),
+        "model_weeks_banked": wti_mc.get("weeks_banked"),
+        "model_wti_spot": wti_mc.get("current_wti"),
+        "model_barrier_basis": wti_mc.get("barrier_basis"),
+        "model_cpi_prints_in_window": cancel_model.get("cpi_prints_in_window"),
+        "model_cpi_n_obs": cancel_model.get("cpi_n_obs"),
     }
     payload["brave_fearful_display"] = posture_display(brave)
     # Build combo_status_rows BEFORE narrative so the briefing has all 7 combo rows
