@@ -169,10 +169,10 @@ class TestPromptRules(unittest.TestCase):
         from prompts.engine import SYSTEM_PROMPT
 
         for rule in (
-            "Name the price MTM is measured from",
+            "The entry price for MTM is the signal price",
             "Copy the stored MTM character-for-character",
             "sample size",
-            "Date every web quote",
+            "Never quote a price from a STALE web source",
             "Cover every symbol",
         ):
             self.assertIn(rule, SYSTEM_PROMPT, rule)

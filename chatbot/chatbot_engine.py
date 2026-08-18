@@ -44,7 +44,13 @@ from .config import (
     INTERNAL_FETCH_TIMEOUT_SECONDS,
 )
 from .data_processor import DataProcessor
-from .asset_coverage import build_ticker_mapping_note, coverage_note, inferred_assets, uncovered_assets
+from .asset_coverage import (
+    build_ticker_mapping_note,
+    build_unresolved_ticker_note,
+    coverage_note,
+    inferred_assets,
+    uncovered_assets,
+)
 from .error_messages import safe_error_metadata, user_facing_error
 from .history_manager import HistoryManager
 from .unified_extractor import UnifiedExtractor
@@ -1054,6 +1060,17 @@ class ChatbotEngine:
                     logger.info(f"Extracted tickers: {assets[:10]}{'...' if len(assets) > 10 else ''}")
                 else:
                     logger.info("No specific tickers mentioned - will load ALL assets")
+
+            # Symbols the user named that we do not track, plus any the extractor
+            # invented. This list was written by the extractor and read by nobody
+            # until now, which is why "tlk" could be answered with TLT's rows.
+            unresolved_tickers = extraction_result.get("unresolved_tickers") or []
+            if unresolved_tickers:
+                notice = build_unresolved_ticker_note(unresolved_tickers)
+                additional_context = (
+                    f"{additional_context}\n\n{notice}" if additional_context else notice
+                )
+                logger.info(f"[ENGINE] Unresolved tickers reported to model: {unresolved_tickers}")
 
             _pos_infer_src = (display_prompt_override or user_message or "").strip()
             position_side_candidate = normalize_position_side(
@@ -2300,13 +2317,41 @@ class ChatbotEngine:
 
         if not ENABLE_WEB_SEARCH or not TAVILY_API_KEY:
             return None
-        return WebSearchAgent(
+        agent = WebSearchAgent(
             tavily_api_key=TAVILY_API_KEY,
             openai_api_key=OPENAI_API_KEY,
             max_results=WEB_SEARCH_MAX_RESULTS,
             max_chars_per_result=WEB_SEARCH_MAX_CHARS_PER_RESULT,
             min_relevance_score=WEB_SEARCH_MIN_RELEVANCE_SCORE,
         )
+        # Age web results against our signal data's as-of date, not wall clock.
+        agent.data_as_of = self._current_data_as_of()
+        return agent
+
+    def _current_data_as_of(self) -> Optional[str]:
+        """
+        MindWealth's data as-of date (YYYY-MM-DD), or ``None`` if unavailable.
+
+        Read from the same stamp the rest of the platform uses, so a web quote is
+        judged against the prices it will be printed beside.
+        """
+        try:
+            from src.utils.helpers import get_data_fetch_datetime
+
+            stamp = get_data_fetch_datetime()
+            if isinstance(stamp, dict):
+                value = stamp.get("date") or stamp.get("datetime")
+            else:
+                value = stamp
+            if value:
+                import re as _re
+
+                match = _re.search(r"(\d{4}-\d{2}-\d{2})", str(value))
+                if match:
+                    return match.group(1)
+        except Exception as exc:
+            logger.debug(f"Could not resolve data as-of for web ageing: {exc}")
+        return None
 
     def _answer_deep_research(
         self,
@@ -2936,7 +2981,9 @@ class ChatbotEngine:
 
             # Tell the model which symbols it inferred rather than read verbatim,
             # so "tlk" can never be answered with TLT's rows under TLK's name.
-            mapping_note = build_ticker_mapping_note(user_message, assets)
+            mapping_note = build_ticker_mapping_note(
+                user_message, assets, self.data_processor.get_available_tickers()
+            )
             if mapping_note:
                 additional_context = (
                     f"{additional_context}\n\n{mapping_note}"

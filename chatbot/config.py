@@ -192,6 +192,11 @@ WEB_SEARCH_MAX_RESULTS = int(os.getenv("WEB_SEARCH_MAX_RESULTS", "3"))
 WEB_SEARCH_MAX_CHARS_PER_RESULT = int(os.getenv("WEB_SEARCH_MAX_CHARS_PER_RESULT", "1500"))
 # Lower default — Tavily scores vary; WebSearchAgent falls back to top-N if none pass threshold
 WEB_SEARCH_MIN_RELEVANCE_SCORE = float(os.getenv("WEB_SEARCH_MIN_RELEVANCE_SCORE", "0.15"))
+# A web quote older than this many days (measured against MindWealth's own data
+# as-of date, not wall clock) may not be used for prices. An NVDA quote dated
+# 2026-07-18 once sat beside a live internal price with nothing marking it stale.
+# Sources beyond the limit stay in the prompt for narrative context.
+WEB_QUOTE_MAX_AGE_DAYS = int(os.getenv("WEB_QUOTE_MAX_AGE_DAYS", "2"))
 
 # Parallel Hybrid Architecture — controls the ParallelOrchestrator for HYBRID routes.
 # Set PARALLEL_HYBRID_ENABLED=false to fall back to the legacy sequential path.
