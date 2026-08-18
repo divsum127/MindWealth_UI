@@ -23,6 +23,30 @@ Reference deploy skill: `.cursor/skills/prod-pull-and-details/SKILL.md`
 
 ## 2026-08-18 — AI Analyst panel: audit defects FIXED on dev, awaiting prod cutover `[PENDING]`
 
+**Committed + pushed 2026-08-18** (all as `divsum127`):
+
+| Repo | Branch | SHA | Remote |
+|------|--------|-----|--------|
+| MindWealth_UI | `chatbot-dev` | `d624be4cf` | `divsum127/MindWealth_UI` |
+| `docs/mindwealth-api-docs` | `main` | `1a4e0ac` | `divsum127/mindwealth-api-docs` |
+| MindwealthUI_Vue | `ui-dev` | `f49ef8b` | `D-ParthChauhan/MindwealthUI_Vue` |
+
+**API version bumped `1.10.9` → `1.11.0`** — the alerts response gained a type. Frontend and
+backend must cut over together: a client that switches on `type` and does not know `position_risk`
+will silently drop 237 of 249 alerts.
+
+API docs updated on the submodule `main` and the pointer committed in the parent:
+`changelog.md` (v1.11.0), `services/analyst/README.md`, `endpoints/get-analyst-alerts.md`,
+`get-analyst-brief.md`, `get-overwatch-stream.md`, and a regenerated
+`openapi/mindwealth-v1.json`.
+
+**Also on the Nuxt side (not analyst-specific but shipped in `f49ef8b`):** `vitest` +
+`@vue/test-utils` + `@vitejs/plugin-vue` + `happy-dom` + `vue-tsc` added as devDependencies, with
+`test` / `test:watch` / `typecheck` scripts. `npm ci` on the prod Nuxt tree will pull these —
+they are devDependencies only and do not enter the bundle. vitest is pinned to `^4` so it resolves
+the same vite as Nuxt (7.x); vitest 2 shipped a nested vite 5 and broke the plugin's types.
+
+
 Supersedes the audit entry below — those defects are now fixed on `chatbot-dev` + `ui-dev`.
 **Nothing is deployed.** Backend and Nuxt changes must ship **together**: the panel renders a
 `position_risk` alert type the current prod API does not emit.
