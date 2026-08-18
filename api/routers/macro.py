@@ -395,7 +395,14 @@ def trigger_nightly_run(body: NightlyRunRequest | None = None) -> dict[str, Any]
     use_claude=False (default) skips Claude API for speed and cost.
     Set use_claude=True to include geo overlay + narrative regeneration.
 
-    Returns: status, date, dominant_signal, active_combos, output_path.
+    Only a run for today writes the live snapshot. A backdated `as_of` computes
+    and returns the payload with `persisted: false` and leaves
+    `runic_output.json` (and the briefing files) untouched — without that guard
+    a single backdated call rolls every macro/runic/sizer endpoint back to that
+    date.
+
+    Returns: status, date, dominant_signal, active_combos, output_path,
+    persisted, persist_skipped_reason.
     """
     req = body or NightlyRunRequest()
     try:

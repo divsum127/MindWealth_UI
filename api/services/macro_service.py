@@ -1027,10 +1027,18 @@ def get_ssi_multiplier() -> dict[str, Any]:
 
 
 def trigger_nightly_run(as_of: str | None = None, use_claude: bool = False) -> dict[str, Any]:
-    """Trigger the nightly run. use_claude=False by default for API calls (faster, no LLM cost)."""
+    """Trigger the nightly run. use_claude=False by default for API calls (faster, no LLM cost).
+
+    Only a run for today persists to the live snapshot. A backdated ``as_of``
+    computes and returns the payload but leaves ``runic_output.json`` and the
+    briefing files alone — otherwise one call with an old date replaces the
+    data every macro, runic and sizer endpoint serves.
+    """
+    today = datetime.now().strftime("%Y-%m-%d")
+    persist = as_of is None or as_of == today
     try:
         from src.macro_intelligence.jobs.nightly_run import run_nightly
-        payload = run_nightly(as_of=as_of, use_claude=use_claude)
+        payload = run_nightly(as_of=as_of, use_claude=use_claude, persist=persist)
         return {
             "status": "completed",
             "date": payload.get("date"),
@@ -1038,6 +1046,11 @@ def trigger_nightly_run(as_of: str | None = None, use_claude: bool = False) -> d
             "active_combos": [c.get("combo") for c in payload.get("active_combos", [])],
             "watch_combos": payload.get("watch_combos", []),
             "output_path": payload.get("output_path"),
+            "persisted": persist,
+            "persist_skipped_reason": (
+                None if persist
+                else f"as_of={as_of} is not today ({today}); live snapshot left untouched"
+            ),
         }
     except Exception as exc:
         raise RuntimeError(f"Nightly run failed: {exc}") from exc
