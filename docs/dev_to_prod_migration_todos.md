@@ -2534,6 +2534,88 @@ None. No `.env`, no new env var, no unit-file change, no runtime file to copy.
 
 ---
 
+## 2026-08-18 — SSI resilience, coverage gate, CFTC completeness, regime feed (W1–W7)
+
+Fixes the 8 findings from the sheet-reply truth audit. **This is a live sizing path** — the
+coverage gate can change `ssi_multiplier`, and the CFTC fix changes published percentiles on prod.
+
+### Git (chatbot-dev → chatbot-prod)
+
+**New files**
+
+- `src/sentiment_superindex/data/yahoo_cache.py` — per-ticker close cache with provenance
+- `src/sentiment_superindex/data/pull_guard.py` — pull failure/empty logging
+- `src/sentiment_superindex/data/cboe_indices.py` — CBOE primary source for VIX / VIX3M / SKEW
+- `tests/test_ssi_feed_health.py`
+
+**Modified**
+
+- `macro_intelligence/SSI_CONFIG.yaml` — **new `coverage:` block (required)**
+- `src/sentiment_superindex/config.py` — YAML is now the only source; `staleness_policy()` **raises** if the block is missing
+- `src/sentiment_superindex/engine/{superindex,positioning,regime_block}.py`
+- `src/sentiment_superindex/data/{yahoo_inputs,naaim_pull,put_call_pull,cnn_fear_greed,sp500_breadth,margin_debt_pull,cftc_patterns,pull_all,alignment}.py`
+- `src/sentiment_superindex/jobs/daily_run.py`, `scripts/run_ssi_daily.py` (exit 2 when degraded)
+- `src/macro_intelligence/data/{cftc_pull,retry_cache}.py`
+- `src/macro_intelligence/{output/regime_feed_export.py,jobs/friday_pull.py,analysis/regime_experiments/shadow_backfill.py}`
+- `src/portfolio_nav/four_book_engine.py`
+- `api/routers/macro.py`, `api/services/{reports_service,macro_service,analyst_service}.py`
+- `scripts/export_data_validation.py`
+
+### ⚠ Blocking prerequisite
+
+`SSI_CONFIG.yaml` on prod currently has **no `staleness:` block** and prod's `config.py` has no
+`staleness_policy()` at all. After this merge the SSI job **will raise** unless the YAML lands
+with it. That is intentional — scoring on a silent code default is what caused the drift. Confirm
+`macro_intelligence/SSI_CONFIG.yaml` merged cleanly **before** running the daily job.
+
+### Prod runtime (not in git)
+
+- **CFTC zip cache: no manual action.** Prod holds only `fut_fin_txt_2026.zip`, which is why its
+  percentiles rank against ~31 weekly prints (87.1st) where dev uses 156 (52.9th). The
+  `_download_frames` completeness fix makes prod **fetch the missing years itself on first run**.
+  Expect the first post-deploy run to download ~10 zips (~5 MB) and take longer than usual.
+- Expect `fm_pctile` / `rm_pctile` on prod to **change materially** at that point. That is the bug
+  being fixed, not a regression — but it is visible, so it is worth telling Rohit before deploy.
+
+### systemd / Nuxt
+
+```bash
+sudo systemctl restart mindwealth-api.service
+```
+
+Nuxt prod is now a **separate tree** (`/home/ubuntu/MindwealthUI_Vue_prod`, branch
+`presentation-prod`, port 8512) — a dev build no longer overwrites the prod bundle, so the Vue
+changes need their own merge into that branch plus `npm run build` and a
+`mindwealth-ui.service` restart.
+
+### Smoke tests `[PENDING]`
+
+```bash
+cd /home/ubuntu/uiv2/prod/MindWealth_UI && .venv/bin/python scripts/run_ssi_daily.py; echo "exit=$?"
+```
+
+```bash
+curl -s -H "X-API-Key: $KEY" http://127.0.0.1:8506/api/v1/analytics/sentiment/layers | jq '{mult: .composite.ssi_multiplier, ok: .composite.coverage_ok, policy: .staleness_policy.max_stale_days, l2: .positioning.layers.layer2.signal_coverage.available_count}'
+```
+
+```bash
+curl -s -H "X-API-Key: $KEY" http://127.0.0.1:8506/api/v1/analytics/sentiment/layers | jq '.positioning.inputs.layer3_cftc | {fm_net, fm_pctile, position_date}'
+```
+
+Expect `fm_pctile` on prod to match dev for the same `fm_net` once the zip backfill completes.
+
+### Follow-ups
+
+- **NAAIM has no free source** (public feed moved behind a login 2026-08). Layer 1 runs 3 of 4 on
+  both clones until Rohit picks: membership, manual entry, or re-specced weights.
+- Coverage thresholds in `SSI_CONFIG.yaml` are **proposed defaults pending sign-off**.
+- Trading-day vs calendar-day staleness for daily inputs — open question for Rohit (his C43).
+- FRED `BOGZFL224066003Q` 404s for margin debt (no layer uses it).
+
+### Status: `[PENDING]` — not committed or deployed; the dev working tree carries unrelated pre-existing changes, so the commit/merge is the user's call.
+
+---
+
 ## Template for future entries
 
 Copy for each new dev feature:
@@ -2568,6 +2650,7 @@ Copy for each new dev feature:
 
 | Date | Change |
 |------|--------|
+| 2026-08-18 | SSI resilience + coverage gate + CFTC zip completeness + regime feed currency; **SSI_CONFIG.yaml `staleness:` block is now a hard prerequisite on prod** |
 | 2026-08-17 | Sheet-reply truth audit: 3 silent live feed defects (NAAIM scrape, `vix_ratio`, CFTC one release behind), dev/prod CFTC percentile mismatch, prod missing `signal_coverage` + gate label |
 | 2026-08-17 | Logged `pytest` → `run_nightly(as_of="2024-09-18")` clobbering the live `runic_output.json`; prod latent, fix pending |
 | 2026-07-27 | Sizer `pnl_rows`/`positions` gained `cross_function_exit`/`asset_class`/`status`; fixed `_parse_signal_meta` interval bug that made `implied_natural_exit_date` always `null` |

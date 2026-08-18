@@ -95,6 +95,44 @@ This file captures minute-level implementation context for each completed task:
 
 ---
 
+### 2026-08-18 — Root-cause fix for the 8 audit findings (W1–W7)
+
+**Ask:** "Create a step-by-step plan to fix all these issues 1 to 8, find the root cause, and fix them properly so they don't appear again."
+
+**The finding that reframed the work.** Re-checking during planning showed the situation had degraded since the audit: Layer 2 was running **2 of 6**, and the SSI size multiplier had moved 1.2× → 0.8× *purely because inputs were missing*. That is the real defect — not any individual dead feed, but that a data outage and a market signal were indistinguishable at the output. Six of the eight findings turned out to share one root cause (no resilience contract in the pull layer), which is why the fix is a layer rather than eight patches.
+
+**Key decisions**
+- **CBOE over Yahoo for the three indices.** The plan said "cache the Yahoo inputs". Caching alone would have frozen ^VIX3M at 2026-07-17 forever, because Yahoo genuinely has nothing newer and `^VXV` is delisted. CBOE publishes VIX/VIX3M/SKEW itself, free, same-day. That is upstream of Yahoo rather than another scrape of it, and the repo already scrapes CBOE for put/call. Yahoo is kept as fallback specifically because CBOE's VIX3M starts 2009 while Yahoo reaches 2007 — the cache unions both so the older history is not truncated.
+- **Cache the closes, not the derived series.** The failure was in the join: `pd.DataFrame({...}).dropna()` inherits the shorter leg's index, so one truncated leg deleted a whole ratio. Caching `hyg_lqd` would have hidden that; caching `^VIX`, `^VIX3M`, `HYG`, `LQD` … fixes it at the point where the damage happens.
+- **The coverage gate is weight-aware, not count-aware.** Layer 1's four inputs are not interchangeable — NAAIM alone is 0.35 — so a "3 of 4 is fine" rule would call a layer healthy after losing its heaviest signal. Both tests must pass. Thresholds live in `SSI_CONFIG.yaml` and are marked **PENDING ROHIT SIGN-OFF**: they are proposed defaults, not validated cuts.
+- **Gate logs at DEBUG inside `_build_layer`, ERROR once at job level.** The first version logged ERROR per layer per date; `build_ssi_history` walks ~3,900 historical dates, so a single run emitted **510 ERROR lines** — rebuilding the exact log-noise problem the gate was added to solve. The authoritative report is `daily_run.log_coverage`, which runs once.
+- **Verified the gate does not move the published percentile.** Counted, rather than assumed: of 3,884 history dates, 510 are dropped and **all 510 were already being dropped** by pre-existing behaviour (`build_ssi_history` skips any date with a null layer). Newly dropped by the gate: **zero**.
+- **Reused `four_book_engine.load_full_ceiling_chain_series` for the regime overlays** rather than writing a second VIX/trend/HY multiplier implementation. It already mirrors `portfolio_service._compute_ceiling`'s live thresholds, so the history and the live sizing path agree by construction — the same "ranking and wording read one call" property `dominant.py` documents.
+- **Did not commit or deploy.** The working tree carries substantial uncommitted work predating this task; sweeping it into a commit was not mine to do.
+
+**Assumptions**
+- Coverage thresholds (L1 ≥3, L2 ≥4, L3 ≥2, and ≥60% of nominal weight) are judgement, not calibration. They were chosen so today's real state (Layer 1 at 3/4 with NAAIM gone) stays scoreable while both audit scenarios trip.
+- `MIN_PCTILE_WINDOW_OBS = 100` allows for the genuine ramp-up at the start of the TFF series (June 2006) while rejecting the "only the current year loaded" failure at ~31.
+- The `stale_dates` banner treats an SSI/signal date split as **normal intraday**, not an error — the two jobs legitimately run on different clocks (04:00 ET vs post-close). It explains rather than alarms.
+
+**Things deferred / left for future**
+- **NAAIM has no free source.** Documented exhaustively in the module docstring so the next person does not re-run the search. Needs a product decision. A `manual` provenance tag is reserved in the cache for hand-entered prints.
+- **FRED `BOGZFL224066003Q` 404s** — margin debt is loaded but is in no layer, so no scoring impact. Surfaced by the new logging; left unfixed as out of scope.
+- **Trading-day vs calendar-day staleness** not changed. The daily cap of 3 *calendar* days drops a Friday close read on a Tuesday (4 days). This is exactly Rohit's C43 business-vs-calendar question and it changes scoring, so it needs sign-off, not a unilateral edit.
+- Prod's CFTC data cache is not touched by hand (CLAUDE.md forbids agent edits to prod runtime data). The `_download_frames` completeness fix means prod **self-heals on its first run after deploy** — that is the intended repair path.
+
+**Edge cases identified but not handled**
+- `cached_yahoo_close` logs "live tail behind cached" on every ^VIX pull because the cache holds a Yahoo intraday bar for today while CBOE's file ends at yesterday's close. Harmless (the merge keeps both) but noisy; a source-aware comparison would silence it.
+- The coverage gate cannot distinguish "input never existed at this date" from "input broke". For historical rebuilds these look identical, which is why the gate is silent at that level.
+- `_read_zip_frames` still swallows a corrupt zip per-file; the new completeness check catches a *missing* file, not a *damaged* one.
+
+**Caveats for the next developer**
+- **`staleness_policy()` now raises when `SSI_CONFIG.yaml` has no `staleness:` block.** Prod's current config has none, so the merge must carry the YAML or the SSI job will fail loudly on prod. That is deliberate: failing is better than scoring on a silent default.
+- The Nuxt `banners` array is new; `banner` (singular) is still emitted for backwards compatibility and `pages/sentiment.vue` falls back to it.
+- `formatComponentScoringNote` gained an options argument. Callers that want the z suppressed pass `{ includeZ: false }` — do not de-duplicate inside `joinSub`, which must stay a dumb string join.
+- When adding an SSI input, add it to `SSI_SCORED_KEYS` in `export_data_validation.py` too, or it will be invisible to the health report exactly as put/call, VIX TS and the COT legs were.
+
+
 ### 2026-08-17 — Truth-audit of all 45 sheet replies against live dev (`:8507` API, `:8514` Nuxt)
 
 **Ask:** "Analyse every task in the sheet that has my reply, check the dev API and the chatbot website on 8514, and confirm nothing I told Rohit is wrong or non-functioning."
@@ -5978,3 +6016,48 @@ Adding `/api/performance` and `/api/runic/nightly` to `isPublicBffPath()` would 
 `mindwealth-ui-dev.service` (`:8514` → API `:8507`) and `mindwealth-ui.service` (`:8512` → API `:8506`, www.mindwealth.co) both declare `WorkingDirectory=/home/ubuntu/MindwealthUI_Vue` and both run `.output/server/index.mjs` from it. They differ only in environment. So **`npm run build` for dev also replaces the prod bundle on disk** — prod keeps serving the old code purely because its node process loaded the previous build at start time, and any prod restart (including an unattended `Restart=on-failure`) silently promotes whatever dev last built. This is a real deploy hazard independent of this task; prod should get its own checkout or its own `.output`.
 
 **Files changed:** `server/api/landing-stats.get.ts` (new), `server/utils/require-auth.ts`, `composables/useLandingStats.ts`, `types/api.ts` — all under `/home/ubuntu/MindwealthUI_Vue`.
+
+---
+
+## 2026-08-18 — "Claude V3 Addendum" email: task/question extraction (Rohit, 11 Aug; chased 17 Aug)
+
+**How the attachments were obtained.** The `gmail-filtered` MCP has no attachment tool, and `get_email_metadata` refused both message ids ("does not match the active filter configuration") even though `search_emails`/`fetch_emails` return them — the id-based path re-applies the filter differently. Working route: `fetch_emails(include_body=true)` for the body, and a short script against `/home/ubuntu/.gmail_mcp/token.json` (`google-api-python-client` already installed in `/home/ubuntu/.gmail-mcp/server/.venv`) for `messages().attachments().get()`. Worth remembering for the next "read the attachment" request.
+
+**Gotchas in the package itself.**
+- `MindWealth_Claude_Role_Reference.docx` is **not** a docx — it is UTF-8 markdown with a `.docx` extension (`file` says "Unicode text"). `python-docx`/zipfile parsing fails on it; `cat` works. The other three are real OOXML.
+- `unzip` is not installed on this host; used `python3 -m zipfile`/`zipfile.ZipFile` instead.
+- Docx→text was done with a small ElementTree walker (`w:p` + `w:tbl`) rather than installing python-docx, so tables come out pipe-delimited.
+
+**Substantive finding worth flagging for whoever answers the mail.** The five documents do not agree with each other, and the addendum is explicit that it does not resolve all of it:
+- **Short-signal alpha benchmark** has three live answers across the pack — zero (Role Reference §5, argued at length), IRX cash rate (MasterSpec Gate A2d + Supplementary §3), and −(B&H_CAGR/252 × avg_hold_days) (addendum 7a, per Google Sheet row 92, which explicitly says *both* prior answers were wrong). Only the third is current, and only for the C2/signal_alpha role — Sharpe's risk-free rate, short-rebate accrual, the rf=0 reporting convention and Gate A2a/CAGR_diff keep their existing behaviour.
+- **"Gate A2" means two different things.** Base May prompt: single test, historical WR ≥ 70%. MasterSpec §E1: a family (A2a E[R] vs random window, A2b fwd WR ≥ 60, A2c conviction, A2d CAGR_diff). The addendum's Section 1 deprecation of "Gates A2, A2b, A2d" is ambiguous until this is settled.
+- **Gate A2e** (R:R ≥ 1.0) exists in the Role Reference and MasterSpec but not in the base prompt's gate list (A0, A1, A2, A2b, A2c, A2d, A3–A6); the addendum relabels it as a new mechanical check.
+- **Composite formula**: MasterSpec = 3 components (er_score 0–50, alpha_score ±15, sharpe_score −6..+8, range ≈ −21..+73, absolute per-trade returns). Composite v4 = 4 components (C1 40 / C2 25 / C3 20 / C4 10) on **annualized** E[R] and alpha, with CAGR_diff reinstated as C4 and every threshold recalibrated at the 80th percentile of the real signal population. The two disagree by design, not by constant.
+- **`tier` name collision**: the base prompt's Section 9H output JSON already emits `tier` with single-letter values ("C"), while the incoming payload's `tier` is `tA|best|tierc|exit`. No document confirms they are the same concept.
+- **`er_score` / `alpha_score` / `sharpe_score`**: listed as payload fields in the Role Reference §2.1 table, but the addendum says they appear in the MasterSpec only as internal formula variables and must not be assumed exposed. This is exactly the mail's question 2.
+
+**Deferred.** No reply was drafted and nothing was answered against the live code — the request was extraction only. Answering questions 1–3 needs a read of the actual daily Claude payload builder (which fields it really emits today, and which composite version generates `composite_score`); question 4 needs a grep of the pipeline for every place a short signal's benchmark is set to 0 or IRX.
+
+**Prod impact:** none.
+
+---
+
+## 2026-08-18 — Completion audit of the v3-addendum task list (sheet + code)
+
+**Where the evidence actually lives.** None of this thread is in the `mindwealth todos` sheet. The authoritative status is a set of docs inside the core repo that nobody outside it would find: `/home/ubuntu/MindWealth/instruction_docs_2/signals_master_spec/status_v2..v6.md` and `doubts.md`. `status_v6.md` §9 and `status_v5.md` §14 are effectively Divyanshu's own open-items list for exactly these tasks, and they already name Ahil A2/A3 as NOT STARTED, the Claude-Optimized JSON schema and SBI/H&NH panel schemas as OPEN, and tier-cutoff recalibration after v4 as a Rohit decision. Read those before re-auditing.
+
+**Split of responsibility that the audit made obvious.** Two enrichment implementations exist in parallel:
+- `MindWealth/helper_functions/claude_lateness_metrics.py` — the Python-authoritative one; used by the nightly email/report pipeline and therefore by the Claude payload.
+- `MindWealth_UI/api/services/signal_enrichment_service.py` — a self-contained reimplementation, written because `claude_lateness_metrics.py` → `util.py` → `from dash import html` cannot be imported in the API venv (documented in `status_v6.md` §5).
+
+They have already drifted: the API version maps `conviction_bq_score` from the overlay's `bq_raw`, the core/pipeline version does not, so the frontend sees a field the Claude prompt never gets. Any answer to Rohit about "what is in the payload" has to say *which* payload.
+
+**Assumptions in this audit.**
+- "Live" = what the nightly pipeline runs, i.e. `send_email.py` → `claude_box_prompt()` → `enrich_signal_dict()` → `json.dumps`. Not the Streamlit path, not the API path.
+- Field presence was verified by reading code plus the 2026-08-17 overlay/report CSVs on disk, not by capturing an actual outbound Claude request. A field could still be dropped by `_json_default_encoder` returning None for NaN — verified for `composite_score` on the 17 Aug file (71/71 non-null), not exhaustively for every field.
+
+**Not done, deliberately.** No fixes were applied — the request was a status check. The three divergences (short-alpha formula, `conviction_bq_score` missing from the Claude overlay, dual Gate A2 definitions) are left as-is pending Rohit's answers, since two of the three are the subject of his open questions and changing them now would pre-empt his ruling.
+
+**Caveat for the next developer.** `R_REF`/`ALPHA_CLIP`/`CAGR_CLIP` in `claude_lateness_metrics.py` are the *proxy-basis* v4 numbers (calibrated when all-trades hold days were N/A and win-trades hold was substituted). The underlying data bug is now fixed in the reports, so those constants are stale by construction, and the equity thresholds in `constant.py` (R_ref 50 / ALPHA_CLIP 45 / CAGR_CLIP 5) are duplicated there — a recalibration has to update **both** files or the prompt and the scorer will disagree.
+
+**Prod impact:** none.

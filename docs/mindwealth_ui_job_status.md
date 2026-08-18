@@ -209,6 +209,12 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
    - Files changed: none (audit only).
    - Prod impact: **none** — no code, config, or runtime artifact touched.
 
+10. **Appended the 48 v3-addendum tasks/questions to the `mindwealth todos` sheet (`v2_TODOs` A94:H141)** — SUCCESSFUL
+   - Date: 2026-08-18
+   - Summary: Read the sheet's column convention first (A topic / B sent / C Rohit's message / D Task Details / E Who / F Status / G Divyanshu's Reply / H date done), found the last used row was 93 (`C93 = "complete ssi experiments"`), and appended 48 rows below it in two `update_cells` calls (A94:H116 = 184 cells, A117:H141 = 200 cells). Every item from entry 8's extraction is represented, carrying the entry-9 audit verdict in column F and, for the five mail questions, the code-verified answer in column G. Owners follow the sheet's existing vocabulary — `Divyanshu` ×39, `Ahil` ×5, `Divyanshu, Parth` ×2, `Divyanshu, Ahil` ×1; items blocked on Rohit are `Waiting for Input` under Divyanshu, since the sheet has no Rohit owner value. Status split: 17 Completed, 6 Inprogress, 8 Waiting for Input, 17 Not Started Yet. Write was confirmed by the user before either call, per the repo's sheet edit policy; verified afterwards by re-reading E94:F141.
+   - Files changed: none in the repo — the change is in Google Sheets `1a60p0E4D1w4X3xayV65UOvk9dz4b2q9bKLBPPnrHQKg`, tab `v2_TODOs`.
+   - Prod impact: **none**.
+
 ---
 
 ### 2026-08-17
@@ -389,7 +395,8 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
    - Verification: `pytest tests/` (see entry note), 44 SSI-specific tests pass, `npm run test` 47 pass, `npm run typecheck` 45 errors vs a 46 pre-existing baseline (no new errors), dev API `:8507` and dev Nuxt `:8514` both rebuilt and verified against the live BFF payload.
    - Files changed: `src/sentiment_superindex/{config.py,data/{yahoo_cache.py,pull_guard.py,cboe_indices.py,yahoo_inputs.py,naaim_pull.py,put_call_pull.py,cnn_fear_greed.py,sp500_breadth.py,margin_debt_pull.py,cftc_patterns.py,pull_all.py,alignment.py},engine/{superindex.py,positioning.py,regime_block.py},jobs/daily_run.py,analysis/staleness_decay_study.py}`, `src/macro_intelligence/{data/{cftc_pull.py,retry_cache.py},output/regime_feed_export.py,jobs/friday_pull.py,analysis/regime_experiments/shadow_backfill.py}`, `src/portfolio_nav/four_book_engine.py`, `api/{routers/macro.py,services/{reports_service.py,macro_service.py,analyst_service.py}}`, `scripts/{run_ssi_daily.py,export_data_validation.py}`, `macro_intelligence/SSI_CONFIG.yaml`, `tests/{test_ssi_feed_health.py,test_ssi_staleness.py,test_ssi_vix_ratio.py,test_series_alignment.py}`, and in `MindwealthUI_Vue`: `utils/{ordinal.ts,signal-freshness.ts}`, `server/utils/sentiment-mapper.ts`, `components/sentiment/SentimentBannerStrip.vue`, `pages/sentiment.vue`, `types/api.ts`, `test/sentiment-mapper.spec.ts`.
    - **NAAIM remains open and is not a code problem.** The public feed is gone: naaim.org dropped the table, `index.naaim.org` is now a sign-in page, both public iframes are frozen at 2026-05-13 (older than our own cache), Wayback has no snapshot after June 2026, the WordPress REST API exposes only monthly newsletters, and FRED carries no NAAIM series. The scraper was still repaired (it now parses the iframe — 131 rows vs 0 before — and resumes automatically if NAAIM unfreezes it) and the absence is now loud rather than silent. NAAIM is 0.35 of Layer 1, so restoring it needs a product decision from Rohit: membership, manual weekly entry (a `manual` provenance tag is reserved for it), or re-specced Layer 1 weights.
-   - Prod impact: **large — see `dev_to_prod_migration_todos.md`.** Not deployed: the working tree carries substantial pre-existing uncommitted work from before this task, so committing/merging was left to the user.
+   - Prod impact: **large — see `dev_to_prod_migration_todos.md`.**
+   - **Committed + pushed 2026-08-18** (all authored `divsum127`) via the `robust-test-and-dev-deploy` skill. API bumped to **v1.12.0**; API docs and OpenAPI snapshot regenerated. Dev deployed and smoke-tested: `mindwealth-api-dev` `:8507` v1.12.0 `status=ok` with `conviction_store` isolated, `mindwealth-ui-dev` `:8514` rebuilt. Full suite **858 passed / 0 failed**, Nuxt **48 passed**, typecheck 45 errors vs a 46 pre-existing baseline.
 
 ---
 
