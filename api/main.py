@@ -18,7 +18,7 @@ from api.schemas.conviction import HealthResponse
 from api.services import conviction_service as svc
 from src.config_paths import CONVICTION_STORE_DIR
 
-API_VERSION = "1.10.9"
+API_VERSION = "1.11.0"
 API_PREFIX = "/api/v1"
 
 _default_origins = "http://localhost:8504,http://localhost:8509,http://127.0.0.1:8504,http://127.0.0.1:8509,http://localhost:8512,http://127.0.0.1:8512"
@@ -43,7 +43,21 @@ async def lifespan(_app: FastAPI):
             )
     except Exception as exc:  # never block startup over housekeeping
         logging.getLogger(__name__).warning(f"Could not reconcile orphaned chat jobs: {exc}")
+
+    # Overwatch scans run here rather than in cron: the SSE event bus is
+    # per-process, so a cron process publishes to nobody. See overwatch_runner.
+    overwatch_tasks = []
+    try:
+        from api.services import overwatch_runner  # noqa: PLC0415
+
+        overwatch_tasks = overwatch_runner.start()
+    except Exception as exc:
+        logging.getLogger(__name__).warning(f"Overwatch scheduler did not start: {exc}")
+
     yield
+
+    for task in overwatch_tasks:
+        task.cancel()
     shutdown_executor()
 
 

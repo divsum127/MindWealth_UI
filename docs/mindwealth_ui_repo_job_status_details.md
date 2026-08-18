@@ -15,6 +15,49 @@ This file captures minute-level implementation context for each completed task:
 
 ---
 
+### 2026-08-18 — AI Analyst panel: implementing the audit fixes (5 phases, both repos)
+
+**Ask:** "Analyze any specs in my codebase / gmail mcp server, create a step by step plan for the fixes starting with fake frontend then moving on to other fixes properly implemented and tested." User then approved editing `MindwealthUI_Vue` and chose **option B** for push mode.
+
+**Spec sources used**
+- `instruction_docs/ai_analyst/ai_analyst_spec_doc.md` (Rohit, 22 May 2026) and `ai_analyst_implementation_log.md` (v1.8.1).
+- `MindwealthUI_Vue/docs/AI_ANALYST_BACKEND_REQUIREMENTS.md` §5/§6/§8/§9 — the written migration plan, previously unstarted.
+- **`instruction_docs/portfolio_page/spec_15July.md` + `15July_imp_spec_additions.md` (D4)** — the agent slide-in mechanic. This was missed by the earlier audit: "auto-open after 1.5 seconds on the target page; badge dot only on other pages; a dismissed alert never re-opens in the same session", driven by an `alerts.json` with `type` + `target_page`. `GET /api/v1/portfolio/alerts` has served exactly that for months with **zero frontend consumers**.
+- **Gmail MCP is body-blind for the relevant mail.** `search_emails` finds the threads (22 May "AI Analyst Overwatch agent…" `19e4ee57ecbde55b`, 15 Jul portfolio brief `19f6762ddd4889f3`, 16 Jun "agents → global overwatch" `19ed26367c3b1df4`) but every one returns `body: null`, and `get_email_metadata` on the 22 May id is refused with `ACCESS_DENIED … does not match the active filter configuration`. Only recent messages return bodies, so `privacy.allow_full_body` appears time-scoped. **The repo copies are complete, so nothing was lost — but do not plan a future task around reading old spec mail through this MCP server.**
+
+**Key decisions**
+- **`/analytics/analyst/fwd-trend` was NOT built, deliberately**, even though `AI_ANALYST_BACKEND_REQUIREMENTS.md` §5.2 lists it P0 and it 404s. Once the position/drift split landed, **100% of genuine drift alerts already carry a real 4-point `fwd_trend`** — the 237 "missing trends" were portfolio alerts that should never have had a win-rate trend. The endpoint would have had no caller. Revisit only if trend depth beyond 4 weeks is wanted.
+- **No new Python dependency for the scheduler.** APScheduler is not installed in the venv; three fixed schedules do not justify adding it when the API already owns an asyncio loop. `overwatch_runner.py` is ~110 lines of `asyncio.sleep` + `asyncio.to_thread`.
+- **Schedules live in one module** (`overwatch_schedule.py`) read by both the runner and `meta.next_signal_check`, mirroring the crontab lines in `install_aws_cron_dual.sh:40-42` (macro 18:30, signals 19:00 Mon–Fri, system every 15 min, all UTC). Previously the API had no idea when the next scan was, which is why those meta fields were always `null`.
+- **`bind_loop()` on the event bus rather than a helper in the runner.** `scan_and_publish_new_alerts()` calls `publish_sync` internally, so fixing only the runner's own call site would have left the signals and macro scans broken. Making the bus loop-aware fixes every caller.
+- **SYSTEM tab shows nothing rather than something wrong.** When `/system/health` is unreachable or the user is not admin, the tab renders an explicit "System health unavailable" card. The previous `buildSystemChecks()` emitted five rows with invented statuses, including a "Google Sheets sync" that merely echoed `meta.data_updated_at` under a different name.
+- **Panel `pendingAlert` no longer fires on the bootstrap poll.** With a permanent backlog of ~249 alerts it lit the gold dot on every page load, so it signalled nothing.
+
+**New defect found while testing (not in the audit)**
+`scripts/smoke_analyst.sh` caught **duplicate alert ids: 166 unique out of 249**. A single combo routinely holds many simultaneous open positions — SFTBY had **29** live short breaches on one function/interval — and the id keyed only on `function/direction/interval/symbol`. Fixed by threading `Entry Date`/`Exit Date` from the virtual-trading CSV through `degradation_service` into the id and the `position` payload. The pre-existing `deg-` ids had the same flaw. This mattered beyond cosmetics: Vue `v-for` keys and the panel's `seenAlertIds` new-alert diff both assume unique ids.
+
+**Things deferred or left for future**
+- Chat presets (`analyze_asset` / `signal_insights` / `breadth_analysis` / `deep_research_enabled`) and prompts from `/chatbot/config` — plan item 4.6, **not done**. The BFF and backend support all of it; the panel still sends bare `message` → `freeform`. Needs UI design (a preset picker) rather than wiring.
+- Incremental polling with `?since=` / `?channel=` — plan item 4.7, **not done**. The panel still refetches the full feed every 60s. Now cheap to add: the backend supports both params and `panel_meta` is already plumbed.
+- `GET /chatbot/sessions` session-picker UI — still unwired (flagged as such since the June requirements doc).
+- Economic-surprise alert type — deferred in the July implementation log, still deferred.
+- `vue-tsc` reports **45 pre-existing errors** (verified identical before and after via `git stash`). `npm run typecheck` therefore fails today; it is wired up but cannot gate CI until those are cleared. Unrelated to the analyst: `PerformanceRow` undefined in `mindwealth-data.ts:888`, `Signal.ticker`/`.direction` missing, a `'drifting'` comparison in `pages/overwatch.vue`.
+- SSE is wired end-to-end on the backend, but **the frontend still polls** — no `EventSource` was added. Push now works server-side; switching the client is a separate change with its own reconnect/backoff concerns.
+
+**Edge cases identified but not handled**
+- The in-process scheduler requires `--workers 1`. Both `mindwealth-api` and `mindwealth-api-dev` run single-worker today, but nothing enforces it; with N workers each SSE client attaches to one worker and sees 1/N of alerts. Multi-worker still needs Redis (spec open question 2, never answered).
+- If the crontab is ever installed alongside the in-process runner, both scan. `alert_state.json` dedupes so nothing double-publishes, but the degradation cache gets rebuilt twice. Set `OVERWATCH_SCHEDULER=0` if cron should own it.
+- `usePageAlerts` dismissals live in `sessionStorage`, so a second tab keeps its own dismissals until reload. The spec says "the same session", which a tab arguably is.
+- `TARGET_ROUTES` in `usePageAlerts.ts` maps `target_page` → route. Backend currently emits only `risk` and `holdings`; an unmapped value is silently ignored rather than shown on every page. Add to the map when the backend grows a new target.
+- Position-alert ids now depend on `Entry Date`/`Exit Date` being present in the virtual-trading CSVs. If a row lacks both, the id falls back to `profit_pct`, which can still collide for two positions at identical P&L.
+
+**Caveats**
+- The degradation result cache had to be rebuilt (`warm_degradation_cache()`) after adding the date columns — a stale cache serves alerts without `entry_date`, so ids silently fall back. **Any deploy of this change must warm the cache or delete `overwatch_store/degradation_result.json`.**
+- Counts quoted (249 total / 5 drift / 237 position) are from 2026-08-18 07:2x UTC and move with the portfolio.
+- **Prod and dev no longer share a Nuxt build dir** — this corrects the earlier audit entry. `mindwealth-ui.service` was already repointed to `/home/ubuntu/MindwealthUI_Vue_prod` with an absolute `ExecStart`, verified by inode and content diff; the prod bundle contains no `position_risk`. But the **running** prod process still has `cwd=/home/ubuntu/MindwealthUI_Vue` because it predates the unit fix, so its next restart jumps to the prod checkout at `ba2bcfd` (20 Jul).
+
+---
+
 ### 2026-08-18 — AI Analyst panel: full wiring audit (codebase + live dev `:8514` / `:8507`)
 
 **Ask:** "Check the ai analyst codebase and the ai analyst panel on the dev website, analyze what all is working, properly wired to the backend, what is not wired to backend yet."

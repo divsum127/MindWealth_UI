@@ -21,6 +21,77 @@ Reference deploy skill: `.cursor/skills/prod-pull-and-details/SKILL.md`
 | `[PROD-ACTION]` | Manual step on server after git merge (secrets, systemd, bootstrap) |
 | `[DONE]` | Completed on prod (date in notes) |
 
+## 2026-08-18 — AI Analyst panel: audit defects FIXED on dev, awaiting prod cutover `[PENDING]`
+
+Supersedes the audit entry below — those defects are now fixed on `chatbot-dev` + `ui-dev`.
+**Nothing is deployed.** Backend and Nuxt changes must ship **together**: the panel renders a
+`position_risk` alert type the current prod API does not emit.
+
+### Backend — merge `chatbot-dev` → `chatbot-prod`
+
+| File | Change |
+|------|--------|
+| `api/services/analyst_service.py` | New `position_risk` type + `_portfolio_to_panel_alert`; `above_floor` honours `floor_pct`; `_first_sentence()` brief fix; schedule in `meta`; split signals badge |
+| `api/services/degradation_service.py` | Cache is floor-aware; portfolio alerts carry `entry_date`/`exit_date` |
+| `api/services/overwatch_event_bus.py` | `bind_loop()` — lets a scan thread publish to live SSE subscribers |
+| `api/schemas/analyst.py` | `position_risk` in the type literal; `OverwatchPanelPositionDetail`; `drift_count`/`position_count` on the badge |
+| `api/main.py` | Starts/cancels the Overwatch scan loops in `lifespan` |
+| **new** `api/services/overwatch_schedule.py` | Scan times, shared by the runner and `meta` |
+| **new** `api/services/overwatch_runner.py` | In-process scan loops (replaces cron for SSE) |
+| **new** `scripts/smoke_analyst.sh` | 12-assertion contract smoke test |
+| **new** `tests/test_analyst_position_split.py`, `tests/test_overwatch_runner.py` | 21 tests |
+
+### Nuxt — merge `ui-dev` → the prod Nuxt branch (`presentation-prod`)
+
+`server/api/overwatch.get.ts`, `server/utils/overwatch-panel.ts`, `server/utils/mindwealth-data.ts`,
+`server/utils/signal-parsers.ts`, `composables/useOverwatch.ts`, `composables/useClaudePanel.ts`,
+`components/AnalystPanelInner.vue`, `components/analyst/AnalystAlertsView.vue`,
+`components/analyst/AnalystMacroAlertCard.vue`, `types/api.ts`, `package.json`, plus **new**
+`server/api/page-alerts.get.ts`, `composables/usePageAlerts.ts`,
+`components/analyst/AnalystPositionRiskCard.vue`, `components/analyst/AnalystPageAlertCard.vue`,
+`vitest.config.ts`, `test/*.spec.ts`, `test/fixtures/analyst-alerts.json`.
+
+Note the prod Nuxt tree is `/home/ubuntu/MindwealthUI_Vue_prod` (branch `presentation-prod`,
+currently `ba2bcfd`, 20 Jul) and is **22+ commits behind** `ui-dev`. This merge is not analyst-only.
+
+### `[PROD-ACTION]` Host steps — required, in this order
+
+1. **Warm the degradation cache after deploying the backend**, before the first panel load:
+   `.venv/bin/python -c "from api.services.degradation_service import warm_degradation_cache; warm_degradation_cache()"`
+   A cache written by the old code has no `entry_date`, so position-alert ids fall back and collide.
+   Alternative: delete `overwatch_store/degradation_result.json` and let the first request rebuild it
+   (slow — that request pays the full ~1,990-CSV scan).
+2. **Confirm the API runs `--workers 1`.** `mindwealth-api.service` does today. The SSE bus is
+   per-process; with N workers each client sees 1/N of alerts.
+3. **Do NOT install the Overwatch crontab.** `scripts/install_aws_cron_dual.sh:40-42` is now redundant —
+   the scans run inside the API. Leaving cron installed is safe (`alert_state.json` dedupes) but
+   rebuilds the degradation cache twice a day for nothing. If cron is preferred, set
+   `OVERWATCH_SCHEDULER=0` in the service environment — but note SSE will then deliver nothing,
+   which is the pre-existing behaviour.
+4. **Rebuild the prod Nuxt bundle in its own tree** — `cd /home/ubuntu/MindwealthUI_Vue_prod && npm ci && npm run build`, then `sudo systemctl restart mindwealth-ui.service`.
+5. Optional: `ANALYST_USE_CLAUDE_COPY` is still absent from both `.env` files, so alert copy stays
+   template-generated. If it is ever enabled, re-check the model id in `analyst_copy_service.py:72`
+   (`claude-sonnet-4-5-20250929`) — a dead Claude model id was already retired elsewhere on 2026-08-17.
+
+### `[PENDING]` Latent, pre-existing — running prod Nuxt process is from the old tree
+
+`mindwealth-ui.service` was corrected on 2026-08-17 to `WorkingDirectory=/home/ubuntu/MindwealthUI_Vue_prod`
+with an absolute `ExecStart`, but the **running** process (pid 1540211) predates that and still has
+`cwd=/home/ubuntu/MindwealthUI_Vue`. Its next restart — planned or not — will switch www.mindwealth.co
+to the prod checkout at `ba2bcfd` (20 Jul). Whoever restarts it should expect a visible content jump.
+Verified today: the two `.output` trees have different inodes and different content, and the prod
+bundle contains none of the analyst work, so a dev `npm run build` can no longer reach prod.
+
+### Smoke tests
+
+- [DONE 2026-08-18] `scripts/smoke_analyst.sh http://127.0.0.1:8507 $KEY` → **12/12 PASS** on dev.
+- [PENDING] Same script against `http://127.0.0.1:8506` after the prod API deploy.
+- [PENDING] Logged-in `GET :8512/api/overwatch` — assert `system_checks` has 7 named checks for an
+  admin, one card per Combo, and `panel_alerts[].type` includes `position_risk`.
+- [PENDING] Confirm `journalctl -u mindwealth-api` logs `overwatch scheduler started (3 loops)` on boot.
+
+---
+
 ## 2026-08-18 — AI Analyst panel wiring audit: defects found, **nothing fixed yet** `[PENDING]`
 
 Audit only — **no code changed in either repo**, so there is nothing to merge from this entry today.
