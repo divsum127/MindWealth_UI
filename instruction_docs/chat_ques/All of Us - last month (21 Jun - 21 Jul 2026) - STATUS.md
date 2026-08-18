@@ -202,7 +202,7 @@ These are largely analytical asks for Ahil (and Divyanshu backing him up), not w
 | Date | Ask | Status |
 |---|---|---|
 | 24/06 | CFTC "expected Tue 2026-06-16" repeated twice while system date was 24/06 — stale/duplicated date logic | ✅ DONE — CFTC auto-refresh (`refresh_cftc_zip_if_stale`) + separate CFTC staleness investigation/fix (job status "CFTC data staleness investigation and fix — stale May-26 data updated to Jun-2 report", SUCCESSFUL) directly resolve this class of bug. |
-| 25/06 | VIX/ratio shown on the site vs. what the user saw independently online (1.06 vs 1.01) — possible date/data-integrity issue | ❌ PENDING — no specific investigation of this exact discrepancy found in job status docs (distinct from the later, resolved McClellan/NH-NL/SKEW rounding issues). |
+| 25/06 | VIX/ratio shown on the site vs. what the user saw independently online (1.06 vs 1.01) — possible date/data-integrity issue | ✅ FIXED 2026-08-02 — SSI `vix_ratio` formula flipped to `VIX/VIX3M` (was inverted `VIX3M/VIX` vs stress thresholds). Normal contango no longer paints red backwardation. Rebuild `positioning.json` + `ssi.db` on deploy. |
 | 24/06 | CAPE 42.70 (site) vs 42.84 (Multpl) vs 41.44 (GuruFocus) — 1.3pt gap at EXTREME threshold | 🟡 PARTIAL — remains listed as **open** in the TODO section of `mindwealth_ui_job_status.md` (T-03, Priority 2 — Investigate/Improve); no fix confirmed. |
 | 22/06 | Fed Cycle stuck on "CUTTING_LATE" during a pause with rising hike risk | ✅ DONE — "FIXED 2026-07-22" per job status TODO-section strikethrough (T-01); `fed_cycle.py` updated. |
 | 22/06 | VIX single-day +40% spike not escalating tier (stays NORMAL) | ✅ DONE — "FIXED 2026-07-22" per TODO-section strikethrough (T-03 duplicate ID in source doc). |

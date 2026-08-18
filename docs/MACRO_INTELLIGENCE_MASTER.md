@@ -363,7 +363,7 @@ This section is the single authoritative reference for every data source used in
 | **FRED web page** | https://fred.stlouisfed.org/series/BAMLH0A0HYM2 |
 | **Fallback (no API key)** | FRED public CSV: `https://fred.stlouisfed.org/graph/fredgraph.csv?id=BAMLH0A0HYM2` |
 | **History start** | 1996-12-31 |
-| **Practical depth** | ICE BofA licensing restricts FRED API distribution to the most recent ~3 years only, regardless of API key. FRED displays the full series on the web, but programmatic access is capped. The system computes HY percentile on the available 3-year window. |
+| **Practical depth** | ICE BofA licensing restricts the **live FRED API** to the most recent ~3 years only, regardless of API key. **Confirmed 2026-07-29: FRED's own series page now states this explicitly — "Starting in April 2026, this series will only include 3 years of observations." — a permanent relicensing, not a code-side limitation.** `fredgraph.csv?id=BAMLH0A0HYM2&cosd=1996-01-01` returns data starting 2023-07-31 regardless of the requested start date. **Fixed free 2026-08-02:** a Wayback Machine snapshot of FRED's own CSV (captured 2025-11-04, just before the cutoff) contains the real ICE OAS series 1996-12-31 → 2025-11-03; combined with the live-collected 2023-06-09→today series, `runic.db` now has continuous **real** HY OAS history 1996-12-31 → today (`scripts/backfill_hy_oas_from_wayback.py`), except 7 disclosed bond-market-holiday dates still on the old BAA10Y+VIX Model v2 estimate (`signal_tier='PROXY'`) — see `docs/ssi_validation/hy_oas_wayback_backfill_2026-08-02.md`. The 2026-07-29 Model v2 recalibration (`docs/ssi_validation/hy_oas_recalibration_2026-07-29.md`) is superseded by this backfill. |
 | **Publication frequency** | Daily (business days) |
 | **Units** | Percent (e.g., 2.74 = 274 basis points OAS) |
 
@@ -551,14 +551,17 @@ Variables computed into the daily SSI score. Data lives in CSV caches under `mac
 
 | Variable | Spec Requires | Currently Have | Gap | Fixable? |
 |----------|--------------|----------------|-----|----------|
-| **CNN Fear & Greed** | 2011–2026 stock market index | 2018-02-01 → 2026-present · ~3,052+ rows (Alternative.me **crypto** F&G, not CNN stock market F&G) | Wrong index — cache is crypto sentiment, not CNN stock market F&G. Also missing 2011–2018. | Bloomberg CSV export only — no free source exists |
+| **CNN Fear & Greed** | 2011–2026 stock market index | **2012-05-25 → today, real/reconstructed CNN F&G** (2026-08-02 free backfill — see `docs/ssi_validation/cnn_fg_wayback_backfill_2026-08-02.md`): real CNN API 2020-07-14→today + validated community wayback-reconstruction 2012-05-25→2020-07-13. Alternative.me crypto proxy remains only for non-trading days and the disclosed 2011-01→2012-05-24 residual. | **Mostly fixed free.** Disclosed residual: 2011-01→2012-05-24 (~16 months) has no free source (zero Wayback CDX snapshots of the CNN F&G page exist before 2012-05-25). | **Fixed free** (2026-08-02) for the bulk of the range; remaining ~16-month gap is Bloomberg CSV export only. |
 
 **Summary — SSI (6 total variables):**
 
 | Status | Count | Variables |
 |--------|-------|-----------|
-| No gap | 5 | NAAIM, DBMF, HYG/LQD, Breadth, VIX sentiment |
-| Gap — paid data only | 1 | CNN Fear & Greed |
+| No gap | 6\* | NAAIM, DBMF, HYG/LQD, Breadth, VIX sentiment, CNN Fear & Greed |
+
+\* CNN F&G moved from "Gap — paid data only" to "No gap" on 2026-08-02 (free backfill) but keeps a
+disclosed ~16-month residual (2011-01→2012-05-24) with no free source available — see addendum in
+`docs/ssi_validation/data_gap_report_2026-06-06.md`.
 
 ---
 
@@ -569,25 +572,31 @@ Variables stored in `macro_intelligence/data/runic.db` → `daily_readings`. Use
 | Variable | Spec Requires | Currently Have | Gap | Fixable? |
 |----------|--------------|----------------|-----|----------|
 | **CFTC Fast Money (FM/RM)** | 2006–2026 | 2010-06-18 → 2026-present · ~840 rows | 2006–2010 missing (~4 years) | No — CFTC TFF format (FM/RM split) was introduced Sep 2009; earlier data physically does not exist |
-| **HY Credit Spreads OAS** | 2006–2026 real OAS | 2023–2026 real (163 rows) + 1997–2026 BAA10Y proxy (R²=0.40) | Proxy explains only 40% of OAS variance. Understates blow-outs in 2008/2020/2022. 3yr percentile skewed in stress regimes. | Paid data only — Bloomberg terminal or ICE Direct |
+| **HY Credit Spreads OAS** | 2006–2026 real OAS | **1996-12-31 → today, real** (Wayback Machine FRED snapshot backfill, 2026-08-02 — see `docs/ssi_validation/hy_oas_wayback_backfill_2026-08-02.md`) | FRED's *live* free API/CSV was relicensed to a rolling 3yr window starting **April 2026** (confirmed live), but a pre-cutoff Wayback Machine snapshot of FRED's own CSV recovered the full real series for free. Only 7 dates (bond-market-only holidays, ~0.1% of prior `PROXY` rows) remain on the superseded Model v2 BAA10Y+VIX estimate. | **Fixed free** (2026-08-02). Superseded the 2026-07-29 Model v2 calibration improvement. |
 | **CPI Surprise** | Enough history for 3yr percentile | 2024-01-12 → 2026-present · 27 rows | Only 27 months — 3yr percentile unreliable until mid-2027 | Partial — FRED CPI actuals back to 1947; consensus estimates (needed for "surprise") from Cleveland Fed (free) |
 
 **Summary — Runic DB (12 total variables):**
 
 | Status | Count | Variables |
 |--------|-------|-----------|
-| No gap | 9 | NFCI, HY (proxy acceptable), WTI, VIX, VXTS, GSR, CNH, WALCL, SPX, CAPE, Fed Cycle |
+| No gap | 10\* | NFCI, HY (real, 2026-08-02 wayback backfill), WTI, VIX, VXTS, GSR, CNH, WALCL, SPX, CAPE, Fed Cycle |
 | Gap — fixable (partial) | 1 | CPI Surprise (extend consensus back to 2010 via Cleveland Fed) |
-| Gap — paid data only | 1 | HY OAS real history (Bloomberg / ICE Direct) |
 | Gap — structural/impossible | 1 | CFTC FM/RM pre-2010 (data does not exist) |
+
+\* HY OAS moved from "Gap — paid data only" to "No gap" on 2026-08-02 (free wayback backfill) but
+keeps a disclosed 7-date residual (0.1% of prior `PROXY` rows, bond-market holidays with no
+wayback print) — see `docs/ssi_validation/hy_oas_wayback_backfill_2026-08-02.md`.
 
 **Overall totals (18 variables across SSI + Runic DB):**
 
 | Category | Total | No Gap | Gap — Fixable | Gap — Paid Data Only | Gap — Structural/Impossible |
 |----------|-------|--------|---------------|---------------------|----------------------------|
-| SSI | 6 | 5 | 0 | 1 (CNN F&G) | 0 |
-| Runic DB | 12 | 9 | 1 (CPI Surprise) | 1 (HY OAS) | 1 (CFTC pre-2010) |
-| **Total** | **18** | **14** | **1** | **2** | **1** |
+| SSI | 6 | 6\* | 0 | 0 | 0 |
+| Runic DB | 12 | 10\* | 1 (CPI Surprise) | 0 | 1 (CFTC pre-2010) |
+| **Total** | **18** | **16\*** | **1** | **0** | **1** |
+
+\* See the two footnotes above — both HY OAS and CNN F&G were fixed free on 2026-08-02 but each
+carries a small disclosed residual not covered by any free source.
 
 ---
 
@@ -783,7 +792,7 @@ MindWealth_UI/
 
 | Variable | Spec lookback | Actual data available | Reason | Impact |
 |---|---|---|---|---|
-| HY (`BAMLH0A0HYM2`) | 1996-01-01 | 2023-06-05 (3 years only) | ICE BofA licensing restricts FRED API distribution to ~3 years, even with an API key — this is a FRED platform restriction, not a code bug | Combo B uses absolute threshold (≥ 400 bps), so combo detection is unaffected. HY percentile rank is calculated on available 3-year window. |
+| HY (`BAMLH0A0HYM2`) | 1996-01-01 | Rolling ~3yr window from *live* FRED (2023-07-31 onward as of 2026-07-29); **full 1996-2026 real history now in `runic.db`** via the 2026-08-02 Wayback Machine backfill | ICE BofA licensing restricts the *live* FRED API to ~3 years, even with an API key (confirmed permanent April-2026 relicensing). **Fixed free 2026-08-02:** a Wayback Machine snapshot of FRED's own CSV (captured 2025-11-04, pre-cutoff) recovered the real ICE OAS series back to 1996-12-31, applied via `scripts/backfill_hy_oas_from_wayback.py`. Only 7 dates (bond-market holidays with no wayback print) remain `signal_tier='PROXY'` on the now-superseded Model v2 estimate. | Combo B now evaluates against **real** ICE OAS for 6,620 of 6,627 previously-proxy dates (up from a BAA10Y+VIX proxy) — historical combo fire counts for HY-driven combos (A, B, F, G) changed as a result; see `docs/ssi_validation/hy_proxy_consumer_audit_2026-07-29.md` addendum. |
 | WTI (`CL=F`) | 1985-01-01 | 2000-08-23 (Yahoo futures limit) | Yahoo Finance continuous futures only go back ~25 years; FRED `DCOILWTICO` fallback (1986) fires automatically when Yahoo returns <100 bars | WTI uses rolling 3-year percentile — live readings unaffected |
 | GSR (`GC=F/SI=F`) | 1968-01-01 | 2000-08-30 (Yahoo futures limit) | Same Yahoo futures depth limitation for gold and silver continuous contracts | GSR uses rolling 3-year percentile — live readings unaffected |
 

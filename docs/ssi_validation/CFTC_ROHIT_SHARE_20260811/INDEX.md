@@ -1,6 +1,5 @@
 # CFTC SQUEEZE / LIQUIDITY EXIT — Share Package for Rohit
 
-**Prepared by:** Divyanshu (MindWealth SSI validation)  
 **Package date:** 2026-08-11  
 **COT data through:** 2026-08-04 (Tuesday position date)  
 **Spec:** Rohit Aug 4, 2026 email (episode collapse, extended FM axis, mean−median gap, PAR/excess, robustness)

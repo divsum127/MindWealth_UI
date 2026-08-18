@@ -1,10 +1,5 @@
 # CFTC Positioning Pattern Thresholds — Experiment Results for Sign-Off
 
-**Prepared for:** Rohit Malhotra  
-**Prepared by:** Divyanshu (MindWealth SSI validation)  
-**Report date:** 2026-08-11  
-**Experiment run:** Tests 3–4 (`cftc_grid_v2.py`) — episode-collapsed distribution
-
 ---
 
 ## 1. Purpose

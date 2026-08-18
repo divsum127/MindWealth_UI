@@ -45,6 +45,44 @@ In Step 2 (SSI multipliers), add this critical exception rule **as a named const
 # values). The OAS credit multiplier and SPX trend multiplier still apply.
 ```
 
+### Two terms, defined (Rohit 6 Aug: "Define both")
+
+Both words were used interchangeably in the formula and neither was defined anywhere:
+
+| Term | Definition | Units | Where it lives |
+|---|---|---|---|
+| **Equity ceiling** | The maximum share of NAV that may be deployed into equities in total, after every overlay. A portfolio-level cap. | % of NAV (e.g. 72%) | `final_ceiling_pct` in `portfolio_service._compute_ceiling` |
+| **Ceiling scalar** | The multiplier applied to an individual position inside `size = (NAV ÷ N) × conviction% × scalar`. A per-position scaling factor. | dimensionless multiplier (e.g. 0.90) | applied in the sizing path, not the ceiling path |
+
+They are not the same object and must not be swapped: the ceiling constrains the book, the
+scalar scales a position within it.
+
+### The `SSI ≥ 2` comparand — answered (Rohit: "Tell me what 'SSI≥2' is currently compared against")
+
+It is **not** on the SSI level or multiplier scale, which is why nothing we emit matches it
+(level has run 0.0849–0.4387, multiplier 1.20×). The answer is in this document's own bypass
+comment above: *"Combo F (Recovery Window) is active AND SSI confirms (>=2 of 4 signals)"* —
+so `SSI ≥ 2` means **at least 2 confirming Layer 2 signals**, a count, not a score.
+
+Today's equivalent field is `layer2_confirmed_count`, now out of **6** gates rather than the
+original 4, with `min_confirmed = 2` in `SSI_CONFIG.yaml`. So the modern reading is
+`layer2_confirmed_count >= 2 of 6`.
+
+### The two bypass rules conflict — reconciled in code, decision still yours
+
+| Source | Trigger | Target |
+|---|---|---|
+| This doc (Jun 18) | Combo B confirmed **OR** (Combo F active AND SSI ≥ 2 of N) | the VIX level multiplier |
+| Addendum A6 | Combo B **ACTIVE only** | `size_mult` in the C++ model |
+
+Different trigger **and** different target. Combo F has been active, so the Jun 18 clause
+fired while A6 did not — which is exactly why the flag was observed on with Combo B inactive.
+
+**Resolved 2026-08-07 in favour of A6** (`src/macro_intelligence/engine/vix_bypass.py`): the
+bypass now requires Combo B `status == ACTIVE`, with an assertion in `build_payload` and a
+runtime guard in the API so the F+SSI path cannot silently return. Which rule *should* govern
+remains Rohit's call — the code follows the stricter one meanwhile.
+
 The full Step 2 multiplier table for reference:
 
 **VIX level multiplier** (bypassed when Combo B or F active):
@@ -62,7 +100,38 @@ The full Step 2 multiplier table for reference:
 | Condition | Multiplier |
 |---|---|
 | SPX more than 5% above its 200-day average | ×1.00 |
-| SPX below its 200-day average | ×0.80 |
+| SPX below its 200-day average | **×0.90** |
+
+> **Updated 2026-08-17 per Rohit's 6 Aug sign-off: "SPX vs 200d MA — CODE IS CORRECT. Adopt
+> ×0.90 and update the spec."** This row previously read ×0.80 while `portfolio_service.py`
+> ran ×0.90; the code value is now the signed value. (The same ×0.80 appeared in the Step 2
+> summary further down and has been corrected there too.)
+>
+> **Moving-average mismatch — deliberate, documented, not yet standardised.** This sizing
+> overlay uses the **200-DAY** MA. Combo F's fire condition uses the **50-WEEK** MA, which is
+> roughly 250 trading days, not 200. The two will therefore disagree at turning points: SPX
+> can sit above its 50-week MA while below its 200-day MA, so the detector can call a
+> recovery active on a day this overlay is still applying a haircut. Either standardise both
+> on one measure or keep the difference and accept the disagreement — the decision is open.
+
+**SSI multiplier** (the fifth term in the formula — was missing from this spec entirely,
+flagged by Rohit 6 Aug):
+
+| Condition | Multiplier |
+|---|---|
+| SSI multiplier ≤ 1.00 (risk-off haircut) | pass through as-is |
+| SSI multiplier > 1.00 (risk-on) | **capped at ×1.00** |
+
+What `portfolio_service._compute_ceiling` actually reads is `min(1.0, ssi_multiplier)`, so an
+SSI above 1.00 never raises the ceiling. The uncapped value is still used for position
+sizing, which is why the Runic page can legitimately show ×1.20 in the SSI panels and ×1.00
+in the ceiling chain — two different terms, now labelled separately in the API response.
+
+**Axiom 2 consequence (Rohit: "establish which"):** because the SSI term is capped at 1.00
+and the final ceiling is `min(100%, …)`, the live chain **cannot** produce the 104% that
+85% × 1.20 VIX × 1.20 SSI implies. The axioms bind, and both ×1.20 terms are dead on the
+upside today. A U-shaped ladder's re-expansion leg therefore needs an explicit axiom
+exemption before it can have any effect. Regression test: `tests/test_api_portfolio.py`.
 
 **HY credit spread (OAS) multiplier:**
 
@@ -254,7 +323,9 @@ Download one year of ^VIX from Yahoo Finance (you already pull Yahoo data). Calc
 Step 2 — SSI (Super Sentiment Index) multiplier on the ceiling
 Three small adjustments to the ceiling from Step 1:
    VIX level:    calm (<15) → ×1.20 / normal (15–25) → ×1.00 / stress (25–35) → ×0.75 / crisis (>35) → ×0.50
-   Trend:        SPX >5% above 200DMA → ×1.00 / below 200DMA → ×0.80
+                 [VIX ladder UNDER REDESIGN — Rohit 6 Aug: "NEITHER column is right… this
+                  needs redesigning, not reconciling." Code keeps running as-is meanwhile.]
+   Trend:        SPX >5% above 200DMA → ×1.00 / below 200DMA → ×0.90   [adopted 2026-08-17]
    Credit (HY):  OAS <300bp → ×1.00 / 300–500bp → ×0.90 / 500–700bp → ×0.80 / >700bp → ×0.70
 Multiply all three together and apply to the ceiling.
 Example: normal VIX (80%) × 1.00 × 0.90 (HY at 318bp) = 72% final ceiling.
