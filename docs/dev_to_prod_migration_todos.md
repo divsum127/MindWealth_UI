@@ -273,6 +273,41 @@ Server TZ is `Etc/UTC`. Both clones run `run_macro_nightly.py` at `0 18 * * 1-5`
 
 ---
 
+## 2026-08-17 — "Could not reach the analyst" — permanent fix, **two repos, ship together** `[PENDING]`
+
+**Both halves must deploy together.** The backend's 330s answer budget is only safe because the client now resumes a job by id instead of holding one socket open and 503-ing. Shipping the backend alone re-exposes the original failure.
+
+**`MindWealth_UI`** (`chatbot-dev` → `chatbot-prod`), commit **`6c893e309`**:
+- `api/jobs/store.py` — `JobStore.fail_orphaned()`
+- `api/main.py` — lifespan calls it at startup
+- `tests/test_api_chatbot.py` — 2 new cases
+
+**`MindwealthUI_Vue`** (`ui-dev` → prod UI branch), commit **`bd18d42`**:
+- `server/utils/mindwealth-client.ts` — never cache `/chatbot/*`; cache key carries a bearer-token fingerprint
+- `server/utils/mindwealth-data.ts` — poll tolerates 8 consecutive failures; 45s handoff; empty-content jobs reported immediately
+- `server/api/chat.post.ts` — returns `{pending, job_id}` instead of throwing 503
+- `server/api/chat/job/[jobId].get.ts` — **new** resume route
+- `composables/useClaudePanel.ts` — browser-side resume loop, job id persisted, error messages differentiated
+- `types/api.ts` — `pending` / `job_id` on `ChatResponse`
+
+`[PROD-ACTION]` prod host: `npm run build` **and** restart the prod UI service — a merge alone does not update the running bundle. Note the still-open finding that prod and dev share one Nuxt build dir.
+`[PROD-ACTION]` restart `mindwealth-api.service` so `fail_orphaned()` runs and clears any jobs stranded by earlier restarts.
+
+**Security note worth calling out separately:** the GET cache key had no caller identity, so user-scoped responses could be served across signed-in users for up to 30s. Fixed in the same commit. Prod carries this defect until the UI ships.
+
+**Smoke tests:**
+- `[DONE]` 2026-08-17 — through the Nuxt BFF on `:8514` with a real `mw_access_token`: NZ question `pending` at 45.1s → one resume poll → **5,501 chars at 60.1s, no 503**; signals+quality **7,647 chars at 57.8s**; short AAPL question **inline at 25.1s**.
+- `[DONE]` 2026-08-17 — poll cadence in the API log went from **3 polls/30s apart** to **24 polls at ~2.5s** (the first patch was an anchored regex that silently matched nothing — caught by this check, not by review).
+- `[DONE]` 2026-08-17 — `pytest tests/` **817 passed, 4 skipped, 0 failed**; `npm run build` clean; `smoke-test-apis.sh` 11/11.
+- `[PENDING]` prod: after both deploys, send a long question and confirm no red banner, then hard-refresh mid-answer and confirm the answer still lands.
+
+**Not fixed, reported:**
+- `[PENDING]` **Macro questions still route to the web.** "What is the current macro regime / which combo is dominant" → `WEB_RAG`, answered "transitional, mixed signals" from web sources while Runic says Combo F dominant, week 20 of 26, TACTICAL EASY MONEY. Same defect class as the original NZ complaint. Needs macro wording in `_RECOMMENDATION_QUERY_RE` **and** a new SOURCE D runic feed — a data source, not a regex.
+- `[PENDING]` Per-ticker questions ("how is AAPL doing") miss `_CONVICTION_RELEVANT_RE`, so no conviction/fundamentals block.
+- `[PENDING]` History-restore-on-refresh (`useClaudePanel.ts:82`) and the hardcoded SYSTEM tab rows remain.
+
+---
+
 ## 2026-08-17 — Dead Claude model id + permanent "CPI pending" flag `[PENDING]`
 
 **Highest-value item in this file right now.** Prod has been serving **template** macro narratives, not Claude ones, for as long as `claude-sonnet-4-20250514` has been retired. Every Claude call outside the chatbot 404s and falls back silently.
@@ -2209,6 +2244,50 @@ curl -N -H "X-API-Key: $KEY" http://127.0.0.1:8506/api/v1/overwatch/stream
 
 ---
 
+## 2026-08-17 — Sheet-reply truth audit: live feed defects + dev/prod SSI gap
+
+Investigation only — **no git files to merge from this entry**. It records prod-affecting state found while verifying the 45 `v2_TODOs` replies against dev `:8507` / `:8514`.
+
+### Git (chatbot-dev → chatbot-prod)
+
+None from this audit. The SSI surfaces below are already covered by earlier entries (six-gate votes, `signal_coverage`, freshness annotations, Layer 4 panel, `vix_bypass` A6).
+
+### Live data-feed defects `[PROD-ACTION]` — affect dev **and** prod equally
+
+| # | Defect | Evidence | Effect on the page |
+|---|--------|----------|--------------------|
+| 1 | **NAAIM scrape returns 0 rows** | `_scrape_naaim()` → empty; `macro_intelligence/data/ssi/naaim_exposure.csv` last row `2026-07-29`; `stale_days=19` | Layer 1 runs **3 of 4**, weights renormalised (AAII 46.2% vs nominal 30%) |
+| 2 | **`vix_ratio` NULL since 2026-08-04** | `ssi.db.ssi_daily.vix_ratio` null every date after 4 Aug; `vix_ratio_series()` called directly still returns `0.798` today | `VIX Term Structure | unavailable`; Layer 2 runs **5 of 6** |
+| 3 | **CFTC one release behind while data is on disk** | `fetch_cftc_fast_money_net()` → `2026-08-11 = -286,505`; API/positioning still `2026-08-04 = -333,099`, `stale_days=13` | All three CFTC inputs dropped; **Layer 3 = DBMF at 100% weight**; tile reads `Waiting for Friday release` and `next release Fri 14 Aug` (past) |
+
+Likely cause for #3: SSI cron is `0 8 * * 1-5` (04:00 ET) but the TFF ZIP for the Friday 15:30 ET release is refreshed later the same morning (`fut_fin_txt_2026.zip` mtime 10:56 today), so `positioning.json` is written before the new week exists. Fix is scheduling/ordering, not parsing.
+
+No error for #1 or #2 appears in `macro_intelligence/logs/ssi_daily.log` — the pulls fail silently to cache. **Any health check must call the pull functions, not read the log.**
+
+### Dev/prod divergence to resolve before quoting numbers to Rohit
+
+- **CFTC percentile mismatch:** identical `fm_net = -333,099` ranks `fm_pctile 52.9 / rm_pctile 55.5` on dev `:8507` but `87.1 / 35.5` on prod `:8506`. One window is wrong; diff the two `cftc_positioning` tables before either figure is used.
+- **Prod payload is missing** `signal_coverage`, `layer2_gate_label` / `conf_long` / `conf_short`, `regime`, `inputs_meta.layer3_cftc` and `spark_data`. Consequence: the "running on N of M · weights renormalised" disclosure and the long/short vote split (sheet rows 35/36/39) **do not exist on the live site**, so those rows cannot be closed on the strength of dev.
+
+### Nuxt follow-up (separate repo `MindwealthUI_Vue`, `ui-dev`)
+
+- Sheet row 72 promised a **stale-date banner + clearer labeling on the SSI page**; not built. Sentiment stamps the topbar from `signal_report_date` (14 Aug) while the SSI body is 17 Aug, with nothing explaining the split.
+- CFTC raw rows show 13-day-old values with no freshness marker (only the `COT data` row has one).
+- `buildCotFreshnessAnnotation` prints `next_release` verbatim with no future-date check → `next release Fri 14 Aug`.
+- Cosmetic: duplicated `z` in Layer 2 sub-lines; `83th` / `53th` / `55th` ordinals; Sentiment `meta.source_files` still `2026-05-12_*`; dead `pct_above_200dma` key in `LAYER1_LABELS`.
+
+### Smoke tests `[PENDING]`
+
+```bash
+curl -s -H "X-API-Key: $KEY" http://127.0.0.1:8506/api/v1/analytics/sentiment/layers | jq '.positioning.layers.layer1.signal_coverage, .positioning.layer2_gate_label'
+curl -s -H "X-API-Key: $KEY" http://127.0.0.1:8506/api/v1/analytics/sentiment/layers | jq '.positioning.inputs.layer3_cftc | {fm_net, fm_pctile, position_date, stale}'
+.venv/bin/python -c "from src.sentiment_superindex.data.naaim_pull import _scrape_naaim; print(len(_scrape_naaim()))"
+```
+
+### Status: `[PENDING]`
+
+---
+
 ## Template for future entries
 
 Copy for each new dev feature:
@@ -2243,6 +2322,7 @@ Copy for each new dev feature:
 
 | Date | Change |
 |------|--------|
+| 2026-08-17 | Sheet-reply truth audit: 3 silent live feed defects (NAAIM scrape, `vix_ratio`, CFTC one release behind), dev/prod CFTC percentile mismatch, prod missing `signal_coverage` + gate label |
 | 2026-08-17 | Logged `pytest` → `run_nightly(as_of="2024-09-18")` clobbering the live `runic_output.json`; prod latent, fix pending |
 | 2026-07-27 | Sizer `pnl_rows`/`positions` gained `cross_function_exit`/`asset_class`/`status`; fixed `_parse_signal_meta` interval bug that made `implied_natural_exit_date` always `null` |
 | 2026-07-22 | Fundamentals `_df_row`/`_df_ttm_sum` sort-order fix (TTM revenue/FCF/EBITDA/debt) + full 193-ticker recalc |

@@ -15,6 +15,37 @@ This file captures minute-level implementation context for each completed task:
 
 ---
 
+### 2026-08-17 — Truth-audit of all 45 sheet replies against live dev (`:8507` API, `:8514` Nuxt)
+
+**Ask:** "Analyse every task in the sheet that has my reply, check the dev API and the chatbot website on 8514, and confirm nothing I told Rohit is wrong or non-functioning."
+
+**Method / key decisions**
+- **Verified against what the page actually renders, not against source alone.** Nuxt page routes redirect to `/login` (the global middleware validates the cookie upstream via `/api/auth/me`), but the **BFF data routes do not** — `GET :8514/api/sentiment` with any `mw_access_token` cookie returns the exact mapped payload the Sentiment page draws (labels, ✓/✗ marks, freshness annotations, header notes). That is the strongest available evidence short of a logged-in browser, and it is what caught the duplicated-`z` sub-line and the `83th` ordinals that source reading alone would have missed. **Reuse this route for future UI verification.**
+- **Distinguished "the fix is in the code" from "the fix is visible".** Several replies are correct at code level but invisible on the site because the upstream feed died afterwards. R15 (VIX/VIX3M) is the clearest: `yahoo_inputs.vix_ratio_series` is the corrected `VIX / VIX3M`, and calling it directly still returns `0.798` for today — but `ssi.db.vix_ratio` has been `NULL` on every date since 2026-08-04 and the tile reads `unavailable`. Reporting that reply as "verified" from the formula alone would have been wrong.
+- **Checked source feeds directly rather than trusting the job log.** `ssi_daily.log` contains only `pd.to_datetime` UserWarnings — no error is emitted when a scrape returns nothing. `_scrape_naaim()` returns **0 rows**; `fetch_naaim_exposure()` silently serves the cached CSV frozen at 2026-07-29. Any future "is the SSI healthy" check must call the pull functions, not read the log.
+- **Read-only in `/home/ubuntu/uiv2/prod/` and `/home/ubuntu/MindwealthUI_Vue`.** Prod was queried only to test the replies that explicitly claimed "deployed on prod" (R26 held: 6 gate votes present). No writes anywhere.
+
+**Assumptions**
+- "Correct" was judged against the state of the system **today (2026-08-17)**, not the date the reply was written. Numeric drift (e.g. R24 put/call `0.77` → `0.75`, R23 %200DMA `68` → `74`) was treated as normal movement, not as a wrong claim. Only structural claims (a field exists, a label reads X, a gate is wired, a source is live) were scored.
+- Replies whose evidence is an external Drive/Notion/Sheets artifact (R42, R45, R53, R54, R5's Notion log) were scored only on the in-repo half of the claim; the attached experiment reports were not re-derived.
+
+**Things deferred / left for future**
+- **Three live feed defects were identified but not fixed** (audit was scoped to verification): NAAIM scrape returning 0 rows; `vix_ratio` null since 4 Aug; CFTC one release behind (`fetch_cftc_fast_money_net()` has `2026-08-11 = -286,505`, positioning still on `2026-08-04 = -333,099`). The CFTC one has a plausible ordering cause — SSI cron is `0 8 * * 1-5` (04:00 ET) while the TFF ZIP for the Friday 15:30 ET release lands later the same morning, so `positioning.json` is written before the new ZIP exists.
+- **Dev/prod CFTC percentile mismatch not diagnosed.** Identical `fm_net = -333,099` ranks `52.9` on dev and `87.1` on prod. Likely different history depth in the two `cftc_positioning` tables; needs a row-count/window diff before either number is quoted to Rohit.
+- Cosmetic items left alone: duplicated `z` (both `formatLayer2GateDriver` and `formatComponentScoringNote` emit it into the same sub-line), `83th`/`53th` ordinals, stale `meta.source_files` on Sentiment pointing at `2026-05-12_*`, and the dead `pct_above_200dma` key in `LAYER1_LABELS` (not in `LAYER1_DISPLAY_KEYS`, so never rendered).
+
+**Edge cases identified but not handled**
+- The three CFTC raw rows (`CFTC Fast Money Net`, `Real Money Net`, `Gross Net`) render 13-day-old figures with **no** freshness annotation — only the separate `COT data` row carries one. A reader sees three confident numbers that are excluded from the layer score.
+- `next release Fri 14 Aug` renders in the past. `buildCotFreshnessAnnotation` prints `next_release` verbatim with no check that it is still in the future.
+- R47's freshness scope deliberately excludes put/call (matching the reply), so a 3-day-stale put/call print shows no annotation while a 4-day-stale AAII does. Consistent with the spec, but it reads as inconsistent on the page.
+
+**Caveats for the next developer**
+- The **`layer1`/`layer2`/`layer3` `signal_coverage` block is the honest part of the page** — it is what turns "3 of 4 signals · weights renormalised" on. Prod does not emit it, so prod silently renormalises exactly as Rohit complained in R35/R36. Do not close those two rows on the strength of dev.
+- R45's reply text is a copy of R42's (the CFTC re-run). The COT indexing question — Tuesday position date vs Friday release date, and whether Layer 3 drops out — is **still unanswered**, and the live payload shows it dropping out right now.
+- The R43/R44 staleness numbers Rohit was asked to sign off (weekly 10 / daily 1 / monthly 25 / 0.8) are **not** the numbers running (weekly 8 / daily 3 / monthly 30, and 1.0 for the four Layer 1 signals per `weight_penalty_by_signal`, recalibrated 2026-08-07 by Test 21). Re-ask before quoting the old figures.
+
+---
+
 ### 2026-08-17 — Topbar "Aug 13, 08:00 PM EDT": Nuxt midnight-UTC stamp (repo `MindwealthUI_Vue`, `ui-dev`)
 
 **Ask:** "the website still shows Aug 13, 08:00 PM EDT" — after the macro snapshot fix (entry 13) had already landed.
@@ -265,6 +296,32 @@ The failure then compounded: both units are `Restart=on-failure`, and a SIGTERM 
 `.env` with `NUXT_API_BASE_URL` and `NUXT_API_KEY` is **tracked in git**, `.gitignore` does not exclude it, and it was already published on `origin/ui-dev` by upstream commit `f99e9d4` — **in a public repo** (`private: false` via the GitHub API). The dev API key is therefore world-readable and stays in history after any plain delete. The push performed here did not add or worsen this (the file was already on the remote); it was reported and left for the user to decide. Remediation, when authorised: rotate `NUXT_API_KEY`, `git rm --cached .env` + `.gitignore` entry, then `git filter-repo`/BFG + force-push coordinated with Parth (rewrites `ui-dev`). Same commit also dumped `mindwealth-api-docs-main (2).zip` (128 KB binary) and `mindwealth-api-docs-main 7/` — a full duplicate of the API docs with a 9,498-line OpenAPI JSON — into the repo root; note this duplicates `docs/mindwealth-api-docs/` in `MindWealth_UI`, so it is a drift risk of exactly the kind CLAUDE.md's "do not create `docs/api/`" rule exists to prevent.
 
 **Concurrency caveat:** during the task, 6 files in the Vue working tree (`assets/css/main.css`, `components/runic/MacroSsiPanel.vue`, `RunicCombosPanel.vue`, `RunicTrackerPanel.vue`, `server/utils/runic-mappers.ts`, `types/api.ts`; +180 lines) went from clean to modified, mtimes minutes old — someone or something else was editing live. Nothing run here writes source files (`npm install`, `nuxt build`, `nuxt prepare`, `vue-tsc`, worktree add/remove all leave sources alone). Only committed `HEAD` was pushed, so those edits are still uncommitted. **Check `git status` in this repo before assuming you have it to yourself.**
+
+---
+
+### 2026-08-17 — "Could not reach the analyst": root cause across two repos
+
+**Ask:** "still seeing the could not reach analyst error sometimes, figure out the root cause, create a fix plan and make sure the issue does not happen again, also make changes to the frontend repo if needed" — the first explicit authorisation to edit `MindwealthUI_Vue`.
+
+**The message was almost always a lie.** In every case traced, the backend was healthy and in most cases the answer had already been generated. Four faults in the Nuxt repo and one in ours, each independently sufficient to produce it.
+
+**Ordering matters when diagnosing this:** the 30s cache is the famous one, but it only bites on slow answers. The single-`null`-aborts-the-poll bug (fault 3) fires on *any* answer length whenever the API blips — which includes every `systemctl restart` we ourselves ran during this session. That is why the error looked intermittent and unrelated to question complexity.
+
+**Design decisions:**
+- **45s handoff, not the full budget.** Holding one HTTP request open for 330s puts the chat at the mercy of every proxy and load-balancer idle timeout between browser and uvicorn. 45s covers the large majority of answers inline (measured: 25s, 35s, 55s, 57s, 60s, 70s across the replay set) and anything slower continues in the browser.
+- **Browser-driven resume, not server-side long-poll.** The resume route polls for at most 20s per call and returns; the browser loops. No single request is long enough to trip an intermediate timeout, and the job id in `localStorage` means a refresh mid-answer does not strand the result.
+- **Tolerate 8 consecutive poll failures, not 1.** `mindwealthFetch` collapses every failure to `null`, so the poll cannot distinguish "backend restarting" from "job gone". 8 × 2.5s ≈ 20s of grace, which covers a service restart.
+- **Fingerprint the token rather than key on it.** The cache key needs caller identity, but the raw bearer token should not sit in a Map key. A cheap non-reversible hash is enough to partition the cache.
+- **`fail_orphaned()` at startup, not a TTL sweeper.** Jobs are in-process, so process start is exactly the moment we know every `running` record is dead. A time-based sweeper would need a threshold longer than the slowest legitimate answer and would still leave a window.
+
+**The fix had a bug, and only the live check caught it.** The first cache-bypass pattern was `/^\/chatbot\//`, but `mindwealthFetch` matches the *normalized* path which already carries `/api/v1`. It matched nothing, the build passed, the e2e test still succeeded (because the handoff path masked it), and only counting poll requests in the API log revealed 3 polls where there should have been ~24. **Verify the mechanism, not just the outcome** — the outcome was green while the fix was inert.
+
+**Edge cases now handled that were not:** a completed job with empty `content` (previously polled to timeout, then reported unreachable); a job failed on the backend (previously surfaced through the same generic string); session id persisted before the answer arrives (previously a mid-flight failure orphaned a server-side session the client never learned about).
+
+**Still open after this work:**
+- **Macro questions route to the web and contradict us.** Q4 in the replay: "what is the current macro regime and which combo is dominant?" → `WEB_RAG` → "transitional with mixed signals" sourced from the internet, while Runic says Combo F dominant, week 20 of 26, TACTICAL EASY MONEY, PAUSING Fed, GLOBAL_EASY. Structurally identical to the original NZ complaint. The word *combo* is MindWealth-only vocabulary and still did not force internal. Needs both a wording rule and a runic feed the chatbot does not have.
+- **Per-ticker questions get no conviction block** — "how is AAPL doing" misses `_CONVICTION_RELEVANT_RE`. The gate exists to avoid latency on ordinary turns, but a named-ticker question is precisely where fundamentals belong.
+- **LLM run-to-run variance is visible.** The same NZ question answered "MFT.NZ has fresh ENTRY signals" on one run and "there are currently NO fresh entry signals for New Zealand stocks" on another, minutes apart against identical data. Worth a determinism pass on the signal-selection step before showing this to Rohit as settled.
 
 ---
 
