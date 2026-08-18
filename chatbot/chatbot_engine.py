@@ -2070,10 +2070,16 @@ class ChatbotEngine:
         self,
         user_message: str,
         metadata: Dict,
+        additional_context: Optional[str] = None,
     ) -> tuple:
         """
         Answer a conversational query using history only — no data fetch.
         Adds the message to history and calls _simple_batch_query.
+
+        ``additional_context`` carries the SOURCE E platform block when the user
+        asked about MindWealth itself. It is appended to the outgoing message
+        only — history keeps the user's own words, so the block never
+        accumulates across turns.
         """
         self.history_manager.add_message(
             "user",
@@ -2081,6 +2087,11 @@ class ChatbotEngine:
             self._prepare_user_metadata(metadata, user_message),
         )
         messages = self.history_manager.get_messages_for_api()
+        if additional_context and messages:
+            messages = list(messages)
+            last = dict(messages[-1])
+            last["content"] = f"{last.get('content', '')}\n\n{additional_context}"
+            messages[-1] = last
         total_chars = sum(len(str(m.get("content", ""))) for m in messages)
         estimated_tokens = total_chars // ESTIMATED_CHARS_PER_TOKEN
 
@@ -2206,6 +2217,38 @@ class ChatbotEngine:
             return build_conviction_context(user_message, assets=assets)
         except Exception as exc:
             logger.warning(f"Conviction context skipped: {exc}")
+            return None
+
+    def _build_macro_block(self, user_message: str) -> Optional[str]:
+        """
+        Build the SOURCE D macro / regime / sentiment block, or return ``None``.
+
+        Macro questions used to be answered from web search, which contradicted
+        our own nightly Runic output. Same contract as the conviction block:
+        gated on wording, fetched over HTTP, never raises.
+        """
+        try:
+            from .macro_context import build_macro_context
+
+            return build_macro_context(user_message)
+        except Exception as exc:
+            logger.warning(f"Macro context skipped: {exc}")
+            return None
+
+    def _build_platform_block(self, user_message: str) -> Optional[str]:
+        """
+        Build the SOURCE E platform-capability block, or return ``None``.
+
+        Cheap and local — no HTTP. Lets the assistant answer questions about its
+        own signal types and functions from our taxonomy instead of guessing
+        that a MindWealth term is a stock ticker.
+        """
+        try:
+            from .platform_context import build_platform_context
+
+            return build_platform_context(user_message)
+        except Exception as exc:
+            logger.warning(f"Platform context skipped: {exc}")
             return None
 
     def _get_web_agent(self):
@@ -2587,7 +2630,18 @@ class ChatbotEngine:
                 logger.info("[ENGINE] CONVERSATIONAL route — skipping data fetch")
                 meta = {**route_meta_base, "input_type": "conversational"}
                 add_flow_step("Conversation Mode", "Using conversation history only (no web/internal data fetch)")
-                response, meta = self._answer_from_history(user_message, meta)
+                # SOURCE E is local and cheap, so even a chatty turn that
+                # mentions our own vocabulary gets the real taxonomy rather than
+                # a textbook answer invented from general knowledge.
+                platform_block = self._build_platform_block(user_message)
+                if platform_block:
+                    add_flow_step(
+                        "Platform Capabilities",
+                        "Added MindWealth signal-type and function taxonomy",
+                    )
+                response, meta = self._answer_from_history(
+                    user_message, meta, additional_context=platform_block
+                )
                 meta["input_type"] = "conversational"
                 self._persist_flow_trace(meta, flow_trace)
                 return response, meta
@@ -2733,6 +2787,28 @@ class ChatbotEngine:
                         f"block_chars={len(conviction_block)}"
                     )
 
+                # SOURCE D / SOURCE E — macro regime and platform vocabulary.
+                # Both are gated on wording, so a plain ticker question adds
+                # nothing to the prompt and no extra latency.
+                macro_block = self._build_macro_block(user_message)
+                if macro_block:
+                    synthesized_prompt = f"{synthesized_prompt}\n\n{macro_block}"
+                    add_flow_step(
+                        "Macro Overlay",
+                        "Added Runic regime, SSI sentiment and portfolio risk posture",
+                    )
+                    logger.info(
+                        f"[FLOW 6/7] Macro context appended  |  block_chars={len(macro_block)}"
+                    )
+
+                platform_block = self._build_platform_block(user_message)
+                if platform_block:
+                    synthesized_prompt = f"{synthesized_prompt}\n\n{platform_block}"
+                    add_flow_step(
+                        "Platform Capabilities",
+                        "Added MindWealth signal-type and function taxonomy",
+                    )
+
                 meta = {
                     **route_meta_base,
                     "input_type": "hybrid_synthesized",
@@ -2794,6 +2870,32 @@ class ChatbotEngine:
                 logger.info(
                     f"[ENGINE] Conviction context merged into additional_context  |  "
                     f"block_chars={len(conviction_block)}"
+                )
+
+            # SOURCE D / SOURCE E on the internal path, same channel.
+            macro_block = self._build_macro_block(user_message)
+            if macro_block:
+                additional_context = (
+                    f"{additional_context}\n\n{macro_block}"
+                    if additional_context else macro_block
+                )
+                add_flow_step(
+                    "Macro Overlay",
+                    "Added Runic regime, SSI sentiment and portfolio risk posture",
+                )
+                logger.info(
+                    f"[ENGINE] Macro context merged  |  block_chars={len(macro_block)}"
+                )
+
+            platform_block = self._build_platform_block(user_message)
+            if platform_block:
+                additional_context = (
+                    f"{additional_context}\n\n{platform_block}"
+                    if additional_context else platform_block
+                )
+                add_flow_step(
+                    "Platform Capabilities",
+                    "Added MindWealth signal-type and function taxonomy",
                 )
 
             # ── INTERNAL (or HYBRID legacy fallback) — existing pipeline ─────

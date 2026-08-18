@@ -74,6 +74,100 @@ _RECOMMENDATION_QUERY_RE = re.compile(
 )
 
 
+# MindWealth's own vocabulary. A question that names our data, our signal types
+# or our functions can only be answered from inside the platform — the web has
+# no idea what a "claude report" or a "TRENDPULSE signal" is.
+#
+# Observed failure this guards: "give me a short summary about claude report"
+# routed CONVERSATIONAL and the model asked whether Claude was a stock ticker,
+# while `claude_report` is a first-class signal type backed by a live file that
+# is refreshed daily.
+_PLATFORM_VOCAB_RE = re.compile(
+    r"\b(claude\s+report|claude.s\s+(report|analysis)|comprehensive\s+(analysis\s+)?report)\b"
+    r"|\bsignal\s+types?\b"
+    r"|\b(which|what)\s+(functions?|strategies|models?|signals?)\b.{0,30}\b(exist|available|have|use|run)\b"
+    r"|\b(fractal\s*track|trendpulse|deltadrift|sigmashell|pulsegauge|baselinedivergence|"
+    r"band\s*matrix|altitude\s*alpha|f[- ]?stack\s*analyzer|breadth\s*sbi)\b"
+    r"|\bportfolio\s+target\s+achieved\b"
+    r"|\bmindwealth\b"
+    r"|\b(our|your|the)\s+(model|system|engine|platform|data)\b"
+    r"|\bwhat\s+(data|reports?|signals?)\s+(do\s+)?(you|we)\s+(have|hold|track|cover)\b",
+    re.I,
+)
+
+# Macro / regime / sentiment / portfolio wording. MindWealth computes all of
+# this nightly (Runic combos, SSI layers, sizing multiplier, portfolio risk),
+# so a web answer is not merely thinner — it contradicts our own engine.
+#
+# Observed failure this guards: "what is the current macro regime and which
+# combo is dominant?" routed WEB_RAG and answered "transitional with mixed
+# signals" from news sources while Runic had Combo F dominant, week 20 of 26,
+# TACTICAL EASY MONEY. The word "combo" is MindWealth-only vocabulary.
+_MACRO_QUERY_RE = re.compile(
+    r"\b(macro\s+(regime|backdrop|picture|view)|current\s+regime|regime\b)"
+    r"|\bcombo\s*[a-g]?\b|\brunic\b"
+    r"|\b(ssi|super\s*sentiment|sentiment\s+(index|layer|regime))\b"
+    r"|\b(fear\s*(and|&|/)?\s*greed|naaim|aaii|put[- ]?call)\b"
+    r"|\b(market\s+breadth|breadth)\b"
+    r"|\b(vix|vxts|cape|nfci|walcl|liquidity\s+(regime|conditions))\b"
+    r"|\b(fed\s+cycle|yield\s+curve|steepening|inversion)\b"
+    r"|\b(position\s+sizing|sizing\s+multiplier|portfolio\s+(nav|risk|exposure|allocation)|"
+    r"cluster\s+weight|drawdown)\b"
+    r"|\bsystem\s+posture\b|\bdominant\s+signal\b",
+    re.I,
+)
+
+
+def apply_platform_vocab_internal_override(
+    user_message: str,
+    internal: bool,
+    web: bool,
+    queries,
+    reasoning: str,
+):
+    """
+    Force internal data for questions phrased in MindWealth's own vocabulary.
+
+    Like the recommendation override this only ever turns internal ON; web is
+    left as the router set it, so "claude report summary" goes internal-only
+    while "claude report vs today's news" still lands on HYBRID.
+    """
+    if internal:
+        return internal, web, queries, reasoning
+    if not _PLATFORM_VOCAB_RE.search(user_message or ""):
+        return internal, web, queries, reasoning
+    new_reasoning = (
+        f"{reasoning.strip()} + override: question names MindWealth's own data/"
+        "signal types/functions — internal data forced."
+    ).strip()
+    return True, web, queries, new_reasoning
+
+
+def apply_macro_internal_override(
+    user_message: str,
+    internal: bool,
+    web: bool,
+    queries,
+    reasoning: str,
+):
+    """
+    Force internal data for macro / regime / sentiment / portfolio questions.
+
+    Web stays on where the router asked for it, so the answer becomes HYBRID:
+    our Runic regime and SSI as SOURCE A, market colour as SOURCE B. What this
+    prevents is the pure-web answer that contradicts our own nightly output.
+    """
+    if internal:
+        return internal, web, queries, reasoning
+    if not _MACRO_QUERY_RE.search(user_message or ""):
+        return internal, web, queries, reasoning
+    new_reasoning = (
+        f"{reasoning.strip()} + override: macro/regime/sentiment/portfolio query "
+        "— internal MindWealth macro data forced (web kept as supplementary)."
+    ).strip()
+    return True, web, queries, new_reasoning
+
+
 def apply_recommendation_internal_override(
     user_message: str,
     internal: bool,
@@ -240,6 +334,18 @@ class LLMRouter:
         if web and not queries:
             queries = [user_message[:200]]
 
+        # Platform-vocabulary questions must never stay CONVERSATIONAL: the model
+        # answers them from general knowledge and invents a taxonomy. Observed:
+        # "What signal types exist?" produced a textbook LONG/SHORT answer, and
+        # "summary about claude report" asked whether Claude was a ticker.
+        if conv and _PLATFORM_VOCAB_RE.search(um):
+            conv = False
+            internal = True
+            reasoning = (
+                f"{reasoning.strip()} + override: names MindWealth's own data — "
+                "demoted from conversational to internal."
+            ).strip()
+
         if not conv:
             internal, web, queries, reasoning = apply_internal_level_override(
                 um, internal, web, queries, reasoning
@@ -247,6 +353,14 @@ class LLMRouter:
             # Runs after the level override so an internal-only level query keeps
             # web suppressed; this one only ever turns internal ON.
             internal, web, queries, reasoning = apply_recommendation_internal_override(
+                um, internal, web, queries, reasoning
+            )
+            # Both only ever turn internal ON, so they compose with the two
+            # above without weakening the internal-only level route.
+            internal, web, queries, reasoning = apply_platform_vocab_internal_override(
+                um, internal, web, queries, reasoning
+            )
+            internal, web, queries, reasoning = apply_macro_internal_override(
                 um, internal, web, queries, reasoning
             )
 

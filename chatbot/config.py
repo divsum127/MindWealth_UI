@@ -248,6 +248,20 @@ CONVICTION_CONTEXT_MAX_ROWS = int(os.getenv("CONVICTION_CONTEXT_MAX_ROWS", "25")
 # IBKR integration and personal has no Sizer concept.
 CONVICTION_BOOK_ID = os.getenv("CONVICTION_BOOK_ID", "model").strip() or "model"
 
+# Macro regime & sentiment context (SOURCE D) — see chatbot/macro_context.py.
+# Pulls the Runic nightly regime, SSI summary and portfolio risk posture from our
+# own REST API. Without it, macro questions were answered from web search and
+# contradicted the engine's own regime call. Gated on macro wording, so ordinary
+# turns take no extra latency.
+ENABLE_MACRO_CONTEXT = os.getenv("ENABLE_MACRO_CONTEXT", "true").lower() == "true"
+MACRO_CONTEXT_BOOK_ID = os.getenv("MACRO_CONTEXT_BOOK_ID", "model").strip() or "model"
+
+# Platform capability context (SOURCE E) — see chatbot/platform_context.py.
+# A static description of our own signal types plus the live function list, so
+# "what signal types exist" and "summarise the claude report" are answered from
+# our taxonomy instead of generic textbook definitions.
+ENABLE_PLATFORM_CONTEXT = os.getenv("ENABLE_PLATFORM_CONTEXT", "true").lower() == "true"
+
 # LLM Router — decides web vs internal vs conversational (gpt-4o-mini JSON)
 LLM_ROUTER_ENABLED = os.getenv("LLM_ROUTER_ENABLED", "true").lower() == "true"
 LLM_ROUTER_MODEL = os.getenv("LLM_ROUTER_MODEL", "gpt-4o-mini")
