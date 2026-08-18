@@ -1,0 +1,33 @@
+{
+  "test_id": "15_sbi_short",
+  "freq": "BMS",
+  "n_short_entries": 0,
+  "metrics": {
+    "n_events": 0,
+    "1w": {
+      "n": 0,
+      "avg": null,
+      "median": null,
+      "win_pct": null,
+      "worst": null,
+      "sharpe": null
+    },
+    "4w": {
+      "n": 0,
+      "avg": null,
+      "median": null,
+      "win_pct": null,
+      "worst": null,
+      "sharpe": null
+    },
+    "8w": {
+      "n": 0,
+      "avg": null,
+      "median": null,
+      "win_pct": null,
+      "worst": null,
+      "sharpe": null
+    }
+  },
+  "sample_dates": []
+}

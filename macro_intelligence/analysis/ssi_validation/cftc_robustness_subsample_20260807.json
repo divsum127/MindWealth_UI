@@ -1,0 +1,1098 @@
+{
+  "test_id": "cftc_robustness_subsample",
+  "spec": "rohit_subsample_stability_primary",
+  "data_note": "TFF FM/RM stitched: legacy S&P 500 STOCK INDEX through 2010-06, then Consolidated; raw from 2006-06-13; first percentile (\u226520w) 2006-10-24; first full 156w window 2009-06-02; analysis weeks 1032 (2006-10-24 \u2192 2026-07-28).",
+  "cells": [
+    {
+      "condition": "FM_roll_pct<7.5 AND RM_roll_pct>45",
+      "n_qualifying_weeks": 71,
+      "subsample_stability": {
+        "method": "weekly_calendar_stride",
+        "stride": 12,
+        "horizon": "12w",
+        "full": {
+          "n_weeks": 71,
+          "n_episodes": 22,
+          "mean": 2.874,
+          "median": 3.2921,
+          "mean_excess": 0.5738,
+          "hit_pct": 76.19,
+          "hit_excess_pct": 57.14
+        },
+        "offsets": [
+          {
+            "offset": 0,
+            "n_weeks": 6,
+            "n_episodes": 6,
+            "mean": 6.3578,
+            "median": 7.2213,
+            "mean_excess": 4.0575,
+            "hit_pct": 100.0,
+            "hit_excess_pct": 100.0
+          },
+          {
+            "offset": 1,
+            "n_weeks": 7,
+            "n_episodes": 7,
+            "mean": 4.1253,
+            "median": 5.395,
+            "mean_excess": 1.8251,
+            "hit_pct": 85.71,
+            "hit_excess_pct": 71.43
+          },
+          {
+            "offset": 2,
+            "n_weeks": 7,
+            "n_episodes": 7,
+            "mean": 4.5062,
+            "median": 4.149,
+            "mean_excess": 2.2059,
+            "hit_pct": 100.0,
+            "hit_excess_pct": 83.33
+          },
+          {
+            "offset": 3,
+            "n_weeks": 6,
+            "n_episodes": 6,
+            "mean": 3.9435,
+            "median": 5.2245,
+            "mean_excess": 1.6433,
+            "hit_pct": 80.0,
+            "hit_excess_pct": 60.0
+          },
+          {
+            "offset": 4,
+            "n_weeks": 6,
+            "n_episodes": 6,
+            "mean": 2.3049,
+            "median": 2.0252,
+            "mean_excess": 0.0047,
+            "hit_pct": 80.0,
+            "hit_excess_pct": 40.0
+          },
+          {
+            "offset": 5,
+            "n_weeks": 7,
+            "n_episodes": 7,
+            "mean": 2.8125,
+            "median": 2.4537,
+            "mean_excess": 0.5123,
+            "hit_pct": 83.33,
+            "hit_excess_pct": 50.0
+          },
+          {
+            "offset": 6,
+            "n_weeks": 4,
+            "n_episodes": 4,
+            "mean": 3.6764,
+            "median": 3.8298,
+            "mean_excess": 1.3761,
+            "hit_pct": 75.0,
+            "hit_excess_pct": 50.0
+          },
+          {
+            "offset": 7,
+            "n_weeks": 3,
+            "n_episodes": 3,
+            "mean": 3.6392,
+            "median": 3.4334,
+            "mean_excess": 1.339,
+            "hit_pct": 66.67,
+            "hit_excess_pct": 66.67
+          },
+          {
+            "offset": 8,
+            "n_weeks": 7,
+            "n_episodes": 7,
+            "mean": 4.8891,
+            "median": 5.669,
+            "mean_excess": 2.5889,
+            "hit_pct": 71.43,
+            "hit_excess_pct": 71.43
+          },
+          {
+            "offset": 9,
+            "n_weeks": 6,
+            "n_episodes": 6,
+            "mean": 7.6542,
+            "median": 9.6012,
+            "mean_excess": 5.354,
+            "hit_pct": 83.33,
+            "hit_excess_pct": 83.33
+          },
+          {
+            "offset": 10,
+            "n_weeks": 6,
+            "n_episodes": 6,
+            "mean": 1.4981,
+            "median": 3.5126,
+            "mean_excess": -0.8021,
+            "hit_pct": 50.0,
+            "hit_excess_pct": 50.0
+          },
+          {
+            "offset": 11,
+            "n_weeks": 6,
+            "n_episodes": 6,
+            "mean": 2.187,
+            "median": 1.881,
+            "mean_excess": -0.1133,
+            "hit_pct": 66.67,
+            "hit_excess_pct": 50.0
+          }
+        ],
+        "offset_excess_spread": 6.1561,
+        "offsets_positive_excess": 10,
+        "offsets_with_data": 12,
+        "stable_across_offsets": true
+      },
+      "block_bootstrap": {
+        "method": "stationary_block_bootstrap_politis_romano",
+        "n_draws": 10000,
+        "n_successful_draws": 10000,
+        "block_weeks": 12,
+        "horizon": "12w",
+        "observed": {
+          "n_episodes": 22,
+          "mean_excess": 0.5738
+        },
+        "bootstrap_mean_excess": {
+          "pctile_of_observed": 43.95,
+          "mean": 0.7521,
+          "median": 0.717,
+          "p5": -0.8129,
+          "p95": 2.4432
+        },
+        "episode_excess_percentiles": [
+          {
+            "date": "2007-03-13",
+            "excess": 5.8837,
+            "bootstrap_pctile": 84.53
+          },
+          {
+            "date": "2007-08-28",
+            "excess": -3.3886,
+            "bootstrap_pctile": 18.62
+          },
+          {
+            "date": "2010-06-15",
+            "excess": -3.2911,
+            "bootstrap_pctile": 22.94
+          },
+          {
+            "date": "2011-03-01",
+            "excess": -1.2178,
+            "bootstrap_pctile": 32.62
+          },
+          {
+            "date": "2011-03-15",
+            "excess": -1.744,
+            "bootstrap_pctile": 27.64
+          },
+          {
+            "date": "2011-03-29",
+            "excess": -5.0241,
+            "bootstrap_pctile": 14.12
+          },
+          {
+            "date": "2011-04-12",
+            "excess": -0.0448,
+            "bootstrap_pctile": 41.67
+          },
+          {
+            "date": "2011-08-23",
+            "excess": 4.1144,
+            "bootstrap_pctile": 70.35
+          },
+          {
+            "date": "2012-06-12",
+            "excess": 5.8512,
+            "bootstrap_pctile": 80.23
+          },
+          {
+            "date": "2012-08-21",
+            "excess": -6.0712,
+            "bootstrap_pctile": 9.82
+          },
+          {
+            "date": "2019-11-05",
+            "excess": 3.3688,
+            "bootstrap_pctile": 65.6
+          },
+          {
+            "date": "2020-02-11",
+            "excess": -16.4931,
+            "bootstrap_pctile": 4.32
+          },
+          {
+            "date": "2020-08-11",
+            "excess": 0.9919,
+            "bootstrap_pctile": 50.9
+          },
+          {
+            "date": "2023-04-18",
+            "excess": 6.1368,
+            "bootstrap_pctile": 89.08
+          },
+          {
+            "date": "2024-01-02",
+            "excess": 8.4849,
+            "bootstrap_pctile": 98.79
+          },
+          {
+            "date": "2024-01-23",
+            "excess": 0.7117,
+            "bootstrap_pctile": 46.57
+          },
+          {
+            "date": "2024-02-20",
+            "excess": 4.3853,
+            "bootstrap_pctile": 74.68
+          },
+          {
+            "date": "2024-03-12",
+            "excess": 1.1332,
+            "bootstrap_pctile": 55.19
+          },
+          {
+            "date": "2025-09-16",
+            "excess": 1.9366,
+            "bootstrap_pctile": 59.95
+          },
+          {
+            "date": "2025-10-07",
+            "excess": -0.1574,
+            "bootstrap_pctile": 37.13
+          },
+          {
+            "date": "2026-02-17",
+            "excess": 6.4826,
+            "bootstrap_pctile": 94.06
+          }
+        ]
+      }
+    },
+    {
+      "condition": "FM_roll_pct<7.5 AND RM_roll_pct>40",
+      "n_qualifying_weeks": 74,
+      "subsample_stability": {
+        "method": "weekly_calendar_stride",
+        "stride": 12,
+        "horizon": "12w",
+        "full": {
+          "n_weeks": 74,
+          "n_episodes": 24,
+          "mean": 3.1045,
+          "median": 3.2921,
+          "mean_excess": 0.8043,
+          "hit_pct": 78.26,
+          "hit_excess_pct": 60.87
+        },
+        "offsets": [
+          {
+            "offset": 0,
+            "n_weeks": 7,
+            "n_episodes": 7,
+            "mean": 6.7582,
+            "median": 8.0279,
+            "mean_excess": 4.458,
+            "hit_pct": 100.0,
+            "hit_excess_pct": 100.0
+          },
+          {
+            "offset": 1,
+            "n_weeks": 7,
+            "n_episodes": 7,
+            "mean": 4.1253,
+            "median": 5.395,
+            "mean_excess": 1.8251,
+            "hit_pct": 85.71,
+            "hit_excess_pct": 71.43
+          },
+          {
+            "offset": 2,
+            "n_weeks": 7,
+            "n_episodes": 7,
+            "mean": 4.5062,
+            "median": 4.149,
+            "mean_excess": 2.2059,
+            "hit_pct": 100.0,
+            "hit_excess_pct": 83.33
+          },
+          {
+            "offset": 3,
+            "n_weeks": 6,
+            "n_episodes": 6,
+            "mean": 3.9435,
+            "median": 5.2245,
+            "mean_excess": 1.6433,
+            "hit_pct": 80.0,
+            "hit_excess_pct": 60.0
+          },
+          {
+            "offset": 4,
+            "n_weeks": 7,
+            "n_episodes": 7,
+            "mean": 2.4656,
+            "median": 2.647,
+            "mean_excess": 0.1653,
+            "hit_pct": 83.33,
+            "hit_excess_pct": 50.0
+          },
+          {
+            "offset": 5,
+            "n_weeks": 7,
+            "n_episodes": 7,
+            "mean": 2.8125,
+            "median": 2.4537,
+            "mean_excess": 0.5123,
+            "hit_pct": 83.33,
+            "hit_excess_pct": 50.0
+          },
+          {
+            "offset": 6,
+            "n_weeks": 4,
+            "n_episodes": 4,
+            "mean": 3.6764,
+            "median": 3.8298,
+            "mean_excess": 1.3761,
+            "hit_pct": 75.0,
+            "hit_excess_pct": 50.0
+          },
+          {
+            "offset": 7,
+            "n_weeks": 4,
+            "n_episodes": 4,
+            "mean": 4.4939,
+            "median": 5.2457,
+            "mean_excess": 2.1937,
+            "hit_pct": 75.0,
+            "hit_excess_pct": 75.0
+          },
+          {
+            "offset": 8,
+            "n_weeks": 7,
+            "n_episodes": 7,
+            "mean": 4.8891,
+            "median": 5.669,
+            "mean_excess": 2.5889,
+            "hit_pct": 71.43,
+            "hit_excess_pct": 71.43
+          },
+          {
+            "offset": 9,
+            "n_weeks": 6,
+            "n_episodes": 6,
+            "mean": 7.6542,
+            "median": 9.6012,
+            "mean_excess": 5.354,
+            "hit_pct": 83.33,
+            "hit_excess_pct": 83.33
+          },
+          {
+            "offset": 10,
+            "n_weeks": 6,
+            "n_episodes": 6,
+            "mean": 1.4981,
+            "median": 3.5126,
+            "mean_excess": -0.8021,
+            "hit_pct": 50.0,
+            "hit_excess_pct": 50.0
+          },
+          {
+            "offset": 11,
+            "n_weeks": 6,
+            "n_episodes": 6,
+            "mean": 2.187,
+            "median": 1.881,
+            "mean_excess": -0.1133,
+            "hit_pct": 66.67,
+            "hit_excess_pct": 50.0
+          }
+        ],
+        "offset_excess_spread": 6.1561,
+        "offsets_positive_excess": 10,
+        "offsets_with_data": 12,
+        "stable_across_offsets": true
+      },
+      "block_bootstrap": {
+        "method": "stationary_block_bootstrap_politis_romano",
+        "n_draws": 10000,
+        "n_successful_draws": 10000,
+        "block_weeks": 12,
+        "horizon": "12w",
+        "observed": {
+          "n_episodes": 24,
+          "mean_excess": 0.8043
+        },
+        "bootstrap_mean_excess": {
+          "pctile_of_observed": 44.61,
+          "mean": 0.9534,
+          "median": 0.9278,
+          "p5": -0.4936,
+          "p95": 2.4998
+        },
+        "episode_excess_percentiles": [
+          {
+            "date": "2007-02-13",
+            "excess": 0.9686,
+            "bootstrap_pctile": 46.74
+          },
+          {
+            "date": "2007-03-13",
+            "excess": 5.8837,
+            "bootstrap_pctile": 85.63
+          },
+          {
+            "date": "2007-08-28",
+            "excess": -3.3886,
+            "bootstrap_pctile": 17.11
+          },
+          {
+            "date": "2010-06-15",
+            "excess": -3.2911,
+            "bootstrap_pctile": 21.08
+          },
+          {
+            "date": "2011-03-01",
+            "excess": -1.2178,
+            "bootstrap_pctile": 29.97
+          },
+          {
+            "date": "2011-03-15",
+            "excess": -1.744,
+            "bootstrap_pctile": 25.39
+          },
+          {
+            "date": "2011-03-29",
+            "excess": -5.0241,
+            "bootstrap_pctile": 12.97
+          },
+          {
+            "date": "2011-04-12",
+            "excess": -0.0448,
+            "bootstrap_pctile": 38.29
+          },
+          {
+            "date": "2011-08-23",
+            "excess": 4.1144,
+            "bootstrap_pctile": 68.58
+          },
+          {
+            "date": "2012-06-12",
+            "excess": 5.8512,
+            "bootstrap_pctile": 81.68
+          },
+          {
+            "date": "2012-07-24",
+            "excess": 6.8606,
+            "bootstrap_pctile": 94.55
+          },
+          {
+            "date": "2012-08-21",
+            "excess": -6.0712,
+            "bootstrap_pctile": 9.02
+          },
+          {
+            "date": "2019-11-05",
+            "excess": 3.3688,
+            "bootstrap_pctile": 64.22
+          },
+          {
+            "date": "2020-02-11",
+            "excess": -16.4931,
+            "bootstrap_pctile": 3.97
+          },
+          {
+            "date": "2020-08-11",
+            "excess": 0.9919,
+            "bootstrap_pctile": 50.72
+          },
+          {
+            "date": "2023-04-11",
+            "excess": 4.7578,
+            "bootstrap_pctile": 76.97
+          },
+          {
+            "date": "2024-01-02",
+            "excess": 8.4849,
+            "bootstrap_pctile": 98.89
+          },
+          {
+            "date": "2024-01-23",
+            "excess": 0.7117,
+            "bootstrap_pctile": 42.79
+          },
+          {
+            "date": "2024-02-20",
+            "excess": 4.3853,
+            "bootstrap_pctile": 72.57
+          },
+          {
+            "date": "2024-03-12",
+            "excess": 1.1332,
+            "bootstrap_pctile": 54.65
+          },
+          {
+            "date": "2025-09-16",
+            "excess": 1.9366,
+            "bootstrap_pctile": 59.03
+          },
+          {
+            "date": "2025-10-07",
+            "excess": -0.1574,
+            "bootstrap_pctile": 34.11
+          },
+          {
+            "date": "2026-02-17",
+            "excess": 6.4826,
+            "bootstrap_pctile": 90.56
+          }
+        ]
+      }
+    },
+    {
+      "condition": "FM_roll_pct<7.5 AND FM_net<0",
+      "n_qualifying_weeks": 128,
+      "subsample_stability": {
+        "method": "weekly_calendar_stride",
+        "stride": 12,
+        "horizon": "12w",
+        "full": {
+          "n_weeks": 128,
+          "n_episodes": 34,
+          "mean": 3.2416,
+          "median": 3.4334,
+          "mean_excess": 0.9414,
+          "hit_pct": 72.73,
+          "hit_excess_pct": 60.61
+        },
+        "offsets": [
+          {
+            "offset": 0,
+            "n_weeks": 12,
+            "n_episodes": 12,
+            "mean": 4.9365,
+            "median": 5.4068,
+            "mean_excess": 2.6362,
+            "hit_pct": 83.33,
+            "hit_excess_pct": 75.0
+          },
+          {
+            "offset": 1,
+            "n_weeks": 12,
+            "n_episodes": 12,
+            "mean": 2.6423,
+            "median": 2.229,
+            "mean_excess": 0.342,
+            "hit_pct": 75.0,
+            "hit_excess_pct": 50.0
+          },
+          {
+            "offset": 2,
+            "n_weeks": 12,
+            "n_episodes": 12,
+            "mean": 1.6157,
+            "median": 3.6058,
+            "mean_excess": -0.6845,
+            "hit_pct": 72.73,
+            "hit_excess_pct": 54.55
+          },
+          {
+            "offset": 3,
+            "n_weeks": 11,
+            "n_episodes": 11,
+            "mean": 1.342,
+            "median": 1.4838,
+            "mean_excess": -0.9583,
+            "hit_pct": 60.0,
+            "hit_excess_pct": 40.0
+          },
+          {
+            "offset": 4,
+            "n_weeks": 12,
+            "n_episodes": 12,
+            "mean": 2.2265,
+            "median": 3.2688,
+            "mean_excess": -0.0737,
+            "hit_pct": 72.73,
+            "hit_excess_pct": 54.55
+          },
+          {
+            "offset": 5,
+            "n_weeks": 9,
+            "n_episodes": 9,
+            "mean": 1.8684,
+            "median": 2.4537,
+            "mean_excess": -0.4318,
+            "hit_pct": 75.0,
+            "hit_excess_pct": 50.0
+          },
+          {
+            "offset": 6,
+            "n_weeks": 10,
+            "n_episodes": 10,
+            "mean": 4.1946,
+            "median": 5.7893,
+            "mean_excess": 1.8943,
+            "hit_pct": 80.0,
+            "hit_excess_pct": 70.0
+          },
+          {
+            "offset": 7,
+            "n_weeks": 8,
+            "n_episodes": 8,
+            "mean": 3.039,
+            "median": 3.7988,
+            "mean_excess": 0.7388,
+            "hit_pct": 75.0,
+            "hit_excess_pct": 62.5
+          },
+          {
+            "offset": 8,
+            "n_weeks": 9,
+            "n_episodes": 9,
+            "mean": 3.596,
+            "median": 5.669,
+            "mean_excess": 1.2958,
+            "hit_pct": 66.67,
+            "hit_excess_pct": 66.67
+          },
+          {
+            "offset": 9,
+            "n_weeks": 10,
+            "n_episodes": 10,
+            "mean": 3.2466,
+            "median": 6.0598,
+            "mean_excess": 0.9464,
+            "hit_pct": 60.0,
+            "hit_excess_pct": 60.0
+          },
+          {
+            "offset": 10,
+            "n_weeks": 10,
+            "n_episodes": 10,
+            "mean": 0.6194,
+            "median": -0.036,
+            "mean_excess": -1.6808,
+            "hit_pct": 50.0,
+            "hit_excess_pct": 40.0
+          },
+          {
+            "offset": 11,
+            "n_weeks": 13,
+            "n_episodes": 13,
+            "mean": 2.492,
+            "median": 1.0824,
+            "mean_excess": 0.1918,
+            "hit_pct": 61.54,
+            "hit_excess_pct": 38.46
+          }
+        ],
+        "offset_excess_spread": 4.317,
+        "offsets_positive_excess": 7,
+        "offsets_with_data": 12,
+        "stable_across_offsets": false
+      },
+      "block_bootstrap": {
+        "method": "stationary_block_bootstrap_politis_romano",
+        "n_draws": 10000,
+        "n_successful_draws": 10000,
+        "block_weeks": 12,
+        "horizon": "12w",
+        "observed": {
+          "n_episodes": 34,
+          "mean_excess": 0.9414
+        },
+        "bootstrap_mean_excess": {
+          "pctile_of_observed": 54.09,
+          "mean": 0.8536,
+          "median": 0.8599,
+          "p5": -0.4545,
+          "p95": 2.1534
+        },
+        "episode_excess_percentiles": [
+          {
+            "date": "2007-02-13",
+            "excess": 0.9686,
+            "bootstrap_pctile": 48.71
+          },
+          {
+            "date": "2007-02-27",
+            "excess": 6.5087,
+            "bootstrap_pctile": 87.71
+          },
+          {
+            "date": "2007-03-13",
+            "excess": 5.8837,
+            "bootstrap_pctile": 79.02
+          },
+          {
+            "date": "2007-06-19",
+            "excess": -5.544,
+            "bootstrap_pctile": 16.07
+          },
+          {
+            "date": "2007-08-14",
+            "excess": 1.1403,
+            "bootstrap_pctile": 54.17
+          },
+          {
+            "date": "2010-03-16",
+            "excess": -8.5635,
+            "bootstrap_pctile": 6.75
+          },
+          {
+            "date": "2010-06-15",
+            "excess": -3.2911,
+            "bootstrap_pctile": 27.34
+          },
+          {
+            "date": "2011-03-01",
+            "excess": -1.2178,
+            "bootstrap_pctile": 34.19
+          },
+          {
+            "date": "2011-03-15",
+            "excess": -1.744,
+            "bootstrap_pctile": 30.73
+          },
+          {
+            "date": "2011-03-29",
+            "excess": -5.0241,
+            "bootstrap_pctile": 21.45
+          },
+          {
+            "date": "2011-04-12",
+            "excess": -0.0448,
+            "bootstrap_pctile": 40.31
+          },
+          {
+            "date": "2011-08-23",
+            "excess": 4.1144,
+            "bootstrap_pctile": 66.77
+          },
+          {
+            "date": "2012-06-12",
+            "excess": 5.8512,
+            "bootstrap_pctile": 76.35
+          },
+          {
+            "date": "2012-07-24",
+            "excess": 6.8606,
+            "bootstrap_pctile": 90.4
+          },
+          {
+            "date": "2012-08-21",
+            "excess": -6.0712,
+            "bootstrap_pctile": 13.37
+          },
+          {
+            "date": "2015-10-06",
+            "excess": 0.9332,
+            "bootstrap_pctile": 46.04
+          },
+          {
+            "date": "2019-11-05",
+            "excess": 3.3688,
+            "bootstrap_pctile": 63.82
+          },
+          {
+            "date": "2020-02-11",
+            "excess": -16.4931,
+            "bootstrap_pctile": 2.68
+          },
+          {
+            "date": "2020-05-12",
+            "excess": 14.3903,
+            "bootstrap_pctile": 100.0
+          },
+          {
+            "date": "2020-08-04",
+            "excess": -3.3733,
+            "bootstrap_pctile": 24.65
+          },
+          {
+            "date": "2022-07-05",
+            "excess": -5.2326,
+            "bootstrap_pctile": 18.78
+          },
+          {
+            "date": "2022-10-18",
+            "excess": 5.2028,
+            "bootstrap_pctile": 73.17
+          },
+          {
+            "date": "2022-11-15",
+            "excess": 1.3463,
+            "bootstrap_pctile": 56.99
+          },
+          {
+            "date": "2022-12-13",
+            "excess": -6.3775,
+            "bootstrap_pctile": 10.18
+          },
+          {
+            "date": "2023-03-21",
+            "excess": 8.2664,
+            "bootstrap_pctile": 93.39
+          },
+          {
+            "date": "2023-04-04",
+            "excess": 6.2297,
+            "bootstrap_pctile": 81.97
+          },
+          {
+            "date": "2024-01-02",
+            "excess": 8.4849,
+            "bootstrap_pctile": 96.05
+          },
+          {
+            "date": "2024-01-23",
+            "excess": 0.7117,
+            "bootstrap_pctile": 43.35
+          },
+          {
+            "date": "2024-02-20",
+            "excess": 4.3853,
+            "bootstrap_pctile": 69.46
+          },
+          {
+            "date": "2024-03-12",
+            "excess": 1.1332,
+            "bootstrap_pctile": 51.49
+          },
+          {
+            "date": "2025-09-16",
+            "excess": 1.9366,
+            "bootstrap_pctile": 60.07
+          },
+          {
+            "date": "2025-10-07",
+            "excess": -0.1574,
+            "bootstrap_pctile": 37.48
+          },
+          {
+            "date": "2026-02-17",
+            "excess": 6.4826,
+            "bootstrap_pctile": 85.07
+          }
+        ]
+      }
+    },
+    {
+      "condition": "FM_roll_pct<5 AND RM_roll_pct>45",
+      "n_qualifying_weeks": 37,
+      "subsample_stability": {
+        "method": "weekly_calendar_stride",
+        "stride": 12,
+        "horizon": "12w",
+        "full": {
+          "n_weeks": 37,
+          "n_episodes": 11,
+          "mean": 4.5381,
+          "median": 4.5512,
+          "mean_excess": 2.2379,
+          "hit_pct": 80.0,
+          "hit_excess_pct": 70.0
+        },
+        "offsets": [
+          {
+            "offset": 0,
+            "n_weeks": 4,
+            "n_episodes": 4,
+            "mean": 6.5879,
+            "median": 7.2213,
+            "mean_excess": 4.2877,
+            "hit_pct": 100.0,
+            "hit_excess_pct": 100.0
+          },
+          {
+            "offset": 1,
+            "n_weeks": 3,
+            "n_episodes": 3,
+            "mean": 4.1799,
+            "median": 5.4065,
+            "mean_excess": 1.8797,
+            "hit_pct": 66.67,
+            "hit_excess_pct": 66.67
+          },
+          {
+            "offset": 2,
+            "n_weeks": 3,
+            "n_episodes": 3,
+            "mean": 5.6582,
+            "median": 5.9005,
+            "mean_excess": 3.358,
+            "hit_pct": 100.0,
+            "hit_excess_pct": 100.0
+          },
+          {
+            "offset": 3,
+            "n_weeks": 3,
+            "n_episodes": 3,
+            "mean": 6.9787,
+            "median": 6.9787,
+            "mean_excess": 4.6785,
+            "hit_pct": 100.0,
+            "hit_excess_pct": 100.0
+          },
+          {
+            "offset": 4,
+            "n_weeks": 3,
+            "n_episodes": 3,
+            "mean": 3.9003,
+            "median": 3.9003,
+            "mean_excess": 1.6001,
+            "hit_pct": 100.0,
+            "hit_excess_pct": 50.0
+          },
+          {
+            "offset": 5,
+            "n_weeks": 2,
+            "n_episodes": 2,
+            "mean": 5.5325,
+            "median": 5.5325,
+            "mean_excess": 3.2323,
+            "hit_pct": 100.0,
+            "hit_excess_pct": 100.0
+          },
+          {
+            "offset": 6,
+            "n_weeks": 2,
+            "n_episodes": 2,
+            "mean": 3.8298,
+            "median": 3.8298,
+            "mean_excess": 1.5296,
+            "hit_pct": 100.0,
+            "hit_excess_pct": 50.0
+          },
+          {
+            "offset": 7,
+            "n_weeks": 2,
+            "n_episodes": 2,
+            "mean": 7.4909,
+            "median": 7.4909,
+            "mean_excess": 5.1906,
+            "hit_pct": 100.0,
+            "hit_excess_pct": 100.0
+          },
+          {
+            "offset": 8,
+            "n_weeks": 5,
+            "n_episodes": 5,
+            "mean": 6.6497,
+            "median": 8.1839,
+            "mean_excess": 4.3495,
+            "hit_pct": 80.0,
+            "hit_excess_pct": 80.0
+          },
+          {
+            "offset": 9,
+            "n_weeks": 2,
+            "n_episodes": 2,
+            "mean": 11.3093,
+            "median": 11.3093,
+            "mean_excess": 9.0091,
+            "hit_pct": 100.0,
+            "hit_excess_pct": 100.0
+          },
+          {
+            "offset": 10,
+            "n_weeks": 4,
+            "n_episodes": 4,
+            "mean": 7.1794,
+            "median": 9.239,
+            "mean_excess": 4.8792,
+            "hit_pct": 75.0,
+            "hit_excess_pct": 75.0
+          },
+          {
+            "offset": 11,
+            "n_weeks": 4,
+            "n_episodes": 4,
+            "mean": 5.14,
+            "median": 5.6958,
+            "mean_excess": 2.8397,
+            "hit_pct": 75.0,
+            "hit_excess_pct": 75.0
+          }
+        ],
+        "offset_excess_spread": 7.4795,
+        "offsets_positive_excess": 12,
+        "offsets_with_data": 12,
+        "stable_across_offsets": true
+      },
+      "block_bootstrap": {
+        "method": "stationary_block_bootstrap_politis_romano",
+        "n_draws": 10000,
+        "n_successful_draws": 10000,
+        "block_weeks": 12,
+        "horizon": "12w",
+        "observed": {
+          "n_episodes": 11,
+          "mean_excess": 2.2379
+        },
+        "bootstrap_mean_excess": {
+          "pctile_of_observed": 40.31,
+          "mean": 2.452,
+          "median": 2.4855,
+          "p5": 0.3676,
+          "p95": 4.3656
+        },
+        "episode_excess_percentiles": [
+          {
+            "date": "2007-03-13",
+            "excess": 5.8837,
+            "bootstrap_pctile": 77.57
+          },
+          {
+            "date": "2007-08-28",
+            "excess": -3.3886,
+            "bootstrap_pctile": 9.35
+          },
+          {
+            "date": "2010-06-15",
+            "excess": -3.2911,
+            "bootstrap_pctile": 18.35
+          },
+          {
+            "date": "2011-08-23",
+            "excess": 4.1144,
+            "bootstrap_pctile": 66.91
+          },
+          {
+            "date": "2012-09-04",
+            "excess": -1.5002,
+            "bootstrap_pctile": 27.73
+          },
+          {
+            "date": "2019-11-05",
+            "excess": 3.3688,
+            "bootstrap_pctile": 57.02
+          },
+          {
+            "date": "2020-08-11",
+            "excess": 0.9919,
+            "bootstrap_pctile": 37.57
+          },
+          {
+            "date": "2023-04-18",
+            "excess": 6.1368,
+            "bootstrap_pctile": 87.03
+          },
+          {
+            "date": "2023-05-02",
+            "excess": 8.9303,
+            "bootstrap_pctile": 98.27
+          },
+          {
+            "date": "2024-03-12",
+            "excess": 1.1332,
+            "bootstrap_pctile": 46.49
+          }
+        ]
+      }
+    }
+  ]
+}

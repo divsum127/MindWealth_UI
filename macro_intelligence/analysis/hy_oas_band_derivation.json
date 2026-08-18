@@ -1,0 +1,60 @@
+{
+  "observations_total": 7737,
+  "observations_real": 7730,
+  "observations_proxy_excluded": 7,
+  "date_range": [
+    "1996-12-31",
+    "2026-08-14"
+  ],
+  "min_bps": 241.0,
+  "max_bps": 2182.0,
+  "percentiles_bps": {
+    "50": 450.5,
+    "60": 497.0,
+    "70": 570.0,
+    "75": 614.0,
+    "80": 663.2,
+    "85": 734.6,
+    "90": 805.0,
+    "95": 916.6,
+    "97.5": 1082.9,
+    "99": 1673.7
+  },
+  "current_bands_bps": [
+    300,
+    500,
+    700
+  ],
+  "current_multipliers": {
+    "<300": 1.0,
+    "300-500": 0.9,
+    "500-700": 0.8,
+    ">700": 0.7
+  },
+  "current_band_coverage": [
+    {
+      "band": "<300",
+      "share_pct": 10.97
+    },
+    {
+      "band": "300-500",
+      "share_pct": 49.64
+    },
+    {
+      "band": "500-700",
+      "share_pct": 21.97
+    },
+    {
+      "band": ">700",
+      "share_pct": 17.43
+    }
+  ],
+  "percentile_anchored_proposal_bps": {
+    "benign_below": 450.0,
+    "mild_below": 660.0,
+    "stress_below": 920.0
+  },
+  "days_changing_band": 5436,
+  "days_changing_band_pct": 70.32,
+  "status": "PROPOSAL \u2014 awaiting Rohit sign-off, no thresholds changed"
+}

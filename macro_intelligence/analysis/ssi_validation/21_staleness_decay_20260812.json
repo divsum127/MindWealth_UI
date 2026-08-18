@@ -1,0 +1,1093 @@
+{
+  "test_id": "21_staleness_decay",
+  "start": "2010-01-01",
+  "max_stale_days_calibrated": {
+    "weekly": 8,
+    "daily": 3,
+    "monthly": 30
+  },
+  "method": "Calendar-day age since last print; SPX forward returns from first session on/after each day; no stale weight penalty applied",
+  "horizons_trading_days": {
+    "1w": 5,
+    "2w": 10,
+    "4w": 20,
+    "8w": 40
+  },
+  "age_buckets_calendar_days": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "signals": [
+    {
+      "series_key": "aaii_spread",
+      "cadence": "weekly",
+      "n_obs_total": 4327,
+      "age_buckets": [
+        {
+          "age_post_print": 1,
+          "n_obs": 865,
+          "horizons": {
+            "1w": {
+              "n": 864,
+              "r2": 0.0008,
+              "p_value": 0.4196,
+              "slope": -0.0038,
+              "hit_rate_pct": 48.38
+            },
+            "2w": {
+              "n": 863,
+              "r2": 0.002,
+              "p_value": 0.1862,
+              "slope": -0.0084,
+              "hit_rate_pct": 47.51
+            },
+            "4w": {
+              "n": 861,
+              "r2": 0.0081,
+              "p_value": 0.0082,
+              "slope": -0.0243,
+              "hit_rate_pct": 47.39
+            },
+            "8w": {
+              "n": 857,
+              "r2": 0.0153,
+              "p_value": 0.0003,
+              "slope": -0.0428,
+              "hit_rate_pct": 48.42
+            }
+          }
+        },
+        {
+          "age_post_print": 2,
+          "n_obs": 865,
+          "horizons": {
+            "1w": {
+              "n": 864,
+              "r2": 0.0023,
+              "p_value": 0.1615,
+              "slope": -0.007,
+              "hit_rate_pct": 49.42
+            },
+            "2w": {
+              "n": 863,
+              "r2": 0.0031,
+              "p_value": 0.1007,
+              "slope": -0.0112,
+              "hit_rate_pct": 46.81
+            },
+            "4w": {
+              "n": 861,
+              "r2": 0.01,
+              "p_value": 0.0034,
+              "slope": -0.0263,
+              "hit_rate_pct": 48.2
+            },
+            "8w": {
+              "n": 856,
+              "r2": 0.0157,
+              "p_value": 0.0002,
+              "slope": -0.043,
+              "hit_rate_pct": 49.07
+            }
+          }
+        },
+        {
+          "age_post_print": 3,
+          "n_obs": 865,
+          "horizons": {
+            "1w": {
+              "n": 864,
+              "r2": 0.0023,
+              "p_value": 0.1617,
+              "slope": -0.007,
+              "hit_rate_pct": 49.42
+            },
+            "2w": {
+              "n": 863,
+              "r2": 0.0031,
+              "p_value": 0.1025,
+              "slope": -0.0111,
+              "hit_rate_pct": 46.81
+            },
+            "4w": {
+              "n": 861,
+              "r2": 0.0099,
+              "p_value": 0.0034,
+              "slope": -0.0263,
+              "hit_rate_pct": 48.32
+            },
+            "8w": {
+              "n": 856,
+              "r2": 0.0157,
+              "p_value": 0.0002,
+              "slope": -0.0429,
+              "hit_rate_pct": 49.07
+            }
+          }
+        },
+        {
+          "age_post_print": 4,
+          "n_obs": 866,
+          "horizons": {
+            "1w": {
+              "n": 865,
+              "r2": 0.0022,
+              "p_value": 0.1643,
+              "slope": -0.007,
+              "hit_rate_pct": 49.6
+            },
+            "2w": {
+              "n": 864,
+              "r2": 0.003,
+              "p_value": 0.1065,
+              "slope": -0.011,
+              "hit_rate_pct": 46.76
+            },
+            "4w": {
+              "n": 862,
+              "r2": 0.0102,
+              "p_value": 0.003,
+              "slope": -0.0267,
+              "hit_rate_pct": 48.49
+            },
+            "8w": {
+              "n": 857,
+              "r2": 0.0161,
+              "p_value": 0.0002,
+              "slope": -0.0434,
+              "hit_rate_pct": 49.12
+            }
+          }
+        },
+        {
+          "age_post_print": 5,
+          "n_obs": 866,
+          "horizons": {
+            "1w": {
+              "n": 865,
+              "r2": 0.0025,
+              "p_value": 0.1456,
+              "slope": -0.0065,
+              "hit_rate_pct": 49.48
+            },
+            "2w": {
+              "n": 864,
+              "r2": 0.0029,
+              "p_value": 0.1141,
+              "slope": -0.0098,
+              "hit_rate_pct": 46.76
+            },
+            "4w": {
+              "n": 862,
+              "r2": 0.0109,
+              "p_value": 0.0022,
+              "slope": -0.0257,
+              "hit_rate_pct": 48.26
+            },
+            "8w": {
+              "n": 857,
+              "r2": 0.0142,
+              "p_value": 0.0005,
+              "slope": -0.0402,
+              "hit_rate_pct": 48.89
+            }
+          }
+        }
+      ],
+      "penalty_recommendation": "no penalty warranted (day-5 R\u00b2 \u2265 90% of day-1)"
+    },
+    {
+      "series_key": "naaim_exposure",
+      "cadence": "weekly",
+      "n_obs_total": 4316,
+      "age_buckets": [
+        {
+          "age_post_print": 1,
+          "n_obs": 863,
+          "horizons": {
+            "1w": {
+              "n": 863,
+              "r2": 0.0042,
+              "p_value": 0.0564,
+              "slope": -0.0068,
+              "hit_rate_pct": 49.13
+            },
+            "2w": {
+              "n": 862,
+              "r2": 0.0126,
+              "p_value": 0.0009,
+              "slope": -0.0157,
+              "hit_rate_pct": 47.22
+            },
+            "4w": {
+              "n": 860,
+              "r2": 0.0195,
+              "p_value": 0.0,
+              "slope": -0.0274,
+              "hit_rate_pct": 46.51
+            },
+            "8w": {
+              "n": 856,
+              "r2": 0.0248,
+              "p_value": 0.0,
+              "slope": -0.0419,
+              "hit_rate_pct": 45.09
+            }
+          }
+        },
+        {
+          "age_post_print": 2,
+          "n_obs": 863,
+          "horizons": {
+            "1w": {
+              "n": 863,
+              "r2": 0.0061,
+              "p_value": 0.022,
+              "slope": -0.0083,
+              "hit_rate_pct": 48.55
+            },
+            "2w": {
+              "n": 862,
+              "r2": 0.0128,
+              "p_value": 0.0009,
+              "slope": -0.016,
+              "hit_rate_pct": 47.91
+            },
+            "4w": {
+              "n": 860,
+              "r2": 0.0205,
+              "p_value": 0.0,
+              "slope": -0.0293,
+              "hit_rate_pct": 46.86
+            },
+            "8w": {
+              "n": 856,
+              "r2": 0.0284,
+              "p_value": 0.0,
+              "slope": -0.0444,
+              "hit_rate_pct": 45.33
+            }
+          }
+        },
+        {
+          "age_post_print": 3,
+          "n_obs": 863,
+          "horizons": {
+            "1w": {
+              "n": 863,
+              "r2": 0.0075,
+              "p_value": 0.0108,
+              "slope": -0.0097,
+              "hit_rate_pct": 49.48
+            },
+            "2w": {
+              "n": 862,
+              "r2": 0.0147,
+              "p_value": 0.0004,
+              "slope": -0.0184,
+              "hit_rate_pct": 46.98
+            },
+            "4w": {
+              "n": 860,
+              "r2": 0.0261,
+              "p_value": 0.0,
+              "slope": -0.0324,
+              "hit_rate_pct": 46.63
+            },
+            "8w": {
+              "n": 855,
+              "r2": 0.0329,
+              "p_value": 0.0,
+              "slope": -0.0473,
+              "hit_rate_pct": 46.67
+            }
+          }
+        },
+        {
+          "age_post_print": 4,
+          "n_obs": 863,
+          "horizons": {
+            "1w": {
+              "n": 863,
+              "r2": 0.0075,
+              "p_value": 0.0107,
+              "slope": -0.0097,
+              "hit_rate_pct": 49.48
+            },
+            "2w": {
+              "n": 862,
+              "r2": 0.0148,
+              "p_value": 0.0004,
+              "slope": -0.0184,
+              "hit_rate_pct": 46.98
+            },
+            "4w": {
+              "n": 860,
+              "r2": 0.0261,
+              "p_value": 0.0,
+              "slope": -0.0324,
+              "hit_rate_pct": 46.63
+            },
+            "8w": {
+              "n": 855,
+              "r2": 0.0329,
+              "p_value": 0.0,
+              "slope": -0.0472,
+              "hit_rate_pct": 46.67
+            }
+          }
+        },
+        {
+          "age_post_print": 5,
+          "n_obs": 864,
+          "horizons": {
+            "1w": {
+              "n": 864,
+              "r2": 0.0076,
+              "p_value": 0.0102,
+              "slope": -0.0098,
+              "hit_rate_pct": 49.31
+            },
+            "2w": {
+              "n": 863,
+              "r2": 0.0148,
+              "p_value": 0.0003,
+              "slope": -0.0185,
+              "hit_rate_pct": 47.05
+            },
+            "4w": {
+              "n": 861,
+              "r2": 0.0261,
+              "p_value": 0.0,
+              "slope": -0.0325,
+              "hit_rate_pct": 46.81
+            },
+            "8w": {
+              "n": 856,
+              "r2": 0.0329,
+              "p_value": 0.0,
+              "slope": -0.0473,
+              "hit_rate_pct": 46.73
+            }
+          }
+        }
+      ],
+      "penalty_recommendation": "no penalty warranted (day-5 R\u00b2 \u2265 90% of day-1)"
+    },
+    {
+      "series_key": "cnn_fg",
+      "cadence": "daily",
+      "n_obs_total": 670,
+      "age_buckets": [
+        {
+          "age_post_print": 1,
+          "n_obs": 324,
+          "horizons": {
+            "1w": {
+              "n": 323,
+              "r2": 0.0052,
+              "p_value": 0.1982,
+              "slope": -0.0058,
+              "hit_rate_pct": 48.92
+            },
+            "2w": {
+              "n": 322,
+              "r2": 0.0129,
+              "p_value": 0.042,
+              "slope": -0.0119,
+              "hit_rate_pct": 47.52
+            },
+            "4w": {
+              "n": 320,
+              "r2": 0.0383,
+              "p_value": 0.0004,
+              "slope": -0.026,
+              "hit_rate_pct": 54.69
+            },
+            "8w": {
+              "n": 315,
+              "r2": 0.0384,
+              "p_value": 0.0005,
+              "slope": -0.0347,
+              "hit_rate_pct": 54.29
+            }
+          }
+        },
+        {
+          "age_post_print": 2,
+          "n_obs": 307,
+          "horizons": {
+            "1w": {
+              "n": 306,
+              "r2": 0.0034,
+              "p_value": 0.3098,
+              "slope": -0.0046,
+              "hit_rate_pct": 48.37
+            },
+            "2w": {
+              "n": 305,
+              "r2": 0.0132,
+              "p_value": 0.045,
+              "slope": -0.0119,
+              "hit_rate_pct": 48.2
+            },
+            "4w": {
+              "n": 303,
+              "r2": 0.0378,
+              "p_value": 0.0007,
+              "slope": -0.0256,
+              "hit_rate_pct": 55.12
+            },
+            "8w": {
+              "n": 298,
+              "r2": 0.0376,
+              "p_value": 0.0008,
+              "slope": -0.0338,
+              "hit_rate_pct": 54.36
+            }
+          }
+        },
+        {
+          "age_post_print": 3,
+          "n_obs": 38,
+          "horizons": {
+            "1w": {
+              "n": 38,
+              "r2": 0.0,
+              "p_value": 0.9968,
+              "slope": -0.0,
+              "hit_rate_pct": 44.74
+            },
+            "2w": {
+              "n": 38,
+              "r2": 0.0109,
+              "p_value": 0.5328,
+              "slope": -0.0116,
+              "hit_rate_pct": 47.37
+            },
+            "4w": {
+              "n": 38,
+              "r2": 0.0517,
+              "p_value": 0.17,
+              "slope": -0.03,
+              "hit_rate_pct": 55.26
+            },
+            "8w": {
+              "n": 38,
+              "r2": 0.0379,
+              "p_value": 0.2416,
+              "slope": -0.0287,
+              "hit_rate_pct": 42.11
+            }
+          }
+        },
+        {
+          "age_post_print": 4,
+          "n_obs": 1,
+          "horizons": {
+            "1w": {
+              "n": 1,
+              "r2": null,
+              "p_value": null,
+              "slope": null,
+              "hit_rate_pct": null
+            },
+            "2w": {
+              "n": 1,
+              "r2": null,
+              "p_value": null,
+              "slope": null,
+              "hit_rate_pct": null
+            },
+            "4w": {
+              "n": 1,
+              "r2": null,
+              "p_value": null,
+              "slope": null,
+              "hit_rate_pct": null
+            },
+            "8w": {
+              "n": 1,
+              "r2": null,
+              "p_value": null,
+              "slope": null,
+              "hit_rate_pct": null
+            }
+          }
+        },
+        {
+          "age_post_print": 5,
+          "n_obs": 0,
+          "horizons": {
+            "1w": {
+              "n": 0,
+              "r2": null,
+              "p_value": null,
+              "slope": null,
+              "hit_rate_pct": null
+            },
+            "2w": {
+              "n": 0,
+              "r2": null,
+              "p_value": null,
+              "slope": null,
+              "hit_rate_pct": null
+            },
+            "4w": {
+              "n": 0,
+              "r2": null,
+              "p_value": null,
+              "slope": null,
+              "hit_rate_pct": null
+            },
+            "8w": {
+              "n": 0,
+              "r2": null,
+              "p_value": null,
+              "slope": null,
+              "hit_rate_pct": null
+            }
+          }
+        }
+      ],
+      "penalty_recommendation": "no penalty warranted (day-2 R\u00b2 \u2265 90% of day-1)"
+    },
+    {
+      "series_key": "cftc_fm_net",
+      "cadence": "weekly",
+      "n_obs_total": 4330,
+      "age_buckets": [
+        {
+          "age_post_print": 1,
+          "n_obs": 866,
+          "horizons": {
+            "1w": {
+              "n": 865,
+              "r2": 0.0007,
+              "p_value": 0.4371,
+              "slope": -0.0,
+              "hit_rate_pct": 45.43
+            },
+            "2w": {
+              "n": 864,
+              "r2": 0.0014,
+              "p_value": 0.2793,
+              "slope": -0.0,
+              "hit_rate_pct": 44.79
+            },
+            "4w": {
+              "n": 862,
+              "r2": 0.0025,
+              "p_value": 0.1434,
+              "slope": -0.0,
+              "hit_rate_pct": 44.43
+            },
+            "8w": {
+              "n": 858,
+              "r2": 0.0032,
+              "p_value": 0.0985,
+              "slope": -0.0,
+              "hit_rate_pct": 41.26
+            }
+          }
+        },
+        {
+          "age_post_print": 2,
+          "n_obs": 866,
+          "horizons": {
+            "1w": {
+              "n": 865,
+              "r2": 0.0007,
+              "p_value": 0.4321,
+              "slope": -0.0,
+              "hit_rate_pct": 46.82
+            },
+            "2w": {
+              "n": 864,
+              "r2": 0.0011,
+              "p_value": 0.3355,
+              "slope": -0.0,
+              "hit_rate_pct": 43.98
+            },
+            "4w": {
+              "n": 862,
+              "r2": 0.0019,
+              "p_value": 0.2065,
+              "slope": -0.0,
+              "hit_rate_pct": 43.16
+            },
+            "8w": {
+              "n": 858,
+              "r2": 0.0033,
+              "p_value": 0.0926,
+              "slope": -0.0,
+              "hit_rate_pct": 41.14
+            }
+          }
+        },
+        {
+          "age_post_print": 3,
+          "n_obs": 866,
+          "horizons": {
+            "1w": {
+              "n": 865,
+              "r2": 0.0002,
+              "p_value": 0.7137,
+              "slope": -0.0,
+              "hit_rate_pct": 46.13
+            },
+            "2w": {
+              "n": 864,
+              "r2": 0.0006,
+              "p_value": 0.4891,
+              "slope": -0.0,
+              "hit_rate_pct": 43.98
+            },
+            "4w": {
+              "n": 862,
+              "r2": 0.002,
+              "p_value": 0.1864,
+              "slope": -0.0,
+              "hit_rate_pct": 44.32
+            },
+            "8w": {
+              "n": 858,
+              "r2": 0.0034,
+              "p_value": 0.0868,
+              "slope": -0.0,
+              "hit_rate_pct": 41.61
+            }
+          }
+        },
+        {
+          "age_post_print": 4,
+          "n_obs": 866,
+          "horizons": {
+            "1w": {
+              "n": 865,
+              "r2": 0.0002,
+              "p_value": 0.6904,
+              "slope": -0.0,
+              "hit_rate_pct": 44.28
+            },
+            "2w": {
+              "n": 864,
+              "r2": 0.0005,
+              "p_value": 0.503,
+              "slope": -0.0,
+              "hit_rate_pct": 43.17
+            },
+            "4w": {
+              "n": 862,
+              "r2": 0.0008,
+              "p_value": 0.4011,
+              "slope": -0.0,
+              "hit_rate_pct": 42.92
+            },
+            "8w": {
+              "n": 857,
+              "r2": 0.0017,
+              "p_value": 0.2295,
+              "slope": -0.0,
+              "hit_rate_pct": 41.19
+            }
+          }
+        },
+        {
+          "age_post_print": 5,
+          "n_obs": 866,
+          "horizons": {
+            "1w": {
+              "n": 865,
+              "r2": 0.0003,
+              "p_value": 0.6068,
+              "slope": -0.0,
+              "hit_rate_pct": 44.39
+            },
+            "2w": {
+              "n": 864,
+              "r2": 0.0006,
+              "p_value": 0.4663,
+              "slope": -0.0,
+              "hit_rate_pct": 43.17
+            },
+            "4w": {
+              "n": 862,
+              "r2": 0.0009,
+              "p_value": 0.3912,
+              "slope": -0.0,
+              "hit_rate_pct": 42.92
+            },
+            "8w": {
+              "n": 857,
+              "r2": 0.0018,
+              "p_value": 0.2144,
+              "slope": -0.0,
+              "hit_rate_pct": 41.19
+            }
+          }
+        }
+      ],
+      "penalty_recommendation": "decay detected \u2014 day-5/day-1 R\u00b2 ratio=0.36 at 4w (suggest penalty \u2248 0.36, not global 0.8)"
+    },
+    {
+      "series_key": "cftc_rm_net",
+      "cadence": "weekly",
+      "n_obs_total": 4330,
+      "age_buckets": [
+        {
+          "age_post_print": 1,
+          "n_obs": 866,
+          "horizons": {
+            "1w": {
+              "n": 865,
+              "r2": 0.0006,
+              "p_value": 0.4663,
+              "slope": 0.0,
+              "hit_rate_pct": 44.05
+            },
+            "2w": {
+              "n": 864,
+              "r2": 0.001,
+              "p_value": 0.3547,
+              "slope": 0.0,
+              "hit_rate_pct": 43.52
+            },
+            "4w": {
+              "n": 862,
+              "r2": 0.0018,
+              "p_value": 0.2118,
+              "slope": 0.0,
+              "hit_rate_pct": 41.53
+            },
+            "8w": {
+              "n": 858,
+              "r2": 0.0027,
+              "p_value": 0.13,
+              "slope": 0.0,
+              "hit_rate_pct": 38.11
+            }
+          }
+        },
+        {
+          "age_post_print": 2,
+          "n_obs": 866,
+          "horizons": {
+            "1w": {
+              "n": 865,
+              "r2": 0.0005,
+              "p_value": 0.5051,
+              "slope": 0.0,
+              "hit_rate_pct": 45.66
+            },
+            "2w": {
+              "n": 864,
+              "r2": 0.0007,
+              "p_value": 0.4243,
+              "slope": 0.0,
+              "hit_rate_pct": 42.48
+            },
+            "4w": {
+              "n": 862,
+              "r2": 0.0016,
+              "p_value": 0.2435,
+              "slope": 0.0,
+              "hit_rate_pct": 41.42
+            },
+            "8w": {
+              "n": 858,
+              "r2": 0.0029,
+              "p_value": 0.1162,
+              "slope": 0.0,
+              "hit_rate_pct": 38.46
+            }
+          }
+        },
+        {
+          "age_post_print": 3,
+          "n_obs": 866,
+          "horizons": {
+            "1w": {
+              "n": 865,
+              "r2": 0.0002,
+              "p_value": 0.6786,
+              "slope": 0.0,
+              "hit_rate_pct": 45.9
+            },
+            "2w": {
+              "n": 864,
+              "r2": 0.0005,
+              "p_value": 0.5055,
+              "slope": 0.0,
+              "hit_rate_pct": 42.25
+            },
+            "4w": {
+              "n": 862,
+              "r2": 0.0019,
+              "p_value": 0.1987,
+              "slope": 0.0,
+              "hit_rate_pct": 41.88
+            },
+            "8w": {
+              "n": 858,
+              "r2": 0.0034,
+              "p_value": 0.087,
+              "slope": 0.0,
+              "hit_rate_pct": 38.69
+            }
+          }
+        },
+        {
+          "age_post_print": 4,
+          "n_obs": 866,
+          "horizons": {
+            "1w": {
+              "n": 865,
+              "r2": 0.0002,
+              "p_value": 0.7028,
+              "slope": 0.0,
+              "hit_rate_pct": 43.35
+            },
+            "2w": {
+              "n": 864,
+              "r2": 0.0006,
+              "p_value": 0.4854,
+              "slope": 0.0,
+              "hit_rate_pct": 41.67
+            },
+            "4w": {
+              "n": 862,
+              "r2": 0.0007,
+              "p_value": 0.429,
+              "slope": 0.0,
+              "hit_rate_pct": 40.49
+            },
+            "8w": {
+              "n": 857,
+              "r2": 0.0019,
+              "p_value": 0.1969,
+              "slope": 0.0,
+              "hit_rate_pct": 38.27
+            }
+          }
+        },
+        {
+          "age_post_print": 5,
+          "n_obs": 866,
+          "horizons": {
+            "1w": {
+              "n": 865,
+              "r2": 0.0003,
+              "p_value": 0.6368,
+              "slope": 0.0,
+              "hit_rate_pct": 43.47
+            },
+            "2w": {
+              "n": 864,
+              "r2": 0.0006,
+              "p_value": 0.458,
+              "slope": 0.0,
+              "hit_rate_pct": 41.67
+            },
+            "4w": {
+              "n": 862,
+              "r2": 0.0008,
+              "p_value": 0.4184,
+              "slope": 0.0,
+              "hit_rate_pct": 40.49
+            },
+            "8w": {
+              "n": 857,
+              "r2": 0.002,
+              "p_value": 0.1881,
+              "slope": 0.0,
+              "hit_rate_pct": 38.27
+            }
+          }
+        }
+      ],
+      "penalty_recommendation": "decay detected \u2014 day-5/day-1 R\u00b2 ratio=0.44 at 4w (suggest penalty \u2248 0.44, not global 0.8)"
+    },
+    {
+      "series_key": "margin_debt",
+      "cadence": "monthly",
+      "n_obs_total": 328,
+      "age_buckets": [
+        {
+          "age_post_print": 1,
+          "n_obs": 65,
+          "horizons": {
+            "1w": {
+              "n": 65,
+              "r2": 0.0156,
+              "p_value": 0.3208,
+              "slope": 0.0242,
+              "hit_rate_pct": 46.15
+            },
+            "2w": {
+              "n": 65,
+              "r2": 0.0098,
+              "p_value": 0.4328,
+              "slope": 0.0249,
+              "hit_rate_pct": 35.38
+            },
+            "4w": {
+              "n": 65,
+              "r2": 0.0697,
+              "p_value": 0.0336,
+              "slope": -0.0881,
+              "hit_rate_pct": 69.23
+            },
+            "8w": {
+              "n": 65,
+              "r2": 0.2271,
+              "p_value": 0.0001,
+              "slope": -0.2251,
+              "hit_rate_pct": 75.38
+            }
+          }
+        },
+        {
+          "age_post_print": 2,
+          "n_obs": 65,
+          "horizons": {
+            "1w": {
+              "n": 65,
+              "r2": 0.0138,
+              "p_value": 0.3505,
+              "slope": 0.0252,
+              "hit_rate_pct": 44.62
+            },
+            "2w": {
+              "n": 65,
+              "r2": 0.0097,
+              "p_value": 0.4344,
+              "slope": 0.024,
+              "hit_rate_pct": 36.92
+            },
+            "4w": {
+              "n": 65,
+              "r2": 0.0655,
+              "p_value": 0.0396,
+              "slope": -0.0892,
+              "hit_rate_pct": 69.23
+            },
+            "8w": {
+              "n": 65,
+              "r2": 0.2052,
+              "p_value": 0.0002,
+              "slope": -0.2263,
+              "hit_rate_pct": 75.38
+            }
+          }
+        },
+        {
+          "age_post_print": 3,
+          "n_obs": 66,
+          "horizons": {
+            "1w": {
+              "n": 66,
+              "r2": 0.0044,
+              "p_value": 0.5976,
+              "slope": 0.0129,
+              "hit_rate_pct": 40.91
+            },
+            "2w": {
+              "n": 66,
+              "r2": 0.0079,
+              "p_value": 0.4781,
+              "slope": 0.0177,
+              "hit_rate_pct": 37.88
+            },
+            "4w": {
+              "n": 66,
+              "r2": 0.0429,
+              "p_value": 0.095,
+              "slope": -0.0637,
+              "hit_rate_pct": 68.18
+            },
+            "8w": {
+              "n": 66,
+              "r2": 0.2853,
+              "p_value": 0.0,
+              "slope": -0.2703,
+              "hit_rate_pct": 75.76
+            }
+          }
+        },
+        {
+          "age_post_print": 4,
+          "n_obs": 66,
+          "horizons": {
+            "1w": {
+              "n": 66,
+              "r2": 0.0014,
+              "p_value": 0.769,
+              "slope": 0.0069,
+              "hit_rate_pct": 36.36
+            },
+            "2w": {
+              "n": 66,
+              "r2": 0.0001,
+              "p_value": 0.9364,
+              "slope": 0.0019,
+              "hit_rate_pct": 33.33
+            },
+            "4w": {
+              "n": 66,
+              "r2": 0.1095,
+              "p_value": 0.0066,
+              "slope": -0.1041,
+              "hit_rate_pct": 68.18
+            },
+            "8w": {
+              "n": 66,
+              "r2": 0.2924,
+              "p_value": 0.0,
+              "slope": -0.2628,
+              "hit_rate_pct": 75.76
+            }
+          }
+        },
+        {
+          "age_post_print": 5,
+          "n_obs": 66,
+          "horizons": {
+            "1w": {
+              "n": 66,
+              "r2": 0.0002,
+              "p_value": 0.9007,
+              "slope": 0.0027,
+              "hit_rate_pct": 39.39
+            },
+            "2w": {
+              "n": 66,
+              "r2": 0.0037,
+              "p_value": 0.6283,
+              "slope": -0.0114,
+              "hit_rate_pct": 65.15
+            },
+            "4w": {
+              "n": 66,
+              "r2": 0.1353,
+              "p_value": 0.0024,
+              "slope": -0.1219,
+              "hit_rate_pct": 69.7
+            },
+            "8w": {
+              "n": 66,
+              "r2": 0.3125,
+              "p_value": 0.0,
+              "slope": -0.2745,
+              "hit_rate_pct": 72.73
+            }
+          }
+        }
+      ],
+      "penalty_recommendation": "insufficient data"
+    }
+  ]
+}
