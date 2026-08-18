@@ -20,6 +20,8 @@ if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
 from src.conviction_engine.pe_history_sec import (
+    FOREIGN_PRIVATE_ISSUER_ALIASES,
+    _build_annual_only_eps_series,
     _dedupe_first_filed,
     _plug_quarterly_series,
     build_quarterly_eps_series,
@@ -262,6 +264,236 @@ class TestFetchPeHistorySec(unittest.TestCase):
             with patch("src.conviction_engine.pe_history_sec.requests.get", return_value=bad_resp):
                 bundle = fetch_pe_history_sec("PYPL", _price_series(), cache_dir=Path(tmp), cik="0001633917")
             self.assertIsNone(bundle)
+
+
+def _fpi_price_series(periods: int = 40) -> pd.Series:
+    dates = pd.date_range("2017-01-31", periods=periods, freq="ME")
+    return pd.Series([80.0 + 0.3 * i for i in range(periods)], index=dates)
+
+
+class TestForeignPrivateIssuerAlias(unittest.TestCase):
+    """``FOREIGN_PRIVATE_ISSUER_ALIASES`` — the 2026-07-29 Canada MJDS/IFRS extension.
+    All network calls mocked; see job-status docs for the live smoke test against the
+    real data.sec.gov API (TD.TO/RY.TO/BNS.TO/CNQ.TO)."""
+
+    def _ifrs_quarterly_facts_resp(self, years: int = 8, currency: str = "CAD") -> MagicMock:
+        """Mimics TD/RY/BNS: real quarter-duration 6-K facts + annual 40-F totals."""
+        resp = MagicMock(status_code=200)
+        facts = []
+        for y in range(2019, 2019 + years):
+            facts.extend(
+                [
+                    _fact(f"{y}-01-01", f"{y}-03-31", 1.0, form="6-K", filed=f"{y}-05-01"),
+                    _fact(f"{y}-04-01", f"{y}-06-30", 1.1, form="6-K", filed=f"{y}-08-01"),
+                    _fact(f"{y}-07-01", f"{y}-09-30", 1.2, form="6-K", filed=f"{y}-11-01"),
+                    _fact(f"{y}-01-01", f"{y}-12-31", 4.6, form="40-F", filed=f"{y + 1}-02-01"),
+                ]
+            )
+        resp.json.return_value = {"units": {f"{currency}/shares": facts}}
+        return resp
+
+    def _ifrs_annual_only_facts_resp(self, years: int = 8, currency: str = "CAD") -> MagicMock:
+        """Mimics CNQ: only annual 40-F totals, zero quarter-duration facts at all."""
+        resp = MagicMock(status_code=200)
+        facts = [
+            _fact(f"{y}-01-01", f"{y}-12-31", 4.6 + 0.1 * (y - 2019), form="40-F", filed=f"{y + 1}-02-01")
+            for y in range(2019, 2019 + years)
+        ]
+        resp.json.return_value = {"units": {f"{currency}/shares": facts}}
+        return resp
+
+    def test_non_aliased_dot_to_ticker_still_returns_none_without_network(self):
+        """Regression guard: a .TO ticker NOT in the allowlist must behave exactly as
+        before this feature existed — no network call, no attempt at the FPI path."""
+        self.assertNotIn("SHOP.TO", FOREIGN_PRIVATE_ISSUER_ALIASES)
+        with patch("src.conviction_engine.pe_history_sec.requests.get") as mock_get:
+            result = fetch_pe_history_sec("SHOP.TO", _fpi_price_series())
+        self.assertIsNone(result)
+        mock_get.assert_not_called()
+
+    def test_quarterly_aliased_ticker_fetches_ifrs_data_and_caches(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cache_dir = Path(tmp)
+            with patch(
+                "src.conviction_engine.pe_history_sec.requests.get",
+                return_value=self._ifrs_quarterly_facts_resp(),
+            ) as mock_get:
+                bundle = fetch_pe_history_sec("TD.TO", _fpi_price_series(), cache_dir=cache_dir, cik="0000947263")
+            self.assertIsNotNone(bundle)
+            self.assertEqual(bundle["meta"]["source"], "sec_edgar_40f")
+            self.assertGreater(bundle["meta"]["point_count"], 0)
+            self.assertGreaterEqual(mock_get.call_count, 1)
+            self.assertTrue((cache_dir / "TD.TO_sec.json").exists())
+
+            # second call hits cache, no network
+            with patch("src.conviction_engine.pe_history_sec.requests.get") as mock_get2:
+                bundle2 = fetch_pe_history_sec("TD.TO", _fpi_price_series(), cache_dir=cache_dir, cik="0000947263")
+            mock_get2.assert_not_called()
+            self.assertEqual(bundle2["values"], bundle["values"])
+
+    def test_annual_only_aliased_ticker_uses_legacy_annual_path(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            with patch(
+                "src.conviction_engine.pe_history_sec.requests.get",
+                return_value=self._ifrs_annual_only_facts_resp(),
+            ):
+                bundle = fetch_pe_history_sec("CNQ.TO", _fpi_price_series(), cache_dir=Path(tmp), cik="0001017413")
+            self.assertIsNotNone(bundle)
+            self.assertEqual(bundle["meta"]["source"], "sec_edgar_40f")
+            self.assertGreater(bundle["meta"]["point_count"], 0)
+
+    def test_falls_back_to_basic_ifrs_concept_when_diluted_missing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            diluted_resp = MagicMock(status_code=404)
+            basic_resp = self._ifrs_quarterly_facts_resp()
+            with patch(
+                "src.conviction_engine.pe_history_sec.requests.get",
+                side_effect=[diluted_resp, basic_resp],
+            ):
+                bundle = fetch_pe_history_sec("TD.TO", _fpi_price_series(), cache_dir=Path(tmp), cik="0000947263")
+            self.assertIsNotNone(bundle)
+
+    def test_currency_mismatch_returns_none_not_silently_wrong(self):
+        """TD.TO requires CAD/shares. If SEC only has USD/shares for this concept (as
+        would happen for e.g. a ticker misconfigured with the wrong currency), the
+        fetch must fail cleanly rather than pair mismatched-currency EPS with a price."""
+        with tempfile.TemporaryDirectory() as tmp:
+            with patch(
+                "src.conviction_engine.pe_history_sec.requests.get",
+                return_value=self._ifrs_quarterly_facts_resp(currency="USD"),
+            ):
+                bundle = fetch_pe_history_sec("TD.TO", _fpi_price_series(), cache_dir=Path(tmp), cik="0000947263")
+            self.assertIsNone(bundle)
+
+    def test_no_facts_at_all_returns_none(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            not_found = MagicMock(status_code=404)
+            with patch("src.conviction_engine.pe_history_sec.requests.get", return_value=not_found):
+                bundle = fetch_pe_history_sec("TD.TO", _fpi_price_series(), cache_dir=Path(tmp), cik="0000947263")
+            self.assertIsNone(bundle)
+
+    def test_empty_price_series_returns_none_even_for_aliased_ticker(self):
+        result = fetch_pe_history_sec("TD.TO", pd.Series(dtype=float), cik="0000947263")
+        self.assertIsNone(result)
+
+
+class TestBuildAnnualOnlyEpsSeries(unittest.TestCase):
+    def test_extracts_only_annual_duration_facts(self):
+        facts = [
+            _fact("2019-01-01", "2019-12-31", 4.6, form="40-F"),
+            _fact("2019-01-01", "2019-03-31", 1.0, form="6-K"),  # quarter -> excluded
+            _fact("2020-01-01", "2020-12-31", 5.1, form="40-F"),
+        ]
+        result = _build_annual_only_eps_series(facts, valid_forms={"40-F", "6-K"})
+        self.assertEqual(len(result), 2)
+        self.assertAlmostEqual(result[pd.Timestamp("2019-12-31")], 4.6)
+        self.assertAlmostEqual(result[pd.Timestamp("2020-12-31")], 5.1)
+
+    def test_respects_valid_forms_filter(self):
+        facts = [_fact("2019-01-01", "2019-12-31", 4.6, form="10-K")]
+        result = _build_annual_only_eps_series(facts, valid_forms={"40-F"})
+        self.assertTrue(result.empty)
+
+    def test_empty_input_returns_empty_series(self):
+        result = _build_annual_only_eps_series([], valid_forms={"40-F"})
+        self.assertTrue(result.empty)
+
+
+class TestLegacyExtension(unittest.TestCase):
+    """``fetch_pe_history_sec`` only attempts the pre-2009 legacy extension when the
+    XBRL-only bundle is still ``insufficient_20y`` — and only keeps it if it strictly
+    improves point_count. All network calls (XBRL facts + the legacy module's own
+    fetches) are mocked."""
+
+    def _xbrl_facts_resp(self, years: int = 4) -> MagicMock:
+        """A short XBRL history (a handful of years) that will land as insufficient_20y."""
+        resp = MagicMock(status_code=200)
+        facts = []
+        for y in range(2019, 2019 + years):
+            facts.extend(
+                [
+                    _fact(f"{y}-01-01", f"{y}-03-31", 1.0, filed=f"{y}-05-01"),
+                    _fact(f"{y}-04-01", f"{y}-06-30", 1.1, filed=f"{y}-08-01"),
+                    _fact(f"{y}-07-01", f"{y}-09-30", 1.2, filed=f"{y}-11-01"),
+                    _fact(f"{y}-01-01", f"{y}-12-31", 4.6, form="10-K", filed=f"{y + 1}-02-01"),
+                ]
+            )
+        resp.json.return_value = {"units": {"USD/shares": facts}}
+        return resp
+
+    def _long_price_series(self, start="1994-01-31", periods=400) -> pd.Series:
+        dates = pd.date_range(start, periods=periods, freq="ME")
+        return pd.Series([10.0 + 0.1 * i for i in range(periods)], index=dates)
+
+    def test_insufficient_bundle_gets_extended_when_legacy_data_available(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            legacy_series = pd.Series(
+                {pd.Timestamp(f"{y}-12-31"): 0.5 + 0.05 * (y - 1994) for y in range(1994, 2019)}
+            )
+            with (
+                patch("src.conviction_engine.pe_history_sec.requests.get", return_value=self._xbrl_facts_resp()),
+                patch(
+                    "src.conviction_engine.pe_history_sec_legacy.fetch_legacy_annual_eps",
+                    return_value=legacy_series,
+                ),
+            ):
+                bundle = fetch_pe_history_sec(
+                    "PYPL", self._long_price_series(), cache_dir=Path(tmp), cik="0001633917"
+                )
+        self.assertIsNotNone(bundle)
+        self.assertEqual(bundle["meta"]["source"], "sec_edgar+legacy")
+        self.assertFalse(bundle["meta"]["insufficient_20y"])
+
+    def test_empty_legacy_series_keeps_xbrl_only_bundle(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            with (
+                patch("src.conviction_engine.pe_history_sec.requests.get", return_value=self._xbrl_facts_resp()),
+                patch(
+                    "src.conviction_engine.pe_history_sec_legacy.fetch_legacy_annual_eps",
+                    return_value=pd.Series(dtype=float),
+                ),
+            ):
+                bundle = fetch_pe_history_sec(
+                    "PYPL", self._long_price_series(), cache_dir=Path(tmp), cik="0001633917"
+                )
+        self.assertIsNotNone(bundle)
+        self.assertEqual(bundle["meta"]["source"], "sec_edgar")
+
+    def test_legacy_module_exception_falls_back_to_xbrl_only_bundle(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            with (
+                patch("src.conviction_engine.pe_history_sec.requests.get", return_value=self._xbrl_facts_resp()),
+                patch(
+                    "src.conviction_engine.pe_history_sec_legacy.fetch_legacy_annual_eps",
+                    side_effect=RuntimeError("boom"),
+                ),
+            ):
+                bundle = fetch_pe_history_sec(
+                    "PYPL", self._long_price_series(), cache_dir=Path(tmp), cik="0001633917"
+                )
+        self.assertIsNotNone(bundle)
+        self.assertEqual(bundle["meta"]["source"], "sec_edgar")
+
+    def test_sufficient_xbrl_bundle_never_attempts_legacy_extension(self):
+        """20+ years of XBRL-only quarterly data -> insufficient_20y is already False,
+        so the legacy module must never even be called (bounds network cost to genuinely
+        gap tickers only)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            with (
+                patch(
+                    "src.conviction_engine.pe_history_sec.requests.get",
+                    return_value=self._xbrl_facts_resp(years=22),
+                ),
+                patch(
+                    "src.conviction_engine.pe_history_sec_legacy.fetch_legacy_annual_eps"
+                ) as mock_legacy,
+            ):
+                bundle = fetch_pe_history_sec(
+                    "PYPL", self._long_price_series(start="2019-01-31", periods=400), cache_dir=Path(tmp), cik="0001633917"
+                )
+        self.assertIsNotNone(bundle)
+        self.assertEqual(bundle["meta"]["source"], "sec_edgar")
+        mock_legacy.assert_not_called()
 
 
 if __name__ == "__main__":

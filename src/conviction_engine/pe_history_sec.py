@@ -22,10 +22,15 @@ Design (per explicit user decisions, 2026-07-24):
    segment changes, etc.) — the same period's EPS can appear in multiple filings (its
    own quarter's 10-Q/10-K, plus as a prior-year comparative in next year's filing);
    the earliest-``filed`` value is kept.
-3. Foreign private issuers (20-F/40-F/6-K filers) are out of scope — they don't report
-   US-GAAP ``EarningsPerShareDiluted``/``EarningsPerShareBasic`` and won't be found in
-   SEC's ticker→CIK map with usable facts; ``fetch_pe_history_sec`` returns ``None`` for
-   them (same non-US routing to ``scripts/set_manual_pe_history.py`` as the FMP path).
+3. Foreign private issuers (20-F/40-F/6-K filers) are out of scope for the general
+   ``is_us_ticker()``-gated path — they don't report US-GAAP
+   ``EarningsPerShareDiluted``/``EarningsPerShareBasic`` and won't be found in SEC's
+   ticker→CIK map under their local-exchange ticker with usable facts; ``fetch_pe_history_sec``
+   returns ``None`` for them (same non-US routing to ``scripts/set_manual_pe_history.py``
+   as the FMP path) **unless** explicitly listed in ``FOREIGN_PRIVATE_ISSUER_ALIASES``
+   below (2026-07-29 addendum, see that dict's docstring) — a small, manually-verified
+   allowlist for large-cap Canadian names that are dual-listed on a US exchange and file
+   ``40-F``/``6-K`` under the MJDS regime with real ``ifrs-full``-taxonomy EPS data.
 
 Known caveat (shared with the yfinance path, not new here): EPS values are **not**
 retroactively split-adjusted the way yfinance's split-adjusted close prices are, since
@@ -49,7 +54,7 @@ import requests
 
 from src.config_paths import CONVICTION_STORE_DIR
 
-from .pe_history_core import compute_pe_history
+from .pe_history_core import compute_pe_history, compute_pe_history_with_legacy_annual
 from .pe_history_fmp import is_us_ticker
 
 logger = logging.getLogger(__name__)
@@ -72,6 +77,48 @@ EPS_CONCEPTS: tuple[str, ...] = ("EarningsPerShareDiluted", "EarningsPerShareBas
 _VALID_FORMS = {"10-K", "10-Q", "10-K/A", "10-Q/A"}
 _QUARTER_DAYS_RANGE = (80, 100)
 _ANNUAL_DAYS_RANGE = (340, 380)
+
+# Added 2026-07-29: a small, **manually verified** allowlist of large-cap Canadian
+# tickers that are dual-listed on a US exchange under a different (bare) ticker symbol
+# and file annual reports with the SEC via the MJDS regime (form 40-F, quarterly updates
+# via 6-K) rather than a 10-K/10-Q — and report EPS under the ``ifrs-full`` XBRL
+# taxonomy (``DilutedEarningsLossPerShare``/``BasicEarningsLossPerShare``), not
+# ``us-gaap``. Deliberately NOT a generic "any bare foreign ticker" rule: SEC's
+# ticker->CIK map has real collisions with unrelated shell companies for some Canadian
+# tickers (e.g. bare "NA" and "SJ" resolve to unrelated OTC issuers, not National Bank
+# of Canada / Stella-Jones) — every entry here was individually confirmed via a live
+# ``companyconcept`` fetch before being added, not inferred from a suffix pattern.
+#
+# ``currency`` is the XBRL unit (e.g. ``"CAD/shares"``) to require — this ticker's own
+# ``conviction_store`` price series must be denominated in that same currency, or the
+# resulting "P/E" would silently divide a price in one currency by EPS in another. This
+# is why only the ``.TO`` (CAD-priced, TSX) listing is aliased for TD/RY/BNS/CNQ even
+# though a bare US-listed (USD-priced) ticker also exists for some of them (e.g. "TD")
+# — their EPS is CAD-only, so only the CAD-priced ``.TO`` listing can use it correctly.
+# TRI.TO and BN.TO were investigated and explicitly excluded: both report EPS in
+# USD/shares only (confirmed via live ``companyconcept`` check), but trade in CAD on the
+# TSX — using their USD EPS against a CAD price needs an FX conversion step that does
+# not exist yet; left as a documented follow-up rather than risking a wrong ratio.
+#
+# ``annual_only=True`` (CNQ) means the concept has zero quarter-duration (~80-100 day)
+# facts at all — only annual (40-F) totals, no 6-K interim updates carry this concept for
+# that filer — so there is nothing to run through the normal Q4-plug reconstruction.
+# These are instead treated as already-TTM values (one per fiscal year end), reusing
+# ``compute_pe_history_with_legacy_annual``'s existing "annual points are already TTM"
+# handling (see ``_fetch_foreign_private_issuer`` below) rather than duplicating that
+# logic here.
+FOREIGN_PRIVATE_ISSUER_ALIASES: dict[str, dict[str, Any]] = {
+    "TD.TO": {"sec_ticker": "TD", "currency": "CAD"},
+    "RY.TO": {"sec_ticker": "RY", "currency": "CAD"},
+    "BNS.TO": {"sec_ticker": "BNS", "currency": "CAD"},
+    "CNQ.TO": {"sec_ticker": "CNQ", "currency": "CAD", "annual_only": True},
+}
+
+_FPI_VALID_FORMS = {"40-F", "40-F/A", "6-K"}
+_FPI_EPS_TAXONOMY_CONCEPTS: tuple[tuple[str, str], ...] = (
+    ("ifrs-full", "DilutedEarningsLossPerShare"),
+    ("ifrs-full", "BasicEarningsLossPerShare"),
+)
 
 
 def _user_agent() -> str:
@@ -228,14 +275,19 @@ def _plug_quarterly_series(facts: list[dict[str, Any]]) -> dict[str, float]:
     return result
 
 
-def build_quarterly_eps_series(facts: list[dict[str, Any]]) -> pd.Series:
-    """SEC XBRL facts (one company-concept's ``units['USD/shares']`` array) -> a
+def build_quarterly_eps_series(facts: list[dict[str, Any]], *, valid_forms: set[str] | None = None) -> pd.Series:
+    """SEC XBRL facts (one company-concept's ``units[currency + '/shares']`` array) -> a
     quarterly EPS ``pd.Series`` indexed by quarter-end date, ready for
-    ``compute_pe_history()``. Empty series when nothing usable is found."""
+    ``compute_pe_history()``. Empty series when nothing usable is found.
+
+    ``valid_forms`` defaults to the standard US 10-K/10-Q set; the foreign-private-issuer
+    path passes ``_FPI_VALID_FORMS`` (40-F/6-K) instead — see ``FOREIGN_PRIVATE_ISSUER_ALIASES``.
+    """
+    forms = valid_forms if valid_forms is not None else _VALID_FORMS
     filtered = [
         f
         for f in facts
-        if isinstance(f, dict) and str(f.get("form") or "").upper() in _VALID_FORMS and f.get("val") is not None
+        if isinstance(f, dict) and str(f.get("form") or "").upper() in forms and f.get("val") is not None
     ]
     deduped = _dedupe_first_filed(filtered)
     quarter_map = _plug_quarterly_series(deduped)
@@ -246,8 +298,47 @@ def build_quarterly_eps_series(facts: list[dict[str, Any]]) -> pd.Series:
     return pd.Series(values, index=pd.DatetimeIndex(dates)).sort_index()
 
 
-def _fetch_concept_facts(cik: str, concept: str) -> list[dict[str, Any]] | None:
-    url = f"{SEC_BASE_URL}/api/xbrl/companyconcept/CIK{cik}/us-gaap/{concept}.json"
+def _build_annual_only_eps_series(facts: list[dict[str, Any]], *, valid_forms: set[str]) -> pd.Series:
+    """For filers with **no** quarter-duration facts at all (e.g. CNQ's IFRS EPS concept
+    only ever carries annual 40-F totals, never a 6-K interim update) — build a plain
+    annual series directly, skipping the Q4-plug machinery entirely since there are no
+    discrete quarters to reconstruct around. Each value is already a full-year (i.e.
+    already-TTM-as-of-fiscal-year-end) figure, meant for
+    ``compute_pe_history_with_legacy_annual``'s ``legacy_annual_eps`` parameter.
+    """
+    filtered = [
+        f
+        for f in facts
+        if isinstance(f, dict) and str(f.get("form") or "").upper() in valid_forms and f.get("val") is not None
+    ]
+    deduped = _dedupe_first_filed(filtered)
+    annual_map: dict[str, float] = {}
+    for fact in deduped:
+        days = _duration_days(fact)
+        end = fact.get("end")
+        val = fact.get("val")
+        if days is None or end is None or val is None:
+            continue
+        if _ANNUAL_DAYS_RANGE[0] <= days <= _ANNUAL_DAYS_RANGE[1]:
+            try:
+                annual_map[end] = float(val)
+            except (TypeError, ValueError):
+                continue
+    if not annual_map:
+        return pd.Series(dtype=float)
+    dates = [pd.Timestamp(d) for d in annual_map]
+    values = list(annual_map.values())
+    return pd.Series(values, index=pd.DatetimeIndex(dates)).sort_index()
+
+
+def _fetch_concept_facts(
+    cik: str,
+    concept: str,
+    *,
+    taxonomy: str = "us-gaap",
+    currency: str = "USD",
+) -> list[dict[str, Any]] | None:
+    url = f"{SEC_BASE_URL}/api/xbrl/companyconcept/CIK{cik}/{taxonomy}/{concept}.json"
     resp = _get_with_backoff(url)
     if resp is None or resp.status_code != 200:
         return None
@@ -256,7 +347,7 @@ def _fetch_concept_facts(cik: str, concept: str) -> list[dict[str, Any]] | None:
     except Exception:
         return None
     units = data.get("units") if isinstance(data, dict) else None
-    facts = (units or {}).get("USD/shares")
+    facts = (units or {}).get(f"{currency}/shares")
     if not facts:
         return None
     return facts
@@ -312,10 +403,19 @@ def fetch_pe_history_sec(
     or SEC has no usable EPS facts for it — callers should fall back to FMP (or the
     existing yfinance bundle) in that case. A successful result is cached on disk for
     ``SEC_CACHE_MAX_AGE_DAYS`` since fundamentals only change quarterly.
+
+    Checks ``FOREIGN_PRIVATE_ISSUER_ALIASES`` first (2026-07-29 addendum) — a handful of
+    dual-listed Canadian tickers that would otherwise fail the ``is_us_ticker()`` gate
+    below (they carry a ``.TO`` suffix) but have real, currency-matched IFRS EPS data on
+    SEC via MJDS ``40-F``/``6-K`` filings.
     """
-    if not is_us_ticker(ticker):
-        return None
     if price_series is None or getattr(price_series, "empty", True):
+        return None
+
+    if ticker.upper() in FOREIGN_PRIVATE_ISSUER_ALIASES:
+        return _fetch_foreign_private_issuer(ticker, price_series, cache_dir=cache_dir, cik=cik)
+
+    if not is_us_ticker(ticker):
         return None
 
     resolved_cache_dir = cache_dir if cache_dir is not None else SEC_CACHE_DIR
@@ -344,5 +444,93 @@ def fetch_pe_history_sec(
         return None
 
     bundle["meta"]["source"] = "sec_edgar"
+
+    if bundle["meta"].get("insufficient_20y"):
+        extended = _try_legacy_extension(ticker, resolved_cik, price_series, quarterly_eps, bundle)
+        if extended is not None:
+            bundle = extended
+
     _save_bundle_cache(ticker, bundle, resolved_cache_dir)
     return bundle
+
+
+def _fetch_foreign_private_issuer(
+    ticker: str,
+    price_series: pd.Series,
+    *,
+    cache_dir: Path | None = None,
+    cik: str | None = None,
+) -> dict[str, Any] | None:
+    """Handles the ``FOREIGN_PRIVATE_ISSUER_ALIASES`` allowlist path — resolves the CIK
+    under the *aliased* SEC-registered ticker (e.g. ``"TD"`` for ``"TD.TO"``), fetches
+    ``ifrs-full`` EPS facts restricted to the currency this specific ticker's price
+    series is denominated in, and accepts ``40-F``/``6-K`` forms instead of 10-K/10-Q.
+    """
+    alias = FOREIGN_PRIVATE_ISSUER_ALIASES[ticker.upper()]
+    sec_ticker = alias["sec_ticker"]
+    currency = alias["currency"]
+    annual_only = bool(alias.get("annual_only"))
+
+    resolved_cache_dir = cache_dir if cache_dir is not None else SEC_CACHE_DIR
+    cached = _load_bundle_cache(ticker, resolved_cache_dir)
+    if cached is not None:
+        return cached
+
+    resolved_cik = cik if cik is not None else get_cik_for_ticker(sec_ticker, resolved_cache_dir)
+    if not resolved_cik:
+        return None
+
+    facts: list[dict[str, Any]] | None = None
+    for taxonomy, concept in _FPI_EPS_TAXONOMY_CONCEPTS:
+        facts = _fetch_concept_facts(resolved_cik, concept, taxonomy=taxonomy, currency=currency)
+        if facts:
+            break
+    if not facts:
+        return None
+
+    if annual_only:
+        annual_eps = _build_annual_only_eps_series(facts, valid_forms=_FPI_VALID_FORMS)
+        if annual_eps.empty:
+            return None
+        bundle = compute_pe_history_with_legacy_annual(price_series, pd.Series(dtype=float), annual_eps)
+    else:
+        quarterly_eps = build_quarterly_eps_series(facts, valid_forms=_FPI_VALID_FORMS)
+        if quarterly_eps.empty:
+            return None
+        bundle = compute_pe_history(price_series, quarterly_eps)
+
+    if not bundle.get("values"):
+        return None
+
+    bundle["meta"]["source"] = "sec_edgar_40f"
+    _save_bundle_cache(ticker, bundle, resolved_cache_dir)
+    return bundle
+
+
+def _try_legacy_extension(
+    ticker: str,
+    cik: str,
+    price_series: pd.Series,
+    quarterly_eps: pd.Series,
+    xbrl_bundle: dict[str, Any],
+) -> dict[str, Any] | None:
+    """Only reached when the XBRL-only bundle is still ``insufficient_20y`` — attempts
+    the pre-2009 EX-27 / Selected-Financial-Data extension (``pe_history_sec_legacy.py``).
+    Deliberately isolated + defensive (broad except) so a legacy-filing parsing issue for
+    one ticker can never break the (already-working) XBRL-only bundle for it — worst case
+    is falling back to ``xbrl_bundle`` unchanged, never a crash or corrupted PE series.
+    """
+    try:
+        from .pe_history_sec_legacy import fetch_legacy_annual_eps
+
+        legacy_eps = fetch_legacy_annual_eps(ticker, cik, quarterly_eps.index.min())
+        if legacy_eps.empty:
+            return None
+        extended = compute_pe_history_with_legacy_annual(price_series, quarterly_eps, legacy_eps)
+        if not extended.get("values") or extended["meta"]["point_count"] <= xbrl_bundle["meta"]["point_count"]:
+            return None
+        extended["meta"]["source"] = "sec_edgar+legacy"
+        return extended
+    except Exception:
+        logger.debug("pe_history_sec: legacy extension failed for %s", ticker, exc_info=True)
+        return None
