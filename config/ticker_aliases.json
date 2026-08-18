@@ -1,0 +1,1445 @@
+{
+  "as_of": "2026-08-18",
+  "generated_by": "scripts/update_ticker_aliases.py",
+  "symbol_count": 197,
+  "named_count": 178,
+  "symbols": {
+    "000660.KS": {
+      "aliases": [
+        "000660",
+        "sk hynix",
+        "sk hynix inc"
+      ],
+      "name": "SK hynix Inc."
+    },
+    "005930.KS": {
+      "aliases": [
+        "005930",
+        "samsung",
+        "samsung electronics",
+        "samsung electronics co ltd"
+      ],
+      "name": "Samsung Electronics Co., Ltd."
+    },
+    "0700.HK": {
+      "aliases": [
+        "0700"
+      ],
+      "name": "Tencent Holdings Limited"
+    },
+    "2807.HK": {
+      "aliases": [
+        "2807",
+        "global",
+        "global x etf series ofc global x china robotics and artificial intelligence",
+        "global x etf series ofc global x china robotics and artificial intelligence etf"
+      ],
+      "name": "Global X ETF Series OFC - Global X China Robotics and Artificial Intelligence ETF"
+    },
+    "3033.HK": {
+      "aliases": [
+        "3033",
+        "csop etf series csop hang seng tech index",
+        "csop etf series csop hang seng tech index etf"
+      ],
+      "name": "CSOP ETF Series - CSOP Hang Seng TECH Index ETF"
+    },
+    "3690.HK": {
+      "aliases": [
+        "3690",
+        "meituan"
+      ],
+      "name": "Meituan"
+    },
+    "AAPL": {
+      "aliases": [
+        "apple",
+        "apple inc"
+      ],
+      "name": "Apple Inc."
+    },
+    "ABNB": {
+      "aliases": [
+        "airbnb",
+        "airbnb inc"
+      ],
+      "name": "Airbnb, Inc."
+    },
+    "ACWX": {
+      "aliases": [
+        "ishares msci acwi ex u s",
+        "ishares msci acwi ex u s etf"
+      ],
+      "name": "iShares MSCI ACWI ex U.S. ETF"
+    },
+    "ADBE": {
+      "aliases": [
+        "adobe",
+        "adobe inc"
+      ],
+      "name": "ADOBE INC."
+    },
+    "AEM.TO": {
+      "aliases": [
+        "aem",
+        "agnico",
+        "agnico eagle mines",
+        "agnico eagle mines limited"
+      ],
+      "name": "Agnico Eagle Mines Limited"
+    },
+    "AIA.NZ": {
+      "aliases": [
+        "aia",
+        "auckland",
+        "auckland international airport",
+        "auckland international airport limited"
+      ],
+      "name": "Auckland International Airport Limited"
+    },
+    "AMD": {
+      "aliases": [
+        "advanced",
+        "advanced micro devices",
+        "advanced micro devices inc"
+      ],
+      "name": "ADVANCED MICRO DEVICES INC"
+    },
+    "AMZN": {
+      "aliases": [
+        "amazon",
+        "amazon com",
+        "amazon com inc"
+      ],
+      "name": "AMAZON COM INC"
+    },
+    "ARM": {
+      "aliases": [
+        "arm holdings plc uk"
+      ],
+      "name": "ARM HOLDINGS PLC /UK"
+    },
+    "ASHR": {
+      "aliases": [
+        "xtrackers",
+        "xtrackers harvest csi 300 china a shares",
+        "xtrackers harvest csi 300 china a shares etf"
+      ],
+      "name": "Xtrackers Harvest CSI 300 China A-Shares ETF"
+    },
+    "ASML": {
+      "aliases": [
+        "asml",
+        "asml holding nv"
+      ],
+      "name": "ASML HOLDING NV"
+    },
+    "ATD.TO": {
+      "aliases": [
+        "alimentation",
+        "alimentation couche tard",
+        "alimentation couche tard inc",
+        "atd"
+      ],
+      "name": "Alimentation Couche-Tard Inc."
+    },
+    "ATM.NZ": {
+      "aliases": [
+        "atm",
+        "the a2 milk",
+        "the a2 milk company limited"
+      ],
+      "name": "The a2 Milk Company Limited"
+    },
+    "ATZ.TO": {
+      "aliases": [
+        "aritzia",
+        "aritzia inc",
+        "atz"
+      ],
+      "name": "Aritzia Inc."
+    },
+    "AVGO": {
+      "aliases": [
+        "broadcom",
+        "broadcom inc"
+      ],
+      "name": "Broadcom Inc."
+    },
+    "BABA": {
+      "aliases": [
+        "alibaba",
+        "alibaba group holding ltd"
+      ],
+      "name": "Alibaba Group Holding Ltd"
+    },
+    "BAC": {
+      "aliases": [
+        "bank of america corp de"
+      ],
+      "name": "BANK OF AMERICA CORP /DE/"
+    },
+    "BBD-B.TO": {
+      "aliases": [
+        "bbd-b",
+        "bombardier",
+        "bombardier inc"
+      ],
+      "name": "Bombardier Inc."
+    },
+    "BBTC.NS": {
+      "aliases": [
+        "bbtc",
+        "the bombay burmah trading",
+        "the bombay burmah trading corporation limited"
+      ],
+      "name": "The Bombay Burmah Trading Corporation Limited"
+    },
+    "BDGI.TO": {
+      "aliases": [
+        "badger",
+        "badger infrastructure solutions",
+        "badger infrastructure solutions ltd",
+        "bdgi"
+      ],
+      "name": "Badger Infrastructure Solutions Ltd."
+    },
+    "BDL.NS": {
+      "aliases": [
+        "bdl",
+        "bharat dynamics",
+        "bharat dynamics limited"
+      ],
+      "name": "Bharat Dynamics Limited"
+    },
+    "BEL.NS": {
+      "aliases": [
+        "bel",
+        "bharat electronics",
+        "bharat electronics limited"
+      ],
+      "name": "Bharat Electronics Limited"
+    },
+    "BIPC.TO": {
+      "aliases": [
+        "bipc",
+        "brookfield infrastructure",
+        "brookfield infrastructure corporation"
+      ],
+      "name": "Brookfield Infrastructure Corporation"
+    },
+    "BN.TO": {
+      "aliases": [
+        "bn",
+        "brookfield corporation"
+      ],
+      "name": "Brookfield Corporation"
+    },
+    "BNS.TO": {
+      "aliases": [
+        "bns",
+        "the bank of nova scotia"
+      ],
+      "name": "The Bank of Nova Scotia"
+    },
+    "BPCL.NS": {
+      "aliases": [
+        "bharat petroleum",
+        "bharat petroleum corporation limited",
+        "bpcl"
+      ],
+      "name": "Bharat Petroleum Corporation Limited"
+    },
+    "BRK-B": {
+      "aliases": [
+        "berkshire",
+        "berkshire hathaway",
+        "berkshire hathaway inc",
+        "brk b",
+        "brkb"
+      ],
+      "name": "BERKSHIRE HATHAWAY INC"
+    },
+    "BTC-USD": {
+      "aliases": [
+        "bitcoin",
+        "btc"
+      ],
+      "kind": "non_company"
+    },
+    "BTI": {
+      "aliases": [
+        "british",
+        "british american tobacco p l c"
+      ],
+      "name": "British American Tobacco p.l.c."
+    },
+    "BYD.TO": {
+      "aliases": [
+        "boyd group services",
+        "boyd group services inc"
+      ],
+      "name": "Boyd Group Services Inc."
+    },
+    "BYDDY": {
+      "aliases": [
+        "byd company limited"
+      ],
+      "name": "BYD Company Limited"
+    },
+    "C6L.SI": {
+      "aliases": [
+        "c6l",
+        "singapore",
+        "singapore airlines",
+        "singapore airlines limited"
+      ],
+      "name": "Singapore Airlines Limited"
+    },
+    "CAD=X": {
+      "aliases": [],
+      "kind": "non_company"
+    },
+    "CEN.NZ": {
+      "aliases": [
+        "cen",
+        "cen nz",
+        "contact",
+        "contact energy",
+        "contact energy limited"
+      ],
+      "name": "Contact Energy Limited"
+    },
+    "CNQ.TO": {
+      "aliases": [
+        "canadian natural resources",
+        "canadian natural resources limited",
+        "cnq"
+      ],
+      "name": "Canadian Natural Resources Limited"
+    },
+    "CNR.TO": {
+      "aliases": [
+        "canadian national railway",
+        "canadian national railway company",
+        "cnr"
+      ],
+      "name": "Canadian National Railway Company"
+    },
+    "CNU.NZ": {
+      "aliases": [
+        "chorus",
+        "chorus limited",
+        "cnu"
+      ],
+      "name": "Chorus Limited"
+    },
+    "COIN": {
+      "aliases": [
+        "coinbase",
+        "coinbase global",
+        "coinbase global inc"
+      ],
+      "name": "Coinbase Global, Inc."
+    },
+    "CRM": {
+      "aliases": [
+        "salesforce",
+        "salesforce inc"
+      ],
+      "name": "Salesforce, Inc."
+    },
+    "CSCO": {
+      "aliases": [
+        "cisco",
+        "cisco systems",
+        "cisco systems inc"
+      ],
+      "name": "CISCO SYSTEMS, INC."
+    },
+    "CSU.TO": {
+      "aliases": [
+        "constellation",
+        "constellation software",
+        "constellation software inc",
+        "csu"
+      ],
+      "name": "Constellation Software Inc."
+    },
+    "CVS": {
+      "aliases": [
+        "cvs health",
+        "cvs health corp"
+      ],
+      "name": "CVS HEALTH Corp"
+    },
+    "DBC": {
+      "aliases": [
+        "invesco db commodity index tracking",
+        "invesco db commodity index tracking fund"
+      ],
+      "name": "Invesco DB Commodity Index Tracking Fund"
+    },
+    "DIA": {
+      "aliases": [
+        "spdr dow jones industrial average",
+        "spdr dow jones industrial average etf trust"
+      ],
+      "name": "SPDR DOW JONES INDUSTRIAL AVERAGE ETF TRUST"
+    },
+    "DIS": {
+      "aliases": [
+        "walt disney",
+        "walt disney co"
+      ],
+      "name": "Walt Disney Co"
+    },
+    "DOL.TO": {
+      "aliases": [
+        "dol",
+        "dollarama",
+        "dollarama inc"
+      ],
+      "name": "Dollarama Inc."
+    },
+    "EBO.NZ": {
+      "aliases": [
+        "ebo",
+        "ebos",
+        "ebos group limited"
+      ],
+      "name": "EBOS Group Limited"
+    },
+    "EEM": {
+      "aliases": [
+        "ishares msci emerging markets",
+        "ishares msci emerging markets etf"
+      ],
+      "name": "iShares MSCI Emerging Markets ETF"
+    },
+    "EFA": {
+      "aliases": [
+        "ishares msci eafe",
+        "ishares msci eafe etf"
+      ],
+      "name": "iShares MSCI EAFE ETF"
+    },
+    "EFN.TO": {
+      "aliases": [
+        "efn",
+        "element",
+        "element fleet management",
+        "element fleet management corp"
+      ],
+      "name": "Element Fleet Management Corp."
+    },
+    "EIF.TO": {
+      "aliases": [
+        "eif",
+        "exchange",
+        "exchange income",
+        "exchange income corporation"
+      ],
+      "name": "Exchange Income Corporation"
+    },
+    "EMAMILTD.NS": {
+      "aliases": [
+        "emami",
+        "emami limited",
+        "emamiltd"
+      ],
+      "name": "Emami Limited"
+    },
+    "ENZL": {
+      "aliases": [
+        "ishares msci new zealand",
+        "ishares msci new zealand etf"
+      ],
+      "name": "iShares MSCI New Zealand ETF"
+    },
+    "ETH-USD": {
+      "aliases": [
+        "eth",
+        "ethereum"
+      ],
+      "kind": "non_company"
+    },
+    "EURUSD=X": {
+      "aliases": [],
+      "kind": "non_company"
+    },
+    "EWJ": {
+      "aliases": [
+        "ishares msci japan",
+        "ishares msci japan etf"
+      ],
+      "name": "iShares MSCI Japan ETF"
+    },
+    "FBU.NZ": {
+      "aliases": [
+        "fbu",
+        "fletcher",
+        "fletcher building",
+        "fletcher building limited"
+      ],
+      "name": "Fletcher Building Limited"
+    },
+    "FPH.NZ": {
+      "aliases": [
+        "fisher",
+        "fisher paykel healthcare",
+        "fisher paykel healthcare corporation limited",
+        "fph"
+      ],
+      "name": "Fisher & Paykel Healthcare Corporation Limited"
+    },
+    "FRW.NZ": {
+      "aliases": [
+        "freightways",
+        "freightways group limited",
+        "frw"
+      ],
+      "name": "Freightways Group Limited"
+    },
+    "FSF.NZ": {
+      "aliases": [
+        "fonterra",
+        "fonterra shareholders",
+        "fonterra shareholders fund",
+        "fsf"
+      ],
+      "name": "Fonterra Shareholders Fund"
+    },
+    "FUTU": {
+      "aliases": [
+        "futu",
+        "futu holdings ltd"
+      ],
+      "name": "Futu Holdings Ltd"
+    },
+    "FXI": {
+      "aliases": [
+        "ishares china large cap",
+        "ishares china large cap etf"
+      ],
+      "name": "iShares China Large-Cap ETF"
+    },
+    "GBPSGD=X": {
+      "aliases": [],
+      "kind": "non_company"
+    },
+    "GBPUSD=X": {
+      "aliases": [],
+      "kind": "non_company"
+    },
+    "GDX": {
+      "aliases": [
+        "vaneck gold miners",
+        "vaneck gold miners etf"
+      ],
+      "name": "VanEck Gold Miners ETF"
+    },
+    "GILD": {
+      "aliases": [
+        "gilead",
+        "gilead sciences",
+        "gilead sciences inc"
+      ],
+      "name": "GILEAD SCIENCES, INC."
+    },
+    "GLD": {
+      "aliases": [
+        "spdr gold",
+        "spdr gold trust"
+      ],
+      "name": "SPDR GOLD TRUST"
+    },
+    "GLXY": {
+      "aliases": [
+        "galaxy",
+        "galaxy digital",
+        "galaxy digital inc"
+      ],
+      "name": "Galaxy Digital Inc."
+    },
+    "GNE.NZ": {
+      "aliases": [
+        "genesis",
+        "genesis energy",
+        "genesis energy limited",
+        "gne"
+      ],
+      "name": "Genesis Energy Limited"
+    },
+    "GNRC": {
+      "aliases": [
+        "generac",
+        "generac holdings inc"
+      ],
+      "name": "GENERAC HOLDINGS INC."
+    },
+    "GOOG": {
+      "aliases": [
+        "alphabet",
+        "alphabet inc",
+        "googl",
+        "google"
+      ],
+      "name": "Alphabet Inc."
+    },
+    "GRANULES.NS": {
+      "aliases": [
+        "granules",
+        "granules india",
+        "granules india limited"
+      ],
+      "name": "Granules India Limited"
+    },
+    "GS": {
+      "aliases": [
+        "goldman",
+        "goldman sachs",
+        "goldman sachs group inc"
+      ],
+      "name": "GOLDMAN SACHS GROUP INC"
+    },
+    "HDB": {
+      "aliases": [
+        "hdfc bank ltd"
+      ],
+      "name": "HDFC BANK LTD"
+    },
+    "HDFCBANK.NS": {
+      "aliases": [
+        "hdfc bank limited",
+        "hdfcbank"
+      ],
+      "name": "HDFC Bank Limited"
+    },
+    "HOOD": {
+      "aliases": [
+        "robinhood",
+        "robinhood markets",
+        "robinhood markets inc"
+      ],
+      "name": "Robinhood Markets, Inc."
+    },
+    "HYG": {
+      "aliases": [
+        "ishares iboxx high yield corporate bond",
+        "ishares iboxx high yield corporate bond etf"
+      ],
+      "name": "iShares iBoxx $ High Yield Corporate Bond ETF"
+    },
+    "IBIT": {
+      "aliases": [
+        "ishares bitcoin",
+        "ishares bitcoin trust etf"
+      ],
+      "name": "iShares Bitcoin Trust ETF"
+    },
+    "IBKR": {
+      "aliases": [
+        "interactive",
+        "interactive brokers",
+        "interactive brokers group inc"
+      ],
+      "name": "Interactive Brokers Group, Inc."
+    },
+    "IEI": {
+      "aliases": [
+        "ishares 3 7 year treasury bond",
+        "ishares 3 7 year treasury bond etf"
+      ],
+      "name": "iShares 3-7 Year Treasury Bond ETF"
+    },
+    "IFT.NZ": {
+      "aliases": [
+        "ift",
+        "infratil",
+        "infratil limited"
+      ],
+      "name": "Infratil Limited"
+    },
+    "IHI": {
+      "aliases": [
+        "ishares u s medical devices",
+        "ishares u s medical devices etf"
+      ],
+      "name": "iShares U.S. Medical Devices ETF"
+    },
+    "IMO.TO": {
+      "aliases": [
+        "imo",
+        "imperial",
+        "imperial oil",
+        "imperial oil limited"
+      ],
+      "name": "Imperial Oil Limited"
+    },
+    "INDA": {
+      "aliases": [
+        "ishares msci india",
+        "ishares msci india etf"
+      ],
+      "name": "iShares MSCI India ETF"
+    },
+    "INDY": {
+      "aliases": [
+        "ishares india 50",
+        "ishares india 50 etf"
+      ],
+      "name": "iShares India 50 ETF"
+    },
+    "INFY": {
+      "aliases": [
+        "infosys",
+        "infosys ltd"
+      ],
+      "name": "Infosys Ltd"
+    },
+    "IREN": {
+      "aliases": [
+        "iren",
+        "iren ltd"
+      ],
+      "name": "IREN Ltd"
+    },
+    "IWM": {
+      "aliases": [
+        "ishares russell 2000",
+        "ishares russell 2000 etf"
+      ],
+      "name": "iShares Russell 2000 ETF"
+    },
+    "JD": {
+      "aliases": [
+        "jd com",
+        "jd com inc"
+      ],
+      "name": "JD.com, Inc."
+    },
+    "JETS": {
+      "aliases": [
+        "u s global jets",
+        "u s global jets etf"
+      ],
+      "name": "U.S. Global Jets ETF"
+    },
+    "JNK": {
+      "aliases": [
+        "state street spdr bloomberg high yield bond",
+        "state street spdr bloomberg high yield bond etf"
+      ],
+      "name": "State Street SPDR Bloomberg High Yield Bond ETF"
+    },
+    "JPM": {
+      "aliases": [
+        "jpmorgan",
+        "jpmorgan chase",
+        "jpmorgan chase co"
+      ],
+      "name": "JPMORGAN CHASE & CO"
+    },
+    "JPY=X": {
+      "aliases": [],
+      "kind": "non_company"
+    },
+    "KWEB": {
+      "aliases": [
+        "kraneshares",
+        "kraneshares csi china internet",
+        "kraneshares csi china internet etf"
+      ],
+      "name": "KraneShares CSI China Internet ETF"
+    },
+    "KXS.TO": {
+      "aliases": [
+        "kinaxis",
+        "kinaxis inc",
+        "kxs"
+      ],
+      "name": "Kinaxis Inc."
+    },
+    "LULU": {
+      "aliases": [
+        "lululemon",
+        "lululemon athletica",
+        "lululemon athletica inc"
+      ],
+      "name": "lululemon athletica inc."
+    },
+    "LYFT": {
+      "aliases": [
+        "lyft",
+        "lyft inc"
+      ],
+      "name": "Lyft, Inc."
+    },
+    "MA": {
+      "aliases": [
+        "mastercard",
+        "mastercard inc"
+      ],
+      "name": "Mastercard Inc"
+    },
+    "MAR": {
+      "aliases": [
+        "marriott",
+        "marriott international inc md"
+      ],
+      "name": "MARRIOTT INTERNATIONAL INC /MD/"
+    },
+    "MAZDOCK.NS": {
+      "aliases": [
+        "mazagon",
+        "mazagon dock shipbuilders",
+        "mazagon dock shipbuilders limited",
+        "mazdock"
+      ],
+      "name": "Mazagon Dock Shipbuilders Limited"
+    },
+    "MCD": {
+      "aliases": [
+        "mcdonalds",
+        "mcdonalds corp"
+      ],
+      "name": "MCDONALDS CORP"
+    },
+    "MCHI": {
+      "aliases": [
+        "ishares msci china",
+        "ishares msci china etf"
+      ],
+      "name": "iShares MSCI China ETF"
+    },
+    "MCY.NZ": {
+      "aliases": [
+        "mcy",
+        "mercury",
+        "mercury nz",
+        "mercury nz limited"
+      ],
+      "name": "Mercury NZ Limited"
+    },
+    "MEL.NZ": {
+      "aliases": [
+        "mel",
+        "meridian",
+        "meridian energy",
+        "meridian energy limited"
+      ],
+      "name": "Meridian Energy Limited"
+    },
+    "META": {
+      "aliases": [
+        "facebook",
+        "meta platforms",
+        "meta platforms inc"
+      ],
+      "name": "Meta Platforms, Inc."
+    },
+    "MFT.NZ": {
+      "aliases": [
+        "mainfreight",
+        "mainfreight limited",
+        "mft"
+      ],
+      "name": "Mainfreight Limited"
+    },
+    "MSE.PA": {
+      "aliases": [
+        "amundi",
+        "amundi euro stoxx 50 ii ucits etf acc",
+        "mse"
+      ],
+      "name": "Amundi EURO STOXX 50 II UCITS ETF Acc"
+    },
+    "MSFT": {
+      "aliases": [
+        "microsoft",
+        "microsoft corp"
+      ],
+      "name": "MICROSOFT CORP"
+    },
+    "MTY.TO": {
+      "aliases": [
+        "mty",
+        "mty food",
+        "mty food group inc"
+      ],
+      "name": "MTY Food Group Inc."
+    },
+    "MU": {
+      "aliases": [
+        "micron",
+        "micron technology",
+        "micron technology inc"
+      ],
+      "name": "MICRON TECHNOLOGY INC"
+    },
+    "MX.TO": {
+      "aliases": [
+        "methanex",
+        "methanex corporation",
+        "mx"
+      ],
+      "name": "Methanex Corporation"
+    },
+    "NA.TO": {
+      "aliases": [
+        "na",
+        "national",
+        "national bank of canada"
+      ],
+      "name": "National Bank of Canada"
+    },
+    "NAUKRI.NS": {
+      "aliases": [
+        "info edge india",
+        "info edge india limited",
+        "naukri"
+      ],
+      "name": "Info Edge (India) Limited"
+    },
+    "NBIS": {
+      "aliases": [
+        "nebius",
+        "nebius group n v"
+      ],
+      "name": "Nebius Group N.V."
+    },
+    "NFLX": {
+      "aliases": [
+        "netflix",
+        "netflix inc"
+      ],
+      "name": "NETFLIX INC"
+    },
+    "NIFTY_MIDCAP_100.NS": {
+      "aliases": [
+        "nifty",
+        "nifty midcap 100",
+        "nifty_midcap_100"
+      ],
+      "name": "NIFTY MIDCAP 100"
+    },
+    "NIO": {
+      "aliases": [
+        "nio",
+        "nio inc"
+      ],
+      "name": "NIO Inc."
+    },
+    "NKE": {
+      "aliases": [
+        "nike",
+        "nike inc"
+      ],
+      "name": "NIKE, Inc."
+    },
+    "NOVA.F": {
+      "aliases": [
+        "nova"
+      ],
+      "name": "Novo Nordisk A/S"
+    },
+    "NU": {
+      "aliases": [
+        "nu",
+        "nu holdings ltd"
+      ],
+      "name": "Nu Holdings Ltd."
+    },
+    "NVDA": {
+      "aliases": [
+        "nvidia",
+        "nvidia corp"
+      ],
+      "name": "NVIDIA CORP"
+    },
+    "NVO": {
+      "aliases": [],
+      "name": "NOVO NORDISK A S"
+    },
+    "NZDCAD=X": {
+      "aliases": [],
+      "kind": "non_company"
+    },
+    "NZDUSD=X": {
+      "aliases": [],
+      "kind": "non_company"
+    },
+    "ORCL": {
+      "aliases": [
+        "oracle",
+        "oracle corp"
+      ],
+      "name": "ORACLE CORP"
+    },
+    "PERSISTENT.NS": {
+      "aliases": [
+        "persistent",
+        "persistent systems",
+        "persistent systems limited"
+      ],
+      "name": "Persistent Systems Limited"
+    },
+    "PFE": {
+      "aliases": [
+        "pfizer",
+        "pfizer inc"
+      ],
+      "name": "PFIZER INC"
+    },
+    "PG": {
+      "aliases": [
+        "procter",
+        "procter gamble",
+        "procter gamble co"
+      ],
+      "name": "PROCTER & GAMBLE Co"
+    },
+    "PLTR": {
+      "aliases": [
+        "palantir",
+        "palantir technologies",
+        "palantir technologies inc"
+      ],
+      "name": "Palantir Technologies Inc."
+    },
+    "PPH": {
+      "aliases": [
+        "vaneck pharmaceutical",
+        "vaneck pharmaceutical etf"
+      ],
+      "name": "VanEck Pharmaceutical ETF"
+    },
+    "PPL.TO": {
+      "aliases": [
+        "pembina",
+        "pembina pipeline",
+        "pembina pipeline corporation",
+        "ppl"
+      ],
+      "name": "Pembina Pipeline Corporation"
+    },
+    "PYPL": {
+      "aliases": [
+        "paypal",
+        "paypal holdings inc"
+      ],
+      "name": "PayPal Holdings, Inc."
+    },
+    "QQQ": {
+      "aliases": [
+        "invesco qqq trust series 1"
+      ],
+      "name": "INVESCO QQQ TRUST, SERIES 1"
+    },
+    "RELIANCE.NS": {
+      "aliases": [
+        "reliance",
+        "reliance industries",
+        "reliance industries limited"
+      ],
+      "name": "Reliance Industries Limited"
+    },
+    "RHHBY": {
+      "aliases": [
+        "roche",
+        "roche holding ag"
+      ],
+      "name": "Roche Holding AG"
+    },
+    "RINF": {
+      "aliases": [
+        "proshares",
+        "proshares inflation expectations",
+        "proshares inflation expectations etf"
+      ],
+      "name": "ProShares Inflation Expectations ETF"
+    },
+    "RY.TO": {
+      "aliases": [
+        "royal",
+        "royal bank of canada",
+        "ry"
+      ],
+      "name": "Royal Bank of Canada"
+    },
+    "SBUX": {
+      "aliases": [
+        "starbucks",
+        "starbucks corp"
+      ],
+      "name": "STARBUCKS CORP"
+    },
+    "SFM": {
+      "aliases": [
+        "sprouts",
+        "sprouts farmers market",
+        "sprouts farmers market inc"
+      ],
+      "name": "Sprouts Farmers Market, Inc."
+    },
+    "SFTBY": {
+      "aliases": [
+        "softbank",
+        "softbank group corp"
+      ],
+      "name": "SoftBank Group Corp."
+    },
+    "SJ.TO": {
+      "aliases": [
+        "sj",
+        "stella",
+        "stella jones",
+        "stella jones inc"
+      ],
+      "name": "Stella-Jones Inc."
+    },
+    "SLV": {
+      "aliases": [
+        "ishares silver",
+        "ishares silver trust"
+      ],
+      "name": "iShares Silver Trust"
+    },
+    "SONY": {
+      "aliases": [
+        "sony",
+        "sony group corp"
+      ],
+      "name": "Sony Group Corp"
+    },
+    "SOXX": {
+      "aliases": [
+        "ishares semiconductor",
+        "ishares semiconductor etf"
+      ],
+      "name": "iShares Semiconductor ETF"
+    },
+    "SPK.NZ": {
+      "aliases": [
+        "spark",
+        "spark new zealand",
+        "spark new zealand limited",
+        "spk"
+      ],
+      "name": "Spark New Zealand Limited"
+    },
+    "SPOT": {
+      "aliases": [
+        "spotify",
+        "spotify technology s a"
+      ],
+      "name": "Spotify Technology S.A."
+    },
+    "SPY": {
+      "aliases": [
+        "spdr s p 500",
+        "spdr s p 500 etf trust"
+      ],
+      "name": "SPDR S&P 500 ETF TRUST"
+    },
+    "STI": {
+      "aliases": [
+        "solidion",
+        "solidion technology",
+        "solidion technology inc"
+      ],
+      "name": "Solidion Technology Inc."
+    },
+    "SUM.NZ": {
+      "aliases": [
+        "sum",
+        "summerset",
+        "summerset group holdings limited"
+      ],
+      "name": "Summerset Group Holdings Limited"
+    },
+    "SUNPHARMA.NS": {
+      "aliases": [
+        "sun pharmaceutical industries",
+        "sun pharmaceutical industries limited",
+        "sunpharma"
+      ],
+      "name": "Sun Pharmaceutical Industries Limited"
+    },
+    "TCEHY": {
+      "aliases": [],
+      "name": "Tencent Holdings Limited"
+    },
+    "TCS.NS": {
+      "aliases": [
+        "tata consultancy services",
+        "tata consultancy services limited",
+        "tcs"
+      ],
+      "name": "Tata Consultancy Services Limited"
+    },
+    "TD": {
+      "aliases": [
+        "toronto",
+        "toronto dominion bank"
+      ],
+      "name": "TORONTO DOMINION BANK"
+    },
+    "TD.TO": {
+      "aliases": [
+        "td",
+        "the toronto dominion bank"
+      ],
+      "name": "The Toronto-Dominion Bank"
+    },
+    "TFII.TO": {
+      "aliases": [
+        "tfi international",
+        "tfi international inc",
+        "tfii"
+      ],
+      "name": "TFI International Inc."
+    },
+    "TLT": {
+      "aliases": [
+        "ishares 20 year treasury bond",
+        "ishares 20 year treasury bond etf"
+      ],
+      "name": "iShares 20+ Year Treasury Bond ETF"
+    },
+    "TRI.TO": {
+      "aliases": [
+        "thomson",
+        "thomson reuters",
+        "thomson reuters corporation",
+        "tri"
+      ],
+      "name": "Thomson Reuters Corporation"
+    },
+    "TSLA": {
+      "aliases": [
+        "tesla",
+        "tesla inc"
+      ],
+      "name": "Tesla, Inc."
+    },
+    "TSM": {
+      "aliases": [
+        "taiwan",
+        "taiwan semiconductor manufacturing",
+        "taiwan semiconductor manufacturing co ltd"
+      ],
+      "name": "TAIWAN SEMICONDUCTOR MANUFACTURING CO LTD"
+    },
+    "TWR.NZ": {
+      "aliases": [
+        "tower",
+        "tower limited",
+        "twr"
+      ],
+      "name": "Tower Limited"
+    },
+    "UBER": {
+      "aliases": [
+        "uber technologies",
+        "uber technologies inc"
+      ],
+      "name": "Uber Technologies, Inc"
+    },
+    "UPS": {
+      "aliases": [
+        "united parcel service",
+        "united parcel service inc"
+      ],
+      "name": "UNITED PARCEL SERVICE INC"
+    },
+    "URNM": {
+      "aliases": [
+        "sprott",
+        "sprott uranium miners",
+        "sprott uranium miners etf"
+      ],
+      "name": "Sprott Uranium Miners ETF"
+    },
+    "USCI": {
+      "aliases": [
+        "united states commodity index funds",
+        "united states commodity index funds trust"
+      ],
+      "name": "United States Commodity Index Funds Trust"
+    },
+    "USDCHF=X": {
+      "aliases": [],
+      "kind": "non_company"
+    },
+    "USO": {
+      "aliases": [
+        "united states oil fund lp"
+      ],
+      "name": "United States Oil Fund, LP"
+    },
+    "VEEV": {
+      "aliases": [
+        "veeva",
+        "veeva systems",
+        "veeva systems inc"
+      ],
+      "name": "VEEVA SYSTEMS INC"
+    },
+    "VGT": {
+      "aliases": [
+        "vanguard",
+        "vanguard information technology index fund etf shares"
+      ],
+      "name": "Vanguard Information Technology Index Fund ETF Shares"
+    },
+    "WCN.TO": {
+      "aliases": [
+        "waste",
+        "waste connections",
+        "waste connections inc",
+        "wcn"
+      ],
+      "name": "Waste Connections, Inc."
+    },
+    "WFG.TO": {
+      "aliases": [
+        "west fraser timber",
+        "west fraser timber co ltd",
+        "wfg"
+      ],
+      "name": "West Fraser Timber Co. Ltd."
+    },
+    "WIPRO.NS": {
+      "aliases": [
+        "wipro",
+        "wipro limited"
+      ],
+      "name": "Wipro Limited"
+    },
+    "WMT": {
+      "aliases": [
+        "walmart",
+        "walmart inc"
+      ],
+      "name": "Walmart Inc."
+    },
+    "WPM": {
+      "aliases": [],
+      "name": "Wheaton Precious Metals Corp."
+    },
+    "WPM.TO": {
+      "aliases": [
+        "wpm"
+      ],
+      "name": "Wheaton Precious Metals Corp."
+    },
+    "XIU.TO": {
+      "aliases": [
+        "ishares s p tsx 60 index",
+        "ishares s p tsx 60 index etf",
+        "xiu"
+      ],
+      "name": "iShares S&P/TSX 60 Index ETF"
+    },
+    "XLE": {
+      "aliases": [
+        "state street energy select sector spdr",
+        "state street energy select sector spdr etf"
+      ],
+      "name": "State Street Energy Select Sector SPDR ETF"
+    },
+    "XLF": {
+      "aliases": [
+        "state street financial select sector spdr",
+        "state street financial select sector spdr etf"
+      ],
+      "name": "State Street Financial Select Sector SPDR ETF"
+    },
+    "XLU": {
+      "aliases": [
+        "state street utilities select sector spdr",
+        "state street utilities select sector spdr etf"
+      ],
+      "name": "State Street Utilities Select Sector SPDR ETF"
+    },
+    "XLV": {
+      "aliases": [
+        "state street health care select sector spdr",
+        "state street health care select sector spdr etf"
+      ],
+      "name": "State Street Health Care Select Sector SPDR ETF"
+    },
+    "XLY": {
+      "aliases": [
+        "state street consumer discretionary select sector spdr",
+        "state street consumer discretionary select sector spdr etf"
+      ],
+      "name": "State Street Consumer Discretionary Select Sector SPDR ETF"
+    },
+    "ZM": {
+      "aliases": [
+        "zoom communications",
+        "zoom communications inc"
+      ],
+      "name": "Zoom Communications, Inc."
+    },
+    "ZTS": {
+      "aliases": [
+        "zoetis",
+        "zoetis inc"
+      ],
+      "name": "Zoetis Inc."
+    },
+    "^BVSP": {
+      "aliases": [],
+      "kind": "non_company"
+    },
+    "^DJI": {
+      "aliases": [
+        "dow",
+        "dow jones"
+      ],
+      "kind": "non_company"
+    },
+    "^GSPC": {
+      "aliases": [
+        "s p",
+        "s p 500",
+        "sp500",
+        "spx"
+      ],
+      "kind": "non_company"
+    },
+    "^NDX": {
+      "aliases": [
+        "nasdaq 100",
+        "ndx"
+      ],
+      "kind": "non_company"
+    },
+    "^NSEI": {
+      "aliases": [],
+      "kind": "non_company"
+    },
+    "^NZ50": {
+      "aliases": [],
+      "kind": "non_company"
+    },
+    "^STI": {
+      "aliases": [],
+      "kind": "non_company"
+    },
+    "^TNX": {
+      "aliases": [],
+      "kind": "non_company"
+    },
+    "^VIX": {
+      "aliases": [
+        "vix"
+      ],
+      "kind": "non_company"
+    }
+  }
+}

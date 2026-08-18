@@ -11,7 +11,7 @@ from pathlib import Path
 
 from .column_metadata_extractor import ColumnMetadataExtractor
 from .config import OPENAI_API_KEY, OPENAI_MODEL, MAX_TOKENS, TEMPERATURE
-from .ticker_resolver import resolve_tickers
+from .ticker_resolver import resolve_tickers, verify_extracted_symbols
 from prompts.engine import format_unified_extractor_prompt, load_chatbot_system_prompt
 
 logging.basicConfig(level=logging.INFO)
@@ -205,7 +205,9 @@ class UnifiedExtractor:
                 }
             
             # Validate and normalize the result
-            result = self._validate_and_normalize(result)
+            result = self._validate_and_normalize(
+                result, user_query=user_query, conversation_history=conversation_history
+            )
             result["success"] = True
             
             logger.info(f"✅ Unified extraction complete:")
@@ -242,7 +244,12 @@ class UnifiedExtractor:
             logger.error(f"Response text: {response_text}")
             return None
     
-    def _validate_and_normalize(self, result: Dict) -> Dict:
+    def _validate_and_normalize(
+        self,
+        result: Dict,
+        user_query: str = "",
+        conversation_history: Optional[List[Dict]] = None,
+    ) -> Dict:
         """Validate and normalize the extraction result."""
         # Ensure signal_types is valid
         signal_types = result.get("signal_types", [])
@@ -276,8 +283,30 @@ class UnifiedExtractor:
                 # ("MFT" → "MFT.NZ"). Filtering downstream is an exact match, so
                 # an unresolved bare symbol silently yields zero rows.
                 resolved, unresolved = resolve_tickers(tickers, self.available_tickers)
-                if unresolved:
-                    result["unresolved_tickers"] = unresolved
+
+                # Drop symbols the question does not justify. The model will
+                # "correct" an unknown ticker to a real one — "tlk" came back as
+                # TLT, a different asset that passes every membership check — so
+                # each surviving symbol must be traceable to the wording, either
+                # literally or through the committed alias map. History is part
+                # of the haystack because follow-ups ("the mtm for those") name
+                # their ticker in an earlier turn.
+                haystack = " ".join(
+                    [str(user_query or "")]
+                    + [
+                        str(msg.get("content", ""))
+                        for msg in (conversation_history or [])
+                        if isinstance(msg, dict)
+                    ]
+                )
+                resolved, guessed = verify_extracted_symbols(
+                    haystack, resolved, self.available_tickers
+                )
+                if guessed:
+                    logger.warning(f"Discarded unsupported extracted symbols: {guessed}")
+
+                if unresolved or guessed:
+                    result["unresolved_tickers"] = unresolved + guessed
                 # Keep unresolved symbols in the filter list so the caller can
                 # report "not in the universe" rather than answering as if the
                 # user had asked about nothing in particular.

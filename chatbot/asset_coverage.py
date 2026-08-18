@@ -64,22 +64,70 @@ def inferred_assets(user_message: str, assets: Optional[Sequence[str]]) -> List[
     return [a for a in assets if a and not _mentions(user_message, a)]
 
 
-def build_ticker_mapping_note(user_message: str, assets: Optional[Sequence[str]]) -> Optional[str]:
+def _pair_tokens_to_symbols(
+    user_message: str,
+    symbols: Sequence[str],
+    available: Optional[Sequence[str]] = None,
+) -> Dict[str, str]:
+    """
+    Which word in the question produced each symbol, e.g. ``{"brbk": "BRK-B"}``.
+
+    Without the pairing the model was told only that ``BRK-B`` was "inferred" and
+    had to guess where it came from — it decided the user's ``brbk`` was a
+    separate, untracked ticker and reported it as such alongside BRK-B's own data.
+    """
+    pairs: Dict[str, str] = {}
+    if not user_message or not symbols:
+        return pairs
+    try:
+        from .ticker_resolver import _message_tokens, resolve_ticker
+    except Exception:  # pragma: no cover - pairing is a nicety, never fatal
+        return pairs
+
+    wanted = {str(s).upper(): str(s) for s in symbols if s}
+    universe = list(available) if available else list(wanted.values())
+    for token in _message_tokens(user_message):
+        try:
+            hit = resolve_ticker(token, universe)
+        except Exception:
+            continue
+        if hit and hit.upper() in wanted and token.lower() != hit.lower():
+            pairs.setdefault(token.lower(), wanted[hit.upper()])
+    return pairs
+
+
+def build_ticker_mapping_note(
+    user_message: str,
+    assets: Optional[Sequence[str]],
+    available: Optional[Sequence[str]] = None,
+) -> Optional[str]:
     """Prompt fragment telling the model to be explicit about inferred symbols."""
     inferred = inferred_assets(user_message, assets)
     if not inferred:
         return None
-    return (
-        "=== TICKER RESOLUTION NOTICE ===\n"
+
+    pairs = _pair_tokens_to_symbols(user_message, inferred, available)
+    lines = [
+        "=== TICKER RESOLUTION NOTICE ===",
         f"These symbols were inferred from the question rather than typed verbatim: "
-        f"{', '.join(inferred)}.\n"
+        f"{', '.join(inferred)}.",
+    ]
+    if pairs:
+        lines.append(
+            "Resolved from the user's own wording: "
+            + ", ".join(f"\"{token}\" → {symbol}" for token, symbol in sorted(pairs.items()))
+            + ". Treat these as the SAME asset — do not also report the user's spelling "
+            "as a separate untracked ticker."
+        )
+    lines += [
         "- State the mapping explicitly the first time you use one "
-        "(e.g. \"brbk → BRK-B\", \"google → GOOG\").\n"
+        "(e.g. \"brbk → BRK-B\", \"google → GOOG\").",
         "- If a symbol the user typed is NOT in the MindWealth universe, say so "
         "plainly and do NOT present another symbol's rows under that name. A "
         "near-miss on a ticker is a different company, not a typo to be fixed "
-        "silently."
-    )
+        "silently.",
+    ]
+    return "\n".join(lines)
 
 
 def uncovered_assets(
@@ -121,4 +169,28 @@ def coverage_note(missing: Sequence[str]) -> str:
         f"\n\n---\n\n> **Coverage note:** {symbols} — this symbol{plural} part of your "
         "question and present in the retrieved signal data, but not covered above. "
         "Ask again naming it directly to get the detail."
+    )
+
+
+def build_unresolved_ticker_note(unresolved: Sequence[str]) -> Optional[str]:
+    """
+    Prompt fragment naming symbols the user asked about that we do not track.
+
+    ``unified_extractor`` has always produced this list and nothing ever read it,
+    so an untracked ticker was simply absent from the answer — or, worse, quietly
+    replaced by whatever the model thought the user meant. Stating it plainly is
+    the whole point: "TLK is not in the MindWealth universe" is a useful answer,
+    "here are TLT's numbers" is a wrong one.
+    """
+    symbols = [str(s).strip() for s in (unresolved or []) if str(s).strip()]
+    if not symbols:
+        return None
+    return (
+        "=== TICKERS NOT IN THE MINDWEALTH UNIVERSE ===\n"
+        f"{', '.join(symbols)}\n"
+        "- Say plainly that we do not track these, giving each its own line.\n"
+        "- Do NOT substitute a similarly spelled symbol, and do NOT present another "
+        "asset's rows under one of these names. A near-miss ticker is a different "
+        "company, not a typo to be corrected.\n"
+        "- Answer normally for every other symbol in the question."
     )
