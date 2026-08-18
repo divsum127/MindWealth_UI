@@ -7,6 +7,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+import pandas as pd
+
 _ROOT = Path(__file__).resolve().parent.parent
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
@@ -75,7 +77,16 @@ class TestCftcPatterns(unittest.TestCase):
         self.assertEqual(out["data_freshness"], "waiting_for_friday_release")
         self.assertEqual(out["status"], "PENDING_CFTC_CONFIRM")
         self.assertEqual(out["release_date"], "2026-07-25")
-        self.assertEqual(out["next_release"], "2026-08-01")
+        # next_release must be in the FUTURE relative to as_of. It used to be computed as
+        # expected_release + 3 days, which returns the Friday that has already passed
+        # (2026-08-01 here, four days before the 2026-08-04 as-of) -- the tile then advertised
+        # a "next release" date in the past. The overdue release is `expected_release`;
+        # `next_release` is the next scheduled one.
+        self.assertEqual(out["next_release"], "2026-08-08")
+        self.assertGreater(
+            pd.Timestamp(out["next_release"]), pd.Timestamp("2026-08-04")
+        )
+        self.assertEqual(out["expected_release"], "2026-07-29")
 
 
 if __name__ == "__main__":

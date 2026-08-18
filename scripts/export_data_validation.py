@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import csv
 import sys
+
+import pandas as pd
 from pathlib import Path
 
 import yaml
@@ -17,6 +19,8 @@ from src.macro_intelligence.config import load_config
 from src.macro_intelligence.data.pull_all import load_all_series
 from src.macro_intelligence.db.connection import get_connection, init_db
 from src.sentiment_superindex.data.pull_all import load_all_series as load_ssi_series
+from src.sentiment_superindex.config import SSI_INPUT_CADENCE
+from src.sentiment_superindex.data.alignment import max_stale_days_for_cadence
 
 OUT = ROOT / "macro_intelligence" / "output" / "data_validation_checklist.csv"
 SOURCES = ROOT / "macro_intelligence" / "DATA_SOURCES.yaml"
@@ -33,6 +37,47 @@ SSI_KEY_MAP = {
     "DBMF": "dbmf_beta",
 }
 
+# Every key the superindex actually scores. The map above is keyed by DATA_SOURCES.yaml var_id
+# and covers only the nine inputs that happen to be declared there -- the remaining five
+# (put/call, VIX term structure, both COT legs and their gross) were absent from this report,
+# which is part of why a dead ^VIX3M went unnoticed for a month (audit 2026-08-18).
+SSI_SCORED_KEYS = [
+    "aaii_spread",
+    "naaim_exposure",
+    "put_call_ema",
+    "cnn_fg",
+    "mcclellan",
+    "nh_nl_ratio",
+    "hyg_lqd",
+    "skew",
+    "vix_ratio",
+    "pct_above_200dma",
+    "dbmf_beta",
+    "cftc_fm_net",
+    "cftc_rm_net",
+    "gross_net",
+]
+
+
+
+def _last_value(series) -> float | None:
+    """Last scalar value of a series, or None.
+
+    Some macro variables load as a multi-column frame, whose ``.iloc[-1]`` is itself a Series
+    -- ``float()`` on that raises and took the whole report down (pre-existing; found while
+    extending this script on 2026-08-18). A report about data health must not itself fall over
+    on odd-shaped data.
+    """
+    if series is None or getattr(series, "empty", True):
+        return None
+    try:
+        value = series.iloc[-1]
+        if hasattr(value, "iloc"):
+            value = value.iloc[0]
+        return float(value)
+    except (TypeError, ValueError, IndexError):
+        return None
+
 
 def main() -> None:
     init_db()
@@ -46,7 +91,7 @@ def main() -> None:
         vid = var["id"]
         s = macro_series.get(vid)
         n = len(s) if s is not None and hasattr(s, "__len__") else 0
-        last = float(s.iloc[-1]) if s is not None and not getattr(s, "empty", True) else None
+        last = _last_value(s)
         with get_connection() as conn:
             log = conn.execute(
                 "SELECT status, pulled_at FROM data_pull_log WHERE source_id LIKE ? ORDER BY log_id DESC LIMIT 1",
@@ -66,15 +111,42 @@ def main() -> None:
             continue
         s = ssi_series.get(key) if key else None
         n = len(s) if s is not None and hasattr(s, "__len__") else 0
-        last = float(s.iloc[-1]) if s is not None and not getattr(s, "empty", True) else None
+        last = _last_value(s)
         rows.append([vid, entry.get("system"), entry.get("source"), n, last, "live", "—"])
+
+    # Every scored SSI input, keyed by the name the engine uses, with the age that decides
+    # whether it is still eligible. This is the view that would have shown NAAIM and
+    # ^VIX3M dead: row_count alone cannot, because a frozen cache keeps its rows.
+    today = pd.Timestamp.now().normalize()
+    for key in SSI_SCORED_KEYS:
+        series = ssi_series.get(key)
+        n = len(series) if series is not None and hasattr(series, "__len__") else 0
+        if series is None or getattr(series, "empty", True):
+            rows.append([f"SSI::{key}", "ssi_scored", "-", 0, None, "MISSING", "—"])
+            continue
+        last_ts = series.index[-1]
+        age_days = int((today - pd.Timestamp(last_ts).normalize()).days)
+        max_stale = max_stale_days_for_cadence(SSI_INPUT_CADENCE.get(key, "weekly"))
+        status = "STALE" if age_days > max_stale else "OK"
+        rows.append([
+            f"SSI::{key}",
+            "ssi_scored",
+            f"cadence={SSI_INPUT_CADENCE.get(key, '?')} max_stale={max_stale}d",
+            n,
+            _last_value(series),
+            f"{status} (age {age_days}d)",
+            pd.Timestamp(last_ts).strftime("%Y-%m-%d"),
+        ])
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     with OUT.open("w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(["var_id", "system", "source", "row_count", "last_value", "pull_status", "pulled_at"])
         w.writerows(rows)
+    stale = [r[0] for r in rows if str(r[5]).startswith(("STALE", "MISSING"))]
     print(f"Wrote {OUT} ({len(rows)} variables)")
+    if stale:
+        print(f"DEGRADED SSI INPUTS ({len(stale)}): {', '.join(stale)}")
 
 
 if __name__ == "__main__":
