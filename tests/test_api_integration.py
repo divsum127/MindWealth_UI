@@ -59,6 +59,14 @@ class TestAnalyticsAPI(unittest.TestCase):
     def setUp(self) -> None:
         disable_rate_limits()
         self.client = TestClient(app)
+        self._api_patch = patch.dict("os.environ", {"API_KEY": ""}, clear=False)
+        self._key_patch = patch("api.dependencies.API_KEY", "")
+        self._api_patch.start()
+        self._key_patch.start()
+
+    def tearDown(self) -> None:
+        self._key_patch.stop()
+        self._api_patch.stop()
 
     def test_sigma(self) -> None:
         r = self.client.get("/api/v1/analytics/sigma")
