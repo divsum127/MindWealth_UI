@@ -29,7 +29,9 @@ logger = logging.getLogger(__name__)
 
 # Mirrors ``llm_router._PLATFORM_VOCAB_RE`` — questions phrased in our own nouns.
 _PLATFORM_RELEVANT_RE = re.compile(
-    r"\b(claude\s+report|claude.s\s+(report|analysis)|comprehensive\s+(analysis\s+)?report)\b"
+    r"\b(claude\s+(\w+\s+)?(report|analysis|shortlist(ed)?( signals?)?)|"
+    r"claude.s\s+(report|analysis|shortlist)|comprehensive\s+(analysis\s+)?report|"
+    r"shortlist(ed)?\s+signals?)\b"
     r"|\bsignal\s+types?\b"
     r"|\b(which|what)\s+(functions?|strategies|models?|signals?)\b.{0,30}\b(exist|available|have|use|run)\b"
     r"|\bportfolio\s+target\s+achieved\b"

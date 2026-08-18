@@ -83,7 +83,9 @@ _RECOMMENDATION_QUERY_RE = re.compile(
 # while `claude_report` is a first-class signal type backed by a live file that
 # is refreshed daily.
 _PLATFORM_VOCAB_RE = re.compile(
-    r"\b(claude\s+report|claude.s\s+(report|analysis)|comprehensive\s+(analysis\s+)?report)\b"
+    r"\b(claude\s+(\w+\s+)?(report|analysis|shortlist(ed)?( signals?)?)|"
+    r"claude.s\s+(report|analysis|shortlist)|comprehensive\s+(analysis\s+)?report|"
+    r"shortlist(ed)?\s+signals?)\b"
     r"|\bsignal\s+types?\b"
     r"|\b(which|what)\s+(functions?|strategies|models?|signals?)\b.{0,30}\b(exist|available|have|use|run)\b"
     r"|\b(fractal\s*track|trendpulse|deltadrift|sigmashell|pulsegauge|baselinedivergence|"
