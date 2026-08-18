@@ -44,6 +44,8 @@ from .config import (
     INTERNAL_FETCH_TIMEOUT_SECONDS,
 )
 from .data_processor import DataProcessor
+from .asset_coverage import build_ticker_mapping_note, coverage_note, inferred_assets, uncovered_assets
+from .error_messages import safe_error_metadata, user_facing_error
 from .history_manager import HistoryManager
 from .unified_extractor import UnifiedExtractor
 from .smart_data_fetcher import (
@@ -937,9 +939,10 @@ class ChatbotEngine:
             return assistant_message, metadata
             
         except Exception as e:
-            error_message = f"Error processing query: {str(e)}"
-            logger.error(error_message)
-            return error_message, {"error": str(e)}
+            # Never render a provider exception into the chat: an Anthropic
+            # billing failure once reached a user verbatim, request_id included.
+            # Full detail is logged and kept in metadata for debugging.
+            return user_facing_error(e, context="query"), safe_error_metadata(e)
     
     def smart_query(
         self,
@@ -1505,11 +1508,9 @@ class ChatbotEngine:
             return assistant_message, metadata
             
         except Exception as e:
-            error_message = f"Error processing smart query: {str(e)}"
-            logger.error(error_message)
             import traceback
             traceback.print_exc()
-            return error_message, {"error": str(e)}
+            return user_facing_error(e, context="smart query"), safe_error_metadata(e)
     
     # ── Agentic orchestration helpers ───────────────────────────────────────────
 
@@ -2235,6 +2236,41 @@ class ChatbotEngine:
             logger.warning(f"Macro context skipped: {exc}")
             return None
 
+    def _apply_coverage_guard(
+        self,
+        user_message: str,
+        response: str,
+        metadata: Dict,
+        assets: Optional[List[str]],
+    ) -> tuple:
+        """
+        Flag requested symbols the answer never mentions.
+
+        Twice observed: rows fetched for a symbol, answer silently covers only
+        the others. Nothing is rewritten — a short advisory is appended and the
+        omission is recorded in metadata so it is visible in the job record.
+        Symbols the extractor inferred are excluded, because an answer that
+        correctly ignores a wrong guess must not be flagged for doing so.
+        """
+        try:
+            if not assets or not response:
+                return response, metadata
+            rows_by_asset = metadata.get("rows_by_asset") if isinstance(metadata, dict) else None
+            missing = uncovered_assets(
+                response,
+                assets,
+                rows_by_asset if isinstance(rows_by_asset, dict) else None,
+                skip=inferred_assets(user_message, assets),
+            )
+            if not missing:
+                return response, metadata
+            logger.warning(f"[ENGINE] Answer omitted requested symbol(s): {missing}")
+            metadata["assets_not_covered"] = missing
+            return response + coverage_note(missing), metadata
+        except Exception as exc:  # a guard must never break an answer
+            logger.warning(f"Coverage guard skipped: {exc}")
+            return response, metadata
+
     def _build_platform_block(self, user_message: str) -> Optional[str]:
         """
         Build the SOURCE E platform-capability block, or return ``None``.
@@ -2898,6 +2934,16 @@ class ChatbotEngine:
                     "Added MindWealth signal-type and function taxonomy",
                 )
 
+            # Tell the model which symbols it inferred rather than read verbatim,
+            # so "tlk" can never be answered with TLT's rows under TLK's name.
+            mapping_note = build_ticker_mapping_note(user_message, assets)
+            if mapping_note:
+                additional_context = (
+                    f"{additional_context}\n\n{mapping_note}"
+                    if additional_context else mapping_note
+                )
+                logger.info(f"[ENGINE] Ticker mapping notice added for inferred symbols")
+
             # ── INTERNAL (or HYBRID legacy fallback) — existing pipeline ─────
             # Get last N exchanges from history (text only, no raw data)
             history_messages = self.history_manager.get_messages_for_api(max_pairs=MAX_HISTORY_LENGTH)
@@ -2924,6 +2970,9 @@ class ChatbotEngine:
                 metadata["history_exchanges_used"] = 0
                 add_flow_step("Internal Data Query", "Fetched internal signal data (selector + columns + date filters)")
                 add_flow_step("Response Generation", "Generated final response from internal analysis")
+                response, metadata = self._apply_coverage_guard(
+                    user_message, response, metadata, assets
+                )
                 self._persist_flow_trace(metadata, flow_trace)
                 return response, metadata
             
@@ -2981,6 +3030,9 @@ NOTE: Use the conversation context above to understand what we've discussed, but
 
             # Attach routing metadata
             metadata.update(route_meta_base)
+            response, metadata = self._apply_coverage_guard(
+                user_message, response, metadata, assets
+            )
             self._persist_flow_trace(metadata, flow_trace)
             
             logger.info(f"Dynamic follow-up query completed with fresh analysis")
@@ -2989,11 +3041,9 @@ NOTE: Use the conversation context above to understand what we've discussed, but
             return response, metadata
             
         except Exception as e:
-            error_message = f"Error processing follow-up query: {str(e)}"
-            logger.error(error_message)
             import traceback
             traceback.print_exc()
-            return error_message, {"error": str(e)}
+            return user_facing_error(e, context="follow-up query"), safe_error_metadata(e)
 
     def _strip_data_from_history(self, history_messages: List[Dict]) -> List[Dict]:
         """
@@ -3146,9 +3196,10 @@ NOTE: Use the conversation context above to understand what we've discussed, but
             return assistant_message, metadata
             
         except Exception as e:
-            error_message = f"Error processing query: {str(e)}"
-            logger.error(error_message)
-            return error_message, {"error": str(e)}
+            # Never render a provider exception into the chat: an Anthropic
+            # billing failure once reached a user verbatim, request_id included.
+            # Full detail is logged and kept in metadata for debugging.
+            return user_facing_error(e, context="query"), safe_error_metadata(e)
     
     def get_session_id(self) -> str:
         """Get current session ID."""
@@ -3291,13 +3342,17 @@ NOTE: Use the conversation context above to understand what we've discussed, but
             
         except Exception as e:
             logger.error(f"Error in single batch processing: {e}")
-            error_msg = f"Error processing query: {str(e)}"
+            # Sanitized for display; the raw exception stays in the log and in
+            # metadata["error_detail"] via safe_error_metadata below.
+            error_msg = user_facing_error(e, context="batch")
             metadata = {
                 "tokens_used": {"prompt": estimated_tokens, "completion": 0, "total": estimated_tokens},
                 "finish_reason": "error",
                 "batch_count": 1,
                 "batch_mode": "single",
-                "error": str(e)
+                # Display-safe; raw exception preserved alongside for debugging.
+                "error": user_facing_error(e),
+                "error_detail": f"{type(e).__name__}: {e}",
             }
             return error_msg, metadata
     
@@ -3551,13 +3606,17 @@ Note: This is batch {group_idx + 1} of {len(ticker_groups)} analyzing assets: {'
             
         except Exception as e:
             logger.error(f"Error in simple batch processing: {e}")
-            error_msg = f"Error processing query: {str(e)}"
+            # Sanitized for display; the raw exception stays in the log and in
+            # metadata["error_detail"] via safe_error_metadata below.
+            error_msg = user_facing_error(e, context="batch")
             metadata = {
                 "tokens_used": {"prompt": estimated_tokens, "completion": 0, "total": estimated_tokens},
                 "finish_reason": "error",
                 "batch_count": 1,
                 "batch_mode": "single",
-                "error": str(e)
+                # Display-safe; raw exception preserved alongside for debugging.
+                "error": user_facing_error(e),
+                "error_detail": f"{type(e).__name__}: {e}",
             }
             return error_msg, metadata
     
@@ -3774,13 +3833,15 @@ Please analyze this batch. Your response will be combined with other batches lat
             logger.error(f"Error in batch follow-up processing: {e}")
             import traceback
             traceback.print_exc()
-            error_msg = f"Error processing batch query: {str(e)}"
+            error_msg = user_facing_error(e, context="batch query")
             metadata = {
                 "tokens_used": {"prompt": estimated_tokens, "completion": 0, "total": estimated_tokens},
                 "finish_reason": "error",
                 "batch_count": 1,
                 "batch_mode": "single",
-                "error": str(e)
+                # Display-safe; raw exception preserved alongside for debugging.
+                "error": user_facing_error(e),
+                "error_detail": f"{type(e).__name__}: {e}",
             }
             return error_msg, metadata
     

@@ -52,6 +52,29 @@ from src.utils.mtm_pricing import normalize_today_price_column_names
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
+def _drop_exact_duplicate_rows(df: "pd.DataFrame") -> "pd.DataFrame":
+    """
+    Remove byte-identical rows, preserving order and the first occurrence.
+
+    Deliberately strict: only rows equal in *every* column are dropped, so two
+    genuinely different signals that happen to share a symbol and function are
+    both kept. Unhashable cell values (lists/dicts) make ``drop_duplicates``
+    raise, so that case degrades to the original frame rather than failing the
+    fetch.
+    """
+    if df is None or getattr(df, "empty", True):
+        return df
+    try:
+        before = len(df)
+        out = df.drop_duplicates(keep="first")
+        if len(out) != before:
+            logger.info(f"Dropped {before - len(out)} exact duplicate row(s) of {before}")
+        return out
+    except TypeError as exc:
+        logger.warning(f"Exact-duplicate dedupe skipped (unhashable cells): {exc}")
+        return df
+
 # Compound column in consolidated CSVs: "SYMBOL, Long|Short, YYYY-MM-DD (Price: ...)"
 SYMBOL_SIGNAL_COMPOUND_COL = "Symbol, Signal, Signal Date/Price[$]"
 BREADTH_REQUIRED_COLUMNS = BREADTH_SBI_COLUMNS
@@ -1038,6 +1061,13 @@ class SmartDataFetcher:
                     errors="coerce",
                 )
         
+        # Drop byte-identical rows before the cap. The exported CSVs carry heavy
+        # duplication (entry.csv: 25,709 rows for 2,671 unique symbol+function
+        # pairs), so a 100-row cap could otherwise be spent on copies of the same
+        # signal and hide genuine ones. Exact duplicates carry no information, so
+        # nothing is lost; near-duplicates are left alone deliberately.
+        combined_df = _drop_exact_duplicate_rows(combined_df)
+
         # Apply row limit if specified
         if limit_rows and len(combined_df) > limit_rows:
             combined_df = combined_df.head(limit_rows)
@@ -1603,6 +1633,13 @@ class SmartDataFetcher:
         
         combined_df = pd.concat(all_data, ignore_index=True)
         
+        # Drop byte-identical rows before the cap. The exported CSVs carry heavy
+        # duplication (entry.csv: 25,709 rows for 2,671 unique symbol+function
+        # pairs), so a 100-row cap could otherwise be spent on copies of the same
+        # signal and hide genuine ones. Exact duplicates carry no information, so
+        # nothing is lost; near-duplicates are left alone deliberately.
+        combined_df = _drop_exact_duplicate_rows(combined_df)
+
         # Apply row limit if specified
         if limit_rows and len(combined_df) > limit_rows:
             combined_df = combined_df.head(limit_rows)
