@@ -79,24 +79,61 @@ def parse_cnn_historical_points(
     return s.astype(float)
 
 
-def load_cached_series(cache_path: Path, *, value_col: str = "value", date_col: str = "date") -> pd.Series:
+def load_cached_series(
+    cache_path: Path,
+    *,
+    value_col: str = "value",
+    date_col: str = "date",
+    extra_col: str | None = None,
+) -> pd.Series | tuple[pd.Series, pd.Series]:
+    """Load a cached date-indexed series from CSV.
+
+    If `extra_col` is given, also returns a second date-aligned Series with that column's raw
+    (string) values -- used e.g. by the CNN F&G cache's `source` provenance tag
+    (`real_cnn_api` / `wayback_reconstructed` / `crypto_proxy`). Omitting `extra_col` (the
+    default) returns a single Series exactly as before -- fully backward compatible with every
+    existing caller.
+    """
+    empty = pd.Series(dtype=float)
     if not cache_path.exists():
-        return pd.Series(dtype=float)
+        return (empty, pd.Series(dtype=object)) if extra_col else empty
     df = pd.read_csv(cache_path, parse_dates=[date_col])
     if value_col not in df.columns:
-        cols = [c for c in df.columns if c != date_col]
+        cols = [c for c in df.columns if c not in (date_col, extra_col)]
         if not cols:
-            return pd.Series(dtype=float)
+            return (empty, pd.Series(dtype=object)) if extra_col else empty
         value_col = cols[0]
-    return df.set_index(date_col)[value_col].sort_index().astype(float)
+    df = df.set_index(date_col).sort_index()
+    series = df[value_col].astype(float)
+    if not extra_col:
+        return series
+    extra = df[extra_col] if extra_col in df.columns else pd.Series(index=series.index, dtype=object)
+    return series, extra
 
 
-def save_cached_series(series: pd.Series, cache_path: Path, *, value_col: str = "value") -> None:
+def save_cached_series(
+    series: pd.Series,
+    cache_path: Path,
+    *,
+    value_col: str = "value",
+    extra_col: str | None = None,
+    extra_series: pd.Series | None = None,
+) -> None:
+    """Save a date-indexed series to CSV.
+
+    If both `extra_col` and `extra_series` are given, writes a third column carrying
+    `extra_series`'s values aligned to `series`'s (post-dropna) index -- used for provenance tags.
+    Omitting them (the default) writes the original two-column `date,value_col` CSV -- fully
+    backward compatible with every existing caller.
+    """
     if series.empty:
         return
     cache_path.parent.mkdir(parents=True, exist_ok=True)
-    out = series.dropna().sort_index().reset_index()
+    clean = series.dropna().sort_index()
+    out = clean.reset_index()
     out.columns = ["date", value_col]
+    if extra_col and extra_series is not None:
+        out[extra_col] = out["date"].map(extra_series.to_dict())
     out.to_csv(cache_path, index=False)
 
 

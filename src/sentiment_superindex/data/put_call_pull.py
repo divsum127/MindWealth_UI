@@ -27,6 +27,7 @@ from src.sentiment_superindex.data.scraper_utils import (
     parse_cnn_historical_points,
     save_cached_series,
 )
+from src.sentiment_superindex.data.pull_guard import log_pull_empty, log_pull_failure
 
 CBOE_TOTAL_URL = "https://cdn.cboe.com/resources/options/volume_and_call_put_ratios/totalpc.csv"
 CBOE_ARCHIVE_URL = "https://cdn.cboe.com/resources/options/volume_and_call_put_ratios/totalpcarchive.csv"
@@ -78,7 +79,8 @@ def _fetch_cboe_totalpc() -> pd.Series:
     try:
         resp = http_get(CBOE_TOTAL_URL, headers=BROWSER_HEADERS, timeout=45)
         resp.raise_for_status()
-    except Exception:
+    except Exception as exc:
+        log_pull_failure("ssi_put_call_cboe_total", exc, note=CBOE_TOTAL_URL)
         return pd.Series(dtype=float, name="put_call_ratio")
     return _parse_cboe_ratio_csv(
         resp.text,
@@ -91,7 +93,8 @@ def _fetch_cboe_archive() -> pd.Series:
     try:
         resp = http_get(CBOE_ARCHIVE_URL, headers=BROWSER_HEADERS, timeout=45)
         resp.raise_for_status()
-    except Exception:
+    except Exception as exc:
+        log_pull_failure("ssi_put_call_cboe_archive", exc, note=CBOE_ARCHIVE_URL)
         return pd.Series(dtype=float, name="put_call_ratio")
     return _parse_cboe_ratio_csv(
         resp.text,
@@ -105,7 +108,8 @@ def _fetch_cnn_put_call_ratio() -> pd.Series:
         resp = http_get(f"{CNN_GRAPHDATA_URL}/{CNN_EARLIEST_START_DATE}", headers=CNN_HEADERS, timeout=45)
         resp.raise_for_status()
         data = resp.json()
-    except Exception:
+    except Exception as exc:
+        log_pull_failure("ssi_put_call_cnn", exc, note=CNN_GRAPHDATA_URL)
         return pd.Series(dtype=float, name="put_call_ratio")
     series = parse_cnn_historical_points(data.get("put_call_options"), clamp_0_100=False)
     if series.empty:

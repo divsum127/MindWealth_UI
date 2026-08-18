@@ -34,15 +34,22 @@ def _vix_regime_label(vix_pct: float | None) -> str:
 
 
 def _trend_regime_label() -> tuple[str, dict[str, Any]]:
-    meta: dict[str, Any] = {"source": "yfinance", "symbol": "^GSPC"}
-    try:
-        import yfinance as yf  # type: ignore
+    """SPX vs its 200-day MA.
 
-        hist = yf.Ticker("^GSPC").history(period="1y")
-        if hist.empty or len(hist) < 200:
+    Reads the cached ^GSPC close series rather than a live ``yf.Ticker(...).history(period=
+    "1y")`` call. The live call had no cache and no retry, so a single yfinance hiccup put
+    ``spx_price``/``spx_ma200`` at NaN and the trend leg at UNKNOWN -- observed in the live
+    payload during the 2026-08-18 audit. The cache also removes the 1-year window's own
+    fragility: 200 sessions out of ~252 leaves almost no headroom for a short response.
+    """
+    meta: dict[str, Any] = {"source": "ssi_yahoo_cache", "symbol": "^GSPC"}
+    try:
+        from src.sentiment_superindex.data.yahoo_cache import cached_yahoo_close
+
+        close = cached_yahoo_close("^GSPC", "1990-01-01")
+        if close.empty or len(close) < 200:
             meta["note"] = "Insufficient history for 200d MA"
             return "UNKNOWN", meta
-        close = hist["Close"]
         ma200 = float(close.rolling(200).mean().iloc[-1])
         current = float(close.iloc[-1])
         above = current >= ma200

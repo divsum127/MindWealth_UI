@@ -7,6 +7,7 @@ import pandas as pd
 import yfinance as yf
 
 from src.sentiment_superindex.data.sp500_universe import load_sp500_tickers
+from src.sentiment_superindex.data.pull_guard import log_pull_empty, log_pull_failure
 
 MIN_HISTORY_DAYS = 220
 CHUNK_SIZE = 40
@@ -29,7 +30,12 @@ def _download_closes(tickers: list[str], period: str = "5y", start: str | None =
             else:
                 kwargs["period"] = period
             data = yf.download(chunk, **kwargs)
-        except Exception:
+        except Exception as exc:
+            log_pull_failure(
+                "ssi_sp500_breadth",
+                exc,
+                note=f"chunk of {len(chunk)} tickers skipped; breadth will undercount",
+            )
             continue
         if data is None or data.empty:
             continue
