@@ -1,0 +1,77 @@
+---
+description: Default MindWealth todo Google Sheet — read by default; writes only with explicit request + confirmation
+alwaysApply: true
+---
+
+# MindWealth Todos — Default Google Sheet
+
+## Canonical sheet
+
+Unless the user **explicitly names another spreadsheet, URL, or tab**, treat this as the default todo sheet:
+
+| Field | Value |
+|-------|-------|
+| **Name** | mindwealth todos |
+| **Spreadsheet ID** | `1a60p0E4D1w4X3xayV65UOvk9dz4b2q9bKLBPPnrHQKg` |
+| **Default tab** | `v2_TODOs` (gid `1916178694`) |
+| **Spreadsheet title** | Copy of Tasks_Mindwealth |
+| **URL** | https://docs.google.com/spreadsheets/d/1a60p0E4D1w4X3xayV65UOvk9dz4b2q9bKLBPPnrHQKg/edit?gid=1916178694 |
+
+Config file: `/home/ubuntu/.google-sheets-mcp/sheet-config.json`
+
+MCP server: `user-mindwealth-todos` (in `~/.cursor/mcp.json`)
+
+## Edit policy (mandatory)
+
+**Default: read-only.** Never modify the sheet unless the user **explicitly** asks for a write (add, update, mark done, delete, clear, append, change status, etc.).
+
+**Even when the user explicitly requests an edit**, you **must ask for confirmation once** before calling any write MCP tool (`update_cells`, `batch_update_cells`, or any other tool that mutates sheet data).
+
+Confirmation must include:
+- Exact spreadsheet + tab
+- Cell/range or row to change
+- Current value (if known) → proposed new value
+- A clear yes/no prompt (e.g. "Confirm this edit?")
+
+**Do not write** until the user confirms in a follow-up message. If they decline or do not confirm, stop — no write.
+
+**Never** infer write permission from:
+- Summarizing, listing, or analyzing todos
+- Vague language ("clean this up", "sync todos", "fix the sheet")
+- Completing related code/docs work elsewhere in the repo
+
+Reads (`get_sheet_data`, `list_sheets`, `find_in_spreadsheet`, `search_spreadsheets`, etc.) are allowed without confirmation.
+
+## When to use this sheet
+
+Use **mindwealth todos** for any request about:
+
+- todos / task list / backlog / checklist
+- "what's pending", "show open items", "summarize todos"
+- MindWealth work tracking in Google Sheets
+
+**Do not ask** which sheet to use for read-only todo queries — assume this one.
+
+Write requests ("add a task", "mark done", "update status") still require the **confirmation step** above before any MCP write.
+
+## When to use a different sheet
+
+Only switch away from this default when the user:
+
+- Pastes a different Google Sheets URL or spreadsheet ID
+- Names another spreadsheet or tab explicitly
+- Says "use a different sheet" or similar
+
+The same **read-only default + confirmation-before-write** policy applies to any Google Sheet accessed via MCP.
+
+## MCP usage
+
+1. Use the `user-mindwealth-todos` MCP server tools.
+2. Pass `spreadsheet_id` = `1a60p0E4D1w4X3xayV65UOvk9dz4b2q9bKLBPPnrHQKg` unless overridden.
+3. Default tab name: **`v2_TODOs`** (gid `1916178694`). Use this tab unless user names another.
+4. **Read first** when structure is unknown or before proposing an edit.
+5. **Write only** after explicit user request **and** one confirmed yes.
+
+## Auth note
+
+Requires Google Sheets API + Drive API enabled on GCP project `mindwealth-gmail-mcp`, and OAuth token at `~/.google-sheets-mcp/token.json`.
