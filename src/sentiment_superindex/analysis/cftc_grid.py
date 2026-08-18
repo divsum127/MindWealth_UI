@@ -1,113 +1,166 @@
-"""Tests 3–4: SQUEEZE and LIQUIDITY EXIT CFTC FM/RM grids."""
+"""Tests 3–4: SQUEEZE and LIQUIDITY EXIT CFTC FM/RM grids (episode-collapsed)."""
 
 from __future__ import annotations
 
 from typing import Any
 
-import numpy as np
-import pandas as pd
-
-from src.macro_intelligence.data.cftc_pull import fetch_cftc_asset_manager_net, fetch_cftc_fast_money_net
-from src.macro_intelligence.engine.percentiles import percentile_rank
-from src.sentiment_superindex.analysis.forward_metrics import load_spx, returns_at_horizons, summarize_returns
+from src.sentiment_superindex.analysis.cftc_grid_v2 import (
+    LIQ_FM_THRESHOLDS,
+    LIQ_RM_THRESHOLDS,
+    SQUEEZE_FM_THRESHOLDS,
+    SQUEEZE_RM_THRESHOLDS,
+    run_liquidity_exit_grid_v2,
+    run_squeeze_grid_v2,
+)
 from src.sentiment_superindex.analysis.report_utils import save_artifact, write_md_snippet
 
+_H = ("4w", "8w", "12w")
 
-def _weekly_pctile_series(net: pd.Series, weeks: int = 156) -> pd.Series:
-    out = []
-    for dt in net.index:
-        window = net.loc[:dt].dropna().tail(weeks)
-        if len(window) < 20:
+__all__ = [
+    "SQUEEZE_FM_THRESHOLDS",
+    "SQUEEZE_RM_THRESHOLDS",
+    "LIQ_FM_THRESHOLDS",
+    "LIQ_RM_THRESHOLDS",
+    "run_and_report",
+    "run_squeeze_grid",
+    "run_liquidity_exit_grid",
+]
+
+
+def _legacy_metrics(cell: dict[str, Any], *, long_side: bool = True) -> dict[str, Any]:
+    out: dict[str, Any] = {}
+    for label in _H:
+        m = cell.get("metrics", {}).get(label, {})
+        if not m or not m.get("n"):
+            out[label] = {"n": 0, "avg": None, "median": None, "win_pct": None, "worst": None, "sharpe": None}
             continue
-        out.append((dt, percentile_rank(float(net.loc[dt]), window)))
-    return pd.Series(dict(out)).sort_index()
+        out[label] = {
+            "n": m.get("n"),
+            "avg": m.get("mean"),
+            "median": m.get("median"),
+            "win_pct": m.get("hit_pct"),
+            "worst": m.get("worst"),
+            "sharpe": m.get("sharpe"),
+        }
+    if not long_side:
+        dds = []
+        for ep in cell.get("all_episodes", []):
+            vals = [ep.get(f"ret_{h}") for h in _H]
+            vals = [v for v in vals if v is not None]
+            if vals:
+                dds.append(min(vals))
+        if dds:
+            import numpy as np
+
+            out["median_drawdown"] = round(float(np.median(dds)), 4)
+    return out
+
+
+def _squeeze_to_legacy(row: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "fm_max": row.get("fm_pct_max"),
+        "rm_min": row.get("rm_pct_min"),
+        "n": row.get("n_episodes", 0),
+        "n_episodes": row.get("n_episodes", 0),
+        "n_weeks": row.get("n_weeks", 0),
+        "metrics": _legacy_metrics(row, long_side=True),
+    }
+
+
+def _liq_to_legacy(row: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "rm_max": row.get("rm_pct_max"),
+        "fm_min": row.get("fm_pct_min"),
+        "n": row.get("n_episodes", 0),
+        "n_episodes": row.get("n_episodes", 0),
+        "n_weeks": row.get("n_weeks", 0),
+        "metrics": _legacy_metrics(row, long_side=False),
+    }
 
 
 def run_squeeze_grid(start: str = "2006-01-01") -> dict[str, Any]:
-    fm = fetch_cftc_fast_money_net()
-    rm = fetch_cftc_asset_manager_net()
-    spx = load_spx(start)
-    rows = []
-    fm_pct = _weekly_pctile_series(fm)
-    rm_pct = _weekly_pctile_series(rm)
-    idx = fm_pct.index.intersection(rm_pct.index)
-    idx = idx[idx >= pd.Timestamp(start)]
-    for fm_thr in range(15, 45, 5):
-        for rm_thr in range(40, 70, 5):
-            mask = (fm_pct.loc[idx] < fm_thr) & (rm_pct.loc[idx] > rm_thr)
-            dates = idx[mask]
-            if len(dates) < 3:
-                rows.append({"fm_max": fm_thr, "rm_min": rm_thr, "n": len(dates), "metrics": {}})
-                continue
-            _h = {"4w": 20, "8w": 40, "12w": 60}
-            ret_rows = returns_at_horizons(spx, dates, horizons=_h)
-            rows.append({"fm_max": fm_thr, "rm_min": rm_thr, "n": len(dates), "metrics": summarize_returns(ret_rows, horizons=_h)})
+    from src.sentiment_superindex.analysis.cftc_episode_metrics import load_analysis_context
+
+    raw = run_squeeze_grid_v2(load_analysis_context(start=start, pctile_start="2006-01-01"))
+    rows = [_squeeze_to_legacy(r) for r in raw["rows"] if r.get("pattern") == "SQUEEZE"]
     return {"test_id": "03_squeeze_grid", "rows": rows}
 
 
 def run_liquidity_exit_grid(start: str = "2006-01-01") -> dict[str, Any]:
-    fm = fetch_cftc_fast_money_net()
-    rm = fetch_cftc_asset_manager_net()
-    spx = load_spx(start)
-    rows = []
-    fm_pct = _weekly_pctile_series(fm)
-    rm_pct = _weekly_pctile_series(rm)
-    idx = fm_pct.index.intersection(rm_pct.index)
-    idx = idx[idx >= pd.Timestamp(start)]
-    for rm_thr in range(15, 45, 5):
-        for fm_thr in range(45, 80, 5):
-            mask = (rm_pct.loc[idx] < rm_thr) & (fm_pct.loc[idx] > fm_thr)
-            dates = idx[mask]
-            if len(dates) < 3:
-                rows.append({"rm_max": rm_thr, "fm_min": fm_thr, "n": len(dates), "metrics": {}})
-                continue
-            _h = {"4w": 20, "8w": 40, "12w": 60}
-            ret_rows = returns_at_horizons(spx, dates, horizons=_h)
-            m = summarize_returns(ret_rows, long_side=False, horizons=_h)
-            dds = [min(r.get("ret_4w") or 0, r.get("ret_8w") or 0, r.get("ret_12w") or 0) for r in ret_rows]
-            m["median_drawdown"] = round(float(np.median(dds)), 4) if dds else None
-            rows.append({"rm_max": rm_thr, "fm_min": fm_thr, "n": len(dates), "metrics": m})
+    from src.sentiment_superindex.analysis.cftc_episode_metrics import load_analysis_context
+
+    raw = run_liquidity_exit_grid_v2(load_analysis_context(start=start, pctile_start="2006-01-01"))
+    rows = [_liq_to_legacy(r) for r in raw["rows"]]
     return {"test_id": "04_liquidity_exit_grid", "rows": rows}
 
 
-def _cell_12w(r: dict) -> str:
+def _cell_12w(r: dict | None) -> str:
+    if not r:
+        return "n_ep=0"
+    n_ep = r.get("n_episodes", r.get("n", 0))
+    n_wk = r.get("n_weeks", 0)
     m = r.get("metrics", {}).get("12w", {})
     if not m or not m.get("n"):
-        return "—"
-    return f"{m.get('avg')}% / {m.get('win_pct')}% win / Sh{m.get('sharpe')}"
+        return f"n_ep={n_ep} (wk={n_wk})"
+    return f"{m.get('avg')}% / Sh{m.get('sharpe')} (n_ep={n_ep}, wk={n_wk})"
 
 
 def run_and_report(start: str = "2006-01-01") -> dict[str, Any]:
-    squeeze = run_squeeze_grid(start)
-    liq = run_liquidity_exit_grid(start)
+    """Episode-collapsed grids + Rohit v2 report artifacts."""
+    from src.sentiment_superindex.analysis.cftc_episode_metrics import load_analysis_context
+    from src.sentiment_superindex.analysis.cftc_grid_v2 import (
+        build_rohit_report,
+        run_fm_pctile_regression,
+    )
+    from src.sentiment_superindex.analysis.report_utils import write_md_snippet
+
+    ctx = load_analysis_context(start=start, pctile_start="2006-01-01")
+    squeeze_raw = run_squeeze_grid_v2(ctx)
+    liq_raw = run_liquidity_exit_grid_v2(ctx)
+    regression = run_fm_pctile_regression(ctx)
+    save_artifact("03_squeeze_grid_v2", squeeze_raw)
+    save_artifact("04_liquidity_exit_grid_v2", liq_raw)
+    save_artifact("cftc_fm_pctile_regression", regression)
+    write_md_snippet("cftc_rohit_rerun", build_rohit_report(squeeze_raw, liq_raw, regression))
+
+    squeeze = {
+        "test_id": "03_squeeze_grid",
+        "rows": [_squeeze_to_legacy(r) for r in squeeze_raw["rows"] if r.get("pattern") == "SQUEEZE"],
+    }
+    liq = {
+        "test_id": "04_liquidity_exit_grid",
+        "rows": [_liq_to_legacy(r) for r in liq_raw["rows"]],
+    }
     save_artifact("03_squeeze_grid", squeeze)
     save_artifact("04_liquidity_exit_grid", liq)
-    md = "# Tests 3–4: CFTC grids\n\n## SQUEEZE heatmap (12w avg SPX % / win % / Sharpe)\n\n"
+    md = "# Tests 3–4: CFTC grids (episode-collapsed)\n\n"
+    md += "Consecutive qualifying weeks → one episode (first fire). Stats on **n_ep**; **wk** = qualifying weeks.\n\n"
+    md += "## SQUEEZE heatmap (12w avg SPX % / Sharpe)\n\n"
     md += "| FM < | RM > 40 | RM > 45 | RM > 50 | RM > 55 | RM > 60 | RM > 65 |\n"
     md += "|------|-----------|-----------|-----------|-----------|-----------|----------|\n"
-    for fm in range(15, 45, 5):
+    for fm in SQUEEZE_FM_THRESHOLDS:
         cells = []
-        for rm in range(40, 70, 5):
+        for rm in SQUEEZE_RM_THRESHOLDS:
             row = next((x for x in squeeze["rows"] if x["fm_max"] == fm and x["rm_min"] == rm), None)
-            cells.append(_cell_12w(row) if row else "—")
+            cells.append(_cell_12w(row))
         md += f"| {fm} | " + " | ".join(cells) + " |\n"
-    best = max(
-        (r for r in squeeze["rows"] if r.get("n", 0) >= 50 and r.get("metrics", {}).get("12w")),
-        key=lambda x: (x["metrics"]["12w"].get("sharpe") or 0),
-        default=None,
+    ranked = sorted(
+        (r for r in squeeze["rows"] if r.get("metrics", {}).get("12w", {}).get("sharpe") is not None),
+        key=lambda x: x["metrics"]["12w"].get("sharpe") or 0,
+        reverse=True,
     )
-    if best:
+    if ranked:
+        best = ranked[0]
         md += (
-            f"\n**Recommended SQUEEZE cell:** FM<{best['fm_max']}, RM>{best['rm_min']} "
-            f"(n={best['n']}, 12w avg {best['metrics']['12w'].get('avg')}%, "
-            f"Sharpe {best['metrics']['12w'].get('sharpe')})\n"
+            f"\n**Highest 12w Sharpe (episode n):** FM<{best['fm_max']}, RM>{best['rm_min']} "
+            f"(n_ep={best['n_episodes']}, wk={best['n_weeks']}).\n"
         )
-    md += "\n## LIQUIDITY EXIT (top cells by n)\n"
-    for r in sorted(liq["rows"], key=lambda x: -x.get("n", 0))[:10]:
+    md += "\n## LIQUIDITY EXIT (top cells by episode n)\n"
+    for r in sorted(liq["rows"], key=lambda x: -x.get("n_episodes", 0))[:10]:
         m4 = r.get("metrics", {}).get("4w", {})
         md += (
-            f"- RM<{r['rm_max']} FM>{r['fm_min']}: n={r['n']}, "
-            f"4w SPX down {m4.get('win_pct')}% (median DD {r.get('metrics', {}).get('median_drawdown')})\n"
+            f"- RM<{r['rm_max']} FM>{r['fm_min']}: n_ep={r['n_episodes']} (wk={r['n_weeks']}), "
+            f"4w SPX down {m4.get('win_pct')}%\n"
         )
     write_md_snippet("03_04_cftc_grid", md)
-    return {"squeeze": squeeze, "liquidity": liq}
+    return {"squeeze": squeeze, "liquidity": liq, "v2": {"squeeze": squeeze_raw, "liquidity": liq_raw, "regression": regression}}

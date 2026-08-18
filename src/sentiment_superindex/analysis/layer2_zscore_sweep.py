@@ -28,6 +28,8 @@ def _confirm_count_frame(series: dict[str, pd.Series], idx: pd.DatetimeIndex) ->
         s = series.get(key)
         if s is None or s.empty:
             continue
+        # idx = sparse union of SSI history dates (trading-day observations, not freq="D").
+        # Unlimited ffill onto idx — limit would count trading-day rows, not calendar days.
         z = _rolling_z_series(s.reindex(idx).ffill())
         z_frames.append((abs(z) >= 0.5).astype(int).rename(key))
     if not z_frames:
@@ -44,6 +46,7 @@ def run_and_report(start: str = "2015-01-01") -> dict[str, Any]:
     idx = hist.index
     long_gate = hist["ssi_pctile_5y"] <= float(cfg.get("thresholds", {}).get("long_entry_pctile", 20))
     confirms = _confirm_count_frame(series, idx)
+    # Same sparse trading-day idx + unlimited ffill as _confirm_count_frame above.
     abs_z = pd.DataFrame({k: _rolling_z_series(series[k].reindex(idx).ffill()).abs() for k in confirms.columns})
 
     thresholds = [round(x, 2) for x in np.arange(0, 2.01, 0.25)]

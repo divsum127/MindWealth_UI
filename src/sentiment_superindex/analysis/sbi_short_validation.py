@@ -12,6 +12,15 @@ from src.config_paths import BASE_DIR
 
 
 def run_via_adapter(start: str = "2015-01-01") -> dict[str, Any]:
+    import json
+
+    out_file = Path("/tmp/sbi_full_out.json")
+    if out_file.is_file() and out_file.stat().st_size > 20:
+        try:
+            return json.loads(out_file.read_text().strip().split("\n")[-1])
+        except Exception:
+            pass
+
     mw = Path(os.getenv("MINDWEALTH_ROOT", "/home/ubuntu/MindWealth"))
     if not mw.is_dir():
         return {"test_id": "15_sbi_short", "error": "MINDWEALTH_ROOT not set"}
@@ -19,13 +28,23 @@ def run_via_adapter(start: str = "2015-01-01") -> dict[str, Any]:
     py = mw / ".venv" / "bin" / "python"
     if not py.exists():
         py = Path(sys.executable)
+    dates_cache = Path("/tmp/sbi_short_dates.json")
     proc = subprocess.run(
-        [str(py), str(script), "--start", start],
+        [
+            str(py),
+            str(script),
+            "--start",
+            start,
+            "--freq",
+            "BMS",
+            "--dates-cache",
+            str(dates_cache),
+        ],
         cwd=str(mw),
-        env={**os.environ, "MINDWEALTH_ROOT": str(mw), "PYTHONPATH": str(BASE_DIR)},
+        env={**os.environ, "MINDWEALTH_ROOT": str(mw), "PYTHONPATH": str(mw)},
         capture_output=True,
         text=True,
-        timeout=600,
+        timeout=14400,
     )
     import json
 

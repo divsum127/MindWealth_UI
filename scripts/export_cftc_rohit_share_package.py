@@ -150,7 +150,6 @@ def build_index(
     lines = [
         "# CFTC SQUEEZE / LIQUIDITY EXIT — Share Package for Rohit",
         "",
-        f"**Prepared by:** Divyanshu (MindWealth SSI validation)  ",
         f"**Package date:** {today}  ",
         f"**COT data through:** 2026-08-04 (Tuesday position date)  ",
         f"**Spec:** Rohit Aug 4, 2026 email (episode collapse, extended FM axis, mean−median gap, PAR/excess, robustness)",

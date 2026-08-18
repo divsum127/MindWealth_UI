@@ -39,11 +39,30 @@ def run_and_report(start: str = "2010-01-01") -> dict[str, Any]:
             "metrics": summarize_returns(ret_rows, horizons=_h),
             "median_days_to_vix25": int(pd.Series(lead_days).median()) if lead_days else None,
         })
-    payload = {"test_id": "08_hyg_lqd", "rows": rows}
+    granger_p: dict[str, Any] | None = None
+    try:
+        from statsmodels.tsa.stattools import grangercausalitytests
+
+        spx_ret = spx.pct_change().dropna()
+        chg_aligned = chg4w.reindex(spx_ret.index).dropna()
+        aligned = pd.concat(
+            {"spx_ret": spx_ret, "chg4w": chg_aligned},
+            axis=1,
+            join="inner",
+        ).dropna()
+        if len(aligned) > 60:
+            gc = grangercausalitytests(aligned[["spx_ret", "chg4w"]], maxlag=8, verbose=False)
+            granger_p = {f"lag_{k}": round(gc[k][0]["ssr_ftest"][1], 4) for k in range(1, 9)}
+    except Exception as exc:
+        granger_p = {"note": f"Granger unavailable: {exc}"}
+
+    payload = {"test_id": "08_hyg_lqd", "rows": rows, "granger_chg4w_to_spx": granger_p}
     save_artifact("08_hyg_lqd", payload)
     md = "# Test 8: HYG/LQD widening\n\n"
     for r in rows:
         md += f"\n## 4w change < {r['threshold_pct']}% (n={r['n_crossings']}, median days to VIX>25: {r.get('median_days_to_vix25')})\n"
         md += metrics_table(r["metrics"])
+    if granger_p:
+        md += f"\n## Granger causality (4w HYG/LQD % change → SPX return)\n`{granger_p}`\n"
     write_md_snippet("08_hyg_lqd", md)
     return payload
