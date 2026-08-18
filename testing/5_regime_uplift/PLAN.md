@@ -35,7 +35,7 @@ From `macro_regime_log_v2.regime_json` (Friday backfill, forward-filled to daily
 | Geo | `geo_overlay_v2` | CRISIS, ELEVATED_RISK, NEUTRAL |
 | Liquidity | `liquidity_v2` | Level bucket: TIGHT_*, NEUTRAL_*, EASY_* |
 
-Multiplier table: see `multiplier_spec.md` (v1 economic priors — illustrative until Rohit sign-off).
+Multiplier table: see `regime_dimension_multipliers_v1_unsigned.md` (v1 economic priors — illustrative until Rohit sign-off).
 
 **Combined multiplier:** `clip(Π dimension_mult, 0.40, 1.00)`.
 

@@ -2,7 +2,8 @@
 
 **For:** Divyanshu  
 **Source spec:** `testing/ssi_th_exp/SSI_OpenQuestions_DivyanshuTestList (1).pdf` (May 25, 2026)  
-**Status file:** `testing/ssi_th_exp/SSI_OPEN_QUESTIONS_SUMMARY.md` (validation runs 2026-06-04, 2026-06-06, Part III + Tests 18–20 on 2026-06-07)  
+**Status file:** [`SSI_OPEN_QUESTIONS_STATUS.md`](../SSI_OPEN_QUESTIONS_STATUS.md) (updated 2026-08-07)  
+**Results:** [`SSI_EXPERIMENT_RESULTS.md`](../SSI_EXPERIMENT_RESULTS.md)  
 **Purpose:** Explain what the PDF asks you to build and validate, what every technical term means, what we already tested, and **what doubts to raise with Rohit Sir**.
 
 ---
@@ -207,23 +208,27 @@ Rohit Sir’s PDF is a **validation homework list** for the **SSI (Sentiment Sup
 
 ---
 
-### 1.8 Layer 2 z-score threshold sweep — Tests 10 & 20
+### 1.8 Layer 2 confirmation — Tests 10, 20 & **22**
 
-**What the spec asks:** Sweep z-score confirmation **0 to 2.0** in 0.25 steps. Measure false positive rate and hit rate. PDF mentioned z&gt;0.5; production uses **vote count** (≥2 of 4 inputs).
+**What the spec asks:** Sweep z-score confirmation **0 to 2.0** in 0.25 steps. Measure false positive rate and hit rate. Also validate **`min_confirmed`** (≥N of 6 gates agree on the same side) — production uses **`gate_z_min: 0.5`** and **`min_confirmed: 2`** on the **6-gate** Layer 2 architecture (4 z-gated breadth/vol inputs + legacy HYG/VIX).
 
 #### 1.8 — Experiment status
 
 | | Detail |
 |---|--------|
-| **What we did** | Test 10: vote count 0–4 (`10_layer2_sweep_20260606.json`). Test 20: z-score sweep (`20_layer2_zscore_sweep_20260607.json`). |
-| **Results (votes)** | Long gate days n=**419** for min_votes 0–3; identical metrics. min_votes=4 → **0** days. |
-| **Results (z-score)** | z≥**1.25**: n=**105** long+confirm, **90.48%** 3m hit. z≥**1.5**: n=**63**, **92.06%** hit. z=0: n=**396**, **79.29%** hit. |
-| **Production** | **`min_confirmed: 2`**, multipliers 1.2 / 1.0 / 0.8. |
+| **What we did** | Test 10: legacy **4-input** vote count 0–4 (`10_layer2_sweep_20260606.json`). Test 20: **4-input** z-score sweep (`20_layer2_zscore_sweep_20260607.json`). **Test 22:** joint **6-gate** 2-D grid z∈{0…2.0} × min_confirmed∈{1,2,3,4} (`22_layer2_gate_grid_20260807.json`, 2010→2026, n=**5,135** trading days). |
+| **Results (legacy 4-input votes)** | Long gate days n=**419** for min_votes 0–3; identical metrics. min_votes=4 → **0** days. **Not comparable** to production 6-gate logic. |
+| **Results (legacy 4-input z-score)** | z≥**1.25**: n=**105** long+confirm, **90.48%** 3m hit. z=0: n=**396**, **79.29%** hit. Uses old 4-input count, not directional 6-gate. |
+| **Results (Test 22 — 6-gate joint grid)** | **Production cell** (z≥0.5, min=2): n=**180** long+gate+confirmed, **45.0%** 3m hit, **−0.43%** avg 3m. Raising min to **3** at same z: n=**141**, **46.1%** hit, **+0.40%** avg. Raising z to **1.25** at min=2: n=**94**, **52.1%** hit. min=4 anywhere: n≤**25** (too thin). |
+| **Production** | **`gate_z_min: 0.5`**, **`min_confirmed: 2`**, multipliers 1.2 / 1.0 / 0.8. CONFIG key: `layer2.min_confirmed` (alias for briefing `layer2_confirmations_req`). |
 
 | Question | Answered? | Answer | Doubts to ask Rohit Sir |
 |----------|-----------|--------|-------------------------|
-| Does raising min_votes improve long quality? | **No** | All **419** long-gate days already have ≤3 votes active — sweeping 0→3 changes nothing. | **Doubt:** Is vote-count Layer 2 too loose in practice? Should we add **z≥1.25** overlay for sizing? |
-| What z threshold improves hit rate? | **Yes** | Inflection at **z≥1.25–1.5**: 3m hit **90–92%** on n=**63–105** vs **79%** at z=0 (n=396). | **Doubt:** Deploy z≥1.25 as research overlay only, or change Layer 2 architecture from votes to z-thresholds? |
+| Does raising min_votes improve long quality? (legacy 4-input) | **No** | All **419** long-gate days already have ≤3 votes active — sweeping 0→3 changes nothing. | Superseded by Test 22 on 6-gate logic. |
+| What z threshold improves hit rate? (legacy 4-input) | **Yes** | Inflection at **z≥1.25–1.5**: 3m hit **90–92%** on n=**63–105** vs **79%** at z=0. | Legacy 4-input only — not production 6-gate. |
+| **Does `min_confirmed` 1–4 of 6 improve long+gate quality?** | **Yes (Test 22)** | At z=0.5: min=1 n=40 (47.5% hit); **min=2 n=180 (45%)**; min=3 n=141 (46.1%); min=4 n=25 (36%). No monotonic quality gain from raising count alone. | **Doubt:** Keep min=2, or tighten to min=3 (fewer fires, similar hit)? |
+| **Do z and min_confirmed interact?** | **Yes (Test 22)** | Lower z + higher min ≈ higher z + lower min on frequency: e.g. z=0.5/min=3 (n=141, 46% hit) vs z=0.75/min=2 (n=152, 43% hit). Best hit n≥50: **z=1.25/min=2** (n=94, **52.1%** hit). | **Doubt:** Adopt z≥1.25 overlay for sizing, or keep z=0.5/min=2 for frequency? |
+| **Is “2 of 6” empirically derived?** | **No** | Test 22 shows min=2 is a **frequency/quality trade-off**, not a clear optimum — briefing rationale (“prevents false positives from sentiment alone”) is **design intent**, not backtested on 6-gate logic before Aug 2026. | **Doubt:** Document as design default pending Rohit sign-off on Test 22 grid. |
 
 ---
 
@@ -435,15 +440,15 @@ Rohit Sir’s PDF is a **validation homework list** for the **SSI (Sentiment Sup
 | **3** | SQUEEZE grid | **DONE** | Runic research |
 | **4** | LIQUIDITY EXIT grid | **DONE** | Runic research |
 | **5** | TP/SL optimization | **DONE** | Pending CONFIG change |
-| **6** | CNN F&G | **DONE** (proxy 2018+) | Layer 2 25/75 |
+| **6** | CNN F&G | **DONE** (Aug 2026 backfill) | Layer 2 25/75 — fear&lt;20 n=121, greed not short trigger |
 | **7** | DBMF beta | **DONE** | Layer 2 bands 0.5/1.2 |
-| **8** | HYG/LQD widening | **DONE** (no Granger) | Layer 2 percentiles |
+| **8** | HYG/LQD widening | **DONE** (+ Granger Aug 2026) | Layer 2 percentiles |
 | **9** | Z-score vs percentile | **DONE** | Z-score still in prod |
 | **10** | Layer 2 votes | **DONE** | min_confirmed=2 |
 | **10b** | Layer 2 z-score sweep | **DONE** (Test 20) | Research only |
 | **11** | VIX multiplier A/B | **Partial** (spot check) | vix_bypass live |
-| **12** | Bollinger + SSI | **DONE** but **0 combo events** | Must rerun |
-| **13** | Stochastic + McClellan | **DONE** n=3 combo | Must rerun |
+| **12** | Bollinger + SSI | **DONE** (combo n=1) | Advisory only |
+| **13** | Stochastic + McClellan | **DONE** (combo n=13, Aug 2026) | Research only |
 | **14** | Gross/net divergence | **DONE** n=25 | Research only |
 | **15** | SBI short | **NOT RUN** | Unvalidated |
 | **16** | Friday pull checklist | **DONE** 12/12 PASS | Ops automation |

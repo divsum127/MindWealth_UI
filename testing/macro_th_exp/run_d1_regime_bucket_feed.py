@@ -34,11 +34,14 @@ from src.macro_intelligence.db.connection import get_connection
 from src.macro_intelligence.engine import combo_detector as cd
 from src.macro_intelligence.engine.combo_c_cancel import cpi_leg_passes
 from src.macro_intelligence.engine.combo_detector import detect_named_combos
+from src.macro_intelligence.engine.dominant import is_validated_combo
 from src.macro_intelligence.engine.regime_rules import build_python_regime
 
 OUT_DIR = Path(__file__).resolve().parent
 DATE_TAG = datetime.now(UTC).strftime("%Y-%m-%d")
-SERIES_VERSION = f"D1_regime_bucket_v1.1_{DATE_TAG}"
+# v1.2 (2026-08-17): B moved above C in the dominance priority and low-n combos
+# (fewer than 5 matured episodes) demoted below every validated combo — Rohit 2026-08-06.
+SERIES_VERSION = f"D1_regime_bucket_v1.2_{DATE_TAG}"
 
 _SERIES_CACHE: dict | None = None
 
@@ -133,13 +136,21 @@ def _fire_row(fire) -> dict:
 
 
 def _resolve_dominant(actives: list[dict]) -> dict | None:
+    """Same ordering the live engine uses: PRIORITY, with low-n combos demoted.
+
+    Kept in step with src/macro_intelligence/engine/dominant.py:_rank_key — if the two
+    ever diverge, D1 buckets stop matching the posture the system actually took.
+    """
     if not actives:
         return None
-    priority = load_config().get("dominant", {}).get("PRIORITY", {})
+    dominant_cfg = load_config().get("dominant", {})
+    priority = dominant_cfg.get("PRIORITY", {})
+    demotion_on = bool(dominant_cfg.get("low_n_demotion", True))
 
-    def rank_key(row: dict) -> tuple[int, str]:
+    def rank_key(row: dict) -> tuple[int, int, str]:
         letter = row["combo"]
-        return (-int(priority.get(letter, 0)), letter)
+        low_n = 1 if (demotion_on and not is_validated_combo(letter)) else 0
+        return (low_n, -int(priority.get(letter, 0)), letter)
 
     return sorted(actives, key=rank_key)[0]
 
@@ -399,7 +410,7 @@ def _write_csv(path: Path, rows: list[dict]) -> None:
                     "evaluation_date": row.get("evaluation_date", ""),
                     "is_forward_filled": "true" if row.get("is_forward_filled") else "false",
                     "series_version": SERIES_VERSION,
-                    "dominant_rule": "CONFIG_PRIORITY_v1",
+                    "dominant_rule": "CONFIG_PRIORITY_v2_B_ABOVE_C_LOW_N_DEMOTED",
                 }
             )
 
@@ -509,9 +520,13 @@ def main() -> None:
         "config_source": "macro_intelligence/CONFIG.yaml",
         "d5_artifact": f"D5_fed_cycle_reslice_2026-07-16.json",
         "recalibrated_gates": RECALIBRATED_GATES,
-        "dominant_rule": "CONFIG_PRIORITY_v1",
+        "dominant_rule": "CONFIG_PRIORITY_v2_B_ABOVE_C_LOW_N_DEMOTED",
         "point_in_time": "daily_readings as-of + Combo C sequential replay + Friday forward-fill",
-        "series_version_note": "v1.1 fixes C live-flag leak and WATCH→MIXED over-classification",
+        "series_version_note": (
+            "v1.2 applies Rohit 2026-08-06: B above C, and any combo with fewer than 5 "
+            "matured episodes ranks below every validated combo (C n=3). "
+            "v1.1 fixed C live-flag leak and WATCH→MIXED over-classification."
+        ),
     }
 
     daily_csv = OUT_DIR / f"D1_regime_bucket_daily_{DATE_TAG}.csv"

@@ -115,7 +115,9 @@ def load_regime_fridays() -> pd.DataFrame:
 
 
 def regime_daily(trading_index: pd.DatetimeIndex, fridays: pd.DataFrame) -> pd.DataFrame:
-    aligned = fridays.reindex(trading_index, method="ffill")
+    # trading_index = Yahoo price trading days (sparse). Unlimited ffill — limit would
+    # count trading-day rows, not calendar or business days.
+    aligned = fridays.reindex(trading_index, method="ffill")  # limit=None
     return aligned
 
 
@@ -155,6 +157,7 @@ def monthly_equal_weight_returns(prices: pd.DataFrame) -> pd.Series:
 
 def scale_returns(ew: pd.Series, mult: pd.Series) -> pd.Series:
     """Apply lagged gross multiplier; remainder in cash at 0%."""
+    # ew.index = trading days. Unlimited ffill before shift(1).
     m = mult.reindex(ew.index).ffill().fillna(1.0).shift(1).fillna(1.0)
     return (m * ew).rename("overlay_return")
 
@@ -221,7 +224,7 @@ def write_report(
         "",
         "- Basket: **SPY, TLT, GLD, HYG** equal-weight, monthly rebalance",
         f"- Sample: **{baseline.get('start')}** → **{baseline.get('end')}** ({baseline.get('n_days')} trading days)",
-        "- Overlay: product of 5 dimension multipliers (see `multiplier_spec.md`), lagged 1d, cash at 0%",
+        "- Overlay: product of 5 dimension multipliers (see `regime_dimension_multipliers_v1_unsigned.md`), lagged 1d, cash at 0%",
         "- EUR=X excluded per spec",
         "",
         "## Regime multiplier distribution",
@@ -299,7 +302,7 @@ def main() -> None:
         "regime_overlay": overlay_stats,
         "uplift": uplift,
         "mult_summary": mult_summary,
-        "multiplier_spec": "testing/5_regime_uplift/multiplier_spec.md",
+        "multiplier_spec": "testing/5_regime_uplift/regime_dimension_multipliers_v1_unsigned.md",
     }
     (OUT_DIR / "summary_metrics.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
 

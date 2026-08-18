@@ -16,7 +16,7 @@ Regime overlay **improves** Sharpe on this sample.
 
 - Basket: **SPY, TLT, GLD, HYG** equal-weight, monthly rebalance
 - Sample: **2007-04-12** → **2026-07-13** (4843 trading days)
-- Overlay: product of 5 dimension multipliers (see `multiplier_spec.md`), lagged 1d, cash at 0%
+- Overlay: product of 5 dimension multipliers (see `regime_dimension_multipliers_v1_unsigned.md`), lagged 1d, cash at 0%
 - EUR=X excluded per spec
 
 ## Regime multiplier distribution
