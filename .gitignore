@@ -52,3 +52,7 @@ macro_intelligence/data/ssi.db
 # Claude Code local session state — machine-specific, never shared
 .claude/settings.local.json
 .claude/worktrees/
+
+# Cursor chat archive — transcripts routinely contain pasted tokens and keys.
+# A live GitHub PAT was found in INDEX.md/index.json on 2026-08-18 and blocked a push.
+docs/cursor_chat_archive/
