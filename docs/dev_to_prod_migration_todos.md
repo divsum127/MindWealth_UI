@@ -478,7 +478,7 @@ Closes the three routing/data gaps found in the usage audit. Same defect class a
 - `[DONE]` 2026-08-18 — "what is the current macro regime and which combo is dominant?" → **HYBRID** with a `Macro Overlay` step, leads with Combo F week 20 of 26 and the real regime components. Previously `WEB_RAG` contradicting our own engine.
 - `[PENDING]` prod: repeat all three after merge + restart.
 
-**Dev-environment hazard found while testing (not a code defect):** `mindwealth-api-dev.service` runs uvicorn with `--reload`, so **every file save kills in-flight chat answers**. Three replays died mid-flight while another session edited `api/`. Prod does **not** use `--reload` (verified), so this is dev-only — but it makes live chat testing unreliable whenever anyone is editing. The new `fail_orphaned()` turns it into an honest 8-second error instead of a hang, which is how it was spotted.
+**Dev-environment hazard — `[DONE 2026-08-18]`, fixed.** `mindwealth-api-dev.service` ran uvicorn with `--reload`, so every file save restarted the API and killed in-flight chat answers (chat jobs run in worker threads inside that process, so a reload is indistinguishable from a crash). Three replays died this way while another session edited `api/`. `--reload` removed from the host unit **and** the tracked copy `scripts/mindwealth-api-dev.service` (commit `14adc93be`), `daemon-reload` + restart applied. Proof: touched `api/main.py`, `chatbot/config.py` and `api/services/analyst_service.py` mid-answer — **zero restarts**, answer completed at 125.6s / 16,271 chars. Prod never had `--reload`, so **no prod action is required**; the tracked file merges for consistency only.
 
 ---
 

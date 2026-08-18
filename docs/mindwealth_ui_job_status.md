@@ -155,6 +155,14 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
    - Prod impact: **yes** — six files merge `chatbot-dev` → `chatbot-prod` plus an API restart. No new env keys (all three flags default on), no API surface change.
    - Still open from the audit: gaps 1-4 (MTM anchored on `Signal Open Price` vs the entry price shown, ~90% duplicate rows in `entry.csv`, MTM recomputed instead of quoted, no sample-size caveat on ranked screens) and gap 7 (stale web quotes shown beside live ones).
 
+5. **Removed `--reload` from the dev API unit + full 12-query live regression** — SUCCESSFUL
+   - Summary: `mindwealth-api-dev.service` ran `uvicorn ... --reload`, which watches the whole repo. Chat jobs run in worker threads **inside** that process, so a reload is indistinguishable from a crash: the job dies mid-answer and the user is told the analyst is unreachable. Three live replays died this way in a single session while another process was editing `api/`. Removed from both `/etc/systemd/system/mindwealth-api-dev.service` (host) and the tracked copy `scripts/mindwealth-api-dev.service`, then `daemon-reload` + restart. Prod never had `--reload`, so this only aligns dev with prod. The convenience was worth little here: the box is shared, and the API is restarted explicitly after every deploy anyway.
+   - Verification — **the failure mode itself**: started a deep-dive answer, then touched `api/main.py`, `chatbot/config.py` and `api/services/analyst_service.py` while it was running. **Zero server restarts**, and the answer completed at **125.6s with 16,271 chars**. Under `--reload` that answer would have been discarded.
+   - Verification — **12-query live regression through the Nuxt BFF on `:8514`** with a real session cookie, **12/12 passed, zero errors**: ticker lookup 27.6s, SOXX MTM 20.1s, top-5 Sharpe screen 35.1s, "should i buy meta" HYBRID+Conviction 47.7s, the NZ replacement question HYBRID+Conviction 50.2s, macro regime **HYBRID+Macro Overlay** 40.1s, signal types **INTERNAL+Platform Capabilities** 52.9s, claude report **INTERNAL+Platform Capabilities** 52.8s, BRK-B signals+news HYBRID 37.6s, exits INTERNAL+Conviction 90.4s (3 browser resumes), plus a two-turn continuity check where "now calculate the mtm according to the last trade" resolved from session context, and `GET /api/chat/history` → **200 with 4 messages**. Every long answer used the resume path; none 503'd.
+   - `pytest tests/ chatbot/tests -q` → **900 passed, 4 skipped**; `smoke-test-apis.sh` **11/11 PASS**, prod isolation intact.
+   - Files changed: `scripts/mindwealth-api-dev.service`; host unit `/etc/systemd/system/mindwealth-api-dev.service` edited directly (not in git).
+   - Prod impact: **none to prod runtime** — prod already runs without `--reload`. The tracked unit file merges with the rest of the branch for consistency; the host-side edit is dev-only and needs no prod action.
+
 ---
 
 ### 2026-08-17
