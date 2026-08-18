@@ -15,6 +15,43 @@ This file captures minute-level implementation context for each completed task:
 
 ---
 
+### 2026-08-18 — AI Analyst panel: full wiring audit (codebase + live dev `:8514` / `:8507`)
+
+**Ask:** "Check the ai analyst codebase and the ai analyst panel on the dev website, analyze what all is working, properly wired to the backend, what is not wired to backend yet."
+
+**Method / key decisions**
+- **Three-layer trace, not source reading alone.** Every surface was followed Vue component → Nuxt Nitro BFF route → FastAPI endpoint, then confirmed against a live call to `:8507` with the `X-API-Key` from the Nuxt systemd environment. The 242-vs-5 degradation split and the `fwd_wr: -23.7` leak are only visible in the live payload; source reading suggests the panel shows win-rate drift.
+- **Environment identified from `/proc`, not from `.env`.** `MindwealthUI_Vue/.env` line 1 says `NUXT_API_BASE_URL=http://51.20.53.218:8514`, which points a Nuxt at itself. The **runtime** value comes from systemd: pid on `:8514` has `NUXT_API_BASE_URL=http://127.0.0.1:8507` (dev), pid on `:8512` has `:8506` (prod). Any future check must read `/proc/<pid>/environ`, not the checked-in `.env`.
+- **Live Nuxt `/api/overwatch` could not be called** — `server/middleware/bff-auth.ts` 401s it without a session cookie and no plaintext admin password is available. The merged panel payload was therefore derived deterministically from the route source plus the three upstream endpoints it calls. This is exact for the merge logic (a `Map` keyed on `alert.id`) but was not observed in a browser.
+
+**Assumptions made**
+- The dev site is the Nuxt on `:8514`; `:8512` is treated as the prod-facing build.
+- The 8514 bundle is current (`.output/server/index.mjs` 06:17 vs newest source 06:16), so component source reflects what renders. If the bundle is rebuilt from newer source this conclusion needs re-checking.
+- `ANALYST_USE_CLAUDE_COPY` absent from `.env` means the flag is off; no attempt was made to override it and generate live Claude copy.
+
+**Root causes recorded (for whoever fixes these)**
+- **MTM leaking into the win-rate field:** `analyst_service.py:101` reads `raw.get("fwd_rate") or raw.get("profit_pct")`. Portfolio alerts carry no `fwd_rate`, so `profit_pct` (a live MTM percentage, e.g. `-23.7`) lands in `signal.fwd_wr` and renders as "FWD WR". Both alert families share one panel-alert shape; the fix is a separate `type` (e.g. `position_risk`) with its own card, not a coalesce change.
+- **`floor_pct` is inert twice over:** `_degradation_to_panel_alert` takes `floor_pct` and never reads it (`above_floor` is hardcoded `fwd_rate >= 61.0`, `analyst_service.py:151`), and `check_degradation(floor_pct=…)` returns `deg_cache.load_cached_degradation_result()` before the parameter reaches `_compute_degradation` (`degradation_service.py:397`). Passing `?floor_pct=` to the API changes only `meta`.
+- **Analog Finder invisible by construction:** `_build_runic_alerts` appends the analog block into `alert.html`, but `AnalystAlertsView.vue:50` routes `runic`/`sentiment_warning` to `AnalystMacroAlertCard`, which renders `macro.reason` and `macro.narrative` and **never** `alert.html`. Only the generic `v-else` fallback block (`:62`) does `v-html`. So the richer the backend copy, the less of it shows.
+- **SSE is unreachable end-to-end, in two independent ways:** no crontab entry or systemd timer runs `scripts/overwatch/run_overwatch_*.py`; and `overwatch_event_bus.py:59` instantiates a module-level in-process asyncio bus, so a cron process's `publish_sync` iterates its own empty `_subscribers` set and drops the alert. Spec open question 2 (Redis on AWS) was never answered, which is the actual blocker.
+
+**Things deferred / left for future**
+- No fixes applied — this was an audit. Nothing was changed in either repo.
+- The frontend repo `/home/ubuntu/MindwealthUI_Vue` is outside the two editable trees named in `CLAUDE.md`; it was inspected read-only. Any frontend fix needs an explicit scope decision first.
+- `docs/AI_ANALYST_BACKEND_REQUIREMENTS.md` §6 ("Nuxt BFF migration, after backend ships") is the written plan for most of the unwired items and is still entirely unstarted, even though the P0 backend endpoints it depends on now exist. The one exception is §5.2 `/analytics/analyst/fwd-trend`, which returns 404 and was never built.
+
+**Edge cases identified but not handled**
+- `pendingAlert` is set on the very first bootstrap poll whenever any non-system alert exists (`useOverwatch.ts:96`). With 249 alerts permanently present, the gold trigger dot shows on every page load, so it no longer signals anything new.
+- `runicShownOnPath` dedupes runic auto-opens per route path, but `panelAlerts` is replaced wholesale each poll while `seenAlertIds` only grows — a backend restart that regenerates `created_at` keeps ids stable, so this happens to be safe today, but ids are derived from combo/asset names and would collide across a rename.
+- Duplicate Combo F card: BFF id `runic-dominant-f` vs backend id `runic-f`, merged by id, so both survive. Deleting `runicPanelAlertFromNightly` from `overwatch.get.ts` is the clean fix now that the backend emits runic alerts.
+- `parseForwardTestingRows(perf.records)` is called with no `driftAlerts` argument and returns `[]` unconditionally — so `degradationToPanelAlert`, `inferPattern`, `inferRecommendation`, and the interpolated 4-bar `fwdTrend` are dead. They read as live code and will mislead the next person; the interpolation in particular fabricated a trend from `(win - backtest) / 3`.
+
+**Caveats**
+- Counts in this entry are from the 2026-08-18 06:23 UTC payload (`data_updated_at` 2026-08-17 16:00 ET). Alert volume moves with the portfolio, so re-measure before quoting 249/242/5.
+- The SYSTEM tab looks plausible but is almost entirely synthetic: only "US CSV pipeline" has any real signal, and even that is generic `meta.data_updated_at`, not a pipeline mtime. "Google Sheets sync" echoes the same date under a different name. Do not use it for on-call.
+
+---
+
 ### 2026-08-17 — Truth-audit of all 45 sheet replies against live dev (`:8507` API, `:8514` Nuxt)
 
 **Ask:** "Analyse every task in the sheet that has my reply, check the dev API and the chatbot website on 8514, and confirm nothing I told Rohit is wrong or non-functioning."
@@ -43,6 +80,33 @@ This file captures minute-level implementation context for each completed task:
 - The **`layer1`/`layer2`/`layer3` `signal_coverage` block is the honest part of the page** — it is what turns "3 of 4 signals · weights renormalised" on. Prod does not emit it, so prod silently renormalises exactly as Rohit complained in R35/R36. Do not close those two rows on the strength of dev.
 - R45's reply text is a copy of R42's (the CFTC re-run). The COT indexing question — Tuesday position date vs Friday release date, and whether Layer 3 drops out — is **still unanswered**, and the live payload shows it dropping out right now.
 - The R43/R44 staleness numbers Rohit was asked to sign off (weekly 10 / daily 1 / monthly 25 / 0.8) are **not** the numbers running (weekly 8 / daily 3 / monthly 30, and 1.0 for the four Layer 1 signals per `weight_penalty_by_signal`, recalibrated 2026-08-07 by Test 21). Re-ask before quoting the old figures.
+
+---
+
+### 2026-08-18 — `POST /macro/run-nightly` persist guard + runic-test DB isolation
+
+**Ask:** run the robust test + dev deploy skill; the outstanding items from the snapshot-clobber audit were the API path and the DB writes.
+
+**Key decisions**
+- **Guard placed in the service, not the router or the job.** `run_nightly()` stays a dumb job that persists when told to; the "is this today?" policy lives in `trigger_nightly_run()` where the HTTP intent is known. A router-level check would have to be repeated by any future caller.
+- **Rule is `as_of is None or as_of == today`, compared as strings.** No date parsing, so a malformed `as_of` simply does not persist — failing closed is the right side to err on for a value that can wipe the served snapshot.
+- **Response reports the decision instead of erroring.** A backdated call still returns the computed payload with `persisted: false` and a reason string, so the endpoint keeps working as a "compute me this date" tool. Rejecting with 4xx would have been a breaking change for any caller that just wanted the numbers.
+- **Test DB isolation copies the live DB rather than starting empty.** An empty DB would force `pull_all_series()` to re-download every series, making the test slow and network-dependent. The copy keeps the test's runtime at ~35s and its assertions unchanged.
+- **Version bumped to 1.10.9** because the response shape changed (additively) — endpoint page, changelog and OpenAPI snapshot all regenerated and pushed to the docs submodule.
+
+**Things left for future**
+- The API path still writes date-stamped rows to the **runic DB** on a backdated run: `pull_all_series()` and `run_persistence_scan()` execute before the persist branch. Only the snapshot is guarded. Fixing that means either a read-only mode for the pull or an env-scoped DB for the request, neither of which is a small change.
+- The 26 pre-existing 2024-09-18 rows (12 `daily_readings`, 1 `macro_regime_log`, 1 `cftc_positioning`, 12 `emission_vectors`) were **not** deleted. They are real historical readings for a real date; a delete is riskier than the residue. Verified they stopped growing.
+- `run_nightly()` still has no `out_path` parameter — a caller who wants an old date written *somewhere else* must set `MACRO_INTEL_JSON_PATH`.
+
+**Edge cases not handled**
+- Timezone: `today` is the server's local date (`Etc/UTC`). A call made at 23:30 UTC "for today" in ET terms would be tomorrow's date to the guard and would not persist. Acceptable — the cron runs at 18:00 UTC — but worth knowing before anyone reschedules it.
+- Concurrency: the guard does not serialise runs. Two simultaneous today-runs still race on the file; `write_runic_json` is atomic per write, so the file is never torn, but last writer wins.
+
+**Caveats for the next developer**
+- **The full suite is green for the first time in this sequence: 818 passed, 4 skipped, 0 failed.** The Monday-only `test_shortlist_mtm_not_stale_zero_for_aged_signals` failure disappeared on its own once the 2026-08-17 pull landed, because it compares calendar age against trading days. Expect it back on the next Monday-before-pull run; it is a data-shaped failure, not a code regression.
+- `api/services/macro_service.py` and `api/routers/macro.py` in this worktree carry ~238 lines of **another task's uncommitted work**. Commit `40fda07de` contains only the guard hunks, staged with `git apply --cached` from a filtered patch. Do not `git add` those two files wholesale.
+- Verifying the guard live is safe and cheap: `POST /macro/run-nightly {"as_of":"2024-09-18"}` on `:8507`, then re-`stat` the snapshot. It takes ~40s (real data pull) and leaves the served file alone.
 
 ---
 

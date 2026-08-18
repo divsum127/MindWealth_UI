@@ -21,6 +21,93 @@ Reference deploy skill: `.cursor/skills/prod-pull-and-details/SKILL.md`
 | `[PROD-ACTION]` | Manual step on server after git merge (secrets, systemd, bootstrap) |
 | `[DONE]` | Completed on prod (date in notes) |
 
+## 2026-08-18 — AI Analyst panel wiring audit: defects found, **nothing fixed yet** `[PENDING]`
+
+Audit only — **no code changed in either repo**, so there is nothing to merge from this entry today.
+Recorded here because every defect below is in code that **prod already runs**, so each fix will need a
+`chatbot-dev` → `chatbot-prod` merge **plus** a `MindwealthUI_Vue` rebuild + restart, shipped together.
+
+**Prod is affected the same way dev is.** These are not dev-only shortcuts.
+
+### Backend files that will change when fixed (`chatbot-dev` → `chatbot-prod`)
+
+| File | Defect |
+|------|--------|
+| `api/services/analyst_service.py:101` | Portfolio `profit_pct` (live MTM %) coalesced into the `fwd_wr` win-rate field — 237 of 249 alerts render "FWD WR −23.7%" and "BELOW 60% FLOOR" |
+| `api/services/analyst_service.py:151` | `above_floor` hardcoded `>= 61.0`; the `floor_pct` argument is accepted and never read |
+| `api/services/analyst_service.py:637` | `/analyst/brief` splits the narrative on the first `.` → snippet truncates mid-number (`"…with a 78."`) |
+| `api/services/degradation_service.py:397` | `check_degradation(floor_pct=…)` returns the disk cache before the parameter reaches `_compute_degradation`, so `?floor_pct=` is inert |
+| *(new)* `/analytics/analyst/fwd-trend` | P0 in `docs/AI_ANALYST_BACKEND_REQUIREMENTS.md` §5.2 — returns **404**, never implemented; 237/242 alerts have `fwd_trend: null` because of it |
+
+### Nuxt files that will change when fixed (`MindwealthUI_Vue`, `ui-dev` → prod branch)
+
+| File | Defect |
+|------|--------|
+| `components/analyst/AnalystMacroAlertCard.vue` | Never renders `alert.html` or `macro.historical_analogs` — the **Analog Finder block is invisible** despite the backend building it |
+| `types/api.ts:371` | `OverwatchAlertType` omits `runic_watch` / `regime_warning` / `persistence` |
+| `composables/useOverwatch.ts:36` | MACRO tab filter drops those 3 types; ALERTS badge counts 245 while ALL renders 249 |
+| `composables/useOverwatch.ts:44` | ALL badge reads `'Overwatch · Claude triggered'` — **spec requires `'Overwatch · auto-triggered'`**; backend already returns the correct string |
+| `server/api/overwatch.get.ts:31` | `include_system: 'false'` hardcoded — SYSTEM tab never calls the real `/system/health` |
+| `server/api/overwatch.get.ts:17-20` | BFF still emits `runic-dominant-<combo>` alongside the backend's `runic-<combo>` → **Combo F card renders twice** |
+| `server/utils/overwatch-panel.ts:125` | `buildSystemChecks()` hardcodes India CSV / Claude API / Tavily as `warn` + "unavailable"; "Google Sheets sync" just echoes `meta.data_updated_at` |
+| `server/utils/overwatch-panel.ts:32-61` | Dead code (`parseForwardTestingRows` always returns `[]`) incl. a fabricated `fwdTrend` interpolation — delete rather than leave live-looking |
+| `components/analyst/AnalystAlertsView.vue` | No cap/pagination — renders all 249 cards in a 360px column |
+
+### Backend endpoints live on prod with **zero frontend consumers**
+
+`GET /api/v1/analytics/analyst/context` · `GET /api/v1/analytics/analyst/brief` · `GET /api/v1/system/health` ·
+`GET /api/v1/overwatch/stream` (SSE) · all `/analyst/alerts` query params (`channel`, `since`, `include_persistence`, `gap_threshold_pp`) ·
+all chat presets (`analyze_asset`, `signal_insights`, `breadth_analysis`, `deep_research_enabled`).
+Wiring these is `docs/AI_ANALYST_BACKEND_REQUIREMENTS.md` §6, still unstarted.
+
+### Host / runtime actions needed (**not** git)
+
+1. **Overwatch cron is not scheduled on any host** — `scripts/overwatch/run_overwatch_{signals,macro,system}.py` have no crontab entry and no systemd timer, on dev or prod.
+2. **Scheduling them alone will not work.** `api/services/overwatch_event_bus.py:59` is an in-process asyncio bus; a cron process publishes into its own empty subscriber set. SSE needs Redis pub/sub (spec open question 2, never answered) or an in-API scheduler. Decide before wiring `EventSource` in Nuxt.
+3. `ANALYST_USE_CLAUDE_COPY` is absent from dev `.env` (`ANTHROPIC_API_KEY` **is** set) — all alert copy is template. If Claude copy is wanted on prod, add the flag to the prod `.env` **and** confirm the model id in `analyst_copy_service.py:72` (`claude-sonnet-4-5-20250929`) is still valid — a dead Claude model id was already retired elsewhere on 2026-08-17.
+4. `MindwealthUI_Vue/.env:1` still reads `NUXT_API_BASE_URL=http://51.20.53.218:8514` — points a Nuxt at itself. Harmless while systemd supplies the real value (`:8514`→`127.0.0.1:8507`, `:8512`→`127.0.0.1:8506`), but wrong for anyone running the app from a shell. Fix or delete the line.
+
+### Smoke tests
+
+- [PENDING] After any fix: `GET :8507/api/v1/analytics/analyst/alerts?include_system=false` — assert no `signal.fwd_wr < 0`, and that `type` distinguishes position-risk alerts from win-rate drift.
+- [PENDING] `GET :8507/api/v1/analytics/analyst/brief` — assert the snippet does not end mid-number.
+- [PENDING] Logged-in `GET :8514/api/overwatch` — assert exactly one card per Combo, and `system_checks` sourced from `/system/health`.
+
+---
+
+## 2026-08-18 — `POST /macro/run-nightly` could clobber the live snapshot (API 1.10.9) `[PENDING]`
+
+Closes the half of the 2026-08-17 snapshot bug that the `persist` flag did **not** cover. `trigger_nightly_run()` passed any `as_of` into `run_nightly()`, which persists, so a single call like `{"as_of": "2024-09-18"}` reproduced the exact corruption over HTTP.
+
+**Fix:** persist only when `as_of` is unset or equals today; response gains `persisted` and `persist_skipped_reason`, and `output_path` is `null` when skipped. Also isolated the runic schema test's DB writes via a throwaway `MACRO_INTEL_DB` copy.
+
+### 1. Files to merge `chatbot-dev` → `chatbot-prod` (commit `40fda07de`)
+
+| Path | Kind |
+|---|---|
+| `api/services/macro_service.py` | modified — `persist` guard in `trigger_nightly_run()` |
+| `api/routers/macro.py` | modified — docstring documents the guard |
+| `api/main.py` | modified — `API_VERSION` 1.10.8 → **1.10.9** |
+| `tests/test_api_macro.py` | modified — `test_backdated_nightly_run_does_not_persist` |
+| `tests/test_runic_output_schema.py` | modified — tmp-DB isolation in `setUp`/`tearDown` |
+| `docs/mindwealth-api-docs` | submodule pointer → `1121b3e` (pushed to `divsum127/mindwealth-api-docs` `main`) |
+
+**Careful when merging:** `api/services/macro_service.py` and `api/routers/macro.py` still carry **uncommitted work from other tasks** in this worktree (≈238 further lines). Only the hunks in `40fda07de` belong to this change.
+
+- **Dev-only / revert:** none. **Runtime artifacts:** none. **`.env` / secrets:** unchanged. **systemd / Nuxt:** no change, no rebuild.
+- **Response-shape change:** additive only (`persisted`, `persist_skipped_reason`); `output_path` becomes nullable. No Nuxt consumer reads this endpoint.
+
+### 2. Smoke tests
+
+- `[DONE 2026-08-18]` `pytest tests/ -q` → **818 passed, 4 skipped, 0 failed** (249s). The long-standing Monday-only `test_shortlist_mtm_not_stale_zero_for_aged_signals` failure is **gone** now that the 2026-08-17 pull landed.
+- `[DONE 2026-08-18]` Live proof on dev `:8507`: `POST /macro/run-nightly {"as_of":"2024-09-18"}` → `persisted: false`, `output_path: null`, reason string present; `runic_output.json` mtime **unchanged**, `date` still `2026-08-17`, no `runic_briefing_2024-09-18.*` produced.
+- `[DONE 2026-08-18]` `smoke-test-apis.sh` 11/11 PASS, dev reports **v1.10.9**, prod v1.8.1 isolated.
+- `[PENDING]` After the prod merge: same backdated call against `:8506` must return `persisted: false`.
+
+### Status: `[PENDING]` — done and verified on dev; prod merge outstanding.
+
+---
+
 ## 2026-08-17 — Nuxt stamped report dates at midnight UTC (topbar read one evening early) `[PROD-ACTION]`
 
 **Repo:** `MindwealthUI_Vue` (separate remote `D-ParthChauhan/MindwealthUI_Vue`), branch `ui-dev` @ `fe7ebf1`, author `divsum127`.
