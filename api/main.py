@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import os
 from contextlib import asynccontextmanager
 
@@ -29,6 +30,19 @@ _docs_enabled = os.getenv("DOCS_ENABLED", "true").strip().lower() not in {"0", "
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     CONVICTION_STORE_DIR.mkdir(parents=True, exist_ok=True)
+    # Chat jobs run in worker threads in this process, so anything still marked
+    # running belongs to a process that no longer exists. Left alone, a client
+    # polls that job forever and eventually reports the analyst as unreachable.
+    try:
+        from api.jobs.store import get_job_store  # noqa: PLC0415
+
+        orphaned = get_job_store().fail_orphaned()
+        if orphaned:
+            logging.getLogger(__name__).warning(
+                f"Marked {orphaned} chat job(s) as failed — interrupted by a previous restart"
+            )
+    except Exception as exc:  # never block startup over housekeeping
+        logging.getLogger(__name__).warning(f"Could not reconcile orphaned chat jobs: {exc}")
     yield
     shutdown_executor()
 

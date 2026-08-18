@@ -262,3 +262,42 @@ class TestHistorySerialization(unittest.TestCase):
         self.assertIsNone(rows[1]["signal_date"], "NaT must become null")
         # The engine's own copy must keep the DataFrame — it is used in later turns.
         self.assertIsInstance(messages[1]["metadata"]["full_signal_tables"]["entry"], pd.DataFrame)
+
+
+class TestOrphanedJobReconciliation(unittest.TestCase):
+    """
+    Jobs run in worker threads in the API process. A restart kills the thread
+    but used to leave the record saying `running` forever, so a polling client
+    never received an answer or an error — it spun until its own budget expired
+    and reported the analyst as unreachable.
+    """
+
+    def test_running_jobs_are_failed_on_startup(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = JobStore(Path(tmp))
+            queued = store.create(session_id="s1", request={"message": "a"})
+            running = store.create(session_id="s1", request={"message": "b"})
+            store.update(running["job_id"], status="running")
+            done = store.create(session_id="s1", request={"message": "c"})
+            store.update(done["job_id"], status="completed", result={"content": "answer"})
+
+            self.assertEqual(store.fail_orphaned(), 2)
+
+            for job_id in (queued["job_id"], running["job_id"]):
+                rec = store.get(job_id)
+                assert rec is not None
+                self.assertEqual(rec["status"], "failed")
+                self.assertIn("restarted", rec["error"])
+                self.assertIsNotNone(rec["completed_at"])
+
+            finished = store.get(done["job_id"])
+            assert finished is not None
+            self.assertEqual(finished["status"], "completed", "completed jobs must not be touched")
+            self.assertEqual(finished["result"], {"content": "answer"})
+
+    def test_second_call_is_a_no_op(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = JobStore(Path(tmp))
+            store.create(session_id="s1", request={"message": "a"})
+            self.assertEqual(store.fail_orphaned(), 1)
+            self.assertEqual(store.fail_orphaned(), 0)

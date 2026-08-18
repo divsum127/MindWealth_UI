@@ -90,6 +90,36 @@ class JobStore:
                 break
         return jobs
 
+    def fail_orphaned(self) -> int:
+        """
+        Mark jobs left ``queued``/``running`` by a previous process as failed.
+
+        Jobs execute in worker threads inside this process. A restart (deploy,
+        crash, ``systemctl restart``) kills the thread but leaves the on-disk
+        record saying ``running`` forever, so a client polling that job never
+        gets an answer and never gets an error either — it just spins until its
+        own budget expires and shows "Could not reach the analyst".
+
+        Called once at startup, before any new job can be created.
+        """
+        orphaned = 0
+        for path in self.root.glob("*.json"):
+            try:
+                record = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                continue
+            if record.get("status") not in {"queued", "running"}:
+                continue
+            record["status"] = "failed"
+            record["completed_at"] = _utc_now()
+            record["error"] = "Interrupted — the API restarted while this answer was being generated."
+            try:
+                self._write(record["job_id"], record)
+                orphaned += 1
+            except (OSError, KeyError):
+                continue
+        return orphaned
+
     def _write(self, job_id: str, record: dict[str, Any]) -> None:
         path = self._path(job_id)
         path.parent.mkdir(parents=True, exist_ok=True)
