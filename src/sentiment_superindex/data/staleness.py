@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from src.sentiment_superindex.config import SSI_INPUT_CADENCE, staleness_policy
+from src.sentiment_superindex.config import SSI_INPUT_CADENCE, staleness_policy, weight_penalty_for
 
 
 def input_cadence(series_key: str) -> str:
@@ -29,8 +29,10 @@ def observation_as_of(
     weight_multiplier is 0 when dropped (beyond max_stale_days or no data),
     1.0 on the print date, else stale_weight_penalty.
     """
-    if max_stale_days is None or stale_weight_penalty is None:
-        max_stale_days, stale_weight_penalty = staleness_policy()
+    if max_stale_days is None:
+        max_stale_days, _, _ = staleness_policy()
+    if stale_weight_penalty is None:
+        stale_weight_penalty = weight_penalty_for(series_key)
 
     if series is None or series.empty:
         return None, None, 0.0

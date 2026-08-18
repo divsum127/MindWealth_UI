@@ -25,14 +25,23 @@ from src.sentiment_superindex.config import staleness_policy
 
 _UNSET: object = object()
 
-# Back-compat defaults (weekly cadence). Prefer cadence-aware helpers below.
-MAX_FFORWARD_FILL_CALENDAR_DAYS = 5
-MAX_FFORWARD_FILL_BUSINESS_DAYS = 5
+# Historical forward-fill defaults, kept only so the alignment helpers have a documented
+# reference point. They are NOT the staleness policy and nothing in scoring reads them: the
+# live caps come from SSI_CONFIG.yaml via `max_stale_days_for_cadence` below (weekly 8 /
+# daily 3 / monthly 30 as of Test 21, 2026-08-07). They are deliberately left at their
+# original 5 rather than "refreshed" to match, because silently tracking the real policy is
+# exactly how a fourth divergent copy of these numbers would be born again.
+DEPRECATED_FFILL_CALENDAR_DAYS = 5
+DEPRECATED_FFILL_BUSINESS_DAYS = 5
+
+# Deprecated aliases retained for import compatibility.
+MAX_FFORWARD_FILL_CALENDAR_DAYS = DEPRECATED_FFILL_CALENDAR_DAYS
+MAX_FFORWARD_FILL_BUSINESS_DAYS = DEPRECATED_FFILL_BUSINESS_DAYS
 
 
 def max_stale_days_for_cadence(cadence: str) -> int:
     """Calendar-day carry cap for a publication cadence (weekly/daily/monthly)."""
-    max_stale, _ = staleness_policy()
+    max_stale, _, _ = staleness_policy()
     return int(max_stale.get(cadence, max_stale["weekly"]))
 
 

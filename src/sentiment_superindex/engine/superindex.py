@@ -2,14 +2,22 @@
 
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 import numpy as np
 import pandas as pd
 
-from src.sentiment_superindex.config import load_config, staleness_policy
+from src.sentiment_superindex.config import (
+    coverage_policy,
+    load_config,
+    staleness_policy,
+    weight_penalty_for,
+)
 from src.sentiment_superindex.data.pull_all import load_all_series
 from src.sentiment_superindex.data.staleness import effective_input_weights, observation_as_of
+
+logger = logging.getLogger("ssi.superindex")
 
 DEFAULT_LAYER_WEIGHTS = {"layer1": 0.40, "layer2": 0.35, "layer3": 0.25}
 
@@ -103,8 +111,16 @@ def _layer_signal_coverage(
     input_keys: list[str],
     components: dict[str, Any],
     input_weights: dict[str, float],
+    *,
+    layer_key: str | None = None,
 ) -> dict[str, Any]:
-    """Unavailable / expired signals dropped; stale carries weight_penalty then renormalize."""
+    """Unavailable / expired signals dropped; stale carries weight_penalty then renormalize.
+
+    Also decides whether what survived is still enough to score. ``reliable`` is consumed by
+    ``_build_layer`` (to suppress the score) and by the API/UI (to label the layer), so the
+    number shown and the number used can never disagree -- the same rule the combo dominance
+    code follows for ``insufficient_episodes``.
+    """
     configured_count = len(input_keys)
     available_keys = [
         key for key in input_keys if components.get(key, {}).get("raw") is not None
@@ -126,9 +142,34 @@ def _layer_signal_coverage(
         if components.get(key, {}).get("stale_days") is not None
         and components.get(key, {}).get("raw") is None
     ]
+    min_counts, min_weight_retained = coverage_policy()
+    nominal_weight_retained = (
+        sum(input_weights.get(key, 0.0) for key in available_keys) / configured_weight_sum
+        if configured_weight_sum > 0
+        else 0.0
+    )
+    min_count = min_counts.get(layer_key or "", 0)
+    reasons: list[str] = []
+    if available_count < min_count:
+        reasons.append(
+            f"only {available_count} of {configured_count} inputs available "
+            f"(minimum {min_count})"
+        )
+    if nominal_weight_retained < min_weight_retained:
+        reasons.append(
+            f"only {nominal_weight_retained:.0%} of nominal weight present "
+            f"(minimum {min_weight_retained:.0%})"
+        )
+    reliable = not reasons
+
     return {
         "configured_count": configured_count,
         "available_count": available_count,
+        "reliable": reliable,
+        "unreliable_reason": "; ".join(reasons) if reasons else None,
+        "nominal_weight_retained": round(nominal_weight_retained, 4),
+        "min_available_count": min_count,
+        "min_nominal_weight_retained": min_weight_retained,
         "weights_renormalized": available_count < configured_count or bool(stale_keys),
         "nominal_weights": {
             key: round(input_weights.get(key, 0.0), 4) for key in input_keys
@@ -195,7 +236,7 @@ def _build_layer(
     *,
     layer1_input_weights: dict[str, float],
 ) -> dict[str, Any]:
-    max_stale_days, stale_penalty = staleness_policy()
+    max_stale_days, _, _ = staleness_policy()
     components: dict[str, Any] = {}
     input_weights = _input_weights_for_layer(layer_key, input_keys, layer1_input_weights)
     for key in input_keys:
@@ -205,7 +246,7 @@ def _build_layer(
             as_of,
             series_key=key,
             max_stale_days=max_stale_days,
-            stale_weight_penalty=stale_penalty,
+            stale_weight_penalty=weight_penalty_for(key),
         )
         if raw is None:
             components[key] = {
@@ -225,10 +266,27 @@ def _build_layer(
         }
     _attach_component_contributions(input_keys, components, input_weights)
     score = _weighted_layer_score(input_keys, components, input_weights)
+    coverage = _layer_signal_coverage(
+        input_keys, components, input_weights, layer_key=layer_key
+    )
+    if not coverage["reliable"]:
+        # Suppressing the score (rather than publishing a number built on a fraction of the
+        # inputs) makes build_superindex drop the layer from the weighted mean via the path it
+        # already uses for a fully-empty layer. The components stay in the payload so the page
+        # can still show what was and was not received.
+        # DEBUG, not ERROR: _build_layer runs once per date while build_ssi_history walks
+        # several thousand historical dates, most of which predate a given input entirely.
+        # The authoritative, once-per-run report is jobs.daily_run.log_coverage; shouting here
+        # produced 510 ERROR lines in a single job and would have rebuilt the very log-noise
+        # problem this gate was added to solve.
+        logger.debug(
+            "SSI %s marked UNRELIABLE: %s", layer_key, coverage["unreliable_reason"]
+        )
+        score = None
     return {
         "score": float(score) if score is not None else None,
         "components": components,
-        "signal_coverage": _layer_signal_coverage(input_keys, components, input_weights),
+        "signal_coverage": coverage,
     }
 
 

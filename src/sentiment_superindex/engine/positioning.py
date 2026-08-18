@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import logging
+
 from datetime import datetime
 from typing import Any
 
 import pandas as pd
 
-from src.sentiment_superindex.config import load_config
+from src.sentiment_superindex.config import coverage_policy, load_config, staleness_policy
 from src.sentiment_superindex.data.alignment import max_stale_days_for_cadence
 from src.sentiment_superindex.engine.layer2 import (
     derive_layer2_sizing,
@@ -18,6 +20,8 @@ from src.sentiment_superindex.data.pull_all import layer3_for_date, load_all_ser
 from src.sentiment_superindex.engine.regime_block import build_regime_block
 from src.sentiment_superindex.engine.superindex import build_superindex
 from src.sentiment_superindex.engine.ssi_score import compute_ssi_at_date
+
+logger = logging.getLogger("ssi.positioning")
 
 
 # Display rounding policy: 2 decimals for every indicator (oscillators, ratios,
@@ -139,6 +143,23 @@ def _layer3_cftc_meta(as_of: pd.Timestamp, cftc: dict[str, Any]) -> dict[str, An
     }
 
 
+
+def _staleness_policy_block() -> dict[str, Any]:
+    """The resolved staleness policy, emitted so the UI reads it instead of duplicating it."""
+    max_stale_days, default_penalty, penalty_by_signal = staleness_policy()
+    min_counts, min_weight_retained = coverage_policy()
+    return {
+        "max_stale_days": max_stale_days,
+        "weight_penalty": default_penalty,
+        "weight_penalty_by_signal": penalty_by_signal,
+        "coverage": {
+            "min_available_count": min_counts,
+            "min_nominal_weight_retained": min_weight_retained,
+        },
+        "source": "SSI_CONFIG.yaml",
+    }
+
+
 def build_positioning_payload(as_of: str | None = None) -> dict[str, Any]:
     as_of = as_of or datetime.now().strftime("%Y-%m-%d")
     cfg = load_config()
@@ -159,6 +180,25 @@ def build_positioning_payload(as_of: str | None = None) -> dict[str, Any]:
     gate_summary = evaluate_layer2_gates(layer2, legacy_votes=hyg_vix_votes)
     layer2_status, layer2_count, ssi_mult = derive_layer2_sizing(gate_summary)
     layer3_cftc = layer3_for_date(as_of)
+
+    # Coverage gate (2026-08-18). A gate decision built on a fraction of its inputs is not a
+    # market call, so when any layer is UNRELIABLE the size multiplier goes neutral instead of
+    # 0.80x / 1.20x. Without this, the 2026-08-18 outage -- four of six Layer 2 inputs lost to
+    # a dead ^VIX3M feed -- published "UNCONFIRMED, 0.80x size" as though the market had moved.
+    unreliable_layers = {
+        key: layer["signal_coverage"].get("unreliable_reason")
+        for key, layer in superindex.get("layers", {}).items()
+        if layer.get("signal_coverage") and not layer["signal_coverage"].get("reliable", True)
+    }
+    coverage_ok = not unreliable_layers
+    if not coverage_ok:
+        logger.error(
+            "SSI coverage gate active -- forcing neutral multiplier (was %.2fx): %s",
+            ssi_mult,
+            "; ".join(f"{k}: {v}" for k, v in unreliable_layers.items()),
+        )
+        ssi_mult = 1.0
+        layer2_status = "COVERAGE_INCOMPLETE"
 
     long_th = float(th.get("long_entry", -0.6))
     short_th = float(th.get("short_entry", 0.85))
@@ -189,6 +229,8 @@ def build_positioning_payload(as_of: str | None = None) -> dict[str, Any]:
         "layer2_status": layer2_status,
         "layer2_confirmed_count": layer2_count,
         "ssi_multiplier": ssi_mult,
+        "coverage_ok": coverage_ok,
+        "coverage_unreliable_layers": unreliable_layers,
         "layer2_gate_direction": gate_summary.direction,
         "layer2_gate_label": gate_summary.label,
         "regime": build_regime_block(ssi_mult),
@@ -205,6 +247,10 @@ def build_positioning_payload(as_of: str | None = None) -> dict[str, Any]:
                 "active": short_active,
             },
         },
+        # Published so consumers stop keeping their own copy of these numbers. The Nuxt
+        # freshness util used to hardcode "mirrors SSI_CONFIG.yaml" values; a mirror that
+        # cannot be checked is a mirror that eventually lies.
+        "staleness_policy": _staleness_policy_block(),
         "inputs_meta": {
             "layer1": layer1_inputs_meta,
             "layer3_cftc": _layer3_cftc_meta(as_of_ts, layer3_cftc),
