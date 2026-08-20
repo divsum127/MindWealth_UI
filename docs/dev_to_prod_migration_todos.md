@@ -23,6 +23,10 @@ Reference deploy skill: `.cursor/skills/prod-pull-and-details/SKILL.md`
 
 ## 2026-08-20 — CFTC six-point close-out: date-parse fix, FOMC calendar fix, placeholder flag cuts `[PENDING]`
 
+**Pushed 2026-08-20:** `chatbot-dev` @ `18d572586`, `ui-dev` @ `c17c5c6`, docs submodule `main` @ `d91ab61`
+(all authored `divsum127`). `API_VERSION` bumped **1.12.0 → 1.12.1**; OpenAPI snapshot regenerated.
+The parent commit carries the submodule pointer, so a prod merge picks up the API docs with it.
+
 **Two of these are data-correctness fixes, not features. They change numbers on prod.**
 
 | File | Change | Prod effect |
