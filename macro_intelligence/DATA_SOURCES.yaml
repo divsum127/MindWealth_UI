@@ -167,6 +167,15 @@ variables:
     schedule_et: EOD
     source: computed
     pull: spx_constituents_ma200
+  - id: 25
+    var_id: PUT_CALL_EMA
+    system: ssi_layer1
+    frequency: daily
+    schedule_et: EOD
+    source: CBOE
+    pull: "cboe_totalpc_csv + cnn_put_call_options; 10-week EMA (span=50)"
+    fallback: "optional EQUIBLES_API_KEY for 2019-10 → 2020-07 gap"
+    lookback: "2003-01-01"
   - id: 17
     var_id: MCCLELLAN
     system: ssi_layer2

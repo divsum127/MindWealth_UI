@@ -57,12 +57,44 @@ def _run_job(job_id: str, session_id: str, followup_kwargs: dict[str, Any]) -> N
     except Exception as exc:
         logger.exception("Chatbot job %s failed", job_id)
 
+        # `error` is rendered directly by the chat client, so it must not carry
+        # provider text (an Anthropic billing message once reached a user with
+        # its request_id). The raw exception stays on the record as
+        # `error_detail` and in the log above.
+        from chatbot.error_messages import safe_error_metadata  # noqa: PLC0415
+
+        safe = safe_error_metadata(exc)
         store.update(
             job_id,
             status="failed",
             completed_at=datetime.now(timezone.utc).isoformat(),
-            error=str(exc),
+            error=safe["error"],
+            error_detail=safe["error_detail"],
         )
+        _persist_failure_to_history(session_id, exc)
+
+
+def _persist_failure_to_history(session_id: str, exc: Exception) -> None:
+    """
+    Record a failed turn in the session history.
+
+    Failures were previously never persisted anywhere the UI reads, so after a
+    refresh a failed exchange vanished entirely and the user could not tell
+    whether the question had been asked at all.
+    """
+    try:
+        from chatbot.history_manager import HistoryManager
+
+        from chatbot.error_messages import safe_error_metadata  # noqa: PLC0415
+
+        safe = safe_error_metadata(exc)
+        HistoryManager(session_id=session_id).add_message(
+            "assistant",
+            safe["error"],
+            {**safe, "job_failed": True},
+        )
+    except Exception:
+        logger.warning("Could not persist job failure to history for session %s", session_id)
 
 
 def enqueue_chatbot_job(session_id: str, followup_kwargs: dict[str, Any], request_snapshot: dict[str, Any]) -> dict[str, Any]:

@@ -14,6 +14,16 @@ class OverwatchEventBus:
     def __init__(self) -> None:
         self._subscribers: set[asyncio.Queue[dict[str, Any]]] = set()
         self._lock = asyncio.Lock()
+        self._loop: asyncio.AbstractEventLoop | None = None
+
+    def bind_loop(self, loop: asyncio.AbstractEventLoop) -> None:
+        """Record the loop that owns the subscriber queues.
+
+        Scans run in worker threads, where ``asyncio.get_running_loop()`` fails
+        and touching a queue directly is not thread-safe. With the loop bound,
+        ``publish_sync`` hands the work back to it instead.
+        """
+        self._loop = loop
 
     async def publish(self, alert: dict[str, Any]) -> None:
         async with self._lock:
@@ -39,17 +49,29 @@ class OverwatchEventBus:
                 self._subscribers.discard(queue)
 
     def publish_sync(self, alert: dict[str, Any]) -> None:
-        """Best-effort publish from sync cron scripts."""
+        """Publish from sync code — a worker thread, or a standalone script."""
         try:
             loop = asyncio.get_running_loop()
         except RuntimeError:
-            for queue in list(self._subscribers):
-                try:
-                    queue.put_nowait(alert)
-                except asyncio.QueueFull:
-                    self._subscribers.discard(queue)
+            loop = None
+
+        if loop is not None:
+            loop.create_task(self.publish(alert))
             return
-        loop.create_task(self.publish(alert))
+
+        bound = self._loop
+        if bound is not None and bound.is_running():
+            # Called off-loop (scan thread): schedule on the owning loop.
+            asyncio.run_coroutine_threadsafe(self.publish(alert), bound)
+            return
+
+        # No loop anywhere — a standalone cron process. Its subscriber set is
+        # empty by definition, so this is a no-op kept only for compatibility.
+        for queue in list(self._subscribers):
+            try:
+                queue.put_nowait(alert)
+            except asyncio.QueueFull:
+                self._subscribers.discard(queue)
 
     @staticmethod
     def format_sse(alert: dict[str, Any]) -> str:

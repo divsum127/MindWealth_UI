@@ -53,6 +53,20 @@ def score_macro_tailwind(overrides: dict[str, Any]) -> float:
     return float(max(-1.0, min(2.0, v)))
 
 
+def score_deal_delay_risk(overrides: dict[str, Any]) -> float:
+    """Dim 13 (item 20) — prefers the live ``compute_deal_delay_agent()`` result
+    (``deal_delay_detail.score``, already anchored to 0 by the confidence rule and to 0
+    unless ``signal == "deal_delay"`` by the agent itself) over the older binary
+    ``deal_delay_risk``/``deal_delay_flag`` override, which stays as a manual-override
+    fallback for when the agent hasn't run (``skip_agent_dims`` / no API key)."""
+    detail = overrides.get("deal_delay_detail")
+    if isinstance(detail, dict) and detail.get("score") is not None:
+        v = _float_or_none(detail.get("score"))
+        if v is not None:
+            return float(max(-2.0, min(0.0, v)))
+    return -1.0 if overrides.get("deal_delay_risk") or overrides.get("deal_delay_flag") else 0.0
+
+
 def classify_debt_purpose(financials: dict[str, Any]) -> str:
     """
     financial_engineering | capex_cycle | operational
@@ -103,11 +117,20 @@ def score_balance_sheet_v6(
 ) -> tuple[float, str]:
     """
     Balance sheet BQ score and debt_purpose classification.
+
+    `bank` substitutes the equity/assets "well-capitalized" ratio (item 3) — banks
+    are naturally leveraged (deposits are liabilities), so net-debt/EBITDA is
+    meaningless for them.
     """
     overrides = overrides or {}
     if overrides.get("balance_sheet") is not None:
         purpose = str(overrides.get("debt_purpose") or classify_debt_purpose(financials))
         return float(overrides["balance_sheet"]), purpose
+
+    if business_type == BusinessType.BANK.value:
+        from .bank_valuation import score_bank_balance_sheet
+
+        return score_bank_balance_sheet(financials)
 
     purpose = classify_debt_purpose(financials)
     if purpose == "financial_engineering":

@@ -1,60 +1,75 @@
 # SSI validation sign-off
 
-**Status:** Partially complete — see table below. Tests 1–4, 7–11, 13 are archived. Remaining items tracked in Phase 1 / Phase 2 columns.
+**Status:** 21/22 tests complete (Test 15 env caveat); Test 11 full backtest waived.  
+**Updated:** 2026-08-12  
+**Status tracker:** [`testing/ssi_th_exp/SSI_OPEN_QUESTIONS_STATUS.md`](../../testing/ssi_th_exp/SSI_OPEN_QUESTIONS_STATUS.md)  
+**Results:** [`testing/ssi_th_exp/SSI_EXPERIMENT_RESULTS.md`](../../testing/ssi_th_exp/SSI_EXPERIMENT_RESULTS.md)
 
 ## How to complete
 
 1. Run `.venv/bin/python scripts/run_ssi_validation_suite.py`
 2. Read **[SSI_THRESHOLD_JUSTIFICATION.md](SSI_THRESHOLD_JUSTIFICATION.md)** (why each threshold value)
-3. Optional: [SSI_OPEN_QUESTIONS_SUMMARY.md](SSI_OPEN_QUESTIONS_SUMMARY.md) (experiment overview)
-4. Review detailed tables: `01_long_threshold_sweep.md` … `17_trendpulse_deterioration.md`
+3. Review **[SSI_EXPERIMENT_RESULTS.md](../../testing/ssi_th_exp/SSI_EXPERIMENT_RESULTS.md)** (compiled results + analysis)
+4. Review detailed tables: `01_long_threshold_sweep.md` … `22_layer2_gate_grid.md`
 5. Fill decisions below
 
 ## Test status summary
 
 | Test | Name | Status | Conclusion |
 |------|------|--------|------------|
-| 1–2 | SSI long/short threshold sweep | **DONE** | Long pctile ≤20 (n=16, +4.08% 3m, 81.25% win). Short +0.6 rejected. Short pctile ≥85 supported. |
-| 3 | SQUEEZE grid | **DONE** | Macro flag only — not an SSI gate |
-| 4 | LIQUIDITY EXIT grid | **DONE** | Macro flag only — not an SSI gate |
-| 5 | TP/SL optimization | **DONE** (artifact saved 2026-06-06) | Best: TP×5, SL×20 (Sharpe=4.06, win=97.67%). Legacy 10×/15× is suboptimal. |
-| 6 | CNN Fear & Greed | **PENDING** (CNN cache only 2025–2026; greed n=0) | Re-run after historical backfill |
-| 7 | DBMF beta threshold | **DONE** | Layer 2 context; prod bands 0.5/1.2 defensible |
-| 8 | HYG/LQD widening | **DONE** | −1.5% threshold → 3 median days to VIX>25 |
+| 1–2 | SSI long/short threshold sweep | **DONE** | Long pctile ≤20 (n=419, 3m +3.14%, 78% win). Short +0.6 rejected. ≥95 pctile for short context. |
+| 3 | SQUEEZE grid | **DONE** (2026-08-07) | Best FM&lt;20/RM&gt;45 (12w Sharpe 1.18). Display flag only. |
+| 4 | LIQUIDITY EXIT grid | **DONE** (2026-08-07) | RM&lt;30/FM&gt;60: ~35% 4w SPX-down. Stress flag only. |
+| 5 | TP/SL optimization | **DONE** | Best: TP×5, SL×20 (Sharpe=4.06). Legacy 10×/15× suboptimal. |
+| 6 | CNN Fear & Greed | **DONE** (2026-08-07) | Post wayback backfill: fear&lt;20 n=121, 3m +4.73%. Greed not a short trigger. |
+| 7 | DBMF beta threshold | **DONE** | Contrarian long context; prod bands 0.5/1.2 defensible |
+| 8 | HYG/LQD widening | **DONE** (2026-08-07) | −1.5% → 2d to VIX&gt;25. Granger lag-1 p=0.006. |
 | 9 | Z-score vs percentile SSI | **DONE** (not deployed) | Percentile wins in 2020/2022 crises; awaiting sign-off |
-| 10 | Layer 2 min_votes | **DONE** | `min_confirmed: 2` correct |
-| 11 | VIX regime / Combo B bypass | **DONE** (full 20y curve waived) | Oct 2022 vix_bypass wiring verified |
-| 12 | Bollinger + SSI | **DONE** | Uses pctile ≤20 gate; see report |
-| 13 | Stochastic + McClellan | **DONE** | Research only — not a production gate |
-| 14 | Gross/net divergence | **DONE** | 21 instances found; forward returns populated |
-| 15 | SBI short signal | **PARTIAL** (MindWealth accessible; batch run needed) | `sbi_breadth.py --start 2015-01-01` from MindWealth venv; each day loads 500 stocks |
-| 16 | Friday pull checklist | **DONE** | All items PASS after CPI + AAII automation fixes |
-| 17 | TrendPulse 0.5/week | **DONE** | See 17_trendpulse_deterioration.md |
+| 10 | Layer 2 min_votes (legacy 4-input) | **DONE** | Superseded by Test 22 — not production 6-gate logic |
+| 11 | VIX regime / Combo B bypass | **PARTIAL** (waiver) | Oct 2022 vix_bypass verified; full 20y curve waived |
+| 12 | Bollinger + SSI | **DONE** (low-n) | Combo n=1 — overlay extremely rare |
+| 13 | Stochastic + McClellan | **DONE** (2026-08-07) | Re-run: combo n=13. Research only. |
+| 14 | Gross/net divergence | **DONE** | n=25; SPX rises ~76% of episodes |
+| 15 | SBI short signal | **DONE** (env caveat) | BMS 2015→2026 complete; **n=0** — MW `cpp_functions` missing C++ backtest symbols. Re-run on C++-enabled host before product use. |
+| 16 | Friday pull checklist | **DONE** | 12/12 PASS |
+| 17 | TrendPulse 0.5/week | **DONE** | 11 episodes at p60; advisory |
+| 18 | COT FM long gate | **DONE** (2026-08-07) | FM&lt;20: 3m +3.13% (n=203) vs FM&lt;30 +2.78% (n=274) |
+| 19 | VIX≥35 FM distribution | **DONE** | FM&lt;15 only 18% of VIX≥35 episodes |
+| 20 | Layer 2 z-score sweep | **DONE** | Inflection z≥1.25 (90.5% 3m hit, n=105) |
+| 21 | Staleness decay | **DONE** (2026-08-12) | Caps 8/3/30; per-signal penalties live; margin debt in pull_all |
+| 22 | Layer 2 gate 2-D grid | **DONE** (2026-08-12) | Prod z≥0.5/min=2: n=160 long+gate, **41.25%** 3m hit, −1.2% avg 3m. Joint grid shows parameter interaction; **pending Rohit** |
 
 ## Recommended thresholds (engineering draft)
 
 | Parameter | CONFIG today | Empirical recommendation | Approve? |
 |-----------|--------------|--------------------------|----------|
-| `long_entry_pctile` | 20 | Test 1–2: n=16, 3m +4.08%, 81.25% win | |
-| `short_entry_pctile` | 85 | Test 2: n=7, 57% 1w short win. Consider 90 (n=5, 60%) | |
-| `long_entry` (level) | -0.6 | Secondary only — never fires in-sample | |
-| `short_entry` (level) | 0.85 | Test 2: n=30 vs 57 at +0.6 | |
-| Percentile SSI (Test 9) | Not in prod | Strongly favored in crises — waive / v3.1 | |
-| TP/SL 10×/15× vol (Test 5) | MindWealth PulseGauge | Best is TP×5, SL×20 (Sharpe 4.06 vs 2.36 legacy) — approve change? | |
+| `long_entry_pctile` | 20 | n=419, 3m +3.14%, 78% win | |
+| `short_entry_pctile` | 85 | ≥95 for negative 3m avg (n=326). 85 = caution. | |
+| `long_entry` (level) | -0.6 | Secondary only | |
+| `short_entry` (level) | 0.85 | Reject +0.6 | |
+| Percentile SSI (Test 9) | Not in prod | Strongly favored in crises | |
+| TP/SL 10×/15× vol (Test 5) | PulseGauge legacy | TP×5/SL×20 (Sharpe 4.06) | |
+| `cot_fast_money_max_pct` | 30 | Test 18: **20** — 3m +3.13% vs +2.78% | |
+| `layer2.min_confirmed` | 2 of 6 | Test 22: prod n=160, 41% hit; min=3 → n=107, 37% hit (not clearly better) | |
+| `layer2.gate_z_min` | 0.5 | Test 22: z=0.5/min=2 best among n≥30 cells; still −1.2% avg 3m on long+gate | |
+| SQUEEZE display | FM&lt;20/RM&gt;45 | Test 3 Aug 2026 | |
+| LIQUIDITY EXIT display | RM&lt;30/FM&gt;60 | Test 4 Aug 2026 | |
 
 ## Waivers
 
 | Item | ID | Notes |
 |------|-----|-------|
-| NFCI in SSI Layer 2 | WAIVER-NFCI-SSI | Product decision — Runic only today |
-| Full virtual-trading equity curve (Test 11) | WAIVER-VT-11 | Oct 2022 vix_bypass verified in unit tests |
+| NFCI in SSI Layer 2 | WAIVER-NFCI-SSI | Runic only |
+| Full virtual-trading equity curve (Test 11) | WAIVER-VT-11 | Oct 2022 bypass verified |
+| VIX removed from SSI Layer 2 | WAIVER-VIX-L2 | Product decision pending |
 
 ## Decisions needed from Rohit
 
-1. **Short pctile gate**: 85 vs 90? (n=7 vs n=5; 57% vs 60% 1w short win — both defensible; 90 is more selective)
-2. **Percentile SSI deployment** (Test 9): Approve switch from z-score to 3yr percentile? (Strongly favored in 2020/2022 crises — z-score path had 0 events; percentile had 62–84 days with +19% / +8% 6m avg returns)
-3. **TP/SL change** (Test 5): Switch from 10×/15× to optimal TP×5 / SL×20? (Sharpe improves from ~2.36 to 4.06)
-4. **Test 15 batch run**: Approve overnight `sbi_breadth.py --start 2015-01-01` run in MindWealth venv?
-5. **Bollinger overlay** (Test 12): Is the Bollinger + SSI gate a product requirement? (0 combo events — can only be evaluated with full SSI history)
+1. **Short pctile gate**: 85 (caution) vs 90 vs 95 (only negative 3m avg)?
+2. **Percentile SSI deployment** (Test 9): Switch from z-score to 3yr percentile?
+3. **TP/SL change** (Test 5): TP×5 / SL×20?
+4. **COT FM long gate** (Test 18): FM&lt;20 vs PDF &lt;30?
+5. **SQUEEZE thresholds** (Test 3): FM&lt;20/RM&gt;45 vs PDF 30/50?
+6. **Bollinger overlay** (Test 12): Product requirement? (combo n=1)
 
 **Signed:** _______________ **Date:** _______________

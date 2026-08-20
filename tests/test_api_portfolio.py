@@ -798,3 +798,87 @@ class TestPersonalBookApi(_PortfolioTestMixin, unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestAxiom2CeilingBounds(unittest.TestCase):
+    """Can portfolio_service produce an allocation the axioms forbid?
+
+    Rohit 6 Aug: his own spec example, 85% low-vol cap x 1.20 VIX x 1.20 SSI, multiplies out
+    to a 104% equity ceiling — a levered book — which violates Axiom 2. "So either
+    portfolio_service can produce an allocation the axioms forbid, or the axioms bind and
+    those x1.20 terms have never done anything. Establish which before we build on top."
+
+    Answer: the axioms bind. The SSI term is capped at 1.00 and the final ceiling is
+    min(100, ...), so no combination of inputs reaches 104%. These tests pin that down so a
+    future ladder redesign cannot quietly introduce leverage without an explicit exemption.
+    """
+
+    def test_ssi_above_one_never_raises_the_ceiling(self) -> None:
+        runic = {
+            "variables_dashboard": [
+                {"variable": "VIX", "current": 12.0, "pctile_3yr": 10.0},
+                {"variable": "HY", "current": 2.5, "tier": "REAL"},
+            ],
+            "regime": {"val_regime": "NORMAL", "geo_overlay": "NEUTRAL"},
+        }
+        capped = portfolio_svc._compute_ceiling(
+            "lowvol", runic, {"ssi_multiplier": 1.20}, spx_trend_mult=1.0, spx_trend_meta={}
+        )
+        neutral = portfolio_svc._compute_ceiling(
+            "lowvol", runic, {"ssi_multiplier": 1.00}, spx_trend_mult=1.0, spx_trend_meta={}
+        )
+        self.assertEqual(capped["ssi_multiplier"], 1.0)
+        self.assertEqual(capped["ssi_multiplier_raw"], 1.20)
+        self.assertEqual(capped["final_ceiling_pct"], neutral["final_ceiling_pct"])
+
+    def test_ceiling_cannot_exceed_one_hundred_percent(self) -> None:
+        runic = {
+            "variables_dashboard": [
+                {"variable": "VIX", "current": 10.0, "pctile_3yr": 1.0},
+                {"variable": "HY", "current": 1.0, "tier": "REAL"},
+            ],
+            "regime": {},
+        }
+        for ssi in (1.0, 1.2, 5.0):
+            ceiling = portfolio_svc._compute_ceiling(
+                "lowvol", runic, {"ssi_multiplier": ssi}, spx_trend_mult=1.0, spx_trend_meta={}
+            )
+            self.assertLessEqual(
+                ceiling["final_ceiling_pct"], 100.0, f"ceiling breached 100% at SSI {ssi}"
+            )
+
+    def test_ssi_below_one_still_cuts_the_ceiling(self) -> None:
+        """The cap must not neuter the haircut direction — only the upside."""
+        runic = {
+            "variables_dashboard": [
+                {"variable": "VIX", "current": 12.0, "pctile_3yr": 10.0},
+                {"variable": "HY", "current": 2.5, "tier": "REAL"},
+            ],
+            "regime": {},
+        }
+        haircut = portfolio_svc._compute_ceiling(
+            "lowvol", runic, {"ssi_multiplier": 0.80}, spx_trend_mult=1.0, spx_trend_meta={}
+        )
+        neutral = portfolio_svc._compute_ceiling(
+            "lowvol", runic, {"ssi_multiplier": 1.00}, spx_trend_mult=1.0, spx_trend_meta={}
+        )
+        self.assertLess(haircut["final_ceiling_pct"], neutral["final_ceiling_pct"])
+
+    def test_ssi_ceiling_step_is_labelled_distinctly_from_the_raw_multiplier(self) -> None:
+        """One number under two meanings was the 1.00x-vs-1.20x panel mismatch."""
+        runic = {
+            "variables_dashboard": [
+                {"variable": "VIX", "current": 12.0, "pctile_3yr": 10.0},
+                {"variable": "HY", "current": 2.5, "tier": "REAL"},
+            ],
+            "regime": {},
+        }
+        ceiling = portfolio_svc._compute_ceiling(
+            "lowvol", runic, {"ssi_multiplier": 1.20}, spx_trend_mult=1.0, spx_trend_meta={}
+        )
+        step = next(s for s in ceiling["steps"] if "SSI" in s["label"])
+        self.assertIn("capped", step["label"].lower())
+        self.assertEqual(step["value"], "×1.00")
+        self.assertEqual(step["raw_value"], "×1.20")
+
+

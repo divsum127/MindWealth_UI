@@ -16,17 +16,20 @@ from .fd_votes import compute_fd_votes
 from .scoring import (
     apply_fs_cap,
     calculate_bq_raw,
-    calculate_fs_score,
     classify_fs,
     clamp,
     compute_bq_components,
     detect_business_type,
+    fs_score_breakdown,
+    is_coverage_incomplete,
     is_equity_asset,
+    is_hardware_or_semiconductor_sector,
     is_yield_trap,
     market_yield_threshold,
     valuation_tax_breakdown,
     verdict_for_buy,
     verdict_for_sell,
+    yield_trap_breakdown,
 )
 from .signals import load_signal_file, normalize_signal_dataframe, normalize_signal_row
 from .data_coverage import apply_coverage_to_record
@@ -118,7 +121,14 @@ def full_recalculation(
     if not skip_agents:
         company = str(info.get("longName") or info.get("shortName") or symbol)
         agent_out = run_agent_dimensions(
-            symbol, company, business_type, revenue_ttm=_safe_float(fundamentals.get("revenue_ttm") or fundamentals.get("fwd_revenue_stored"))
+            symbol,
+            company,
+            business_type,
+            revenue_ttm=_safe_float(fundamentals.get("revenue_ttm") or fundamentals.get("fwd_revenue_stored")),
+            # Item 6: G2 exclusion keyed off raw sector/industry tokens, not the
+            # `high_margin_hardware` business_type bucket — a 25%-margin chip name
+            # still deserves Gartner/patent sourcing over G2, same as a 55%-margin one.
+            is_hardware_sector=is_hardware_or_semiconductor_sector(info),
         )
         for key, val in agent_out.items():
             if val:
@@ -127,6 +137,20 @@ def full_recalculation(
             tam_mult = manual["reinvestment_runway_detail"].get("tam_revenue_multiple")
             if tam_mult is not None:
                 manual["reinvestment_runway"] = tam_mult
+        # Deal-delay agent (item 20): auto-populates the two flags that used to require
+        # a human to set manually — `deal_delay_flag` feeds the existing valuation-tax
+        # `deal_delay_signal` component (scoring.py) and the BQ `deal_delay_risk` line
+        # (fundamentals_enriched.py); `supply_constraint_flag` (item 9) is informational
+        # only and lands in modify_signal()'s rationale. A confidence-gated agent result
+        # (score already anchored to 0 by _apply_confidence_rules when confidence < 0.7)
+        # never overrides an explicit human-set flag already present in manual_overrides.
+        deal_delay_detail = manual.get("deal_delay_detail")
+        if isinstance(deal_delay_detail, dict):
+            signal = deal_delay_detail.get("signal")
+            if signal == "deal_delay" and "deal_delay_flag" not in manual:
+                manual["deal_delay_flag"] = True
+            elif signal == "supply_constraint" and "supply_constraint_flag" not in manual:
+                manual["supply_constraint_flag"] = deal_delay_detail.get("supply_constraint_detail") or "Supply-constrained per latest transcript scan"
         record["manual_overrides"] = manual
 
     # Divergence counter — update before BQ so divergence_signal uses persisted days
@@ -156,6 +180,27 @@ def full_recalculation(
     record["fs_quality_base"] = round(50 + (record["bq_raw"] * 2.5), 2)
     record["debt_purpose"] = fundamentals.get("debt_purpose")
     record["revenue_accelerating"] = fundamentals.get("revenue_accelerating")
+    record["capital_return_penalty"] = float(bq_components.get("capital_return_flags", 0.0) or 0.0)
+
+    # Buyback-suspension / dividend-cut / revenue-miss flags (items 7-8) — informational
+    # `record["flags"]` entries; surfaced by run_daily_universe()'s alert_map the same
+    # way yield_trap/fs_weak/pe_history_insufficient already are (see daily_run.py).
+    new_flags: list[str] = []
+    buyback_flag = fundamentals.get("buyback_suspension_flag")
+    if isinstance(buyback_flag, dict) and buyback_flag.get("triggered"):
+        new_flags.append("buyback_suspension")
+    dividend_flag = fundamentals.get("dividend_cut_flag")
+    if isinstance(dividend_flag, dict) and dividend_flag.get("triggered"):
+        new_flags.append("dividend_cut")
+    if fundamentals.get("revenue_miss_gt_10pct"):
+        new_flags.append("revenue_miss_gt_10pct")
+    if is_coverage_incomplete(business_type):
+        new_flags.append("coverage_incomplete")
+    if new_flags:
+        existing_flags = [f for f in (record.get("flags") or []) if f not in new_flags]
+        record["flags"] = existing_flags + new_flags
+    else:
+        record["flags"] = [f for f in (record.get("flags") or []) if f not in {"buyback_suspension", "dividend_cut", "revenue_miss_gt_10pct", "coverage_incomplete"}]
 
     fd_bundle = compute_fd_votes(fundamentals, record)
     record["fd_votes"] = fd_bundle.get("votes", {})
@@ -189,6 +234,20 @@ def full_recalculation(
             "shares_outstanding_change_pct": fundamentals.get("shares_outstanding_change_pct"),
             "fifty_two_week_high": fundamentals.get("fifty_two_week_high"),
             "days_below_high": fundamentals.get("days_below_high"),
+            "net_income_ttm": fundamentals.get("net_income_ttm"),
+            "ebitda_ttm": fundamentals.get("ebitda_ttm"),
+            "tangible_book_value": fundamentals.get("tangible_book_value"),
+            "buyback_suspension_flag": fundamentals.get("buyback_suspension_flag"),
+            "dividend_cut_flag": fundamentals.get("dividend_cut_flag"),
+            "revenue_estimate_current": fundamentals.get("revenue_estimate_current"),
+            "revenue_miss_pct": fundamentals.get("revenue_miss_pct"),
+            "revenue_miss_gt_10pct": fundamentals.get("revenue_miss_gt_10pct"),
+            "pe_history_thin": fundamentals.get("pe_history_thin"),
+            "pe_history_years": fundamentals.get("pe_history_years"),
+            "adjusted_eps_ttm": fundamentals.get("adjusted_eps_ttm"),
+            "one_off_pct_of_ni": fundamentals.get("one_off_pct_of_ni"),
+            "effective_tax_rate": fundamentals.get("effective_tax_rate"),
+            "pe_ttm_adjusted": fundamentals.get("pe_ttm_adjusted"),
         },
     )
 
@@ -279,20 +338,38 @@ def daily_update(
         record["pe_ttm"] = None
         record["pe_percentile_20y"] = None
 
+    # Adjusted-PE materiality-gate substitution (item 11, Q10 answer): only the
+    # *percentile ranking* input swaps to adjusted PE when one-off items exceed 5%
+    # of trailing net income — the raw `pe_ttm` field itself is never overwritten.
+    pe_for_percentile = _safe_float(record.get("pe_ttm_adjusted")) or record.get("pe_ttm")
+
     pe_history = record.get("pe_20y_array") or []
-    if isinstance(pe_history, list) and record.get("pe_ttm") and record["pe_ttm"] > 0:
-        record["pe_percentile_20y"] = _percentile_rank(pe_history, _safe_float(record.get("pe_ttm")))
+    if isinstance(pe_history, list) and pe_for_percentile and pe_for_percentile > 0:
+        record["pe_percentile_20y"] = _percentile_rank(pe_history, _safe_float(pe_for_percentile))
 
     mcap = _safe_float(record.get("market_cap"))
     net_debt = _safe_float(record.get("net_debt_stored")) or 0.0
     fwd_revenue = _safe_float(record.get("fwd_revenue_stored"))
+    business_type = str(record.get("business_type") or "")
     if mcap is not None:
         record["enterprise_value"] = mcap + net_debt
-        fcf = _safe_float(record.get("fcf_ttm"))
-        if fcf is not None and mcap > 0:
-            record["owner_earnings_yield"] = round(fcf / mcap, 6)
+        if business_type == "bank":
+            # OEY substitution (item 3): earnings yield = Net Income / Market Cap
+            # (i.e. 1/PE) — FCF-based OEY doesn't apply to banks.
+            net_income = _safe_float(record.get("net_income_ttm"))
+            if net_income is not None and mcap > 0:
+                record["owner_earnings_yield"] = round(net_income / mcap, 6)
+        else:
+            fcf = _safe_float(record.get("fcf_ttm"))
+            if fcf is not None and mcap > 0:
+                record["owner_earnings_yield"] = round(fcf / mcap, 6)
     if mcap is not None and fwd_revenue and fwd_revenue > 0:
         record["ev_fwd_rev"] = round((mcap + net_debt) / fwd_revenue, 4)
+    ebitda_ttm = _safe_float(record.get("ebitda_ttm"))
+    if mcap is not None and ebitda_ttm and ebitda_ttm > 0:
+        # EV/forward-EBITDA driver (item 4) — computed generically (cheap) whenever
+        # EBITDA is available; only actually consumed for `high_margin_hardware`.
+        record["ev_fwd_ebitda"] = round((mcap + net_debt) / ebitda_ttm, 4)
 
     annual_div = _safe_float(record.get("annual_div_per_share_stored"))
     if annual_div is not None and stored_price and stored_price > 0:
@@ -306,7 +383,7 @@ def daily_update(
     if isinstance(pe_meta, dict) and pe_meta.get("insufficient_20y"):
         record["pe_history_insufficient"] = True
         record["pe_percentile_20y"] = None
-    if not record.get("pe_ttm") or (record.get("pe_ttm") or 0) <= 0:
+    if not pe_for_percentile or (pe_for_percentile or 0) <= 0:
         record["pe_percentile_20y"] = None
 
     # Divergence state persistence (bootstrap from price history on first run)
@@ -354,10 +431,15 @@ def daily_update(
     record["valuation_tax_breakdown"] = valuation_tax_breakdown(record)
     record["valuation_tax"] = record["valuation_tax_breakdown"]["total"]
     record["conviction_score"] = round((_safe_float(record.get("bq_raw")) or 0.0) + record["valuation_tax"], 2)
-    record["yield_trap_mkt_threshold"] = market_yield_threshold(symbol)
-    record["fs_score"] = calculate_fs_score(record)
+    record["yield_trap_mkt_threshold"] = market_yield_threshold(symbol, record.get("business_type"))
+    # FS-score total always derived by summing fs_score_breakdown()'s rows (item 15) —
+    # never a separately cached number. fs_cap_breakdown is stored for the Engine
+    # Layers "FS Cap" click-through panel (item 19 — Parth hand-off data).
+    record["fs_cap_breakdown"] = fs_score_breakdown(record)
+    record["fs_score"] = record["fs_cap_breakdown"]["total"]
     record["fs_class"] = classify_fs(record["fs_score"])
     record["yield_trap_warning"] = is_yield_trap(record, symbol)
+    record["yield_trap_breakdown"] = yield_trap_breakdown(record, symbol)
     record["last_daily_update"] = utc_now_iso()
     apply_coverage_to_record(record, market_data, raw_fetch=raw_fetch, info=coverage_info)
 
@@ -448,22 +530,30 @@ def modify_signal(
     fs_class = str(record.get("fs_class") or classify_fs(record.get("fs_score")))
     final_score, cap_reason = apply_fs_cap(raw_score, fs_class, signal_timeframe)
     yield_trap = bool(record.get("yield_trap_warning"))
+    coverage_incomplete = is_coverage_incomplete(record.get("business_type"))
     rationale = [
         f"BQ {record.get('bq_raw', 0)} + valuation tax {record.get('valuation_tax', 0)} = {raw_score}",
         f"FS class {fs_class}",
     ]
     if cap_reason:
         rationale.append(cap_reason)
+    supply_flag = (record.get("manual_overrides") or {}).get("supply_constraint_flag")
+    if supply_flag:
+        # Item 9 (Q8 answer): informational only, lands in rationale the same way TAM
+        # sourcing citations do — never a score input. Set via manual_overrides until
+        # the deal-delay agent (item 20, carried forward) can derive it from transcripts.
+        rationale.append(f"Supply constraint noted: {supply_flag}")
 
     technical_signal = str(technical_signal or "").upper()
     if technical_signal == "BUY" and signal_timeframe == "short" and long_position_near_stop:
         verdict, sizing = "CANCEL BUY", 0.0
         rationale.append("TRAILING_STOP_WARNING: long position near stop")
     elif technical_signal == "BUY":
-        verdict, sizing = verdict_for_buy(final_score, record.get("fd_direction"), yield_trap)
+        verdict, sizing = verdict_for_buy(final_score, record.get("fd_direction"), yield_trap, coverage_incomplete)
         # fd_direction sizing is encoded in verdict_for_buy tiers — do not double-apply fd_sizing_adj
         if (
-            signal_timeframe == "short"
+            verdict not in {"COVERAGE INCOMPLETE"}
+            and signal_timeframe == "short"
             and technical_signal == "BUY"
             and layers.core_fraction
             and final_score < 2
@@ -472,12 +562,16 @@ def modify_signal(
             verdict, sizing = "CANCEL BUY", 0.0
             rationale.append("TACTICAL_ADD_WARNING: conviction deteriorated since core opened")
     elif technical_signal == "SELL":
-        verdict, sizing = verdict_for_sell(final_score, signal_timeframe, yield_trap)
+        verdict, sizing = verdict_for_sell(final_score, signal_timeframe, yield_trap, coverage_incomplete)
     else:
         verdict, sizing = "NOT_APPLICABLE", 0.0
         rationale.append("Unknown technical signal")
 
-    if yield_trap:
+    if coverage_incomplete:
+        rationale.append(
+            f"Coverage incomplete: business_type '{record.get('business_type')}' is not one of the 6 calibrated types"
+        )
+    elif yield_trap:
         rationale.append("Yield trap hard gate fired")
 
     if update_layers:
@@ -498,6 +592,7 @@ def modify_signal(
         fs_score=record.get("fs_score"),
         fs_class=fs_class,
         yield_trap_warning=yield_trap,
+        coverage_incomplete=coverage_incomplete,
         business_type=record.get("business_type"),
         bq_raw=record.get("bq_raw"),
         valuation_tax=record.get("valuation_tax"),
@@ -596,14 +691,34 @@ def run_daily_universe(tickers: list[str], store_dir: Path | None = None) -> dic
     for ticker in tickers:
         record = daily_update(ticker, store_dir=store_dir)
         flags: list[str] = []
+        yield_breakdown = record.get("yield_trap_breakdown") or {}
         if record.get("yield_trap_warning"):
             flags.append("yield_trap")
+        elif yield_breakdown.get("watching"):
+            # Item 19 (Parth hand-off): distinguish confirmed-fired from
+            # watching-but-not-fired so the Yield-Traps panel count matches its list.
+            flags.append("yield_trap_watching")
         if record.get("fs_class") in {"weak", "moderate_low"}:
             flags.append(f"fs_{record.get('fs_class')}")
         if (record.get("conviction_score") or 0) < 2:
             flags.append("low_conviction")
         if record.get("pe_history_insufficient"):
             flags.append("pe_history_insufficient")
+        if record.get("pe_history_thin"):
+            flags.append("pe_history_thin")
+        if is_coverage_incomplete(record.get("business_type")):
+            flags.append("coverage_incomplete")
+        # Recalc-worthy flags (items 7-8): surfaced here for manual review /
+        # queueing rather than auto-triggering full_recalculation() from inside the
+        # lightweight daily pass, matching how pe_history_insufficient is handled.
+        buyback_flag = record.get("buyback_suspension_flag") or {}
+        if isinstance(buyback_flag, dict) and buyback_flag.get("triggered"):
+            flags.append("buyback_suspension_needs_recalc")
+        dividend_flag = record.get("dividend_cut_flag") or {}
+        if isinstance(dividend_flag, dict) and dividend_flag.get("triggered"):
+            flags.append("dividend_cut_needs_recalc")
+        if record.get("revenue_miss_gt_10pct"):
+            flags.append("revenue_miss_needs_recalc")
         if flags:
             alert_map[sanitize_ticker(ticker)] = flags
     return alert_map

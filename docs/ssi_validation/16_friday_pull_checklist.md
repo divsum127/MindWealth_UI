@@ -1,4 +1,4 @@
-<!-- generated from 16_friday_pull_20260606.md -->
+<!-- generated from 16_friday_pull_20260807.md -->
 
 # Part 10: Friday pull checklist
 
@@ -10,11 +10,11 @@
 | WTI/CNH/GSR | Friday pull | PASS |
 | CFTC FM/RM | cftc_pull + Friday | PASS |
 | Curve/WALCL/CAPE | FRED + scrape | PASS |
-| CPI surprise | cpi_pull (Trading Economics primary) | PASS |
+| CPI surprise | cpi_pull (Trading Economics primary) | WARN |
 | HYG/LQD | run_ssi_daily | PASS |
 | DBMF beta | run_ssi_daily | PASS |
 | CNN F&G | run_ssi_daily | PASS |
 | AAII | aaii_pull (sentiment.xls urllib) | PASS |
 | NAAIM | naaim_pull | PASS |
 
-**12/12 PASS**
+**11/12 PASS**

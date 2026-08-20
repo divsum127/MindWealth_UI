@@ -12,6 +12,7 @@ from api.services import degradation_service as degrade_svc
 from api.services import macro_service as macro_svc
 from api.services import meta_service as meta_svc
 from api.services import reports_service as reports_svc
+from api.services import overwatch_schedule as schedule_svc
 from api.services import system_health_service as health_svc
 from api.services.macro_override import compute_macro_override
 from api.services.meta_service import market_close_data_updated_at, resolve_report_date
@@ -28,8 +29,27 @@ def _slug(value: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
 
 
+_SENTENCE_END = re.compile(r"(?<!\d)\.(?!\d)\s")
+
+
+def _first_sentence(text: str, max_len: int = 220) -> str:
+    """First sentence, without breaking inside a decimal.
+
+    Splitting on a bare "." truncated "78.4% hit rate" to "78." — the number was
+    read as the end of the sentence.
+    """
+    text = text.strip()
+    if not text:
+        return ""
+    match = _SENTENCE_END.search(text)
+    snippet = text[: match.start() + 1] if match else text
+    if len(snippet) > max_len:
+        snippet = snippet[:max_len].rsplit(" ", 1)[0].rstrip(",;:") + "\u2026"
+    return snippet.strip()
+
+
 def _channel_for_type(alert_type: str) -> PanelChannel:
-    if alert_type == "degradation":
+    if alert_type in {"degradation", "position_risk"}:
         return "signals"
     if alert_type == "system":
         return "system"
@@ -93,12 +113,20 @@ def _build_historical_analogs(combo_id: str) -> dict[str, Any] | None:
 
 
 def _degradation_to_panel_alert(raw: dict[str, Any], floor_pct: float) -> dict[str, Any]:
+    """Forward win-rate drift only.
+
+    Portfolio position triggers (booked loss / live MTM breach) are a different
+    kind of event and go through ``_portfolio_to_panel_alert``. They used to be
+    funnelled through here, which meant ``profit_pct`` — a mark-to-market
+    percentage — was coalesced into ``fwd_rate`` and rendered as a win rate, so
+    a position down 23.7% displayed as "FWD WR -23.7%, below the 60% floor".
+    """
     combo = raw.get("combo") or {}
     function = combo.get("function") or raw.get("function") or raw.get("strategy", "")
     interval = combo.get("interval") or raw.get("interval", "")
     direction = combo.get("direction") or raw.get("direction", "Long")
     asset = combo.get("asset") or raw.get("symbol", "")
-    fwd_rate = float(raw.get("fwd_rate") or raw.get("profit_pct") or 0)
+    fwd_rate = float(raw.get("fwd_rate") or 0)
     bt_rate = float(raw.get("bt_rate") or 0)
     gap = round(fwd_rate - bt_rate, 1) if bt_rate else 0.0
     fwd_trend = raw.get("weekly_trend") or raw.get("fwd_trend") or []
@@ -148,7 +176,67 @@ def _degradation_to_panel_alert(raw: dict[str, Any], floor_pct: float) -> dict[s
             "backtest_wr": bt_rate,
             "gap": gap,
             "pattern": raw.get("pattern", ""),
-            "above_floor": fwd_rate >= 61.0,
+            "above_floor": fwd_rate >= floor_pct,
+        },
+    }
+
+
+def _portfolio_to_panel_alert(raw: dict[str, Any]) -> dict[str, Any]:
+    """Booked-loss / live-MTM alerts on open positions.
+
+    These carry a P&L percentage, not a win rate, so they get their own type and
+    their own payload. Nothing here may be written into ``signal``.
+    """
+    symbol = str(raw.get("symbol", ""))
+    function = str(raw.get("function") or raw.get("strategy", ""))
+    interval = str(raw.get("interval", ""))
+    direction = str(raw.get("direction") or raw.get("side", "Long"))
+    trigger_type = str(raw.get("trigger_type", "booked_loss"))
+    profit_pct = float(raw.get("profit_pct") or 0)
+    severity = str(raw.get("severity", "breach"))
+
+    # degradation_service labels these "DRIFT ALERT BREACH" alongside the real
+    # win-rate alerts. They are not drift, so the label is replaced here.
+    kind = "BOOKED LOSS" if trigger_type == "booked_loss" else "LIVE MTM BREACH"
+    label = f"AI ANALYST \u00b7 OVERWATCH AUTO-TRIGGERED \u00b7 {kind}"
+
+    html = raw.get("message", "")
+    if "<br>" not in html and "\n" in html:
+        html = html.replace("\n", "<br>")
+
+    # One combo can hold many open positions at once — SFTBY alone had 29 live
+    # short breaches on the same function/interval. Without the trade's own
+    # dates the ids collide, which breaks list keys and new-alert detection.
+    entry_date = str(raw.get("entry_date", "") or "")
+    exit_date = str(raw.get("exit_date", "") or "")
+    trade_key = f"{entry_date}-{exit_date}" if (entry_date or exit_date) else f"{profit_pct}"
+
+    return {
+        "id": _slug(
+            f"pos-{trigger_type}-{function}-{direction}-{interval}-{symbol}-{trade_key}"
+        ),
+        "type": "position_risk",
+        "channel": "signals",
+        "label": label,
+        "html": html,
+        "recommendation": raw.get("recommendation"),
+        "fwd_trend": None,
+        "created_at": _utc_now_iso(),
+        "border_color": raw.get("border_color", "#ff4d6d"),
+        "severity": severity,
+        "position": {
+            "symbol": symbol,
+            "function": function,
+            "interval": interval,
+            "direction": direction,
+            "side": str(raw.get("side", direction)).lower(),
+            "trigger_type": trigger_type,
+            "entry_date": entry_date or None,
+            "exit_date": exit_date or None,
+            "profit_pct": profit_pct,
+            "floor_pct": (
+                degrade_svc._MTM_LOSS_THRESHOLD if trigger_type == "live_mtm_breach" else None
+            ),
         },
     }
 
@@ -341,17 +429,92 @@ def _build_persistence_alerts(persistence: list[dict[str, Any]]) -> list[dict[st
     return alerts
 
 
+def _build_coverage_alerts(ssi: dict[str, Any]) -> list[dict[str, Any]]:
+    """Raise an Overwatch alert when an SSI layer is below its input-coverage minimum.
+
+    A degraded feed used to be visible only in a log nobody reads. On 2026-08-18 four of Layer
+    2's six inputs were missing for most of a day and the site showed a confident
+    "UNCONFIRMED / 0.80x size" the whole time. Surfacing it here puts a data outage on the
+    same page as the market alerts it would otherwise be mistaken for.
+    """
+    if ssi.get("coverage_ok", True):
+        return []
+    unreliable = ssi.get("coverage_unreliable_layers") or {}
+    if not unreliable:
+        return []
+    detail = "<br>".join(
+        f"<b>{layer.replace('layer', 'Layer ')}</b>: {reason}"
+        for layer, reason in sorted(unreliable.items())
+    )
+    return [{
+        "id": "sentiment-coverage-incomplete",
+        "type": "sentiment_warning",
+        "channel": "system",
+        "label": "AI ANALYST · OVERWATCH · SSI COVERAGE INCOMPLETE",
+        "html": (
+            "SSI size multiplier held at 1.00× because inputs are missing, "
+            "not because the market is neutral.<br>" + detail
+        ),
+        "created_at": _utc_now_iso(),
+        "border_color": "#C5A059",
+        "macro": {
+            "combo": None,
+            "reason": "SSI layer coverage below minimum",
+            "variant": "sentiment",
+        },
+        "warning": {"reasons": sorted(unreliable), "coverage_ok": False},
+    }]
+
+
 def _build_sentiment_warning_alerts(ssi: dict[str, Any]) -> list[dict[str, Any]]:
+    alerts: list[dict[str, Any]] = _build_coverage_alerts(ssi)
+    cftc = ssi.get("layer3_cftc") or {}
+    pattern = cftc.get("positioning_pattern")
+    if pattern:
+        label = cftc.get("pattern_label") or str(pattern).replace("_", " ").title()
+        plain = cftc.get("plain_english") or ""
+        fm = cftc.get("fm_pctile")
+        rm = cftc.get("rm_pctile")
+        pct_note = ""
+        if fm is not None and rm is not None:
+            pct_note = f"FM {float(fm):.0f}th pct · RM {float(rm):.0f}th pct<br>"
+        alerts.append({
+            "id": "sentiment-cftc-pattern",
+            "type": "sentiment_warning",
+            "channel": "macro",
+            "label": "AI ANALYST · OVERWATCH · CFTC POSITIONING",
+            "html": f"{pct_note}CFTC pattern: {label}<br>{plain}" if plain else f"{pct_note}CFTC pattern: {label}",
+            "created_at": _utc_now_iso(),
+            "border_color": "#C5A059",
+            "macro": {"variant": "sentiment", "reason": f"CFTC {label}"},
+            "warning": {"cftc_pattern": pattern},
+        })
+
+    if cftc.get("gross_net_divergence_active"):
+        gnd_label = cftc.get("gross_net_divergence_label") or "Gross/Net Divergence"
+        gnd_plain = cftc.get("gross_net_divergence_plain_english") or "Gross elevated; RM net falling; credit widening"
+        alerts.append({
+            "id": "sentiment-gross-net-divergence",
+            "type": "sentiment_warning",
+            "channel": "macro",
+            "label": "AI ANALYST · OVERWATCH · GROSS/NET DIVERGENCE",
+            "html": f"{gnd_label}<br>{gnd_plain}",
+            "created_at": _utc_now_iso(),
+            "border_color": "#C5A059",
+            "macro": {"variant": "sentiment", "reason": gnd_label},
+            "warning": {"gross_net_divergence": True},
+        })
+
     level = ssi.get("ssi_level")
     if level is None:
-        return []
+        return alerts
     posture = ssi.get("posture") or "NEUTRAL"
     long_active = bool(ssi.get("long_signal_active"))
     short_active = bool(ssi.get("short_signal_active"))
     if not long_active and not short_active:
         layer2 = (ssi.get("layer2_status") or "").upper()
         if layer2 not in {"CONFIRMED", "EXTREME"}:
-            return []
+            return alerts
 
     if short_active:
         headline = f"SSI {level:.2f} — Fear / risk-off zone ({posture})"
@@ -363,7 +526,7 @@ def _build_sentiment_warning_alerts(ssi: dict[str, Any]) -> list[dict[str, Any]]
         headline = f"SSI layer-2 status: {ssi.get('layer2_status')}"
         note = "Layer-2 sentiment confirmation active."
 
-    return [{
+    alerts.append({
         "id": "sentiment-ssi-warning",
         "type": "sentiment_warning",
         "channel": "macro",
@@ -373,7 +536,8 @@ def _build_sentiment_warning_alerts(ssi: dict[str, Any]) -> list[dict[str, Any]]
         "border_color": "#C5A059",
         "macro": {"variant": "sentiment", "reason": headline},
         "warning": {"ssi_level": level, "ssi_posture": posture},
-    }]
+    })
+    return alerts
 
 
 def _load_runic_safe() -> dict[str, Any]:
@@ -383,10 +547,23 @@ def _load_runic_safe() -> dict[str, Any]:
         return {}
 
 
+def _signals_badge(drift_count: int, position_count: int) -> str:
+    parts = []
+    if drift_count:
+        parts.append(f"{drift_count} drift watch")
+    if position_count:
+        parts.append(f"{position_count} position alert{'s' if position_count != 1 else ''}")
+    if not parts:
+        return "Overwatch · no signal watches"
+    return "Overwatch · " + " · ".join(parts)
+
+
 def _compute_tab_badges(panel_alerts: list[dict[str, Any]], dominant: str | None) -> dict[str, Any]:
     signal_count = sum(1 for a in panel_alerts if a.get("channel") == "signals")
     macro_count = sum(1 for a in panel_alerts if a.get("channel") == "macro")
     system_count = sum(1 for a in panel_alerts if a.get("channel") == "system")
+    drift_count = sum(1 for a in panel_alerts if a.get("type") == "degradation")
+    position_count = sum(1 for a in panel_alerts if a.get("type") == "position_risk")
     dom = dominant or next(
         (a.get("macro", {}).get("combo") for a in panel_alerts if a.get("type") == "runic"),
         None,
@@ -400,11 +577,11 @@ def _compute_tab_badges(panel_alerts: list[dict[str, Any]], dominant: str | None
         "all": {"count": len(panel_alerts), "badge": "Overwatch · auto-triggered"},
         "signals": {
             "count": signal_count,
-            "badge": (
-                f"Overwatch · {signal_count} watch active"
-                if signal_count
-                else "Overwatch · no signal watches"
-            ),
+            "drift_count": drift_count,
+            "position_count": position_count,
+            # Drift and position risk are different events. One combined count
+            # read as "242 strategies are degrading" when only 5 were.
+            "badge": _signals_badge(drift_count, position_count),
         },
         "macro": {"count": macro_count, "badge": macro_badge},
         "system": {"count": system_count, "badge": "System monitor · admin only"},
@@ -434,8 +611,8 @@ def _meta_block(
         "data_updated_at": data_updated_at,
         "floor_pct": floor_pct,
         "gap_threshold_pp": gap_threshold_pp,
-        "next_signal_check": None,
-        "next_macro_scan": None,
+        "next_signal_check": schedule_svc.next_signal_check(),
+        "next_macro_scan": schedule_svc.next_macro_scan(),
         "stale_reason": stale_reason,
         "tabs": tabs,
     }
@@ -463,8 +640,10 @@ def get_panel_alerts(
     if include_degradation:
         try:
             raw = degrade_svc.check_degradation(floor_pct=floor_pct)
-            for item in raw.get("alerts", []) + raw.get("portfolio_alerts", []):
+            for item in raw.get("alerts", []):
                 panel_alerts.append(_degradation_to_panel_alert(item, floor_pct))
+            for item in raw.get("portfolio_alerts", []):
+                panel_alerts.append(_portfolio_to_panel_alert(item))
         except Exception as exc:
             stale_reason = f"degradation_unavailable: {exc}"
 
@@ -595,8 +774,11 @@ def get_analyst_brief() -> dict[str, Any]:
         narrative = macro_svc.get_narrative()
         text = (narrative.get("narrative") or narrative.get("dominant_reason") or "").strip()
         if text:
-            snippet = text.split(".")[0].strip() + "."
-            return {"snippet": snippet, "source": "narrative", "updated_at": narrative.get("date")}
+            return {
+                "snippet": _first_sentence(text),
+                "source": "narrative",
+                "updated_at": narrative.get("date"),
+            }
     except Exception:
         pass
 

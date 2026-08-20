@@ -69,7 +69,7 @@ def generate_alert_copy(kind: AlertKind, context: dict[str, Any], fallback_html:
                 f"Context: {json.dumps(context, default=str)}"
             )
         msg = client.messages.create(
-            model=os.getenv("ANALYST_CLAUDE_MODEL", "claude-sonnet-4-20250514"),
+            model=os.getenv("ANALYST_CLAUDE_MODEL", "claude-sonnet-4-5-20250929"),
             max_tokens=_MAX_TOKENS,
             messages=[{"role": "user", "content": prompt}],
         )

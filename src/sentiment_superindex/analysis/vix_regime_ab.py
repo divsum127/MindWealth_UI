@@ -10,7 +10,7 @@ from src.macro_intelligence.engine.combo_detector import evaluate_combo_b_at_dat
 from src.macro_intelligence.engine.vix_bypass import compute_vix_bypass
 from src.sentiment_superindex.analysis.report_utils import save_artifact, write_md_snippet
 from src.sentiment_superindex.analysis.ssi_history import build_ssi_history_frame
-from src.sentiment_superindex.engine.layer2 import evaluate_layer2
+from src.sentiment_superindex.engine.layer2 import evaluate_layer2_sizing
 
 
 def run_and_report() -> dict[str, Any]:
@@ -23,7 +23,7 @@ def run_and_report() -> dict[str, Any]:
     mult_on = []
     mult_off = []
     for dt in hist.index[-500:]:
-        _, _, _, mult = evaluate_layer2(str(dt.date()))
+        _, _, mult = evaluate_layer2_sizing(str(dt.date()))
         mult_on.append(mult)
         mult_off.append(1.0)
     payload = {

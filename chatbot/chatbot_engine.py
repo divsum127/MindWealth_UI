@@ -44,11 +44,20 @@ from .config import (
     INTERNAL_FETCH_TIMEOUT_SECONDS,
 )
 from .data_processor import DataProcessor
+from .asset_coverage import (
+    build_ticker_mapping_note,
+    build_unresolved_ticker_note,
+    coverage_note,
+    inferred_assets,
+    uncovered_assets,
+)
+from .error_messages import safe_error_metadata, user_facing_error
 from .history_manager import HistoryManager
 from .unified_extractor import UnifiedExtractor
 from .smart_data_fetcher import (
     CONSOLIDATED_MTM_REPORT_COLUMN_NAMES,
     ENTRY_TARGETS_STOP_COLUMN_NAMES,
+    build_signal_data_source_legend,
     SmartDataFetcher,
     infer_date_filter_mode,
     infer_position_side_from_query,
@@ -74,7 +83,8 @@ logger = logging.getLogger(__name__)
 
 _TARGETS_STOP_QUERY_RE = re.compile(
     r"\b(stop\s*loss|stop\s*level|stops?|take\s*profit|targets?|tp\b|sl\b|"
-    r"open\s+position|deep[- ]?dive|levels?\s+vs)\b",
+    r"open\s+position|deep[- ]?dive|levels?\s+vs|resistance|support\s*level|"
+    r"entry\s+level|exit\s+level|recent\s+entry|recent\s+exit|pivot)\b",
     re.I,
 )
 
@@ -935,9 +945,10 @@ class ChatbotEngine:
             return assistant_message, metadata
             
         except Exception as e:
-            error_message = f"Error processing query: {str(e)}"
-            logger.error(error_message)
-            return error_message, {"error": str(e)}
+            # Never render a provider exception into the chat: an Anthropic
+            # billing failure once reached a user verbatim, request_id included.
+            # Full detail is logged and kept in metadata for debugging.
+            return user_facing_error(e, context="query"), safe_error_metadata(e)
     
     def smart_query(
         self,
@@ -1049,6 +1060,17 @@ class ChatbotEngine:
                     logger.info(f"Extracted tickers: {assets[:10]}{'...' if len(assets) > 10 else ''}")
                 else:
                     logger.info("No specific tickers mentioned - will load ALL assets")
+
+            # Symbols the user named that we do not track, plus any the extractor
+            # invented. This list was written by the extractor and read by nobody
+            # until now, which is why "tlk" could be answered with TLT's rows.
+            unresolved_tickers = extraction_result.get("unresolved_tickers") or []
+            if unresolved_tickers:
+                notice = build_unresolved_ticker_note(unresolved_tickers)
+                additional_context = (
+                    f"{additional_context}\n\n{notice}" if additional_context else notice
+                )
+                logger.info(f"[ENGINE] Unresolved tickers reported to model: {unresolved_tickers}")
 
             _pos_infer_src = (display_prompt_override or user_message or "").strip()
             position_side_candidate = normalize_position_side(
@@ -1398,6 +1420,9 @@ class ChatbotEngine:
                     complete_message += f"\n  Reasoning: {reasoning_by_signal_type.get(signal_type, '')}"
             
             complete_message += f"\n\n=== SIGNAL DATA CONTEXT ===\n{data_context}"
+            source_legend = build_signal_data_source_legend(fetched_data.get("entry"))
+            if source_legend:
+                complete_message += f"\n\n{source_legend}"
             entry_validation = build_entry_validation_section(fetched_data.get("entry"))
             if entry_validation:
                 complete_message += f"\n\n{entry_validation}"
@@ -1500,11 +1525,9 @@ class ChatbotEngine:
             return assistant_message, metadata
             
         except Exception as e:
-            error_message = f"Error processing smart query: {str(e)}"
-            logger.error(error_message)
             import traceback
             traceback.print_exc()
-            return error_message, {"error": str(e)}
+            return user_facing_error(e, context="smart query"), safe_error_metadata(e)
     
     # ── Agentic orchestration helpers ───────────────────────────────────────────
 
@@ -1957,6 +1980,9 @@ class ChatbotEngine:
             "signal_types_reasoning": extraction_result.get("signal_types_reasoning", ""),
             "signal_type_reasoning": signal_type_reasoning or "",
             "rows_fetched": total_rows,
+            # Canonical tickers actually used for filtering — lets the conviction
+            # context target the same names (see chatbot/conviction_context.py).
+            "assets": assets,
         }
 
         logger.info(
@@ -2062,10 +2088,16 @@ class ChatbotEngine:
         self,
         user_message: str,
         metadata: Dict,
+        additional_context: Optional[str] = None,
     ) -> tuple:
         """
         Answer a conversational query using history only — no data fetch.
         Adds the message to history and calls _simple_batch_query.
+
+        ``additional_context`` carries the SOURCE E platform block when the user
+        asked about MindWealth itself. It is appended to the outgoing message
+        only — history keeps the user's own words, so the block never
+        accumulates across turns.
         """
         self.history_manager.add_message(
             "user",
@@ -2073,6 +2105,11 @@ class ChatbotEngine:
             self._prepare_user_metadata(metadata, user_message),
         )
         messages = self.history_manager.get_messages_for_api()
+        if additional_context and messages:
+            messages = list(messages)
+            last = dict(messages[-1])
+            last["content"] = f"{last.get('content', '')}\n\n{additional_context}"
+            messages[-1] = last
         total_chars = sum(len(str(m.get("content", ""))) for m in messages)
         estimated_tokens = total_chars // ESTIMATED_CHARS_PER_TOKEN
 
@@ -2178,6 +2215,95 @@ class ChatbotEngine:
         self.history_manager.add_message("assistant", assistant_message, metadata)
         return assistant_message, metadata
 
+    def _build_conviction_block(
+        self,
+        user_message: str,
+        assets: Optional[List[str]] = None,
+    ) -> Optional[str]:
+        """
+        Build the SOURCE C conviction / signal-quality block, or return ``None``.
+
+        Recommendation and quality questions need MindWealth's own ranked buy and
+        exit lists, Signal Quality Composite Scores, conviction scores and
+        fundamentals — none of which live in the chatbot CSVs. Fetched over HTTP
+        from our own API and gated on query wording, so ordinary turns pay no
+        latency. Never raises: enrichment must not fail an answer.
+        """
+        try:
+            from .conviction_context import build_conviction_context
+
+            return build_conviction_context(user_message, assets=assets)
+        except Exception as exc:
+            logger.warning(f"Conviction context skipped: {exc}")
+            return None
+
+    def _build_macro_block(self, user_message: str) -> Optional[str]:
+        """
+        Build the SOURCE D macro / regime / sentiment block, or return ``None``.
+
+        Macro questions used to be answered from web search, which contradicted
+        our own nightly Runic output. Same contract as the conviction block:
+        gated on wording, fetched over HTTP, never raises.
+        """
+        try:
+            from .macro_context import build_macro_context
+
+            return build_macro_context(user_message)
+        except Exception as exc:
+            logger.warning(f"Macro context skipped: {exc}")
+            return None
+
+    def _apply_coverage_guard(
+        self,
+        user_message: str,
+        response: str,
+        metadata: Dict,
+        assets: Optional[List[str]],
+    ) -> tuple:
+        """
+        Flag requested symbols the answer never mentions.
+
+        Twice observed: rows fetched for a symbol, answer silently covers only
+        the others. Nothing is rewritten — a short advisory is appended and the
+        omission is recorded in metadata so it is visible in the job record.
+        Symbols the extractor inferred are excluded, because an answer that
+        correctly ignores a wrong guess must not be flagged for doing so.
+        """
+        try:
+            if not assets or not response:
+                return response, metadata
+            rows_by_asset = metadata.get("rows_by_asset") if isinstance(metadata, dict) else None
+            missing = uncovered_assets(
+                response,
+                assets,
+                rows_by_asset if isinstance(rows_by_asset, dict) else None,
+                skip=inferred_assets(user_message, assets),
+            )
+            if not missing:
+                return response, metadata
+            logger.warning(f"[ENGINE] Answer omitted requested symbol(s): {missing}")
+            metadata["assets_not_covered"] = missing
+            return response + coverage_note(missing), metadata
+        except Exception as exc:  # a guard must never break an answer
+            logger.warning(f"Coverage guard skipped: {exc}")
+            return response, metadata
+
+    def _build_platform_block(self, user_message: str) -> Optional[str]:
+        """
+        Build the SOURCE E platform-capability block, or return ``None``.
+
+        Cheap and local — no HTTP. Lets the assistant answer questions about its
+        own signal types and functions from our taxonomy instead of guessing
+        that a MindWealth term is a stock ticker.
+        """
+        try:
+            from .platform_context import build_platform_context
+
+            return build_platform_context(user_message)
+        except Exception as exc:
+            logger.warning(f"Platform context skipped: {exc}")
+            return None
+
     def _get_web_agent(self):
         """Lazily build WebSearchAgent (shared by router and deep research)."""
         from .config import (
@@ -2191,13 +2317,41 @@ class ChatbotEngine:
 
         if not ENABLE_WEB_SEARCH or not TAVILY_API_KEY:
             return None
-        return WebSearchAgent(
+        agent = WebSearchAgent(
             tavily_api_key=TAVILY_API_KEY,
             openai_api_key=OPENAI_API_KEY,
             max_results=WEB_SEARCH_MAX_RESULTS,
             max_chars_per_result=WEB_SEARCH_MAX_CHARS_PER_RESULT,
             min_relevance_score=WEB_SEARCH_MIN_RELEVANCE_SCORE,
         )
+        # Age web results against our signal data's as-of date, not wall clock.
+        agent.data_as_of = self._current_data_as_of()
+        return agent
+
+    def _current_data_as_of(self) -> Optional[str]:
+        """
+        MindWealth's data as-of date (YYYY-MM-DD), or ``None`` if unavailable.
+
+        Read from the same stamp the rest of the platform uses, so a web quote is
+        judged against the prices it will be printed beside.
+        """
+        try:
+            from src.utils.helpers import get_data_fetch_datetime
+
+            stamp = get_data_fetch_datetime()
+            if isinstance(stamp, dict):
+                value = stamp.get("date") or stamp.get("datetime")
+            else:
+                value = stamp
+            if value:
+                import re as _re
+
+                match = _re.search(r"(\d{4}-\d{2}-\d{2})", str(value))
+                if match:
+                    return match.group(1)
+        except Exception as exc:
+            logger.debug(f"Could not resolve data as-of for web ageing: {exc}")
+        return None
 
     def _answer_deep_research(
         self,
@@ -2557,7 +2711,18 @@ class ChatbotEngine:
                 logger.info("[ENGINE] CONVERSATIONAL route — skipping data fetch")
                 meta = {**route_meta_base, "input_type": "conversational"}
                 add_flow_step("Conversation Mode", "Using conversation history only (no web/internal data fetch)")
-                response, meta = self._answer_from_history(user_message, meta)
+                # SOURCE E is local and cheap, so even a chatty turn that
+                # mentions our own vocabulary gets the real taxonomy rather than
+                # a textbook answer invented from general knowledge.
+                platform_block = self._build_platform_block(user_message)
+                if platform_block:
+                    add_flow_step(
+                        "Platform Capabilities",
+                        "Added MindWealth signal-type and function taxonomy",
+                    )
+                response, meta = self._answer_from_history(
+                    user_message, meta, additional_context=platform_block
+                )
                 meta["input_type"] = "conversational"
                 self._persist_flow_trace(meta, flow_trace)
                 return response, meta
@@ -2683,6 +2848,48 @@ class ChatbotEngine:
                     f"prompt_chars={len(synthesized_prompt)}"
                 )
 
+                # SOURCE C — conviction, fundamentals and Signal Quality Composite
+                # Scores. Appended after synthesis so it sits alongside SOURCE A
+                # (internal signals) and SOURCE B (web) without changing their
+                # reconciliation instructions.
+                conviction_assets = assets or (
+                    (orch_result.signal_metadata or {}).get("assets")
+                    if orch_result.signal_metadata else None
+                )
+                conviction_block = self._build_conviction_block(user_message, conviction_assets)
+                if conviction_block:
+                    synthesized_prompt = f"{synthesized_prompt}\n\n{conviction_block}"
+                    add_flow_step(
+                        "Conviction Overlay",
+                        "Added conviction scores, fundamentals and signal quality scores",
+                    )
+                    logger.info(
+                        f"[FLOW 6/7] Conviction context appended  |  "
+                        f"block_chars={len(conviction_block)}"
+                    )
+
+                # SOURCE D / SOURCE E — macro regime and platform vocabulary.
+                # Both are gated on wording, so a plain ticker question adds
+                # nothing to the prompt and no extra latency.
+                macro_block = self._build_macro_block(user_message)
+                if macro_block:
+                    synthesized_prompt = f"{synthesized_prompt}\n\n{macro_block}"
+                    add_flow_step(
+                        "Macro Overlay",
+                        "Added Runic regime, SSI sentiment and portfolio risk posture",
+                    )
+                    logger.info(
+                        f"[FLOW 6/7] Macro context appended  |  block_chars={len(macro_block)}"
+                    )
+
+                platform_block = self._build_platform_block(user_message)
+                if platform_block:
+                    synthesized_prompt = f"{synthesized_prompt}\n\n{platform_block}"
+                    add_flow_step(
+                        "Platform Capabilities",
+                        "Added MindWealth signal-type and function taxonomy",
+                    )
+
                 meta = {
                     **route_meta_base,
                     "input_type": "hybrid_synthesized",
@@ -2728,6 +2935,62 @@ class ChatbotEngine:
             elif decision.route == ROUTE_INTERNAL:
                 add_flow_step("Internal Search", "Using internal signal data pipeline")
 
+            # SOURCE C — conviction / fundamentals / signal-quality scores, merged
+            # through the existing additional_context channel so both smart_query
+            # call sites below pick it up.
+            conviction_block = self._build_conviction_block(user_message, assets)
+            if conviction_block:
+                additional_context = (
+                    f"{additional_context}\n\n{conviction_block}"
+                    if additional_context else conviction_block
+                )
+                add_flow_step(
+                    "Conviction Overlay",
+                    "Added conviction scores, fundamentals and signal quality scores",
+                )
+                logger.info(
+                    f"[ENGINE] Conviction context merged into additional_context  |  "
+                    f"block_chars={len(conviction_block)}"
+                )
+
+            # SOURCE D / SOURCE E on the internal path, same channel.
+            macro_block = self._build_macro_block(user_message)
+            if macro_block:
+                additional_context = (
+                    f"{additional_context}\n\n{macro_block}"
+                    if additional_context else macro_block
+                )
+                add_flow_step(
+                    "Macro Overlay",
+                    "Added Runic regime, SSI sentiment and portfolio risk posture",
+                )
+                logger.info(
+                    f"[ENGINE] Macro context merged  |  block_chars={len(macro_block)}"
+                )
+
+            platform_block = self._build_platform_block(user_message)
+            if platform_block:
+                additional_context = (
+                    f"{additional_context}\n\n{platform_block}"
+                    if additional_context else platform_block
+                )
+                add_flow_step(
+                    "Platform Capabilities",
+                    "Added MindWealth signal-type and function taxonomy",
+                )
+
+            # Tell the model which symbols it inferred rather than read verbatim,
+            # so "tlk" can never be answered with TLT's rows under TLK's name.
+            mapping_note = build_ticker_mapping_note(
+                user_message, assets, self.data_processor.get_available_tickers()
+            )
+            if mapping_note:
+                additional_context = (
+                    f"{additional_context}\n\n{mapping_note}"
+                    if additional_context else mapping_note
+                )
+                logger.info(f"[ENGINE] Ticker mapping notice added for inferred symbols")
+
             # ── INTERNAL (or HYBRID legacy fallback) — existing pipeline ─────
             # Get last N exchanges from history (text only, no raw data)
             history_messages = self.history_manager.get_messages_for_api(max_pairs=MAX_HISTORY_LENGTH)
@@ -2754,6 +3017,9 @@ class ChatbotEngine:
                 metadata["history_exchanges_used"] = 0
                 add_flow_step("Internal Data Query", "Fetched internal signal data (selector + columns + date filters)")
                 add_flow_step("Response Generation", "Generated final response from internal analysis")
+                response, metadata = self._apply_coverage_guard(
+                    user_message, response, metadata, assets
+                )
                 self._persist_flow_trace(metadata, flow_trace)
                 return response, metadata
             
@@ -2811,6 +3077,9 @@ NOTE: Use the conversation context above to understand what we've discussed, but
 
             # Attach routing metadata
             metadata.update(route_meta_base)
+            response, metadata = self._apply_coverage_guard(
+                user_message, response, metadata, assets
+            )
             self._persist_flow_trace(metadata, flow_trace)
             
             logger.info(f"Dynamic follow-up query completed with fresh analysis")
@@ -2819,11 +3088,9 @@ NOTE: Use the conversation context above to understand what we've discussed, but
             return response, metadata
             
         except Exception as e:
-            error_message = f"Error processing follow-up query: {str(e)}"
-            logger.error(error_message)
             import traceback
             traceback.print_exc()
-            return error_message, {"error": str(e)}
+            return user_facing_error(e, context="follow-up query"), safe_error_metadata(e)
 
     def _strip_data_from_history(self, history_messages: List[Dict]) -> List[Dict]:
         """
@@ -2976,9 +3243,10 @@ NOTE: Use the conversation context above to understand what we've discussed, but
             return assistant_message, metadata
             
         except Exception as e:
-            error_message = f"Error processing query: {str(e)}"
-            logger.error(error_message)
-            return error_message, {"error": str(e)}
+            # Never render a provider exception into the chat: an Anthropic
+            # billing failure once reached a user verbatim, request_id included.
+            # Full detail is logged and kept in metadata for debugging.
+            return user_facing_error(e, context="query"), safe_error_metadata(e)
     
     def get_session_id(self) -> str:
         """Get current session ID."""
@@ -3121,13 +3389,17 @@ NOTE: Use the conversation context above to understand what we've discussed, but
             
         except Exception as e:
             logger.error(f"Error in single batch processing: {e}")
-            error_msg = f"Error processing query: {str(e)}"
+            # Sanitized for display; the raw exception stays in the log and in
+            # metadata["error_detail"] via safe_error_metadata below.
+            error_msg = user_facing_error(e, context="batch")
             metadata = {
                 "tokens_used": {"prompt": estimated_tokens, "completion": 0, "total": estimated_tokens},
                 "finish_reason": "error",
                 "batch_count": 1,
                 "batch_mode": "single",
-                "error": str(e)
+                # Display-safe; raw exception preserved alongside for debugging.
+                "error": user_facing_error(e),
+                "error_detail": f"{type(e).__name__}: {e}",
             }
             return error_msg, metadata
     
@@ -3381,13 +3653,17 @@ Note: This is batch {group_idx + 1} of {len(ticker_groups)} analyzing assets: {'
             
         except Exception as e:
             logger.error(f"Error in simple batch processing: {e}")
-            error_msg = f"Error processing query: {str(e)}"
+            # Sanitized for display; the raw exception stays in the log and in
+            # metadata["error_detail"] via safe_error_metadata below.
+            error_msg = user_facing_error(e, context="batch")
             metadata = {
                 "tokens_used": {"prompt": estimated_tokens, "completion": 0, "total": estimated_tokens},
                 "finish_reason": "error",
                 "batch_count": 1,
                 "batch_mode": "single",
-                "error": str(e)
+                # Display-safe; raw exception preserved alongside for debugging.
+                "error": user_facing_error(e),
+                "error_detail": f"{type(e).__name__}: {e}",
             }
             return error_msg, metadata
     
@@ -3604,13 +3880,15 @@ Please analyze this batch. Your response will be combined with other batches lat
             logger.error(f"Error in batch follow-up processing: {e}")
             import traceback
             traceback.print_exc()
-            error_msg = f"Error processing batch query: {str(e)}"
+            error_msg = user_facing_error(e, context="batch query")
             metadata = {
                 "tokens_used": {"prompt": estimated_tokens, "completion": 0, "total": estimated_tokens},
                 "finish_reason": "error",
                 "batch_count": 1,
                 "batch_mode": "single",
-                "error": str(e)
+                # Display-safe; raw exception preserved alongside for debugging.
+                "error": user_facing_error(e),
+                "error_detail": f"{type(e).__name__}: {e}",
             }
             return error_msg, metadata
     

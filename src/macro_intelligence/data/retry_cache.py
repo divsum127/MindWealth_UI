@@ -41,17 +41,37 @@ def get_last_good(source_id: str) -> Any | None:
         return row["last_good_value"]
 
 
+
+def _is_empty(result: Any) -> bool:
+    """True for an empty pandas object or an empty list/dict/tuple; False for scalars."""
+    empty = getattr(result, "empty", None)
+    if isinstance(empty, bool):
+        return empty
+    if isinstance(result, (list, tuple, dict, set, str)):
+        return len(result) == 0
+    return False
+
+
 def pull_with_cache(
     source_id: str,
     fetch_fn: Callable[[], T],
     *,
     serialize: Callable[[T], Any] | None = None,
 ) -> T | None:
-    """Run fetch; on failure return last good value and log — never propagate NULL writes."""
+    """Run fetch; on failure return last good value and log — never propagate NULL writes.
+
+    "Failure" deliberately includes an *empty* result, not just an exception or ``None``.
+    Most pulls in this codebase signal a dead source by returning an empty ``pd.Series`` or
+    ``DataFrame`` rather than raising (see ``sentiment_superindex.data.pull_guard``), so
+    without the emptiness check below a source that had gone silent would be logged ``OK``
+    with zero rows and would overwrite a perfectly good cached value.
+    """
     try:
         result = fetch_fn()
         if result is None:
             raise ValueError("fetch returned None")
+        if _is_empty(result):
+            raise ValueError(f"fetch returned an empty {type(result).__name__}")
         log_pull(source_id, "OK", serialize(result) if serialize else result)
         return result
     except Exception as exc:

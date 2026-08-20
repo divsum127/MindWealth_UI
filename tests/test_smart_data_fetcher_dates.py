@@ -15,6 +15,8 @@ from chatbot.smart_data_fetcher import (
     SYMBOL_SIGNAL_COMPOUND_COL,
     EXIT_DATE_COL,
     SOURCE_COL,
+    SIGNAL_DATA_SOURCE_COL,
+    build_signal_data_source_legend,
     compute_missing_open_entry_keys,
 )
 
@@ -275,6 +277,21 @@ class TestSingleAssetDedup(unittest.TestCase):
         deduped = SmartDataFetcher.dedupe_single_asset_signals(df)
         self.assertEqual(len(deduped), 1)
         self.assertNotIn(SOURCE_COL, deduped.columns)
+        self.assertEqual(deduped.iloc[0][SIGNAL_DATA_SOURCE_COL], "outstanding")
+
+    def test_build_signal_data_source_legend(self):
+        df = pd.DataFrame(
+            [
+                {SIGNAL_DATA_SOURCE_COL: "outstanding"},
+                {SIGNAL_DATA_SOURCE_COL: "all_signal"},
+                {SIGNAL_DATA_SOURCE_COL: "virtual_trading"},
+            ]
+        )
+        legend = build_signal_data_source_legend(df)
+        self.assertIn("SIGNAL DATA SOURCE LEGEND", legend)
+        self.assertIn("outstanding", legend)
+        self.assertIn("virtual_trading", legend)
+        self.assertIn("Row counts", legend)
 
 
 class TestIsOpenExitValue(unittest.TestCase):

@@ -1,0 +1,12 @@
+key,value
+test_id,21_staleness_decay
+start,2010-01-01
+max_stale_days_calibrated.weekly,8
+max_stale_days_calibrated.daily,3
+max_stale_days_calibrated.monthly,30
+method,Calendar-day age since last print; SPX forward returns from first session on/after each day; no stale weight penalty applied
+horizons_trading_days.1w,5
+horizons_trading_days.2w,10
+horizons_trading_days.4w,20
+horizons_trading_days.8w,40
+age_buckets_calendar_days,"[1, 2, 3, 4, 5]"

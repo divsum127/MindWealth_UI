@@ -89,7 +89,9 @@ def steepen_bps_post_inversion_trough(spread_bps: pd.Series) -> pd.Series:
             steepen_weekly.append(chg_4wk)
 
     steepen_w = pd.Series(steepen_weekly, index=weekly.index)
-    return steepen_w.reindex(spread_bps.index, method="ffill")
+    # spread_bps.index is daily (FRED T10Y2Y). Unlimited ffill: each weekly steepen value
+    # carries to every calendar/trading day until the next Friday evaluation.
+    return steepen_w.reindex(spread_bps.index, method="ffill")  # limit=None
 
 
 def fetch_dgs2(start: str = "1990-01-01") -> pd.Series:

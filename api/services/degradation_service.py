@@ -256,6 +256,8 @@ def _check_portfolio_triggers(fwd_df: pd.DataFrame) -> list[dict[str, Any]]:
                 "function": function,
                 "interval": interval,
                 "direction": side.title(),
+                "entry_date": str(row.get("Entry Date", "") or ""),
+                "exit_date": str(row.get("Exit Date", "") or ""),
                 "profit_pct": round(float(row["_profit"]), 2),
                 "pattern": pattern_info["pattern"],
                 "recommendation": pattern_info["recommendation"],
@@ -281,6 +283,8 @@ def _check_portfolio_triggers(fwd_df: pd.DataFrame) -> list[dict[str, Any]]:
                 "function": str(row.get("Function", "")),
                 "interval": str(row.get("Interval", "")),
                 "direction": side.title(),
+                "entry_date": str(row.get("Entry Date", "") or ""),
+                "exit_date": str(row.get("Exit Date", "") or ""),
                 "profit_pct": round(float(row["_profit"]), 2),
                 "message": (
                     f"Live MTM breach on {side} position: "
@@ -393,15 +397,22 @@ def _compute_degradation(fwd_df: pd.DataFrame, floor_pct: float) -> dict[str, An
 
 
 def check_degradation(floor_pct: float = FWD_WR_FLOOR, *, use_cache: bool = True) -> dict[str, Any]:
-    """Run Layer 1 degradation analysis with parquet + result disk cache."""
+    """Run Layer 1 degradation analysis with parquet + result disk cache.
+
+    The cached result is only valid for the floor it was computed with. Serving
+    it for any floor made ``?floor_pct=`` silently inert: callers could ask for a
+    70% floor and get the 60% answer back.
+    """
     if use_cache:
         cached = deg_cache.load_cached_degradation_result()
-        if cached is not None:
+        if cached is not None and float(cached.get("floor_pct", FWD_WR_FLOOR)) == float(floor_pct):
             return cached
 
     fwd_df = deg_cache.load_fwd_trades_df()
     result = _compute_degradation(fwd_df, floor_pct)
-    if use_cache:
+    # Only the default floor is worth persisting — that is what the cron warms
+    # and what every unparameterised caller reads.
+    if use_cache and float(floor_pct) == float(FWD_WR_FLOOR):
         deg_cache.save_degradation_result(result)
     return result
 

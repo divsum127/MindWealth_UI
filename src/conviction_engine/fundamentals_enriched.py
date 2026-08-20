@@ -11,6 +11,7 @@ import pandas as pd
 from .bq_scoring import (
     detect_divergence_signal,
     score_balance_sheet_v6,
+    score_deal_delay_risk,
     score_debt_maturity_risk,
     score_macro_tailwind,
     score_margin_quality_cyclical,
@@ -21,9 +22,10 @@ from .pe_history_core import (  # re-exported: existing `from .fundamentals_enri
     PE_HISTORY_MAX_STORED_POINTS,
     PE_HISTORY_TARGET_YEARS,
     compute_pe_history,
+    reconstruct_quarterly_eps_from_net_income,
 )
 from .pe_history_fmp import fetch_pe_history_fmp, is_us_ticker
-from .pe_history_sec import fetch_pe_history_sec
+from .pe_history_sec import FOREIGN_PRIVATE_ISSUER_ALIASES, fetch_pe_history_sec
 from .scoring import (
     BusinessType,
     _float_or_none,
@@ -40,6 +42,8 @@ WACC_BY_TYPE = {
     BusinessType.COMPOUNDER.value: 0.075,
     BusinessType.CYCLICAL.value: 0.09,
     BusinessType.SAAS.value: 0.10,
+    BusinessType.BANK.value: 0.09,  # item 3: cost-of-equity proxy for the roic_wacc_spread substitution
+    BusinessType.HIGH_MARGIN_HARDWARE.value: 0.09,
     BusinessType.UNKNOWN.value: 0.08,
 }
 
@@ -262,7 +266,12 @@ def score_margin_quality(
     fcf_margin: float | None,
     distribution_coverage: float | None,
     gross_margin: float | None,
+    fundamentals: dict[str, Any] | None = None,
 ) -> float:
+    if business_type == BusinessType.BANK.value:
+        from .bank_valuation import score_bank_margin_quality
+
+        return score_bank_margin_quality(fundamentals or {})
     if business_type == BusinessType.INCOME.value and distribution_coverage is not None:
         if distribution_coverage > 2.0:
             return 2.0
@@ -397,6 +406,18 @@ def compute_bq_components_auto(
         if cap_detail:
             fundamentals["capital_allocation_detail"] = cap_detail
 
+    from .capital_allocation import (
+        combined_capital_return_penalty,
+        detect_buyback_suspension,
+        detect_dividend_cut,
+    )
+
+    buyback_flag = detect_buyback_suspension(fundamentals)
+    dividend_flag = detect_dividend_cut(fundamentals)
+    capital_return_penalty = combined_capital_return_penalty(buyback_flag, dividend_flag)
+    fundamentals["buyback_suspension_flag"] = buyback_flag
+    fundamentals["dividend_cut_flag"] = dividend_flag
+
     div_flag = overrides.get("divergence_signal")
     if div_flag is None:
         div_flag = detect_divergence_signal(
@@ -411,7 +432,7 @@ def compute_bq_components_auto(
     return {
         "revenue_quality": score_revenue_quality(gross_m, fcf_m),
         "growth_trajectory": score_growth_trajectory(rev_g, rev_accel if isinstance(rev_accel, bool) else None),
-        "margin_quality": score_margin_quality(business_type, rev_g, fcf_m, dist_cov, gross_m),
+        "margin_quality": score_margin_quality(business_type, rev_g, fcf_m, dist_cov, gross_m, fundamentals),
         "balance_sheet": bs_score,
         "roic_wacc_spread": score_roic_spread(roic, business_type),
         "gross_margin_trend": score_gross_margin_trend(margin_trend),
@@ -421,9 +442,10 @@ def compute_bq_components_auto(
         "competitive_moat": moat_score,
         "macro_tailwind": score_macro_tailwind(overrides),
         "divergence_signal": 2.0 if div_flag else 0.0,
-        "deal_delay_risk": -1.0 if overrides.get("deal_delay_risk") or overrides.get("deal_delay_flag") else 0.0,
+        "deal_delay_risk": score_deal_delay_risk(overrides),
         "insider_ownership": _score_insider(insider_val),
         "reinvestment_runway": _score_reinvestment(reinvest_val),
+        "capital_return_flags": capital_return_penalty,
     }
 
 
@@ -471,6 +493,56 @@ def build_fundamentals_from_raw(raw: dict[str, Any]) -> dict[str, Any]:
 
     total_debt = _df_row(q_bal, "Total Debt", "Long Term Debt And Capital Lease Obligation", "Long Term Debt")
     total_cash = _df_row(q_bal, "Cash And Cash Equivalents", "Cash Cash Equivalents And Short Term Investments")
+
+    # Stored for `net_income_ttm`-based OEY substitution (banks, item 3) and the
+    # bank P/TBV valuation module (item 3) / hardware EV/EBITDA driver (item 4).
+    fundamentals["net_income_ttm"] = net_income_ttm
+    if ebitda_ttm and ebitda_ttm > 0:
+        fundamentals["ebitda_ttm"] = ebitda_ttm
+    elif _float_or_none(info.get("ebitda")):
+        fundamentals["ebitda_ttm"] = _float_or_none(info.get("ebitda"))
+
+    # Bank-specific balance-sheet fields (item 3): equity/assets ratio + tangible
+    # book value. Harmless no-ops for non-bank tickers (fields just stay unused).
+    stockholders_equity = _df_row(q_bal, "Stockholders Equity", "Total Stockholder Equity", "Common Stock Equity")
+    total_assets = _df_row(q_bal, "Total Assets")
+    goodwill = _df_row(q_bal, "Goodwill")
+    other_intangibles = _df_row(q_bal, "Other Intangible Assets", "Intangible Assets Excluding Goodwill", "Intangible Assets")
+    if stockholders_equity is not None:
+        fundamentals["stockholders_equity"] = stockholders_equity
+    if total_assets is not None:
+        fundamentals["total_assets"] = total_assets
+    if goodwill is not None:
+        fundamentals["goodwill"] = goodwill
+    if other_intangibles is not None:
+        fundamentals["other_intangible_assets"] = other_intangibles
+    book_value_per_share = _float_or_none(info.get("bookValue"))
+    if book_value_per_share is not None:
+        fundamentals["book_value_per_share"] = book_value_per_share
+
+    # Bank income-statement substitutions (item 3): efficiency ratio inputs. yfinance
+    # exposes these row labels only for bank-classified tickers' quarterly statements;
+    # missing for everyone else, which is fine (score functions return neutral 0.0).
+    noninterest_expense_ttm = _df_ttm_sum(q_inc, "Non Interest Expense", "Noninterest Expense", "Total Non Interest Expense")
+    net_interest_income_ttm = _df_ttm_sum(q_inc, "Net Interest Income")
+    noninterest_income_ttm = _df_ttm_sum(q_inc, "Non Interest Income", "Noninterest Income", "Total Non Interest Income")
+    if noninterest_expense_ttm is not None:
+        fundamentals["noninterest_expense_ttm"] = noninterest_expense_ttm
+    if net_interest_income_ttm is not None:
+        fundamentals["net_interest_income_ttm"] = net_interest_income_ttm
+    if noninterest_income_ttm is not None:
+        fundamentals["noninterest_income_ttm"] = noninterest_income_ttm
+
+    # Revenue-miss full_recalculation trigger (item 8, Q7 answer): reuses the same
+    # yfinance analyst estimate field already wired for the fd_direction EPS-revisions
+    # vote — no new data source. Purely a flag; no new scoring dimension (growth_
+    # trajectory / fd_direction already pick up the consequence once recalculated).
+    analyst_revenue_estimate = _float_or_none(info.get("revenueEstimate"))
+    if analyst_revenue_estimate and revenue_ttm and revenue_ttm > 0:
+        miss_pct = (analyst_revenue_estimate - revenue_ttm) / abs(analyst_revenue_estimate)
+        fundamentals["revenue_estimate_current"] = analyst_revenue_estimate
+        fundamentals["revenue_miss_pct"] = round(miss_pct, 4)
+        fundamentals["revenue_miss_gt_10pct"] = bool(miss_pct > 0.10)
 
     if revenue_ttm and revenue_ttm > 0:
         info_revenue = _float_or_none(info.get("totalRevenue"))
@@ -582,6 +654,27 @@ def build_fundamentals_from_raw(raw: dict[str, Any]) -> dict[str, Any]:
     if shares_now and shares_prior and shares_prior > 0:
         fundamentals["shares_outstanding_change_pct"] = round((shares_now - shares_prior) / shares_prior, 4)
 
+    from .bank_valuation import compute_tangible_book_value
+
+    tbv = compute_tangible_book_value(fundamentals)
+    if tbv is not None:
+        fundamentals["tangible_book_value"] = tbv
+
+    # Buyback-suspension flag inputs (item 7): dollar-spend TTM vs the TTM one year
+    # prior, same 8-quarter windowing pattern already used for fcf_prior_year. This is
+    # a *spend*-based signal, distinct from the existing share-count-based buyback
+    # vote in fd_votes.py (that vote is unaffected and keeps running as-is).
+    if q_cf is not None and "Repurchase Of Capital Stock" in getattr(q_cf, "index", []):
+        try:
+            buyback_row = q_cf.loc["Repurchase Of Capital Stock"].dropna().sort_index()
+            if len(buyback_row) >= 4:
+                # Cash outflow is reported negative; buyback spend is the absolute value.
+                fundamentals["buyback_spend_ttm"] = abs(float(buyback_row.iloc[-4:].sum()))
+            if len(buyback_row) >= 8:
+                fundamentals["buyback_spend_prior_year"] = abs(float(buyback_row.iloc[-8:-4].sum()))
+        except Exception:
+            pass
+
     roe = _normalize_ratio(_float_or_none(info.get("returnOnEquity")))
     roa = _normalize_ratio(_float_or_none(info.get("returnOnAssets")))
     if roe is not None:
@@ -636,6 +729,27 @@ def build_fundamentals_from_raw(raw: dict[str, Any]) -> dict[str, Any]:
 
     price_hist = raw.get("price_history")
     divs = raw.get("dividends")
+
+    # Dividend-cut flag inputs (item 7): declared annual dividend-per-share, trailing
+    # 12mo vs the 12mo before that, from the actual payment history — same tiered
+    # penalty structure as buyback suspension, applied in capital_allocation.py.
+    if isinstance(divs, pd.Series) and not divs.empty:
+        try:
+            div_dates = divs.index.tz_localize(None) if divs.index.tz is not None else divs.index
+            div_series = pd.Series(divs.values, index=div_dates).sort_index()
+            last_date = div_series.index[-1]
+            current_window = div_series[div_series.index > last_date - pd.Timedelta(days=365)]
+            prior_window = div_series[
+                (div_series.index <= last_date - pd.Timedelta(days=365))
+                & (div_series.index > last_date - pd.Timedelta(days=730))
+            ]
+            if not current_window.empty:
+                fundamentals["annual_div_declared_current"] = float(current_window.sum())
+            if not prior_window.empty:
+                fundamentals["annual_div_declared_prior"] = float(prior_window.sum())
+        except Exception:
+            pass
+
     fundamentals["fifty_two_week_high"] = _float_or_none(
         _first_not_none(fast.get("year_high"), fast.get("fiftyDayHigh"), info.get("fiftyTwoWeekHigh"))
     )
@@ -648,30 +762,72 @@ def build_fundamentals_from_raw(raw: dict[str, Any]) -> dict[str, Any]:
         fundamentals["fifty_two_week_high"] = _float_or_none(info.get("fiftyTwoWeekHigh"))
 
     if isinstance(price_hist, pd.Series) and q_inc is not None:
+        quarterly_eps_series: pd.Series | None = None
+        eps_source_label = None
         for label in ("Diluted EPS", "Basic EPS"):
             if label in q_inc.index:
-                pe_bundle = compute_pe_history(price_hist, q_inc.loc[label])
-                if pe_bundle.get("values"):
-                    pe_bundle["meta"]["source"] = "yfinance"
-                    ticker = fundamentals.get("ticker") or raw.get("ticker")
-                    if pe_bundle["meta"].get("insufficient_20y") and ticker and is_us_ticker(ticker):
-                        # SEC EDGAR first: free, unlimited, deeper (~15-19y vs FMP's
-                        # free-tier 5y cap) — confirmed live 2026-07-24. FMP is only
-                        # tried when SEC has genuinely nothing for this ticker (e.g.
-                        # foreign private issuer filing 20-F, or not in SEC's CIK map).
-                        sec_bundle = fetch_pe_history_sec(ticker, price_hist)
-                        if sec_bundle and sec_bundle["meta"]["point_count"] > pe_bundle["meta"]["point_count"]:
-                            pe_bundle = sec_bundle
-                        if sec_bundle is None:
-                            fmp_bundle = fetch_pe_history_fmp(ticker, target_years=PE_HISTORY_TARGET_YEARS)
-                            if fmp_bundle and fmp_bundle["meta"]["point_count"] > pe_bundle["meta"]["point_count"]:
-                                pe_bundle = fmp_bundle
-                    fundamentals["pe_20y_array"] = pe_bundle["values"]
-                    fundamentals["pe_history_meta"] = pe_bundle["meta"]
+                quarterly_eps_series = q_inc.loc[label]
+                eps_source_label = label
                 break
+        if quarterly_eps_series is None:
+            # Tier 2 (item 16): many non-US filers' quarterly_income_stmt has no
+            # direct EPS row at all — reconstruct Net Income / Diluted-or-Basic
+            # Average Shares per quarter across the full available window instead
+            # of leaving this whole block (and pe_history_thin) unset.
+            reconstructed = reconstruct_quarterly_eps_from_net_income(q_inc)
+            if not reconstructed.empty:
+                quarterly_eps_series = reconstructed
+                eps_source_label = "reconstructed_net_income_over_shares"
+
+        if quarterly_eps_series is not None:
+            pe_bundle = compute_pe_history(price_hist, quarterly_eps_series)
+            if pe_bundle.get("values"):
+                pe_bundle["meta"]["source"] = "yfinance"
+                pe_bundle["meta"]["eps_source"] = eps_source_label
+                ticker = fundamentals.get("ticker") or raw.get("ticker")
+                is_fpi_alias = bool(ticker) and ticker.upper() in FOREIGN_PRIVATE_ISSUER_ALIASES
+                if pe_bundle["meta"].get("insufficient_20y") and ticker and (is_us_ticker(ticker) or is_fpi_alias):
+                    # SEC EDGAR first: free, unlimited, deeper (~15-19y vs FMP's
+                    # free-tier 5y cap) — confirmed live 2026-07-24. FMP is only
+                    # tried when SEC has genuinely nothing for this ticker (e.g.
+                    # foreign private issuer filing 20-F, or not in SEC's CIK map).
+                    # ``is_fpi_alias`` (2026-07-29): a handful of Canadian ``.TO``
+                    # tickers fail ``is_us_ticker()`` but are explicitly allowlisted
+                    # in ``FOREIGN_PRIVATE_ISSUER_ALIASES`` — see pe_history_sec.py.
+                    sec_bundle = fetch_pe_history_sec(ticker, price_hist)
+                    if sec_bundle and sec_bundle["meta"]["point_count"] > pe_bundle["meta"]["point_count"]:
+                        pe_bundle = sec_bundle
+                    if sec_bundle is None:
+                        fmp_bundle = fetch_pe_history_fmp(ticker, target_years=PE_HISTORY_TARGET_YEARS)
+                        if fmp_bundle and fmp_bundle["meta"]["point_count"] > pe_bundle["meta"]["point_count"]:
+                            pe_bundle = fmp_bundle
+                fundamentals["pe_20y_array"] = pe_bundle["values"]
+                fundamentals["pe_history_meta"] = pe_bundle["meta"]
+
+                # Tier 3 (item 16): non-US tickers never get the SEC/FMP deep-history
+                # attempt above (US-only gate), so a thin yfinance-only bundle (whether
+                # from a direct EPS row or the Tier 2 net-income/shares reconstruction
+                # above) is the final result for them — flag it explicitly with a point
+                # count rather than silently leaving `insufficient_20y` as the only
+                # signal, or blocking the ticker / requiring a manual CSV entry.
+                meta = pe_bundle["meta"]
+                if meta.get("insufficient_20y") and meta.get("point_count", 0) < 8:
+                    fundamentals["pe_history_thin"] = True
+                    fundamentals["pe_history_years"] = meta.get("years_available", 0.0)
 
     if fundamentals.get("revenue_growth_yoy") is not None:
         fundamentals["revenue_growth"] = fundamentals["revenue_growth_yoy"]
+
+    # Adjusted EPS / materiality-gated adjusted-PE substitution (items 10-11): only
+    # affects `pe_percentile_20y` ranking, never the raw displayed `pe_ttm`.
+    try:
+        from .adjusted_eps import compute_adjusted_eps_bundle
+
+        adj = compute_adjusted_eps_bundle(fundamentals, q_inc)
+        if adj:
+            fundamentals.update(adj)
+    except Exception:
+        logger.debug("fundamentals_enriched: adjusted EPS computation failed", exc_info=True)
 
     fundamentals["fetch_errors"] = errors
     return fundamentals
@@ -714,6 +870,32 @@ def map_to_engine_fundamentals(enriched: dict[str, Any]) -> dict[str, Any]:
         "shares_outstanding_12m_ago",
         "days_below_high",
         "capital_allocation_detail",
+        "net_income_ttm",
+        "ebitda_ttm",
+        "stockholders_equity",
+        "total_assets",
+        "goodwill",
+        "other_intangible_assets",
+        "book_value_per_share",
+        "tangible_book_value",
+        "noninterest_expense_ttm",
+        "net_interest_income_ttm",
+        "noninterest_income_ttm",
+        "buyback_spend_ttm",
+        "buyback_spend_prior_year",
+        "buyback_suspension_flag",
+        "annual_div_declared_current",
+        "annual_div_declared_prior",
+        "dividend_cut_flag",
+        "revenue_estimate_current",
+        "revenue_miss_pct",
+        "revenue_miss_gt_10pct",
+        "pe_history_thin",
+        "pe_history_years",
+        "adjusted_eps_ttm",
+        "one_off_pct_of_ni",
+        "effective_tax_rate",
+        "pe_ttm_adjusted",
     ]
     out = {k: enriched[k] for k in keys if k in enriched and enriched[k] is not None}
     if enriched.get("gross_margin_computed") is not None and "gross_margin" not in out:

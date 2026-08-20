@@ -25,11 +25,20 @@ full 2015+ coverage (``macro_intelligence/data/ssi/ssi.db``, 3,858 rows — no g
   snapshot date forward** — never backfilled/fabricated for dates before that. Callers must
   surface this via a ``data_status`` field (see ``run_four_book_engine()``'s return dict).
 
-**Scoping note:** "deployment ceiling" here uses the SSI multiplier only (capped at 1.0, same
-haircut-only rule as ``api/services/portfolio_service.py::_compute_ceiling``), not the full
-live regime chain (regime max × VIX × trend × HY × SSI). VIX/trend/HY multipliers have no
-historical daily series stored anywhere in this repo — reconstructing one is a separate,
-tracked gap (see ``docs/mindwealth_ui_repo_job_status_details.md``), not fabricated here.
+**Scoping note:** the BASE+SSI / ENHANCED books below still apply the SSI multiplier only
+(capped at 1.0, same haircut-only rule as
+``api/services/portfolio_service.py::_compute_ceiling``), not the full live regime chain
+(regime max × VIX × trend × HY × SSI). **Update 2026-07-29:** the VIX/trend/HY legs of that
+chain now DO have a backfilled historical daily series — see
+``load_full_ceiling_chain_series()`` below (macro regime system fix-to-spec plan, work item 3,
+action 4). It is exposed as a standalone series, not yet wired into the BASE+SSI/ENHANCED NAV
+decomposition above — switching the live decomposition to the full chain is a separate decision
+(it would change every historical BASE+SSI/ENHANCED number, not just add a diagnostic), tracked
+alongside the regime-source-of-truth and multiplier sign-off decisions in
+``docs/plans/regime_source_of_truth_decision_2026-07-29.md`` /
+``docs/plans/multiplier_signoff_request_2026-07-29.md``. The HY leg of the new series is itself
+bounded by the HY OAS proxy gap pre-2023-07-13 — see
+``docs/ssi_validation/hy_oas_recalibration_2026-07-29.md``.
 """
 
 from __future__ import annotations
@@ -89,13 +98,155 @@ def load_ssi_ceiling_series(*, ssi_db_path: Path | None = None) -> pd.Series:
 
 
 def _ceiling_on(series: pd.Series, date: pd.Timestamp) -> float:
-    """Ceiling fraction for a date — forward-fill from the latest available reading <= date."""
+    """Ceiling fraction for a date — forward-fill from the latest available reading <= date.
+
+    Unlimited carry-forward: no row/day cap. series.index is sparse SSI daily dates.
+    """
     if series.empty:
         return 1.0
     pos = series.index.searchsorted(date, side="right") - 1
     if pos < 0:
         return 1.0
     return float(series.iloc[pos])
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Full ceiling-chain backfill: VIX + SPX-trend + HY multiplier daily series
+# (macro regime system fix-to-spec plan, work item 3, action 4 — closes the gap this module's
+# own docstring used to describe as "VIX/trend/HY multipliers have no historical daily series
+# stored anywhere in this repo".)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Mirrors api/services/portfolio_service.py::_compute_ceiling's thresholds exactly, so this
+# backfill and the live daily calc agree by construction. Kept local (src/ stays independent
+# of api/, matching the _BQ_TIER_THRESHOLDS convention above).
+_VIX_MULT_THRESHOLDS: list[tuple[float, float]] = [(30.0, 0.90), (25.0, 0.95)]  # (>, mult), else 1.00
+_HY_MULT_THRESHOLDS: list[tuple[float, float]] = [(5.0, 0.80), (4.0, 0.85), (3.0, 0.90)]  # (>, mult), else 1.00
+_SPX_TREND_MA_WINDOW = 200
+_SPX_BELOW_MA_MULT = 0.90
+
+
+def _tiered_mult(level: float | None, thresholds: list[tuple[float, float]]) -> float:
+    if level is None or (isinstance(level, float) and np.isnan(level)):
+        return 1.00
+    for cutoff, mult in thresholds:
+        if level > cutoff:
+            return mult
+    return 1.00
+
+
+def load_vix_mult_series(*, vix_series: pd.Series | None = None) -> pd.Series:
+    """Daily VIX level -> ceiling multiplier (>30 -> 0.90, >25 -> 0.95, else 1.00).
+
+    Mirrors ``portfolio_service._compute_ceiling``'s live thresholds. Full free history via
+    Yahoo (`^VIX`, back to 1990) -- no data gap on this leg.
+    """
+    if vix_series is None:
+        # Cached reader: a truncated Yahoo response would otherwise shorten this multiplier
+        # history silently, the same failure that killed the SSI vix_ratio input.
+        from src.sentiment_superindex.data.yahoo_cache import cached_yahoo_close
+
+        vix_series = cached_yahoo_close("^VIX", "1990-01-01")
+    if vix_series.empty:
+        return pd.Series(dtype=float)
+    return vix_series.apply(lambda v: _tiered_mult(float(v), _VIX_MULT_THRESHOLDS))
+
+
+def load_spx_trend_mult_series(*, spx_series: pd.Series | None = None) -> pd.Series:
+    """Daily SPX-vs-200dma trend multiplier (below 200dma -> 0.90, else 1.00).
+
+    Mirrors ``portfolio_service._compute_spx_trend_mult``'s live single-threshold rule, computed
+    historically instead of only for "now". Full free history via Yahoo (`^GSPC`) -- the first
+    ~200 trading days of any requested window have no multiplier (200dma undefined yet), same as
+    the live function's own "insufficient history" fallback (returns 1.0, no haircut).
+    """
+    if spx_series is None:
+        from src.sentiment_superindex.data.yahoo_cache import cached_yahoo_close
+
+        spx_series = cached_yahoo_close("^GSPC", "1990-01-01")
+    if spx_series.empty:
+        return pd.Series(dtype=float)
+    ma200 = spx_series.rolling(_SPX_TREND_MA_WINDOW).mean()
+    above = spx_series >= ma200
+    mult = above.map({True: 1.00, False: _SPX_BELOW_MA_MULT})
+    mult[ma200.isna()] = 1.00  # no MA yet -> no haircut, matches live "insufficient history" path
+    return mult.astype(float)
+
+
+def load_hy_mult_series(*, db_path: Path | None = None) -> tuple[pd.Series, pd.Series]:
+    """Daily HY-OAS-level ceiling multiplier (>5% -> 0.80, >4% -> 0.85, >3% -> 0.90, else 1.00).
+
+    Mirrors ``portfolio_service._compute_ceiling``'s live thresholds, applied to the full
+    ``daily_readings`` HY series (``macro_intelligence/data/runic.db``). **Update 2026-08-02:**
+    this series is now real ICE BofA HY OAS for virtually all of history (1996-12-31 -> today),
+    not a proxy -- ``scripts/backfill_hy_oas_from_wayback.py`` replaced the BAA10Y+VIX-calibrated
+    Model v2 proxy with real data recovered from a Wayback Machine snapshot of FRED's own CSV. No
+    code change was needed here since this function already read ``daily_readings`` directly (see
+    ``docs/ssi_validation/hy_oas_wayback_backfill_2026-08-02.md``). Only 7 dates (bond-market-only
+    holidays with no wayback print, ~0.1% of the former proxy era) remain
+    ``signal_tier='PROXY'`` on the now-superseded Model v2 estimate -- see ``tier`` in the
+    companion DataFrame from ``load_full_ceiling_chain_series`` below.
+    """
+    from src.macro_intelligence.config import db_path as default_db_path
+    from src.macro_intelligence.db.connection import get_connection
+
+    path = db_path or default_db_path()
+    with get_connection(path) as conn:
+        rows = conn.execute(
+            "SELECT date, raw_value, signal_tier FROM daily_readings WHERE var_id='HY' ORDER BY date"
+        ).fetchall()
+    if not rows:
+        return pd.Series(dtype=float), pd.Series(dtype=object)
+    idx = pd.to_datetime([r["date"] for r in rows])
+    vals = pd.Series([float(r["raw_value"]) for r in rows], index=idx).sort_index()
+    tiers = pd.Series([r["signal_tier"] for r in rows], index=idx).sort_index()
+    mult = vals.apply(lambda v: _tiered_mult(float(v), _HY_MULT_THRESHOLDS))
+    return mult, tiers
+
+
+def load_full_ceiling_chain_series(
+    *,
+    start: str | None = None,
+    end: str | None = None,
+) -> pd.DataFrame:
+    """Daily VIX x SPX-trend x HY ceiling-chain multiplier series, backfilled as far as free
+    data allows (VIX/SPX: full history since 1990; HY: full history since 1996-12-31, real data
+    -- see ``load_hy_mult_series`` and the 2026-08-02 wayback backfill note there).
+
+    This does NOT include ``regime_max`` (scenario-level cap) or the SSI multiplier
+    (``load_ssi_ceiling_series`` above) -- combine those separately, same as
+    ``portfolio_service._compute_ceiling``'s live formula
+    (``regime_max * vix_mult * trend_mult * hy_mult * ssi_mult``).
+
+    Returns a DataFrame indexed by date with columns:
+        vix_mult, trend_mult, hy_mult   -- each in (0, 1.0], haircut-only
+        chain_mult                      -- product of the three
+        hy_tier                         -- 'PROXY' or the live signal_tier for that HY reading
+        hy_is_proxy                     -- bool, for the same reason `_compute_ceiling` now
+                                            surfaces `hy_is_proxy` (see hy-proxy-audit)
+    """
+    vix_mult = load_vix_mult_series()
+    trend_mult = load_spx_trend_mult_series()
+    hy_mult, hy_tier = load_hy_mult_series()
+
+    idx = vix_mult.index.union(trend_mult.index).union(hy_mult.index)
+    if start:
+        idx = idx[idx >= pd.Timestamp(start)]
+    if end:
+        idx = idx[idx <= pd.Timestamp(end)]
+    idx = idx.sort_values()
+
+    df = pd.DataFrame(index=idx)
+    # idx = union of Yahoo trading-day observation dates (sparse, not freq="B" or freq="D").
+    # ffill() here is UNLIMITED and counts trading-day ROWS of idx — a multi-week source
+    # outage would silently carry the last multiplier forward with no staleness cap.
+    df["vix_mult"] = vix_mult.reindex(idx).ffill()
+    df["trend_mult"] = trend_mult.reindex(idx).ffill()
+    df["hy_mult"] = hy_mult.reindex(idx).ffill()
+    df["hy_tier"] = hy_tier.reindex(idx).ffill()
+    df["hy_is_proxy"] = df["hy_tier"] == "PROXY"
+    df["chain_mult"] = (df["vix_mult"] * df["trend_mult"] * df["hy_mult"]).clip(upper=1.0)
+    return df.dropna(subset=["vix_mult", "trend_mult", "hy_mult"])
 
 
 # ─────────────────────────────────────────────────────────────────────────────

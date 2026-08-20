@@ -2,7 +2,7 @@
 version: "2.2"
 
 claude:
-  model: "claude-sonnet-4-20250514"  # fallback; spec prefers claude-sonnet-4-6 when available
+  model: "claude-sonnet-4-5-20250929"  # fallback; spec prefers claude-sonnet-4-6 when available
   regime_max_tokens: 150
   narrative_max_tokens: 2200
 
@@ -275,21 +275,32 @@ persistence_rules:
 
 vix_bypass:
   combos: [B]
-  ssi_confirmed_combo_f: true
+  ssi_confirmed_combo_f: false
   docstring: |
-    CRITICAL RULE: VIX_REGIME_BYPASS
-    When runic_combo = 'B' (Maximum Capitulation) is confirmed active,
-    the VIX regime size multiplier is BYPASSED.
+    CRITICAL RULE: VIX_REGIME_BYPASS (Addendum A6)
+    vix_bypass is set ONLY when runic_combo = 'B' is confirmed ACTIVE.
+    Combo F + SSI confirmation does NOT set vix_bypass.
 
 dominant:
+  # Rohit sign-off 2026-08-06: B moved ABOVE C.
+  # B and C can co-fire (an oil shock that cracks the market produces WTI +10% AND
+  # VIX>25 AND HY>400bps AND CFTC<15th at the same time). Under the old C-first order
+  # C's bearish call suppressed the capitulation buy at the exact bottom.
   PRIORITY:
-    C: 100
-    B: 90
+    B: 100
+    C: 90
     F: 80
     E: 70
     D: 60
     G: 50
     A: 40
+  # General rule (same sign-off, not a C special case): any combo with fewer than
+  # min_matured_episodes matured episodes ranks BELOW every validated combo,
+  # regardless of its PRIORITY number. Episode counts come from the existing
+  # combo_hit_rate_stats() / min_episodes_for_hit_rate() path, not a separate query.
+  # Live counts 2026-08-17: A=174, B=274, C=3, D=455, E=508, F=704, G=n/a.
+  low_n_demotion: true
+  min_matured_episodes: 5
   combo_f_validation_date: "2020-06-08"
 
 cpi:
@@ -320,16 +331,26 @@ cftc:
   # Official zips: scripts/download_cftc_tff_zip.py → macro_intelligence/data_cache/cftc/
   local_cache_dir: macro_intelligence/data_cache/cftc
   market_primary: "S&P 500 Consolidated"
+  # Pre-Consolidated TFF line (2006-06 → 2010-06) — stitches before Consolidated for GFC-era backtests
+  legacy_market_backfill: "S&P 500 STOCK INDEX"
+  legacy_market_backfill_enabled: true
   market_filter: "S&P 500"
   market_exclude: "E-MINI|MICRO|DIVIDEND|ADJUSTED INT RATE"
   fm_classification: "Lev Money|Leveraged Funds"
   rm_classification: "Asset Mgr|Asset Manager"
   pending_status: PENDING_CFTC_CONFIRM
   pctile_window_weeks: 156
+  positioning_patterns:
+    squeeze: { fm_pctile_max: 20, rm_pctile_min: 45 }
+    liquidity_exit: { rm_pctile_max: 30, fm_pctile_min: 60 }
+  pattern_templates:
+    squeeze: "Fast money very short; real money less short"
+    liquidity_exit: "Real money exiting; fast money still crowded long"
+    none: ""
 
 regime:
   min_regime_days_for_pctile: 50
-  geo_model: claude-sonnet-4-20250514
+  geo_model: claude-sonnet-4-5-20250929
   tavily_max_results: 5
   fed_funds_series: DFF
   fed_funds_start: "1990-01-01"

@@ -5,7 +5,7 @@ Demonstrates whether the Runic **5 regime dimensions** improve risk-adjusted ret
 | Doc | Purpose |
 |-----|---------|
 | [PLAN.md](PLAN.md) | Experiment spec |
-| [multiplier_spec.md](multiplier_spec.md) | v1 dimension → multiplier table |
+| [regime_dimension_multipliers_v1_unsigned.md](regime_dimension_multipliers_v1_unsigned.md) | v1 dimension → multiplier table |
 | [output_files/REPORT.md](output_files/REPORT.md) | **Michele-ready results** |
 | [run_regime_sharpe_uplift.py](run_regime_sharpe_uplift.py) | Backtest script |
 

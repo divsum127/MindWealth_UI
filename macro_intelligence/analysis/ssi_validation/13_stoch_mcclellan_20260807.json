@@ -1,0 +1,159 @@
+{
+  "test_id": "13_stoch_mcclellan",
+  "stoch_only": {
+    "n_events": 179,
+    "1w": {
+      "n": 179,
+      "avg": 0.1267,
+      "median": 0.5337,
+      "win_pct": 59.78,
+      "worst": -17.9666,
+      "sharpe": 0.3046
+    },
+    "2w": {
+      "n": 179,
+      "avg": 0.6194,
+      "median": 1.3,
+      "win_pct": 65.92,
+      "worst": -20.3228,
+      "sharpe": 0.771
+    },
+    "1m": {
+      "n": 0,
+      "avg": null,
+      "median": null,
+      "win_pct": null,
+      "worst": null,
+      "sharpe": null
+    },
+    "3m": {
+      "n": 0,
+      "avg": null,
+      "median": null,
+      "win_pct": null,
+      "worst": null,
+      "sharpe": null
+    },
+    "6m": {
+      "n": 0,
+      "avg": null,
+      "median": null,
+      "win_pct": null,
+      "worst": null,
+      "sharpe": null
+    },
+    "12m": {
+      "n": 0,
+      "avg": null,
+      "median": null,
+      "win_pct": null,
+      "worst": null,
+      "sharpe": null
+    }
+  },
+  "mcclellan_only": {
+    "n_events": 291,
+    "1w": {
+      "n": 290,
+      "avg": 0.2757,
+      "median": 0.4576,
+      "win_pct": 60.69,
+      "worst": -9.7936,
+      "sharpe": 0.836
+    },
+    "2w": {
+      "n": 289,
+      "avg": 0.5534,
+      "median": 0.6957,
+      "win_pct": 62.28,
+      "worst": -12.2291,
+      "sharpe": 0.8914
+    },
+    "1m": {
+      "n": 0,
+      "avg": null,
+      "median": null,
+      "win_pct": null,
+      "worst": null,
+      "sharpe": null
+    },
+    "3m": {
+      "n": 0,
+      "avg": null,
+      "median": null,
+      "win_pct": null,
+      "worst": null,
+      "sharpe": null
+    },
+    "6m": {
+      "n": 0,
+      "avg": null,
+      "median": null,
+      "win_pct": null,
+      "worst": null,
+      "sharpe": null
+    },
+    "12m": {
+      "n": 0,
+      "avg": null,
+      "median": null,
+      "win_pct": null,
+      "worst": null,
+      "sharpe": null
+    }
+  },
+  "combo": {
+    "n_events": 13,
+    "1w": {
+      "n": 13,
+      "avg": -0.2532,
+      "median": -0.3181,
+      "win_pct": 46.15,
+      "worst": -3.6128,
+      "sharpe": -0.7414
+    },
+    "2w": {
+      "n": 13,
+      "avg": 0.4496,
+      "median": 0.6653,
+      "win_pct": 61.54,
+      "worst": -4.2814,
+      "sharpe": 0.8332
+    },
+    "1m": {
+      "n": 0,
+      "avg": null,
+      "median": null,
+      "win_pct": null,
+      "worst": null,
+      "sharpe": null
+    },
+    "3m": {
+      "n": 0,
+      "avg": null,
+      "median": null,
+      "win_pct": null,
+      "worst": null,
+      "sharpe": null
+    },
+    "6m": {
+      "n": 0,
+      "avg": null,
+      "median": null,
+      "win_pct": null,
+      "worst": null,
+      "sharpe": null
+    },
+    "12m": {
+      "n": 0,
+      "avg": null,
+      "median": null,
+      "win_pct": null,
+      "worst": null,
+      "sharpe": null
+    }
+  },
+  "n_stoch": 179,
+  "n_mcc": 291,
+  "n_combo": 13
+}

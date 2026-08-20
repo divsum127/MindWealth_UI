@@ -21,6 +21,941 @@ Reference deploy skill: `.cursor/skills/prod-pull-and-details/SKILL.md`
 | `[PROD-ACTION]` | Manual step on server after git merge (secrets, systemd, bootstrap) |
 | `[DONE]` | Completed on prod (date in notes) |
 
+## 2026-08-18 — AI Analyst panel: audit defects FIXED on dev, awaiting prod cutover `[PENDING]`
+
+**Committed + pushed 2026-08-18** (all as `divsum127`):
+
+| Repo | Branch | SHA | Remote |
+|------|--------|-----|--------|
+| MindWealth_UI | `chatbot-dev` | `d624be4cf` | `divsum127/MindWealth_UI` |
+| `docs/mindwealth-api-docs` | `main` | `1a4e0ac` | `divsum127/mindwealth-api-docs` |
+| MindwealthUI_Vue | `ui-dev` | `f49ef8b` | `D-ParthChauhan/MindwealthUI_Vue` |
+
+**API version bumped `1.10.9` → `1.11.0`** — the alerts response gained a type. Frontend and
+backend must cut over together: a client that switches on `type` and does not know `position_risk`
+will silently drop 237 of 249 alerts.
+
+API docs updated on the submodule `main` and the pointer committed in the parent:
+`changelog.md` (v1.11.0), `services/analyst/README.md`, `endpoints/get-analyst-alerts.md`,
+`get-analyst-brief.md`, `get-overwatch-stream.md`, and a regenerated
+`openapi/mindwealth-v1.json`.
+
+**Also on the Nuxt side (not analyst-specific but shipped in `f49ef8b`):** `vitest` +
+`@vue/test-utils` + `@vitejs/plugin-vue` + `happy-dom` + `vue-tsc` added as devDependencies, with
+`test` / `test:watch` / `typecheck` scripts. `npm ci` on the prod Nuxt tree will pull these —
+they are devDependencies only and do not enter the bundle. vitest is pinned to `^4` so it resolves
+the same vite as Nuxt (7.x); vitest 2 shipped a nested vite 5 and broke the plugin's types.
+
+
+Supersedes the audit entry below — those defects are now fixed on `chatbot-dev` + `ui-dev`.
+**Nothing is deployed.** Backend and Nuxt changes must ship **together**: the panel renders a
+`position_risk` alert type the current prod API does not emit.
+
+### Backend — merge `chatbot-dev` → `chatbot-prod`
+
+| File | Change |
+|------|--------|
+| `api/services/analyst_service.py` | New `position_risk` type + `_portfolio_to_panel_alert`; `above_floor` honours `floor_pct`; `_first_sentence()` brief fix; schedule in `meta`; split signals badge |
+| `api/services/degradation_service.py` | Cache is floor-aware; portfolio alerts carry `entry_date`/`exit_date` |
+| `api/services/overwatch_event_bus.py` | `bind_loop()` — lets a scan thread publish to live SSE subscribers |
+| `api/schemas/analyst.py` | `position_risk` in the type literal; `OverwatchPanelPositionDetail`; `drift_count`/`position_count` on the badge |
+| `api/main.py` | Starts/cancels the Overwatch scan loops in `lifespan` |
+| **new** `api/services/overwatch_schedule.py` | Scan times, shared by the runner and `meta` |
+| **new** `api/services/overwatch_runner.py` | In-process scan loops (replaces cron for SSE) |
+| **new** `scripts/smoke_analyst.sh` | 12-assertion contract smoke test |
+| **new** `tests/test_analyst_position_split.py`, `tests/test_overwatch_runner.py` | 21 tests |
+
+### Nuxt — merge `ui-dev` → the prod Nuxt branch (`presentation-prod`)
+
+`server/api/overwatch.get.ts`, `server/utils/overwatch-panel.ts`, `server/utils/mindwealth-data.ts`,
+`server/utils/signal-parsers.ts`, `composables/useOverwatch.ts`, `composables/useClaudePanel.ts`,
+`components/AnalystPanelInner.vue`, `components/analyst/AnalystAlertsView.vue`,
+`components/analyst/AnalystMacroAlertCard.vue`, `types/api.ts`, `package.json`, plus **new**
+`server/api/page-alerts.get.ts`, `composables/usePageAlerts.ts`,
+`components/analyst/AnalystPositionRiskCard.vue`, `components/analyst/AnalystPageAlertCard.vue`,
+`vitest.config.ts`, `test/*.spec.ts`, `test/fixtures/analyst-alerts.json`.
+
+Note the prod Nuxt tree is `/home/ubuntu/MindwealthUI_Vue_prod` (branch `presentation-prod`,
+currently `ba2bcfd`, 20 Jul) and is **22+ commits behind** `ui-dev`. This merge is not analyst-only.
+
+### `[PROD-ACTION]` Host steps — required, in this order
+
+1. **Warm the degradation cache after deploying the backend**, before the first panel load:
+   `.venv/bin/python -c "from api.services.degradation_service import warm_degradation_cache; warm_degradation_cache()"`
+   A cache written by the old code has no `entry_date`, so position-alert ids fall back and collide.
+   Alternative: delete `overwatch_store/degradation_result.json` and let the first request rebuild it
+   (slow — that request pays the full ~1,990-CSV scan).
+2. **Confirm the API runs `--workers 1`.** `mindwealth-api.service` does today. The SSE bus is
+   per-process; with N workers each client sees 1/N of alerts.
+3. **Do NOT install the Overwatch crontab.** `scripts/install_aws_cron_dual.sh:40-42` is now redundant —
+   the scans run inside the API. Leaving cron installed is safe (`alert_state.json` dedupes) but
+   rebuilds the degradation cache twice a day for nothing. If cron is preferred, set
+   `OVERWATCH_SCHEDULER=0` in the service environment — but note SSE will then deliver nothing,
+   which is the pre-existing behaviour.
+4. **Rebuild the prod Nuxt bundle in its own tree** — `cd /home/ubuntu/MindwealthUI_Vue_prod && npm ci && npm run build`, then `sudo systemctl restart mindwealth-ui.service`.
+5. Optional: `ANALYST_USE_CLAUDE_COPY` is still absent from both `.env` files, so alert copy stays
+   template-generated. If it is ever enabled, re-check the model id in `analyst_copy_service.py:72`
+   (`claude-sonnet-4-5-20250929`) — a dead Claude model id was already retired elsewhere on 2026-08-17.
+
+### `[PENDING]` Latent, pre-existing — running prod Nuxt process is from the old tree
+
+`mindwealth-ui.service` was corrected on 2026-08-17 to `WorkingDirectory=/home/ubuntu/MindwealthUI_Vue_prod`
+with an absolute `ExecStart`, but the **running** process (pid 1540211) predates that and still has
+`cwd=/home/ubuntu/MindwealthUI_Vue`. Its next restart — planned or not — will switch www.mindwealth.co
+to the prod checkout at `ba2bcfd` (20 Jul). Whoever restarts it should expect a visible content jump.
+Verified today: the two `.output` trees have different inodes and different content, and the prod
+bundle contains none of the analyst work, so a dev `npm run build` can no longer reach prod.
+
+### Smoke tests
+
+- [DONE 2026-08-18] `scripts/smoke_analyst.sh http://127.0.0.1:8507 $KEY` → **12/12 PASS** on dev.
+- [PENDING] Same script against `http://127.0.0.1:8506` after the prod API deploy.
+- [PENDING] Logged-in `GET :8512/api/overwatch` — assert `system_checks` has 7 named checks for an
+  admin, one card per Combo, and `panel_alerts[].type` includes `position_risk`.
+- [PENDING] Confirm `journalctl -u mindwealth-api` logs `overwatch scheduler started (3 loops)` on boot.
+
+---
+
+## 2026-08-18 — AI Analyst panel wiring audit: defects found, **nothing fixed yet** `[PENDING]`
+
+Audit only — **no code changed in either repo**, so there is nothing to merge from this entry today.
+Recorded here because every defect below is in code that **prod already runs**, so each fix will need a
+`chatbot-dev` → `chatbot-prod` merge **plus** a `MindwealthUI_Vue` rebuild + restart, shipped together.
+
+**Prod is affected the same way dev is.** These are not dev-only shortcuts.
+
+### Backend files that will change when fixed (`chatbot-dev` → `chatbot-prod`)
+
+| File | Defect |
+|------|--------|
+| `api/services/analyst_service.py:101` | Portfolio `profit_pct` (live MTM %) coalesced into the `fwd_wr` win-rate field — 237 of 249 alerts render "FWD WR −23.7%" and "BELOW 60% FLOOR" |
+| `api/services/analyst_service.py:151` | `above_floor` hardcoded `>= 61.0`; the `floor_pct` argument is accepted and never read |
+| `api/services/analyst_service.py:637` | `/analyst/brief` splits the narrative on the first `.` → snippet truncates mid-number (`"…with a 78."`) |
+| `api/services/degradation_service.py:397` | `check_degradation(floor_pct=…)` returns the disk cache before the parameter reaches `_compute_degradation`, so `?floor_pct=` is inert |
+| *(new)* `/analytics/analyst/fwd-trend` | P0 in `docs/AI_ANALYST_BACKEND_REQUIREMENTS.md` §5.2 — returns **404**, never implemented; 237/242 alerts have `fwd_trend: null` because of it |
+
+### Nuxt files that will change when fixed (`MindwealthUI_Vue`, `ui-dev` → prod branch)
+
+| File | Defect |
+|------|--------|
+| `components/analyst/AnalystMacroAlertCard.vue` | Never renders `alert.html` or `macro.historical_analogs` — the **Analog Finder block is invisible** despite the backend building it |
+| `types/api.ts:371` | `OverwatchAlertType` omits `runic_watch` / `regime_warning` / `persistence` |
+| `composables/useOverwatch.ts:36` | MACRO tab filter drops those 3 types; ALERTS badge counts 245 while ALL renders 249 |
+| `composables/useOverwatch.ts:44` | ALL badge reads `'Overwatch · Claude triggered'` — **spec requires `'Overwatch · auto-triggered'`**; backend already returns the correct string |
+| `server/api/overwatch.get.ts:31` | `include_system: 'false'` hardcoded — SYSTEM tab never calls the real `/system/health` |
+| `server/api/overwatch.get.ts:17-20` | BFF still emits `runic-dominant-<combo>` alongside the backend's `runic-<combo>` → **Combo F card renders twice** |
+| `server/utils/overwatch-panel.ts:125` | `buildSystemChecks()` hardcodes India CSV / Claude API / Tavily as `warn` + "unavailable"; "Google Sheets sync" just echoes `meta.data_updated_at` |
+| `server/utils/overwatch-panel.ts:32-61` | Dead code (`parseForwardTestingRows` always returns `[]`) incl. a fabricated `fwdTrend` interpolation — delete rather than leave live-looking |
+| `components/analyst/AnalystAlertsView.vue` | No cap/pagination — renders all 249 cards in a 360px column |
+
+### Backend endpoints live on prod with **zero frontend consumers**
+
+`GET /api/v1/analytics/analyst/context` · `GET /api/v1/analytics/analyst/brief` · `GET /api/v1/system/health` ·
+`GET /api/v1/overwatch/stream` (SSE) · all `/analyst/alerts` query params (`channel`, `since`, `include_persistence`, `gap_threshold_pp`) ·
+all chat presets (`analyze_asset`, `signal_insights`, `breadth_analysis`, `deep_research_enabled`).
+Wiring these is `docs/AI_ANALYST_BACKEND_REQUIREMENTS.md` §6, still unstarted.
+
+### Host / runtime actions needed (**not** git)
+
+1. **Overwatch cron is not scheduled on any host** — `scripts/overwatch/run_overwatch_{signals,macro,system}.py` have no crontab entry and no systemd timer, on dev or prod.
+2. **Scheduling them alone will not work.** `api/services/overwatch_event_bus.py:59` is an in-process asyncio bus; a cron process publishes into its own empty subscriber set. SSE needs Redis pub/sub (spec open question 2, never answered) or an in-API scheduler. Decide before wiring `EventSource` in Nuxt.
+3. `ANALYST_USE_CLAUDE_COPY` is absent from dev `.env` (`ANTHROPIC_API_KEY` **is** set) — all alert copy is template. If Claude copy is wanted on prod, add the flag to the prod `.env` **and** confirm the model id in `analyst_copy_service.py:72` (`claude-sonnet-4-5-20250929`) is still valid — a dead Claude model id was already retired elsewhere on 2026-08-17.
+4. `MindwealthUI_Vue/.env:1` still reads `NUXT_API_BASE_URL=http://51.20.53.218:8514` — points a Nuxt at itself. Harmless while systemd supplies the real value (`:8514`→`127.0.0.1:8507`, `:8512`→`127.0.0.1:8506`), but wrong for anyone running the app from a shell. Fix or delete the line.
+
+### Smoke tests
+
+- [PENDING] After any fix: `GET :8507/api/v1/analytics/analyst/alerts?include_system=false` — assert no `signal.fwd_wr < 0`, and that `type` distinguishes position-risk alerts from win-rate drift.
+- [PENDING] `GET :8507/api/v1/analytics/analyst/brief` — assert the snippet does not end mid-number.
+- [PENDING] Logged-in `GET :8514/api/overwatch` — assert exactly one card per Combo, and `system_checks` sourced from `/system/health`.
+
+---
+
+## 2026-08-18 — `POST /macro/run-nightly` could clobber the live snapshot (API 1.10.9) `[PENDING]`
+
+Closes the half of the 2026-08-17 snapshot bug that the `persist` flag did **not** cover. `trigger_nightly_run()` passed any `as_of` into `run_nightly()`, which persists, so a single call like `{"as_of": "2024-09-18"}` reproduced the exact corruption over HTTP.
+
+**Fix:** persist only when `as_of` is unset or equals today; response gains `persisted` and `persist_skipped_reason`, and `output_path` is `null` when skipped. Also isolated the runic schema test's DB writes via a throwaway `MACRO_INTEL_DB` copy.
+
+### 1. Files to merge `chatbot-dev` → `chatbot-prod` (commit `40fda07de`)
+
+| Path | Kind |
+|---|---|
+| `api/services/macro_service.py` | modified — `persist` guard in `trigger_nightly_run()` |
+| `api/routers/macro.py` | modified — docstring documents the guard |
+| `api/main.py` | modified — `API_VERSION` 1.10.8 → **1.10.9** |
+| `tests/test_api_macro.py` | modified — `test_backdated_nightly_run_does_not_persist` |
+| `tests/test_runic_output_schema.py` | modified — tmp-DB isolation in `setUp`/`tearDown` |
+| `docs/mindwealth-api-docs` | submodule pointer → `1121b3e` (pushed to `divsum127/mindwealth-api-docs` `main`) |
+
+**Careful when merging:** `api/services/macro_service.py` and `api/routers/macro.py` still carry **uncommitted work from other tasks** in this worktree (≈238 further lines). Only the hunks in `40fda07de` belong to this change.
+
+- **Dev-only / revert:** none. **Runtime artifacts:** none. **`.env` / secrets:** unchanged. **systemd / Nuxt:** no change, no rebuild.
+- **Response-shape change:** additive only (`persisted`, `persist_skipped_reason`); `output_path` becomes nullable. No Nuxt consumer reads this endpoint.
+
+### 2. Smoke tests
+
+- `[DONE 2026-08-18]` `pytest tests/ -q` → **818 passed, 4 skipped, 0 failed** (249s). The long-standing Monday-only `test_shortlist_mtm_not_stale_zero_for_aged_signals` failure is **gone** now that the 2026-08-17 pull landed.
+- `[DONE 2026-08-18]` Live proof on dev `:8507`: `POST /macro/run-nightly {"as_of":"2024-09-18"}` → `persisted: false`, `output_path: null`, reason string present; `runic_output.json` mtime **unchanged**, `date` still `2026-08-17`, no `runic_briefing_2024-09-18.*` produced.
+- `[DONE 2026-08-18]` `smoke-test-apis.sh` 11/11 PASS, dev reports **v1.10.9**, prod v1.8.1 isolated.
+- `[PENDING]` After the prod merge: same backdated call against `:8506` must return `persisted: false`.
+
+### Status: `[PENDING]` — done and verified on dev; prod merge outstanding.
+
+---
+
+## 2026-08-17 — Nuxt stamped report dates at midnight UTC (topbar read one evening early) `[PROD-ACTION]`
+
+**Repo:** `MindwealthUI_Vue` (separate remote `D-ParthChauhan/MindwealthUI_Vue`), branch `ui-dev` @ `fe7ebf1`, author `divsum127`.
+
+**Defect:** `server/utils/mindwealth-data.ts` built `data_updated_at.datetime` as `<report-date>T00:00:00Z` in three places (`metaFromSource()`, signals-list meta, shortlist meta). Midnight UTC renders as 8:00 PM the previous evening in `America/New_York`, so a 2026-08-14 report displayed as **Aug 13, 08:00 PM EDT**. The FastAPI `/api/v1/meta` was correct throughout (`2026-08-14T16:00:00-04:00`) and simply unused — `loadMeta()` derived meta from the overlay filename instead.
+
+**Fix:** all three sites use the existing DST-safe `buildMarketCloseDataUpdatedAt()` (16:00 America/New_York); `loadMeta()` now calls the backend `/meta` and merges via `mergeApiMeta()`, keeping filename derivation as fallback.
+
+### 1. Files to merge
+
+| Path | Kind |
+|---|---|
+| `MindwealthUI_Vue/server/utils/mindwealth-data.ts` | modified — market-close stamps + backend `/meta` preference |
+
+No `MindWealth_UI` code file changed. Docs updated here: `docs/mindwealth_ui_job_status.md` (entry 17), `docs/mindwealth_ui_repo_job_status_details.md`, this file.
+
+- **Dev-only / revert:** none.
+- **Runtime artifacts:** none. `.env` / secrets / `config/users.json` unchanged.
+- **API:** no route, schema or response-shape change. No OpenAPI export, no docs-submodule commit.
+
+### 2. `[PROD-ACTION]` — already half-applied, read before restarting prod UI
+
+`mindwealth-ui-dev` (`:8514`) and `mindwealth-ui` (`:8512`, public `www.mindwealth.co`) share **one** `WorkingDirectory=/home/ubuntu/MindwealthUI_Vue` and **one** `.output`. The `npm run build` run for dev has **already replaced the bundle prod serves**; `:8512` keeps executing the previously-loaded code until it restarts, then picks this change up with no merge step.
+
+Consequence: `sudo systemctl restart mindwealth-ui` deploys this fix to production. That is the intended outcome here, but treat any future dev build in this repo as a staged prod deploy.
+
+### 3. Smoke tests
+
+- `[DONE 2026-08-17]` `rg "T00:00:00Z"` across `server/ components/ pages/ composables/ utils/` → no matches.
+- `[DONE 2026-08-17]` `npm run build` clean (Node 20); `mindwealth-ui-dev` restarted, active, `:8514` → 200.
+- `[DONE 2026-08-17]` Render proof in Node: old stamp → `Aug 13, 08:00 PM EDT`, new stamp → `Aug 14, 04:00 PM EDT`.
+- `[DONE 2026-08-17]` End-to-end BFF check on dev: `GET :8514/api/meta` → `datetime: 2026-08-14T16:00:00-04:00`, `data_source: live`.
+- `[DONE 2026-08-17]` `smoke-test-apis.sh` all PASS; `pytest tests/test_api_*.py` 187 passed / 1 known failure; `mindwealth-ui-dev` journal clean.
+- `[PENDING]` **Prod still serving the bug:** `GET :8512/api/meta` → `2026-08-14T00:00:00Z`. `www.mindwealth.co` will keep showing `Aug 13, 08:00 PM EDT` until `sudo systemctl restart mindwealth-ui`. Not done — needs the user's go-ahead (public deploy).
+- `[PENDING]` Logged-in browser check on `:8514` (visual confirmation of the topbar string).
+
+### Status: `[PROD-ACTION]` — dev verified end to end; prod fix is one restart away and awaiting go-ahead.
+
+### Related follow-up (separate task, pre-existing)
+
+`server/utils/require-auth.ts` `requireAuth()` checks only that the `mw_access_token` cookie exists, never that it is valid, while `mindwealth-client.ts` authenticates upstream with the server-side `NUXT_API_KEY`. Any fabricated cookie therefore reaches live BFF data on both `:8514` and public `:8512`. Not introduced by this change and not fixed here.
+
+---
+
+## 2026-08-17 — `pytest` clobbers the live `runic_output.json` (macro page date rollback) `[PENDING]`
+
+**Fix applied on dev 2026-08-17** (see §1 below for the final shape — it differs from the originally proposed env-var monkeypatch). Dev snapshot restored and verified. Still `[PENDING]` for prod: the defective test file is in prod's tree and must be replaced by the merge.
+
+**Defect:** `tests/test_runic_output_schema.py:34` calls `run_nightly(as_of="2024-09-18")`; `run_nightly` unconditionally persists at `src/macro_intelligence/jobs/nightly_run.py:262` → `write_runic_json()` → `json_output_path()` → the live, **gitignored** `macro_intelligence/output/runic_output.json` (plus `runic_briefing_<as_of>.html/pdf`). Running the suite rolls every runic-JSON-backed endpoint back to `date: 2024-09-18` (`/macro/status`, `/macro/regime`, `/macro/runic/*`, `/macro/overview/kpis`, `/macro/combos`, `/macro/combo-*`, `/macro/narrative`, `/macro/persistence`, `/macro/variables/heatmap`, `/macro/data/freshness`, `/macro/events/*`, `/portfolio/sizer`, `/portfolio/sizing`).
+
+**Prod exposure today: none** — `pytest` is not run in `/home/ubuntu/uiv2/prod/MindWealth_UI`, and its `runic_output.json` is written only by the prod nightly cron (`0 18 * * 1-5`). The risk is latent: the first time anyone runs the suite there, the prod macro page silently reverts.
+
+### 1. `[PENDING]` Files to merge `chatbot-dev` → `chatbot-prod` (fix written 2026-08-17)
+
+| Path | Kind |
+|---|---|
+| `src/macro_intelligence/jobs/nightly_run.py` | modified — `run_nightly(..., persist: bool = True)`; `persist=False` returns the payload without calling `write_runic_json()` / `write_briefing()` |
+| `tests/test_runic_output_schema.py` | modified — passes `persist=False`, plus new `test_nightly_does_not_touch_live_snapshot` asserting the live JSON's mtime is unchanged |
+
+Chose the `persist` flag over the `MACRO_INTEL_JSON_PATH` tmpdir monkeypatch first proposed: `write_briefing()` has **no** env override (its dir comes from `CONFIG.yaml briefing.output_dir`), so the env route would have isolated the JSON and still emitted stray `runic_briefing_2024-09-18.html/pdf`. The optional `json_writer.py` date-monotonic guard was **not** implemented — it would block legitimate backfills, and with `persist=False` there is no remaining writer of a stale date.
+
+Both production callers keep the default `persist=True` and are unchanged: `scripts/run_macro_nightly.py:23` (cron) and `api/services/macro_service.py:1197`.
+
+Modified now (docs only): `docs/mindwealth_ui_job_status.md`, `docs/mindwealth_ui_repo_job_status_details.md`, this file.
+
+- **Dev-only / revert:** none.
+- **Runtime artifacts to create on prod:** none. `runic_output.json` is gitignored (`.gitignore:43`) and is regenerated by cron, never merged.
+- **`.env` / secrets / `config/users.json`:** unchanged.
+- **systemd / Nuxt:** no change, no rebuild. An API restart is **not** required — `macro_service._load_runic()` re-reads the JSON per request.
+
+### 2. `[PROD-ACTION]` Recovery command (only if a prod snapshot is ever clobbered)
+
+```bash
+cd /home/ubuntu/uiv2/prod/MindWealth_UI && .venv/bin/python scripts/run_macro_nightly.py --no-claude
+```
+
+Deploy-step only; this is the same script prod cron already runs. Nothing else in the prod clone is to be written.
+
+### 3. Smoke tests
+
+- `[DONE 2026-08-17]` Dev restore — `.venv/bin/python scripts/run_macro_nightly.py --no-claude` → `runic_output.json` `date: 2026-08-17`, Combo F week 20 of 26, `runic_briefing_2026-08-17.html/pdf` regenerated.
+- `[DONE 2026-08-17]` `curl -H "X-API-Key: $KEY" localhost:8507/api/v1/macro/status` → `date: 2026-08-17`. Same on `:8506` → `2026-08-17`. No API restart performed or needed.
+- `[DONE 2026-08-17]` Regression proof — `pytest tests/test_runic_output_schema.py -q` → **2 passed**; live JSON mtime unchanged across the run (asserted by the new test itself).
+- `[PENDING]` After the prod merge: `curl -s -H "X-API-Key: $KEY" localhost:8506/api/v1/macro/status | jq -r .date` → latest weekday, **not** `2024-09-18`.
+
+### Status: `[PENDING]` — fix done and verified on dev; prod merge outstanding (prod exposure remains latent, not active).
+
+---
+
+## 2026-08-17 — SSI threshold experiments: analysis doc + CSV value exports `[PENDING]`
+
+Analysis artifacts only. **No runtime, API, CONFIG, systemd or Nuxt surface is touched, and no threshold value changes.** Safe to merge with any batch.
+
+### 1. `[PENDING]` New files to merge `chatbot-dev` → `chatbot-prod`
+
+| Path | Kind |
+|---|---|
+| `scripts/export_ssi_validation_csvs.py` | new script (read-only over artifacts) |
+| `testing/ssi_th_exp/SSI_THRESHOLD_EXPERIMENTS_ANALYSIS.md` | new analysis doc |
+| `macro_intelligence/analysis/ssi_validation/csv/` | new dir — 50 CSVs + `INDEX.csv`, regenerable |
+
+Modified: `docs/mindwealth_ui_job_status.md`, `docs/mindwealth_ui_repo_job_status_details.md`, this file.
+
+- **Runtime artifacts to create on prod:** none.
+- **`.env` / secrets / `config/users.json`:** unchanged.
+- **systemd / Nuxt:** no change, no restart needed.
+- The CSV dir is fully regenerable — if the merge is noisy, `.venv/bin/python scripts/export_ssi_validation_csvs.py` recreates it from the tracked JSON artifacts.
+
+### 2. `[DONE]` 2026-08-17 — Two untracked status docs added to git **and** corrected
+
+`testing/ssi_th_exp/SSI_EXPERIMENT_RESULTS.md` and `testing/ssi_th_exp/SSI_OPEN_QUESTIONS_STATUS.md` were the two most-cited SSI status docs and were **untracked** — they would not have merged to prod. Both are now staged and corrected in place: C-1…C-7 fixed inline and marked `[corrected 08-17]`, all artifact citations re-pointed to the newest file per stem, Tests 3–4 re-labelled SIGN-OFF HELD, Test 15 VOID-but-runnable, Test 6 STALE, and decision D-7 (`min_confirmed`) added. Staged, **not committed**.
+
+### 3. `[PENDING]` Amend the staleness list before any re-run is authorised
+
+`docs/ssi_validation/STALE_BACKTESTS_AFTER_CNN_HY_FIXES.md` buckets Tests 8/10/20/22 as stale "via `hyg_lqd`" from the HY OAS fix. SSI's `hyg_lqd` is a Yahoo ETF price ratio (`src/sentiment_superindex/data/yahoo_inputs.py:15`); HY OAS is consumed only under `src/macro_intelligence/`. No shared path — those tests are stale via `cnn_fg` in the composite gate instead. The list is the agreed gate for re-runs, so amend it before step 2–4 of its re-run order starts.
+
+### 4. Smoke test `[DONE]` 2026-08-17
+
+`.venv/bin/python scripts/export_ssi_validation_csvs.py` → exit 0, 23 artifact families, 50 CSVs + `INDEX.csv` (64 index rows). Three values hand-checked against source JSON (Test 3 `FM<10/RM>55` n_ep=21 / gap +0.4111; Test 22 prod cell n=160 / hit 41.25; Test 15 `n_short_entries=0`). Every path cited in the analysis doc resolves.
+
+### 5. Robust test + dev deploy `[DONE]` 2026-08-17
+
+- `pytest tests/` → **809 passed, 1 failed, 3 skipped**. The single failure is the pre-existing `test_shortlist_mtm_not_stale_zero_for_aged_signals` calendar-vs-trading-day bug (see §"Known pre-existing test failure" below) — unrelated to this change.
+- `pytest tests/test_api_*.py` → 186 passed, same 1 pre-existing failure.
+- Targeted `-k "ssi or cftc or staleness or layer2"` → **124 passed**.
+- `smoke-test-apis.sh` → **all PASS**. Dev `:8507` v1.10.8, `conviction_store` = git clone, writable. Prod `:8506` v1.8.1 still isolated at the prod clone path — **prod service not restarted** (`ActiveEnterTimestamp` still 2026-08-02).
+- Mock audit on the one changed `.py`: clean — no mocks, placeholders, `temporary`/`for now` markers, or clone-specific absolute paths. **No importers**, so zero runtime blast radius.
+- Export re-run after the dev restart → byte-identical, 0-line diff vs the committed CSVs (deterministic).
+- Pushed `chatbot-dev` → `divsum127/MindWealth_UI` @ `26c4dabeb`, author `divsum127`. `upstream` (`ahiliitb/*`) untouched.
+
+**Known pre-existing test failure (not introduced here, do not treat as a regression):** `tests/test_api_signals_surface.py::test_shortlist_mtm_not_stale_zero_for_aged_signals` gates on **calendar** age (`>= 3` days) then asserts on `days_elapsed`, which is **trading** days sourced from the `Trading Days between Signal and Today Date` column in `trade_store`. All 10 failing records are dated **Fri 2026-08-14** and today is **Mon 2026-08-17**, so `days_elapsed=0` is correct. The guard's own docstring targets "0% MTM **with** 0 holding days", and `mtm_pct` is live and non-zero (1.77, 2.42, 8.04…), so the staleness it exists to catch is absent. **It will fail every Monday** for any Friday signal. Left unfixed by prior decision (`global_repo_todos.md` 2026-08-17 #2) — relaxing the assertion would weaken a genuine stale-MTM guard, so the fix needs a call on whether the gate should use trading-day age or additionally require `mtm_pct == 0`.
+
+---
+
+## 2026-08-17 — Nuxt frontend: prod and dev share ONE build dir; `www.mindwealth.co` outage post-mortem `[PENDING]`
+
+Applies to the **Nuxt frontend repo** `/home/ubuntu/MindwealthUI_Vue`, not `MindWealth_UI`. Docs-only change in git here.
+
+### 1. `[PENDING]` **`mindwealth-ui.service` (prod) and `mindwealth-ui-dev.service` share one working tree and one `.output`**
+
+| Unit | Port | Public entry | `NUXT_API_BASE_URL` | WorkingDirectory |
+|---|---|---|---|---|
+| `mindwealth-ui.service` | 8512 | `www.mindwealth.co` (nginx) | `127.0.0.1:8506` (prod API v1.8.1) | `/home/ubuntu/MindwealthUI_Vue` |
+| `mindwealth-ui-dev.service` | 8514 | `http://51.20.53.218` (nginx) | `127.0.0.1:8507` (dev API v1.10.8) | `/home/ubuntu/MindwealthUI_Vue` |
+
+SSR byte sizes on both ports are **identical (115,614)** — they serve the same `.output`. Consequences:
+
+- **`www.mindwealth.co` serves whatever the `ui-dev` branch last built.** There is no separate prod build. `presentation-prod` (`ba2bcfd`) is *not* what the public site runs.
+- Any `npm run build` in that directory silently stages a public-site redeploy, applied at the next restart.
+- A rebuild **without** an immediate restart breaks the live site's asset loading — Nitro serves hashed files from `.output/public`, and the running process references hashes the rebuild deleted.
+- The only prod/dev isolation is the systemd `NUXT_API_BASE_URL` (8506 vs 8507). The repo's tracked `.env` (pointing at `:8514`) is **not** used by either service — systemd `Environment=` wins, and `.output` does not read `.env`.
+- Action: give prod its own clone (or its own worktree + build dir) checked out to the intended prod branch, so a dev build cannot redeploy the public site. Until then, treat `npm run build` in that directory as a production action.
+
+### 2. `[PENDING]` Deployed artifact is a mid-edit snapshot — clean rebuild wanted
+
+Current `.output` (mtime `12:11:14` 2026-08-17) was built while another operator was mid-save on 6 files (written 12:09:48–12:10:31, later committed as `0921dd3`). The built bundle *does* contain `0921dd3`'s new symbols (`mapComboPriorityOrder`, `SIGMA_SOURCE_LABELS`, `demoted_for_low_n`, `model_barrier_basis`, `min_matured_episodes`), so it is not stale — but it is **not provably identical to any commit**.
+
+- Action (restarts the public site — schedule it): with the tree clean at `0921dd3`, `npm run build` then `sudo systemctl restart mindwealth-ui.service mindwealth-ui-dev.service`, and re-verify `https://www.mindwealth.co/` → 200 plus one `/_nuxt/*.js` asset → 200.
+- Note the `fetch-and-reload` skill builds from **`origin/main`**, not `ui-dev`, so it is not the right tool for this branch as configured.
+
+### 3. `[DONE]` Outage post-mortem — 14m50s on `www.mindwealth.co` (2026-08-17)
+
+`pkill -f ".output/server/index.mjs"`, intended for a local `:3007` smoke-test server, also matched **both** systemd Nuxt units (same entrypoint, same WorkingDirectory). Both exited cleanly at **12:14:06 UTC**; because the units are `Restart=on-failure` and a clean SIGTERM is not a failure, **systemd did not restart either** (`NRestarts=0`). Dev was started by another operator at 12:18:57; prod stayed down until `sudo systemctl start mindwealth-ui.service` at **12:28:56** — **14m50s public outage**. Restored and verified (`:8512` listening, `https://www.mindwealth.co/` → 200).
+
+- **Standing rule:** never `pkill -f` a generic Node/Nitro entrypoint on this host. Stop test servers by PID or by port, and run `systemctl list-units | grep -i nuxt` **before** any pattern kill. Consider adding `Restart=always` to both units so a stray SIGTERM self-heals.
+
+---
+
+## 2026-08-17 — `MindwealthUI_Vue` `ui-dev` synced + pushed; public-repo API key exposure `[PENDING]`
+
+Git ops in the **Nuxt frontend repo** (`/home/ubuntu/MindwealthUI_Vue`, remote `github.com/D-ParthChauhan/MindwealthUI_Vue`) — a separate repo that is **not** deployed by `scripts/prod-pull-and-restart.sh`. No `MindWealth_UI` code was touched.
+
+**Git files to merge** (`chatbot-dev` → `chatbot-prod`): docs only — `docs/mindwealth_ui_job_status.md`, `docs/mindwealth_ui_repo_job_status_details.md`, `docs/dev_to_prod_migration_todos.md`. **Zero runtime, API, schema, systemd, or Nuxt impact for `MindWealth_UI`.**
+
+Vue-side state: `ui-dev` was diverged (local `73e196a` vs remote `f99e9d4`); merged clean (`0502751`, 144 files, +19,240/−609) and pushed to `origin/ui-dev`. Build verified (`npm run build` exit 0), built server boots, auth gate and `/api/v1` proxy correct, all 10 upstream endpoints 200. Type errors 55 post-merge vs 56 pre-merge — merge introduced none.
+
+### 1. `[PENDING]` **SECURITY — dev API key published in a public repo**
+
+`.env` containing `NUXT_API_BASE_URL=http://51.20.53.218:8514` and `NUXT_API_KEY` is **tracked in git**, `.gitignore` does not exclude it, and it is already on `origin/ui-dev` via upstream commit `f99e9d4`. Repo visibility is **public** (`private: false`, GitHub API). The dev API key for `:8514` is world-readable and persists in history after any plain delete. Pre-existing — not introduced by the 2026-08-17 merge/push, which added no new exposure.
+
+- Action (needs Parth coordination — rewrites `ui-dev`):
+  1. **Rotate `NUXT_API_KEY`** on the API side; treat the current value as compromised. Check `api/dependencies.py::require_api_key` consumers before rotating.
+  2. Add `.env` to `.gitignore`, then `git rm --cached .env`.
+  3. Purge from history: `git filter-repo --path .env --invert-paths` (or BFG) + coordinated force-push.
+- Also committed by `f99e9d4` and worth removing: `mindwealth-api-docs-main (2).zip` (128 KB binary) and `mindwealth-api-docs-main 7/` — a full duplicate of the API docs incl. a 9,498-line OpenAPI JSON. **This duplicates `docs/mindwealth-api-docs/` and is exactly the drift CLAUDE.md's "never create `docs/api/`" rule guards against.**
+
+### 2. `[PENDING]` Authenticated render of the new portfolio views never tested
+
+The merge brought in `PortfolioOverviewView.vue` (638 lines), `PortfolioNavChart.vue`, `PortfolioActualPnlView.vue`, `PortfolioContributionList.vue`, `PortfolioRailBlock.vue`, `PortfolioOverviewStat.vue`, a rewritten `ConvictionRowDrawer.vue` / `ConvictionSignalsPanel.vue`, and reshaped `server/utils/mindwealth-data.ts` / `portfolio-mappers.ts` / `types/api.ts`. All of it runs only behind a `mw_access_token` session; `config/users.json` stores bcrypt hashes, so no login was possible during verification. Build-time and endpoint-contract correctness confirmed; **render-time correctness is unverified.**
+
+- Action: log in on the dev UI and click through Portfolio (overview / NAV / actual P&L / sized alloc / risk), Conviction (row drawer + signals panel), and Sentiment before any `presentation-prod` promotion.
+- Related: `server/utils/mindwealth-data.ts:1618,1620` — `Property 'ticker'` and `Property 'direction'` do not exist on type `Signal` (possible runtime `undefined`); `:886` — `Cannot find name 'PerformanceRow'`. Pre-existing, unblocked by the build since Nitro does not typecheck.
+
+### 3. `[PENDING]` `ui-dev` promotions still open
+
+`ui-dev` is **11 commits ahead of `main`**; `presentation-prod` sits at `ba2bcfd`. Neither promotion was performed (user chose sync-only). Also: 6 files in the Vue working tree (`assets/css/main.css`, `components/runic/*.vue` ×3, `server/utils/runic-mappers.ts`, `types/api.ts`, +180 lines) are **uncommitted** from concurrent live editing — commit or stash before promoting.
+
+### 4. Note on the required frontend follow-up from the AI Analyst fix
+
+The chatbot 503 fix (job status 2026-08-17 #7) still needs its `MindwealthUI_Vue` client-side change (poll budget / 30 s GET cache). **Not addressed by this merge** — `DEEP_RESEARCH_TOTAL_TIMEOUT_SECONDS` 120 → 300 raises the server budget only; without the client change the 503 can still recur.
+
+---
+
+## 2026-08-17 — Rohit 21 Jul email audit: three live prod defects found `[PENDING]`
+
+Documentation-only change in git (`instruction_docs/chat_ques/21July_Rohit_feedback_and_priorities - STATUS.md`), but the audit surfaced **three prod-affecting problems that need action outside a normal merge**.
+
+**Git files to merge** (`chatbot-dev` → `chatbot-prod`):
+- `instruction_docs/chat_ques/21July_Rohit_feedback_and_priorities - STATUS.md` (new)
+- `docs/mindwealth_ui_job_status.md`, `docs/mindwealth_ui_repo_job_status_details.md`, `docs/dev_to_prod_migration_todos.md` (modified)
+
+### 1. `[PENDING]` The merge itself is overdue — 23 commits, 22 days
+
+`origin/chatbot-prod` is at `0fb433521` (2026-07-26); prod API reports **v1.8.1**, dev **v1.10.8**. Everything in the 2026-07-26 → 2026-08-17 window is invisible to Rohit. **Hard evidence:** `conviction_store/PYPL.json` reads `valuation_tax=-1.0` on dev and **`-4.0` / `pe_percentile_20y=100.0` on prod** — the exact bug Rohit reported on 21 Jul, still live on the site.
+
+- Action: `bash scripts/prod-pull-and-restart.sh` after merge, then re-verify `/api/v1/health` reports the new version.
+
+### 2. `[PROD-ACTION]` Conviction P/E rollout (PE-01b) — still never run
+
+Merging the code is **not sufficient**. The prod `conviction_store/` records must be regenerated on the prod host (an agent may not write prod runtime data). Runbook already in the TODO section of `docs/mindwealth_ui_job_status.md`:
+
+```bash
+cd /home/ubuntu/uiv2/prod/MindWealth_UI
+rm -f conviction_store/pe_history_cache/*_sec.json
+python scripts/update_conviction_fundamentals.py --mode full --include-existing-records --pe-history-report
+```
+
+Sanity check: PYPL must move off `pe_percentile_20y=100.0` / `valuation_tax=-4.0`.
+
+### 3. `[PENDING]` Code fix — `pnl_usd` is direction-blind on shorts (affects dev **and** prod)
+
+`api/services/portfolio_service.py:985` computes `pnl_usd = market_value_usd - allocation_usd` without using `direction` (bound at `:960`). Every SHORT reports the opposite sign to `mtm_pct`. Verified live: BABA short `mtm_pct=-1.35` / `pnl_usd=+471.96`; 000660.KS short `mtm_pct=+24.78` / `pnl_usd=-16617.50`.
+
+Propagates into `day_mtm_usd` (`portfolio_pipeline_service.py:722`) and the top-5 gainers/losers (`:742-746`) — **Live P&L winners and losers are inverted for shorts, client-visible.** Fix + regression test before the next demo.
+
+### 4. `[PROD-ACTION]` Nightly cron fires before the US cash close
+
+Server TZ is `Etc/UTC`. Both clones run `run_macro_nightly.py` at `0 18 * * 1-5` = **14:00 ET**, two hours before the 16:00 ET close and 2h15m before VIX settlement — so VIX / VXTS / WTI / CNH / CURVE are intraday prints, never official closes. Prod's 2026-08-14 nightly holds `VIX=14.34` vs Yahoo close `14.25`, `VXTS=1.288` vs `1.2381`. **This is the mechanical cause of the VIX mismatch Rohit reported and it feeds Combo A/D/G thresholds.**
+
+- Action: move both crontab entries to **≥ `15 21 * * 1-5`** (21:15 UTC = 17:15 ET), or pin the pull explicitly to the prior completed session's close. `run_ssi_daily.py` at `0 8` (04:00 ET, pre-open) needs the same review.
+- Applies to **both** the dev and prod crontab lines.
+
+### 5. `[PENDING]` Freshness gap — 10 of 12 macro variables have no `source_date`
+
+`GET /macro/data/freshness` on prod returns `source_date: null` for NFCI, HY, WALCL, CNH, WTI, VIX, VXTS, CURVE, CPI, GSR. Only CFTC and CAPE are stamped. Rohit asked to "check the live-ness for all macro variables" — there is currently nothing to check against.
+
+### 6. `[PENDING]` 8D rounding rule not applied to the Runic variables endpoint
+
+`_round2()` / `_display_decimals()` cover `/macro/ssi/summary` and `/macro/ssi/history` only. `/macro/runic/variables/current` still returns float32 noise (`VIX = 14.34000015258789`).
+
+---
+
+## 2026-08-18 — Chatbot vocabulary + macro data (audit gaps 5, 6, 8) `[PENDING]`
+
+Closes the three routing/data gaps found in the usage audit. Same defect class as the NZ complaint: the assistant could not reach or name data we already compute.
+
+**Git files to merge** (`chatbot-dev` → `chatbot-prod`), commit **`f694f73f8`**:
+- `chatbot/agents/llm_router.py` — `_PLATFORM_VOCAB_RE` + `_MACRO_QUERY_RE` overrides, and demotion of platform-vocab questions out of CONVERSATIONAL
+- `chatbot/macro_context.py` — **new**, SOURCE D (Runic regime, combos, SSI, portfolio risk)
+- `chatbot/platform_context.py` — **new**, SOURCE E (signal-type taxonomy + live function list)
+- `chatbot/chatbot_engine.py` — injects SOURCE D/E on the hybrid, internal **and** conversational paths
+- `chatbot/config.py` — `ENABLE_MACRO_CONTEXT`, `MACRO_CONTEXT_BOOK_ID`, `ENABLE_PLATFORM_CONTEXT`
+- `chatbot/tests/test_platform_and_macro_context.py` — **new**, 17 cases
+
+`[PROD-ACTION]` restart `mindwealth-api.service` after merge — config and prompt wiring are read at process start. No new env keys required (all three default on). No API surface change, so no OpenAPI or docs-submodule update.
+
+`[PROD-ACTION]` **Verify `API_PORT=8506` is set on the prod unit.** SOURCE D self-calls over HTTP and derives its base URL from `API_PORT`; the client's fallback is also `8506`, so this is a check rather than a change. Sharp edge worth knowing: any invocation *outside* the service (a shell script, a cron job) inherits no `API_PORT` and will silently query **prod** even when run from the dev clone.
+
+**Smoke tests:**
+- `[DONE]` 2026-08-18 — `pytest tests/ chatbot/tests -q` → **900 passed, 4 skipped**.
+- `[DONE]` 2026-08-18 — "give me a short summry about claude report" → INTERNAL, extractor selects `claude_report`, answer summarises the real 2026-08-17 report (VIX 15.19, 72 signals). Previously CONVERSATIONAL asking whether Claude was a ticker.
+- `[DONE]` 2026-08-18 — "What signal types exist?" → INTERNAL, `Platform Capabilities` in the flow, all five types selected, answer names TRENDPULSE / DELTADRIFT / FRACTAL TRACK / BASELINEDIVERGENCE / BAND MATRIX. Previously a textbook LONG/SHORT answer.
+- `[DONE]` 2026-08-18 — "what is the current macro regime and which combo is dominant?" → **HYBRID** with a `Macro Overlay` step, leads with Combo F week 20 of 26 and the real regime components. Previously `WEB_RAG` contradicting our own engine.
+- `[PENDING]` prod: repeat all three after merge + restart.
+
+**Dev-environment hazard — `[DONE 2026-08-18]`, fixed.** `mindwealth-api-dev.service` ran uvicorn with `--reload`, so every file save restarted the API and killed in-flight chat answers (chat jobs run in worker threads inside that process, so a reload is indistinguishable from a crash). Three replays died this way while another session edited `api/`. `--reload` removed from the host unit **and** the tracked copy `scripts/mindwealth-api-dev.service` (commit `14adc93be`), `daemon-reload` + restart applied. Proof: touched `api/main.py`, `chatbot/config.py` and `api/services/analyst_service.py` mid-answer — **zero restarts**, answer completed at 125.6s / 16,271 chars. Prod never had `--reload`, so **no prod action is required**; the tracked file merges for consistency only.
+
+---
+
+## 2026-08-17 — "Could not reach the analyst" — permanent fix, **two repos, ship together** `[PENDING]`
+
+**Both halves must deploy together.** The backend's 330s answer budget is only safe because the client now resumes a job by id instead of holding one socket open and 503-ing. Shipping the backend alone re-exposes the original failure.
+
+**`MindWealth_UI`** (`chatbot-dev` → `chatbot-prod`), commit **`6c893e309`**:
+- `api/jobs/store.py` — `JobStore.fail_orphaned()`
+- `api/main.py` — lifespan calls it at startup
+- `tests/test_api_chatbot.py` — 2 new cases
+
+**`MindwealthUI_Vue`** (`ui-dev` → prod UI branch), commit **`bd18d42`**:
+- `server/utils/mindwealth-client.ts` — never cache `/chatbot/*`; cache key carries a bearer-token fingerprint
+- `server/utils/mindwealth-data.ts` — poll tolerates 8 consecutive failures; 45s handoff; empty-content jobs reported immediately
+- `server/api/chat.post.ts` — returns `{pending, job_id}` instead of throwing 503
+- `server/api/chat/job/[jobId].get.ts` — **new** resume route
+- `composables/useClaudePanel.ts` — browser-side resume loop, job id persisted, error messages differentiated
+- `types/api.ts` — `pending` / `job_id` on `ChatResponse`
+
+`[PROD-ACTION]` prod host: `npm run build` **and** restart the prod UI service — a merge alone does not update the running bundle. Note the still-open finding that prod and dev share one Nuxt build dir.
+`[PROD-ACTION]` restart `mindwealth-api.service` so `fail_orphaned()` runs and clears any jobs stranded by earlier restarts.
+
+**Security note worth calling out separately:** the GET cache key had no caller identity, so user-scoped responses could be served across signed-in users for up to 30s. Fixed in the same commit. Prod carries this defect until the UI ships.
+
+**Smoke tests:**
+- `[DONE]` 2026-08-17 — through the Nuxt BFF on `:8514` with a real `mw_access_token`: NZ question `pending` at 45.1s → one resume poll → **5,501 chars at 60.1s, no 503**; signals+quality **7,647 chars at 57.8s**; short AAPL question **inline at 25.1s**.
+- `[DONE]` 2026-08-17 — poll cadence in the API log went from **3 polls/30s apart** to **24 polls at ~2.5s** (the first patch was an anchored regex that silently matched nothing — caught by this check, not by review).
+- `[DONE]` 2026-08-17 — `pytest tests/` **817 passed, 4 skipped, 0 failed**; `npm run build` clean; `smoke-test-apis.sh` 11/11.
+- `[PENDING]` prod: after both deploys, send a long question and confirm no red banner, then hard-refresh mid-answer and confirm the answer still lands.
+
+**Not fixed, reported:**
+- `[PENDING]` **Macro questions still route to the web.** "What is the current macro regime / which combo is dominant" → `WEB_RAG`, answered "transitional, mixed signals" from web sources while Runic says Combo F dominant, week 20 of 26, TACTICAL EASY MONEY. Same defect class as the original NZ complaint. Needs macro wording in `_RECOMMENDATION_QUERY_RE` **and** a new SOURCE D runic feed — a data source, not a regex.
+- `[PENDING]` Per-ticker questions ("how is AAPL doing") miss `_CONVICTION_RELEVANT_RE`, so no conviction/fundamentals block.
+- `[PENDING]` History-restore-on-refresh (`useClaudePanel.ts:82`) and the hardcoded SYSTEM tab rows remain.
+
+---
+
+## 2026-08-17 — Dead Claude model id + permanent "CPI pending" flag `[PENDING]`
+
+**Highest-value item in this file right now.** Prod has been serving **template** macro narratives, not Claude ones, for as long as `claude-sonnet-4-20250514` has been retired. Every Claude call outside the chatbot 404s and falls back silently.
+
+**Git files to merge** (`chatbot-dev` → `chatbot-prod`), commit **`87b5f1a83`**:
+- `src/macro_intelligence/claude/_client.py` — default model
+- `macro_intelligence/CONFIG.yaml` — `claude.model` and `geo_model`
+- `src/conviction_engine/agent_dims.py` — `_DEFAULT_MODEL`
+- `api/services/analyst_copy_service.py` — `ANALYST_CLAUDE_MODEL` default
+- `src/macro_intelligence/output/json_writer.py` — `_pending_cpi_release` strictly-forward window
+- `.env.example`, `tests/test_pending_cpi_release.py` (new)
+
+`[PROD-ACTION]` **`.env` edit required on prod — the merge alone is not enough.** Prod `.env` pins `MACRO_CLAUDE_MODEL=claude-sonnet-4-20250514`; the env var beats both the YAML and the code default, so without this edit prod keeps producing template briefings even after merging:
+```
+MACRO_CLAUDE_MODEL=claude-sonnet-4-5-20250929
+```
+`[PROD-ACTION]` after the merge + `.env` edit, re-run the nightly on prod so the live snapshot carries a real Claude narrative instead of the template one currently on the page: `.venv/bin/python scripts/run_macro_nightly.py`. Then restart `mindwealth-api.service`.
+
+`[PROD-ACTION]` check for the same dead id anywhere else in the prod environment: `grep -rn "claude-sonnet-4-20250514" /home/ubuntu/uiv2/prod/MindWealth_UI --include=*.py --include=*.yaml` plus its `.env`.
+
+**Smoke tests:**
+- `[DONE]` 2026-08-17 — `call_claude()` returns a real completion (was `404 not_found_error`).
+- `[DONE]` 2026-08-17 — regenerated `runic_briefing_2026-08-17`; narrative is **7,233 chars of genuine Claude analysis**, reports CPI surprise **−0.026pp "not hot"**, and no longer claims a pending release.
+- `[DONE]` 2026-08-17 — `GET /macro/runic/nightly` on `:8507` → `date 2026-08-17`, `pending_cpi_release: false`.
+- `[DONE]` 2026-08-17 — `pytest tests/ -q` → **814 passed / 1 known Monday-only failure / 3 skipped**; `smoke-test-apis.sh` **11/11 PASS**.
+- `[PENDING]` prod: after the `.env` edit + nightly re-run, confirm the MACRO tab narrative is multi-section Claude prose and carries no "A CPI release is pending this week" sentence.
+
+**Open, needs Rohit's decision — do not silently patch:**
+- `[PENDING]` `bls_pull.try_bls_cpi_pull()` stamps `release_date = datetime.now()`, so `pending_releases` records "the day the nightly ran" rather than the real CPI release date (identical `actual` rows on 08-10, 08-11, 08-13, 08-14, 08-17). This feeds `fetch_cpi_surprise_series()` **and** `get_upcoming_event()`, which is why `pre_catalyst` reports a CPI catalyst at `days_to_event: 0` with `HIGH — REGIME SENSITIVE TO CATALYST` every single day. Fixing it changes the meaning of a table the surprise series depends on.
+- `[PENDING]` Two independent Claude model constants (`chatbot/config.py` vs the macro/conviction/analyst defaults) with no shared source of truth — the reason half the product kept working while the other half silently degraded. Consolidate.
+- `[PENDING]` **`MindwealthUI_Vue` hardcodes the SYSTEM tab** — `server/utils/overwatch-panel.ts:141-155` returns `India CSV pipeline`, `Claude API` and `Tavily` as literal `status:'warn', detail:'Could not fetch from server'`; the UI never calls `GET /system/health`. The tab has never reflected real service state. Backend endpoint is correct and ready to wire.
+- `[PENDING]` The regenerated Claude narrative contradicts itself once ("CPI came in hot" vs "−0.026pp, not hot") — prompt-level issue, newly visible now that Claude output actually reaches the page.
+
+---
+
+## 2026-08-17 — Chat history endpoint 500 (pandas metadata) + India health check casing `[PENDING]`
+
+**⚠️ Merge-ordering constraint — read before the entry below.** These two files must merge **together with** the AI Analyst entry below, never after it. Prod does not 500 on `GET /chatbot/sessions/{id}/history` today only because prod still has the history-corruption bug that hides the defect: corrupt file → `load_history` returns `[]` → nothing to serialize. Shipping the durability fix alone turns prod's **silent history wipe into a hard 500 on every chat open**.
+
+**Git files to merge** (`chatbot-dev` → `chatbot-prod`), commit **`a0e84384b`**:
+- `api/services/chatbot_service.py` — `_jsonable` / `_jsonable_message` sanitizer applied in `get_history` for both `display` modes
+- `api/services/system_health_service.py` — `_india_datetime_json()` tries `India` and `INDIA`
+- `tests/test_api_chatbot.py` — `TestHistorySerialization` regression guard
+
+`[PROD-ACTION]` restart `mindwealth-api.service` after merge. No env key, no runtime artifact, no dev-only config, **no API surface change** (same routes, same field names — only the value types inside `metadata.full_signal_tables` change from unserializable objects to JSON records, so no OpenAPI or API-doc update).
+
+**Smoke tests:**
+- `[DONE]` 2026-08-17 — `pytest tests/test_api_chatbot.py -q` → **9 passed**; `pytest tests/ -q` → **811 passed / 1 known Monday-only failure / 3 skipped**.
+- `[DONE]` 2026-08-17 — dev `:8507` restarted, `smoke-test-apis.sh` all PASS, prod `:8506` isolation intact.
+- `[DONE]` 2026-08-17 — live HTTP with a minted admin token: history **200** with `display=true` (367 KB) and **200** raw; `GET /system/health` → Tavily `ok`, Claude API `ok`, India `4503.3h ago`.
+- `[PENDING]` prod: after merge, open a chat that has fetched signals and hard-refresh — history must return 200, not 500.
+
+**Findings recorded, not fixed here:**
+- `[PROD-ACTION]` **India pipeline is 6 months stale** — `trade_store/INDIA/data_fetch_datetime.json` last written **2026-02-11**. The casing bug was masking this behind "path not found". Core-repo cron issue; needs an owner.
+- `[PENDING]` **`GET /system/health` is admin-only** (`require_admin`) — 7 of the 9 users in `config/users.json` are role `user`, so the SYSTEM tab can only render as unknown/offline for them. Needs a product decision: non-admin-safe summary endpoint, or hide the tab for non-admins.
+- `[PENDING]` **Nuxt sends no `book_id`** to `GET /portfolio/nav` and `GET /signals/reports/portfolio-risk/latest` → repeated 422s. `MindwealthUI_Vue`, out of scope.
+- `[PENDING]` 87 × `GET /auth/me` 401 in 3h — expired/missing browser token; may be a token-lifetime issue or just a stale tab.
+
+---
+
+## 2026-08-17 — AI Analyst: recommendation routing + conviction feed + 503 + history durability
+
+**Git files to merge** (`chatbot-dev` → `chatbot-prod`):
+
+*New files:*
+- `chatbot/conviction_context.py` — SOURCE C block builder
+- `chatbot/tools/mindwealth_api_client.py` — localhost HTTP client for our own API
+- `chatbot/ticker_resolver.py` — bare-symbol → canonical symbol resolution
+- `chatbot/tests/test_recommendation_routing.py`, `chatbot/tests/test_history_durability.py`
+
+*Modified:*
+- `prompts/engine.py` — `ROUTER_SYSTEM` rules 9-10; `ROUTER_USER_TEMPLATE` gains `{today}`
+- `chatbot/agents/llm_router.py` — `apply_recommendation_internal_override` + current date
+- `chatbot/chatbot_engine.py` — `_build_conviction_block`, SOURCE C injection on both paths, `assets` added to fetch metadata
+- `chatbot/unified_extractor.py` — full ticker universe in prompt (was truncated at 100), ticker resolution
+- `chatbot/smart_data_fetcher.py` — base-symbol match fallback, `_mentions_closed_position` relaxes open-only
+- `chatbot/history_manager.py` — atomic `default=str` writes, corrupt-file quarantine, per-session locks
+- `chatbot/config.py` — conviction flags; `DEEP_RESEARCH_TOTAL_TIMEOUT_SECONDS` 120 → 300
+- `api/jobs/runner.py` — persist failed turns to history
+- `chatbot/prompt_changelog.json` — `LLM_ROUTER_SYSTEM` v3
+
+`[PENDING]` merge. **`[PROD-ACTION]`** restart `mindwealth-api.service` after merge — `chatbot/config.py` and prompt changes are read at process start.
+
+**New env keys — all optional, safe defaults, nothing to copy:**
+
+| Key | Default | Note |
+|-----|---------|------|
+| `ENABLE_CONVICTION_CONTEXT` | `true` | set `false` to disable the SOURCE C feed |
+| `MINDWEALTH_API_BASE_URL` | *(empty)* | empty → derived from `API_PORT`; set explicitly if `API_PORT` is ever unset |
+| `CONVICTION_CONTEXT_TIMEOUT_SECONDS` | `8` | per-HTTP-call cap |
+| `CONVICTION_CONTEXT_MAX_ROWS` | `25` | rows per SOURCE C section |
+| `CONVICTION_BOOK_ID` | `model` | only book exposing Sizer entries/exits |
+| `DEEP_RESEARCH_TOTAL_TIMEOUT_SECONDS` | **300** (was 120) | also the UI's poll budget — see below |
+
+`[PROD-ACTION]` **Verify `API_PORT=8506` stays set on `mindwealth-api.service`.** The conviction client derives its base URL from it. It is currently set, and the fallback is also `8506`, so this is a check rather than a change — but if the base URL is ever wrong the conviction sections silently degrade to omitted (by design, they never raise).
+
+`[PROD-ACTION]` **No API-key change needed, but note the coupling:** the client sends `X-API-Key` read from the `API_KEY` env of its own process, calling `optional_api_key` (which is an alias for `require_api_key`, `api/dependencies.py:38-53`). Same process, same key — self-consistent. If prod ever splits the key per service, this breaks.
+
+**No dev-only shortcuts in this change.** Nothing to revert at cutover.
+
+### ⚠️ Required frontend follow-up — NOT fixed by this merge
+
+The chat UI lives in `/home/ubuntu/MindwealthUI_Vue` (branch `ui-dev`, GitHub `D-ParthChauhan/MindwealthUI_Vue`), a **separate repo outside CLAUDE.md's editable scope**. This task was scoped backend-only by the user, so these remain open:
+
+1. `[PENDING]` **Job polling is cached for 30 s** — `server/utils/mindwealth-client.ts:13-14,50-56` caches *all* GETs for `GET_CACHE_MS = 30_000`, including `GET /chatbot/jobs/<id>`. The 2.5 s poll loop in `mindwealth-data.ts:1319-1347` therefore only reaches the API once per 30 s. **This is the true cause of "Could not reach the analyst"**: job `4326975d` completed at 147 s, but the cached "running" response from 01:52:54 was still being served at the 01:53:24 deadline. Raising the backend timeout to 300 widens the budget to ~330 s and makes this rare — **it does not fix it.** Fix: exclude job-poll paths from the cache.
+2. `[PENDING]` **On budget exhaustion the client 503s and loses the answer** — `server/api/chat.post.ts:50-53` maps `null` to a 503; the job id is not surfaced, so the client cannot resume polling for an answer that is still coming (or already finished). Fix: return the job id and keep polling.
+3. `[PENDING]` **History not restored on hard refresh** — `useClaudePanel.ts:82` guards `loadSessionHistory` behind `sessionId`, and `restoreSessionFromStorage()` is only called from `toggle()`. With the panel embedded, a refresh shows an empty chat until the panel is toggled. Server-side history is now durable, so this is purely a client restore gap.
+4. `[PENDING]` **Orphan sessions** — `persistSession()` runs only on success (`useClaudePanel.ts:176`), so a first-message failure in a new session leaves the server-created session id unknown to the client.
+5. `[PENDING]` **All failures render one generic string** — the blanket `catch` at `useClaudePanel.ts:191-200` cannot distinguish timeout from network loss from a 500, which is why a *successful* answer surfaced as "check your connection".
+
+**Smoke tests:**
+- `[DONE]` 2026-08-17 — dev `:8507` restarted, all modules import, `GET /chatbot/config` → `deep_research_total_timeout_seconds: 300`.
+- `[DONE]` 2026-08-17 — SOURCE C built all 5 sections against live dev API (buy list 19 rows, exit list 14, signal quality, conviction score sheet 19, fundamentals for FPH.NZ/MFT.NZ).
+- `[DONE]` 2026-08-17 — `pytest chatbot/tests` → **44 passed** (14 new). Bare `['FPH','MFT']` filter now returns **665 rows** (was 0). `Timestamp`-in-metadata history payload round-trips.
+- `[PENDING]` **Live end-to-end LLM replay of both original questions** — declined during implementation (paid call). Run this on dev before prod merge and confirm `result.metadata.route == "HYBRID"`, `flow_steps` contain `Conviction Overlay`, and the answer quotes real `Signal Quality Composite Score` values.
+- `[PENDING]` Manual UI check on `:8514` after the above.
+
+**Robust test + dev deploy `[DONE]` 2026-08-17** (the fix above was written but left uncommitted and unverified against a restarted service; this closes that gap):
+
+- Committed as **`3547f7950`** on `chatbot-dev`, author `divsum127`, 15 files. **`chatbot/agents/synthesis_agent.py` was added to the merge set** — it is not part of this fix (dated 2026-08-02) but imports `build_signal_data_source_legend` from `chatbot/smart_data_fetcher.py`, which was itself uncommitted; the pair must move together or prod lands a consumer without its producer.
+- `[DONE]` `pytest chatbot/tests -q` → **44 passed**; `pytest tests/ -q` → **810 passed, 1 failed, 3 skipped**. The failure is the pre-existing Monday-after-a-Friday-signal `test_shortlist_mtm_not_stale_zero_for_aged_signals` guard already documented above — unrelated, not a regression from this change.
+- `[DONE]` Mock audit over all 15 committed files — no unintended mocks, no placeholder data, no stale-source shortcuts.
+- `[DONE]` **No HTTP surface change** — the conviction feed only *consumes* existing endpoints, so no router/schema edit, no OpenAPI re-export, no API-doc page, no docs-submodule commit. `api/jobs/runner.py` gained error-persistence only. (The dirty `api/routers/macro.py` in the tree belongs to a different task and was deliberately left uncommitted.)
+- `[DONE]` `mindwealth-api-dev.service` restarted 19:54:43 UTC; `smoke-test-apis.sh` **all PASS** — dev `:8507` `status=ok` v1.10.8, `conviction_store` isolated to the git clone and writable; **prod `:8506` untouched and still isolated** (v1.8.1).
+- `[DONE]` Re-verified **against the restarted process**: all five consumed endpoints return `200` with the `.env` `X-API-Key`; SOURCE C rebuilds **5/5 sections, 10,027 chars** with `FPH.NZ` at rank 1 of the exit list; the recommendation override on Rohit's exact sentence yields `(internal=True, web=True)` ⇒ HYBRID; `resolve_tickers(['FPH','MFT','FRE'])` → `['FPH.NZ','MFT.NZ']` + `FRE` correctly reported as outside the universe.
+- `[DONE]` Nuxt untouched — no `MindwealthUI_Vue` file in this change, so no `npm run build` and no `mindwealth-ui-dev` restart. The five frontend items above stay `[PENDING]`.
+
+---
+
+## 2026-08-17 — Rohit 6 Aug email status audit (docs-only) + prod defect escalation
+
+**Git files to merge** (`chatbot-dev` → `chatbot-prod`) — documentation only, zero runtime impact:
+- `docs/mindwealth_ui_job_status.md`
+- `docs/mindwealth_ui_repo_job_status_details.md`
+- `docs/dev_to_prod_migration_todos.md` (this entry)
+
+`[PENDING]` merge only. No systemd change, no runtime artifact, no dev-only config, no API surface change, no Nuxt rebuild.
+
+**Why it is listed here anyway — the audit escalated one live prod defect:**
+
+`[PROD-ACTION]` **The 2026-08-07 `vix_bypass` A6 fix is still not on prod (see the entry immediately below).** Prod `:8506` continues to publish `vix_bypass: true` while Combo B is INACTIVE, and the C++ sizing model reads `macro_intelligence/output/runic_output.json` **from disk** — so on prod, `size_mult` is being forced to `1.0` and the SSI multiplier is discarded on ordinary days. Rohit flagged this specifically in the 6 Aug email ("we may be switching off the one overlay showing real risk value, every ordinary day") because the SSI overlay is the strongest risk contributor in Ahil's decomposition (Sharpe 0.82 → 1.04, drawdown −17.09% → −13.41%). This is now **10 days** stale on prod. Merge + nightly rerun + API restart, in that order — the checklist is in the 2026-08-07 entry below.
+
+**Also surfaced by the audit, tracked but not prod-blocking:**
+- `[PENDING]` Jun 18 spec doc still records SPX-below-200DMA as ×0.80 while both dev and prod code run ×0.90 (`instruction_docs/portfolio_page/portfolio_sizer_v2_18June.md:65`, `:257`). Rohit's instruction was "adopt ×0.90 and update the spec" — the code half is already correct on both environments, so this is a doc fix, not a cutover risk.
+- `[PENDING]` Combo dominance priority still `C(100) > B(90) > F(80) > E > D > G > A` (`testing/5_regime_uplift/README.md:30`) against Rohit's explicit "move B above C". Research-path file, not read by the live sizing chain — but D1 regime buckets derived from it will need regenerating whenever the swap lands.
+- `[PENDING]` Analog tables still served on both environments (`GET /macro/analogs/{combo_id}`, `src/pages/runic_page.py:90-95`) with stub data — Rohit asked for it pulled from the nav until rebuilt. Removing it is a prod-visible surface change and needs its own entry when done.
+- `[PROD-ACTION]` Composite-score `401` for Ahil is a credential handoff, not a deploy: `X-API-Key` against `api/dependencies.py::require_api_key`. No git change; key must be shared over a secure channel (never in git, chat or logs).
+
+**Environment drift noted for the next cutover:** dev is **22 commits ahead** of `origin/chatbot-prod` as of 2026-08-17 (dev `3a634b468`, prod clone `64e17ca26` from 2026-08-02). Nuxt `:8514` (dev, `ui-dev`) and `:8512` (prod) are therefore different builds — this is the cause of the two environments disagreeing about whether Combo C is firing, which Rohit asked about directly.
+
+**Smoke test `[DONE]`** 2026-08-17 dev `:8507` — `smoke-test-apis.sh` **PASS** (dev v1.10.8 `status=ok`, `conviction_store` isolated to the git clone and writable; prod `:8506` v1.8.1 isolation intact). `pytest tests/` → **771 passed, 1 failed, 3 skipped**. The single failure is **pre-existing and unrelated to this docs change**: `tests/test_api_signals_surface.py::test_shortlist_mtm_not_stale_zero_for_aged_signals` compares a signal's **calendar** age against `days_elapsed`, which is sourced from the CSV column `Trading Days between Signal and Today Date` (`api/services/signal_enrichment_service.py:415`). PLTR fired Fri 2026-08-14 and `chatbot/data/entry.csv` correctly records `0 days` of *trading* days as of Mon 2026-08-17, so the guard trips on any Friday signal over a weekend. Upstream data is right; the test's threshold is calendar-based. **Left unfixed pending sign-off** — making it trading-day-aware changes what the guard catches (its purpose is catching genuinely stale MTM), so it should not be relaxed silently.
+
+---
+
+## 2026-08-07 — vix_bypass A6 fix (Combo B only)
+
+**Git files to merge** (`chatbot-dev` → `chatbot-prod`):
+- `src/macro_intelligence/engine/vix_bypass.py`
+- `src/macro_intelligence/output/json_writer.py`
+- `src/macro_intelligence/jobs/nightly_run.py`
+- `macro_intelligence/CONFIG.yaml`
+- `api/services/macro_service.py`
+- `src/macro_intelligence/output/briefing_renderer.py`
+- `src/pages/runic_page.py`
+- `tests/test_ssi_vix_regime_oct_2022.py`
+
+**Runtime (prod host, not git):**
+- [ ] `cd /home/ubuntu/uiv2/prod/MindWealth_UI && git pull origin chatbot-prod`
+- [ ] `.venv/bin/python scripts/run_macro_nightly.py` (regenerates `macro_intelligence/output/runic_output.json` with `vix_bypass: false` when Combo B inactive)
+- [ ] `sudo systemctl restart mindwealth-api.service`
+- [ ] Verify: `jq '{date,vix_bypass,active: [.active_combos[].combo]}' macro_intelligence/output/runic_output.json`
+- [ ] Verify API: `GET /api/v1/macro/status` → `vix_bypass: false`, `vix_bypass_banner: null` (current prod state: F+E active, B inactive)
+
+**Smoke test `[DONE]`** 2026-08-07 dev `:8507` — API v1.10.7; `GET /macro/status` → `vix_bypass: false`, `vix_bypass_banner: null`; `pytest` 761 passed; `smoke-test-apis.sh` PASS. **Prod `[PENDING]`** — merge + nightly + API restart.
+
+---
+
+## 2026-08-07 — Sentiment Layer 1–4 sidebar detail panels + regime block
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`; re-run `run_ssi_daily.py`; Nuxt rebuild.
+
+| Area | Files |
+|------|--------|
+| Regime block (Layer 4) | `src/sentiment_superindex/engine/regime_block.py`, `src/sentiment_superindex/engine/positioning.py` |
+| Spark history API | `api/services/reports_service.py` |
+| Tests | `tests/test_ssi_regime_block.py`, `tests/test_sentiment_spark_data.py` |
+| Nuxt UI | `MindwealthUI_Vue/pages/sentiment.vue`, `components/sentiment/SentimentLayerDetail.vue`, `components/sentiment/SparkLine.vue`, `server/utils/sentiment-mapper.ts`, `types/api.ts` |
+
+**`[PROD-ACTION]`** `python scripts/run_ssi_daily.py` after merge so `positioning.json` includes `regime`.
+
+**Smoke test `[DONE]`** 2026-08-07 dev `:8507` — `GET /analytics/sentiment/layers` → `regime.size_mult=1.2`, `spark_data.layer1` length 60; Nuxt `:8514` rebuilt + `mindwealth-ui-dev` active; sidebar L1–L4 panel switch pending manual UI click check.
+
+---
+
+## 2026-08-12 — Row 46 staleness calibration complete (per-signal penalties + margin debt)
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`; `run_ssi_daily.py`.
+
+| Area | Files |
+|------|--------|
+| Caps + per-signal penalties | `macro_intelligence/SSI_CONFIG.yaml`, `src/sentiment_superindex/config.py`, `data/staleness.py`, `engine/superindex.py` |
+| Margin debt fetch | `src/sentiment_superindex/data/margin_debt_pull.py`, `data/pull_all.py` |
+| Test 21 + tests | `analysis/staleness_decay_study.py`, `tests/test_ssi_staleness.py`, `tests/test_margin_debt_pull.py`, `docs/ssi_validation/21_staleness_decay.md` |
+
+**`[PROD-ACTION]`** `python scripts/run_ssi_daily.py` after merge.
+
+**Smoke test `[PENDING]`:** stale AAII at 2d → weight_multiplier 1.0 (no penalty); stale COT FM at 7d → 0.18; CNN &gt;3d dropped.
+
+**Ahil `[PENDING]`** rows 32/65 portfolio re-run after CNN/HY OAS (not blocking Row 46 code).
+
+---
+
+## 2026-08-07 — SSI staleness calibration (MAX_STALE_DAYS 8/3/30 + Test 21)
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`; re-run `run_ssi_daily.py`.
+
+| Area | Files |
+|------|--------|
+| Staleness caps | `macro_intelligence/SSI_CONFIG.yaml`, `src/sentiment_superindex/config.py` |
+| Test 21 study | `src/sentiment_superindex/analysis/staleness_decay_study.py`, `scripts/run_ssi_validation_suite.py` |
+| Tests / docs | `tests/test_ssi_staleness.py`, `docs/ssi_validation/21_staleness_decay.md` |
+
+**`[PROD-ACTION]`** `python scripts/run_ssi_daily.py` after merge so live scoring uses weekly=8, daily=3, monthly=30.
+
+**Smoke test `[PENDING]`:** AAII 6d stale still carries (penalty); 9d dropped. CFTC 7d stale carries. CNN missing &gt;3d dropped.
+
+**Deferred `[DONE]` 2026-08-12:** Per-signal `weight_penalty_by_signal` wired (Test 21 values). Rohit sign-off still needed before prod cutover.
+
+---
+
+## 2026-08-07 — SSI staleness calibration (MAX_STALE_DAYS 8/3/30 + Test 21) — superseded by 2026-08-12 Row 46 complete entry above
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`; Nuxt rebuild.
+
+| Area | Files |
+|------|--------|
+| Staleness meta | `src/sentiment_superindex/engine/positioning.py`, `src/sentiment_superindex/data/cftc_patterns.py` |
+| Shared freshness util + component | `MindwealthUI_Vue/utils/signal-freshness.ts`, `MindwealthUI_Vue/components/SignalFreshnessAnnotation.vue` |
+| Sentiment mapper + detail UI | `MindwealthUI_Vue/server/utils/sentiment-mapper.ts`, `MindwealthUI_Vue/components/sentiment/SentimentLayerDetail.vue`, `MindwealthUI_Vue/types/api.ts` |
+| Runic variables notes | `MindwealthUI_Vue/utils/macro-variables.ts` |
+
+**`[PROD-ACTION]`** `python scripts/run_ssi_daily.py` so `inputs_meta.*` includes `max_stale_days` and `layer3_cftc.release_date`.
+
+**Smoke test `[DONE]` 2026-08-12:** Nuxt `npm run build` PASS; `SentimentLayerDetail` renders `SignalFreshnessAnnotation` on tiles with `freshness` from mapper.
+
+**Dev deploy `[DONE]` 2026-08-12:** `mindwealth-api-dev` + `mindwealth-ui-dev` restarted; `smoke-test-apis.sh` PASS; `GET /api/v1/macro/sentiment/positioning` returns `inputs_meta.layer1.*.max_stale_days` and `layer3_cftc.release_date`. Browser visual check on Sentiment tiles `[PENDING]` (human).
+
+---
+
+## 2026-08-07 — SSI layer detail scoring transparency (z / weight / contribution)
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`; Nuxt rebuild.
+
+| Area | Files |
+|------|--------|
+| Superindex scoring | `src/sentiment_superindex/engine/superindex.py` |
+| Tests | `tests/test_ssi_superindex.py` |
+| Vue mapper | `MindwealthUI_Vue/server/utils/sentiment-mapper.ts` |
+| API docs | `docs/mindwealth-api-docs/services/analytics/endpoints/get-sentiment-layers.md` |
+
+**`[PROD-ACTION]`** `python scripts/run_ssi_daily.py` so `positioning.json` includes `contribution` + `effective_weight` on each component.
+
+**Smoke test `[DONE]`** 2026-08-07 dev `:8507` — `GET /analytics/sentiment/layers` → `aaii_spread.contribution=0.0374`, `effective_weight=0.4364`, contributions sum to `layer1.score=0.0177`; API v1.10.6; `pytest` SSI/sentiment 29/29; full suite 759 passed (1 flaky `test_ssi_regime_block` in full run, passes isolated); `smoke-test-apis.sh` PASS; `run_ssi_daily.py` refreshed `positioning.json`; Nuxt `:8514` rebuilt + `mindwealth-ui-dev` active.
+
+---
+
+## 2026-08-07 — Layer 3 CFTC pattern flags (display + Overwatch, not sizing)
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`; Nuxt rebuild.
+
+| Area | Files |
+|------|--------|
+| CFTC patterns | `src/sentiment_superindex/data/cftc_patterns.py`, `gross_net_flag.py`, `cftc_ssi.py` |
+| Positioning + API | `src/sentiment_superindex/engine/positioning.py`, `api/services/reports_service.py`, `api/services/analyst_service.py` |
+| Tests | `tests/test_cftc_patterns.py`, `tests/test_layer3_flags.py` |
+| Nuxt | `MindwealthUI_Vue/server/utils/sentiment-mapper.ts`, `pages/sentiment.vue`, `constants/regime-strip.ts`, `server/api/overwatch.get.ts`, `composables/useOverwatch.ts`, `components/analyst/*`, `types/api.ts` |
+
+**`[PROD-ACTION]`** `python scripts/run_ssi_daily.py` so `positioning.json` / `ssi.db` include `squeeze_setup`, `liquidity_exit`, `gross_net_divergence_active` on `layer3_cftc`.
+
+**Smoke test `[PENDING]`:** `GET /analytics/sentiment/layers` → `layer3_flags.liquidity_exit` true when RM&lt;30 &amp; FM&gt;60; Sentiment page shows gold banner + Layer 3 ACTIVE rows; Overwatch MACRO tab shows `sentiment_warning` CFTC alert. Thresholds unvalidated until Rohit grid sign-off.
+
+**🚫 `[MERGE-BLOCKER]` (added 2026-08-17)** — **do not promote this block to prod.** Sign-off is **HELD** on both patterns: §6 of `docs/ssi_validation/CFTC_PATTERN_THRESHOLD_REPORT_FOR_ROHIT_20260811.md` is unsigned, and the wired values (`CONFIG.yaml:344-345` — squeeze FM&lt;20/RM&gt;45, liquidity RM&lt;30/FM&gt;60) are the cells the 11 Aug re-run scores at **negative mean−median gap** (FM&lt;20/RM&gt;45 = −1.99% at 12w, i.e. market beta). Prod is currently clean (`cftc_patterns.py` absent from the prod clone), so the exposure only opens on merge + the `run_ssi_daily.py` PROD-ACTION above. Either hold the whole block, or merge the code with the pattern detector feature-flagged off until Rohit signs §6.
+
+---
+
+## 2026-08-04 — CFTC fm_pctile true rank audit (docstrings + tests)
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`.
+
+| Area | Files |
+|------|--------|
+| Percentile engine | `src/macro_intelligence/engine/percentiles.py` |
+| CFTC pull (diagnostic helper + docstrings) | `src/macro_intelligence/data/cftc_pull.py` |
+| Tests | `tests/test_macro_percentiles.py` |
+
+**Notes:** No formula change — `_rolling_pctile()` already used true `percentile_rank()`. This batch adds explicit docstrings, `describe_cftc_pctile_window()` diagnostic, and regression tests (rank ≠ min–max under outliers).
+
+**Smoke tests:** `[DONE]` 2026-08-07 — `pytest tests/test_macro_percentiles.py` 11 passed; full suite 753 passed; `smoke-test-apis.sh` PASS on `:8507`.
+
+---
+
+## 2026-08-04 — Layer 1 `pct_above_200dma` history contamination fix
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`.
+
+| Area | Files |
+|------|--------|
+| SSI metadata | `src/sentiment_superindex/engine/positioning.py` |
+| Tests | `tests/test_ssi_display_rounding.py` |
+
+**`[PROD-ACTION]`** After deploy on prod host:
+```bash
+cd /home/ubuntu/uiv2/prod/MindWealth_UI
+python scripts/rebuild_ssi_history.py          # ~32 min; recomputes 3,173 dates
+sqlite3 macro_intelligence/data/ssi/ssi.db \
+  "DELETE FROM ssi_daily WHERE json_extract(payload_json, '\$.layers.layer1.components.pct_above_200dma') IS NOT NULL;"
+python scripts/run_ssi_daily.py
+```
+
+**Smoke test `[PENDING]`:**
+- `GET /api/v1/analytics/sentiment/layers` → `inputs_meta.layer1` has no `pct_above_200dma`; `inputs.layer2.pct_above_200dma` populated.
+- `ssi.db`: zero rows with `pct_above_200dma` in `layers.layer1.components`.
+
+**Retroactive warning:** All `layer1_score` / composite percentiles derived from pre-fix `ssi.db` history were inflated by 200DMA in Layer 1 (~mean |Δ| 0.10 on layer1).
+
+---
+
+## 2026-08-04 — SSI VERIFY pointers 1–5 (completion plan)
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`; rebuild/restart Nuxt prod.
+
+| Area | Files |
+|------|--------|
+| API / SSI | `src/sentiment_superindex/engine/layer2.py`, `positioning.py`, `data/cftc_patterns.py`, `data/cftc_ssi.py`, `macro_intelligence/data/cftc_pull.py`, `macro_intelligence/CONFIG.yaml`, `api/services/macro_service.py`, `api/services/analyst_service.py`, `tests/test_ssi_layer2.py`, `tests/test_cftc_patterns.py`, `tests/test_positioning_cftc_meta.py`, `tests/test_ssi_display_rounding.py` |
+| Nuxt (separate repo) | `MindwealthUI_Vue/server/utils/sentiment-mapper.ts`, `utils/signal-freshness.ts`, `utils/macro-variables.ts`, `components/runic/MacroSsiPanel.vue`, `components/runic/RunicBriefPanel.vue`, `types/api.ts`, `server/utils/runic-mappers.ts` |
+| API docs | `docs/mindwealth-api-docs/changelog.md`, `services/analytics/endpoints/get-sentiment-layers.md` |
+
+**`[PROD-ACTION]`** `python scripts/run_ssi_daily.py` after API deploy (refreshes `ssi_multiplier` from 6-gate sizing + CFTC pattern fields in `positioning.json` / `ssi.db`).
+
+**Smoke tests `[DONE]` 2026-08-04 (dev):**
+- pytest targeted SSI: 64 pass; **full suite: 753 passed, 2 skipped**
+- `smoke-test-apis.sh`: PASS (dev `:8507` version **1.10.5**, conviction_store isolated)
+- Live `GET /analytics/sentiment/layers`: 6 gate keys (no dbmf/cnn); `layer3_cftc.data_freshness` + `inputs_meta.layer3_cftc` present; L2 `UNCONFIRMED` / mult `0.8` from 6-gate sizing
+- Live `GET /macro/ssi/summary`: `layer2_gate_label` + 6-gate `inputs` keys
+- `run_ssi_daily.py` refreshed `positioning.json` + `ssi.db`
+- Nuxt: `mindwealth-ui-dev` restarted (prior `npm run build` OK)
+- **Note:** `nh_nl_ratio` raw/norm `null` on 2026-08-04 live payload (upstream series gap — pre-existing data, not deploy regression)
+
+**Smoke tests `[PENDING]` (prod):** Sentiment page COT two lines; MacroSsiPanel `layer2_gate_label`; `GET /analytics/sentiment/layers` JSON shape on `:8506`.
+
+**Google Sheet:** rows C67–C71 — update to Completed pending explicit user OK to write sheet.
+
+---
+
+## 2026-08-04 — SSI Layer 2 directional gate counts (CRITICAL)
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`; rebuild/restart Nuxt.
+
+| Area | Files |
+|------|--------|
+| API / SSI | `src/sentiment_superindex/engine/layer2.py`, `positioning.py`, `api/services/reports_service.py`, `tests/test_ssi_layer2.py`, `tests/test_sentiment_layers_gate_votes.py` |
+| Nuxt (separate repo) | `MindwealthUI_Vue/server/utils/sentiment-mapper.ts` |
+
+**`[PROD-ACTION]`** `python scripts/run_ssi_daily.py` (or rely on API `_ensure_layer2_gate_votes` backfill on next `GET /analytics/sentiment/layers`).
+
+**Smoke test `[DONE]`** 2026-08-04 dev `:8507` — `GET /analytics/sentiment/layers` returns `layer2_gate_conf_long=3`, `layer2_gate_conf_short=0`, `layer2_gate_direction=LONG_CONFIRMED`, `layer2_gate_label` set; `pytest tests/test_ssi_layer2.py tests/test_sentiment_layers_gate_votes.py` 8/8; full suite 753 passed; `smoke-test-apis.sh` PASS; Nuxt `:8514` rebuilt + `mindwealth-ui-dev` active.
+
+---
+
+## 2026-08-04 — NH Share gate row shows z-score not raw share
+
+`[DONE]` 2026-08-04 — Nuxt rebuild + `mindwealth-ui-dev` restart (`MindwealthUI_Vue`). Backend gate logic unchanged.
+
+| Area | Files |
+|------|--------|
+| Nuxt | `MindwealthUI_Vue/server/utils/sentiment-mapper.ts` — norm-gated Layer 2 rows display `norm` (aligned z) so badge direction matches printed value |
+| Tests | `tests/test_ssi_layer2.py` — nh_nl raw-high/norm-negative → bearish gate |
+
+**Smoke test `[DONE]` 2026-08-04:** Live API `nh_nl_ratio` gate `raw=0.571`, `norm=-0.598`, `signal=bearish`. Post-rebuild `mapSentimentLayers()` → NH Share row **`-0.60 ✓ bearish`** (not `+0.57 ✓ bearish`). Build `.output/server/index.mjs` 2026-08-04T09:33:30Z; `mindwealth-ui-dev` active on `:8514`.
+
+---
+
+## 2026-08-04 — SSI partial layer signal coverage UI
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`; rebuild/restart Nuxt (`mindwealth-ui-dev` or prod UI service).
+
+| Area | Files |
+|------|--------|
+| API / SSI | `src/sentiment_superindex/engine/positioning.py`, `tests/test_ssi_superindex.py` |
+| Nuxt (separate repo) | `MindwealthUI_Vue/server/utils/sentiment-mapper.ts`, `pages/sentiment.vue`, `types/api.ts` |
+
+**`[PROD-ACTION]`** After API deploy: `python scripts/run_ssi_daily.py` so `positioning.json` includes `layers.*.signal_coverage`.
+
+**Smoke test `[DONE]`** 2026-08-04 dev `:8507` — `GET /analytics/sentiment/layers` → `positioning.layers.layer1.signal_coverage.weights_renormalized=true`, `available_count=3`, `configured_count=4` (today `naaim_exposure` expired, not put/call); `run_ssi_daily.py` refreshed `positioning.json`; `pytest` SSI/sentiment 17/17 + API 174/174; `smoke-test-apis.sh` PASS; Nuxt `:8514` rebuilt + `mindwealth-ui-dev` active.
+
+---
+
+## 2026-08-02 — Conviction Engine Fixes v2 (bank/hardware business types, coverage-incomplete gate, FS-score slice rebuild, CRM bug fix)
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`. Pure application code, **no new `.env`/secrets/config needed**. After merge, prod's existing `conviction_store/*.json` records will keep using their old `business_type`/`fs_score`/`valuation_tax` values until each ticker's next full recalculation — run the classification-only pass (cheap) or a full universe recalc (thorough) as a `[PROD-ACTION]` follow-up:
+
+```bash
+cd /home/ubuntu/uiv2/prod/MindWealth_UI
+# Cheap option: classify-only, auto-queues full recalc ONLY for tickers that flip into
+# bank / high_margin_hardware / coverage_incomplete (see item 12 of the plan):
+.venv/bin/python scripts/run_universe_classification_pass.py
+# Thorough option: full recalc for every ticker (also picks up the FS-score-slice
+# rebuild, the growth-fragility/floor bugfix, and adjusted-EPS for ALL tickers, not
+# just the 3 flipped buckets — recommended once, to fully retire the pre-fix formulas
+# universe-wide; the classification pass alone leaves non-flipped tickers on the old
+# FS-score/valuation-tax numbers until their own natural recalc cadence):
+.venv/bin/python scripts/update_conviction_fundamentals.py --mode full --include-existing-records
+```
+
+| Path | Notes |
+|------|-------|
+| `src/conviction_engine/models.py` | **modified** — `BANK`/`HIGH_MARGIN_HARDWARE` business types, `KNOWN_BUSINESS_TYPES`, new record fields, `SignalModification.coverage_incomplete` |
+| `src/conviction_engine/scoring.py` | **modified** — bank/hardware detection + valuation-tax substitutions, universal floor/fragility bugfixes, rebuilt `fs_score_breakdown()`, `coverage_incomplete` hard gate, KR/JP/CN undefined yield-trap thresholds |
+| `src/conviction_engine/engine.py` | **modified** — wires all of the above into `daily_update()`/`full_recalculation()`/`modify_signal()`/`run_daily_universe()` |
+| `src/conviction_engine/agent_dims.py` | **modified** — G2 source exclusion for hardware/semi sector, new deal-delay agent, TAM three-tier sourcing prompt |
+| `src/conviction_engine/capital_allocation.py` | **modified** — standalone buyback-suspension/dividend-cut tiered penalty flags |
+| `src/conviction_engine/fundamentals_enriched.py` | **modified** — bank/hardware fundamentals fetch, capital-return flags wiring, adjusted-EPS wiring, Tier 2 non-US PE-history fallback wiring |
+| `src/conviction_engine/fundamentals.py` | **modified** — new classification-only universe diff pass (`classify_universe_diff`/`run_universe_classification_pass`) |
+| `src/conviction_engine/bq_scoring.py` | **modified** — `score_deal_delay_risk()` prefers live agent detail over legacy binary flag |
+| `src/conviction_engine/pe_history_core.py` | **modified** — `reconstruct_quarterly_eps_from_net_income()` Tier 2 fallback |
+| `src/conviction_engine/bank_valuation.py` | **new** — efficiency-ratio margin quality, equity/assets balance sheet, P/TBV-vs-ROE valuation tax + FS slice |
+| `src/conviction_engine/adjusted_eps.py` | **new** — trailing effective-tax-rate adjusted EPS + materiality-gated adjusted PE |
+| `src/conviction_engine/tam_sourcing.py` | **new** — SEC XBRL `RevenueRemainingPerformanceObligation` Tier 1 TAM fetch |
+| `scripts/run_universe_classification_pass.py` | **new** CLI — see prod-action commands above |
+| `src/pages/conviction_engine_page.py` | **modified** — FS-cap/yield-trap breakdown display + agentic-dimension sourcing transparency (Streamlit UI, dev-only tool, no prod-user-facing impact) |
+| `api/schemas/conviction.py` | **modified** — `SignalModificationResponse.coverage_incomplete` field |
+| `instruction_docs/conviction_engine_issues/conviction_fixes_decisions.md` | **new** — decisions/rationale log, docs only |
+| `tests/test_conviction_engine_v2_fixes.py` | **new** — 49 tests |
+| `tests/test_conviction_engine.py` | **modified** — 1-field fixture fix (`test_fs_cap_differs_by_timeframe`) |
+
+**Parth's Vue frontend (separate repo, not in this migration's scope but flagged for him):** new `COVERAGE INCOMPLETE` verdict string needs a color/label case; `yield_trap_breakdown.fired` vs `.watching` and `run_daily_universe()`'s `yield_trap_watching` alert-map flag are now available to reconcile the Yield-Traps panel's count-vs-list display; `fs_cap_breakdown`/`valuation_tax_breakdown` are on every record returned by `GET /conviction/tickers/{ticker}` for the Engine Layers click-through panels shown in `engine_layers_spec.html`.
+
+**Smoke test `[DONE]` 2026-08-02:** dev `:8507` — `smoke-test-apis.sh` all PASS; `GET /conviction/tickers/JPM` shows `business_type=bank` + `bank_ptbv_detail`; `POST /conviction/signals/evaluate` on `BRK-B` returns `COVERAGE INCOMPLETE` + `coverage_incomplete=true`; `GET /conviction/alerts/daily` includes `coverage_incomplete`/`yield_trap_watching` flags. Full dev recalc already run: 195/195, 0 errors.
+
 ---
 
 ## 2026-08-02 — Layer 2 gate votes (McClellan confirm badge)
@@ -38,7 +973,62 @@ Reference deploy skill: `.cursor/skills/prod-pull-and-details/SKILL.md`
 | `MindwealthUI_Vue/server/utils/sentiment-mapper.ts` | Inline ✓/✗ on all 6 Layer 2 rows; NH label → `NH Share (NH/(NH+NL))` |
 | `docs/mindwealth-api-docs/services/analytics/endpoints/get-sentiment-layers.md` | Field reference for gate votes |
 
-**Smoke:** `[PENDING]` `GET /analytics/sentiment/layers` → `layer2_gate_votes` length 6, `nh_nl_ratio` entry has `vote` + `signal`; Sentiment page Layer 2 shows NH Share row with ✓ or ✗.
+**Smoke:** `[DONE]` 2026-08-02 dev `:8507` — `GET /analytics/sentiment/layers` returns `layer2_gate_votes` length 6 (`mcclellan` … `pct_above_200dma`), `layer2_gate_confirmed_count=3`; `pytest tests/test_sentiment_layers_gate_votes.py` 4/4; `smoke-test-apis.sh` PASS; Nuxt `:8514` rebuilt + `mindwealth-ui-dev` active.
+
+---
+
+## 2026-08-04 — Weekly staleness cap 5→10 (Super Sentiment unavailable fix)
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`; rerun `scripts/run_ssi_daily.py`.
+
+| Path | Notes |
+|------|-------|
+| `macro_intelligence/SSI_CONFIG.yaml` | `staleness.max_stale_days.weekly` **5 → 10** |
+| `src/sentiment_superindex/config.py` | Default `MAX_STALE_DAYS["weekly"]` **10** |
+| `src/sentiment_superindex/engine/positioning.py` | `_layer3_display_value()` CFTC snapshot fallback |
+| `tests/test_ssi_staleness.py` | CFTC 7d carry regression; align weekly ffill 10d |
+
+**Smoke test `[DONE]`** 2026-08-04 dev `:8507` — `GET /analytics/sentiment/layers` → `layer3.cftc_fm_net=-302372`, `naaim_exposure=79.7`; `mapSentimentLayers()` 0 unavailable; `pytest test_ssi_staleness test_sentiment_layers_gate_votes` 13/13; `smoke-test-apis.sh` PASS; `mindwealth-api-dev` restarted.
+
+---
+
+## 2026-08-04 — SSI staleness policy wired to live scoring (MAX_STALE_DAYS / STALE_WEIGHT_PENALTY)
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`; rerun `scripts/run_ssi_daily.py`.
+
+| Path | Notes |
+|------|-------|
+| `macro_intelligence/SSI_CONFIG.yaml` | New `staleness.max_stale_days` (weekly **10** / daily 1 / monthly 25) + `weight_penalty: 0.8` |
+| `src/sentiment_superindex/config.py` | `MAX_STALE_DAYS`, `STALE_WEIGHT_PENALTY`, `SSI_INPUT_CADENCE`, `staleness_policy()` |
+| `src/sentiment_superindex/data/staleness.py` | **new** — `observation_as_of`, `effective_input_weights` |
+| `src/sentiment_superindex/engine/superindex.py` | Live scoring uses staleness caps + weight penalty |
+| `src/sentiment_superindex/data/alignment.py` | Cadence-aware default ffill limits from config |
+| `src/sentiment_superindex/data/pull_all.py` | `values_as_of` aligned to staleness policy |
+| `tests/test_ssi_staleness.py` | **new** regression (monthly 25d, AAII penalty renorm) |
+
+**Smoke test `[PENDING]`:** `build_superindex(today)` → stale AAII mid-week shows `signal_coverage.stale` includes `aaii_spread` and `effective_weights.aaii_spread` < nominal 0.30; monthly `align_to_daily(..., cadence="monthly")` carries 25 rows not 5.
+
+---
+
+## 2026-08-04 — Put/Call Layer 1 restore + spec weights (30/35/20/15)
+
+`[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`; rerun SSI daily; rebuild Nuxt UI.
+
+| Path | Notes |
+|------|-------|
+| `src/sentiment_superindex/data/put_call_pull.py` | **new** — CBOE total P/C CSV + CNN gap fill; 10-week EMA |
+| `macro_intelligence/data/ssi/put_call_ema.csv` | **new** runtime cache (commit or bootstrap on deploy host) |
+| `macro_intelligence/data/ssi/put_call_ratio_raw.csv` | **new** raw cache |
+| `macro_intelligence/SSI_CONFIG.yaml` | `put_call_ema` in layer1; `layer1_input_weights` 30/35/20/15 |
+| `src/sentiment_superindex/data/pull_all.py` | `fetch_put_call_ema()` |
+| `src/sentiment_superindex/engine/superindex.py` | Spec-weight Layer 1 composite + `signal_coverage` |
+| `macro_intelligence/DATA_SOURCES.yaml` | `PUT_CALL_EMA` var |
+| `tests/test_put_call_pull.py`, `tests/test_ssi_superindex.py` | Regression incl. missing-P/C renormalization |
+| `MindwealthUI_Vue/server/utils/sentiment-mapper.ts` | Layer 1 header "N of 4 signals"; Put/Call row always shown |
+
+**Smoke test `[PENDING]`:** `GET /api/v1/analytics/sentiment/layers` → `positioning.layers.layer1.components.put_call_ema.raw` populated; `signal_coverage.available_count == 4`; Sentiment Layer 1 header not "3 weekly inputs".
+
+**Smoke test `[DONE]`** 2026-08-04 dev `:8507` — `put_call_ema.raw` ≈ 0.766; `signal_coverage.configured_count=4`; `nominal_weights` 30/35/20/15; `pytest tests/test_ssi_superindex.py tests/test_put_call_pull.py tests/test_ssi_staleness.py` 20/20; full `pytest tests/` 753 passed; `smoke-test-apis.sh` PASS (dev v1.10.5). NAAIM may show `expired` when `stale_days > 5` (weekly cap) — separate staleness policy, not Put/Call fetch failure.
 
 ---
 
@@ -72,9 +1062,13 @@ Reference deploy skill: `.cursor/skills/prod-pull-and-details/SKILL.md`
 | `tests/test_ssi_superindex.py` | Layer assignment regression |
 | `tests/test_ssi_display_rounding.py` | Display bucket regression |
 
+| `api/main.py` | `API_VERSION` → `1.10.3` |
+| `docs/mindwealth-api-docs/changelog.md` | v1.10.3 layer-assignment fix note |
+| `docs/mindwealth-api-docs/openapi/mindwealth-v1.json` | Regenerated |
+
 **`[PROD-ACTION]`** After deploy: `python scripts/run_ssi_daily.py` (or wait for cron) to refresh `macro_intelligence/output/positioning.json`.
 
-**Smoke test `[PENDING]`:** `GET /api/v1/analytics/sentiment/layers` — `pct_above_200dma` present under `positioning.inputs.layer2`, absent from `positioning.inputs.layer1`; `positioning.layers.layer2.components.pct_above_200dma` populated.
+**Smoke test `[DONE]`** 2026-08-02 dev `:8507` — `GET /analytics/sentiment/layers`: `pct_above_200dma` under `positioning.inputs.layer2` only (value 67.86); `positioning.layers.layer2.components.pct_above_200dma` populated; `pytest tests/test_ssi_superindex.py tests/test_ssi_display_rounding.py tests/test_sentiment_layers_gate_votes.py` 14/14; full `pytest tests/` 721 passed; `smoke-test-apis.sh` PASS (dev version 1.10.3).
 
 ---
 
@@ -1459,6 +2453,169 @@ curl -N -H "X-API-Key: $KEY" http://127.0.0.1:8506/api/v1/overwatch/stream
 
 ---
 
+## 2026-08-17 — Sheet-reply truth audit: live feed defects + dev/prod SSI gap
+
+Investigation only — **no git files to merge from this entry**. It records prod-affecting state found while verifying the 45 `v2_TODOs` replies against dev `:8507` / `:8514`.
+
+### Git (chatbot-dev → chatbot-prod)
+
+None from this audit. The SSI surfaces below are already covered by earlier entries (six-gate votes, `signal_coverage`, freshness annotations, Layer 4 panel, `vix_bypass` A6).
+
+### Live data-feed defects `[PROD-ACTION]` — affect dev **and** prod equally
+
+| # | Defect | Evidence | Effect on the page |
+|---|--------|----------|--------------------|
+| 1 | **NAAIM scrape returns 0 rows** | `_scrape_naaim()` → empty; `macro_intelligence/data/ssi/naaim_exposure.csv` last row `2026-07-29`; `stale_days=19` | Layer 1 runs **3 of 4**, weights renormalised (AAII 46.2% vs nominal 30%) |
+| 2 | **`vix_ratio` NULL since 2026-08-04** | `ssi.db.ssi_daily.vix_ratio` null every date after 4 Aug; `vix_ratio_series()` called directly still returns `0.798` today | `VIX Term Structure | unavailable`; Layer 2 runs **5 of 6** |
+| 3 | **CFTC one release behind while data is on disk** | `fetch_cftc_fast_money_net()` → `2026-08-11 = -286,505`; API/positioning still `2026-08-04 = -333,099`, `stale_days=13` | All three CFTC inputs dropped; **Layer 3 = DBMF at 100% weight**; tile reads `Waiting for Friday release` and `next release Fri 14 Aug` (past) |
+
+Likely cause for #3: SSI cron is `0 8 * * 1-5` (04:00 ET) but the TFF ZIP for the Friday 15:30 ET release is refreshed later the same morning (`fut_fin_txt_2026.zip` mtime 10:56 today), so `positioning.json` is written before the new week exists. Fix is scheduling/ordering, not parsing.
+
+No error for #1 or #2 appears in `macro_intelligence/logs/ssi_daily.log` — the pulls fail silently to cache. **Any health check must call the pull functions, not read the log.**
+
+### Dev/prod divergence to resolve before quoting numbers to Rohit
+
+- **CFTC percentile mismatch:** identical `fm_net = -333,099` ranks `fm_pctile 52.9 / rm_pctile 55.5` on dev `:8507` but `87.1 / 35.5` on prod `:8506`. One window is wrong; diff the two `cftc_positioning` tables before either figure is used.
+- **Prod payload is missing** `signal_coverage`, `layer2_gate_label` / `conf_long` / `conf_short`, `regime`, `inputs_meta.layer3_cftc` and `spark_data`. Consequence: the "running on N of M · weights renormalised" disclosure and the long/short vote split (sheet rows 35/36/39) **do not exist on the live site**, so those rows cannot be closed on the strength of dev.
+
+### Nuxt follow-up (separate repo `MindwealthUI_Vue`, `ui-dev`)
+
+- Sheet row 72 promised a **stale-date banner + clearer labeling on the SSI page**; not built. Sentiment stamps the topbar from `signal_report_date` (14 Aug) while the SSI body is 17 Aug, with nothing explaining the split.
+- CFTC raw rows show 13-day-old values with no freshness marker (only the `COT data` row has one).
+- `buildCotFreshnessAnnotation` prints `next_release` verbatim with no future-date check → `next release Fri 14 Aug`.
+- Cosmetic: duplicated `z` in Layer 2 sub-lines; `83th` / `53th` / `55th` ordinals; Sentiment `meta.source_files` still `2026-05-12_*`; dead `pct_above_200dma` key in `LAYER1_LABELS`.
+
+### Smoke tests `[PENDING]`
+
+```bash
+curl -s -H "X-API-Key: $KEY" http://127.0.0.1:8506/api/v1/analytics/sentiment/layers | jq '.positioning.layers.layer1.signal_coverage, .positioning.layer2_gate_label'
+curl -s -H "X-API-Key: $KEY" http://127.0.0.1:8506/api/v1/analytics/sentiment/layers | jq '.positioning.inputs.layer3_cftc | {fm_net, fm_pctile, position_date, stale}'
+.venv/bin/python -c "from src.sentiment_superindex.data.naaim_pull import _scrape_naaim; print(len(_scrape_naaim()))"
+```
+
+### Status: `[PENDING]`
+
+---
+
+## 2026-08-18 — Landing page public BFF route (`/api/landing-stats`) — Nuxt repo
+
+**Repo:** `/home/ubuntu/MindwealthUI_Vue` (branch `ui-dev`) — **separate repo**, not `chatbot-dev` → `chatbot-prod`. No files in `MindWealth_UI` change.
+
+**Why:** the Nitro auth gate (commit `7661255`) shipped `isPublicBffPath()` as `return false`, so the public landing page's SSR calls to `/api/performance` and `/api/runic/nightly` returned 401 and all four hero tiles rendered "Could not fetch from server". **Prod `:8512` (www.mindwealth.co) is affected identically.**
+
+### Files to ship (Nuxt repo, currently uncommitted)
+
+| File | Change |
+|------|--------|
+| `server/api/landing-stats.get.ts` | **new** — public scalars-only route (5 numbers), in-process cache 5 min live / 30 s unavailable |
+| `server/utils/require-auth.ts` | `isPublicBffPath()` allowlists `/api/landing-stats` only |
+| `composables/useLandingStats.ts` | reads `/api/landing-stats` instead of `/api/performance` + `/api/runic/nightly` |
+| `types/api.ts` | adds `LandingStatsResponse` |
+
+### Deploy steps
+
+1. Commit + push on `ui-dev` (not done yet).
+2. `npm run build` in `/home/ubuntu/MindwealthUI_Vue` (Node 20 via nvm).
+3. `sudo systemctl restart mindwealth-ui.service` (prod `:8512`).
+4. Smoke: `curl -s http://127.0.0.1:8512/api/landing-stats` → 200 with `data_source":"live"`; `curl -o /dev/null -w "%{http_code}" http://127.0.0.1:8512/api/performance` → **401**; `curl -s http://127.0.0.1:8512/ | grep -c "Could not fetch from server"` → **0**.
+
+### Status
+
+- Dev `:8514` — `[DONE]` 2026-08-18. Built, restarted, verified: landing-stats 200 live (`avg_win_rate 75.92`, `avg_cagr 11.9`, `function_count 9`, `macro_combo_count 7`), gated routes still 401, landing HTML clean.
+- Prod `:8512` — `[PENDING]`. Not restarted; awaiting go-ahead.
+
+### ⚠️ Deploy hazard found while doing this
+
+`mindwealth-ui-dev.service` and `mindwealth-ui.service` share **one** `WorkingDirectory` (`/home/ubuntu/MindwealthUI_Vue`) and therefore **one `.output`**. Building for dev overwrites the prod bundle on disk; prod only keeps serving old code until its process restarts. Any restart — including systemd's `Restart=on-failure` — promotes whatever dev last built, unreviewed. Prod needs its own checkout or its own build output. `[PENDING]` — separate task.
+
+### Env / systemd / secrets
+
+None. No `.env`, no new env var, no unit-file change, no runtime file to copy.
+
+---
+
+## 2026-08-18 — SSI resilience, coverage gate, CFTC completeness, regime feed (W1–W7)
+
+Fixes the 8 findings from the sheet-reply truth audit. **This is a live sizing path** — the
+coverage gate can change `ssi_multiplier`, and the CFTC fix changes published percentiles on prod.
+
+### Git (chatbot-dev → chatbot-prod)
+
+**New files**
+
+- `src/sentiment_superindex/data/yahoo_cache.py` — per-ticker close cache with provenance
+- `src/sentiment_superindex/data/pull_guard.py` — pull failure/empty logging
+- `src/sentiment_superindex/data/cboe_indices.py` — CBOE primary source for VIX / VIX3M / SKEW
+- `tests/test_ssi_feed_health.py`
+
+**Modified**
+
+- `macro_intelligence/SSI_CONFIG.yaml` — **new `coverage:` block (required)**
+- `src/sentiment_superindex/config.py` — YAML is now the only source; `staleness_policy()` **raises** if the block is missing
+- `src/sentiment_superindex/engine/{superindex,positioning,regime_block}.py`
+- `src/sentiment_superindex/data/{yahoo_inputs,naaim_pull,put_call_pull,cnn_fear_greed,sp500_breadth,margin_debt_pull,cftc_patterns,pull_all,alignment}.py`
+- `src/sentiment_superindex/jobs/daily_run.py`, `scripts/run_ssi_daily.py` (exit 2 when degraded)
+- `src/macro_intelligence/data/{cftc_pull,retry_cache}.py`
+- `src/macro_intelligence/{output/regime_feed_export.py,jobs/friday_pull.py,analysis/regime_experiments/shadow_backfill.py}`
+- `src/portfolio_nav/four_book_engine.py`
+- `api/routers/macro.py`, `api/services/{reports_service,macro_service,analyst_service}.py`
+- `scripts/export_data_validation.py`
+
+### ⚠ Blocking prerequisite
+
+`SSI_CONFIG.yaml` on prod currently has **no `staleness:` block** and prod's `config.py` has no
+`staleness_policy()` at all. After this merge the SSI job **will raise** unless the YAML lands
+with it. That is intentional — scoring on a silent code default is what caused the drift. Confirm
+`macro_intelligence/SSI_CONFIG.yaml` merged cleanly **before** running the daily job.
+
+### Prod runtime (not in git)
+
+- **CFTC zip cache: no manual action.** Prod holds only `fut_fin_txt_2026.zip`, which is why its
+  percentiles rank against ~31 weekly prints (87.1st) where dev uses 156 (52.9th). The
+  `_download_frames` completeness fix makes prod **fetch the missing years itself on first run**.
+  Expect the first post-deploy run to download ~10 zips (~5 MB) and take longer than usual.
+- Expect `fm_pctile` / `rm_pctile` on prod to **change materially** at that point. That is the bug
+  being fixed, not a regression — but it is visible, so it is worth telling Rohit before deploy.
+
+### systemd / Nuxt
+
+```bash
+sudo systemctl restart mindwealth-api.service
+```
+
+Nuxt prod is now a **separate tree** (`/home/ubuntu/MindwealthUI_Vue_prod`, branch
+`presentation-prod`, port 8512) — a dev build no longer overwrites the prod bundle, so the Vue
+changes need their own merge into that branch plus `npm run build` and a
+`mindwealth-ui.service` restart.
+
+### Smoke tests `[PENDING]`
+
+```bash
+cd /home/ubuntu/uiv2/prod/MindWealth_UI && .venv/bin/python scripts/run_ssi_daily.py; echo "exit=$?"
+```
+
+```bash
+curl -s -H "X-API-Key: $KEY" http://127.0.0.1:8506/api/v1/analytics/sentiment/layers | jq '{mult: .composite.ssi_multiplier, ok: .composite.coverage_ok, policy: .staleness_policy.max_stale_days, l2: .positioning.layers.layer2.signal_coverage.available_count}'
+```
+
+```bash
+curl -s -H "X-API-Key: $KEY" http://127.0.0.1:8506/api/v1/analytics/sentiment/layers | jq '.positioning.inputs.layer3_cftc | {fm_net, fm_pctile, position_date}'
+```
+
+Expect `fm_pctile` on prod to match dev for the same `fm_net` once the zip backfill completes.
+
+### Follow-ups
+
+- **NAAIM has no free source** (public feed moved behind a login 2026-08). Layer 1 runs 3 of 4 on
+  both clones until Rohit picks: membership, manual entry, or re-specced weights.
+- Coverage thresholds in `SSI_CONFIG.yaml` are **proposed defaults pending sign-off**.
+- Trading-day vs calendar-day staleness for daily inputs — open question for Rohit (his C43).
+- FRED `BOGZFL224066003Q` 404s for margin debt (no layer uses it).
+
+### Status: `[PENDING]` — not committed or deployed; the dev working tree carries unrelated pre-existing changes, so the commit/merge is the user's call.
+
+---
+
 ## Template for future entries
 
 Copy for each new dev feature:
@@ -1493,6 +2650,9 @@ Copy for each new dev feature:
 
 | Date | Change |
 |------|--------|
+| 2026-08-18 | SSI resilience + coverage gate + CFTC zip completeness + regime feed currency; **SSI_CONFIG.yaml `staleness:` block is now a hard prerequisite on prod** |
+| 2026-08-17 | Sheet-reply truth audit: 3 silent live feed defects (NAAIM scrape, `vix_ratio`, CFTC one release behind), dev/prod CFTC percentile mismatch, prod missing `signal_coverage` + gate label |
+| 2026-08-17 | Logged `pytest` → `run_nightly(as_of="2024-09-18")` clobbering the live `runic_output.json`; prod latent, fix pending |
 | 2026-07-27 | Sizer `pnl_rows`/`positions` gained `cross_function_exit`/`asset_class`/`status`; fixed `_parse_signal_meta` interval bug that made `implied_natural_exit_date` always `null` |
 | 2026-07-22 | Fundamentals `_df_row`/`_df_ttm_sum` sort-order fix (TTM revenue/FCF/EBITDA/debt) + full 193-ticker recalc |
 | 2026-07-22 | Moved `resolve_auto_scenario()` (D4 AUTO) thresholds into `portfolio_policy.yaml` |

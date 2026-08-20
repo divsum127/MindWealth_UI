@@ -12,6 +12,7 @@ from src.config_paths import SSI_POSITIONING_JSON
 from src.macro_intelligence.config import json_output_path
 from src.macro_intelligence.data.bls_pull import fetch_ppi_cooling_flag
 from src.macro_intelligence.db.connection import get_connection
+from src.macro_intelligence.engine.vix_bypass import assert_vix_bypass_consistency
 
 
 def read_positioning_data() -> dict[str, Any] | None:
@@ -66,18 +67,34 @@ def _combo_c_cancel_state() -> dict[str, Any]:
 
 
 def _pending_cpi_release(as_of: str | None = None) -> bool:
-    """True if a CPI release is scheduled this week without finalized actual in DB."""
+    """
+    True when a CPI release is still ahead of us inside the next 7 days.
+
+    This used to scan the **trailing** 7 days (``release_date >= as_of - 7``
+    ``AND release_date <= as_of``), so a CPI that had already printed kept the
+    flag true for a further week. The briefing renders that flag as "A CPI
+    release is pending this week — a hot surprise above +0.2pp would
+    re-activate the Combo C inflation leg", which is why the nightly report
+    read as a week out of date after the August print landed.
+
+    Two things made it permanent rather than merely late: the window looked
+    backwards, and ``bls_pull.try_bls_cpi_pull`` writes an observation row
+    stamped ``release_date = today`` on every nightly run, so the trailing
+    window always contained at least one row. The window is now strictly
+    forward — today's own observation row cannot satisfy it — which keeps the
+    flag correct even while that ingestion defect stands.
+    """
     from datetime import datetime, timedelta
 
     as_of = as_of or datetime.now().strftime("%Y-%m-%d")
-    week_start = (datetime.strptime(as_of, "%Y-%m-%d") - timedelta(days=7)).strftime("%Y-%m-%d")
+    week_ahead = (datetime.strptime(as_of, "%Y-%m-%d") + timedelta(days=7)).strftime("%Y-%m-%d")
     with get_connection() as conn:
         row = conn.execute(
             """
             SELECT COUNT(*) AS n FROM pending_releases
-            WHERE release_type='CPI' AND release_date >= ? AND release_date <= ?
+            WHERE release_type='CPI' AND release_date > ? AND release_date <= ?
             """,
-            (week_start, as_of),
+            (as_of, week_ahead),
         ).fetchone()
     return bool(row and row["n"] > 0)
 
@@ -96,10 +113,13 @@ def build_historical_analogs_block(combo_id: str | None, limit: int = 5) -> dict
     try:
         with get_connection() as conn:
             rows = conn.execute(
-                """SELECT cf.date, fr.spx_3m, cf.macro_regime_json
+                # Column is `macro_regime` and only ACTIVE-class rows are fires — the old
+                # `macro_regime_json` name raised, so this block never populated.
+                """SELECT cf.date, fr.spx_3m, cf.macro_regime
                    FROM combo_fires cf
                    LEFT JOIN forward_returns fr ON cf.combo_id = fr.combo_id
                    WHERE cf.runic_combo = ?
+                     AND cf.status IN ('ACTIVE','PARTIAL','CONFIRMED','CONFIRMED_3_OF_3','ESCALATION_ALERT')
                    ORDER BY cf.date DESC LIMIT ?""",
                 (combo_id, limit),
             ).fetchall()
@@ -114,9 +134,9 @@ def build_historical_analogs_block(combo_id: str | None, limit: int = 5) -> dict
     for row in rows:
         spx_3m = row["spx_3m"]
         description = ""
-        if row["macro_regime_json"]:
+        if row["macro_regime"]:
             try:
-                regime = json.loads(row["macro_regime_json"])
+                regime = json.loads(row["macro_regime"])
                 description = regime.get("label") or regime.get("geo_overlay") or ""
             except Exception:
                 description = ""
@@ -157,6 +177,16 @@ def write_runic_json(payload: dict[str, Any], path: Path | None = None) -> Path:
     return out
 
 
+def _combo_priority_order() -> list[dict[str, Any]]:
+    """Configured dominance order after the low-n demotion rule, most dominant first."""
+    try:
+        from src.macro_intelligence.engine.dominant import priority_ranking
+
+        return priority_ranking()
+    except Exception:
+        return []
+
+
 def build_payload(
     *,
     as_of: str,
@@ -181,6 +211,7 @@ def build_payload(
     pre_catalyst: dict[str, Any] | None = None,
     post_event_regime: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    assert_vix_bypass_consistency(active_combos, vix_bypass)
     pos = read_positioning_data()
     historical_analogs = build_historical_analogs_block(dominant_signal)
     payload = {
@@ -211,6 +242,9 @@ def build_payload(
         "pre_catalyst": pre_catalyst or {},
         "post_event_regime": post_event_regime or {},
         "system_recommendation": system_recommendation,
+        # The priority order decides house posture on any day with multiple fires and
+        # previously appeared on no tab (Rohit 2026-08-06). Emitted so the page can show it.
+        "combo_priority_order": _combo_priority_order(),
     }
     if historical_analogs:
         payload["historical_analogs"] = historical_analogs

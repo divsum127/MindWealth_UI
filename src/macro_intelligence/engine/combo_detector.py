@@ -31,6 +31,21 @@ def _hy_oas_bps(hy_raw: float | None) -> float:
 
 
 def _is_rare_or_extreme(reading: dict[str, Any] | None) -> bool:
+    """Former PROXY-era gap (audited 2026-07-29, closed 2026-08-02): for HY, pre-2023-07-13
+    daily_readings rows used to carry signal_tier='PROXY' unconditionally (the 2026-06 backfill
+    never ran the EXTREME/RARE tier classification against the proxy value), so this always
+    returned False for HY during the entire proxy era, even on the recalibrated stress spikes.
+
+    Closed 2026-08-02: scripts/backfill_hy_oas_from_wayback.py replaced 6,620 of 6,627 PROXY rows
+    with real ICE OAS and computed real NORMAL/RARE/EXTREME tiers for them via
+    evaluate_variable_tier(), so this function now correctly evaluates HY's real tier for
+    virtually all of 1996-2026 (see docs/ssi_validation/hy_oas_wayback_backfill_2026-08-02.md).
+    Combo A's HY leg can now fire on HY alone across nearly all of history -- this retroactively
+    changes Combo A historical fire counts wherever HY was the deciding leg during 1997-2023-07-13
+    (see the addendum in docs/ssi_validation/hy_proxy_consumer_audit_2026-07-29.md). Only the 7
+    disclosed orphan-PROXY dates (bond-market holidays with no free real source) still return
+    False for HY specifically -- negligible (~0.1% of the former proxy era).
+    """
     if not reading:
         return False
     tier = reading.get("signal_tier", "NORMAL")
@@ -412,7 +427,27 @@ def detect_named_combos(
 
 
 def _hy_4wk_change_bps(as_of: str) -> float | None:
-    """HY OAS 4-week change in basis points (calendar ~28d via last-two-months proxy)."""
+    """HY OAS 4-week change in basis points (calendar ~28d via last-two-months proxy).
+
+    Audited 2026-07-29 (macro regime spec-fix plan): this calls FRED live for BAMLH0A0HYM2
+    directly, bypassing daily_readings/signal_tier entirely -- so it does NOT use the
+    BAA10Y-calibrated PROXY value at all. Since April 2026 FRED's own API is capped to a
+    rolling 3-year window (confirmed live: cosd is ignored, first row returned is always
+    ~3 years back regardless of the requested start date), for any as_of date older than that
+    window this silently falls through the `except Exception: return None` below (empty slice
+    IndexError) -- meaning Combo G's HY leg cannot fire on any date the live FRED window has
+    already rolled past. Not a new bug introduced by the June proxy backfill; a consequence of
+    the 2026-04 FRED licensing change. Not fixed here: would require rerouting this function to
+    read the recalibrated daily_readings.HY series instead of hitting FRED live.
+
+    Still NOT closed by the 2026-08-02 wayback backfill (unlike Combo A's _is_rare_or_extreme
+    blind spot above): this function's gap comes from calling FRED live directly, not from
+    daily_readings.HY being PROXY-tagged, so backfilling daily_readings has no effect on it.
+    Combo G's HY leg is still capped to the live FRED rolling-3yr window. Fixing it would mean
+    rerouting this function to read daily_readings.HY (now real back to 1996-12-31) instead of
+    calling FRED live -- tracked as a follow-up, not done in this pass to avoid silently changing
+    Combo G's historical fire behavior without an explicit decision to do so.
+    """
     try:
         hy = fetch_fred_series("BAMLH0A0HYM2", "2010-01-01")
         if hy is None or len(hy) < 30:

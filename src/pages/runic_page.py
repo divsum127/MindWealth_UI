@@ -9,6 +9,7 @@ import pandas as pd
 import streamlit as st
 
 from src.config_paths import MACRO_INTEL_CONFIG, MACRO_INTEL_JSON_PATH, SSI_ANALYSIS_DIR, SSI_POSITIONING_JSON
+from src.macro_intelligence.engine.vix_bypass import VIX_BYPASS_BANNER
 from src.macro_intelligence.config import load_config
 
 
@@ -37,7 +38,7 @@ def create_runic_page() -> None:
         return
 
     if data.get("vix_bypass"):
-        st.error("VIX REGIME MULTIPLIER BYPASSED — Combo B (or confirmed F) active. Full size in effect.")
+        st.error(VIX_BYPASS_BANNER)
 
     col1, col2, col3 = st.columns(3)
     col1.metric("Date", data.get("date", "—"))

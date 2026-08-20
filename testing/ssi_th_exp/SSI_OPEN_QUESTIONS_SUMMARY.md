@@ -1,5 +1,7 @@
 # SSI Open Questions — Plain-Language Summary
 
+> **Updated 2026-08-07:** See **[SSI_OPEN_QUESTIONS_STATUS.md](SSI_OPEN_QUESTIONS_STATUS.md)** for current done/remaining matrix and **[SSI_EXPERIMENT_RESULTS.md](SSI_EXPERIMENT_RESULTS.md)** for compiled results with analysis. This file retains the detailed June 2026 audit history.
+
 **Audience:** Rohit, ops, and anyone reviewing sign-off  
 **Source spec:** [`macro_intelligence_docs/SSI_OpenQuestions_DivyanshuTestList (1).pdf`](../../macro_intelligence_docs/SSI_OpenQuestions_DivyanshuTestList%20(1).pdf) (also `.docx`, May 25, 2026)  
 **Evidence:** Validation runs **2026-06-04** (original), **2026-06-06** (follow-up; Tests 5, 6, 12, 14, 15, 16 re-run; Test 17 added), and **2026-06-06 Part III** (NAAIM backfill + 5 code bug fixes; all affected tests re-run with 7 years of SSI history) — see `macro_intelligence/analysis/ssi_validation/*_20260604.json`, `*_20260606.json`  

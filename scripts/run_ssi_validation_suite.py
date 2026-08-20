@@ -34,6 +34,8 @@ DOC_MAP = {
     "18_cot_fm_long_gate": "18_cot_fm_long_gate.md",
     "19_vix_fm_washout": "19_vix_fm_washout.md",
     "20_layer2_zscore_sweep": "20_layer2_zscore_sweep.md",
+    "21_staleness_decay": "21_staleness_decay.md",
+    "22_layer2_gate_grid": "22_layer2_gate_grid.md",
 }
 
 
@@ -74,6 +76,8 @@ def main() -> int:
         ("18", "src.sentiment_superindex.analysis.cot_fm_long_gate", True),
         ("19", "src.sentiment_superindex.analysis.vix_fm_washout", True),
         ("20", "src.sentiment_superindex.analysis.layer2_zscore_sweep", True),
+        ("21", "src.sentiment_superindex.analysis.staleness_decay_study", True),
+        ("22", "src.sentiment_superindex.analysis.layer2_gate_grid_sweep", True),
     ]
     for tid, module, use_start in runners:
         if args.skip_mindwealth and tid in ("05", "15"):  # MindWealth-dependent tests

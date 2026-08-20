@@ -47,6 +47,7 @@ class HistoricalAnalogsBlock(BaseModel):
 
 PanelAlertType = Literal[
     "degradation",
+    "position_risk",
     "runic",
     "runic_watch",
     "regime_warning",
@@ -76,6 +77,23 @@ class OverwatchPanelMacroDetail(BaseModel):
     historical_analogs: HistoricalAnalogsBlock | None = None
 
 
+class OverwatchPanelPositionDetail(BaseModel):
+    """Live-MTM / booked-loss detail. Carries P&L, never a win rate."""
+
+    model_config = ConfigDict(extra="allow")
+
+    symbol: str
+    function: str = ""
+    interval: str = ""
+    direction: str = ""
+    side: str = ""
+    trigger_type: Literal["booked_loss", "live_mtm_breach"] = "booked_loss"
+    entry_date: str | None = None
+    exit_date: str | None = None
+    profit_pct: float = 0.0
+    floor_pct: float | None = None
+
+
 class OverwatchPanelWarningDetail(BaseModel):
     model_config = ConfigDict(extra="allow")
 
@@ -102,6 +120,7 @@ class OverwatchPanelAlert(BaseModel):
     border_color: str | None = None
     severity: Literal["watch", "breach"] | None = None
     signal: OverwatchPanelSignalDetail | None = None
+    position: OverwatchPanelPositionDetail | None = None
     macro: OverwatchPanelMacroDetail | None = None
     warning: OverwatchPanelWarningDetail | None = None
 
@@ -111,6 +130,8 @@ class AnalystTabBadge(BaseModel):
 
     count: int = 0
     badge: str = ""
+    drift_count: int | None = None
+    position_count: int | None = None
 
 
 class AnalystTabsMeta(BaseModel):

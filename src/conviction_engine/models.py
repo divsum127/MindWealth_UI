@@ -13,7 +13,24 @@ class BusinessType(str, Enum):
     COMPOUNDER = "compounder"
     INCOME = "income"
     CYCLICAL = "cyclical"
+    BANK = "bank"
+    HIGH_MARGIN_HARDWARE = "high_margin_hardware"
     UNKNOWN = "unknown"
+
+
+# The 6 calibrated types with real scoring/valuation modules (v2, 30 July 2026 answers).
+# Anything else (insurer, deep_value, genuinely unresolved sector data -> "unknown") fires
+# the `coverage_incomplete` hard gate instead of silently defaulting to `compounder`.
+KNOWN_BUSINESS_TYPES: frozenset[str] = frozenset(
+    {
+        BusinessType.SAAS.value,
+        BusinessType.COMPOUNDER.value,
+        BusinessType.INCOME.value,
+        BusinessType.CYCLICAL.value,
+        BusinessType.BANK.value,
+        BusinessType.HIGH_MARGIN_HARDWARE.value,
+    }
+)
 
 
 class FsClass(str, Enum):
@@ -94,6 +111,7 @@ class SignalModification:
     fs_score: float | None
     fs_class: str | None
     yield_trap_warning: bool
+    coverage_incomplete: bool = False
     business_type: str | None = None
     bq_raw: float | None = None
     valuation_tax: float | None = None
@@ -130,7 +148,14 @@ def default_record(ticker: str) -> dict[str, Any]:
         "revenue_accelerating": None,
         "valuation_tax_breakdown": None,
         "yield_trap_mkt_threshold": None,
+        "yield_trap_breakdown": None,
+        "fs_cap_breakdown": None,
         "pe_history_insufficient": False,
+        "pe_history_thin": False,
+        "pe_history_years": None,
+        "buyback_suspension_flag": None,
+        "dividend_cut_flag": None,
+        "capital_return_penalty": 0.0,
         "manual_overrides": {},
         "price": None,
         "market_cap": None,

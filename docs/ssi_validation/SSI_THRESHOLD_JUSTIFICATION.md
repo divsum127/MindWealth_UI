@@ -166,15 +166,15 @@ These decide when `positioning.json` marks **long** or **short** as **active** (
 
 Layer 2 does **not** flip long/short. It sets **`ssi_multiplier`**: 1.2 (confirmed), 1.0 (partial), 0.8 (unconfirmed).
 
-## C1. `layer2.min_confirmed: 2`
+## C1. `layer2.min_confirmed: 2` (≥2 of **6** gates, same side)
 
 | | |
 |--|--|
-| **Plain English** | Need **at least 2 of 4** inputs to agree (vote “active”) for **CONFIRMED**. |
-| **Why** | Reduces false positives from one noisy indicator; spec “2 of 4” is standard for “confirmation.” |
-| **Evidence** | Test 10: on long-gate days, vote count sweep 0–4 did not change historical long-gate set in sample. |
-| **Alternatives** | 3 of 4: stricter, fewer CONFIRMED days (not swept exhaustively). |
-| **Status** | **APPROVED (design)** |
+| **Plain English** | Need **at least 2 of 6** Layer 2 gates to agree on the **same direction** (long vs short) for `LONG_CONFIRMED` / `SHORT_CONFIRMED`. Short tally must stay below N (else `CONTESTED`). |
+| **Why** | Reduces false positives from one noisy indicator; briefing: “prevents false positives from sentiment alone.” **Not empirically derived** before Aug 2026 — design intent. |
+| **Evidence** | **Test 10** (legacy 4-input): min_votes 0–3 identical on long-gate days — not comparable to 6-gate. **Test 22** (6-gate joint grid, 2010–2026): at `gate_z_min=0.5`, min=2 → n=**180** long+gate, **45%** 3m hit; min=3 → n=**141**, **46%** hit; min=4 → n=**25** (too thin). Raising count alone does not monotonically improve quality. |
+| **Alternatives** | min=3 at z=0.5 (fewer fires, similar hit). z≥1.25 + min=2 (n=94, **52%** hit). min=4 eliminates most signal. |
+| **Status** | **PENDING Rohit** — design default defensible; Test 22 shows trade-offs, not a single optimum. |
 
 ## C2. Multipliers: CONFIRMED **1.20**, PARTIAL **1.00**, UNCONFIRMED **0.80**
 
@@ -309,6 +309,18 @@ Documented here so one file covers **all** numbers the Open Questions doc raised
 | **Question** | Should the **composite** use percentile ranks instead of z-scores? |
 | **Decision** | **Keep z-scores** in production; percentile composite is experimental. |
 | **Status** | **REJECTED for production switch** until Rohit sign-off |
+
+## D8. COT FM long gate (Test 18): `cot_fast_money_max_pct` **15–45**
+
+| | |
+|--|--|
+| **Spec intent** | Long-entry **condition 3**: Fast Money net positioning below Xth percentile of 3yr rolling window → contrarian long confirmation. PDF default **&lt;30** was never validated. |
+| **What we tested** | Weekly CFTC FM net percentile sweep **15, 20, 25, 30, 35, 40, 45**; SPX forward returns 1w–12m on all weeks where FM &lt; X (2010–2026). Artifact: `18_cot_fm_long_gate_20260807.json`. |
+| **Key results (3m horizon)** | FM&lt;**15**: n=154, +2.83%, 72.7% win. FM&lt;**20**: n=198, **+3.13%**, **73.7%** win. FM&lt;**30** (PDF): n=268, +2.78%, 72.8% win. FM&lt;**45**: n=378, +2.97%, 74.9% win. |
+| **6m horizon** | FM&lt;20 peaks at **+8.35%** (87.7% win, n=195); FM&lt;30 +7.48%; FM&lt;45 +6.95%. Tighter cutoff = higher per-event return, fewer fires. |
+| **In SSI production?** | **No** — macro/Runic long-confirmation context (`LONG_RULES['cot_fast_money_max_pct']` in spec; not wired to SSI CONFIG or sizing). |
+| **Recommendation** | **FM&lt;20–25** for long confirmation; keep **30** only if Rohit prefers frequency over hit rate. |
+| **Status** | **APPROVED** as research; **PENDING** Rohit sign-off before CONFIG change |
 
 ---
 

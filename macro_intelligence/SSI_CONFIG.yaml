@@ -15,6 +15,53 @@ tickers:
   vix: "^VIX"
   vix3m: "^VIX3M"
 
+staleness:
+  # Calendar days a carried-forward print remains eligible; beyond max → dropped.
+  max_stale_days:
+    # Weekly surveys (AAII Thu, NAAIM Wed, CFTC Fri): 8d gives margin past normal gap.
+    weekly: 8
+    # Daily inputs (CNN, put/call): weekend + holiday carry without same-day-only drop.
+    daily: 3
+    # Monthly (margin debt): ~30d between prints with buffer for late release.
+    monthly: 30
+  # Default multiplier when stale_days > 0 (signals not listed below use this).
+  weight_penalty: 0.8
+  # Test 21 calibrated per-signal penalties (2026-08-07). 1.0 = no decay penalty.
+  weight_penalty_by_signal:
+    aaii_spread: 1.0
+    naaim_exposure: 1.0
+    cnn_fg: 1.0
+    put_call_ema: 1.0
+    cftc_fm_net: 0.18
+    cftc_rm_net: 0.29
+    gross_net: 0.18
+
+# --------------------------------------------------------------------------------------------
+# Layer coverage gate (added 2026-08-18 after the sheet-reply audit).
+#
+# Renormalising over whatever inputs survived is right for a small gap and wrong for a large
+# one: on 2026-08-18 Layer 2 lost four of six inputs to a dead ^VIX3M feed and a truncated
+# Yahoo response, Layer 3 fell to DBMF alone, and the page still printed a confident
+# "L2 UNCONFIRMED / 0.80x size". The multiplier had moved on missing data, not on the market.
+#
+# Below these thresholds a layer is marked UNRELIABLE: its score is suppressed (null, so the
+# composite renormalises it out the way it already handles a fully-empty layer) and the SSI
+# size multiplier is forced to neutral 1.0 rather than 0.80 or 1.20. This mirrors the
+# conviction engine's COVERAGE INCOMPLETE gate — "we cannot score this yet" is a different
+# statement from "we scored it and the answer is low".
+#
+# A layer must clear BOTH tests. The weight test is the one that matters most: Layer 1's four
+# inputs are not interchangeable (NAAIM alone is 0.35), so a count-only rule would call a
+# layer healthy after losing its heaviest signal.
+# PENDING ROHIT SIGN-OFF: thresholds below are proposed defaults, not validated cuts.
+coverage:
+  min_available_count:
+    layer1: 3
+    layer2: 4
+    layer3: 2
+  # Fraction of the layer's configured nominal weight that must still be present.
+  min_nominal_weight_retained: 0.60
+
 ssi_score:
   history_years: 5
   design_percentile: 20  # ~20th percentile of 5y distribution by design intent
@@ -23,10 +70,17 @@ ssi_score:
     layer1: 0.40
     layer2: 0.35
     layer3: 0.25
+  # Within-layer weights for Layer 1 composite (renormalized when a signal is missing).
+  layer1_input_weights:
+    aaii_spread: 0.30
+    naaim_exposure: 0.35
+    put_call_ema: 0.20
+    cnn_fg: 0.15
   layers:
     layer1:
       - aaii_spread
       - naaim_exposure
+      - put_call_ema
       - cnn_fg
     layer2:
       - mcclellan

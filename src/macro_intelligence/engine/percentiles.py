@@ -23,6 +23,12 @@ def _window_slice(series: pd.Series, var_cfg: dict[str, Any], as_of: pd.Timestam
 
 
 def percentile_rank(value: float, history: pd.Series) -> float | None:
+    """True percentile rank: share of history at or below ``value`` (0–100).
+
+    This is **not** min–max range scaling ``(value - min) / (max - min) * 100``.
+    Outliers in the window affect rank only through their count, not by compressing
+    the scale between min and max.
+    """
     if history.empty or np.isnan(value):
         return None
     arr = history.values.astype(float)

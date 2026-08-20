@@ -1,0 +1,23 @@
+key,value
+test_id,14_gross_net
+n_events,25
+metrics.n_events,25
+metrics.4w.n,25
+metrics.4w.avg,0.078
+metrics.4w.median,1.926
+metrics.4w.win_pct,24.0
+metrics.4w.worst,6.0551
+metrics.4w.sharpe,0.0483
+metrics.8w.n,25
+metrics.8w.avg,1.0397
+metrics.8w.median,2.1216
+metrics.8w.win_pct,28.0
+metrics.8w.worst,8.9601
+metrics.8w.sharpe,0.3805
+metrics.12w.n,25
+metrics.12w.avg,2.4376
+metrics.12w.median,3.0204
+metrics.12w.win_pct,24.0
+metrics.12w.worst,10.9473
+metrics.12w.sharpe,1.0496
+instances,"[""2017-11-14"", ""2017-12-05"", ""2019-05-14"", ""2019-06-04"", ""2019-07-23"", ""2019-08-06"", ""2020-02-04"", ""2020-02-25"", ""2021-07-13"", ""2021-07-20"", ""2021-07-27"", ""2021-08-03"", ""2021-11-09"", ""2021-11-30"", ""2024-06-18"", ""2024-08-06"", ""2024-08-13"", ""2025-03-04"", ""2025-03-11"", ""2025-03-18""]"

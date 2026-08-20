@@ -11,7 +11,7 @@ if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
 from src.macro_intelligence.engine.combo_detector import evaluate_combo_b_at_date
-from src.macro_intelligence.engine.vix_bypass import compute_vix_bypass
+from src.macro_intelligence.engine.vix_bypass import compute_vix_bypass, assert_vix_bypass_consistency
 
 
 class TestSSIVixRegimeOct2022(unittest.TestCase):
@@ -24,10 +24,16 @@ class TestSSIVixRegimeOct2022(unittest.TestCase):
         active = [{"combo": "B", "status": "ACTIVE"}]
         self.assertTrue(compute_vix_bypass(active, ssi_confirmed_f=False))
 
-    def test_vix_bypass_combo_f_requires_ssi_confirmed(self):
+    def test_vix_bypass_combo_f_never_bypasses(self):
+        """A6: Combo F + SSI confirmed must NOT set vix_bypass."""
         active = [{"combo": "F", "status": "ACTIVE"}]
         self.assertFalse(compute_vix_bypass(active, ssi_confirmed_f=False))
-        self.assertTrue(compute_vix_bypass(active, ssi_confirmed_f=True))
+        self.assertFalse(compute_vix_bypass(active, ssi_confirmed_f=True))
+
+    def test_assert_vix_bypass_rejects_false_positive(self):
+        active = [{"combo": "F", "status": "ACTIVE"}]
+        with self.assertRaises(ValueError):
+            assert_vix_bypass_consistency(active, True)
 
 
 if __name__ == "__main__":

@@ -26,6 +26,8 @@ def rolling_pct_change(series: pd.Series, periods: int = 20) -> pd.Series:
 def calendar_pct_change(series: pd.Series, calendar_days: int = 28) -> pd.Series:
     """v3 ROC: percent change vs value N calendar days ago (not trading bars)."""
     s = series.sort_index()
+    # Lookback is CALENDAR days (Timedelta). ffill on the shifted index is UNLIMITED and
+    # fills from the last trading-day print on or before each calendar lookback date.
     prior = s.reindex(s.index - pd.Timedelta(days=calendar_days), method="ffill")
     prior.index = s.index
     return ((s / prior) - 1) * 100

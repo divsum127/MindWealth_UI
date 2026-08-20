@@ -10,6 +10,7 @@ from xml.sax.saxutils import escape
 
 from src.macro_intelligence.config import load_config
 from src.macro_intelligence.engine.combo_metadata import format_hit_rate_display, posture_display
+from src.macro_intelligence.engine.vix_bypass import VIX_BYPASS_BANNER
 
 logger = logging.getLogger(__name__)
 
@@ -123,13 +124,26 @@ def build_system_recommendation(payload: dict[str, Any]) -> str:
     if cancel.get("active"):
         wk = cancel.get("wti_potential_week", 0)
         mc = cancel.get("model_cancel_prob")
+        # Report the banked progress and the sigma basis alongside the probability. The old
+        # line quoted a bare percentage next to a "do NOT add exposure until cancel
+        # completes" instruction, so a 2% reading read as an indefinite defensive posture
+        # even while the WTI leg was passing (Rohit 6 Aug).
+        leg_state = "passing" if cancel.get("wti_leg_ok") else "not passing"
+        cancel_bits = [f"Combo C cancel watch: WTI leg week {wk}/4 ({leg_state})"]
         if mc is not None:
-            parts.append(
-                f"Combo C cancel watch: WTI leg week {wk}/4; "
-                f"model P(cancel next 4wk)={float(mc) * 100:.0f}%."
-            )
-        else:
-            parts.append(f"Combo C cancel watch: WTI leg week {wk}/4.")
+            weeks_left = cancel.get("model_weeks_remaining")
+            horizon = f"next {weeks_left}wk" if weeks_left else "next 4wk"
+            cancel_bits.append(f"model P(cancel {horizon})={float(mc) * 100:.0f}%")
+        sigma_source = cancel.get("model_sigma_source")
+        sigma = cancel.get("model_sigma")
+        if sigma is not None and sigma_source:
+            label = {
+                "ovx_implied": "OVX option-implied",
+                "realised_60d": "60d realised",
+                "config_default": "config default (NOT measured)",
+            }.get(str(sigma_source), str(sigma_source))
+            cancel_bits.append(f"sigma {float(sigma):.0%} from {label}")
+        parts.append("; ".join(cancel_bits) + ".")
     if pending_cpi:
         parts.append("CPI release pending this week — watch inflation leg.")
     return " — ".join(parts)
@@ -353,6 +367,7 @@ def build_briefing_sections(payload: dict[str, Any]) -> dict[str, Any]:
         "variable_rows": build_variable_rows(payload),
         "system_recommendation": build_system_recommendation(payload),
         "footer": "Runic Agent v2.2 | Macro Intelligence Agent | Internal use only",
+        "vix_bypass_banner": VIX_BYPASS_BANNER if payload.get("vix_bypass") else None,
     }
 
 
@@ -422,6 +437,14 @@ def render_html(payload: dict[str, Any]) -> str:
 
     narrative_html = (s["narrative"] or "Narrative pending.").replace("\n\n", "</p><p>").replace("\n", "<br/>")
 
+    bypass_html = ""
+    if s.get("vix_bypass_banner"):
+        bypass_html = (
+            f'<div style="background:#7D1A1A;color:#fff;padding:10px 16px;border-radius:4px;'
+            f'margin-bottom:14px;font-size:11px;font-weight:700;letter-spacing:.3px">'
+            f'{escape(s["vix_bypass_banner"])}</div>'
+        )
+
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -465,6 +488,7 @@ td{{border:1px solid {_BORDER};padding:5px 8px;font-size:10px;vertical-align:top
   </div>
 
   <div class="body">
+    {bypass_html}
     <!-- DOMINANT SIGNAL -->
     <div class="dominant">
       <div class="signal-label">COMBO {s['dominant_signal']} &mdash; {s['dominant_label']}</div>

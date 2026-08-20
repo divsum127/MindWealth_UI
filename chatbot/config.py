@@ -192,6 +192,11 @@ WEB_SEARCH_MAX_RESULTS = int(os.getenv("WEB_SEARCH_MAX_RESULTS", "3"))
 WEB_SEARCH_MAX_CHARS_PER_RESULT = int(os.getenv("WEB_SEARCH_MAX_CHARS_PER_RESULT", "1500"))
 # Lower default — Tavily scores vary; WebSearchAgent falls back to top-N if none pass threshold
 WEB_SEARCH_MIN_RELEVANCE_SCORE = float(os.getenv("WEB_SEARCH_MIN_RELEVANCE_SCORE", "0.15"))
+# A web quote older than this many days (measured against MindWealth's own data
+# as-of date, not wall clock) may not be used for prices. An NVDA quote dated
+# 2026-07-18 once sat beside a live internal price with nothing marking it stale.
+# Sources beyond the limit stay in the prompt for narrative context.
+WEB_QUOTE_MAX_AGE_DAYS = int(os.getenv("WEB_QUOTE_MAX_AGE_DAYS", "2"))
 
 # Parallel Hybrid Architecture — controls the ParallelOrchestrator for HYBRID routes.
 # Set PARALLEL_HYBRID_ENABLED=false to fall back to the legacy sequential path.
@@ -210,7 +215,11 @@ DEEP_RESEARCH_INTERNAL_TIMEOUT_SECONDS = int(os.getenv("DEEP_RESEARCH_INTERNAL_T
 DEEP_RESEARCH_WEB_MAX_RESULTS = int(os.getenv("DEEP_RESEARCH_WEB_MAX_RESULTS", "8"))
 DEEP_RESEARCH_WEB_MAX_QUERIES_PER_SUBTASK = int(os.getenv("DEEP_RESEARCH_WEB_MAX_QUERIES_PER_SUBTASK", "4"))
 DEEP_RESEARCH_MAX_WEB_CHARS = int(os.getenv("DEEP_RESEARCH_MAX_WEB_CHARS", "12000"))
-DEEP_RESEARCH_TOTAL_TIMEOUT_SECONDS = int(os.getenv("DEEP_RESEARCH_TOTAL_TIMEOUT_SECONDS", "120"))
+# Also the client's job-poll budget: the UI reads this from /chatbot/config and
+# polls for (value + 30)s. At 120 a legitimate 147s answer was completed, then
+# discarded — the UI gave up 3s early and showed "Could not reach the analyst".
+# 300 → ~330s budget, comfortably clear of the UI's 30s poll granularity.
+DEEP_RESEARCH_TOTAL_TIMEOUT_SECONDS = int(os.getenv("DEEP_RESEARCH_TOTAL_TIMEOUT_SECONDS", "300"))
 DEEP_RESEARCH_PLANNER_MODEL = os.getenv("DEEP_RESEARCH_PLANNER_MODEL", "gpt-4o-mini")
 ENABLE_DEEP_RESEARCH_LOGGING = os.getenv("ENABLE_DEEP_RESEARCH_LOGGING", "true").lower() == "true"
 DEEP_RESEARCH_LOG_MAX_CONTENT_CHARS = int(os.getenv("DEEP_RESEARCH_LOG_MAX_CONTENT_CHARS", "2000"))
@@ -230,6 +239,33 @@ NZX_API_KEY = os.getenv("NZX_API_KEY", "").strip() or None
 STOOQ_REQUEST_TIMEOUT_SECONDS = float(os.getenv("STOOQ_REQUEST_TIMEOUT_SECONDS", "12"))
 NZX_PRICE_REQUEST_TIMEOUT_SECONDS = float(os.getenv("NZX_PRICE_REQUEST_TIMEOUT_SECONDS", "15"))
 CACHE_NZ_OHLC_TO_TRADE_STORE = os.getenv("CACHE_NZ_OHLC_TO_TRADE_STORE", "true").lower() == "true"
+
+# Conviction & signal-quality context (SOURCE C) — see chatbot/conviction_context.py.
+# Pulls ranked buy/exit lists, Signal Quality Composite Scores, conviction scores
+# and fundamentals from our own REST API. Only fetched for recommendation /
+# screening / quality questions, so ordinary turns take no extra latency.
+ENABLE_CONVICTION_CONTEXT = os.getenv("ENABLE_CONVICTION_CONTEXT", "true").lower() == "true"
+# Empty → derived from API_PORT at call time (chatbot/tools/mindwealth_api_client.py).
+MINDWEALTH_API_BASE_URL = os.getenv("MINDWEALTH_API_BASE_URL", "").strip()
+CONVICTION_CONTEXT_TIMEOUT_SECONDS = float(os.getenv("CONVICTION_CONTEXT_TIMEOUT_SECONDS", "8"))
+CONVICTION_CONTEXT_MAX_ROWS = int(os.getenv("CONVICTION_CONTEXT_MAX_ROWS", "25"))
+# Only the model book exposes Sizer/Risk entries and exits; brokerage is pending
+# IBKR integration and personal has no Sizer concept.
+CONVICTION_BOOK_ID = os.getenv("CONVICTION_BOOK_ID", "model").strip() or "model"
+
+# Macro regime & sentiment context (SOURCE D) — see chatbot/macro_context.py.
+# Pulls the Runic nightly regime, SSI summary and portfolio risk posture from our
+# own REST API. Without it, macro questions were answered from web search and
+# contradicted the engine's own regime call. Gated on macro wording, so ordinary
+# turns take no extra latency.
+ENABLE_MACRO_CONTEXT = os.getenv("ENABLE_MACRO_CONTEXT", "true").lower() == "true"
+MACRO_CONTEXT_BOOK_ID = os.getenv("MACRO_CONTEXT_BOOK_ID", "model").strip() or "model"
+
+# Platform capability context (SOURCE E) — see chatbot/platform_context.py.
+# A static description of our own signal types plus the live function list, so
+# "what signal types exist" and "summarise the claude report" are answered from
+# our taxonomy instead of generic textbook definitions.
+ENABLE_PLATFORM_CONTEXT = os.getenv("ENABLE_PLATFORM_CONTEXT", "true").lower() == "true"
 
 # LLM Router — decides web vs internal vs conversational (gpt-4o-mini JSON)
 LLM_ROUTER_ENABLED = os.getenv("LLM_ROUTER_ENABLED", "true").lower() == "true"

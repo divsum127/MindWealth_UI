@@ -1,0 +1,9 @@
+key,value
+test_id,22_layer2_gate_grid
+description,Joint 2-D sweep of gate_z_min × min_confirmed on 6-gate Layer 2 (4 z-gate inputs + legacy HYG/VIX). LONG_CONFIRMED required.
+start,2015-01-01
+long_entry_pctile,20.0
+z_thresholds,"[0.0, 0.25, 0.5, 0.75, 1.0]"
+min_confirmed_grid,"[1, 2, 3, 4]"
+production_defaults.gate_z_min,0.5
+production_defaults.min_confirmed,2

@@ -1,0 +1,130 @@
+{
+  "days_requested": 250,
+  "dates_compared": 225,
+  "tolerance": 0.005,
+  "n_matching_macro_convention": 225,
+  "n_matching_ssi_convention": 0,
+  "max_abs_deviation": 0.091007,
+  "max_abs_deviation_date": "2026-07-13",
+  "n_over_tolerance": 4,
+  "n_cross_threshold_disagreements": 0,
+  "worst_10": [
+    {
+      "date": "2026-07-13",
+      "stored": 1.235529,
+      "macro_convention": 1.144522,
+      "ssi_convention": 0.873727,
+      "matches_convention": "macro_vix3m_over_vix",
+      "vix": 17.16,
+      "vix3m": 19.64,
+      "abs_deviation": 0.091007,
+      "threshold_disagreement": false
+    },
+    {
+      "date": "2026-07-16",
+      "stored": 1.235529,
+      "macro_convention": 1.165571,
+      "ssi_convention": 0.857949,
+      "matches_convention": "macro_vix3m_over_vix",
+      "vix": 16.73,
+      "vix3m": 19.5,
+      "abs_deviation": 0.069958,
+      "threshold_disagreement": false
+    },
+    {
+      "date": "2026-07-14",
+      "stored": 1.235529,
+      "macro_convention": 1.169697,
+      "ssi_convention": 0.854922,
+      "matches_convention": "macro_vix3m_over_vix",
+      "vix": 16.5,
+      "vix3m": 19.3,
+      "abs_deviation": 0.065832,
+      "threshold_disagreement": false
+    },
+    {
+      "date": "2026-07-15",
+      "stored": 1.235529,
+      "macro_convention": 1.206765,
+      "ssi_convention": 0.828662,
+      "matches_convention": "macro_vix3m_over_vix",
+      "vix": 15.67,
+      "vix3m": 18.91,
+      "abs_deviation": 0.028764,
+      "threshold_disagreement": false
+    },
+    {
+      "date": "2025-08-20",
+      "stored": 1.217336,
+      "macro_convention": 1.217336,
+      "ssi_convention": 0.821466,
+      "matches_convention": "macro_vix3m_over_vix",
+      "vix": 15.69,
+      "vix3m": 19.1,
+      "abs_deviation": 0.0,
+      "threshold_disagreement": false
+    },
+    {
+      "date": "2025-08-21",
+      "stored": 1.169277,
+      "macro_convention": 1.169277,
+      "ssi_convention": 0.855229,
+      "matches_convention": "macro_vix3m_over_vix",
+      "vix": 16.6,
+      "vix3m": 19.41,
+      "abs_deviation": 0.0,
+      "threshold_disagreement": false
+    },
+    {
+      "date": "2025-08-22",
+      "stored": 1.248945,
+      "macro_convention": 1.248945,
+      "ssi_convention": 0.800676,
+      "matches_convention": "macro_vix3m_over_vix",
+      "vix": 14.22,
+      "vix3m": 17.76,
+      "abs_deviation": 0.0,
+      "threshold_disagreement": false
+    },
+    {
+      "date": "2025-08-25",
+      "stored": 1.218391,
+      "macro_convention": 1.218391,
+      "ssi_convention": 0.820755,
+      "matches_convention": "macro_vix3m_over_vix",
+      "vix": 14.79,
+      "vix3m": 18.02,
+      "abs_deviation": 0.0,
+      "threshold_disagreement": false
+    },
+    {
+      "date": "2025-08-26",
+      "stored": 1.22435,
+      "macro_convention": 1.22435,
+      "ssi_convention": 0.81676,
+      "matches_convention": "macro_vix3m_over_vix",
+      "vix": 14.62,
+      "vix3m": 17.9,
+      "abs_deviation": 0.0,
+      "threshold_disagreement": false
+    },
+    {
+      "date": "2025-08-27",
+      "stored": 1.208081,
+      "macro_convention": 1.208081,
+      "ssi_convention": 0.827759,
+      "matches_convention": "macro_vix3m_over_vix",
+      "vix": 14.85,
+      "vix3m": 17.94,
+      "abs_deviation": 0.0,
+      "threshold_disagreement": false
+    }
+  ],
+  "verdict": "REVIEW",
+  "convention_collision": {
+    "macro_series": "daily_readings.VXTS = VIX3M / VIX (>1 contango); Combo D >=1.18, Combo G <=0.95",
+    "ssi_series": "yahoo_inputs.vix_ratio_series = VIX / VIX3M (>1 backwardation)",
+    "rohit_ladder_spec": "'VXTS below 1.0 (backwardation)' \u2014 the SSI convention",
+    "risk": "a ladder built on the macro series inverts the intended trigger"
+  }
+}

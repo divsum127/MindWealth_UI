@@ -648,19 +648,99 @@ def load_positioning() -> dict[str, Any]:
 
 def _ensure_layer2_gate_votes(inputs: dict[str, Any]) -> dict[str, Any]:
     """Backfill six-gate vote rows when positioning.json predates layer2_gate_votes."""
-    if not inputs or inputs.get("layer2_gate_votes"):
+    if not inputs:
+        return inputs
+    if inputs.get("layer2_gate_conf_long") is not None and inputs.get("layer2_gate_votes"):
         return inputs
     layer2_components = inputs.get("layer2_components") or {}
-    if not layer2_components:
+    if not layer2_components and not inputs.get("layer2_gate_votes"):
         return inputs
     from src.sentiment_superindex.engine.layer2 import evaluate_layer2_gates
 
     legacy_votes = inputs.get("layer2_votes") or []
-    confirmed, gate_votes = evaluate_layer2_gates(layer2_components, legacy_votes=legacy_votes)
+    gate_summary = evaluate_layer2_gates(layer2_components, legacy_votes=legacy_votes)
     enriched = dict(inputs)
-    enriched["layer2_gate_votes"] = gate_votes
-    enriched["layer2_gate_confirmed_count"] = confirmed
+    enriched["layer2_gate_votes"] = gate_summary.votes
+    enriched["layer2_gate_confirmed_count"] = gate_summary.confirmed_count
+    enriched["layer2_gate_conf_long"] = gate_summary.conf_long
+    enriched["layer2_gate_conf_short"] = gate_summary.conf_short
+    enriched["layer2_gate_direction"] = gate_summary.direction
+    enriched["layer2_gate_label"] = gate_summary.label
     return enriched
+
+
+def _layer3_flags(cftc: dict[str, Any]) -> dict[str, Any]:
+    """Top-level Layer 3 macro flags for UI banner + Overwatch (display only)."""
+    if not cftc:
+        return {}
+    pattern = cftc.get("positioning_pattern")
+    return {
+        "squeeze_setup": bool(cftc.get("squeeze_setup")),
+        "liquidity_exit": bool(cftc.get("liquidity_exit")),
+        "gross_net_divergence_active": bool(cftc.get("gross_net_divergence_active")),
+        "positioning_pattern": pattern,
+        "pattern_label": cftc.get("pattern_label"),
+        "plain_english": cftc.get("plain_english") or cftc.get("gross_net_divergence_label"),
+        "fm_pctile": cftc.get("fm_pctile"),
+        "rm_pctile": cftc.get("rm_pctile"),
+    }
+
+
+def _parse_payload_json(payload_json: str | None) -> dict[str, Any]:
+    if not payload_json:
+        return {}
+    try:
+        data = json.loads(payload_json)
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def _build_spark_data(days: int = 60) -> dict[str, Any]:
+    """60-day layer score series from ssi.db for Sentiment detail sparklines."""
+    from src.config_paths import SSI_DB
+
+    empty: dict[str, Any] = {
+        "days_requested": days,
+        "days_available": 0,
+        "layer1": [],
+        "layer2": [],
+        "layer3": [],
+    }
+    if not SSI_DB.exists():
+        return empty
+
+    import sqlite3
+
+    conn = sqlite3.connect(SSI_DB)
+    conn.row_factory = sqlite3.Row
+    try:
+        rows = conn.execute(
+            "SELECT date, payload_json FROM ssi_daily ORDER BY date DESC LIMIT ?",
+            (days,),
+        ).fetchall()
+    finally:
+        conn.close()
+
+    layer1: list[dict[str, Any]] = []
+    layer2: list[dict[str, Any]] = []
+    layer3: list[dict[str, Any]] = []
+    for row in reversed(rows):
+        payload = _parse_payload_json(row["payload_json"])
+        layers = payload.get("layers") or {}
+        date = row["date"]
+        for key, bucket in (("layer1", layer1), ("layer2", layer2), ("layer3", layer3)):
+            score = (layers.get(key) or {}).get("score")
+            if score is not None:
+                bucket.append({"date": date, "score": round(float(score), 4)})
+
+    return {
+        "days_requested": days,
+        "days_available": len(rows),
+        "layer1": layer1,
+        "layer2": layer2,
+        "layer3": layer3,
+    }
 
 
 def sentiment_layers() -> dict[str, Any]:
@@ -672,16 +752,33 @@ def sentiment_layers() -> dict[str, Any]:
         "ssi_percentile_5y": positioning.get("ssi_percentile_5y"),
         "layer2_status": positioning.get("layer2_status"),
         "ssi_multiplier": positioning.get("ssi_multiplier"),
+        # Surfaced on the composite (not just buried per-layer) so the page can say the
+        # multiplier is neutral *because inputs are missing* rather than because the market
+        # is neutral -- the distinction the 2026-08-18 audit found the UI could not make.
+        "coverage_ok": positioning.get("coverage_ok", True),
+        "coverage_unreliable_layers": positioning.get("coverage_unreliable_layers") or {},
         "layers": layers,
     }
     layer_inputs = _ensure_layer2_gate_votes(positioning.get("inputs", {}) or {})
+    layer3_cftc = layer_inputs.get("layer3_cftc") or {}
+    layer3_flags = _layer3_flags(layer3_cftc)
+    regime = positioning.get("regime") or {}
     return {
         "positioning": positioning,
         "composite": composite,
         "layer_inputs": layer_inputs,
+        "layer3_flags": layer3_flags,
+        "regime": regime,
+        "spark_data": _build_spark_data(),
         "layer2_votes": layer_inputs.get("layer2_votes", []),
         "layer2_gate_votes": layer_inputs.get("layer2_gate_votes", []),
         "layer2_gate_confirmed_count": layer_inputs.get("layer2_gate_confirmed_count"),
+        "layer2_gate_conf_long": layer_inputs.get("layer2_gate_conf_long"),
+        "layer2_gate_conf_short": layer_inputs.get("layer2_gate_conf_short"),
+        "layer2_gate_direction": layer_inputs.get("layer2_gate_direction")
+        or positioning.get("layer2_gate_direction"),
+        "layer2_gate_label": layer_inputs.get("layer2_gate_label") or positioning.get("layer2_gate_label"),
+        "staleness_policy": positioning.get("staleness_policy") or {},
         "signal_rows": signals.get("records", []),
         "signal_report_date": signals.get("report_date"),
     }

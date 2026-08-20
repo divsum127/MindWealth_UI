@@ -78,10 +78,32 @@ def _check_us_csv_pipeline() -> dict[str, Any]:
     }
 
 
+def _india_datetime_json() -> Path:
+    """
+    Locate the India pipeline's stamp file.
+
+    The directory is spelled ``INDIA`` on disk (``MindWealth/trade_store/INDIA``)
+    while this check only ever looked for ``India``. On a case-sensitive
+    filesystem that never matches, so the check reported "path not found"
+    permanently and the SYSTEM tab showed a red row that said nothing about the
+    real state of the pipeline. Both spellings are tried now; the first that
+    exists wins, and if none do the last candidate is returned so the caller
+    still reports a missing path.
+    """
+    candidates = [
+        TRADE_STORE_DIR / name / "data_fetch_datetime.json" for name in ("India", "INDIA")
+    ] + [
+        MINDWEALTH_ROOT / "trade_store" / name / "data_fetch_datetime.json"
+        for name in ("India", "INDIA")
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return candidates[-1]
+
+
 def _check_india_csv_pipeline() -> dict[str, Any]:
-    india_json = TRADE_STORE_DIR / "India" / "data_fetch_datetime.json"
-    if not india_json.exists():
-        india_json = MINDWEALTH_ROOT / "trade_store" / "India" / "data_fetch_datetime.json"
+    india_json = _india_datetime_json()
     age = _file_age_hours(india_json)
     status = _status_from_age(age, _IN_EXPECTED_HOURS) if india_json.exists() else "fail"
     return {

@@ -128,7 +128,23 @@ def resolve_signal_basis(
     compound_symbol_signal_cell,
 ) -> Tuple[Optional[float], Optional[str], Optional[str]]:
     """
-    Choose entry price for MTM: prefer numeric Signal Open Price when valid; else text column price.
+    Choose the entry price for MTM: the **signal price**, falling back to Signal Open Price.
+
+    MindWealth core computes MTM as ``(close_now - close_at_signal) / close_at_signal``
+    (``helper_functions/*.py`` -> ``util.py``), i.e. from the signal price, and publishes
+    that in ``*_outstanding_signal.csv``. This function used to prefer ``Signal Open
+    Price`` instead, so the nightly rebase in
+    ``chatbot/convert_signals_to_data_structure.py`` silently re-based core's number and
+    ``entry.csv`` ended up disagreeing with the export it was built from — AAPL
+    FRACTAL TRACK 2026-08-14 read -0.14% here against core's -0.11%. The site, the
+    reports and the chat could therefore quote different numbers for one position.
+
+    ``Signal Open Price`` remains the deduplication key (``chatbot/config.py``
+    DEDUP_COLUMNS) and is documented as "not display price" in
+    ``docs/documentation/REPORTS.md``.
+
+    The fallback is deliberate: virtual-trading synthetic rows carry no parsable
+    compound price, and returning ``None`` there would collapse their MTM to "0.0%".
 
     Returns:
         (signal_price, signal_type, signal_date)
@@ -144,7 +160,9 @@ def resolve_signal_basis(
         except (ValueError, TypeError):
             open_price = None
 
-    if open_price is not None and open_price > 0:
+    if text_price is not None and pd.notna(text_price) and float(text_price) > 0:
+        price = text_price
+    elif open_price is not None and open_price > 0:
         price = open_price
     else:
         price = text_price

@@ -14,6 +14,7 @@ if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
 from src.macro_intelligence.engine.percentiles import percentile_rank, compute_pctile_for_series
+from src.macro_intelligence.data.cftc_pull import _rolling_pctile, describe_cftc_pctile_window
 from src.macro_intelligence.models import SignalTier
 from src.macro_intelligence.engine.percentiles import evaluate_variable_tier
 
@@ -24,6 +25,38 @@ class TestPercentiles(unittest.TestCase):
         p = percentile_rank(99.0, hist)
         self.assertIsNotNone(p)
         self.assertGreater(p, 95)
+
+    def test_percentile_rank_is_not_minmax_scaling(self):
+        """Outlier compresses min-max position but not true rank."""
+        hist = pd.Series([-100.0, -90.0, -80.0, -70.0, -60.0, 500.0])
+        value = -65.0
+        rank = percentile_rank(value, hist)
+        roll_min, roll_max = float(hist.min()), float(hist.max())
+        minmax = (value - roll_min) / (roll_max - roll_min) * 100
+        self.assertIsNotNone(rank)
+        self.assertAlmostEqual(rank, 4 / 6 * 100, places=5)  # four of six readings <= -65
+        self.assertAlmostEqual(minmax, 35 / 600 * 100, places=5)
+        self.assertNotAlmostEqual(rank, minmax, places=1)
+
+    def test_rolling_pctile_matches_percentile_rank(self):
+        idx = pd.date_range("2023-01-06", periods=160, freq="W-FRI")
+        values = np.linspace(-500_000, -200_000, 160)
+        series = pd.Series(values, index=idx)
+        as_of = idx[-1]
+        got = _rolling_pctile(series, as_of, weeks=156)
+        window = series.loc[:as_of].dropna().tail(156)
+        expected = percentile_rank(float(series.loc[as_of]), window)
+        self.assertAlmostEqual(got, expected, places=5)
+
+    def test_describe_cftc_pctile_window_sign_distribution(self):
+        idx = pd.date_range("2023-01-06", periods=156, freq="W-FRI")
+        series = pd.Series(np.linspace(-500_000, -200_000, 156), index=idx)
+        diag = describe_cftc_pctile_window(series, idx[-1], weeks=156)
+        self.assertEqual(diag["n"], 156)
+        self.assertEqual(diag["sign_negative"], 156)
+        self.assertEqual(diag["sign_positive"], 0)
+        self.assertIsNotNone(diag["percentile_rank"])
+        self.assertEqual(diag["current"], float(series.iloc[-1]))
 
     def test_vix_rare_tier(self):
         cfg = {

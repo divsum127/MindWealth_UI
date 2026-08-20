@@ -1,0 +1,50 @@
+{
+  "task": "D1_regime_bucket_feed",
+  "series_version": "D1_regime_bucket_v1.2_2026-08-17",
+  "generated_at": "2026-08-17T11:49:36.041493+00:00",
+  "meta": {
+    "start_date": "2018-01-01",
+    "end_date": "2026-08-14",
+    "friday_count": 450,
+    "config_source": "macro_intelligence/CONFIG.yaml",
+    "d5_artifact": "D5_fed_cycle_reslice_2026-07-16.json",
+    "recalibrated_gates": {
+      "D": {
+        "experiment_id": "D_v1.18_c95_x13_l2",
+        "vxts_min": 1.18,
+        "cftc_min_pctile": 95,
+        "vix_max": 13,
+        "legs_required": 2,
+        "validated_horizon": "1W",
+        "d5_bear_hit_pct": 56.52
+      },
+      "E": {
+        "experiment_id": "E_cape32_nfci-0.15_cftc85_l3",
+        "cape_min": 32,
+        "nfci_easy_max": -0.15,
+        "cftc_min_pctile": 85,
+        "legs_required": 3,
+        "validated_horizons": [
+          "6M",
+          "9M",
+          "12M"
+        ],
+        "d5_bear_hit_pct": 66.67
+      }
+    },
+    "dominant_rule": "CONFIG_PRIORITY_v2_B_ABOVE_C_LOW_N_DEMOTED",
+    "point_in_time": "daily_readings as-of + Combo C sequential replay + Friday forward-fill",
+    "series_version_note": "v1.2 applies Rohit 2026-08-06: B above C, and any combo with fewer than 5 matured episodes ranks below every validated combo (C n=3). v1.1 fixed C live-flag leak and WATCH\u2192MIXED over-classification."
+  },
+  "bucket_counts": {
+    "BENIGN": 1648,
+    "ADVERSE": 252,
+    "MIXED": 358
+  },
+  "friday_bucket_counts": {
+    "ADVERSE": 50,
+    "BENIGN": 328,
+    "MIXED": 72
+  },
+  "rows": 2258
+}

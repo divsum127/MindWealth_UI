@@ -40,6 +40,10 @@ class TestRoundDisplayHelper(unittest.TestCase):
         self.assertEqual(_round_display(1.165570862734967, key="vix_ratio"), 1.17)
         self.assertEqual(_round_display(0.5566, key="dbmf_beta"), 0.56)
 
+    def test_negative_zero_normalizes_to_positive_zero(self):
+        self.assertEqual(_round_display(-0.004), 0.0)
+        self.assertEqual(_round_display(-0.004, key="dbmf_beta"), 0.0)
+
     def test_none_passes_through(self):
         self.assertIsNone(_round_display(None))
         self.assertIsNone(_round_display(None, key="skew"))
@@ -60,14 +64,17 @@ class TestRoundDisplayHelper(unittest.TestCase):
 
 
 class TestPositioningPayloadRounding(unittest.TestCase):
+    @patch("src.sentiment_superindex.engine.positioning.derive_layer2_sizing")
+    @patch("src.sentiment_superindex.engine.positioning.evaluate_layer2_gates")
+    @patch("src.sentiment_superindex.engine.positioning.hyg_vix_legacy_votes")
     @patch("src.sentiment_superindex.engine.positioning.values_as_of")
     @patch("src.sentiment_superindex.engine.positioning.load_all_series")
     @patch("src.sentiment_superindex.engine.positioning.layer3_for_date")
-    @patch("src.sentiment_superindex.engine.positioning.evaluate_layer2")
     @patch("src.sentiment_superindex.engine.positioning.compute_ssi_at_date")
     @patch("src.sentiment_superindex.engine.positioning.build_superindex")
     def test_no_field_leaks_more_than_two_decimals(
-        self, mock_build_si, mock_compute, mock_layer2, mock_layer3, mock_load_all, mock_values_as_of
+        self, mock_build_si, mock_compute, mock_layer3, mock_load_all, mock_values_as_of,
+        mock_hyg_vix, mock_gates, mock_sizing,
     ):
         from src.sentiment_superindex.engine.positioning import build_positioning_payload
 
@@ -91,7 +98,14 @@ class TestPositioningPayloadRounding(unittest.TestCase):
             },
         }
         mock_compute.return_value = (0.2173, 55.0, {})
-        mock_layer2.return_value = ("CONFIRMED", 3, [], 1.2)
+        from src.sentiment_superindex.engine.layer2 import Layer2GateSummary
+
+        mock_hyg_vix.return_value = []
+        mock_gates.return_value = Layer2GateSummary(
+            confirmed_count=3, conf_long=2, conf_short=1, gate_total=6,
+            direction="LONG_CONFIRMED", label="test", votes=[],
+        )
+        mock_sizing.return_value = ("CONFIRMED", 3, 1.2)
         mock_layer3.return_value = {}
         mock_load_all.return_value = {}
         mock_values_as_of.return_value = {
@@ -102,6 +116,7 @@ class TestPositioningPayloadRounding(unittest.TestCase):
             "vix_ratio": 1.165570862734967,
             "aaii_spread": 12.041234,
             "naaim_exposure": 95.635912,
+            "put_call_ema": 0.823456,
             "cnn_fg": 43.234567,
             "pct_above_200dma": 66.071234,
         }
@@ -122,20 +137,30 @@ class TestPositioningPayloadRounding(unittest.TestCase):
         self.assertEqual(layer2_display["pct_above_200dma"], 66.07)
         self.assertNotIn("pct_above_200dma", layer1_display)
 
+    @patch("src.sentiment_superindex.engine.positioning.derive_layer2_sizing")
+    @patch("src.sentiment_superindex.engine.positioning.evaluate_layer2_gates")
+    @patch("src.sentiment_superindex.engine.positioning.hyg_vix_legacy_votes")
     @patch("src.sentiment_superindex.engine.positioning.values_as_of")
     @patch("src.sentiment_superindex.engine.positioning.load_all_series")
     @patch("src.sentiment_superindex.engine.positioning.layer3_for_date")
-    @patch("src.sentiment_superindex.engine.positioning.evaluate_layer2")
     @patch("src.sentiment_superindex.engine.positioning.compute_ssi_at_date")
     @patch("src.sentiment_superindex.engine.positioning.build_superindex")
     def test_layer1_inputs_meta_includes_aaii_weekly_as_of(
-        self, mock_build_si, mock_compute, mock_layer2, mock_layer3, mock_load_all, mock_values_as_of
+        self, mock_build_si, mock_compute, mock_layer3, mock_load_all, mock_values_as_of,
+        mock_hyg_vix, mock_gates, mock_sizing,
     ):
         from src.sentiment_superindex.engine.positioning import build_positioning_payload
 
         mock_build_si.return_value = {"ssi_level": 0.1, "layers": {}}
         mock_compute.return_value = (0.1, 50.0, {})
-        mock_layer2.return_value = ("UNCONFIRMED", 0, [], 1.0)
+        from src.sentiment_superindex.engine.layer2 import Layer2GateSummary
+
+        mock_hyg_vix.return_value = []
+        mock_gates.return_value = Layer2GateSummary(
+            confirmed_count=0, conf_long=0, conf_short=0, gate_total=6,
+            direction="UNCONFIRMED", label="test", votes=[],
+        )
+        mock_sizing.return_value = ("UNCONFIRMED", 0, 1.0)
         mock_layer3.return_value = {}
         idx = pd.to_datetime(["2026-07-23", "2026-07-30"])
         mock_load_all.return_value = {
@@ -157,6 +182,7 @@ class TestPositioningPayloadRounding(unittest.TestCase):
         self.assertEqual(aaii_meta["as_of"], "2026-07-30")
         self.assertEqual(aaii_meta["schedule_et"], "Thu")
         self.assertEqual(aaii_meta["stale_days"], 3)
+        self.assertNotIn("pct_above_200dma", payload["inputs_meta"]["layer1"])
 
 
 if __name__ == "__main__":

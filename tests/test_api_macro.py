@@ -6,6 +6,7 @@ import json
 import sys
 import tempfile
 import unittest
+from datetime import datetime
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -221,6 +222,47 @@ class TestMacroAPI(unittest.TestCase):
         self.assertNotIn("pre_catalyst", body)
         self.assertNotIn("post_event_regime", body)
 
+    def test_regime_history(self) -> None:
+        r = self.client.get(
+            "/api/v1/macro/regime/history",
+            params={"start": "2026-05-01", "end": "2026-06-05"},
+        )
+        self.assertEqual(r.status_code, 200)
+        body = r.json()
+        self.assertEqual(body["start"], "2026-05-01")
+        self.assertEqual(body["end"], "2026-06-05")
+        self.assertEqual(body["row_count"], len(body["rows"]))
+        self.assertGreater(body["row_count"], 0)
+        from src.macro_intelligence.output import regime_feed_export as rfe
+
+        first, last = body["rows"][0], body["rows"][-1]
+        for row in (first, last):
+            self.assertEqual(row["schema_version"], "v1")
+            self.assertEqual(row["regime_source"], "macro_regime_log_v2")
+            # Tracks the module constant so an intentional retag (e.g. the 2026-08-17 geo
+            # switch-off) does not read as a regression, while an accidental drift between
+            # the served value and the constant still fails.
+            self.assertEqual(row["multiplier_version"], rfe.MULTIPLIER_VERSION)
+            self.assertIn("fed_cycle_v2", row)
+            self.assertIn("gross_mult", row)
+            self.assertIn("is_forward_filled", row)
+            # Geo overlay switched off 2026-08-17 (Rohit 6 Aug) — pinned here so it cannot
+            # come back silently through the API.
+            self.assertEqual(float(row["m_geo"]), 1.00)
+            self.assertFalse(row["geo_overlay_enabled"])
+        self.assertEqual(first["date"], "2026-05-01")
+        self.assertEqual(last["date"], "2026-06-05")
+
+    def test_regime_history_empty_range(self) -> None:
+        r = self.client.get(
+            "/api/v1/macro/regime/history",
+            params={"start": "1900-01-01", "end": "1900-01-02"},
+        )
+        self.assertEqual(r.status_code, 200)
+        body = r.json()
+        self.assertEqual(body["row_count"], 0)
+        self.assertEqual(body["rows"], [])
+
     # ── Scheduled macro events (pre-catalyst / post-regime) ─────────────────
 
     def test_pre_catalyst_intel(self) -> None:
@@ -433,6 +475,30 @@ class TestMacroAPI(unittest.TestCase):
         self.assertEqual(r.status_code, 200)
         body = r.json()
         self.assertEqual(body["status"], "completed")
+
+    def test_backdated_nightly_run_does_not_persist(self) -> None:
+        """A backdated as_of must not overwrite the live snapshot."""
+        from api.services import macro_service as msvc
+
+        captured: dict[str, object] = {}
+
+        def fake_run_nightly(as_of=None, use_claude=True, persist=True):
+            captured["as_of"] = as_of
+            captured["persist"] = persist
+            return {"date": as_of, "active_combos": [], "watch_combos": [], "output_path": None}
+
+        with patch("src.macro_intelligence.jobs.nightly_run.run_nightly", fake_run_nightly):
+            old = msvc.trigger_nightly_run(as_of="2024-09-18")
+            self.assertFalse(captured["persist"])
+            self.assertFalse(old["persisted"])
+            self.assertIn("2024-09-18", old["persist_skipped_reason"])
+
+            today = datetime.now().strftime("%Y-%m-%d")
+            for same_day in (None, today):
+                current = msvc.trigger_nightly_run(as_of=same_day)
+                self.assertTrue(captured["persist"])
+                self.assertTrue(current["persisted"])
+                self.assertIsNone(current["persist_skipped_reason"])
 
 
 # ─────────────────────────────────────────────────────────────────────────────

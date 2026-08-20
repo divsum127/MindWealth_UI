@@ -10,6 +10,7 @@ import pandas as pd
 from ..config_paths import CONVICTION_UNIVERSE_FILE, TRADE_STORE_US_DIR
 from .dividend_yield import compute_dividend_yield_stats
 from .engine import daily_update, full_recalculation
+from .scoring import BusinessType, detect_business_type, is_coverage_incomplete
 from .signals import discover_signal_sources, load_signal_file, normalize_signal_dataframe
 from .store import list_records, load_record, sanitize_ticker
 
@@ -258,3 +259,134 @@ def update_universe_fundamentals(
                 raise
             results.append({"ticker": sanitize_ticker(ticker), "status": "error", "error": str(exc)})
     return results
+
+
+# --- Item 12: cheap classification-only universe rollout ---------------------------
+#
+# Rohit's Q11 answer replaces the earlier "just run full_recalculation on everyone"
+# plan with a two-step approach: (1) a lightweight `.info`-only classification pass
+# across the whole ~193-ticker universe (same cost profile as the existing daily
+# runner — one yfinance `.info` call per ticker, no quarterly statements/price
+# history pull), (2) diff against each ticker's currently-stored `business_type` and
+# only queue tickers that actually *flip* into one of the 3 new/changed buckets this
+# v2 pass introduces (`bank`, `high_margin_hardware`, `coverage_incomplete`) for a
+# full `full_recalculation()`. Everything that classifies the same stays on its
+# normal schedule — same migration discipline already used for the PE-history
+# rollout (`scripts/report_pe_history_coverage.py` / `set_manual_pe_history.py`).
+
+FLIP_WORTH_RECALCULATING = frozenset(
+    {BusinessType.BANK.value, BusinessType.HIGH_MARGIN_HARDWARE.value, "coverage_incomplete"}
+)
+
+
+def fetch_classification_info(ticker: str, max_attempts: int = 2) -> dict[str, Any]:
+    """Fetch only ``yfinance`` ``.info`` for a ticker — no statements, no price history.
+
+    Deliberately the cheapest possible call: this is the entire point of the
+    classification-only pass (item 12) versus a full `fetch_and_compute_fundamentals()`.
+    """
+    import time as _time
+
+    import yfinance as yf
+
+    symbol = sanitize_ticker(ticker)
+    last_exc: str | None = None
+    for attempt in range(max_attempts):
+        try:
+            info = _safe_dict(getattr(yf.Ticker(symbol), "info", {}) or {})
+            if info:
+                return info
+        except Exception as exc:
+            last_exc = str(exc)
+        _time.sleep(0.4 * (attempt + 1))
+    if last_exc:
+        return {"_fetch_error": last_exc}
+    return {}
+
+
+def classify_universe_diff(
+    tickers: list[str] | None = None,
+    store_dir: Path | None = None,
+    fetch_info: Callable[[str], dict[str, Any]] = fetch_classification_info,
+) -> dict[str, Any]:
+    """Classification-only diff pass (item 12, step 1+2): returns per-ticker
+    old-vs-new `business_type` plus the subset that actually needs a full
+    `full_recalculation()` (flips into bank/high_margin_hardware/coverage_incomplete).
+
+    Never fetches financial statements or writes to the store — purely a cheap read
+    + diff so it's safe to run against the whole universe on a schedule without the
+    cost of a full daily/quarterly fundamentals pull.
+    """
+    tickers = tickers if tickers is not None else [r.get("ticker") for r in list_records(store_dir) if r.get("ticker")]
+    results: list[dict[str, Any]] = []
+    flipped: list[str] = []
+    for raw_ticker in tickers:
+        if not raw_ticker:
+            continue
+        symbol = sanitize_ticker(str(raw_ticker))
+        existing = load_record(symbol, store_dir) or {}
+        old_business_type = str(existing.get("business_type") or BusinessType.UNKNOWN.value)
+
+        info = fetch_info(symbol)
+        if info.get("_fetch_error"):
+            results.append({"ticker": symbol, "status": "error", "error": info["_fetch_error"], "old_business_type": old_business_type})
+            continue
+
+        new_business_type, source = detect_business_type(info, existing.get("manual_overrides"))
+        new_coverage_incomplete = is_coverage_incomplete(new_business_type)
+        old_coverage_incomplete = is_coverage_incomplete(old_business_type)
+        # "Flip" (per Rohit's Q11 answer) means landing in one of the 3 buckets this
+        # v2 pass newly calibrates/introduces, having not been there before — not
+        # every reclassification (e.g. compounder<->cyclical) warrants a full recalc.
+        new_bucket = "coverage_incomplete" if new_coverage_incomplete else new_business_type
+        old_bucket = "coverage_incomplete" if old_coverage_incomplete else old_business_type
+        needs_recalc = new_bucket != old_bucket and new_bucket in FLIP_WORTH_RECALCULATING
+
+        results.append(
+            {
+                "ticker": symbol,
+                "status": "classified",
+                "old_business_type": old_business_type,
+                "new_business_type": new_business_type,
+                "business_type_source": source,
+                "coverage_incomplete": new_coverage_incomplete,
+                "flipped": new_bucket != old_bucket,
+                "needs_full_recalculation": needs_recalc,
+            }
+        )
+        if needs_recalc:
+            flipped.append(symbol)
+
+    return {
+        "universe_size": len(results),
+        "flipped_tickers": flipped,
+        "flipped_count": len(flipped),
+        "results": results,
+    }
+
+
+def run_universe_classification_pass(
+    tickers: list[str] | None = None,
+    store_dir: Path | None = None,
+    fetch_info: Callable[[str], dict[str, Any]] = fetch_classification_info,
+    auto_recalculate: bool = True,
+    fetcher: FundamentalsFetcher = fetch_yfinance_fundamentals,
+    fail_fast: bool = False,
+) -> dict[str, Any]:
+    """Run `classify_universe_diff()` and, by default, immediately queue the flipped
+    subset for a full `full_recalculation()` via the normal `mode="full"` path — the
+    expensive step only ever runs on the (expected-to-be-small) flipped subset, never
+    the whole universe."""
+    diff = classify_universe_diff(tickers, store_dir=store_dir, fetch_info=fetch_info)
+    diff["auto_recalculated"] = False
+    diff["recalculation_results"] = []
+    if auto_recalculate and diff["flipped_tickers"]:
+        diff["recalculation_results"] = update_universe_fundamentals(
+            diff["flipped_tickers"],
+            mode="full",
+            fetcher=fetcher,
+            store_dir=store_dir,
+            fail_fast=fail_fast,
+        )
+        diff["auto_recalculated"] = True
+    return diff

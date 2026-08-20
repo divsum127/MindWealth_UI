@@ -613,6 +613,14 @@ def _compute_ceiling(
     hy_var = var_map.get("HY", {})
     hy_pct: float | None = hy_var.get("current")  # in % (divide by 100 to get decimal)
     hy_bps: float | None = round(hy_pct * 100, 1) if hy_pct is not None else None
+    # Data-gap audit (2026-07-29, macro regime spec-fix plan): pre-2023-07-13 HY OAS is a
+    # BAA10Y-calibrated proxy (signal_tier='PROXY'), not real ICE BofA OAS -- see
+    # docs/ssi_validation/hy_oas_recalibration_2026-07-29.md. This function is only ever called
+    # for TODAY's live ceiling today, so hy_tier is always real in production. Flagged explicitly
+    # so a future historical/backtest caller of this function can't silently treat a proxy value
+    # as real data without it showing up in the response.
+    hy_tier: str | None = hy_var.get("tier")
+    hy_is_proxy: bool = hy_tier == "PROXY"
     if hy_pct is not None:
         if hy_pct > 5.0:      # > 500bps
             hy_credit_mult = 0.80
@@ -628,6 +636,11 @@ def _compute_ceiling(
     # SSI multiplier: spec calls it a "haircut" multiplier.
     # Values > 1.0 occur when SSI is bullish (risk-on posture); spec intent is a haircut
     # when SSI is risk-off. Cap at 1.0 so it only reduces, never inflates, the ceiling.
+    #
+    # AXIOM 2 (Rohit 6 Aug — "establish which"): this cap, plus the min(100.0, …) below, is
+    # why the chain cannot currently produce the 104% his own 85% × 1.20 VIX × 1.20 SSI
+    # example implies. The axioms bind, so both ×1.20 terms are dead on the upside today —
+    # a re-expansion leg needs an explicit exemption before it can do anything.
     ssi_multiplier_raw: float = float(ssi.get("ssi_multiplier") or 1.0)
     ssi_multiplier: float = min(1.0, ssi_multiplier_raw)
 
@@ -650,6 +663,8 @@ def _compute_ceiling(
     if hy_bps is not None:
         hy_stress = "high stress" if hy_bps > 500 else "mild stress" if hy_bps > 300 else "benign"
         hy_note = f"HY credit at {hy_bps:.0f}bps = {hy_stress}; {int((1-hy_credit_mult)*100)}% haircut applied."
+        if hy_is_proxy:
+            hy_note += " [PROXY: BAA10Y-calibrated, not real ICE BofA OAS]"
     else:
         hy_note = "HY credit data unavailable; default 10% haircut applied."
 
@@ -667,6 +682,8 @@ def _compute_ceiling(
         "spx_trend_meta": spx_meta,
         "hy_credit_mult": hy_credit_mult,
         "hy_bps": hy_bps,
+        "hy_tier": hy_tier,
+        "hy_is_proxy": hy_is_proxy,
         "final_ceiling_pct": final_ceiling_pct,
         "formula_text": formula_text,
         "portfolio_notional": get_portfolio_notional(),
@@ -678,7 +695,15 @@ def _compute_ceiling(
             {"label": "VIX level mult", "value": f"×{vix_level_mult:.2f}"},
             {"label": "SPX trend mult", "value": f"×{spx_trend_mult:.2f}"},
             {"label": "HY credit mult", "value": f"×{hy_credit_mult:.2f}"},
-            {"label": "SSI mult", "value": f"×{ssi_multiplier:.2f}"},
+            {
+                "label": "SSI ceiling term (capped at 1.00)",
+                "value": f"×{ssi_multiplier:.2f}",
+                "raw_value": f"×{ssi_multiplier_raw:.2f}",
+                "note": (
+                    "SSI size multiplier is "
+                    f"×{ssi_multiplier_raw:.2f}; the ceiling chain caps it at 1.00."
+                ),
+            },
             {"label": "Final ceiling", "value": f"{final_ceiling_pct:.1f}%"},
         ],
     }

@@ -39,5 +39,5 @@
     "pct_full_exposure": 0.2,
     "pct_below_80": 47.0
   },
-  "multiplier_spec": "testing/5_regime_uplift/multiplier_spec.md"
+  "multiplier_spec": "testing/5_regime_uplift/regime_dimension_multipliers_v1_unsigned.md"
 }
