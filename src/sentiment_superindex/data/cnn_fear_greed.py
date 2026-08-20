@@ -22,6 +22,13 @@ Alternative.me starts 2018-02-01. It is now used only for the disclosed 2011-01 
 residual gap above (previously it silently covered 2018-02-01 -> ~12 months ago before this fix).
 Cache rows carry a `source` column (`real_cnn_api` / `wayback_reconstructed` / `crypto_proxy`) so
 provenance is visible at a glance -- see `scraper_utils.load_cached_series`/`save_cached_series`.
+
+Audit 2026-08-20: the claim above ("used only for the disclosed residual gap") was true of the
+intent and false of the cache -- 974 `crypto_proxy` rows spanned 2018-02-03 -> 2026-07-15, 24 of
+them on real SPX sessions, and Alternative.me starts in 2018 so it never covered the 2011-2012
+residual at all. Those rows were removed (`scripts/repair_cnn_fg_crypto_rows.py`; CNN's own API has
+no value for any of them, so the honest state is no observation and the SSI daily carry uses the
+last real print). `CRYPTO_PROXY_WINDOW_END` now enforces the window in code.
 """
 
 from __future__ import annotations
@@ -56,6 +63,10 @@ CNN_EARLIEST_START_DATE = "2020-07-14"
 # It is used here as a backfill proxy because no free source exists for CNN F&G history pre-2025.
 # Alternative.me crypto F&G starts 2018-02-01 (not 2011 as previously documented incorrectly).
 ALTME_URL = "https://api.alternative.me/fng/?limit=5000&format=json&date_format=us"
+# The only window the crypto index may ever occupy in this cache: everything from 2012-05-25 is
+# covered by the Wayback reconstruction or CNN's own API, so a crypto value on or after this date
+# is a wrong number wearing the right label.
+CRYPTO_PROXY_WINDOW_END = "2012-05-25"
 
 
 def load_cnn_series() -> pd.Series:
@@ -145,6 +156,14 @@ def backfill_cnn_from_altme() -> int:
     Returns the number of new rows added.
     """
     altme = fetch_altme_history()
+    if altme.empty:
+        return 0
+    # Hard window, not a convention. Before this guard the function filled every date the crypto
+    # index covered, which is how 974 crypto rows (2018-02-03 -> 2026-07-15) ended up in a
+    # stock-market series -- 24 of them on real SPX sessions, two of those in 2026 (audit
+    # 2026-08-20, see scripts/repair_cnn_fg_crypto_rows.py). The docstring's residual window is
+    # now enforced in code so the repair cannot be silently undone by the next run.
+    altme = altme[altme.index < pd.Timestamp(CRYPTO_PROXY_WINDOW_END)]
     if altme.empty:
         return 0
     cached, cached_source = load_cached_series(CNN_CACHE, value_col="score", extra_col="source")

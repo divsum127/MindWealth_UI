@@ -198,13 +198,16 @@ def run_liquidity_exit_grid_v2(ctx: dict[str, Any] | None = None) -> dict[str, A
     }
 
 
+REGRESSION_HORIZONS = {"1w": 5, "2w": 10, "4w": 20, "8w": 40}
+
+
 def run_fm_pctile_regression(ctx: dict[str, Any] | None = None) -> dict[str, Any]:
     """FM rolling percentile vs SPX forward returns (continuous linear check)."""
     from scipy import stats
 
     ctx = ctx or load_analysis_context()
     spx, sessions = ctx["spx"], ctx["sessions"]
-    horizons = {"1w": 5, "2w": 10, "4w": 20, "8w": 40}
+    horizons = REGRESSION_HORIZONS
     rows = []
     for dt in ctx["weekly_index"]:
         pct = float(ctx["fm_pct"].loc[dt])
@@ -230,6 +233,148 @@ def run_fm_pctile_regression(ctx: dict[str, Any] | None = None) -> dict[str, Any
             }
         )
     return {"test_id": "cftc_fm_pctile_regression", "n": len(df), "rows": results}
+
+
+def _pctile_forward_frame(ctx: dict[str, Any], horizons: dict[str, int]) -> pd.DataFrame:
+    """One row per analysis week: FM pct, RM pct, and SPX forward returns."""
+    from src.macro_intelligence.engine.forward_returns import forward_return_pct
+
+    spx, sessions = ctx["spx"], ctx["sessions"]
+    rows = []
+    for dt in ctx["weekly_index"]:
+        row: dict[str, Any] = {
+            "date": str(dt.date()),
+            "fm_pctile": float(ctx["fm_pct"].loc[dt]),
+            "rm_pctile": float(ctx["rm_pct"].loc[dt]),
+        }
+        for label, days in horizons.items():
+            row[f"ret_{label}"] = forward_return_pct(spx, dt, days, sessions=sessions)
+        rows.append(row)
+    return pd.DataFrame(rows).dropna()
+
+
+def run_rm_pctile_regression(ctx: dict[str, Any] | None = None) -> dict[str, Any]:
+    """RM rolling percentile vs SPX forward returns — the mirror of the FM test.
+
+    Rohit 4 Aug point 2 asks whether RM has explanatory power at all. Same horizons, same
+    ``linregress`` shape as ``run_fm_pctile_regression`` so the two tables can be read side by
+    side rather than argued about.
+    """
+    from scipy import stats
+
+    ctx = ctx or load_analysis_context()
+    horizons = REGRESSION_HORIZONS
+    df = _pctile_forward_frame(ctx, horizons)
+    results = []
+    for label in horizons:
+        y = df[f"ret_{label}"].values
+        x = df["rm_pctile"].values
+        slope, _intercept, r, p, _ = stats.linregress(x, y)
+        results.append(
+            {
+                "horizon": label,
+                "n": len(y),
+                "r_squared": round(float(r**2), 6),
+                "p_value": round(float(p), 6),
+                "slope": round(float(slope), 6),
+            }
+        )
+    return {"test_id": "cftc_rm_pctile_regression", "n": len(df), "rows": results}
+
+
+def run_joint_pctile_regression(ctx: dict[str, Any] | None = None) -> dict[str, Any]:
+    """FM and RM together — does RM add anything *on top of* FM?
+
+    A single-variable test can only say whether RM is significant alone. The question that decides
+    whether RM stays in the SQUEEZE condition is incremental: fit forward return on FM alone and on
+    FM + RM, and report the change in adjusted R-squared with each coefficient's p-value. OLS by
+    normal equations (numpy) rather than a new dependency.
+    """
+    from scipy import stats
+
+    ctx = ctx or load_analysis_context()
+    horizons = REGRESSION_HORIZONS
+    df = _pctile_forward_frame(ctx, horizons)
+    n = len(df)
+    results = []
+    for label in horizons:
+        y = df[f"ret_{label}"].values
+        fm = df["fm_pctile"].values
+        rm = df["rm_pctile"].values
+
+        _, _, r_fm, p_fm_only, _ = stats.linregress(fm, y)
+        r2_fm = float(r_fm**2)
+        adj_r2_fm = 1 - (1 - r2_fm) * (n - 1) / (n - 2) if n > 2 else float("nan")
+
+        design = np.column_stack([np.ones(n), fm, rm])
+        coeffs, *_ = np.linalg.lstsq(design, y, rcond=None)
+        resid = y - design @ coeffs
+        ss_res = float(resid @ resid)
+        ss_tot = float(((y - y.mean()) ** 2).sum())
+        r2_joint = 1 - ss_res / ss_tot if ss_tot > 0 else float("nan")
+        adj_r2_joint = 1 - (1 - r2_joint) * (n - 1) / (n - 3) if n > 3 else float("nan")
+
+        # Coefficient p-values from the OLS covariance matrix.
+        dof = n - 3
+        sigma2 = ss_res / dof if dof > 0 else float("nan")
+        cov = sigma2 * np.linalg.inv(design.T @ design)
+        se = np.sqrt(np.diag(cov))
+        t_stats = coeffs / se
+        p_values = [float(2 * (1 - stats.t.cdf(abs(t), dof))) for t in t_stats]
+
+        results.append(
+            {
+                "horizon": label,
+                "n": n,
+                "r_squared_fm_only": round(r2_fm, 6),
+                "adj_r_squared_fm_only": round(float(adj_r2_fm), 6),
+                "p_value_fm_only": round(float(p_fm_only), 6),
+                "r_squared_joint": round(float(r2_joint), 6),
+                "adj_r_squared_joint": round(float(adj_r2_joint), 6),
+                "delta_adj_r_squared": round(float(adj_r2_joint - adj_r2_fm), 6),
+                "coef_fm": round(float(coeffs[1]), 6),
+                "p_value_fm": round(p_values[1], 6),
+                "coef_rm": round(float(coeffs[2]), 6),
+                "p_value_rm": round(p_values[2], 6),
+            }
+        )
+    return {"test_id": "cftc_joint_pctile_regression", "n": n, "rows": results}
+
+
+def run_rm_increment_cells(ctx: dict[str, Any] | None = None) -> dict[str, Any]:
+    """The same FM cut with and without the RM leg — the number Rohit's point 2 turns on.
+
+    "RM may be doing all the work" is testable directly: hold FM<10 (and FM<5) fixed, then add the
+    RM>55 condition and see what the episode count, the mean-minus-median gap and the excess over
+    the PAR row actually do. If RM only removes episodes without improving the gap, it is a filter
+    that costs sample and buys nothing.
+    """
+    ctx = ctx or load_analysis_context()
+    rows: list[dict[str, Any]] = []
+    for fm_thr in (10, 5):
+        for rm_thr in (None, 55):
+            dates = _mask_dates(ctx, fm_pct_max=fm_thr, rm_pct_min=rm_thr)
+            cell = analyze_cell(dates, ctx["spx"], benchmark=ctx["benchmark"], long_side=True)
+            rows.append(
+                {
+                    "condition": (
+                        f"FM_roll_pct<{fm_thr}"
+                        if rm_thr is None
+                        else f"FM_roll_pct<{fm_thr} AND RM_roll_pct>{rm_thr}"
+                    ),
+                    "fm_pct_max": fm_thr,
+                    "rm_pct_min": rm_thr,
+                    "rm_leg": rm_thr is not None,
+                    **cell,
+                }
+            )
+    return {
+        "test_id": "cftc_rm_increment_cells",
+        "spec": "rohit_2026-08-13_point_2",
+        "benchmark": ctx["benchmark"],
+        "par": run_par_row(ctx),
+        "rows": rows,
+    }
 
 
 def run_robustness_checks(
@@ -476,9 +621,16 @@ def build_fm_distribution_report(ctx: dict[str, Any]) -> tuple[str, Path | None]
         f"- First **full 156-week** rolling window: **{diag.get('first_full_156w_window', '—')}**",
         f"- Grid analysis weeks: **{diag.get('analysis_weeks', '—')}** "
         f"({diag.get('analysis_start', '—')} → {diag.get('analysis_end', '—')})",
-        "- **GFC 2008:** raw FM net exists (104 weeks in 2008–09) but **rolling-percentile grids exclude Sep 2008–May 2009** "
-        "because the 156-week window is not full until mid-2009. Rebuild from 2003 would require legacy COT proxy "
-        "(pre-TFF non-commercial) — not in current TFF pipeline.",
+        "- **GFC 2008:** present in the grids, contrary to earlier wording here. "
+        "`weekly_pctile_series()` ranks against `tail(156)` with a 20-observation minimum, so percentile "
+        "cells run continuously from the first rank date and the 2008 episodes are included — they are the "
+        "largest negatives in the LIQ EXIT grid. The real caveat is depth, not exclusion: 2008 weeks are "
+        "ranked against a partial (~115-week) lookback rather than a full three years.",
+        "- **Pre-2006:** TFF Leveraged Money starts 2006-06-13. The legacy COT non-commercial series "
+        "(2003+) is now built and cached (`fetch_cftc_legacy_noncommercial_net`), but on the 2006–2010 "
+        "overlap it tracks TFF only loosely — level corr 0.64, percentile corr 0.54, mean absolute "
+        "percentile difference 23 points, and barely half the FM<10 extreme weeks agree. It is therefore "
+        "published as labelled context (`legacy_noncommercial`), **not** stitched into these grids.",
         "",
         "## Fixed distribution percentiles (contracts)",
         "",
@@ -552,9 +704,11 @@ def build_rohit_report(squeeze: dict, liq: dict, regression: dict, robustness: d
             "- **Sample start (Rohit row 75):**",
             f"  - Raw TFF from **{diag.get('raw_start')}**; first rolling pctile **{diag.get('first_pctile_20obs')}**;",
             f"  first full 156w window **{diag.get('first_full_156w_window')}**.",
-            "  - **GFC 2008 rolling grids:** Sep 2008–May 2009 excluded (156w window not full until ~Jun 2009).",
-            "    Raw FM net exists for GFC; percentile-conditioned cells do not.",
-            "  - **2003 rebuild:** TFF Lev Money exists from 2006 only; pre-2006 needs legacy COT proxy (deferred).",
+            "  - **GFC 2008 rolling grids:** included. Percentile cells exist from the first rank date; "
+            "2008 weeks rank against a partial ~115-week lookback, which is a depth caveat, not an exclusion.",
+            "  - **2003 rebuild:** legacy COT non-commercial built and cached from 2003, but the 2006–2010 "
+            "overlap (level corr 0.64, pctile corr 0.54, ~half of FM<10 weeks disagree) says it is not a "
+            "like-for-like FM substitute — kept as labelled context, not stitched into the grids.",
             "",
         ]
     else:

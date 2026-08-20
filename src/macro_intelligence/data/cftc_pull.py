@@ -328,9 +328,17 @@ def _parse_report_dates(values: pd.Series) -> pd.Series:
     failures. The explicit format is also an order of magnitude faster on a full history.
     """
     parsed = pd.to_datetime(values, format="%Y-%m-%d", errors="coerce")
-    if parsed.isna().all() and len(values):
-        # Older bulk files have been seen with other layouts; fall back rather than lose them.
-        parsed = pd.to_datetime(values, errors="coerce", format="mixed")
+    # The all-or-nothing fallback below used to be `parsed.isna().all()`, which is only true when
+    # every file in the frame shares the odd layout. In the combined history it never was: the
+    # yearly files are ISO and the 2006-2016 bulk file is "M/D/YYYY 12:00:00 AM", so the bulk rows
+    # coerced to NaT and were dropped without a word -- the analysis sample silently started 2017
+    # instead of 2006-06-13, taking the GFC and 1052-week window with it (found 2026-08-20 while
+    # answering Rohit's CFTC points). Parse the leftovers instead of testing whether *all* failed.
+    missing = parsed.isna() & values.notna()
+    if missing.any():
+        parsed.loc[missing] = pd.to_datetime(
+            values.loc[missing], errors="coerce", format="mixed"
+        )
     return parsed
 
 
@@ -393,6 +401,114 @@ def _stitch_legacy_consolidated_net(df: pd.DataFrame, *, asset_manager: bool = F
     if pre.empty:
         return consolidated
     return pd.concat([pre, consolidated]).sort_index().groupby(level=0).last()
+
+
+CFTC_LEGACY_URL = "https://www.cftc.gov/files/dea/history/deacot{year}.zip"
+LEGACY_FIRST_YEAR = 2003
+TFF_FIRST_DATE = "2006-06-13"
+
+
+def _legacy_zip_path(year: int) -> Path:
+    return CFTC_LOCAL_CACHE_DIR / f"deacot{year}.zip"
+
+
+def _fetch_legacy_zips(start_year: int, end_year: int) -> list[Path]:
+    """Legacy Commitments-of-Traders annual zips, downloaded once and cached beside the TFF ones."""
+    CFTC_LOCAL_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    paths: list[Path] = []
+    for year in range(start_year, end_year + 1):
+        path = _legacy_zip_path(year)
+        if not path.is_file():
+            url = CFTC_LEGACY_URL.format(year=year)
+            try:
+                resp = requests.get(url, timeout=120)
+                resp.raise_for_status()
+                path.write_bytes(resp.content)
+                logger.info("CFTC legacy COT %s downloaded (%d bytes)", year, len(resp.content))
+            except Exception as exc:
+                logger.warning("CFTC legacy COT %s unavailable: %s", year, exc)
+                continue
+        paths.append(path)
+    return paths
+
+
+def fetch_cftc_legacy_noncommercial_net(
+    start_year: int = LEGACY_FIRST_YEAR,
+    end_year: int = 2010,
+) -> pd.Series:
+    """S&P 500 non-commercial net (long minus short) from the legacy COT report.
+
+    **This is not Fast Money.** TFF Leveraged Money begins 2006-06-13; before that the only
+    available split is the legacy commercial / non-commercial one, which is a different trader
+    definition -- non-commercial lumps managed money together with other speculators and is not
+    a like-for-like substitute. It is built here so the pre-2006 years Rohit asked for exist as a
+    clearly-labelled proxy (``series_tier='legacy_noncommercial'``), and so the definitional gap
+    can be measured on the overlap rather than argued about (``compare_legacy_to_tff``).
+    """
+    paths = _fetch_legacy_zips(start_year, end_year)
+    frames = _read_zip_frames(paths)
+    if not frames:
+        return pd.Series(dtype=float)
+    df = pd.concat(frames, ignore_index=True)
+    market_col = _find_col(df, ["Market and Exchange Names", "Market_and_Exchange_Names"])
+    date_col = _find_col(
+        df, ["As of Date in Form YYYY-MM-DD", "Report_Date_as_YYYY-MM-DD", "As_of_Date_In_Form_YYMMDD"]
+    )
+    long_col = _find_col(df, ["Noncommercial Positions-Long (All)", "NonComm_Positions_Long_All"])
+    short_col = _find_col(df, ["Noncommercial Positions-Short (All)", "NonComm_Positions_Short_All"])
+    if not all([market_col, date_col, long_col, short_col]):
+        logger.warning("CFTC legacy COT: expected columns missing, got %s", list(df.columns)[:8])
+        return pd.Series(dtype=float)
+
+    cfg = load_config().get("cftc", {})
+    exclude = cfg.get("market_exclude", "E-MINI|MICRO|DIVIDEND|ADJUSTED INT RATE")
+    names = df[market_col].astype(str).str.strip()
+    mask = names.str.contains("S&P 500", case=False, na=False)
+    mask &= ~names.str.contains(exclude, case=False, na=False, regex=True)
+    sub = df.loc[mask].copy()
+    if sub.empty:
+        return pd.Series(dtype=float)
+    sub[date_col] = _parse_report_dates(sub[date_col])
+    sub = sub.dropna(subset=[date_col])
+    net = pd.to_numeric(sub[long_col], errors="coerce") - pd.to_numeric(sub[short_col], errors="coerce")
+    out = pd.Series(net.values, index=pd.DatetimeIndex(sub[date_col]), dtype=float).dropna()
+    return out.sort_index().groupby(level=0).last()
+
+
+def compare_legacy_to_tff(
+    legacy: pd.Series | None = None,
+    tff: pd.Series | None = None,
+    *,
+    overlap_end: str = "2010-12-31",
+) -> dict[str, Any]:
+    """Quantify the definitional gap on the overlap before anyone leans on the pre-2006 years.
+
+    Reports level correlation, weekly-change correlation and rank agreement between the legacy
+    non-commercial net and TFF leveraged-money net over the window where both exist.
+    """
+    legacy = fetch_cftc_legacy_noncommercial_net() if legacy is None else legacy
+    tff = fetch_cftc_fast_money_net(2006) if tff is None else tff
+    if legacy.empty or tff.empty:
+        return {"overlap_weeks": 0, "note": "one of the series is empty"}
+    idx = legacy.index.intersection(tff.index)
+    idx = idx[idx <= pd.Timestamp(overlap_end)]
+    if len(idx) < 20:
+        return {"overlap_weeks": int(len(idx)), "note": "overlap too short to judge"}
+    a, b = legacy.loc[idx], tff.loc[idx]
+    da, db = a.diff().dropna(), b.diff().dropna()
+    common = da.index.intersection(db.index)
+    return {
+        "overlap_start": str(idx.min().date()),
+        "overlap_end": str(idx.max().date()),
+        "overlap_weeks": int(len(idx)),
+        "level_corr": round(float(a.corr(b)), 4),
+        "level_rank_corr": round(float(a.corr(b, method="spearman")), 4),
+        "change_corr": round(float(da.loc[common].corr(db.loc[common])), 4),
+        "legacy_mean": round(float(a.mean()), 1),
+        "tff_mean": round(float(b.mean()), 1),
+        "legacy_std": round(float(a.std()), 1),
+        "tff_std": round(float(b.std()), 1),
+    }
 
 
 def _rolling_pctile(series: pd.Series, as_of: pd.Timestamp, weeks: int = 156) -> float | None:

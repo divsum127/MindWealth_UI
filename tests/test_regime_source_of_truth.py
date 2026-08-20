@@ -124,6 +124,23 @@ class TestRegimeSourceOfTruth(unittest.TestCase):
             self.assertLessEqual(float(self.export_rows[date]["gross_mult"]), rfe.MAX_MULT)
             self.assertGreaterEqual(float(self.export_rows[date]["gross_mult"]), rfe.MIN_MULT)
 
+    def test_history_does_not_move_when_a_multiplier_constant_changes(self) -> None:
+        """Rohit 6 Aug: the stored table is the source of truth, no interface recomputes.
+
+        The multipliers used to be derived on every read, so editing a constant silently rewrote
+        every historical row already served. They are persisted per (date, multiplier_version)
+        now, so a constant change can only affect rows stamped with a new version.
+        """
+        before = rfe.load_regime_fridays(start="2020-01-01")["gross_mult"].tail(5).tolist()
+        original = dict(rfe.CURVE_MULT)
+        try:
+            rfe.CURVE_MULT["FLAT"] = 0.10
+            after = rfe.load_regime_fridays(start="2020-01-01")["gross_mult"].tail(5).tolist()
+        finally:
+            rfe.CURVE_MULT.clear()
+            rfe.CURVE_MULT.update(original)
+        self.assertEqual(before, after, "served history moved when a module constant changed")
+
 
 if __name__ == "__main__":
     unittest.main()

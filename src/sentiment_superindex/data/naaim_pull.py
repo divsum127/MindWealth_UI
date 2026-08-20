@@ -37,6 +37,13 @@ SOURCE_MANUAL = "manual"
 def fetch_naaim_exposure() -> pd.Series:
     """NAAIM exposure index, merged into the local cache.
 
+    RE-CHECKED 2026-08-20 (cache last print 2026-07-29, 22 days stale): still nothing free.
+    ``index.naaim.org/embeddable/table`` and ``/embeddable/chart`` both answer 200 but are frozen
+    at 2026-05-13 and 2026-05-06; ``naaim.org/programs/naaim-exposure-index/`` 301s; the WordPress
+    REST API returns newsletters only; the newest Wayback snapshot of the index page is
+    2026-05-31; ``index.naaim.org/api/exposure`` 404s and ``api.naaim.org`` does not resolve.
+    Do not spend another pass on this without a membership -- it is a product decision.
+
     NOTE (2026-08-18 audit): NAAIM has moved this index behind a member login. Every free
     source is now either gone or frozen -- the page's table was removed, index.naaim.org
     requires sign-in, both public iframes stopped updating in May 2026, the Wayback Machine has

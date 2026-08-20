@@ -52,41 +52,65 @@ def _scheduled_cfg() -> dict[str, Any]:
 
 def _fred_release_ids() -> dict[str, int]:
     cfg = _scheduled_cfg()
-    defaults = {"CPI": 10, "FOMC": 19, "NFP": 50}
+    # FOMC deliberately absent (checked 2026-08-20). It used to map to release 19, which is
+    # "H.3 Aggregate Reserves of Depository Institutions" -- a weekly reserves report, not a rate
+    # decision, so every FOMC-dated feature was keying off Thursday reserve prints. The obvious
+    # replacement, release 101 "FOMC Press Release", is no better for this purpose: FRED's
+    # release-dates endpoint returns publication timestamps, ~218 a year, not the eight meetings.
+    # FRED has no meeting-date calendar, so FOMC dates come from the investing.com scraper and the
+    # `pending_releases` table instead, and callers must handle its shorter history (2011+).
+    defaults = {"CPI": 10, "NFP": 50}
     return {**defaults, **(cfg.get("fred_release_ids") or {})}
 
 
-def fetch_fred_release_dates(release_type: str, *, limit: int = 500) -> list[str]:
-    """Release dates from FRED release calendar API."""
+def fetch_fred_release_dates(release_type: str, *, limit: int = 500, max_pages: int = 10) -> list[str]:
+    """Release dates from FRED release calendar API.
+
+    Paged: FRED caps a single response at 1000 rows, and the FOMC release has more than that, so
+    a single call silently returned 2000-2018 and nothing after. Anything reading history off
+    this function (the CFTC event gate, post-event transitions) would have seen a calendar that
+    simply stopped.
+    """
     release_id = _fred_release_ids().get(release_type.upper())
     if release_id is None:
         return []
     key = os.environ.get("FRED_API_KEY")
     if not key:
         return []
+    page_size = min(int(limit), 1000)
+    dates: set[str] = set()
+    offset = 0
     try:
-        resp = requests.get(
-            "https://api.stlouisfed.org/fred/release/dates",
-            params={
-                "release_id": release_id,
-                "api_key": key,
-                "file_type": "json",
-                "sort_order": "desc",
-                "limit": limit,
-                "include_release_dates_with_no_data": "true",
-            },
-            timeout=30,
-        )
-        if resp.status_code != 200:
-            return []
-        dates = [
-            str(item["date"])[:10]
-            for item in resp.json().get("release_dates", [])
-            if item.get("date")
-        ]
-        return sorted(set(dates))
+        for _ in range(max_pages):
+            resp = requests.get(
+                "https://api.stlouisfed.org/fred/release/dates",
+                params={
+                    "release_id": release_id,
+                    "api_key": key,
+                    "file_type": "json",
+                    "sort_order": "asc",
+                    "limit": page_size,
+                    "offset": offset,
+                    "include_release_dates_with_no_data": "false",
+                },
+                timeout=30,
+            )
+            if resp.status_code != 200:
+                break
+            page = [
+                str(item["date"])[:10]
+                for item in resp.json().get("release_dates", [])
+                if item.get("date")
+            ]
+            if not page:
+                break
+            dates.update(page)
+            if len(page) < page_size:
+                break
+            offset += page_size
+        return sorted(dates)
     except Exception:
-        return []
+        return sorted(dates)
 
 
 def _is_event_match(name: str, patterns: tuple[str, ...]) -> bool:

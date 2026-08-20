@@ -127,8 +127,49 @@ def _dimension_multipliers(reg: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+MULTIPLIER_TABLE = "regime_multipliers"
+MULTIPLIER_COLUMNS = ("m_fed", "m_curve", "m_val", "m_geo", "m_liq", "gross_mult")
+
+
+def _ensure_multiplier_table(conn) -> None:
+    conn.execute(
+        f"""
+        CREATE TABLE IF NOT EXISTS {MULTIPLIER_TABLE} (
+            date TEXT NOT NULL,
+            multiplier_version TEXT NOT NULL,
+            m_fed REAL NOT NULL,
+            m_curve REAL NOT NULL,
+            m_val REAL NOT NULL,
+            m_geo REAL NOT NULL,
+            m_liq REAL NOT NULL,
+            gross_mult REAL NOT NULL,
+            PRIMARY KEY (date, multiplier_version)
+        )
+        """
+    )
+
+
+def _stored_multipliers(conn, version: str) -> dict[str, dict[str, float]]:
+    """Multipliers already persisted for this version, keyed by evaluation date."""
+    _ensure_multiplier_table(conn)
+    cols = ", ".join(MULTIPLIER_COLUMNS)
+    rows = conn.execute(
+        f"SELECT date, {cols} FROM {MULTIPLIER_TABLE} WHERE multiplier_version = ?",
+        (version,),
+    ).fetchall()
+    return {r["date"]: {col: float(r[col]) for col in MULTIPLIER_COLUMNS} for r in rows}
+
+
 def load_regime_fridays(start: str | None = None, end: str | None = None) -> pd.DataFrame:
-    """One row per evaluated Friday from macro_regime_log_v2, with dimension states + multipliers."""
+    """One row per evaluated Friday from macro_regime_log_v2, with dimension states + multipliers.
+
+    The five dimension *states* have always been stored. The multipliers derived from them used to
+    be recomputed from the module constants on every read, so editing a constant silently rewrote
+    every historical row the API had ever served -- the opposite of Rohit's 6 Aug instruction that
+    the stored table is the source of truth and no interface recomputes. They are now persisted
+    per ``(date, multiplier_version)`` on first computation and read back afterwards: a constant
+    change only affects rows stamped with a *new* version, and history stays immutable.
+    """
     query = "SELECT date, regime_json FROM macro_regime_log_v2"
     clauses = []
     params: list[str] = []
@@ -144,13 +185,35 @@ def load_regime_fridays(start: str | None = None, end: str | None = None) -> pd.
 
     rows: list[dict[str, Any]] = []
     with get_connection() as conn:
+        stored = _stored_multipliers(conn, MULTIPLIER_VERSION)
+        to_persist: list[tuple[Any, ...]] = []
         for r in conn.execute(query, tuple(params)).fetchall():
             try:
                 reg = json.loads(r["regime_json"] or "{}")
             except json.JSONDecodeError:
                 continue
             parts = _dimension_multipliers(reg)
+            persisted = stored.get(r["date"])
+            if persisted is not None:
+                parts.update(persisted)
+            else:
+                to_persist.append(
+                    (r["date"], MULTIPLIER_VERSION, *(parts[col] for col in MULTIPLIER_COLUMNS))
+                )
             rows.append({"date": pd.Timestamp(r["date"]), "evaluation_date": r["date"], **parts})
+        if to_persist:
+            placeholders = ", ".join(["?"] * (2 + len(MULTIPLIER_COLUMNS)))
+            conn.executemany(
+                f"INSERT OR IGNORE INTO {MULTIPLIER_TABLE} "
+                f"(date, multiplier_version, {', '.join(MULTIPLIER_COLUMNS)}) "
+                f"VALUES ({placeholders})",
+                to_persist,
+            )
+            logger.info(
+                "regime feed: persisted %d multiplier rows for %s",
+                len(to_persist),
+                MULTIPLIER_VERSION,
+            )
     if not rows:
         return pd.DataFrame(columns=["evaluation_date", *DIMENSION_COLUMNS, "gross_mult"])
     return pd.DataFrame(rows).set_index("date").sort_index()

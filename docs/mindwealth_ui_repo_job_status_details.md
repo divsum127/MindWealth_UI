@@ -6396,3 +6396,86 @@ Note this would also make `prod-pull-and-details` and `robust-test-and-dev-deplo
 **Caveats for the next developer.**
 - This skill deliberately stops at "prod clone deployed and smoke-tested." It does not cover the Nuxt (`MindwealthUI_Vue`) side of a prod release, which is a separate repo/branch/host-config concern per `robust-test-and-dev-deploy`'s own scope notes — a future `robust-test-and-prod-deploy` extension (or a sibling skill) would be needed if Nuxt prod releases need the same rigor.
 - Both `check-prod-drift.sh` and the SKILL.md's worktree example use `/tmp/claude-*/scratchpad/prodmerge` as a placeholder path — an operator must substitute their session's actual scratchpad directory; this was intentional (session scratchpad paths are per-session and can't be hardcoded) but is easy to skim past.
+
+---
+
+## 2026-08-20 — SSI truth-telling fixes (partial scores, exclusion labels, CNN crypto rows, multiplier persistence)
+
+**Root causes, not symptoms.**
+- `+0.300` on the Layer 3 tile: `sentiment-mapper.ts` fell back to `Math.round(ssi_level * 10) / 10` whenever `layer3.score` was null. The deeper cause was on the API side — `_build_layer` suppressed the score and published nothing else, so a client that must render something had only bad options. Fixed at the API layer (`partial_score`) and then in the mapper.
+- CFTC rows printing like scored inputs: `observation_as_of` returns `raw=None` past the carry cap, and the mapper's display value came from the `layer_inputs` fallback, which still had the net figures. Neither side was wrong on its own; nothing carried the fact that the value scored zero. Fixed with `excluded_from_score` / `excluded_reason` on the component.
+- COT badge vs layer disagreement: two staleness clocks. `check_cftc_freshness` (release calendar, `expected_latest_cftc_tuesday`) vs `observation_as_of` (flat calendar cap from `SSI_CONFIG.yaml`). Both are defensible; publishing both without saying which is which is not. The scoring verdict now travels in `inputs_meta.layer3_cftc`.
+
+**Assumptions.**
+- A partial layer score is worth showing, labelled, rather than hiding the layer. Stated as a non-blocking assumption for Rohit sir; it is one line to invert if he disagrees.
+- Removing all 974 `crypto_proxy` rows is right because none of them fall in the documented 2011-01 → 2012-05-24 residual window (Alternative.me only starts 2018-02-01, so it never covered that window at all). CNN has no value for any of those dates, so nothing real was displaced.
+- `regime_multipliers` is a new table in the macro DB rather than new columns on `macro_regime_log_v2`, so a version bump adds rows instead of migrating a table other code reads.
+
+**Measured impact of the CNN repair.** SSI level 0.2850 → 0.2855, 5y percentile 65.74 → 66.22 on 2026-08-20. The history index shrinks by the 974 removed dates (mostly weekends and holidays, where a stock-market index has no print), so any SSI backtest run before today sits on the old index — this belongs on the stale-backtest list Rohit sir asked for before re-runs.
+
+**Deferred / not done.**
+- The CFTC carry cap itself (`staleness.max_stale_days.weekly: 8`, measured from the Tuesday position date). COT publishes Friday for Tuesday, so between Wednesday and the next release the age reaches 9–10 days and Layer 3 loses 3 of 4 inputs every week. The repo already owns release-aware logic (`expected_latest_cftc_tuesday`) that could drive eligibility instead; it is a threshold decision and stays a blocking question.
+- NAAIM (22 days stale, largest Layer 1 weight at 0.35). Every free surface re-verified dead on 2026-08-20; needs membership, manual entry, or a Layer 1 re-spec.
+- `ssi_margin_debt` pulls now 404 on FRED (`BOGZFL224066003Q` retired or renamed). Seen on every run in this session, unrelated to this work, not investigated — worth its own task.
+
+**Edge cases handled.**
+- `partial_score` is published only when `score` is null, so a healthy layer cannot show two numbers.
+- Layer 1 and Layer 2 keep their existing legacy fallbacks (`legacyWeeklyScore`, the gate ratio) ahead of "no number", so this change cannot blank a layer that used to render.
+- The multiplier cache is keyed by version, so switching `MULTIPLIER_VERSION` recomputes and stores a fresh set rather than serving the old one under a new name. Proven by a test that mutates `CURVE_MULT` and asserts served history does not move.
+
+**Caveats for the next developer.**
+- `positioning.json` is the API's source for this page; after any SSI engine change, rebuild it (`build_positioning_payload` + `write_positioning_json`) and restart `mindwealth-api-dev`, or the endpoint keeps serving the old shape.
+- The visual check needs Playwright with `executablePath: '/usr/bin/google-chrome'` — the bundled chromium is not installed on this host.
+
+---
+
+## 2026-08-20 — CFTC six-point close-out (v2_TODOs row 42)
+
+**The two bugs matter more than the analysis.**
+
+1. `_parse_report_dates` used `format="%Y-%m-%d"` with an all-or-nothing fallback
+   (`parsed.isna().all()`). The 2006-2016 bulk TFF file uses `M/D/YYYY 12:00:00 AM`; the yearly
+   files are ISO. In a combined frame the ISO rows parse, so the guard never fired and 342 bulk
+   rows became NaT. Effect: the CFTC series began 2017-01-03, the analysis window was 483 weeks
+   instead of 1034, and every percentile in every grid was ranked against a short window. The
+   2026-08-11 package reported 1052 FM weeks, so this regressed between then and now — most likely
+   when the explicit format was introduced to silence a `dateutil` warning. Anyone re-running an
+   older CFTC artefact should check `sample_diagnostics.raw_start` before comparing numbers.
+2. `fred_release_ids.FOMC = 19` is the H.3 reserves release. FOMC dates were never FOMC dates.
+   Release 101 looks right by name but its release-dates endpoint returns publication timestamps
+   (~218/yr), so it is not a meeting calendar either. FRED simply has no FOMC meeting calendar;
+   the honest source is the investing.com scraper already feeding `pending_releases` (2011+).
+   `fetch_fred_release_dates` also had no paging and was silently capped at FRED's 1000-row limit.
+
+**Assumptions.**
+- Event coincidence is defined backward-looking: a release on the episode date or within N calendar
+  days before it. COT episodes are Tuesday-dated, so ±1 and ±3 windows only catch Sunday-to-Tuesday
+  releases and return identical sets; the ±7 window is the one that spans a release week. Both are
+  printed rather than choosing silently.
+- Boundary convention on the display cuts follows how Rohit sir wrote them: `FM<10` strict,
+  `display >=80` inclusive. Encoded in `_pattern_matches` and pinned by a test.
+- The legacy 2003 series is context, not input. The decision rule was set before the numbers came
+  back (plan: "if the overlap shows the legacy definition does not track TFF, it ships as labelled
+  context") and the numbers said it does not track: percentile corr 0.54, 23-point mean absolute
+  percentile gap, ~half the FM<10 weeks disagreeing.
+
+**Deferred.**
+- Putting RM back on LIQUIDITY EXIT. The event-gated result argues for it (excess −5.31% vs −1.58%)
+  but it contradicts the instruction to ship FM-only, so it is a question, not a change.
+- Stitching legacy into the grids, unless Rohit sir wants it despite the overlap numbers.
+- `ssi_margin_debt` still 404s on FRED (`BOGZFL224066003Q`), unrelated to this work, still open.
+
+**Edge cases handled.**
+- An empty `positioning_patterns` rule never fires (`_pattern_matches` returns False on no legs),
+  so deleting a pattern from config disables it rather than making it always-true.
+- The event-gate cache (`macro_intelligence/data_cache/macro_event_dates.json`) merges rather than
+  overwrites, so a failed FRED call cannot empty a populated cache.
+- `compare_legacy_to_tff` refuses to judge on fewer than 20 overlapping weeks instead of returning
+  a correlation from noise.
+
+**Caveats for the next developer.**
+- Regenerate `positioning.json` and restart `mindwealth-api-dev` after any threshold change, or the
+  page keeps describing the old cut — the thresholds now travel to the UI through
+  `inputs_meta.layer3_cftc.pattern_rules`.
+- `scripts/build_cftc_six_point_report.py` takes ~15 minutes cold (forward returns per episode);
+  `--cached` reuses the day's JSON artefact and rebuilds the markdown and PDF in seconds.

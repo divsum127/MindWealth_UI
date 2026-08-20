@@ -46,7 +46,9 @@ class TestCftcPatterns(unittest.TestCase):
             source_date="2026-07-29",
             expected_source_date="2026-07-29",
         )
-        out = evaluate_cftc_positioning(15.0, 50.0, "2026-08-04")
+        # Placeholder cut (Rohit 13 Aug): FM<10 with no RM leg. RM is deliberately set to a value
+        # that would have failed the retired RM>45 condition, to prove the leg is really gone.
+        out = evaluate_cftc_positioning(8.0, 20.0, "2026-08-04")
         self.assertEqual(out["positioning_pattern"], "squeeze")
         self.assertTrue(out["squeeze_setup"])
         self.assertFalse(out["liquidity_exit"])
@@ -60,7 +62,8 @@ class TestCftcPatterns(unittest.TestCase):
             source_date="2026-07-29",
             expected_source_date="2026-07-29",
         )
-        out = evaluate_cftc_positioning(65.0, 25.0, "2026-08-04")
+        # Placeholder cut: FM>=80, RM leg dropped. 60.0 RM would have failed the retired RM<30.
+        out = evaluate_cftc_positioning(85.0, 60.0, "2026-08-04")
         self.assertEqual(out["positioning_pattern"], "liquidity_exit")
         self.assertFalse(out["squeeze_setup"])
         self.assertTrue(out["liquidity_exit"])
@@ -91,3 +94,34 @@ class TestCftcPatterns(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestPatternRuleLegs(unittest.TestCase):
+    """A leg absent from the config must not be silently reinstated from a code default."""
+
+    @patch("src.sentiment_superindex.data.cftc_patterns.check_cftc_freshness")
+    def test_squeeze_ignores_rm_entirely(self, mock_fresh):
+        mock_fresh.return_value = _FreshnessRow(
+            stale=False, source_date="2026-07-29", expected_source_date="2026-07-29"
+        )
+        for rm_pctile in (1.0, 50.0, 99.0):
+            out = evaluate_cftc_positioning(5.0, rm_pctile, "2026-08-04")
+            self.assertEqual(out["positioning_pattern"], "squeeze", f"RM {rm_pctile} changed the verdict")
+
+    @patch("src.sentiment_superindex.data.cftc_patterns.check_cftc_freshness")
+    def test_boundaries(self, mock_fresh):
+        mock_fresh.return_value = _FreshnessRow(
+            stale=False, source_date="2026-07-29", expected_source_date="2026-07-29"
+        )
+        # "FM<10" is strict, "display >=80" is inclusive -- the cuts are written that way.
+        self.assertEqual(evaluate_cftc_positioning(10.0, 50.0, "2026-08-04")["positioning_pattern"], None)
+        self.assertEqual(evaluate_cftc_positioning(9.99, 50.0, "2026-08-04")["positioning_pattern"], "squeeze")
+        self.assertEqual(evaluate_cftc_positioning(80.0, 50.0, "2026-08-04")["positioning_pattern"], "liquidity_exit")
+        self.assertEqual(evaluate_cftc_positioning(79.99, 50.0, "2026-08-04")["positioning_pattern"], None)
+
+    def test_pattern_rules_published_for_the_ui(self):
+        from src.sentiment_superindex.data.cftc_patterns import pattern_rules
+
+        rules = pattern_rules()
+        self.assertEqual(rules["squeeze"], {"fm_pctile_max": 10.0})
+        self.assertEqual(rules["liquidity_exit"], {"fm_pctile_min": 80.0})

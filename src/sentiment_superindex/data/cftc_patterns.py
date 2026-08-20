@@ -22,15 +22,48 @@ def _detect_positioning_pattern(
     patterns = _pattern_cfg().get("positioning_patterns", {})
     squeeze = patterns.get("squeeze", {})
     liq = patterns.get("liquidity_exit", {})
-    fm_max = float(squeeze.get("fm_pctile_max", 20))
-    rm_min = float(squeeze.get("rm_pctile_min", 45))
-    rm_max = float(liq.get("rm_pctile_max", 30))
-    fm_min = float(liq.get("fm_pctile_min", 60))
-    if fm_pctile < fm_max and rm_pctile > rm_min:
+    # An absent leg means "not part of this rule", not "fall back to the old number". The code
+    # defaulted rm_pctile_min to 45 and rm_pctile_max to 30, so deleting the RM leg from the
+    # config would have quietly kept enforcing it (Rohit 13 Aug: no RM in SQUEEZE).
+    if _pattern_matches(squeeze, fm_pctile, rm_pctile):
         return "squeeze"
-    if rm_pctile < rm_max and fm_pctile > fm_min:
+    if _pattern_matches(liq, fm_pctile, rm_pctile):
         return "liquidity_exit"
     return "none"
+
+
+def _pattern_matches(
+    rule: dict[str, Any],
+    fm_pctile: float,
+    rm_pctile: float,
+) -> bool:
+    """True when every leg present in the rule holds. An empty rule never fires."""
+    # Boundary convention, from how the cuts are written: "FM<10" is strict on the max legs,
+    # "LIQUIDITY EXIT display >=80" is inclusive on the min legs.
+    legs = (
+        ("fm_pctile_max", fm_pctile, lambda v, t: v < t),
+        ("fm_pctile_min", fm_pctile, lambda v, t: v >= t),
+        ("rm_pctile_max", rm_pctile, lambda v, t: v < t),
+        ("rm_pctile_min", rm_pctile, lambda v, t: v >= t),
+    )
+    present = [(value, float(rule[key]), test) for key, value, test in legs if rule.get(key) is not None]
+    if not present:
+        return False
+    return all(test(value, threshold) for value, threshold, test in present)
+
+
+def pattern_rules() -> dict[str, dict[str, float]]:
+    """The active cuts, published so the UI can describe the rule it is actually showing.
+
+    The Sentiment page used to hardcode "FM <20th - RM >45th pct" under the flag rows; when the
+    cuts changed the page kept describing the old rule.
+    """
+    patterns = _pattern_cfg().get("positioning_patterns", {})
+    out: dict[str, dict[str, float]] = {}
+    for name in ("squeeze", "liquidity_exit"):
+        rule = patterns.get(name) or {}
+        out[name] = {k: float(v) for k, v in rule.items() if v is not None}
+    return out
 
 
 def evaluate_cftc_positioning(

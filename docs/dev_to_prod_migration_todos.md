@@ -21,6 +21,71 @@ Reference deploy skill: `.cursor/skills/prod-pull-and-details/SKILL.md`
 | `[PROD-ACTION]` | Manual step on server after git merge (secrets, systemd, bootstrap) |
 | `[DONE]` | Completed on prod (date in notes) |
 
+## 2026-08-20 — CFTC six-point close-out: date-parse fix, FOMC calendar fix, placeholder flag cuts `[PENDING]`
+
+**Two of these are data-correctness fixes, not features. They change numbers on prod.**
+
+| File | Change | Prod effect |
+|------|--------|-------------|
+| `src/macro_intelligence/data/cftc_pull.py` | `_parse_report_dates` parses per-row leftovers instead of all-or-nothing; new legacy COT reader + `compare_legacy_to_tff` | **CFTC history goes from 2017-01-03 back to 2006-06-13** (483 → 1034 analysis weeks). Every FM/RM percentile on prod is currently ranked against a short window and will move after deploy. |
+| `src/macro_intelligence/data/macro_calendar.py` | FOMC dropped from FRED ids (19 was H.3 reserves), `fetch_fred_release_dates` paged | FOMC-dated features stop keying off weekly reserve prints. Pre-catalyst / post-event transitions change. |
+| `macro_intelligence/CONFIG.yaml` | `positioning_patterns` → squeeze `{fm_pctile_max: 10}`, liquidity_exit `{fm_pctile_min: 80}`; FOMC release id removed | Flag firing changes: squeeze 181 → 169 weeks, liquidity exit 162 → 214 weeks over the full sample. |
+| `src/sentiment_superindex/data/cftc_patterns.py` | optional rule legs, `pattern_rules()` published | Page can describe the live cut. |
+| `src/sentiment_superindex/engine/positioning.py` | `pattern_rules` into `inputs_meta.layer3_cftc` | New API field. |
+| `src/sentiment_superindex/analysis/cftc_grid_v2.py` | RM + joint regressions, RM-increment cells, corrected GFC boilerplate | Analysis only. |
+| **new** `src/sentiment_superindex/analysis/cftc_event_gate.py`, `scripts/build_cftc_six_point_report.py` | event gating + report builder | Analysis only. |
+| `tests/test_cftc_patterns.py` | cuts updated, leg/boundary tests added | — |
+| Frontend (`MindwealthUI_Vue`, `ui-dev`) | `sentiment-mapper.ts` flag sub-lines from API thresholds; `test/sentiment-mapper.spec.ts` | Flag rows stop printing the retired "FM <20th · RM >45th pct". |
+
+**`[PROD-ACTION]`**
+1. Deploy, then **rebuild the CFTC-dependent artefacts** — the percentile history changes materially with the date fix. Rebuild `positioning.json` and restart `mindwealth-api.service`.
+2. `macro_intelligence/data_cache/cftc/deacot*.zip` (legacy 2003-2010) and `macro_event_dates.json` are caches, not git content; they regenerate on first call.
+3. Any SSI or CFTC backtest run on prod before this deploy sits on the truncated 2017+ sample. That list belongs in the stale-backtest note Rohit sir asked for before re-runs.
+
+**Smoke tests** `[DONE]` 2026-08-20 on dev:
+- `fetch_cftc_fast_money_net(2006)` → 1053 weekly prints from 2006-06-13 (was 502 from 2017-01-03).
+- `/api/v1/analytics/sentiment/layers` → `inputs_meta.layer3_cftc.pattern_rules` = `{squeeze: {fm_pctile_max: 10}, liquidity_exit: {fm_pctile_min: 80}}`.
+- Sentiment page Layer 3: flag rows read `FM <10th pct (unvalidated threshold)` / `FM ≥80th pct (unvalidated threshold)`.
+- `pytest -k "cftc or macro_calendar or regime_source or event"` → 61 passed. `vitest` → 53 passed.
+
+---
+
+## 2026-08-20 — SSI truth-telling fixes (partial score, exclusion labels, CNN crypto rows, multiplier persistence) `[PENDING]`
+
+Lands **after** the merge closure below, so these are new commits on `chatbot-dev`.
+
+**Backend files to merge (`chatbot-dev` → `chatbot-prod`)**
+
+| File | Change |
+|------|--------|
+| `src/sentiment_superindex/engine/superindex.py` | `partial_score` on a suppressed layer; `excluded_from_score` / `excluded_reason` per component |
+| `src/sentiment_superindex/engine/positioning.py` | carries `partial_score` through; `inputs_meta.layer3_cftc` gains `scored_in_ssi` / `excluded_from_score` / `excluded_reason` |
+| `src/sentiment_superindex/data/cnn_fear_greed.py` | `CRYPTO_PROXY_WINDOW_END` guard on `backfill_cnn_from_altme()` |
+| `src/sentiment_superindex/data/naaim_pull.py` | docstring only — 2026-08-20 source re-check |
+| `src/macro_intelligence/output/regime_feed_export.py` | multipliers persisted per `(date, multiplier_version)` in new `regime_multipliers` table |
+| `tests/test_regime_source_of_truth.py` | new immutability test |
+| `scripts/repair_cnn_fg_crypto_rows.py` | **new** one-shot data repair |
+
+**Frontend (`/home/ubuntu/MindwealthUI_Vue`, branch `ui-dev` — separate repo, Parth's deploy)**
+
+`server/utils/sentiment-mapper.ts`, `pages/sentiment.vue`, `types/api.ts`, `test/sentiment-mapper.spec.ts`. The prod Nuxt checkout `/home/ubuntu/MindwealthUI_Vue_prod` is still on `ba2bcfd` with **no `components/sentiment/`**, so none of the Sentiment page work (this change, the Layer 2 confirm-driver rows, the AAII Weekly label) nor the UTC-safe `formatSignalDate` is on the public build. **This, not the API merge, is what blocks Rohit sir's "is it on the website" items.**
+
+**`[PROD-ACTION]` after the merge**
+
+1. Run the data repair once on prod — it edits a tracked-in-dev CSV, so either merge the repaired `macro_intelligence/data/ssi/cnn_fear_greed.csv` or rerun `.venv/bin/python scripts/repair_cnn_fg_crypto_rows.py --apply`. Audit first without `--apply`; expect 974 rows removed, 0 recoverable from CNN.
+2. Rebuild `positioning.json` (`build_positioning_payload` + `write_positioning_json`) and restart `mindwealth-api.service`, or the endpoint keeps serving the pre-change shape.
+3. `regime_multipliers` is created on first read — no migration step, but the first `/macro/regime/history` call after deploy writes ~1,911 rows.
+
+**Smoke tests** `[PENDING]` on prod, `[DONE]` 2026-08-20 on dev `:8507` / `:8514`:
+
+- `GET /api/v1/analytics/sentiment/layers` → `layer3.partial_score` present when `score` is null; `excluded_reason` on each dropped component; `inputs_meta.layer3_cftc.excluded_from_score` true.
+- Sentiment page Layer 3 tab: score reads `+0.863 · partial z-score, layer not scored` (never `+0.300`), CFTC rows amber with `excluded from score`, COT badge `Not in SSI score`.
+- `pytest tests/ -q` → 859 passed, 4 skipped. `vitest test/sentiment-mapper.spec.ts` → 14 passed.
+
+**Not shipped, needs Rohit sir**: the CFTC carry cap (`staleness.max_stale_days.weekly: 8`) that drops COT from Layer 3 every Wed–Thu, and the NAAIM source decision.
+
+---
+
 ## 2026-08-20 — MERGE CLOSURE: `chatbot-dev` → `chatbot-prod`, 74 commits / 438 files `[DONE]` 2026-08-20
 
 **This closes the git-merge portion of every dated entry below whose commits land in the range `64e17ca26..59e351294` on `chatbot-prod`** (in practice: everything from **2026-08-02** ["SSI Layer 2 gate votes + NH share label"] through **2026-08-18/19** ["chatbot verification sweep"] — i.e. essentially the whole backlog accumulated since the last prod merge on 2026-07-26).

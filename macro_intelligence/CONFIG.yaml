@@ -340,9 +340,14 @@ cftc:
   rm_classification: "Asset Mgr|Asset Manager"
   pending_status: PENDING_CFTC_CONFIRM
   pctile_window_weeks: 156
+  # Placeholder display cuts per Rohit 13 Aug: "Ship placeholders with FM<10/SQUEEZE/No RM in
+  # SQUEEZE, LIQUIDITY EXIT display >=80". Both legs are FM-only on purpose -- the RM leg is
+  # dropped until the RM explanatory-power test says it earns its place. Unvalidated: these drive
+  # a labelled display flag, nothing in sizing. Previous cuts were squeeze {FM<20, RM>45} and
+  # liquidity_exit {RM<30, FM>60}. A missing key means the leg is not part of the rule.
   positioning_patterns:
-    squeeze: { fm_pctile_max: 20, rm_pctile_min: 45 }
-    liquidity_exit: { rm_pctile_max: 30, fm_pctile_min: 60 }
+    squeeze: { fm_pctile_max: 10 }
+    liquidity_exit: { fm_pctile_min: 80 }
   pattern_templates:
     squeeze: "Fast money very short; real money less short"
     liquidity_exit: "Real money exiting; fast money still crowded long"
@@ -450,7 +455,9 @@ scheduled_events:
     usd_strength_pct: 0.5
   fred_release_ids:
     CPI: 10
-    FOMC: 19
+    # FOMC removed 2026-08-20: release 19 was H.3 Aggregate Reserves (wrong calendar) and
+    # release 101 returns publication timestamps, not meeting dates. FOMC comes from the
+    # investing.com scraper into pending_releases instead.
     NFP: 50
   event_times_et:
     CPI: "08:30"

@@ -15,7 +15,11 @@ from src.sentiment_superindex.config import (
     weight_penalty_for,
 )
 from src.sentiment_superindex.data.pull_all import load_all_series
-from src.sentiment_superindex.data.staleness import effective_input_weights, observation_as_of
+from src.sentiment_superindex.data.staleness import (
+    effective_input_weights,
+    input_cadence,
+    observation_as_of,
+)
 
 logger = logging.getLogger("ssi.superindex")
 
@@ -105,6 +109,17 @@ def _value_as_of(series: pd.Series, as_of: pd.Timestamp, *, series_key: str) -> 
 
 def _history_window(series: pd.Series, as_of: pd.Timestamp, years: int) -> pd.Series:
     return series.loc[as_of - pd.DateOffset(years=years) : as_of]
+
+
+def _exclusion_reason(
+    series_key: str, stale_days: int | None, max_stale_days: dict[str, int]
+) -> str:
+    """Plain-words why an input was dropped, for the API payload and the page."""
+    if stale_days is None:
+        return "unavailable - no observation on or before this date"
+    cadence = input_cadence(series_key)
+    cap = int(max_stale_days.get(cadence, max_stale_days["weekly"]))
+    return f"expired - last print {stale_days}d old, {cadence} carry cap {cap}d"
 
 
 def _layer_signal_coverage(
@@ -254,6 +269,11 @@ def _build_layer(
                 "norm": None,
                 "stale_days": stale_days,
                 "weight_multiplier": 0.0,
+                # Why this input scored nothing, said once here rather than left for each
+                # consumer to infer from a null. The Sentiment page was printing the carried
+                # net figure with no hint it contributed 0 (audit 2026-08-20).
+                "excluded_from_score": True,
+                "excluded_reason": _exclusion_reason(key, stale_days, max_stale_days),
             }
             continue
         hist = _history_window(s, as_of, years)
@@ -263,12 +283,18 @@ def _build_layer(
             "norm": norm,
             "stale_days": stale_days,
             "weight_multiplier": weight_mult,
+            "excluded_from_score": False,
+            "excluded_reason": None,
         }
     _attach_component_contributions(input_keys, components, input_weights)
     score = _weighted_layer_score(input_keys, components, input_weights)
     coverage = _layer_signal_coverage(
         input_keys, components, input_weights, layer_key=layer_key
     )
+    # The score over whatever survived, kept even when the gate suppresses `score`. Without it
+    # a client that still has to render something has nothing true to render -- the Nuxt page
+    # was falling back to the SSI composite and displaying it as the Layer 3 score.
+    partial_score = float(score) if score is not None else None
     if not coverage["reliable"]:
         # Suppressing the score (rather than publishing a number built on a fraction of the
         # inputs) makes build_superindex drop the layer from the weighted mean via the path it
@@ -285,6 +311,7 @@ def _build_layer(
         score = None
     return {
         "score": float(score) if score is not None else None,
+        "partial_score": partial_score if score is None else None,
         "components": components,
         "signal_coverage": coverage,
     }

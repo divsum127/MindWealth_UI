@@ -16,6 +16,7 @@ from src.sentiment_superindex.engine.layer2 import (
     evaluate_layer2_gates,
     hyg_vix_legacy_votes,
 )
+from src.sentiment_superindex.data.cftc_patterns import pattern_rules
 from src.sentiment_superindex.data.pull_all import layer3_for_date, load_all_series, values_as_of
 from src.sentiment_superindex.engine.regime_block import build_regime_block
 from src.sentiment_superindex.engine.superindex import build_superindex
@@ -112,8 +113,19 @@ def _layer3_display_value(
     return None
 
 
-def _layer3_cftc_meta(as_of: pd.Timestamp, cftc: dict[str, Any]) -> dict[str, Any]:
-    """COT freshness meta for UI stale-dating (mirrors layer1 inputs_meta shape)."""
+def _layer3_cftc_meta(
+    as_of: pd.Timestamp,
+    cftc: dict[str, Any],
+    layer3_components: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """COT freshness meta for UI stale-dating (mirrors layer1 inputs_meta shape).
+
+    ``cftc`` carries the *release-calendar* verdict (``check_cftc_freshness`` compares the source
+    date against the expected Tuesday), while the SSI gate applies the flat calendar carry cap in
+    ``observation_as_of``. On 2026-08-20 those disagreed on one page -- the COT row read "Current"
+    while the same three inputs had been dropped from the Layer 3 score -- so the scoring verdict
+    is published here too rather than left for the client to reconcile.
+    """
     if not cftc:
         return {}
     position_date = cftc.get("position_date")
@@ -123,6 +135,15 @@ def _layer3_cftc_meta(as_of: pd.Timestamp, cftc: dict[str, Any]) -> dict[str, An
         pos_ts = pd.Timestamp(position_date)
         stale_days = int((as_of.normalize() - pos_ts.normalize()).days)
         release_date = (pos_ts + pd.Timedelta(days=3)).strftime("%Y-%m-%d")
+    components = layer3_components or {}
+    cot_components = [
+        components.get(key, {}) for key in ("cftc_fm_net", "cftc_rm_net", "gross_net")
+    ]
+    scored_in_ssi = any(comp.get("raw") is not None for comp in cot_components)
+    excluded_reason = next(
+        (comp.get("excluded_reason") for comp in cot_components if comp.get("excluded_reason")),
+        None,
+    )
     return {
         "cadence": "weekly",
         "schedule_et": "Fri",
@@ -135,6 +156,15 @@ def _layer3_cftc_meta(as_of: pd.Timestamp, cftc: dict[str, Any]) -> dict[str, An
         "max_stale_days": max_stale_days_for_cadence("weekly"),
         "stale": bool(cftc.get("stale")),
         "data_freshness": cftc.get("data_freshness"),
+        # The SSI scoring verdict on the same three inputs, so the COT badge cannot read
+        # "Current" while the layer beneath it scores without them.
+        "scored_in_ssi": scored_in_ssi,
+        "excluded_from_score": not scored_in_ssi,
+        "excluded_reason": excluded_reason,
+        # The active cuts, so the page can describe the rule it is actually displaying instead of
+        # carrying its own copy (the flag rows read "FM <20th - RM >45th pct" long after the
+        # thresholds moved).
+        "pattern_rules": pattern_rules(),
         "positioning_pattern": cftc.get("positioning_pattern"),
         "squeeze_setup": cftc.get("squeeze_setup"),
         "liquidity_exit": cftc.get("liquidity_exit"),
@@ -215,6 +245,13 @@ def build_positioning_payload(as_of: str | None = None) -> dict[str, Any]:
     for layer_key, layer in superindex.get("layers", {}).items():
         layer_out: dict[str, Any] = {
             "score": round(layer["score"], 4) if layer.get("score") is not None else None,
+            # Carried through so a client rendering a suppressed layer has the real number over
+            # the surviving inputs instead of inventing one (see _build_layer).
+            "partial_score": (
+                round(layer["partial_score"], 4)
+                if layer.get("partial_score") is not None
+                else None
+            ),
             "weight": layer.get("weight"),
             "components": layer.get("components", {}),
         }
@@ -253,7 +290,7 @@ def build_positioning_payload(as_of: str | None = None) -> dict[str, Any]:
         "staleness_policy": _staleness_policy_block(),
         "inputs_meta": {
             "layer1": layer1_inputs_meta,
-            "layer3_cftc": _layer3_cftc_meta(as_of_ts, layer3_cftc),
+            "layer3_cftc": _layer3_cftc_meta(as_of_ts, layer3_cftc, layer3),
         },
         "inputs": {
             "layer2_votes": gate_summary.votes,
