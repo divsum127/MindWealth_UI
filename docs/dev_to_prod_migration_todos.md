@@ -21,6 +21,205 @@ Reference deploy skill: `.cursor/skills/prod-pull-and-details/SKILL.md`
 | `[PROD-ACTION]` | Manual step on server after git merge (secrets, systemd, bootstrap) |
 | `[DONE]` | Completed on prod (date in notes) |
 
+## 2026-08-20 — Claude v3 Addendum §3: closed seven-case tier-override list + regime stance in the payload `[PENDING]`
+
+**Repo:** `/home/ubuntu/MindWealth` (core repo, branch `main`) — **not** the UI repo, so nothing here merges `chatbot-dev` → `chatbot-prod`.
+
+| File | Change |
+|------|--------|
+| `constant.py` | `GOOD_SIGNAL_QUERY`: new section **4.8 Tier override — CLOSED LIST of seven judgment cases** (after 4.7, before section 5); new `IMPORTANT — DO NOT` bullet forbidding any override outside the list; new per-row bullet in output section 9C printing payload tier / applied tier / override case number |
+| `send_email.py` | `_fetch_regime_context()` now emits `Runic dominant combo` (`dominant_signal`) and `Regime stance` (`brave_fearful`); `claude_box_prompt()` prepends the regime block to **every** box prompt, not just the synthesis prompt |
+| `tests/test_signals_masterspec_g3.py` | 4 new prompt-contract tests for 4.8 (27 passed total) |
+
+- **No UI-repo code changed.** No API surface, systemd, Nuxt or `.env` change. Nothing to copy to `/home/ubuntu/uiv2/prod/`.
+- **Live on the next nightly run without any deploy step:** the core-repo cron (`0 22 * * * cd /home/ubuntu/MindWealth && bash emailscript.sh`) executes the working tree directly.
+- Smoke test after the next 22:00 run `[PENDING]`: in `trade_store/US/<date>_claude_signals_report.txt` — (a) the regime preamble must show `Regime stance: <one of TACTICAL_EASY_MONEY | TACTICAL_TIGHT_MONEY | STRATEGIC_CAUTIOUS | TACTICAL_TIGHT_MONEY_STRATEGIC_EASY_MONEY | NEUTRAL>` and `Runic dominant combo:`; (b) every `Tier override` line must carry a `[case {1-7} — ...]` tag and both `payload tier=` and `applied tier=`; (c) no override line may cite a reason outside the seven cases. Combo C is ACTIVE as of 2026-08-19, so case 3 (new long entries downgraded tA → best) is the likeliest to fire — check it does not misfire on shorts or on already-held rows.
+- Open with Rohit sir before this is considered final (see the job-status entry for the numbers): the case-1 threshold, whether case 2's `≥ +8` is on the `bq_raw` or `conviction_score` scale, the 30–40 "borderline composite" band, and the `TACTICAL_FEARFUL`/`STRATEGIC_BULLISH` → real-vocabulary mapping.
+
+---
+
+## 2026-08-20 — Claude v3 Addendum §1 follow-ups: 9H schema parity + NaN conviction guard `[PENDING]`
+
+**Repo:** `/home/ubuntu/MindWealth` (core repo, branch `main`) — **not** the UI repo, so nothing here merges `chatbot-dev` → `chatbot-prod`.
+
+| File | Change |
+|------|--------|
+| `constant.py` | `GOOD_SIGNAL_QUERY` 9H: `conviction_bq_score` / `conviction_fs_class` added to the `<surface_json>` example and to the field definitions; the "emit null + tier tierc + missing-field sentence" rule scoped to the four model-output fields, with the two conviction fields routed to the 2.2a applicability carve-out |
+| `send_email.py` | `_merge_conviction_into_signal` now skips NaN as well as `None`, so blank overlay `fs_class` cells no longer reach the payload as a non-null value |
+
+- **No UI-repo code changed.** No API, systemd, Nuxt or `.env` change. Nothing to copy to `/home/ubuntu/uiv2/prod/`.
+- **Live on the next nightly run without any deploy step:** the core-repo cron (`0 22 * * * cd /home/ubuntu/MindWealth && bash emailscript.sh`) executes the working tree directly. Both files are **uncommitted** on `main`, in a tree that already carried unrelated uncommitted work.
+- Smoke test after the next 22:00 run `[PENDING]`: in `trade_store/US/<date>_claude_signals_report.txt`, the `<surface_json>` block must contain `conviction_bq_score` / `conviction_fs_class` on every row, must contain **no** `NaN` literal, and both fields must be `null` on ETF / index / FX / crypto rows.
+
+---
+
+## 2026-08-20 — Claude v3 Addendum §2 mechanical consistency checks (CC1/CC2/CC3) `[PENDING]`
+
+The nightly Claude signals prompt now carries three read-only consistency checks against the
+pre-computed payload: `exit_fired` true must imply `tier='exit'` (CC1), `tier='tA'` must be
+consistent with `rr_dynamic >= 1.0` (CC2, flag — no silent downgrade), and Gate A3 lateness is
+restated as the one check that stays a live computation (CC3). The old `Gate A2e` heading is
+relabelled `R:R Consistency Check (CC2)`; **its hard Tier A exclusion is unchanged**, so Tier A
+membership does not move on this change — only report wording and the new integrity flags.
+
+### 1. Files to merge — **core repo `/home/ubuntu/MindWealth`**, not the UI repo
+
+| File | Change |
+|------|--------|
+| `constant.py` | `GOOD_SIGNAL_QUERY`: new section **4.7** (CC1/CC2/CC3); Section 4 gate heading `Gate A2e` → `R:R Consistency Check (CC2)` with the "no Gate A2e in the base list" note; failure strings `R:R gate fail:` → `R:R check fail:`. Also `OUTSTANDING_NEW_SIGNAL_COLUMN_DESCRIPTIONS["R:R Dynamic"]` tooltip re-worded |
+| `tests/test_signals_masterspec_g3.py` | 3 new prompt-content tests (CC1 wording, CC2 no-silent-downgrade, CC3 + no `Gate A2e —` heading). Suite → 23 passed |
+
+> **Same git caveat as the §1 entry below:** `constant.py` is tracked and modified in a tree that
+> already carried unrelated uncommitted work; nothing was committed.
+
+> **No deploy step exists for this.** The nightly cron runs from the `/home/ubuntu/MindWealth`
+> working tree, so the edited prompt is live on the **next nightly run** with no merge or restart.
+
+### 2. Dev-only / revert before prod
+
+None.
+
+### 3. Prod runtime (not in git)
+
+None — CC1/CC2 read `exit_fired`, `tier` and `rr_dynamic`, all already in the payload.
+
+### 4. systemd / Nuxt
+
+None — no API or UI code changed.
+
+### 5. Smoke tests `[PENDING]`
+
+- After the next nightly run, grep the report for `exit_fired true but tier=` — expect **zero** hits
+  in a healthy run; any hit is a real upstream bug in `compute_signal_tier()`, not a prompt problem.
+- Grep for `reported tier='tA' conflicts with reported rr_dynamic` — hits are expected only where
+  price moved after the payload was built; cross-check the row's `rr_dynamic` in
+  `trade_store/US/{date}_outstanding_signal.csv`.
+- Confirm no row was silently re-tiered: every narrative `tier` still equals the payload `tier`
+  unless the report explicitly cites the "price has moved since pre-computation" case.
+- Confirm `Gate A2e` no longer appears anywhere in the generated report text.
+
+## 2026-08-20 — Claude v3 Addendum §1 hard rule in the live signals prompt `[PENDING]`
+
+The nightly Claude signals prompt now forbids recomputing `composite_score`, `tier`,
+`alpha_interpretation`, `exit_fired`, `conviction_bq_score`, `conviction_fs_class`, and two
+conviction fields were added to the Claude payload so the rule is satisfiable. Report wording and
+tiering behaviour change, so this is a real prod change.
+
+### 1. Files to merge — **core repo `/home/ubuntu/MindWealth`**, not the UI repo
+
+| File | Change |
+|------|--------|
+| `constant.py` | `GOOD_SIGNAL_QUERY`: new section **2.2a** hard rule + fixed missing-field wording + conviction NOT_APPLICABLE carve-out; new bullet in section 0 "IMPORTANT — DO NOT"; 9H Composite v4 formula re-labelled "REFERENCE ONLY — DO NOT COMPUTE"; `surface_json` echo-verbatim rule; four field definitions annotated |
+| `send_email.py` | `_load_conviction_lookup()` now maps `bq_raw` → `conviction_bq_score`, `fs_class` → `conviction_fs_class` (legacy `fs_class` key kept), plus `coverage_incomplete` |
+| `helper_functions/claude_lateness_metrics.py` | `signal_to_surface_row()` emits `conviction_bq_score` / `conviction_fs_class`, matching the API surface builder |
+
+> **Same git caveat as the Q4 entry below:** in `/home/ubuntu/MindWealth`,
+> `helper_functions/claude_lateness_metrics.py` is **untracked**; `constant.py` and `send_email.py`
+> are tracked and modified, and that tree already carried unrelated uncommitted work before this
+> task. Nothing was committed.
+
+> **No deploy step exists for this.** The nightly cron runs from the `/home/ubuntu/MindWealth`
+> working tree, so the edited prompt is live on the **next nightly run** with no merge or restart.
+> Reverting means editing the file back, not rolling back a deploy.
+
+### 2. Dev-only / revert before prod
+
+None.
+
+### 3. Prod runtime (not in git)
+
+None. The conviction overlay CSVs already carry `bq_raw`, `fs_class` and `coverage_incomplete`
+(`conviction_store/overlays/{date}_*_conviction.csv`) — no new file, key or schema.
+
+### 4. systemd / Nuxt
+
+None — no API or UI code changed.
+
+### 5. Smoke tests `[PENDING]`
+
+- After the next nightly run, grep the generated report for the fixed sentence
+  `Not available in model output — {field} missing for` and confirm it appears **only** with a real
+  field name, never for a conviction field on an ETF/index row.
+- Confirm the report no longer restates the Composite v4 arithmetic or invents `er_score` /
+  `alpha_score` / `sharpe_score` / `cagr_score`.
+- Spot-check that a `tier` printed in the narrative equals the payload `tier` for the same row
+  (`trade_store/US/{date}_outstanding_signal.csv`, column `tier`).
+
+### 6. Follow-ups
+
+- Second half of addendum §1 (deprecate Gates A2 / A2b / A2d and the 9H `quality_score`
+  arithmetic) is **not done** — blocked on Rohit sir's unanswered Q5.
+- The conviction NOT_APPLICABLE carve-out is a deliberate deviation from a literal reading of §1;
+  confirm with Rohit sir.
+- `derive_asset_class` defaults 9 ETFs/indices (ACWX, EFA, IHI, XLE, MSE.PA,
+  NIFTY_MIDCAP_100.NS) to `equity`, so they are gated against equity E[R] floors and `R_ref`.
+  Separate fix.
+
+### Status: `[PENDING]` — nothing committed; the prompt is nevertheless live for the next nightly run from the working tree.
+
+---
+
+## 2026-08-20 — Short-signal alpha benchmark corrected (Claude v3 Addendum Q4) `[PENDING]`
+
+Short signals were scored with `signal_alpha = er` (no benchmark subtracted). They are now
+scored against the mirrored random-short baseline `−(B&H_CAGR / 252 × avg_hold_days)`, per
+addendum Correction 2. This changes emitted numbers, so it is a real prod change, not a refactor.
+
+### 1. Files to merge — **core repo `/home/ubuntu/MindWealth`**, not the UI repo
+
+| File | Change |
+|------|--------|
+| `helper_functions/claude_lateness_metrics.py` | `compute_random_window_return()` takes `direction` and negates the baseline for shorts; the Long/Short branch in `enrich_signal_dict` collapses to one subtraction; stale "reserved for future IRX-specific short benchmarks" comment corrected |
+| `constant.py` | Claude prompt field definitions for `random_window_return` and `signal_alpha_per_trade` rewritten to state both directions; `Signal Alpha Per Trade [%]` glossary tooltip updated |
+| `tests/test_signals_masterspec_g3.py` | new `test_short_signal_alpha_uses_random_short_benchmark` |
+
+> **Git caveat:** in `/home/ubuntu/MindWealth`, `helper_functions/claude_lateness_metrics.py` and
+> `tests/test_signals_masterspec_g3.py` are **untracked** (`??`) — they have never been committed to
+> that repo. Only `constant.py` is tracked and modified. A `git pull` on the prod host will therefore
+> **not** carry the alpha fix; those two files must be copied across (or committed first). Verify with
+> `git status --porcelain helper_functions/claude_lateness_metrics.py` before assuming a pull is enough.
+
+**No `MindWealth_UI` git file changed.** `api/services/signal_enrichment_service.py` imports
+`enrich_signal_dict` from the core repo and otherwise reads the pre-computed CSV column, so it
+picks the fix up for free — but only once the core repo on the prod host is updated.
+
+### 2. `[PROD-ACTION]` Host steps
+
+1. Update `/home/ubuntu/MindWealth` on the prod host (this repo deploys separately from the UI clone).
+2. Restart `mindwealth-api.service` — `enrich_signal_dict` is imported lazily per process, so a
+   running API keeps the old function object until restart.
+3. **Regenerate the signal CSVs** (nightly pipeline / `send_email.py`). Until that runs,
+   `Signal Alpha Per Trade [%]` on disk still holds the old short values and the API prefers the
+   CSV column over the freshly-computed one — so prod would serve stale short alpha with new code.
+
+### 3. Dev-only config to revert
+
+None. No flags, no temporary config, no `:8507` shortcuts involved.
+
+### 4. Runtime files to create/copy on prod
+
+None. No `.env` key, no secret, no `config/users.json` change.
+
+### 5. Smoke tests
+
+- [ ] `[PENDING]` `pytest tests/test_claude_lateness_metrics.py tests/test_signals_masterspec_g3.py` on the prod host → 39 passed.
+- [ ] `[PENDING]` Pick a Short row from the regenerated outstanding CSV and confirm
+      `signal_alpha_per_trade ≈ er + (B&H_CAGR / 252 × avg_hold_days)` (not `er`).
+- [ ] `[PENDING]` `GET /signals/surface` — a short signal's `signal_alpha_annualized` and
+      `composite_score` differ from the pre-cutover values; confirm the UI renders the new numbers.
+- [ ] `[PENDING]` Confirm long signals are byte-identical to before (regression guard).
+
+### Known follow-up
+
+Composite v4's calibrated `R_REF` / `ALPHA_CLIP` / `CAGR_CLIP` thresholds were fitted **before**
+this change and every short row's C2 now moves. The 80th-percentile recalibration Rohit sir asked
+for has **not** been re-run. Prod cutover does not depend on it, but short-signal tiering will be
+slightly off-calibration until it is.
+
+### Status: `[PENDING]` — fixed and tested in the core repo dev tree; prod host update outstanding.
+
+---
+
 ## 2026-08-18 — AI Analyst panel: audit defects FIXED on dev, awaiting prod cutover `[PENDING]`
 
 **Committed + pushed 2026-08-18** (all as `divsum127`):

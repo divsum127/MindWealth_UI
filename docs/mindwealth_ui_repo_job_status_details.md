@@ -15,6 +15,101 @@ This file captures minute-level implementation context for each completed task:
 
 ---
 
+### 2026-08-20 — Claude v3 Addendum §1 re-verification: 9H schema/prose mismatch + NaN conviction leak
+
+**Ask:** the same §1 todo row, handed over again with a stale sheet note ("Not started. No file in either repo references the v3 addendum"). Treated as a re-verification of the rule that landed earlier the same day, not a rewrite.
+
+**Assumptions**
+- The live prompt is `GOOD_SIGNAL_QUERY` in `MindWealth/constant.py` and nothing else. Re-confirmed from `crontab -l`: `0 22 * * * cd /home/ubuntu/MindWealth && bash emailscript.sh`, i.e. the **working tree** is production for the core repo — uncommitted edits go live at the next 22:00 run. `GOOD_SIGNAL_QUERY3_OLD` / `_old` / `_v1` are dead strings.
+- `inject_python_surface_json()` overwrites Claude's `<surface_json>` block with the Python-computed rows, so the *emitted* JSON is Python-authoritative. The prompt's example schema still matters because it drives what Claude echoes in its own draft and in the narrative sections, and because `regen_claude_report.py` shares the same path.
+- The addendum's six fields split into two groups with different semantics: four model-output fields that exist for every row, and two conviction fields that exist for individual equities only. §1 read literally does not make that distinction; the 2.2a carve-out added earlier does, and the 9H text now matches it.
+
+**Key decisions**
+- Fixed the 9H example schema rather than deleting the prose. The prose is the addendum's actual requirement; the example was the thing out of step. Both conviction keys were added as `null` alongside the existing `conviction_score` / `yield_trap` nulls so the shape matches what `signal_to_surface_row()` already emits.
+- NaN guard placed in `_merge_conviction_into_signal` (the single merge point) rather than in `signal_to_surface_row` or the JSON encoder. The encoder already handles `np.floating` NaN → `None`, but only for numpy scalars, and a downstream guard would still leave a NaN sitting in the signal dict that the Claude prompt payload (`json.dumps` at `send_email.py:2365`) serialises separately. Fixing it at the merge keeps every consumer consistent.
+- Left `_safe_float_overlay` alone — it already NaN-guards the float fields; the leak was on the string field `fs_class`, which is copied raw.
+
+**Things deferred / left for future**
+- §1's second half (deprecate Gates A2, A2b, A2d in favour of the payload `tier`) remains unimplemented, blocked on Rohit sir's Q5 reply — same reason as the earlier entry.
+- `derive_asset_class` still labels 9 ETFs as `equity` (ACWX, EFA, IHI, XLE, MSE.PA, NIFTY_MIDCAP_100.NS, …). They now fall out cleanly as "no conviction data" rather than as NaN, but the asset-class label itself is still wrong, which weakens the 2.2a carve-out's "individual equities only" test for those rows. Not fixed here — it is a Conviction Engine coverage question, not a prompt question.
+- The sheet row (v2_TODOs C100/D100) was **not** updated — sheet writes need an explicit request plus confirmation.
+
+**Edge cases identified, not handled**
+- A conviction overlay row whose `bq_raw` is genuinely null for a covered equity is now indistinguishable from an uncovered asset: both arrive as an absent key. 2.2a's two branches (explicit null vs missing) therefore cannot both be exercised through this path. Harmless today (all 53 covered equities have `bq_raw`), but it means the "explicit null" wording in 2.2a is currently unreachable.
+- `alpha_interpretation` is legitimately `null` on 50/81 rows. 2.2a's missing-field sentence keys on the field being *absent*, not null, so those rows are not demoted — worth stating if Rohit sir expects nulls to trigger Tier C.
+
+**Caveats for the next developer**
+- Reproducing this from the raw CSV needs `row["Symbol"]` set before `_merge_conviction_into_signal`: `_signal_overlay_key` reads `Symbol` / `ticker`, and `pd.read_csv` on `outstanding_signal.csv` yields the compound `"Symbol\n Signal\n Signal Date/Price[$]"` column instead. Without it every key comes out as `('', FUNCTION, INTERVAL)` and the merge silently matches nothing — it looks exactly like a broken merge. `collect_surface_data_rows()` sets it for you; a bare CSV read does not.
+- Tests run with `./venv/bin/python`, not `./.venv/bin/python` — the dot-venv in the core repo has no `pytest`, `anthropic` or `openai` installed. Importing `send_email` outside the pipeline needs `anthropic` and `openai` stubbed into `sys.modules` first.
+
+---
+
+### 2026-08-20 — Claude v3 Addendum §1: hard "do not recompute" rule in the live signals prompt
+
+**Ask:** the todo row *"Addendum section 1: add the hard rule that Claude must not recompute composite_score, tier, alpha_interpretation, exit_fired, conviction_bq_score or conviction_fs_class, and must use the fixed missing-field wording instead of estimating a substitute."* Source text is `Claude_Prompt_v3_Addendum.md` §1 from the 11 Aug package (extracted copy kept at `/tmp/claude-1000/.../47fc1406-.../scratchpad/att/pkg/Divyanshu_Prompt_v3_Package/`).
+
+**Which prompt is "the live prompt".** `MindWealth/constant.py` defines four prompt strings; only `GOOD_SIGNAL_QUERY` is wired (`send_email.py:2374`, `:2432`, `:3736`; `regen_claude_report.py:120`). `GOOD_SIGNAL_QUERY3_OLD`, `GOOD_SIGNAL_QUERY_old` and `GOOD_SIGNAL_QUERY_v1` are dead — `_v1` is where the older A0–A6 gate list at ~line 1476 lives, which is why a naive grep for "Gate A2" returns two hits. The edit was applied to the `GOOD_SIGNAL_QUERY` slice only, with each replacement asserted unique inside that slice.
+
+**Placement decision.** The rule went in as **2.2a**, directly after 2.2 "Precompute-first", rather than as a new top-level section. 2.2 already says "echo and explain, do not recompute" for `entry_anchor` / `progress` / `lateness_gate`, so 2.2a reads as the hard-gated extension of a rule the model already follows, instead of a bolt-on that contradicts section 9H thirty lines later. Because a conflict *does* remain (9H prints the Composite v4 formula in full), 2.2a opens with "This rule WINS over any conflicting instruction elsewhere in this prompt" and 9H's formula header is re-labelled "REFERENCE ONLY — DO NOT COMPUTE (see 2.2a)". The formula text was kept, not deleted: it documents the upstream calculation and is the only in-repo statement of the calibrated thresholds that reviewers read.
+
+**The carve-out, and why it is not in Rohit sir's text.** §1 says a missing field means "placed in Tier C pending data". Applied literally to `conviction_bq_score` / `conviction_fs_class` that demotes every non-equity row, because the Conviction Engine is equity-only by design — the prompt's own Gate A2c already says "NOT_APPLICABLE for ETFs, indices, FX, crypto, commodities" and "if conviction data is NOT in payload → skip this gate". Measured on `trade_store/US/2026-08-19_outstanding_signal.csv`: 28 of 81 rows have no conviction overlay. So the Tier C placement was scoped to the four model-output fields (`composite_score`, `tier`, `alpha_interpretation`, `exit_fired`) and conviction absence gets a NOT_APPLICABLE note instead. This is a deliberate deviation from a literal reading of the addendum and should be confirmed with Rohit sir.
+
+**Bug found while measuring the carve-out (not fixed here).** Of those 28 rows, 9 are classified `equity` by `derive_asset_class` but are actually ETFs or indices: ACWX, EFA, IHI, XLE, MSE.PA, NIFTY_MIDCAP_100.NS. `ASSET_CLASS_MAP` has no entries for them and the default is `equity`. This matters beyond this task — the asset-class E[R] floor in Gate A2a and the `R_ref` table in Composite v4 both key off `asset_class`, so those 9 rows are being scored against equity thresholds (E[R] floor 2.0%, `R_ref` 50%) instead of `equity_etf` (0.8%, 56%) or `index` (0.6%, 42%). Left alone because it is a different task; the carve-out was written to key off conviction *absence* rather than `asset_class` precisely so this misclassification cannot demote those rows.
+
+**Payload gap.** The rule is only honest if the fields are actually there. Four of six already were, via `enrich_signal_dict()` mutating each signal dict before `json.dumps` (`send_email.py:2365`) — the box payload is the enriched dict, **not** the `newdict` built around `send_email.py:690` (that one feeds the HTML email tables and carries the human labels like "Signal Quality Composite Score"). The two conviction fields were dropped in `_load_conviction_lookup`, which hand-copies seven overlay columns and ignores `bq_raw` / `coverage_incomplete`. Added under the addendum's own names, keeping the legacy `fs_class` key alongside `conviction_fs_class` so nothing that reads the old name breaks. `signal_to_surface_row()` gained the same two keys — the API surface builder (`api/services/signal_enrichment_service.py:498-529`) already emitted them, so the two producers of the same "surface row" shape had silently drifted apart.
+
+**Note on surface_json.** The prompt's 9H instructions matter less than they look: `inject_python_surface_json()` (`send_email.py:254`) regex-replaces whatever Claude emits between `<surface_json>` tags with Python-computed rows. The 9H edits were still made so the prompt does not *teach* self-computation, but the shipped JSON has been Python-authoritative for a while.
+
+**Things left for future.**
+- The rest of §1: Gates A2 / A2b / A2d and the old 9H `quality_score` arithmetic are declared DEPRECATED by the addendum and are still live. Deferred — it re-bases nightly Tier A membership on the payload `tier`, and Rohit sir has not answered Q5 ("which Gate A2 is live?") from the same mail.
+- Addendum item 7d: the `tier` name collision (payload `tA`/`best`/`tierc`/`exit` vs Section 9H's output `tier: "C"`). 2.2a inherits the addendum's own assumption that they are one concept. Unconfirmed.
+- Addendum §2 (mechanical consistency checks: `exit_fired`→`tier=='exit'`, R:R vs `tier=='tA'`) and §3 (the 7-case tier override) are untouched — separate rows.
+- `coverage_incomplete` now reaches the payload but no prompt line uses it.
+
+**Edge cases not handled.** A row where the payload carries `tier` but a null `composite_score` (legitimate: `avg_hold_all_trades` missing ⇒ cannot annualize ⇒ `compute_composite_score` returns None) will now trigger the missing-field sentence *and* the Tier C placement even though the upstream `compute_signal_tier` already handled the null and may have assigned `tA`. That is the addendum's stated behaviour, so it was left as written, but it is the one place where 2.2a can disagree with the payload tier it also declares authoritative.
+
+**Verification caveat.** `MindWealth/venv` had no pytest; it was installed there (`./venv/bin/pip install pytest`) to run the suite, and dash's pytest plugin crashes collection, so the suite needs `-p no:dash`. 51 passed. The nightly cron runs from this same working tree, so the prompt change is live on the next run without any deploy step.
+
+---
+
+### 2026-08-20 — Claude v3 Addendum Q2–Q5: answers + the Q4 short-signal alpha fix
+
+**Ask:** the five Q&A rows from the "Claude v3 Addendum (11 Aug mail)" todo block, pasted with draft answers. Q4 ends with "and correct it if it diverges", so the actionable part was the correction; Q2/Q3/Q5 were confirmations and Q4b an audit.
+
+**Root cause (Q4).** `claude_lateness_metrics.py` computed `random_window_return` as a direction-agnostic passive B&H drift and then branched on direction at the *consumer*: `signal_alpha = er − random_window_return` for Long, and a bare `signal_alpha = er` for Short under the comment "Conservative: no drift credit for short signals". That was a deliberate earlier choice, not an accident — but it makes a short signal's alpha completely insensitive to the asset's own drift, which is exactly what addendum Correction 2 forbids (`MindWealth/instruction_docs_2/signals_master_spec/composite_v4_addtional_details.md`, "Correction 2: short signal alpha benchmark").
+
+**Decision — where to put the sign.** Two options: (a) keep `random_window_return` as the raw long drift and write `er + rw` in the short branch, or (b) make `compute_random_window_return()` direction-aware so it returns the mirrored baseline and the consumer keeps one uniform subtraction. Chose **(b)**. Reasons: the addendum names the short baseline as its own quantity (`random_window_return_short`), the emitted `random_window_return` field then *is* the benchmark that `signal_alpha` was measured against for that row (so the number the LLM sees is self-consistent), and the branch at the call site disappears entirely rather than being duplicated at every future consumer. The `direction` parameter defaults to `"Long"`, so the existing two-arg calls in `tests/test_signals_masterspec_g3.py` keep working unchanged.
+
+**Assumptions.**
+- `random_window_return` is safe to make direction-aware because its **only** consumer is the Claude prompt payload (`claude_lateness_metrics.py` payload builder, ~line 1314). It is not a CSV column, not an API field, and no Vue component reads it. Verified by grep across both repos.
+- `is_short_direction()` (`"S"`, `"SHORT"`, `startswith("SHORT")`) is the right short test — it is already what `compute_alpha_interpretation` and the tier helpers use. This is slightly *wider* than the old `if direction == "Long"` branch, which treated any non-`"Long"` string (including junk) as short. Behaviour for an unparseable direction now falls back to Long instead of Short; for the malformed-data case the long formula is the more conservative of the two.
+- Unfloored is intentional and stated in the spec: for an up-drifting equity the short baseline is negative, so a short signal can post positive alpha with a slightly negative E[R]. No clamp was added.
+
+**Q4b audit result (both repos, no violations).** Every remaining 0/IRX-for-shorts site falls inside the four allowed uses:
+| Site | Use | Verdict |
+|------|-----|---------|
+| `MindWealth_UI/src/portfolio_nav/portfolio_sharpe_analysis.py` | `^IRX` as Sharpe risk-free rate + short cash rebate | allowed |
+| `claude_lateness_metrics.py:1128` / `api/services/signal_enrichment_service.py:177` | `benchmark = "cash (IRX)" if is_short else "B&H"` — Gate A2d display string, driven by `cagr_diff` | allowed (wording only, not alpha math) |
+| `constant.py` Gate A2d | 4.5% risk-free CAGR floor, direction-agnostic | allowed (rf reporting convention) |
+| `compute_composite_score` `c2 = ... else 0.0` | zero fallback when `alpha_ann` is missing | not short-specific |
+The stale comment `_ = bt_bh_cagr  # reserved for future IRX-specific short benchmarks` was replaced — it recorded the position the addendum explicitly overturned, and would have led the next reader to re-introduce an IRX short baseline.
+
+**Caveat — stale values on disk.** `signal_alpha` reaches the UI two ways: `api/services/signal_enrichment_service.py:440` prefers the pre-computed `Signal Alpha Per Trade [%]` CSV column and only falls back to the freshly-imported `enrich_signal_dict`. **Existing outstanding/report CSVs still carry the old short values** until the nightly pipeline regenerates them (`send_email.py:721` writes the column). No backfill was run. Any short-signal composite score quoted from a CSV generated before 2026-08-20 is on the old basis.
+
+**Things deferred.**
+- **Composite v4 80th-percentile recalibration was NOT re-run.** Short `signal_alpha_annualized` values now shift by ±(B&H_CAGR × 252/hold ÷ 252 × hold) — i.e. by the full annualized B&H drift — which moves C2 and therefore `composite_score` for every short row. The calibrated `R_REF` / `ALPHA_CLIP` / `CAGR_CLIP` tables were fitted before this change and were not refitted.
+- **Q2/Q3/Q5 are answers, not fixes.** The Q3 contradiction (MasterSpec section C says 3 components, Composite v4 says 4) and the Q5 finding (base-prompt Gate A2 and A2a–A2e both live simultaneously in `constant.py`) are still open questions for Rohit sir — no gate was removed and no spec doc was reconciled, because either change alters business logic.
+- `compute_alpha_interpretation` still has no short-specific "timing skill real" branch (`if not is_short and sa > 1.0`); a short with genuinely positive alpha and a mildly negative `cagr_diff` still renders as "better held as cash". Left alone — it is Gate A2d display and out of scope for Q4.
+
+**Edge cases not handled.**
+- `avg_hold_days` missing or ≤ 0 → `random_window_return` is `None` → `signal_alpha` falls back to bare `er` for *both* directions. That fallback predates this change and was left as is.
+- `bt_bh_cagr` of exactly 0 gives an identical baseline for Long and Short (0.0), which is correct.
+- No guard against a `direction` string that is neither Long nor Short (e.g. `"Neutral"`) — treated as Long.
+
+**Verification.** Repro script in the session scratchpad (`repro_short_alpha.py`) drives `enrich_signal_dict` with a JETS row at 75% WR / avg win 5% / avg loss −2.5% / 18-day hold. Before: Short alpha `3.125` for both B&H `+7%` and `−4%` (identical to `er`, drift ignored). After: `3.625` and `2.8393` respectively, Long unchanged at `2.625`. Regression test `test_short_signal_alpha_uses_random_short_benchmark` pins all three numbers. `pytest tests/test_claude_lateness_metrics.py tests/test_signals_masterspec_g3.py` → 39 passed. `tests/test_cross_function_exit.py` is uncollectable in this environment for a pre-existing reason (`data.py` imports `joblib`, not installed) — unrelated to this change and not introduced by it.
+
+---
+
 ### 2026-08-18 — AI Analyst panel: implementing the audit fixes (5 phases, both repos)
 
 **Ask:** "Analyze any specs in my codebase / gmail mcp server, create a step by step plan for the fixes starting with fake frontend then moving on to other fixes properly implemented and tested." User then approved editing `MindwealthUI_Vue` and chose **option B** for push mode.
@@ -6061,3 +6156,191 @@ They have already drifted: the API version maps `conviction_bq_score` from the o
 **Caveat for the next developer.** `R_REF`/`ALPHA_CLIP`/`CAGR_CLIP` in `claude_lateness_metrics.py` are the *proxy-basis* v4 numbers (calibrated when all-trades hold days were N/A and win-trades hold was substituted). The underlying data bug is now fixed in the reports, so those constants are stale by construction, and the equity thresholds in `constant.py` (R_ref 50 / ALPHA_CLIP 45 / CAGR_CLIP 5) are duplicated there — a recalibration has to update **both** files or the prompt and the scorer will disagree.
 
 **Prod impact:** none.
+
+---
+
+## 2026-08-20 — Claude v3 Addendum §2: mechanical read-only consistency checks (CC1/CC2/CC3)
+
+**Where the change lives:** `/home/ubuntu/MindWealth/constant.py` (`GOOD_SIGNAL_QUERY`) and
+`/home/ubuntu/MindWealth/tests/test_signals_masterspec_g3.py` — core repo, not this one. Logged here
+because this file is the standing job log.
+
+**Source of truth for the requirement.** `Claude_Prompt_v3_Addendum.md` §2, from the 11 Aug mail's
+`Divyanshu_Prompt_v3_Package`. The attachment is not checked into either repo; it was re-read from
+the earlier extraction under the 18 Aug session scratchpad
+(`.../47fc1406-.../scratchpad/att/pkg/Divyanshu_Prompt_v3_Package/`). **If that scratchpad is
+cleaned, the addendum text is only recoverable from Gmail again** — worth committing to
+`instruction_docs/` next time someone touches this thread.
+
+**The one real decision: A2e stays a hard exclusion.**
+§2 says the R:R test "should be labeled as a new mechanical check, not attributed to an existing
+gate number", and that a `tier='tA'` row with `rr_dynamic < 1.0` should be *flagged* rather than
+silently downgraded. Read literally that turns A2e into a flag. But §2's flag-only framing assumes
+§1 has landed in full — i.e. the payload `tier` is authoritative and Gates A2/A2b/A2d are deprecated.
+Only §1's *first* half is implemented (2.2a, entry 4 of 2026-08-20); the gate deprecation was
+deliberately deferred pending Rohit sir's Q5 answer. Applying §2 literally in that intermediate
+state would remove the only R:R test governing Claude's own Tier A and replace it with a flag on a
+tier that does not yet drive the output — a genuine loosening. So the heading was relabelled
+(`R:R Consistency Check (CC2)`, with the "there is no Gate A2e in the base list" note inline), the
+strings changed `R:R gate fail:` → `R:R check fail:`, the exclusion was kept, and CC2's payload flag
+was added alongside it. The prompt states explicitly that the two are separate and both apply.
+**This is the assumption to revisit the moment §1's gate deprecation lands** — at that point the
+exclusion should be deleted and CC2 becomes flag-only, exactly as the addendum reads.
+
+**Why CC2 keys on `rr_dynamic` only.** `compute_signal_tier()`
+(`helper_functions/claude_lateness_metrics.py:1225`) will not emit `tier='tA'` unless
+`rr_static >= 1.0`, so a static-R:R contradiction cannot occur in a well-formed payload; only
+`rr_dynamic`, recomputed daily against current price, can drift away from the pre-computed tier.
+The prompt says so, otherwise Claude would "helpfully" fall back to `rr_static` and the check would
+be dead in every row.
+
+**CC1's Tier C placement is an inference, not addendum text.** The addendum only specifies the flag
+wording for `exit_fired` true / `tier != 'exit'`. Sending the row to Tier C HOLD FOR REVIEW
+(integrity) follows the base prompt's existing treatment of integrity issues (Gate A5, and the Tier C
+section's "integrity issues" bucket). If Rohit sir wants a flagged-but-still-rankable row, that line
+is the one to change.
+
+**Assumptions.**
+- The live prompt is `GOOD_SIGNAL_QUERY` only. `GOOD_SIGNAL_QUERY3_OLD`, `GOOD_SIGNAL_QUERY_old` and
+  `GOOD_SIGNAL_QUERY_v1` in the same file are dead (verified: only `send_email.py` and
+  `regen_claude_report.py` import the live one) and were left untouched, so they still carry the old
+  `Gate A2e` heading. Any future grep for "Gate A2e" will hit them.
+- CC3 changed no lateness logic — Gate A3 already computed live. Only its status and its permitted
+  input set (`days_elapsed + avg_hold_all_trades`) were written down, to stop the "compute it from
+  whatever is present" reading.
+
+**Edge cases not handled.**
+- No code-side assertion exists for CC1/CC2. If the payload really does emit `exit_fired=true` with
+  `tier != 'exit'`, only Claude's narrative will say so; nothing in the pipeline logs or alerts on
+  it. A cheap follow-up would be a warning in `enrich_pipeline.py` where both fields are written.
+- The three new tests assert prompt *text*, not behaviour. They catch an accidental revert of the
+  wording; they cannot catch Claude ignoring the instruction. Behavioural confirmation needs a grep
+  of the next nightly report (smoke tests in `dev_to_prod_migration_todos.md`).
+
+**Adjacent staleness found, not fixed (out of scope).** `OUTSTANDING_NEW_SIGNAL_COLUMN_DESCRIPTIONS`
+in `constant.py` still describes `Signal Quality Composite Score` as the **v2** 3-component formula
+("range −21 to +73 … C1 0–50 + C2 ±15 + C3 −6..+8"), while the prompt body and
+`compute_composite_score()` are both v4 (C1 40 / C2 25 / C3 20 / C4 10, ≈ −41 to +83). That tooltip
+is user-visible in the report glossary. Left alone to keep this diff scoped.
+
+**Prod impact:** yes, immediate on the next nightly run — the cron executes from the
+`/home/ubuntu/MindWealth` working tree. Nothing committed; that tree already carried unrelated
+uncommitted work.
+
+---
+
+## 2026-08-20 — New skill `do-task`
+
+**What it is.** `.claude/skills/do-task/SKILL.md` — project-scoped. Originally shipped with `disable-model-invocation: true` so it would fire only on `/do-task`; that flag was **removed on 2026-08-20** because it made the skill invisible to the session entirely (see the fix block below). It is now model-invocable as well as `/do-task`-invocable. Input is a task description; output is a root-cause fix plus the three log updates.
+
+**Design decisions.**
+- **Phase order is deliberate: reproduce before diagnose, diagnose before fix.** The failure mode this skill exists to prevent is patching the symptom — the repo history has several of these (e.g. the analyst panel's `profit_pct` mapped into the `fwd_wr` field rendered 237 mislabelled cards; the fix that mattered was in `analyst_service.py`, not in the Vue card). The symptom-vs-root-cause table is concrete on purpose; an abstract "find the root cause" instruction does not change behaviour.
+- **MCP is gated behind "the codebase did not answer it".** Gmail and Sheets are slow and noisy relative to grep, and most tasks are answerable from the call chain. Both are read-only by default and inherit the repo's confirm-once-before-write rule from `CLAUDE.md`.
+- **Clarifications are split blocking vs non-blocking** rather than a flat question list, so a business-logic unknown (a threshold, a formula, what a metric should mean) stops the guess while everything unblocked still ships.
+- **No overlap with `robust-test-and-dev-deploy` or `all-done`.** `do-task` stops at "fix verified + logged"; branch hygiene, API version bumps, docs regeneration, dev deploy and pushes stay in `robust-test-and-dev-deploy`, and the completion audit stays in `all-done`. Phase 5 links out rather than duplicating those steps.
+
+**Assumptions.**
+- Rohit sir = `rohit.malhotra1@gmail.com` (taken from `docs/rohit_6aug_answers_2026-08-17.md` and the ssi_validation reports). If another Rohit address is ever used, the Gmail search step needs updating.
+- The skill assumes the standard repo scope (`/home/ubuntu/MindWealth`, `/home/ubuntu/uiv2/git/MindWealth_UI`) and defers to the user for any other path, matching `CLAUDE.md`.
+
+**Left for future.**
+- No `reference.md` or scripts directory — everything fits in one file today. If the root-cause table or the MCP recipes grow, split them out the way `robust-test-and-dev-deploy` does.
+- Not eval-tested (`skill-creator` evals). Triggering is explicit-invocation only, so the description-matching risk is low, but the phase compliance has not been measured across runs.
+- The MindwealthUI_Vue repo (`/home/ubuntu/MindwealthUI_Vue`, branch `ui-dev`) is not named in the skill's scope table even though many tasks touch it; the skill inherits scope from `CLAUDE.md` and the user's path. Worth adding explicitly if frontend tasks become the common case.
+
+**Prod impact:** none — tooling file, no runtime path.
+
+---
+
+## 2026-08-20 — Fix: `/do-task` not invocable in new chats
+
+**Symptom.** Typing `/do-task` in a fresh session did nothing — the skill never loaded.
+
+**Root cause.** `disable-model-invocation: true` in the skill frontmatter. In this harness (Claude Code desktop / Agent SDK) a skill carrying that flag is not surfaced to the session **at all**: the system prompt contains an "available skills" list for model-invocable skills and **no user-invocable-only section**, so a skill hidden from the first list has nothing at all backing the slash name.
+
+**How it was isolated.** By elimination over all 11 local skills (9 project + user scope), the split is exactly on the flag:
+
+| flag present | visible in session |
+|---|---|
+| `api-creation`, `api-creation-2`, `create-understanding-doc`, `do-task`, `prod-pull-and-details`, `report-creation`, `robust-test-and-dev-deploy`, `pat-token-divsum127`, `push-to-github` | **no** |
+| `fetch-and-reload`, `mindwealth-hosting`, `aim-understanding-doc`, `all-done`, `ask`, `concise-output`, `explain-simple`, `human-reply`, `short-output`, `update-asset-list` | **yes** |
+
+File-level causes were ruled out **first**, before touching anything: frontmatter parses as valid YAML with keys `name` / `description` / `disable-model-invocation`; file is UTF-8, no BOM, LF line endings; `name: do-task` matches the directory name; description is 472 chars. Nothing wrong with the file itself.
+
+**Fix.** Deleted the one `disable-model-invocation: true` line. Verification was immediate and direct — the running session registered `do-task` in its skill list within the same turn as the edit, which is the strongest available confirmation since the failure only reproduces at session start.
+
+**Trade-off accepted.** The skill is now auto-invocable by the model on a matching paste, not only on `/do-task`. This is a real behaviour change from the original design intent (entry above: "fires only on `/do-task` or an explicit ask"), but the skill's own description already says "Use when the user invokes /do-task **or** pastes a task/bug/feature description", and there is no way to keep explicit-only invocation and slash-invocability at the same time in this harness. If explicit-only is later required, the cost is that the skill becomes unreachable again — accept auto-invocation or accept invisibility, not both.
+
+**Left for future.** The other 8 skills carrying the same flag remain invisible for the identical reason and were **not** touched — the request named `do-task` only. Removing the flag from each is a one-line `sed` per file if the same behaviour is wanted:
+
+```bash
+sed -i '/^disable-model-invocation: true$/d' /home/ubuntu/uiv2/git/MindWealth_UI/.claude/skills/*/SKILL.md /home/ubuntu/.claude/skills/*/SKILL.md
+```
+
+Note this would also make `prod-pull-and-details` and `robust-test-and-dev-deploy` model-invocable — both run deploys and restarts, so auto-invocation there is a deliberate risk to weigh, not a free win.
+
+**Edge case not handled.** Not verified whether the harness would surface these skills under a different Claude Code surface (CLI vs desktop app vs SDK) — the flag may behave differently there. The conclusion above is confirmed only for the surface in use.
+
+**Backup.** Pre-edit copy of the file is in the session scratchpad (`do-task.SKILL.md.bak`), which is ephemeral; git history is the durable record.
+
+---
+
+## 2026-08-20 — Verification sweep of Rohit sir's feedback column (v2_TODOs col I)
+
+**How it was verified.** Sheet read via the `mindwealth-todos` MCP (read-only). Backend checks hit dev `:8507` and prod `:8506` with each clone's own `API_KEY`. Visual validation used Playwright (`/home/ubuntu/tinder_food/flavor-reels-main/node_modules/playwright`) driving `/usr/bin/google-chrome` headless — the bundled Playwright chromium is not installed, so `executablePath` must be set. Dev login used `config/.bootstrap_admin_password` (dev clone). Screenshots + page text in the session scratchpad.
+
+**Assumptions.**
+- "The website" in Rohit's replies means the deployed Alpha Terminal. Since `www.mindwealth.co` no longer routes to this EC2, dev at `http://51.20.53.218` (`:8514`) was treated as the only reachable terminal and all "confirm on website" items were validated there, with the prod tree checked at code/API level.
+- Prod login was not attempted beyond one failed password from `config/.bootstrap_admin_password` in the prod clone; no retries, no writes, nothing touched under `/home/ubuntu/uiv2/prod/`.
+
+**Deferred / not verified.**
+- Google Drive + Sheets access for Rohit (row 42 PS) — sharing state cannot be checked from this account without impersonating him; needs an explicit share to his address or link-sharing.
+- Row 2 ("check on a call") and row 6/42 modelling asks (pre-2006 COT rebuild from 2003, RM explanatory-power test, episode/market-event gating) — no code exists for these yet; only the earlier FM regression (`docs/ssi_validation/CFTC_ROHIT_SHARE_20260811/csv/fm_pctile_regression.csv`, R² ≤ 0.0015, p ≥ 0.22 at 1/2/4/8w) is on disk.
+- No end-to-end prod chatbot run — prod is the older router build, so the outcome is inferable from code absence and was not re-tested live.
+
+**Edge cases surfaced, not fixed.**
+- CFTC staleness: `macro_intelligence/SSI_CONFIG.yaml` `staleness.max_stale_days.weekly: 8` is measured from the COT *position* date (Tue) rather than the *release* date (Fri), so between Wednesday and the next Friday release the three CFTC inputs expire and Layer 3 falls to 1 of 4 → `COVERAGE_INCOMPLETE`, size multiplier pinned at 1.00×. On 2026-08-20 `/macro/data/freshness` simultaneously reported `cftc_status: CONFIRMED, stale: false` while `/analytics/sentiment/layers` reported the same inputs `expired` — the two staleness clocks disagree.
+- `server/utils/sentiment-mapper.ts:919-922` falls back to `Math.round(ssi_level * 10) / 10` when `layer3.score` is null, so a missing layer renders as a confident `+0.300`.
+- Missing Layer 3 inputs are dropped from the rendered list entirely; Layer 1 shows `unavailable` for NAAIM. Inconsistent treatment of the same condition.
+- `macro_intelligence/data/ssi/cnn_fear_greed.csv`: 974 dates carry `source=crypto_proxy`, 106 of them weekdays, latest 2026-07-15 — the module docstring claims the crypto series is confined to 2011-01 → 2012-05-24.
+
+**Key decisions.**
+- Verification was evidence-first: router behaviour proved by calling `apply_internal_level_override` directly *and* by a live dev chat whose journal line reads `[ROUTER/llm] conv=False internal=True web=False`, rather than trusting the earlier reply text in the sheet.
+- Prod claims were settled by grepping the prod clone (read-only) instead of deploying anything.
+
+**Caveats for the next developer.**
+- The dev-vs-prod split is the single biggest theme: six of the eleven feedback rows are "done on dev, not on the website". Any answer written back into the sheet must say which environment.
+- `www.mindwealth.co` → 191.101.79.86 is a DNS/hosting change outside this repo; nginx here still has a `mindwealth.co` server block proxying `:8512`, which is now dead config.
+
+---
+
+## 2026-08-20 — Claude v3 Addendum §3: closed seven-case tier-override list (`GOOD_SIGNAL_QUERY` 4.8)
+
+**What the task said vs what was true.** The tracking row claimed cases 1 and 2 were undeliverable because `conviction_bq_score` was absent from the Claude payload. That was correct on 2026-08-17 (audit entry #9) and is no longer correct: the §1 work added the `bq_raw → conviction_bq_score` and `fs_class → conviction_fs_class` mapping to `send_email.py` `_load_conviction_lookup`, and those edits are still **uncommitted** in `/home/ubuntu/MindWealth`, which is exactly why the stale claim survived. Re-verified before writing any prompt text — 74 lookup keys off the 2026-08-19 overlays, real values, surviving `_merge_conviction_into_signal` → `enrich_signal_dict` → `json.dumps`. The lesson generalises: the core repo carries a large uncommitted working tree, so "was this built?" cannot be answered from git history alone.
+
+**The real gap found instead.** Cases 3 and 4 depend on a regime *stance*, and no stance ever reached Claude. `_fetch_regime_context()` emitted VIX + SSI breadth + active/watch combo lists only, and the block was prepended to the synthesis prompt alone — the per-box prompts, where tiers are actually ranked, carried no regime data at all. Fixed on both axes: the block now also carries `Runic dominant combo` (`dominant_signal`) and `Regime stance` (`brave_fearful`), and `claude_box_prompt()` prepends it to every box.
+
+**Assumptions shipped (all flagged to Rohit sir, all one-line reversible).**
+- *Case 1 threshold.* The addendum says "below threshold" with no number. Shipped as `conviction_bq_score < +2`, reusing Gate A2c's `conviction_score` floor. This is a scale mismatch by construction: on the 2026-08-19 overlays `bq_raw` spans −5…+14 (median 8.5) while `conviction_score` spans −12…+10 (median 4.0). The direction is conservative (it only downgrades), which is why it was shipped rather than blocked.
+- *Case 2's `≥ +8`.* Taken literally against `conviction_bq_score` as the addendum writes it. Against `bq_raw` that qualifies ~53% of covered rows — far looser than the "MAX CONVICTION" band `conviction_score ≥ +8` means in Gate A2c. The tight guard rails on case 2 (payload tier must be `best`, composite must be in the narrow 30–40 band, every other tA condition must already pass, and every hard gate must pass) are what keep this from being an upgrade firehose.
+- *"Borderline composite_score".* Defined as `30 < composite_score ≤ 40`, anchored on the real upstream cut in `compute_signal_tier()` (`claude_lateness_metrics.py:1240`, `composite_score > 40`) rather than invented. The intent encoded is "misses tA on composite alone".
+- *Stance vocabulary.* `TACTICAL_FEARFUL` / `STRATEGIC_BULLISH` from the addendum exist nowhere in the code. `_brave_fearful()` (`src/macro_intelligence/engine/dominant.py:177`) emits five values only. Mapped fearful → {`TACTICAL_TIGHT_MONEY`, `STRATEGIC_CAUTIOUS`, `TACTICAL_TIGHT_MONEY_STRATEGIC_EASY_MONEY`}, bullish → `TACTICAL_EASY_MONEY`. `NEUTRAL` fires neither case.
+
+**Key decisions.**
+- *Overrides are reporting-layer only.* 4.8 never rewrites the pre-computed `tier`; it is still echoed verbatim per 2.2a, and the row prints payload tier **and** applied tier. This keeps §1's no-recompute rule intact while still letting the seven cases bite.
+- *Hard gates outrank all seven cases.* An upgrade can never promote a row that fails A0–A6. Without this, case 2 or 4 could have re-admitted a row Gate A2/A3/A5 had already rejected.
+- *Case 4 sustains, it does not promote.* The addendum's wording ("can sustain tA") is ambiguous about whether macro tailwind can create a tA. Read narrowly — a bullish regime lifting rows into Tier A is precisely the "Claude's own macro view moves tiers" failure §3 exists to forbid.
+- *Explicit precedence.* The addendum lists seven independent cases and says nothing about collisions. Downgrades (1, 3, 6, 7) beat upgrade/sustain (2, 4); the lowest tier any firing downgrade produces wins; case 5 never moves a tier; all firing cases get listed. Without this an LLM resolves conflicts silently and inconsistently run to run.
+- *Mandatory case-numbered wording.* Every override must print `Tier override [case {n} — {name}]: payload tier={X} → applied tier={Y}` with the triggering fields quoted, and an override without a case number is declared invalid. This is what makes "the list is closed" auditable in the output rather than merely asserted in the prompt.
+- *Regime block into every box prompt.* Costs ~6 lines × `NUM_CLAUDE` prompts. Accepted: without it cases 3/4 are dead at exactly the stage that assigns tiers.
+
+**Edge cases not handled / left for future.**
+- No test asserts an override actually *fires* end to end — verification covers prompt content and payload-field presence, not Claude's behaviour on a live run. The first nightly report after this change should be read for `Tier override [case` lines, and for false positives on case 3 (Combo C is ACTIVE today, so any new long entry at tA is a candidate).
+- Case 3 says "new long entries". The payload has no explicit new-vs-held flag; Claude must infer it from `days_elapsed` / MTM. A `is_new_entry` boolean would make this deterministic.
+- Case 5's "already at budget" is unimplementable as written — cluster budget lives on the Portfolio page and is not in the Claude payload. Shipped as pure concentration-noting, matching addendum §4 ("cluster context: informational only").
+- Addendum 7c's `coverage_incomplete` would be an eighth case (auto-cap at tierc). The field is now carried through `_load_conviction_lookup` but 4.8 deliberately does **not** use it — §3's list is seven, and 7c is explicitly marked "do not implement until Rohit confirms".
+- `SSI breadth stance` still prints `not available` in the regime block (`compute_sbi_breadth_stance` returns nothing usable for 2026-08-19). Pre-existing, untouched here, and it degrades section 9A's SSI preamble — worth a separate task.
+
+**Caveats for the next developer.**
+- Both edited files live in `/home/ubuntu/MindWealth`, whose working tree is uncommitted and is what the nightly cron runs. There is no deploy step and no dev/prod gate — the next cron run is the rollout.
+- `constant.py` `GOOD_SIGNAL_QUERY` is now ~35k chars. Section 4.8 alone is ~4.6k. If prompt length becomes a problem, 4.7 and 4.8 are the two newest blocks and the likeliest candidates for compression, but the case-numbered output contract must survive any rewrite.
