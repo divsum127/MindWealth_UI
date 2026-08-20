@@ -21,6 +21,28 @@ Reference deploy skill: `.cursor/skills/prod-pull-and-details/SKILL.md`
 | `[PROD-ACTION]` | Manual step on server after git merge (secrets, systemd, bootstrap) |
 | `[DONE]` | Completed on prod (date in notes) |
 
+## 2026-08-20 — MERGE CLOSURE: `chatbot-dev` → `chatbot-prod`, 74 commits / 438 files `[DONE]` 2026-08-20
+
+**This closes the git-merge portion of every dated entry below whose commits land in the range `64e17ca26..59e351294` on `chatbot-prod`** (in practice: everything from **2026-08-02** ["SSI Layer 2 gate votes + NH share label"] through **2026-08-18/19** ["chatbot verification sweep"] — i.e. essentially the whole backlog accumulated since the last prod merge on 2026-07-26).
+
+**What actually happened, in order:**
+1. Local `chatbot-prod` was found **5 commits ahead of `origin/chatbot-prod`** (pulled onto the prod clone directly at some point, never pushed) — used local `chatbot-prod` (`64e17ca26`) as the merge base instead of stale `origin`, so those 5 commits are preserved, not reverted.
+2. Committed and pushed the dev clone's own outstanding work first: `730c2a4b0` (docs), `9e4758159` (chore: track `do-task`/`refer` skills), `249a6ac71` (chore: SSI cache + `monitored_trades.json` refresh) → `chatbot-dev` @ `249a6ac71`.
+3. Merged `origin/chatbot-dev` into `chatbot-prod` in an isolated `git worktree` (clean, 0 conflicts) → pushed `chatbot-prod` @ **`59e351294`**.
+4. Prod clone (`/home/ubuntu/uiv2/prod/MindWealth_UI`): stashed 7 dirty cron-output files → `git pull` (clean fast-forward to `59e351294`) → `git stash pop`, resolved 6 conflicts in favour of prod's own fresher cron data (verified newer by embedded timestamp in each file) → left as ordinary uncommitted working-tree changes, nothing committed from prod.
+5. `requirements.txt` unchanged by the merge → no `pip install`. `sudo systemctl restart mindwealth-api.service` → active, clean.
+6. Verified: `smoke-test-apis.sh` 11/11 PASS (prod `:8506` v1.12.0, isolated + writable store; dev `:8507` v1.12.0, isolated + writable store); public `http://51.20.53.218:8506/api/v1/health` with `X-API-Key` → `ok`; Nuxt `:8512` → HTTP 200.
+
+**What this does NOT close — read before assuming an entry below is fully done:**
+- **`[PROD-ACTION]` runtime/config steps inside each historical entry are UNVERIFIED by this task** — e.g. `.env` keys, `config/users.json`, `overwatch_store/alert_state.json` bootstrap, systemd unit edits, cron installs. Only the **git-file merge** and an **API restart** happened tonight. Any entry whose `[PROD-ACTION]` table lists something beyond "the code is now present" should be treated as still open until someone checks it explicitly on the server.
+- **Core-repo (`/home/ubuntu/MindWealth`) entries are entirely out of scope** — that repo is not part of this git merge and deploys via its own nightly-cron-reads-working-tree path (see the 2026-08-20 Claude v3 Addendum §1/§2/§3 entries immediately below — those are **not** affected by this closure and remain `[PENDING]` on their own terms).
+- **`MindwealthUI_Vue` (Nuxt, `:8512`/`:8514`) is a separate repo, not touched by this deploy.** Any entry describing a Nuxt-side change (BFF routes, components, `ui-dev` → `presentation-prod`) is still open.
+- Full per-entry re-tagging of all 71 dated sections below to `[DONE]` was **not** performed — that would risk mis-marking `[PROD-ACTION]` steps as complete when they were not individually re-verified tonight. Treat "commits are now on `chatbot-prod`" as proven; treat every other checkbox in each entry as still needing its own confirmation.
+
+Full details: `docs/mindwealth_ui_job_status.md` (2026-08-20, entry "chatbot-dev → chatbot-prod merge + prod deploy") and `docs/mindwealth_ui_repo_job_status_details.md` (same date/title).
+
+---
+
 ## 2026-08-20 — Claude v3 Addendum §3: closed seven-case tier-override list + regime stance in the payload `[PENDING]`
 
 **Repo:** `/home/ubuntu/MindWealth` (core repo, branch `main`) — **not** the UI repo, so nothing here merges `chatbot-dev` → `chatbot-prod`.
