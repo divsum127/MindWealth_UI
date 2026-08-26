@@ -6479,3 +6479,283 @@ Note this would also make `prod-pull-and-details` and `robust-test-and-dev-deplo
   `inputs_meta.layer3_cftc.pattern_rules`.
 - `scripts/build_cftc_six_point_report.py` takes ~15 minutes cold (forward returns per episode);
   `--cached` reuses the day's JSON artefact and rebuilds the markdown and PDF in seconds.
+
+---
+
+### 2026-08-24 — Call prep brief for Rohit sir (six points)
+
+**Ask:** prepare in detail for the call on six points — dev/prod split + merge date, the sheet rows awaiting his input, row 151/NAAIM costed options, four twice-chased items, the 2003 COT GO, and the Parth chase list. Invoked via the `refer` skill.
+
+**Assumptions made**
+
+1. **"Row 151" = row 142 (NAAIM).** The sheet's last populated row is 142 and NAAIM is the only row matching his description. Treated his copy as offset by 9 (filter or hidden rows) rather than assuming a second sheet — `list_sheets` confirms `v2_TODOs` is the only tab.
+2. **"The 80 Runic audit rows" = sheet rows 62–141.** That block is exactly 80 rows and matches the 11 Aug audit import. Only one row in the whole sheet is tagged `[RUNIC CRITICAL]` (row 90), so if he means 80 *Runic-specific* rows we are looking at different documents — flagged in the brief as a question rather than resolved silently.
+3. **NAAIM dues read as $300.00 / $600.00.** naaim.org renders them as `$30000` / `$60000` with no decimal separator. The `$750 group discount for up to 5 individuals` line only makes sense against $300/individual, so that reading was taken — and explicitly marked in the brief as needing written confirmation from NAAIM before committing.
+4. **"Both grids" (his point 5) read as SQUEEZE + LIQUIDITY EXIT**, with the row 53 sweep and row 54 grid added to the same re-run because they are stale for the same reason.
+5. **Merge date proposed, not agreed** — Tue 2026-08-26 is my proposal in the brief, contingent on his acknowledgement that prod numbers move when the CFTC history fix lands.
+
+**Evidence gathered (so it does not have to be re-derived)**
+
+- API prod: `/home/ubuntu/uiv2/prod/MindWealth_UI` @ `59e351294`, 8 commits behind `chatbot-dev` `88f971d91`.
+- Public Nuxt prod: `/home/ubuntu/MindwealthUI_Vue_prod` @ `ba2bcfd`, 23 behind `ui-dev` `c17c5c6`; `.output/server/index.mjs` mtime 2026-08-18 07:23 UTC; `components/sentiment/` and `components/portfolio/PortfolioOverviewView.vue` both absent; `sentiment-mapper.ts` still emits `NH/NL Ratio`.
+- `mindwealth-ui.service` `WorkingDirectory=/home/ubuntu/MindwealthUI_Vue_prod`, `PORT=8512`, `NUXT_API_BASE_URL=http://127.0.0.1:8506` — confirms the public site is served from the stale tree and proxies the prod API.
+- Sheet census: 142 rows; reply-without-feedback = 44; rows 62–141 status split 20/9/11/16/24 (Completed / Inprogress / Waiting / Not Started / blank).
+- Row 53 numbers from `macro_intelligence/analysis/ssi_validation/18_cot_fm_long_gate_20260807.json`; row 54 from `22_layer2_gate_grid_20260811.json`; CFTC six-point answers from `docs/ssi_validation/_generated/cftc_six_point_answers_20260820.md`.
+
+**Things left for future**
+
+- **The two sweeps need re-running on the post-2026-08-20 sample** before any CONFIG threshold is locked. Row 53 ranks FM percentiles built on the truncated 2017+ CFTC history; row 54 predates the McClellan and `pct_above_200dma` CSV repairs, both Layer 2 inputs. The brief recommends folding both into the 2003 COT re-run so all four decisions come off one consistent sample.
+- **The 80 sheet status cells are not yet filled in.** The brief commits to doing it; it is a sheet **write**, so it needs Rohit sir's explicit request plus one confirmation per the repo's sheet edit policy. Not done unilaterally.
+- **The 6 Aug regime answers doc (`docs/rohit_6aug_answers_2026-08-17.md`) has still not been sent.** It has sat in the repo since 17 Aug. Same for the v3 addendum Q2–Q5 answers, which exist only in the job-status log.
+- **Public-repo API key exposure is unremediated** — `.env` with `NUXT_API_KEY` is committed on the public `D-ParthChauhan/MindwealthUI_Vue`. Rotation + history purge needs coordination with Parth and Rohit sir's go-ahead; a force-push on someone else's repo was not taken unilaterally.
+
+**Edge cases identified but not handled**
+
+- Gmail bodies are not retrievable — `get_email_metadata(include_body=True)` returns `ACCESS_DENIED` under the active filter config, and `search_emails` returns `body: null`. All mail evidence in the brief is subject + date + snippet only. **Nothing in Divyanshu's sent mail could be verified**, so "answered but never sent" is inferred from the absence of a reply thread plus the presence of an unsent repo doc — stated as such rather than asserted.
+- The 44-vs-31 row count gap was not reconciled to his exact filter; the 13 extra rows are listed so it can be settled verbally.
+- Whether NAAIM membership permits *displaying* a derived index on a commercial site is unknown and materially affects option (a). Flagged as a pre-purchase question, not assumed.
+
+**Key decisions**
+
+- Led the brief with the Nuxt deploy gap rather than the API merge, because that single fact explains the recurring "you said it was fixed" disagreement and reframes 5 of the 6 Parth items as one root cause.
+- Gave a recommendation on every open decision (FM 20; Layer 2 → sizing overlay or 0.5/3; RM back on LIQUIDITY EXIT only; NAAIM option (a) with (b) as bridge) rather than presenting neutral option lists, since the ask was to prepare to *drive* the call.
+- Carried the 2008/GFC correction forward explicitly — the earlier "Sep 2008 – May 2009 excluded" wording was hard-coded boilerplate and factually wrong. Better raised by us than found by him.
+- Read-only throughout: no sheet writes, no mail sent, no code touched.
+
+---
+
+## 2026-08-25 — CFTC unit seam: restatement into E-mini equivalents (`unit_basis`)
+
+### What the seam actually was
+
+Not a "contract code in the pull" as first assumed — the pull always asked for one line,
+`S&P 500 Consolidated`, and that line is continuous in the raw files from 2010-06-15 to today.
+CFTC changed **what the line means** on 2023-05-02. Both identities hold exactly, to the contract,
+in the raw zips:
+
+| week | identity | OI |
+|------|----------|----|
+| 2023-04-25 | `Consolidated = E-mini / 5 + big` | 453,159 = 2,265,794/5 |
+| 2023-05-02 | `Consolidated = E-mini + micro / 10` | 2,304,633 = 2,276,183 + 284,500/10 |
+
+So it is two changes at once: the unit moved from big-contract ($250) equivalents to E-mini ($50)
+equivalents (the ~5x), **and** micro e-minis entered the aggregate (they had been excluded, which
+matters from 2020-07 when micro starts). A pure 5x rescale of the old series would have fixed the
+scale and left the composition wrong.
+
+### Why component reconstruction rather than a splice
+
+Scaling the pre-2023 Consolidated values by 5 was the cheaper fix. Rejected because it (a) leaves
+the micro-inclusion change unhandled, (b) hard-codes one factor that only applies to one historical
+event, and (c) breaks again silently at the next redefinition. Summing the component lines at
+notional weight is definitionally continuous, reproduces CFTC's own post-2023 number to <1 contract
+(rounding on micro/10), and extends back to the first TFF report on 2006-06-13 with no stitch —
+which also retires `_stitch_legacy_consolidated_net` from the production path (kept as fallback and
+for regression tests).
+
+### Assumptions
+
+- **Notional weights are the right basis.** Big S&P = $250 x index = 5 E-minis; Micro = $5 x index
+  = 1/10 E-mini. This is CFTC's own convention post-2023 and reproduces their number.
+- **Dividend, total-return and adjusted-rate S&P lines are excluded on purpose.** They are separate
+  products, not size variants of the same exposure, so they are absent from `contract_weights`
+  rather than weighted at zero — an explicit list beats a regex exclusion that has to be maintained.
+- **`last` on duplicate (market, date) rows**, matching the previous parser, to survive CFTC
+  re-publications.
+- Trader classifications are not versioned by CFTC, so the 2006-2010 years classify historical
+  positions using current definitions. Mild look-ahead — Rohit sir flagged it himself and it should
+  be disclosed wherever the pre-2010 years are used.
+
+### Left for future
+
+- **The grids have not been re-run.** Rohit sir's steps 3 and 4 (re-run both grids, then apply the
+  pre/post split as a standing test on any surviving cell) are open. The indicative single-cell
+  check on FM<10/RM>55 says the recommended SQUEEZE cell does not clear par on restated data
+  (7 episodes, mean excess −1.04%, excess-hit 57.1% vs PAR 57.83%), but that is one cell, not the grid.
+- **The June data-gap report PDF has not been reissued.** Two of its rows are now wrong: CFTC
+  FM/RM ("Sep 2009, earlier data physically does not exist" — data starts 2006-06-13, already fixed
+  in `18d572586`) and CNN F&G ("Alternative.me crypto cache, 2018+" — now real CNN 2012-05-25 →,
+  3,558 rows). He asked for the correction to be recorded somewhere permanent so it stops resurfacing.
+- **`cftc_grid_v2.py` prose is stale**: it still describes the series as "legacy STOCK INDEX →
+  Consolidated stitch", still reports `first_pctile_20obs` as a headline, and still carries the
+  GFC-inclusion paragraph written against the old sample. Rohit sir also counted the sample start
+  stated five different ways across our documents and wants one number everywhere.
+- **Local percentile copies not migrated**: `cot_fm_long_gate.py` and `vix_fm_washout.py` each carry
+  a private `_weekly_pctile_series` with the same 20-observation minimum that was just fixed in the
+  shared one. They rank on the restated series so the units are right, but their ramp-up is not.
+- **GFC forward returns are still out of the percentile grids.** With a full-window requirement and
+  raw data from 2006-06-13, the first ranked week is 2009-06-02 — after the crash. Restatement did
+  not change that arithmetic. Including 2008 needs either a shorter window, an accepted partial
+  window, or the legacy non-commercial proxy (already built, and measured as *not* like-for-like).
+  That is Rohit sir's call, not a code fix.
+
+### Edge cases identified, not handled
+
+- `detect_unit_break` needs at least two fields with non-negligible prior levels to vote. A
+  redefinition that hits only one field would not be caught; nothing in the CFTC history looks like
+  that, and the single-series form is deliberately documented as weaker.
+- The check compares consecutive prints, so a redefinition phased in over several weeks would slip
+  under the ratio. The 2023 change was a single-week switch.
+- `contract_weights` is keyed on the exact market name. If CFTC renames a line (as it did:
+  `E-MINI S&P 500 STOCK INDEX` → `E-MINI S&P 500` in Feb 2022), the new name must be added or that
+  leg silently drops out. Both known names are in the config; a missing leg now shows up as a level
+  shift in `detect_unit_break` rather than passing unnoticed.
+
+### Key decisions
+
+- Unit basis is configurable (`emini_equivalent` | `consolidated_line`) rather than hard-coded, so
+  the old series stays reproducible for the pre/post comparison Rohit sir wants to see.
+- The legacy published series is exported alongside the restated one
+  (`cftc_tff_sp500_fm_rm_legacy_consolidated.csv`) so the seam remains demonstrable from files
+  rather than from an argument.
+- Percentiles in the export are blank until the 156-week window is genuinely full, so the first
+  ranked date *is* the analysis start — there is no longer a second, looser start date to quote.
+
+---
+
+## 2026-08-25 — CFTC grid re-run on the restated series, and Rohit sir's report fix list
+
+### The three numbers that matter
+
+| | result |
+|---|---|
+| PAR 12w excess-hit (899 weeks) | 56.82% |
+| FM<10/RM>55 (the recommended cell) | 7 episodes, mean excess **−1.18%**, excess-hit **57.14%** |
+| Only cells above par | FM<5 / RM>40, >45, >50 — 4–5 episodes each, 100% excess-hit |
+
+The recommendation lands on par once the units are consistent and partial windows stop being ranked.
+That is the honest answer to the sign-off question, and it is the same answer Rohit sir reached from
+the old file by splitting it at the seam.
+
+### The finding he did not have
+
+LIQUIDITY EXIT's four-year silence is **not** a consequence of the FM unit seam. He inferred it was
+("post-break the percentile is pinned low, so a low-FM condition fires constantly and a high-FM
+condition can never fire"), which was a reasonable read of a contaminated file. It does not survive
+restatement: the pattern is still silent. Split by leg —
+
+| leg | pre-seam % of weeks | post-seam % | last fired | weeks since |
+|-----|--------------------:|------------:|-----------|------------:|
+| `FM_pct>45` | 60.7 | 35.8 | 2026-08-18 | 0 |
+| `FM_pct>70` | 36.8 | 12.7 | 2026-08-18 | 0 |
+| `RM_pct<30` | 49.7 | **0.0** | 2023-03-28 | 177 |
+| `RM_pct<15` | 28.1 | **0.0** | 2022-11-08 | 197 |
+
+The FM leg still fires. The **RM** leg has not: asset managers have run persistently net long since
+2023 (RM net mean 977k E-mini equivalents in 2024 against 392k in 2022), so a 156-week rank of RM has
+not approached its floor — post-seam it never goes below 42.3. This is the re-basing problem Rohit sir
+raised himself on 4 Aug about FM, showing up on the RM side: a rolling percentile of a persistently
+trending series stops reaching its own extremes.
+
+### Assumptions
+
+- The pre/post split date stays 2023-05-02 even though the restated series has no seam there. It is
+  now a **stability** test, not a data check — an arbitrary but non-cherry-picked date with roughly
+  15%/85% of the sample either side.
+- `MIN_OFFSET_EPISODES = 8` is a judgement, not a derived threshold. Twelve subsamples of two or
+  three episodes agreeing on sign is not evidence; eight is the point where the agreement starts to
+  carry information. Worth stating to Rohit sir as a choice rather than presenting as a standard.
+- Cells are ranked on both mean−median gap and excess-hit, published side by side, because the two
+  orderings genuinely disagree and only he can say which he wants to act on. The report says to act
+  on excess-hit, per his 4 Aug statement.
+- FM ÷ open interest cuts are added but not recommended. They are a better construction in principle
+  (a share, not a count) but they have not been examined properly yet.
+
+### Left for future
+
+- **Block bootstrap not run.** The re-run used `--no-bootstrap` for turnaround. The 10,000-draw
+  stationary block bootstrap should run before anything is signed off.
+- **The FM<5 cells need more than a caveat.** 4–5 episodes, two of them seven weeks apart in spring
+  2023, one with no forward return yet. They survive the split and beat par, which is exactly the
+  shape Rohit sir said he wanted to see ("80% hit rate on 7 episodes over 30% on 200") — but at n=4 the
+  right next step is an out-of-sample or alternative-construction check, not a recommendation.
+- **RM leg needs a decision.** If asset managers stay structurally long, a rolling-percentile RM
+  floor may never fire again and LIQUIDITY EXIT is dead as specified. Options: drop the RM leg, use a
+  fixed RM cut, or use RM change rather than RM level. Not a code fix — a spec decision.
+- **`cot_fm_long_gate.py` / `vix_fm_washout.py`** still carry private 20-observation percentile
+  helpers.
+- **PDF/share package not regenerated.** `export_cftc_threshold_report_pdfs.py` now resolves the
+  latest artifacts instead of the pinned 4 Aug filenames, but has not been run against this set.
+
+### Edge cases identified, not handled
+
+- `leg_availability` reports the two legs of the published patterns only. A three-leg condition would
+  need the same treatment to attribute silence correctly.
+- `split_stability` calls a cell "survives" on sign agreement plus both sides firing. It does not test
+  whether the two sides differ significantly — with 2–4 episodes a side, nothing would.
+- Duplicate detection compares exact episode-date sets. Cells overlapping on nine of ten episodes are
+  not flagged, though they are nearly as non-independent.
+
+### Key decisions
+
+- Robustness targets are derived from the grid ranking rather than a fixed list, so the tested cells
+  and the recommended cell can no longer drift apart — that drift is what produced a robustness
+  section covering four cells, none of which was the recommendation.
+- `stable_across_offsets` is now gated on offset size, so the flag cannot read "stable" off twelve
+  two-episode subsamples.
+- The table separator is generated from the same column list as the header. The old hand-written
+  separator carried a stray `||`, making it one column wider than the header — enough for a strict
+  renderer to abandon the table, which is what dumped the LIQUIDITY EXIT rows into loose text.
+
+---
+
+## 2026-08-25 — Re-validating the downstream outputs: the stored history carried the seam
+
+### The assumption that was wrong
+
+Every consumer reads through `fetch_cftc_fast_money_net`, so I assumed fixing the pull fixed
+everything downstream. That is true for anything computed on demand and false for anything already
+persisted. `daily_readings.CFTC` and `cftc_positioning` are written weekly as the data arrives, so
+each row froze whatever unit was current when it was written. The stored series was mixed-unit: old
+units before 2023-05-02, new units after, with no marker anywhere saying so.
+
+This is worth remembering as a general point. A unit change in a source contaminates **three** places
+and they need separate fixes: the parser, the derived analysis, and the persisted history.
+
+### Measured before the rebuild
+
+- `daily_readings.CFTC`: 0 of 672 pre-seam rows matched the restated series.
+- Stored `pctile_rank_3yr`: mean absolute error 5.2 points, 20% of days off by more than 10, 5.3% by
+  more than 25.
+- Combo E `CFTC >= 85th`: 22 days flip, 16 false passes and 6 missed fires, 2010-06-18 to 2025-04-18.
+- `cftc_positioning`: 2,951 of 4,127 rows had a wrong `fm_net`.
+
+### One thing that looked like a defect and is not
+
+37 of 223 post-seam rows did not match, which initially looked like a second units problem. They are
+publication lag: the stored value equals the previous week's print for up to six days after release,
+which is exactly what `PENDING_CFTC_CONFIRM` is for. Left alone.
+
+### MR-006 and MR-063
+
+Could not be re-validated by name. Those IDs are not in the repo, not in `v2_TODOs`, and appear in
+exactly one email. They are Rohit sir's own reference numbers. Both are described as logging FM
+percentile readings, so whatever produces them reads `daily_readings.CFTC` and is repaired by the
+rebuild, but that is inference. He needs to say what they map to before anyone claims they are fixed.
+
+### Assumptions
+
+- Daily rows are matched to weekly prints with `merge_asof` (last print at or before the date), which
+  reproduces how the nightly writes them.
+- Rows before the first full 156-week window get a null percentile rather than a partial-window rank,
+  consistent with the rest of the change.
+- The rebuild refuses to run if `detect_unit_break` finds a break in the source series, so it cannot
+  write a fresh set of mixed-unit rows if a future redefinition lands unnoticed.
+
+### Left for future
+
+- **Prod `runic.db` has the same defect.** Untouched. It needs the same script after the merge, and in
+  the right order: code merge, then re-export, then rebuild, then restart. Running the rebuild against
+  old code would write the old units straight back.
+- `forward_returns`, `signal_fires` and `macro_regime_log` were not audited for CFTC-derived values.
+  No CFTC column in them, but a derived field could exist.
+- No unit column on `daily_readings`. If a source is ever redefined again, the same silent mixing
+  happens. Worth a `unit` or `source_version` column, but that is a schema change and out of scope here.
+
+### Edge cases identified, not handled
+
+- The rebuild updates existing rows only. Dates present in the restated series but absent from the DB
+  are not inserted, so a gap in the stored history stays a gap.
+- `updated_at` on `cftc_positioning` is left alone, so a rebuilt row still shows its original write
+  time. Deliberate, to avoid pretending it was freshly pulled, but it does mean the rebuild is not
+  visible from the table itself. The backup filename is the record.

@@ -7,6 +7,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+from src.macro_intelligence.config import load_config
 from src.macro_intelligence.engine.forward_returns import _nyse_sessions, forward_return_pct
 from src.macro_intelligence.engine.percentiles import percentile_rank
 from src.sentiment_superindex.analysis.forward_metrics import load_spx, returns_at_horizons
@@ -21,11 +22,28 @@ DEFAULT_HORIZONS: dict[str, int] = {
 }
 
 
-def weekly_pctile_series(net: pd.Series, weeks: int = 156) -> pd.Series:
+# Below this many episodes per offset, "stable across offsets" is arithmetic, not evidence.
+MIN_OFFSET_EPISODES = 8
+
+
+def weekly_pctile_series(
+    net: pd.Series,
+    weeks: int = 156,
+    *,
+    min_obs: int | None = None,
+) -> pd.Series:
+    """Rolling percentile rank, published only once the window is genuinely full.
+
+    ``min_obs`` used to be a hard 20, so the series began ~136 weeks before a 156-week window
+    could exist and every GFC-era rank was computed on a partial window while being labelled a
+    3-year percentile (Rohit, 24 Aug 2026: "set analysis_start to 2009-06-02, not the
+    20-observation date"). Callers that genuinely want the ramp-up can still ask for it.
+    """
+    required = weeks if min_obs is None else int(min_obs)
     out: list[tuple[pd.Timestamp, float]] = []
     for dt in net.index:
         window = net.loc[:dt].dropna().tail(weeks)
-        if len(window) < 20:
+        if len(window) < required:
             continue
         out.append((dt, percentile_rank(float(net.loc[dt]), window)))
     return pd.Series(dict(out)).sort_index()
@@ -333,7 +351,20 @@ def subsample_stability_weekly(
         "offset_excess_spread": round(spread, 4) if spread is not None else None,
         "offsets_positive_excess": n_positive,
         "offsets_with_data": n_with_data,
-        "stable_across_offsets": n_with_data >= 8 and n_positive >= max(8, int(0.67 * n_with_data)),
+        "median_episodes_per_offset": int(np.median([r["n_episodes"] for r in offset_rows])) if offset_rows else 0,
+        "min_episodes_per_offset": int(np.min([r["n_episodes"] for r in offset_rows])) if offset_rows else 0,
+        # Rohit: "the offsets carry 2-7 episodes each, so 'stable across offsets' isn't meaningful
+        # at that size". Agreeing sign across twelve two-episode subsamples is not evidence, so the
+        # verdict is withheld below a floor rather than reported as a pass.
+        "meaningful_offset_size": bool(
+            offset_rows and float(np.median([r["n_episodes"] for r in offset_rows])) >= MIN_OFFSET_EPISODES
+        ),
+        "stable_across_offsets": (
+            n_with_data >= 8
+            and n_positive >= max(8, int(0.67 * n_with_data))
+            and bool(offset_rows)
+            and float(np.median([r["n_episodes"] for r in offset_rows])) >= MIN_OFFSET_EPISODES
+        ),
     }
 
 
@@ -505,24 +536,47 @@ def stationary_block_bootstrap(
     }
 
 
-def _cftc_sample_diagnostics(fm: pd.Series, rm: pd.Series, weeks: int = 156) -> dict[str, Any]:
-    """Effective CFTC backtest window after rolling percentiles (min 20 obs, tail 156)."""
+def _cftc_sample_diagnostics(
+    fm: pd.Series,
+    rm: pd.Series,
+    weeks: int = 156,
+    *,
+    open_interest: pd.Series | None = None,
+) -> dict[str, Any]:
+    """The sample window, stated once.
+
+    Rohit counted the sample start given five different ways across our documents
+    (2006-01-01, Jun 2009, Sep 2009, 2006-06-13, 2006-10-24). There are only ever two honest
+    numbers here -- when the raw weekly prints begin, and when the first *full* rolling window
+    closes -- and the analysis starts at the second. ``weekly_pctile_series`` now refuses to rank
+    a partial window, so ``analysis_start`` and ``first_full_window`` are the same date by
+    construction rather than by coincidence.
+    """
+    from src.macro_intelligence.data.cftc_pull import detect_unit_break
+
     fm_pct = weekly_pctile_series(fm, weeks=weeks)
     rm_pct = weekly_pctile_series(rm, weeks=weeks)
     idx = fm_pct.index.intersection(rm_pct.index)
-    full156 = None
+    full_window = None
     for dt in fm.index:
         if len(fm.loc[:dt].dropna().tail(weeks)) >= weeks:
-            full156 = dt
+            full_window = dt
             break
+    fields = {"fm_net": fm, "rm_net": rm}
+    if open_interest is not None and not open_interest.empty:
+        fields["open_interest"] = open_interest
+    breaks = detect_unit_break(pd.DataFrame(fields).dropna(how="all"))
     return {
+        "unit_basis": str(load_config().get("cftc", {}).get("unit_basis", "emini_equivalent")),
         "raw_start": str(fm.index.min().date()) if not fm.empty else None,
         "raw_end": str(fm.index.max().date()) if not fm.empty else None,
-        "first_pctile_20obs": str(fm_pct.index.min().date()) if not fm_pct.empty else None,
-        "first_full_156w_window": str(full156.date()) if full156 is not None else None,
+        "raw_weeks": int(len(fm)),
+        "pctile_window_weeks": int(weeks),
+        "first_full_window": str(full_window.date()) if full_window is not None else None,
         "analysis_start": str(idx.min().date()) if not idx.empty else None,
         "analysis_end": str(idx.max().date()) if not idx.empty else None,
         "analysis_weeks": int(len(idx)),
+        "unit_breaks": breaks,
     }
 
 
@@ -533,8 +587,11 @@ def load_analysis_context(
 ) -> dict[str, Any]:
     from src.macro_intelligence.data.cftc_pull import fetch_cftc_asset_manager_net, fetch_cftc_fast_money_net
 
+    from src.macro_intelligence.data.cftc_pull import fetch_cftc_open_interest
+
     fm = fetch_cftc_fast_money_net(cftc_start_year)
     rm = fetch_cftc_asset_manager_net(cftc_start_year)
+    open_interest = fetch_cftc_open_interest(cftc_start_year)
     spx = load_spx("1990-01-01")
     sessions = _nyse_sessions()
     fm_pct = weekly_pctile_series(fm)
@@ -545,10 +602,19 @@ def load_analysis_context(
     idx = idx[idx >= pd.Timestamp(start)]
     benchmark = build_market_benchmark(spx, idx, sessions=sessions)
     fm_dist = fm_fixed_distribution_cuts(fm)
-    diag = _cftc_sample_diagnostics(fm, rm)
+    diag = _cftc_sample_diagnostics(fm, rm, open_interest=open_interest)
+    fm_over_oi = (
+        (fm / open_interest.reindex(fm.index)).replace([float("inf"), float("-inf")], pd.NA).dropna()
+        if not open_interest.empty
+        else pd.Series(dtype=float)
+    )
     return {
         "fm": fm,
         "rm": rm,
+        "open_interest": open_interest,
+        # Rohit: "FM / open interest is probably the better construction" -- a share of the market
+        # rather than a contract count, so it is comparable across a decade of growth in the venue.
+        "fm_over_oi": fm_over_oi.astype(float),
         "spx": spx,
         "sessions": sessions,
         "fm_pct": fm_pct,
@@ -558,9 +624,12 @@ def load_analysis_context(
         "fm_distribution": fm_dist,
         "sample_diagnostics": diag,
         "data_note": (
-            "TFF FM/RM stitched: legacy S&P 500 STOCK INDEX through 2010-06, then Consolidated; "
-            f"raw from {diag['raw_start']}; first percentile (≥20w) {diag['first_pctile_20obs']}; "
-            f"first full 156w window {diag['first_full_156w_window']}; "
-            f"analysis weeks {diag['analysis_weeks']} ({diag['analysis_start']} → {diag['analysis_end']})."
+            f"CFTC TFF S&P 500, restated into {diag['unit_basis']} units (component contract lines at "
+            "notional weight - E-mini 1.0, big 5.0, micro 0.1 - so CFTC's 2023-05-02 redefinition of the "
+            "Consolidated line no longer puts a 5x seam mid-sample); "
+            f"raw {diag['raw_start']} to {diag['raw_end']} ({diag['raw_weeks']} weekly prints); "
+            f"first full {diag['pctile_window_weeks']}w window {diag['first_full_window']}; "
+            f"analysis weeks {diag['analysis_weeks']} ({diag['analysis_start']} to {diag['analysis_end']}); "
+            f"unit breaks detected: {diag['unit_breaks'] or 'none'}."
         ),
     }

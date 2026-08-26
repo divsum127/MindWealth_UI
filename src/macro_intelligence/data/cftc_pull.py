@@ -403,6 +403,146 @@ def _stitch_legacy_consolidated_net(df: pd.DataFrame, *, asset_manager: bool = F
     return pd.concat([pre, consolidated]).sort_index().groupby(level=0).last()
 
 
+def _component_frames(df: pd.DataFrame) -> tuple[str | None, str | None, pd.Series]:
+    """(market column, date column, normalised market names) for the component-line parsers."""
+    market_col = _find_col(df, ["Market_and_Exchange_Names", "Market and Exchange Names"])
+    date_col = _find_col(
+        df, ["Report_Date_as_YYYY-MM-DD", "Report_Date", "As of Date in Form YYYY-MM-DD"]
+    )
+    if market_col is None:
+        return None, date_col, pd.Series(dtype=str)
+    return market_col, date_col, df[market_col].astype(str).str.strip()
+
+
+def _emini_equivalent_series(
+    df: pd.DataFrame,
+    *,
+    asset_manager: bool = False,
+    open_interest: bool = False,
+) -> pd.Series:
+    """S&P 500 positioning restated in E-mini contract equivalents, continuous 2006-06-13 on.
+
+    CFTC changed what the "S&P 500 Consolidated" line means on 2023-05-02. Verified against the
+    raw files, to the contract:
+
+        2023-04-25  Consolidated OI 453,159   = E-mini 2,265,794 / 5      (+ big, then zero)
+        2023-05-02  Consolidated OI 2,304,633 = E-mini 2,276,183 + micro 284,500 / 10
+
+    So the line switched from big-contract ($250) equivalents to E-mini ($50) equivalents, and
+    started including micro. Everything before 2023-05-02 is therefore 5x smaller than everything
+    after it -- the pre and post ranges do not overlap in a single one of 834 weeks, and any
+    156-week window spanning the date ranks one unit against the other. That artifact is what
+    pinned the FM percentile near zero through 2023-24 (found by Rohit, 24 Aug 2026).
+
+    Rather than splice a scale factor onto the Consolidated line -- which would still carry the
+    micro-inclusion change and would break again at the next redefinition -- the series is summed
+    from the component contract lines at their notional weights (see ``cftc.contract_weights``).
+    That reproduces post-2023 Consolidated exactly (the big contract is retired, so the sum is
+    E-mini + micro/10) and extends cleanly back to the first TFF report on 2006-06-13, with no
+    stitch and no pre-2010 special case.
+    """
+    cfg = load_config().get("cftc", {})
+    weights: dict[str, float] = cfg.get("contract_weights") or {}
+    if not weights:
+        return pd.Series(dtype=float)
+
+    market_col, date_col, names = _component_frames(df)
+    if market_col is None or date_col is None or names.empty:
+        return pd.Series(dtype=float)
+
+    if open_interest:
+        value_cols = [_find_col(df, ["Open_Interest_All", "Open Interest (All)"])]
+    elif asset_manager:
+        value_cols = [
+            _find_col(df, ["Asset_Mgr_Positions_Long_All", "Asset Mgr Positions-Long-All"]),
+            _find_col(df, ["Asset_Mgr_Positions_Short_All", "Asset Mgr Positions-Short-All"]),
+        ]
+    else:
+        value_cols = [
+            _find_col(df, ["Lev_Money_Positions_Long_All", "Lev Money Positions-Long-All"]),
+            _find_col(df, ["Lev Money Positions-Short-All", "Lev_Money_Positions_Short_All"]),
+        ]
+    if any(col is None for col in value_cols):
+        return pd.Series(dtype=float)
+
+    dates = _parse_report_dates(df[date_col])
+    lowered = names.str.lower()
+    total: pd.Series | None = None
+    for label, weight in weights.items():
+        mask = lowered == str(label).strip().lower()
+        if not mask.any():
+            continue
+        sub = df.loc[mask]
+        value = pd.to_numeric(sub[value_cols[0]], errors="coerce")
+        if len(value_cols) == 2:
+            value = value - pd.to_numeric(sub[value_cols[1]], errors="coerce")
+        leg = pd.Series(value.values, index=pd.DatetimeIndex(dates.loc[mask])).dropna()
+        # One row per market per report date; ``last`` guards against re-published corrections.
+        leg = leg.groupby(level=0).last() * float(weight)
+        total = leg if total is None else total.add(leg, fill_value=0.0)
+
+    if total is None or total.empty:
+        return pd.Series(dtype=float)
+    return total.sort_index()
+
+
+def detect_unit_break(
+    data: pd.DataFrame | pd.Series,
+    *,
+    ratio: float | None = None,
+    agreement: float = 0.15,
+) -> list[dict[str, Any]]:
+    """Weeks that look like a contract/aggregation change rather than like positioning.
+
+    Rohit's standing test after the 2023-05-02 seam. The tell is not that one number moved a
+    lot -- leveraged funds really do swing -- it is that *every* field scales by the *same*
+    factor in the same week, which no market variable does. So pass the fields together
+    (open interest, FM net, RM net) and the check requires them to agree:
+
+        2023-05-02 raw Consolidated: OI x5.09, FM x4.81, RM x5.09  -> flagged
+        2022-03-22 genuine short build: OI x1.01, FM x1.6, RM x1.0 -> not flagged
+
+    ``ratio`` is the minimum common scale factor (default ``cftc.unit_break_ratio``);
+    ``agreement`` is how far the per-field factors may spread before the week is treated as
+    ordinary positioning. A single Series is checked on its own, with no agreement test, which
+    is weaker -- prefer the frame form.
+    """
+    cfg = load_config().get("cftc", {})
+    ratio = float(ratio if ratio is not None else cfg.get("unit_break_ratio", 2.5))
+    frame = data.to_frame("value") if isinstance(data, pd.Series) else data
+    frame = frame.dropna(how="all").sort_index()
+    if len(frame) < 2:
+        return []
+
+    prior = frame.shift(1)
+    # Ratios only mean anything away from zero: a field crossing zero produces an arbitrary
+    # factor, so fields whose prior level is negligible sit the vote out.
+    floor = frame.abs().median() * 0.05
+    breaks: list[dict[str, Any]] = []
+    for i in range(1, len(frame)):
+        factors: dict[str, float] = {}
+        for col in frame.columns:
+            before, after = prior[col].iloc[i], frame[col].iloc[i]
+            if pd.isna(before) or pd.isna(after) or abs(before) <= float(floor[col]):
+                continue
+            factors[str(col)] = abs(float(after)) / abs(float(before))
+        if len(factors) < max(2, len(frame.columns)):
+            continue
+        values = list(factors.values())
+        if min(values) < ratio:
+            continue
+        if (max(values) - min(values)) / min(values) > agreement:
+            continue  # fields disagree -> positioning, not a redefinition
+        breaks.append(
+            {
+                "date": str(frame.index[i].date()),
+                "common_factor": round(sum(values) / len(values), 2),
+                "factors": {k: round(v, 2) for k, v in factors.items()},
+            }
+        )
+    return breaks
+
+
 CFTC_LEGACY_URL = "https://www.cftc.gov/files/dea/history/deacot{year}.zip"
 LEGACY_FIRST_YEAR = 2003
 TFF_FIRST_DATE = "2006-06-13"
@@ -586,12 +726,34 @@ def describe_cftc_pctile_window(
     }
 
 
+def _positioning_series(df: pd.DataFrame, *, asset_manager: bool = False) -> pd.Series:
+    """FM/RM net on the configured unit basis, falling back to the Consolidated line."""
+    basis = str(load_config().get("cftc", {}).get("unit_basis", "emini_equivalent")).lower()
+    if basis == "emini_equivalent":
+        restated = _emini_equivalent_series(df, asset_manager=asset_manager)
+        if not restated.empty:
+            return restated
+        logger.warning(
+            "CFTC unit_basis=emini_equivalent produced no rows (contract lines missing?); "
+            "falling back to the Consolidated line, which carries the 2023-05-02 unit seam."
+        )
+    return _stitch_legacy_consolidated_net(df, asset_manager=asset_manager)
+
+
+def fetch_cftc_open_interest(start_year: int = 2006) -> pd.Series:
+    """S&P 500 open interest on the same unit basis as the FM/RM series."""
+    df = _download_frames(start_year)
+    if df.empty:
+        return pd.Series(dtype=float)
+    return _emini_equivalent_series(df, open_interest=True)
+
+
 def fetch_cftc_fast_money_net(start_year: int = 2006) -> pd.Series:
     try:
         df = _download_frames(start_year)
         if df.empty:
             return pd.Series(dtype=float)
-        s = _stitch_legacy_consolidated_net(df, asset_manager=False)
+        s = _positioning_series(df, asset_manager=False)
         from src.macro_intelligence.data.retry_cache import log_pull
 
         log_pull("cftc_fm", "OK", {"rows": len(s)})
@@ -608,7 +770,7 @@ def fetch_cftc_asset_manager_net(start_year: int = 2006) -> pd.Series:
         df = _download_frames(start_year)
         if df.empty:
             return pd.Series(dtype=float)
-        s = _stitch_legacy_consolidated_net(df, asset_manager=True)
+        s = _positioning_series(df, asset_manager=True)
         from src.macro_intelligence.data.retry_cache import log_pull
 
         log_pull("cftc_rm", "OK", {"rows": len(s)})

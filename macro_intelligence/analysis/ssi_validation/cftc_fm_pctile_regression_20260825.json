@@ -1,0 +1,34 @@
+{
+  "test_id": "cftc_fm_pctile_regression",
+  "n": 891,
+  "rows": [
+    {
+      "horizon": "1w",
+      "n": 891,
+      "r_squared": 0.000372,
+      "p_value": 0.565435,
+      "slope": -0.001417
+    },
+    {
+      "horizon": "2w",
+      "n": 891,
+      "r_squared": 0.000287,
+      "p_value": 0.613837,
+      "slope": -0.001731
+    },
+    {
+      "horizon": "4w",
+      "n": 891,
+      "r_squared": 0.000249,
+      "p_value": 0.638088,
+      "slope": 0.002175
+    },
+    {
+      "horizon": "8w",
+      "n": 891,
+      "r_squared": 0.002989,
+      "p_value": 0.102946,
+      "slope": 0.010278
+    }
+  ]
+}

@@ -17,8 +17,13 @@ from src.macro_intelligence.data.cftc_pull import (
     fetch_cftc_asset_manager_net,
     fetch_cftc_fast_money_net,
 )
-from src.sentiment_superindex.analysis.cftc_grid_v2 import SQUEEZE_FM_THRESHOLDS, SQUEEZE_RM_THRESHOLDS
+from src.sentiment_superindex.analysis.cftc_grid_v2 import (
+    SQUEEZE_FM_THRESHOLDS,
+    SQUEEZE_RM_THRESHOLDS,
+    rank_cells_by_excess_hit,
+)
 from src.sentiment_superindex.analysis.cftc_report_format import (
+    SIDE_CONVENTION_NOTE,
     distribution_table_header,
     distribution_table_line,
     distribution_table_sep,
@@ -97,8 +102,16 @@ def compile_report(*, squeeze_path: Path, liq_path: Path, out_path: Path) -> Non
     lines.append("|------|-------|")
     lines.append(f"| CFTC Fast Money through | **{fm.index[-1].strftime('%Y-%m-%d')}** (Tuesday position date) |")
     lines.append(f"| CFTC Real Money through | **{rm.index[-1].strftime('%Y-%m-%d')}** |")
-    lines.append("| Percentile window | 156 weeks (~3 years), rolling |")
-    lines.append("| Backtest start | 2006-01-01 |")
+    diag = squeeze.get("sample_diagnostics") or {}
+    lines.append(f"| Units | **{diag.get('unit_basis', 'emini_equivalent')}** — component contract lines at "
+                 "notional weight; CFTC's 2023-05-02 redefinition of the Consolidated line is no longer a seam |")
+    lines.append(f"| Raw weekly prints | {diag.get('raw_start', '—')} → {diag.get('raw_end', '—')} "
+                 f"({diag.get('raw_weeks', '—')} weeks) |")
+    lines.append(f"| Percentile window | {diag.get('pctile_window_weeks', 156)} weeks, rolling — "
+                 "**partial windows are not ranked** |")
+    lines.append(f"| Backtest start | **{diag.get('analysis_start', '—')}** (first full window; "
+                 f"{diag.get('analysis_weeks', '—')} weeks) |")
+    lines.append(f"| Unit-break scan | {diag.get('unit_breaks') or 'none'} |")
     lines.append("| Episode collapse | Consecutive qualifying weeks → one episode (first fire date) |")
     lines.append("| Forward returns | S&P 500 at 4w / 8w / 12w trading days |")
     lines.append("| Benchmark | Mean SPX return across **all** weeks in sample per horizon |")
@@ -123,49 +136,68 @@ def compile_report(*, squeeze_path: Path, liq_path: Path, out_path: Path) -> Non
     lines.append("## 3. Executive summary")
     lines.append("")
 
-    if best_squeeze:
-        m = horizon_metrics(best_squeeze, "12w")
-        lines.append(
-            f"1. **SQUEEZE** top cell by 12w mean−median gap: "
-            f"**`{best_squeeze.get('condition')}`** "
-            f"(n_ep={best_squeeze.get('n_episodes')}, n_wk={best_squeeze.get('n_weeks')}, "
-            f"gap={m.get('mean_median_gap')}%, mean={m.get('mean')}%, hit={m.get('hit_pct')}%, "
-            f"excess_hit={m.get('hit_excess_pct')}%). "
-            f"Prior Sharpe-ranked FM<20/RM>45 shows **negative** gap — tracks market, not tail."
-        )
-    else:
-        lines.append("1. **SQUEEZE** — no rolling cells with computable 12w mean−median gap.")
-    if pdf_squeeze:
-        ps = horizon_metrics(pdf_squeeze, "12w")
-        lines.append(
-            f"2. PDF default FM<30/RM>50: n_ep={pdf_squeeze.get('n_episodes')}, "
-            f"gap={ps.get('mean_median_gap')}%, mean={ps.get('mean')}%, hit={ps.get('hit_pct')}%."
-        )
-    if pdf_liq:
-        p4 = horizon_metrics(pdf_liq, "4w")
-        p12 = horizon_metrics(pdf_liq, "12w")
-        lines.append(
-            f"3. **LIQUIDITY EXIT** RM<30/FM>60: n_ep={pdf_liq.get('n_episodes')}, "
-            f"4w gap={p4.get('mean_median_gap')}%, hit={p4.get('hit_pct')}%, "
-            f"12w mean={p12.get('mean')}% — modest stress flag, not a strong short."
-        )
-    lines.append("4. Patterns are **common** (~5–10 fires/year) — use as context flags only.")
+    par_hit = horizon_metrics(squeeze.get("par", {}), "12w").get("hit_excess_pct")
+    ranked_hit = rank_cells_by_excess_hit(squeeze_rows, horizon="12w", par=squeeze.get("par"))
+    rec = find_squeeze(squeeze_rows, 10, 55)
+    splits = {s.get("condition"): s for s in (squeeze.get("seam_split") or [])}
+    lines.append(
+        f"**PAR (unconditional, {squeeze.get('par', {}).get('n_weeks', 0)} weeks): 12w excess-hit "
+        f"{par_hit}%.** Every cell below is to be read against that number, not against its own win rate."
+    )
     lines.append("")
-    lines.append("### Recommended options")
+    if rec:
+        rm_ = horizon_metrics(rec, "12w")
+        verdict = (
+            "at par" if par_hit is not None and abs((rm_.get("hit_excess_pct") or 0) - par_hit) < 2
+            else ("above par" if (rm_.get("hit_excess_pct") or 0) > (par_hit or 0) else "below par")
+        )
+        lines.append(
+            f"1. **The previously recommended cell, `FM<10 / RM>55`, is {verdict}.** "
+            f"n_ep={rec.get('n_episodes')}, mean={rm_.get('mean')}%, mean_excess={rm_.get('mean_excess')}%, "
+            f"excess_hit={rm_.get('hit_excess_pct')}% against PAR {par_hit}%. It is not recommended."
+        )
+    if ranked_hit:
+        top = ranked_hit[0]
+        tm = horizon_metrics(top, "12w")
+        split = splits.get(str(top.get("condition")), {})
+        lines.append(
+            f"2. **Highest excess-hit cell: `{top.get('condition')}`** — n_ep={top.get('n_episodes')}, "
+            f"mean={tm.get('mean')}%, mean_excess={tm.get('mean_excess')}%, "
+            f"excess_hit={tm.get('hit_excess_pct')}%. Pre/post 2023-05-02: "
+            f"{(split.get('pre') or {}).get('n_episodes', 0)} vs "
+            f"{(split.get('post') or {}).get('n_episodes', 0)} episodes, "
+            f"survives={split.get('survives_split')}. **At that episode count this is an observation, "
+            "not a threshold to sign** — two of its episodes are seven weeks apart in the same spring, "
+            "and the most recent has no full 12w forward window yet."
+        )
+    legs = (liq.get("leg_availability") or {}).get("legs") or []
+    rm_leg = next((l for l in legs if l.get("leg") == "RM_pct<30"), None)
+    fm_leg = next((l for l in legs if l.get("leg") == "FM_pct>70"), None)
+    if rm_leg and fm_leg:
+        lines.append(
+            f"3. **LIQUIDITY EXIT cannot fire, and it is the RM leg — not the FM units.** "
+            f"`RM_pct<30` covered {rm_leg.get('pre_pct_of_weeks')}% of weeks before 2023-05-02 and "
+            f"**{rm_leg.get('post_pct_of_weeks')}%** after; it last fired {rm_leg.get('last_fired')}, "
+            f"{rm_leg.get('weeks_since_last_fired')} weeks ago. `FM_pct>70` still fires "
+            f"({fm_leg.get('post_pct_of_weeks')}% of post-2023 weeks). Asset managers have been "
+            "persistently net long since 2023, so a rolling rank of RM no longer reaches its floor. "
+            "Restating the units does not bring the pattern back."
+        )
+    lines.append(
+        "4. **FM percentile has no linear relationship with forward SPX returns** at any horizon "
+        "(R² ≤ 0.003, p ≥ 0.10). A threshold effect would not show in a linear fit, so this does not "
+        "close the question — but it does settle row 42: `invert=True` on `cot_fast_money` is "
+        "immaterial either way."
+    )
     lines.append("")
-    lines.append("| Pattern | Option A (tail gap) | Option B (PDF / more frequent) |")
-    lines.append("|---------|---------------------|-------------------------------|")
-    if best_squeeze:
-        bm = horizon_metrics(best_squeeze, "12w")
-        lines.append(
-            f"| SQUEEZE | see §4 top gap cells (e.g. `{best_squeeze.get('condition')}`, gap {bm.get('mean_median_gap')}%) | "
-            f"FM **< 30**, RM **> 50** (gap {horizon_metrics(pdf_squeeze, '12w').get('mean_median_gap') if pdf_squeeze else '—'}) |"
-        )
-    if pdf_liq:
-        lines.append(
-            f"| LIQUIDITY EXIT | RM **< 25**, FM **> 55** (see §5) | "
-            f"RM **< 30**, FM **> 60** (n_ep={pdf_liq.get('n_episodes')}, 4w hit {horizon_metrics(pdf_liq, '4w').get('hit_pct')}%) |"
-        )
+    lines.append("### Recommendation")
+    lines.append("")
+    lines.append(
+        "**None — sign-off should stay held.** Nothing in this grid clears par by enough, on enough "
+        "episodes, to be worth putting on the page. The two candidates are a 4–5 episode FM<5 cell and "
+        "a LIQUIDITY EXIT pattern whose trigger leg has been unreachable for three years. Shipping a "
+        "placeholder in the meantime would put a flag on the page that the data does not support."
+    )
     lines.append("")
     lines.append("---")
     lines.append("")
@@ -178,31 +210,33 @@ def compile_report(*, squeeze_path: Path, liq_path: Path, out_path: Path) -> Non
     lines.append("")
     lines.append("### SQUEEZE heatmap — 12w mean−median gap")
     lines.append("")
-    lines.append("| FM < | " + " | ".join(f"RM>{r}" for r in rm_levels) + " |")
-    lines.append("|------|" + "|".join(["------"] * len(rm_levels)) + "|")
+    lines.append("| FM cut | " + " | ".join(f"RM>{r}" for r in rm_levels) + " |")
+    lines.append("|--------|" + "|".join(["------"] * len(rm_levels)) + "|")
     for fm in fm_levels:
         cells = []
         for rm in rm_levels:
             row = find_squeeze(squeeze_rows, fm, rm)
             m = horizon_metrics(row, "12w") if row else {}
             cells.append(str(m.get("mean_median_gap", "—")))
-        lines.append(f"| {fm} | " + " | ".join(cells) + " |")
+        lines.append(f"| FM<{fm} | " + " | ".join(cells) + " |")
     lines.append("")
     lines.append("### SQUEEZE heatmap — 12w excess_hit % (compare to PAR above)")
     lines.append("")
-    lines.append("| FM < | " + " | ".join(f"RM>{r}" for r in rm_levels) + " |")
-    lines.append("|------|" + "|".join(["------"] * len(rm_levels)) + "|")
+    lines.append("| FM cut | " + " | ".join(f"RM>{r}" for r in rm_levels) + " |")
+    lines.append("|--------|" + "|".join(["------"] * len(rm_levels)) + "|")
     for fm in fm_levels:
         cells = []
         for rm in rm_levels:
             row = find_squeeze(squeeze_rows, fm, rm)
-            cells.append(format_heatmap_cell(row, "12w"))
-        lines.append(f"| {fm} | " + " | ".join(cells) + " |")
+            m = horizon_metrics(row, "12w") if row else {}
+            hit = m.get("hit_excess_pct")
+            cells.append(f"{hit} (n={row.get('n_episodes', 0)})" if hit is not None else "—")
+        lines.append(f"| FM<{fm} | " + " | ".join(cells) + " |")
     lines.append("")
     lines.append("### SQUEEZE heatmap — 12w mean % (n_ep in parentheses)")
     lines.append("")
-    lines.append("| FM < | " + " | ".join(f"RM>{r}" for r in rm_levels) + " |")
-    lines.append("|------|" + "|".join(["------"] * len(rm_levels)) + "|")
+    lines.append("| FM cut | " + " | ".join(f"RM>{r}" for r in rm_levels) + " |")
+    lines.append("|--------|" + "|".join(["------"] * len(rm_levels)) + "|")
     for fm in fm_levels:
         cells = []
         for rm in rm_levels:
@@ -210,12 +244,12 @@ def compile_report(*, squeeze_path: Path, liq_path: Path, out_path: Path) -> Non
             m = horizon_metrics(row, "12w") if row else {}
             n_ep = row.get("n_episodes", 0) if row else 0
             cells.append(f"{m.get('mean', '—')} (n={n_ep})" if m.get("mean") is not None else "—")
-        lines.append(f"| {fm} | " + " | ".join(cells) + " |")
+        lines.append(f"| FM<{fm} | " + " | ".join(cells) + " |")
     lines.append("")
     lines.append("### Episode count (n_ep / n_wk)")
     lines.append("")
-    lines.append("| FM < | " + " | ".join(f"RM>{r}" for r in rm_levels) + " |")
-    lines.append("|------|" + "|".join(["------"] * len(rm_levels)) + "|")
+    lines.append("| FM cut | " + " | ".join(f"RM>{r}" for r in rm_levels) + " |")
+    lines.append("|--------|" + "|".join(["------"] * len(rm_levels)) + "|")
     for fm in fm_levels:
         cells = []
         for rm in rm_levels:
@@ -224,26 +258,28 @@ def compile_report(*, squeeze_path: Path, liq_path: Path, out_path: Path) -> Non
                 cells.append(f"{row.get('n_episodes', 0)}/{row.get('n_weeks', 0)}")
             else:
                 cells.append("0/0")
-        lines.append(f"| {fm} | " + " | ".join(cells) + " |")
+        lines.append(f"| FM<{fm} | " + " | ".join(cells) + " |")
     lines.append("")
     lines.append("---")
     lines.append("")
     lines.append("## 5. LIQUIDITY EXIT — top cells by 4w mean−median gap (RM ≤ 35, FM ≥ 45)")
     lines.append("")
-    lines.append("| RM < | FM > | n_wk | n_ep | mean % | median % | gap % | hit % | best % | worst % | top instances |")
-    lines.append("|------|------|------|------|--------|----------|-------|-------|--------|---------|-----------------|")
+    lines.append(SIDE_CONVENTION_NOTE)
+    lines.append("")
+    lines.append(distribution_table_header(fm_label="RM <", rm_label="FM >"))
+    lines.append(distribution_table_sep())
     liq_top = rank_cells_by_gap(
         [r for r in liq_rows if r.get("rm_pct_max", 99) <= 35 and r.get("fm_pct_min", 0) >= 45],
         "4w",
         long_side=False,
     )[:15]
     for r in liq_top:
-        m = horizon_metrics(r, "4w")
-        lines.append(
-            f"| {r.get('rm_pct_max')} | {r.get('fm_pct_min')} | {r.get('n_weeks')} | {r.get('n_episodes')} | "
-            f"{m.get('mean')} | {m.get('median')} | {m.get('mean_median_gap')} | {m.get('hit_pct')} | "
-            f"{m.get('best')} | {m.get('worst')} | {format_episode_instances(r, '4w')} |"
-        )
+        lines.append(distribution_table_line(r, "4w", fm_key="rm_pct_max", rm_key="fm_pct_min"))
+    lines.append("")
+    lines.append("### Dated instances for the cells above (most favourable first for a short)")
+    lines.append("")
+    for r in liq_top:
+        lines.append(f"- `{r.get('condition')}`: {format_episode_instances(r, '4w', long_side=False)}")
     lines.append("")
     if pdf_liq:
         lines.append("### PDF default RM<30, FM>60")

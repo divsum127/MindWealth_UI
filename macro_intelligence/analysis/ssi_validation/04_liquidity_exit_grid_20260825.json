@@ -1,0 +1,2973 @@
+{
+  "test_id": "04_liquidity_exit_grid",
+  "benchmark": {
+    "4w": 1.101533015715058,
+    "8w": 2.114854068983407,
+    "12w": 3.1104724182402177,
+    "6m": 6.426804344829674,
+    "12m": 12.95799209482281
+  },
+  "par": {
+    "condition": "PAR (all weeks, unconditional)",
+    "n": 899,
+    "n_episodes": 899,
+    "n_weeks": 899,
+    "metrics": {
+      "4w": {
+        "n": 895,
+        "avg": 1.1015,
+        "median": 1.569,
+        "win_pct": 68.94,
+        "worst": -24.9563,
+        "sharpe": 0.9791,
+        "mean_excess": 0.0,
+        "median_excess": 0.4675,
+        "excess_hit_pct": 56.87
+      },
+      "8w": {
+        "n": 891,
+        "avg": 2.1149,
+        "median": 2.6184,
+        "win_pct": 72.73,
+        "worst": -27.7853,
+        "sharpe": 0.9731,
+        "mean_excess": 0.0,
+        "median_excess": 0.5035,
+        "excess_hit_pct": 54.1
+      },
+      "12w": {
+        "n": 887,
+        "avg": 3.1105,
+        "median": 3.8267,
+        "win_pct": 75.65,
+        "worst": -30.5884,
+        "sharpe": 0.988,
+        "mean_excess": -0.0,
+        "median_excess": 0.7162,
+        "excess_hit_pct": 56.82
+      },
+      "6m": {
+        "n": 873,
+        "avg": 6.4268,
+        "median": 7.0634,
+        "win_pct": 79.73,
+        "worst": -20.2149,
+        "sharpe": 1.0794,
+        "mean_excess": -0.0,
+        "median_excess": 0.6366,
+        "excess_hit_pct": 54.07
+      },
+      "12m": {
+        "n": 847,
+        "avg": 12.958,
+        "median": 13.8926,
+        "win_pct": 86.89,
+        "worst": -20.9581,
+        "sharpe": 1.1025,
+        "mean_excess": 0.0,
+        "median_excess": 0.9346,
+        "excess_hit_pct": 53.48
+      }
+    }
+  },
+  "rows": [
+    {
+      "n": 30,
+      "n_episodes": 30,
+      "n_weeks": 101,
+      "metrics": {
+        "4w": {
+          "n": 30,
+          "avg": 0.3175,
+          "median": 1.375,
+          "win_pct": 43.33,
+          "worst": 10.0495,
+          "sharpe": 0.2121,
+          "mean_excess": -0.7841,
+          "median_excess": 0.2735,
+          "excess_hit_pct": 46.67,
+          "mean_median_gap": -1.0576
+        },
+        "8w": {
+          "n": 30,
+          "avg": 1.7892,
+          "median": 2.8885,
+          "win_pct": 36.67,
+          "worst": 17.0316,
+          "sharpe": 0.6845,
+          "mean_excess": -0.3256,
+          "median_excess": 0.7737,
+          "excess_hit_pct": 43.33,
+          "mean_median_gap": -1.0993
+        },
+        "12w": {
+          "n": 30,
+          "avg": 3.0958,
+          "median": 5.302,
+          "win_pct": 33.33,
+          "worst": 18.6981,
+          "sharpe": 0.805,
+          "mean_excess": -0.0146,
+          "median_excess": 2.1916,
+          "excess_hit_pct": 43.33,
+          "mean_median_gap": -2.2062
+        },
+        "6m": {
+          "n": 30,
+          "avg": 6.8108,
+          "median": 8.3335,
+          "win_pct": 26.67,
+          "worst": 34.4778,
+          "sharpe": 0.8466,
+          "mean_excess": 0.384,
+          "median_excess": 1.9067,
+          "excess_hit_pct": 43.33,
+          "mean_median_gap": -1.5227
+        },
+        "12m": {
+          "n": 30,
+          "avg": 12.8826,
+          "median": 12.9564,
+          "win_pct": 16.67,
+          "worst": 57.1302,
+          "sharpe": 0.8926,
+          "mean_excess": -0.0754,
+          "median_excess": -0.0016,
+          "excess_hit_pct": 50.0,
+          "mean_median_gap": -0.0738
+        }
+      },
+      "rm_max": 15,
+      "fm_min": 45
+    },
+    {
+      "n": 27,
+      "n_episodes": 27,
+      "n_weeks": 92,
+      "metrics": {
+        "4w": {
+          "n": 27,
+          "avg": 0.801,
+          "median": 1.795,
+          "win_pct": 37.04,
+          "worst": 10.0495,
+          "sharpe": 0.5358,
+          "mean_excess": -0.3006,
+          "median_excess": 0.6935,
+          "excess_hit_pct": 40.74,
+          "mean_median_gap": -0.994
+        },
+        "8w": {
+          "n": 27,
+          "avg": 2.4645,
+          "median": 3.3831,
+          "win_pct": 33.33,
+          "worst": 17.0316,
+          "sharpe": 0.9185,
+          "mean_excess": 0.3496,
+          "median_excess": 1.2682,
+          "excess_hit_pct": 37.04,
+          "mean_median_gap": -0.9186
+        },
+        "12w": {
+          "n": 27,
+          "avg": 3.2993,
+          "median": 5.4974,
+          "win_pct": 29.63,
+          "worst": 18.6981,
+          "sharpe": 0.8292,
+          "mean_excess": 0.1888,
+          "median_excess": 2.3869,
+          "excess_hit_pct": 40.74,
+          "mean_median_gap": -2.1981
+        },
+        "6m": {
+          "n": 27,
+          "avg": 6.4299,
+          "median": 8.7524,
+          "win_pct": 29.63,
+          "worst": 34.4778,
+          "sharpe": 0.7772,
+          "mean_excess": 0.0031,
+          "median_excess": 2.3256,
+          "excess_hit_pct": 40.74,
+          "mean_median_gap": -2.3225
+        },
+        "12m": {
+          "n": 27,
+          "avg": 13.0028,
+          "median": 12.6821,
+          "win_pct": 18.52,
+          "worst": 57.1302,
+          "sharpe": 0.8531,
+          "mean_excess": 0.0448,
+          "median_excess": -0.2759,
+          "excess_hit_pct": 51.85,
+          "mean_median_gap": 0.3207
+        }
+      },
+      "rm_max": 15,
+      "fm_min": 50
+    },
+    {
+      "n": 25,
+      "n_episodes": 25,
+      "n_weeks": 77,
+      "metrics": {
+        "4w": {
+          "n": 25,
+          "avg": 0.6995,
+          "median": 1.6769,
+          "win_pct": 32.0,
+          "worst": 10.0495,
+          "sharpe": 0.4967,
+          "mean_excess": -0.4021,
+          "median_excess": 0.5754,
+          "excess_hit_pct": 40.0,
+          "mean_median_gap": -0.9774
+        },
+        "8w": {
+          "n": 25,
+          "avg": 2.3677,
+          "median": 3.2189,
+          "win_pct": 32.0,
+          "worst": 17.0316,
+          "sharpe": 0.9249,
+          "mean_excess": 0.2528,
+          "median_excess": 1.104,
+          "excess_hit_pct": 40.0,
+          "mean_median_gap": -0.8512
+        },
+        "12w": {
+          "n": 25,
+          "avg": 2.9395,
+          "median": 5.1067,
+          "win_pct": 28.0,
+          "worst": 18.6981,
+          "sharpe": 0.7197,
+          "mean_excess": -0.171,
+          "median_excess": 1.9962,
+          "excess_hit_pct": 48.0,
+          "mean_median_gap": -2.1672
+        },
+        "6m": {
+          "n": 25,
+          "avg": 5.6282,
+          "median": 7.5276,
+          "win_pct": 32.0,
+          "worst": 34.4778,
+          "sharpe": 0.6881,
+          "mean_excess": -0.7986,
+          "median_excess": 1.1008,
+          "excess_hit_pct": 48.0,
+          "mean_median_gap": -1.8994
+        },
+        "12m": {
+          "n": 25,
+          "avg": 12.4445,
+          "median": 12.6821,
+          "win_pct": 24.0,
+          "worst": 57.1302,
+          "sharpe": 0.7863,
+          "mean_excess": -0.5134,
+          "median_excess": -0.2759,
+          "excess_hit_pct": 52.0,
+          "mean_median_gap": -0.2376
+        }
+      },
+      "rm_max": 15,
+      "fm_min": 55
+    },
+    {
+      "n": 22,
+      "n_episodes": 22,
+      "n_weeks": 68,
+      "metrics": {
+        "4w": {
+          "n": 22,
+          "avg": 0.839,
+          "median": 1.6773,
+          "win_pct": 31.82,
+          "worst": 10.0495,
+          "sharpe": 0.5873,
+          "mean_excess": -0.2625,
+          "median_excess": 0.5758,
+          "excess_hit_pct": 45.45,
+          "mean_median_gap": -0.8383
+        },
+        "8w": {
+          "n": 22,
+          "avg": 2.4591,
+          "median": 2.9336,
+          "win_pct": 31.82,
+          "worst": 17.0316,
+          "sharpe": 0.9706,
+          "mean_excess": 0.3442,
+          "median_excess": 0.8187,
+          "excess_hit_pct": 40.91,
+          "mean_median_gap": -0.4745
+        },
+        "12w": {
+          "n": 22,
+          "avg": 2.9877,
+          "median": 5.0225,
+          "win_pct": 27.27,
+          "worst": 18.6981,
+          "sharpe": 0.713,
+          "mean_excess": -0.1228,
+          "median_excess": 1.912,
+          "excess_hit_pct": 45.45,
+          "mean_median_gap": -2.0348
+        },
+        "6m": {
+          "n": 22,
+          "avg": 5.8212,
+          "median": 5.592,
+          "win_pct": 31.82,
+          "worst": 34.4778,
+          "sharpe": 0.7284,
+          "mean_excess": -0.6056,
+          "median_excess": -0.8348,
+          "excess_hit_pct": 54.55,
+          "mean_median_gap": 0.2292
+        },
+        "12m": {
+          "n": 22,
+          "avg": 11.8579,
+          "median": 9.4443,
+          "win_pct": 27.27,
+          "worst": 57.1302,
+          "sharpe": 0.7194,
+          "mean_excess": -1.1,
+          "median_excess": -3.5137,
+          "excess_hit_pct": 54.55,
+          "mean_median_gap": 2.4136
+        }
+      },
+      "rm_max": 15,
+      "fm_min": 60
+    },
+    {
+      "n": 21,
+      "n_episodes": 21,
+      "n_weeks": 58,
+      "metrics": {
+        "4w": {
+          "n": 21,
+          "avg": 0.7853,
+          "median": 1.5596,
+          "win_pct": 28.57,
+          "worst": 10.0495,
+          "sharpe": 0.6204,
+          "mean_excess": -0.3163,
+          "median_excess": 0.4581,
+          "excess_hit_pct": 47.62,
+          "mean_median_gap": -0.7743
+        },
+        "8w": {
+          "n": 21,
+          "avg": 2.2127,
+          "median": 2.6482,
+          "win_pct": 33.33,
+          "worst": 11.4982,
+          "sharpe": 0.9928,
+          "mean_excess": 0.0979,
+          "median_excess": 0.5333,
+          "excess_hit_pct": 42.86,
+          "mean_median_gap": -0.4355
+        },
+        "12w": {
+          "n": 21,
+          "avg": 3.4533,
+          "median": 4.9382,
+          "win_pct": 33.33,
+          "worst": 18.6981,
+          "sharpe": 0.9282,
+          "mean_excess": 0.3429,
+          "median_excess": 1.8277,
+          "excess_hit_pct": 47.62,
+          "mean_median_gap": -1.4849
+        },
+        "6m": {
+          "n": 21,
+          "avg": 5.6529,
+          "median": 5.5106,
+          "win_pct": 33.33,
+          "worst": 34.4778,
+          "sharpe": 0.7179,
+          "mean_excess": -0.7739,
+          "median_excess": -0.9162,
+          "excess_hit_pct": 57.14,
+          "mean_median_gap": 0.1423
+        },
+        "12m": {
+          "n": 21,
+          "avg": 10.0789,
+          "median": 8.6141,
+          "win_pct": 33.33,
+          "worst": 57.1302,
+          "sharpe": 0.7081,
+          "mean_excess": -2.8791,
+          "median_excess": -4.3439,
+          "excess_hit_pct": 57.14,
+          "mean_median_gap": 1.4648
+        }
+      },
+      "rm_max": 15,
+      "fm_min": 65
+    },
+    {
+      "n": 17,
+      "n_episodes": 17,
+      "n_weeks": 51,
+      "metrics": {
+        "4w": {
+          "n": 17,
+          "avg": 0.0909,
+          "median": 1.0103,
+          "win_pct": 35.29,
+          "worst": 10.0495,
+          "sharpe": 0.0716,
+          "mean_excess": -1.0107,
+          "median_excess": -0.0912,
+          "excess_hit_pct": 52.94,
+          "mean_median_gap": -0.9194
+        },
+        "8w": {
+          "n": 17,
+          "avg": 1.0943,
+          "median": 0.4466,
+          "win_pct": 47.06,
+          "worst": 11.4982,
+          "sharpe": 0.4829,
+          "mean_excess": -1.0206,
+          "median_excess": -1.6683,
+          "excess_hit_pct": 58.82,
+          "mean_median_gap": 0.6477
+        },
+        "12w": {
+          "n": 17,
+          "avg": 2.1828,
+          "median": 1.6671,
+          "win_pct": 41.18,
+          "worst": 18.6981,
+          "sharpe": 0.5815,
+          "mean_excess": -0.9276,
+          "median_excess": -1.4434,
+          "excess_hit_pct": 58.82,
+          "mean_median_gap": 0.5157
+        },
+        "6m": {
+          "n": 17,
+          "avg": 3.4416,
+          "median": 2.5145,
+          "win_pct": 41.18,
+          "worst": 34.4778,
+          "sharpe": 0.4359,
+          "mean_excess": -2.9852,
+          "median_excess": -3.9123,
+          "excess_hit_pct": 64.71,
+          "mean_median_gap": 0.9271
+        },
+        "12m": {
+          "n": 17,
+          "avg": 8.5026,
+          "median": 5.4668,
+          "win_pct": 41.18,
+          "worst": 57.1302,
+          "sharpe": 0.5601,
+          "mean_excess": -4.4554,
+          "median_excess": -7.4912,
+          "excess_hit_pct": 70.59,
+          "mean_median_gap": 3.0358
+        }
+      },
+      "rm_max": 15,
+      "fm_min": 70
+    },
+    {
+      "n": 15,
+      "n_episodes": 15,
+      "n_weeks": 39,
+      "metrics": {
+        "4w": {
+          "n": 15,
+          "avg": 0.1337,
+          "median": 1.4562,
+          "win_pct": 40.0,
+          "worst": 10.0495,
+          "sharpe": 0.0898,
+          "mean_excess": -0.9678,
+          "median_excess": 0.3547,
+          "excess_hit_pct": 46.67,
+          "mean_median_gap": -1.3225
+        },
+        "8w": {
+          "n": 15,
+          "avg": 1.0954,
+          "median": 2.625,
+          "win_pct": 40.0,
+          "worst": 11.4982,
+          "sharpe": 0.4095,
+          "mean_excess": -1.0195,
+          "median_excess": 0.5101,
+          "excess_hit_pct": 46.67,
+          "mean_median_gap": -1.5296
+        },
+        "12w": {
+          "n": 15,
+          "avg": 3.632,
+          "median": 5.4974,
+          "win_pct": 33.33,
+          "worst": 18.6981,
+          "sharpe": 0.9042,
+          "mean_excess": 0.5215,
+          "median_excess": 2.3869,
+          "excess_hit_pct": 40.0,
+          "mean_median_gap": -1.8654
+        },
+        "6m": {
+          "n": 15,
+          "avg": 5.4317,
+          "median": 6.784,
+          "win_pct": 26.67,
+          "worst": 34.4778,
+          "sharpe": 0.6554,
+          "mean_excess": -0.9951,
+          "median_excess": 0.3572,
+          "excess_hit_pct": 46.67,
+          "mean_median_gap": -1.3523
+        },
+        "12m": {
+          "n": 15,
+          "avg": 11.6212,
+          "median": 13.2307,
+          "win_pct": 20.0,
+          "worst": 57.1302,
+          "sharpe": 0.7608,
+          "mean_excess": -1.3368,
+          "median_excess": 0.2727,
+          "excess_hit_pct": 46.67,
+          "mean_median_gap": -1.6095
+        }
+      },
+      "rm_max": 15,
+      "fm_min": 75
+    },
+    {
+      "n": 38,
+      "n_episodes": 38,
+      "n_weeks": 135,
+      "metrics": {
+        "4w": {
+          "n": 38,
+          "avg": 0.5121,
+          "median": 1.3045,
+          "win_pct": 39.47,
+          "worst": 10.0495,
+          "sharpe": 0.3647,
+          "mean_excess": -0.5894,
+          "median_excess": 0.203,
+          "excess_hit_pct": 47.37,
+          "mean_median_gap": -0.7924
+        },
+        "8w": {
+          "n": 38,
+          "avg": 1.459,
+          "median": 2.7416,
+          "win_pct": 31.58,
+          "worst": 11.4982,
+          "sharpe": 0.6355,
+          "mean_excess": -0.6558,
+          "median_excess": 0.6267,
+          "excess_hit_pct": 42.11,
+          "mean_median_gap": -1.2826
+        },
+        "12w": {
+          "n": 38,
+          "avg": 3.0416,
+          "median": 5.5271,
+          "win_pct": 31.58,
+          "worst": 18.6981,
+          "sharpe": 0.8672,
+          "mean_excess": -0.0689,
+          "median_excess": 2.4166,
+          "excess_hit_pct": 42.11,
+          "mean_median_gap": -2.4855
+        },
+        "6m": {
+          "n": 38,
+          "avg": 6.1195,
+          "median": 7.3978,
+          "win_pct": 23.68,
+          "worst": 34.4778,
+          "sharpe": 0.8342,
+          "mean_excess": -0.3073,
+          "median_excess": 0.9709,
+          "excess_hit_pct": 44.74,
+          "mean_median_gap": -1.2782
+        },
+        "12m": {
+          "n": 38,
+          "avg": 11.0612,
+          "median": 10.9023,
+          "win_pct": 15.79,
+          "worst": 57.1302,
+          "sharpe": 0.8929,
+          "mean_excess": -1.8968,
+          "median_excess": -2.0556,
+          "excess_hit_pct": 55.26,
+          "mean_median_gap": 0.1589
+        }
+      },
+      "rm_max": 20,
+      "fm_min": 45
+    },
+    {
+      "n": 36,
+      "n_episodes": 36,
+      "n_weeks": 124,
+      "metrics": {
+        "4w": {
+          "n": 36,
+          "avg": 0.7782,
+          "median": 1.5258,
+          "win_pct": 36.11,
+          "worst": 10.0495,
+          "sharpe": 0.5451,
+          "mean_excess": -0.3234,
+          "median_excess": 0.4243,
+          "excess_hit_pct": 44.44,
+          "mean_median_gap": -0.7476
+        },
+        "8w": {
+          "n": 36,
+          "avg": 1.8341,
+          "median": 3.0028,
+          "win_pct": 30.56,
+          "worst": 11.4982,
+          "sharpe": 0.7688,
+          "mean_excess": -0.2808,
+          "median_excess": 0.8879,
+          "excess_hit_pct": 38.89,
+          "mean_median_gap": -1.1687
+        },
+        "12w": {
+          "n": 36,
+          "avg": 3.1279,
+          "median": 5.5271,
+          "win_pct": 30.56,
+          "worst": 18.6981,
+          "sharpe": 0.8645,
+          "mean_excess": 0.0175,
+          "median_excess": 2.4166,
+          "excess_hit_pct": 41.67,
+          "mean_median_gap": -2.3992
+        },
+        "6m": {
+          "n": 36,
+          "avg": 5.6723,
+          "median": 7.3978,
+          "win_pct": 25.0,
+          "worst": 34.4778,
+          "sharpe": 0.7674,
+          "mean_excess": -0.7545,
+          "median_excess": 0.9709,
+          "excess_hit_pct": 44.44,
+          "mean_median_gap": -1.7254
+        },
+        "12m": {
+          "n": 36,
+          "avg": 10.9158,
+          "median": 10.8313,
+          "win_pct": 16.67,
+          "worst": 57.1302,
+          "sharpe": 0.8601,
+          "mean_excess": -2.0422,
+          "median_excess": -2.1267,
+          "excess_hit_pct": 58.33,
+          "mean_median_gap": 0.0845
+        }
+      },
+      "rm_max": 20,
+      "fm_min": 50
+    },
+    {
+      "n": 33,
+      "n_episodes": 33,
+      "n_weeks": 104,
+      "metrics": {
+        "4w": {
+          "n": 33,
+          "avg": 0.5442,
+          "median": 1.3747,
+          "win_pct": 33.33,
+          "worst": 10.0495,
+          "sharpe": 0.4024,
+          "mean_excess": -0.5573,
+          "median_excess": 0.2732,
+          "excess_hit_pct": 45.45,
+          "mean_median_gap": -0.8305
+        },
+        "8w": {
+          "n": 33,
+          "avg": 1.6427,
+          "median": 2.6965,
+          "win_pct": 30.3,
+          "worst": 11.4982,
+          "sharpe": 0.7186,
+          "mean_excess": -0.4721,
+          "median_excess": 0.5816,
+          "excess_hit_pct": 42.42,
+          "mean_median_gap": -1.0538
+        },
+        "12w": {
+          "n": 33,
+          "avg": 2.5979,
+          "median": 5.1067,
+          "win_pct": 30.3,
+          "worst": 18.6981,
+          "sharpe": 0.7091,
+          "mean_excess": -0.5125,
+          "median_excess": 1.9962,
+          "excess_hit_pct": 48.48,
+          "mean_median_gap": -2.5088
+        },
+        "6m": {
+          "n": 33,
+          "avg": 4.8116,
+          "median": 5.6734,
+          "win_pct": 27.27,
+          "worst": 34.4778,
+          "sharpe": 0.6611,
+          "mean_excess": -1.6152,
+          "median_excess": -0.7534,
+          "excess_hit_pct": 51.52,
+          "mean_median_gap": -0.8618
+        },
+        "12m": {
+          "n": 33,
+          "avg": 10.4475,
+          "median": 11.8257,
+          "win_pct": 21.21,
+          "worst": 57.1302,
+          "sharpe": 0.7938,
+          "mean_excess": -2.5105,
+          "median_excess": -1.1323,
+          "excess_hit_pct": 57.58,
+          "mean_median_gap": -1.3782
+        }
+      },
+      "rm_max": 20,
+      "fm_min": 55
+    },
+    {
+      "n": 30,
+      "n_episodes": 30,
+      "n_weeks": 90,
+      "metrics": {
+        "4w": {
+          "n": 30,
+          "avg": 0.7713,
+          "median": 1.3969,
+          "win_pct": 30.0,
+          "worst": 10.0495,
+          "sharpe": 0.5811,
+          "mean_excess": -0.3302,
+          "median_excess": 0.2954,
+          "excess_hit_pct": 46.67,
+          "mean_median_gap": -0.6257
+        },
+        "8w": {
+          "n": 30,
+          "avg": 1.6729,
+          "median": 2.5278,
+          "win_pct": 26.67,
+          "worst": 11.4982,
+          "sharpe": 0.788,
+          "mean_excess": -0.4419,
+          "median_excess": 0.4129,
+          "excess_hit_pct": 43.33,
+          "mean_median_gap": -0.8548
+        },
+        "12w": {
+          "n": 30,
+          "avg": 2.313,
+          "median": 3.3344,
+          "win_pct": 30.0,
+          "worst": 18.6981,
+          "sharpe": 0.6358,
+          "mean_excess": -0.7975,
+          "median_excess": 0.224,
+          "excess_hit_pct": 50.0,
+          "mean_median_gap": -1.0215
+        },
+        "6m": {
+          "n": 30,
+          "avg": 4.1487,
+          "median": 4.4969,
+          "win_pct": 30.0,
+          "worst": 34.4778,
+          "sharpe": 0.5778,
+          "mean_excess": -2.2781,
+          "median_excess": -1.93,
+          "excess_hit_pct": 60.0,
+          "mean_median_gap": -0.3481
+        },
+        "12m": {
+          "n": 30,
+          "avg": 9.3345,
+          "median": 8.0217,
+          "win_pct": 26.67,
+          "worst": 57.1302,
+          "sharpe": 0.6928,
+          "mean_excess": -3.6235,
+          "median_excess": -4.9363,
+          "excess_hit_pct": 60.0,
+          "mean_median_gap": 1.3128
+        }
+      },
+      "rm_max": 20,
+      "fm_min": 60
+    },
+    {
+      "n": 29,
+      "n_episodes": 29,
+      "n_weeks": 75,
+      "metrics": {
+        "4w": {
+          "n": 29,
+          "avg": 0.765,
+          "median": 1.2343,
+          "win_pct": 31.03,
+          "worst": 10.0495,
+          "sharpe": 0.6133,
+          "mean_excess": -0.3366,
+          "median_excess": 0.1328,
+          "excess_hit_pct": 48.28,
+          "mean_median_gap": -0.4693
+        },
+        "8w": {
+          "n": 29,
+          "avg": 1.9902,
+          "median": 2.6482,
+          "win_pct": 31.03,
+          "worst": 11.4982,
+          "sharpe": 0.9247,
+          "mean_excess": -0.1246,
+          "median_excess": 0.5333,
+          "excess_hit_pct": 41.38,
+          "mean_median_gap": -0.658
+        },
+        "12w": {
+          "n": 29,
+          "avg": 3.135,
+          "median": 4.9382,
+          "win_pct": 31.03,
+          "worst": 18.6981,
+          "sharpe": 0.8771,
+          "mean_excess": 0.0245,
+          "median_excess": 1.8277,
+          "excess_hit_pct": 48.28,
+          "mean_median_gap": -1.8032
+        },
+        "6m": {
+          "n": 29,
+          "avg": 4.7596,
+          "median": 4.5025,
+          "win_pct": 31.03,
+          "worst": 34.4778,
+          "sharpe": 0.6253,
+          "mean_excess": -1.6672,
+          "median_excess": -1.9243,
+          "excess_hit_pct": 58.62,
+          "mean_median_gap": 0.2571
+        },
+        "12m": {
+          "n": 29,
+          "avg": 9.4858,
+          "median": 8.6141,
+          "win_pct": 31.03,
+          "worst": 57.1302,
+          "sharpe": 0.6841,
+          "mean_excess": -3.4722,
+          "median_excess": -4.3439,
+          "excess_hit_pct": 58.62,
+          "mean_median_gap": 0.8717
+        }
+      },
+      "rm_max": 20,
+      "fm_min": 65
+    },
+    {
+      "n": 25,
+      "n_episodes": 25,
+      "n_weeks": 68,
+      "metrics": {
+        "4w": {
+          "n": 25,
+          "avg": 0.2895,
+          "median": 1.0103,
+          "win_pct": 36.0,
+          "worst": 10.0495,
+          "sharpe": 0.2318,
+          "mean_excess": -0.812,
+          "median_excess": -0.0912,
+          "excess_hit_pct": 52.0,
+          "mean_median_gap": -0.7208
+        },
+        "8w": {
+          "n": 25,
+          "avg": 1.1941,
+          "median": 1.1667,
+          "win_pct": 40.0,
+          "worst": 11.4982,
+          "sharpe": 0.5524,
+          "mean_excess": -0.9208,
+          "median_excess": -0.9482,
+          "excess_hit_pct": 52.0,
+          "mean_median_gap": 0.0274
+        },
+        "12w": {
+          "n": 25,
+          "avg": 2.2202,
+          "median": 1.7307,
+          "win_pct": 36.0,
+          "worst": 18.6981,
+          "sharpe": 0.6229,
+          "mean_excess": -0.8903,
+          "median_excess": -1.3798,
+          "excess_hit_pct": 56.0,
+          "mean_median_gap": 0.4895
+        },
+        "6m": {
+          "n": 25,
+          "avg": 3.1131,
+          "median": 2.5145,
+          "win_pct": 36.0,
+          "worst": 34.4778,
+          "sharpe": 0.4144,
+          "mean_excess": -3.3137,
+          "median_excess": -3.9123,
+          "excess_hit_pct": 64.0,
+          "mean_median_gap": 0.5986
+        },
+        "12m": {
+          "n": 25,
+          "avg": 8.3191,
+          "median": 5.4668,
+          "win_pct": 36.0,
+          "worst": 57.1302,
+          "sharpe": 0.576,
+          "mean_excess": -4.6389,
+          "median_excess": -7.4912,
+          "excess_hit_pct": 68.0,
+          "mean_median_gap": 2.8523
+        }
+      },
+      "rm_max": 20,
+      "fm_min": 70
+    },
+    {
+      "n": 21,
+      "n_episodes": 21,
+      "n_weeks": 52,
+      "metrics": {
+        "4w": {
+          "n": 21,
+          "avg": 0.637,
+          "median": 1.4562,
+          "win_pct": 38.1,
+          "worst": 10.0495,
+          "sharpe": 0.4564,
+          "mean_excess": -0.4646,
+          "median_excess": 0.3547,
+          "excess_hit_pct": 42.86,
+          "mean_median_gap": -0.8192
+        },
+        "8w": {
+          "n": 21,
+          "avg": 1.436,
+          "median": 2.625,
+          "win_pct": 33.33,
+          "worst": 11.4982,
+          "sharpe": 0.5779,
+          "mean_excess": -0.6789,
+          "median_excess": 0.5101,
+          "excess_hit_pct": 42.86,
+          "mean_median_gap": -1.189
+        },
+        "12w": {
+          "n": 21,
+          "avg": 3.2709,
+          "median": 5.4974,
+          "win_pct": 28.57,
+          "worst": 18.6981,
+          "sharpe": 0.8541,
+          "mean_excess": 0.1605,
+          "median_excess": 2.3869,
+          "excess_hit_pct": 42.86,
+          "mean_median_gap": -2.2265
+        },
+        "6m": {
+          "n": 21,
+          "avg": 4.4691,
+          "median": 4.5025,
+          "win_pct": 28.57,
+          "worst": 34.4778,
+          "sharpe": 0.5489,
+          "mean_excess": -1.9577,
+          "median_excess": -1.9243,
+          "excess_hit_pct": 52.38,
+          "mean_median_gap": -0.0334
+        },
+        "12m": {
+          "n": 21,
+          "avg": 9.5819,
+          "median": 8.6141,
+          "win_pct": 23.81,
+          "worst": 57.1302,
+          "sharpe": 0.6401,
+          "mean_excess": -3.3761,
+          "median_excess": -4.3439,
+          "excess_hit_pct": 57.14,
+          "mean_median_gap": 0.9678
+        }
+      },
+      "rm_max": 20,
+      "fm_min": 75
+    },
+    {
+      "n": 49,
+      "n_episodes": 49,
+      "n_weeks": 178,
+      "metrics": {
+        "4w": {
+          "n": 49,
+          "avg": 0.2077,
+          "median": 1.3512,
+          "win_pct": 38.78,
+          "worst": 7.3993,
+          "sharpe": 0.164,
+          "mean_excess": -0.8939,
+          "median_excess": 0.2497,
+          "excess_hit_pct": 46.94,
+          "mean_median_gap": -1.1435
+        },
+        "8w": {
+          "n": 49,
+          "avg": 1.4568,
+          "median": 2.4869,
+          "win_pct": 32.65,
+          "worst": 10.2418,
+          "sharpe": 0.678,
+          "mean_excess": -0.658,
+          "median_excess": 0.372,
+          "excess_hit_pct": 44.9,
+          "mean_median_gap": -1.0301
+        },
+        "12w": {
+          "n": 49,
+          "avg": 3.2748,
+          "median": 5.3751,
+          "win_pct": 26.53,
+          "worst": 12.7985,
+          "sharpe": 1.0662,
+          "mean_excess": 0.1644,
+          "median_excess": 2.2646,
+          "excess_hit_pct": 36.73,
+          "mean_median_gap": -2.1003
+        },
+        "6m": {
+          "n": 49,
+          "avg": 6.0702,
+          "median": 7.5276,
+          "win_pct": 20.41,
+          "worst": 20.8665,
+          "sharpe": 0.9574,
+          "mean_excess": -0.3566,
+          "median_excess": 1.1008,
+          "excess_hit_pct": 42.86,
+          "mean_median_gap": -1.4574
+        },
+        "12m": {
+          "n": 49,
+          "avg": 11.8687,
+          "median": 12.6821,
+          "win_pct": 10.2,
+          "worst": 35.2706,
+          "sharpe": 1.1679,
+          "mean_excess": -1.0893,
+          "median_excess": -0.2759,
+          "excess_hit_pct": 51.02,
+          "mean_median_gap": -0.8134
+        }
+      },
+      "rm_max": 25,
+      "fm_min": 45
+    },
+    {
+      "n": 50,
+      "n_episodes": 50,
+      "n_weeks": 160,
+      "metrics": {
+        "4w": {
+          "n": 50,
+          "avg": 0.5815,
+          "median": 1.363,
+          "win_pct": 36.0,
+          "worst": 8.6265,
+          "sharpe": 0.4478,
+          "mean_excess": -0.52,
+          "median_excess": 0.2614,
+          "excess_hit_pct": 46.0,
+          "mean_median_gap": -0.7815
+        },
+        "8w": {
+          "n": 50,
+          "avg": 1.8112,
+          "median": 2.7416,
+          "win_pct": 32.0,
+          "worst": 10.2418,
+          "sharpe": 0.8313,
+          "mean_excess": -0.3037,
+          "median_excess": 0.6267,
+          "excess_hit_pct": 42.0,
+          "mean_median_gap": -0.9304
+        },
+        "12w": {
+          "n": 50,
+          "avg": 3.518,
+          "median": 5.3903,
+          "win_pct": 26.0,
+          "worst": 12.7985,
+          "sharpe": 1.1218,
+          "mean_excess": 0.4075,
+          "median_excess": 2.2799,
+          "excess_hit_pct": 36.0,
+          "mean_median_gap": -1.8724
+        },
+        "6m": {
+          "n": 50,
+          "avg": 6.0629,
+          "median": 7.55,
+          "win_pct": 20.0,
+          "worst": 20.0752,
+          "sharpe": 0.9701,
+          "mean_excess": -0.3639,
+          "median_excess": 1.1232,
+          "excess_hit_pct": 42.0,
+          "mean_median_gap": -1.4872
+        },
+        "12m": {
+          "n": 50,
+          "avg": 11.7966,
+          "median": 12.635,
+          "win_pct": 10.0,
+          "worst": 35.2706,
+          "sharpe": 1.178,
+          "mean_excess": -1.1614,
+          "median_excess": -0.323,
+          "excess_hit_pct": 54.0,
+          "mean_median_gap": -0.8384
+        }
+      },
+      "rm_max": 25,
+      "fm_min": 50
+    },
+    {
+      "n": 46,
+      "n_episodes": 46,
+      "n_weeks": 138,
+      "metrics": {
+        "4w": {
+          "n": 46,
+          "avg": 0.4559,
+          "median": 1.363,
+          "win_pct": 32.61,
+          "worst": 8.6265,
+          "sharpe": 0.3678,
+          "mean_excess": -0.6456,
+          "median_excess": 0.2614,
+          "excess_hit_pct": 45.65,
+          "mean_median_gap": -0.907
+        },
+        "8w": {
+          "n": 46,
+          "avg": 1.7762,
+          "median": 2.6723,
+          "win_pct": 30.43,
+          "worst": 8.9465,
+          "sharpe": 0.8488,
+          "mean_excess": -0.3386,
+          "median_excess": 0.5575,
+          "excess_hit_pct": 43.48,
+          "mean_median_gap": -0.8961
+        },
+        "12w": {
+          "n": 46,
+          "avg": 3.3658,
+          "median": 5.3583,
+          "win_pct": 23.91,
+          "worst": 12.7985,
+          "sharpe": 1.0789,
+          "mean_excess": 0.2553,
+          "median_excess": 2.2478,
+          "excess_hit_pct": 39.13,
+          "mean_median_gap": -1.9925
+        },
+        "6m": {
+          "n": 46,
+          "avg": 5.5441,
+          "median": 7.1196,
+          "win_pct": 21.74,
+          "worst": 20.0752,
+          "sharpe": 0.9001,
+          "mean_excess": -0.8827,
+          "median_excess": 0.6927,
+          "excess_hit_pct": 45.65,
+          "mean_median_gap": -1.5755
+        },
+        "12m": {
+          "n": 46,
+          "avg": 11.5179,
+          "median": 12.7981,
+          "win_pct": 13.04,
+          "worst": 35.2706,
+          "sharpe": 1.1092,
+          "mean_excess": -1.4401,
+          "median_excess": -0.1598,
+          "excess_hit_pct": 52.17,
+          "mean_median_gap": -1.2802
+        }
+      },
+      "rm_max": 25,
+      "fm_min": 55
+    },
+    {
+      "n": 42,
+      "n_episodes": 42,
+      "n_weeks": 121,
+      "metrics": {
+        "4w": {
+          "n": 42,
+          "avg": 0.7238,
+          "median": 1.4554,
+          "win_pct": 28.57,
+          "worst": 8.6265,
+          "sharpe": 0.5998,
+          "mean_excess": -0.3778,
+          "median_excess": 0.3539,
+          "excess_hit_pct": 45.24,
+          "mean_median_gap": -0.7316
+        },
+        "8w": {
+          "n": 42,
+          "avg": 1.5776,
+          "median": 2.3492,
+          "win_pct": 30.95,
+          "worst": 8.9465,
+          "sharpe": 0.8012,
+          "mean_excess": -0.5372,
+          "median_excess": 0.2343,
+          "excess_hit_pct": 45.24,
+          "mean_median_gap": -0.7716
+        },
+        "12w": {
+          "n": 42,
+          "avg": 3.0412,
+          "median": 4.785,
+          "win_pct": 23.81,
+          "worst": 12.7985,
+          "sharpe": 0.9918,
+          "mean_excess": -0.0693,
+          "median_excess": 1.6745,
+          "excess_hit_pct": 40.48,
+          "mean_median_gap": -1.7437
+        },
+        "6m": {
+          "n": 42,
+          "avg": 5.0837,
+          "median": 5.592,
+          "win_pct": 21.43,
+          "worst": 20.0752,
+          "sharpe": 0.8584,
+          "mean_excess": -1.3431,
+          "median_excess": -0.8348,
+          "excess_hit_pct": 52.38,
+          "mean_median_gap": -0.5083
+        },
+        "12m": {
+          "n": 42,
+          "avg": 10.5077,
+          "median": 11.0657,
+          "win_pct": 16.67,
+          "worst": 35.2706,
+          "sharpe": 1.001,
+          "mean_excess": -2.4503,
+          "median_excess": -1.8923,
+          "excess_hit_pct": 54.76,
+          "mean_median_gap": -0.558
+        }
+      },
+      "rm_max": 25,
+      "fm_min": 60
+    },
+    {
+      "n": 39,
+      "n_episodes": 39,
+      "n_weeks": 101,
+      "metrics": {
+        "4w": {
+          "n": 39,
+          "avg": 0.7766,
+          "median": 1.5739,
+          "win_pct": 28.21,
+          "worst": 8.6265,
+          "sharpe": 0.6647,
+          "mean_excess": -0.3249,
+          "median_excess": 0.4724,
+          "excess_hit_pct": 43.59,
+          "mean_median_gap": -0.7973
+        },
+        "8w": {
+          "n": 39,
+          "avg": 2.0607,
+          "median": 2.6482,
+          "win_pct": 30.77,
+          "worst": 10.2898,
+          "sharpe": 1.0517,
+          "mean_excess": -0.0542,
+          "median_excess": 0.5333,
+          "excess_hit_pct": 41.03,
+          "mean_median_gap": -0.5875
+        },
+        "12w": {
+          "n": 39,
+          "avg": 3.8829,
+          "median": 4.9382,
+          "win_pct": 20.51,
+          "worst": 14.4928,
+          "sharpe": 1.3247,
+          "mean_excess": 0.7725,
+          "median_excess": 1.8277,
+          "excess_hit_pct": 38.46,
+          "mean_median_gap": -1.0553
+        },
+        "6m": {
+          "n": 39,
+          "avg": 5.2983,
+          "median": 5.6734,
+          "win_pct": 25.64,
+          "worst": 22.1652,
+          "sharpe": 0.8313,
+          "mean_excess": -1.1285,
+          "median_excess": -0.7534,
+          "excess_hit_pct": 51.28,
+          "mean_median_gap": -0.3751
+        },
+        "12m": {
+          "n": 39,
+          "avg": 10.0781,
+          "median": 9.8369,
+          "win_pct": 23.08,
+          "worst": 35.2706,
+          "sharpe": 0.907,
+          "mean_excess": -2.8799,
+          "median_excess": -3.1211,
+          "excess_hit_pct": 56.41,
+          "mean_median_gap": 0.2412
+        }
+      },
+      "rm_max": 25,
+      "fm_min": 65
+    },
+    {
+      "n": 32,
+      "n_episodes": 32,
+      "n_weeks": 90,
+      "metrics": {
+        "4w": {
+          "n": 32,
+          "avg": 0.1045,
+          "median": 1.1363,
+          "win_pct": 34.38,
+          "worst": 6.4949,
+          "sharpe": 0.0903,
+          "mean_excess": -0.997,
+          "median_excess": 0.0348,
+          "excess_hit_pct": 50.0,
+          "mean_median_gap": -1.0318
+        },
+        "8w": {
+          "n": 32,
+          "avg": 1.5891,
+          "median": 2.2908,
+          "win_pct": 34.38,
+          "worst": 8.9465,
+          "sharpe": 0.8184,
+          "mean_excess": -0.5257,
+          "median_excess": 0.176,
+          "excess_hit_pct": 46.88,
+          "mean_median_gap": -0.7017
+        },
+        "12w": {
+          "n": 32,
+          "avg": 3.2576,
+          "median": 4.4493,
+          "win_pct": 25.0,
+          "worst": 12.7985,
+          "sharpe": 1.0889,
+          "mean_excess": 0.1471,
+          "median_excess": 1.3388,
+          "excess_hit_pct": 43.75,
+          "mean_median_gap": -1.1917
+        },
+        "6m": {
+          "n": 32,
+          "avg": 4.2763,
+          "median": 4.4969,
+          "win_pct": 28.12,
+          "worst": 20.0752,
+          "sharpe": 0.6665,
+          "mean_excess": -2.1505,
+          "median_excess": -1.93,
+          "excess_hit_pct": 53.12,
+          "mean_median_gap": -0.2206
+        },
+        "12m": {
+          "n": 32,
+          "avg": 9.0426,
+          "median": 7.6791,
+          "win_pct": 28.12,
+          "worst": 35.2706,
+          "sharpe": 0.7674,
+          "mean_excess": -3.9154,
+          "median_excess": -5.2788,
+          "excess_hit_pct": 62.5,
+          "mean_median_gap": 1.3635
+        }
+      },
+      "rm_max": 25,
+      "fm_min": 70
+    },
+    {
+      "n": 28,
+      "n_episodes": 28,
+      "n_weeks": 68,
+      "metrics": {
+        "4w": {
+          "n": 28,
+          "avg": 0.8649,
+          "median": 1.5151,
+          "win_pct": 35.71,
+          "worst": 10.0495,
+          "sharpe": 0.6622,
+          "mean_excess": -0.2366,
+          "median_excess": 0.4135,
+          "excess_hit_pct": 42.86,
+          "mean_median_gap": -0.6501
+        },
+        "8w": {
+          "n": 28,
+          "avg": 2.2562,
+          "median": 2.7872,
+          "win_pct": 28.57,
+          "worst": 11.4982,
+          "sharpe": 0.9791,
+          "mean_excess": 0.1414,
+          "median_excess": 0.6723,
+          "excess_hit_pct": 35.71,
+          "mean_median_gap": -0.531
+        },
+        "12w": {
+          "n": 28,
+          "avg": 4.3009,
+          "median": 5.4515,
+          "win_pct": 21.43,
+          "worst": 18.6981,
+          "sharpe": 1.2789,
+          "mean_excess": 1.1904,
+          "median_excess": 2.341,
+          "excess_hit_pct": 35.71,
+          "mean_median_gap": -1.1506
+        },
+        "6m": {
+          "n": 28,
+          "avg": 5.8005,
+          "median": 7.1196,
+          "win_pct": 25.0,
+          "worst": 34.4778,
+          "sharpe": 0.7553,
+          "mean_excess": -0.6263,
+          "median_excess": 0.6927,
+          "excess_hit_pct": 42.86,
+          "mean_median_gap": -1.319
+        },
+        "12m": {
+          "n": 28,
+          "avg": 10.4922,
+          "median": 9.2255,
+          "win_pct": 21.43,
+          "worst": 57.1302,
+          "sharpe": 0.7383,
+          "mean_excess": -2.4658,
+          "median_excess": -3.7325,
+          "excess_hit_pct": 53.57,
+          "mean_median_gap": 1.2667
+        }
+      },
+      "rm_max": 25,
+      "fm_min": 75
+    },
+    {
+      "n": 48,
+      "n_episodes": 48,
+      "n_weeks": 198,
+      "metrics": {
+        "4w": {
+          "n": 48,
+          "avg": 0.1286,
+          "median": 1.3,
+          "win_pct": 39.58,
+          "worst": 7.3993,
+          "sharpe": 0.1016,
+          "mean_excess": -0.9729,
+          "median_excess": 0.1985,
+          "excess_hit_pct": 47.92,
+          "mean_median_gap": -1.1714
+        },
+        "8w": {
+          "n": 48,
+          "avg": 1.2044,
+          "median": 2.5917,
+          "win_pct": 35.42,
+          "worst": 10.2418,
+          "sharpe": 0.5536,
+          "mean_excess": -0.9105,
+          "median_excess": 0.4768,
+          "excess_hit_pct": 43.75,
+          "mean_median_gap": -1.3873
+        },
+        "12w": {
+          "n": 48,
+          "avg": 3.0907,
+          "median": 5.2409,
+          "win_pct": 27.08,
+          "worst": 12.7985,
+          "sharpe": 1.0157,
+          "mean_excess": -0.0197,
+          "median_excess": 2.1304,
+          "excess_hit_pct": 37.5,
+          "mean_median_gap": -2.1502
+        },
+        "6m": {
+          "n": 48,
+          "avg": 6.1597,
+          "median": 7.55,
+          "win_pct": 18.75,
+          "worst": 20.8665,
+          "sharpe": 1.0046,
+          "mean_excess": -0.2671,
+          "median_excess": 1.1232,
+          "excess_hit_pct": 41.67,
+          "mean_median_gap": -1.3903
+        },
+        "12m": {
+          "n": 48,
+          "avg": 12.2472,
+          "median": 14.0595,
+          "win_pct": 8.33,
+          "worst": 35.2706,
+          "sharpe": 1.2188,
+          "mean_excess": -0.7108,
+          "median_excess": 1.1015,
+          "excess_hit_pct": 47.92,
+          "mean_median_gap": -1.8123
+        }
+      },
+      "rm_max": 30,
+      "fm_min": 45
+    },
+    {
+      "n": 52,
+      "n_episodes": 52,
+      "n_weeks": 178,
+      "metrics": {
+        "4w": {
+          "n": 52,
+          "avg": 0.3492,
+          "median": 1.1178,
+          "win_pct": 40.38,
+          "worst": 8.6265,
+          "sharpe": 0.2725,
+          "mean_excess": -0.7524,
+          "median_excess": 0.0163,
+          "excess_hit_pct": 50.0,
+          "mean_median_gap": -0.7686
+        },
+        "8w": {
+          "n": 52,
+          "avg": 1.5173,
+          "median": 2.5917,
+          "win_pct": 34.62,
+          "worst": 10.2418,
+          "sharpe": 0.7041,
+          "mean_excess": -0.5975,
+          "median_excess": 0.4768,
+          "excess_hit_pct": 42.31,
+          "mean_median_gap": -1.0744
+        },
+        "12w": {
+          "n": 52,
+          "avg": 3.2126,
+          "median": 5.2241,
+          "win_pct": 28.85,
+          "worst": 12.7985,
+          "sharpe": 1.0521,
+          "mean_excess": 0.1021,
+          "median_excess": 2.1136,
+          "excess_hit_pct": 38.46,
+          "mean_median_gap": -2.0115
+        },
+        "6m": {
+          "n": 52,
+          "avg": 5.768,
+          "median": 7.55,
+          "win_pct": 21.15,
+          "worst": 20.0752,
+          "sharpe": 0.9533,
+          "mean_excess": -0.6588,
+          "median_excess": 1.1232,
+          "excess_hit_pct": 42.31,
+          "mean_median_gap": -1.7821
+        },
+        "12m": {
+          "n": 52,
+          "avg": 12.0803,
+          "median": 12.7981,
+          "win_pct": 7.69,
+          "worst": 35.2706,
+          "sharpe": 1.252,
+          "mean_excess": -0.8777,
+          "median_excess": -0.1598,
+          "excess_hit_pct": 51.92,
+          "mean_median_gap": -0.7179
+        }
+      },
+      "rm_max": 30,
+      "fm_min": 50
+    },
+    {
+      "n": 48,
+      "n_episodes": 48,
+      "n_weeks": 156,
+      "metrics": {
+        "4w": {
+          "n": 48,
+          "avg": 0.2094,
+          "median": 1.1178,
+          "win_pct": 37.5,
+          "worst": 8.6265,
+          "sharpe": 0.1716,
+          "mean_excess": -0.8921,
+          "median_excess": 0.0163,
+          "excess_hit_pct": 50.0,
+          "mean_median_gap": -0.9084
+        },
+        "8w": {
+          "n": 48,
+          "avg": 1.4593,
+          "median": 2.4819,
+          "win_pct": 33.33,
+          "worst": 8.9465,
+          "sharpe": 0.7055,
+          "mean_excess": -0.6555,
+          "median_excess": 0.367,
+          "excess_hit_pct": 43.75,
+          "mean_median_gap": -1.0226
+        },
+        "12w": {
+          "n": 48,
+          "avg": 3.0413,
+          "median": 4.7431,
+          "win_pct": 27.08,
+          "worst": 12.7985,
+          "sharpe": 1.0049,
+          "mean_excess": -0.0692,
+          "median_excess": 1.6327,
+          "excess_hit_pct": 41.67,
+          "mean_median_gap": -1.7019
+        },
+        "6m": {
+          "n": 48,
+          "avg": 5.2462,
+          "median": 7.1196,
+          "win_pct": 22.92,
+          "worst": 20.0752,
+          "sharpe": 0.8846,
+          "mean_excess": -1.1806,
+          "median_excess": 0.6927,
+          "excess_hit_pct": 45.83,
+          "mean_median_gap": -1.8733
+        },
+        "12m": {
+          "n": 48,
+          "avg": 11.8369,
+          "median": 13.1132,
+          "win_pct": 10.42,
+          "worst": 35.2706,
+          "sharpe": 1.1844,
+          "mean_excess": -1.1211,
+          "median_excess": 0.1552,
+          "excess_hit_pct": 50.0,
+          "mean_median_gap": -1.2763
+        }
+      },
+      "rm_max": 30,
+      "fm_min": 55
+    },
+    {
+      "n": 44,
+      "n_episodes": 44,
+      "n_weeks": 137,
+      "metrics": {
+        "4w": {
+          "n": 44,
+          "avg": 0.6331,
+          "median": 1.4554,
+          "win_pct": 29.55,
+          "worst": 8.6265,
+          "sharpe": 0.5322,
+          "mean_excess": -0.4685,
+          "median_excess": 0.3539,
+          "excess_hit_pct": 45.45,
+          "mean_median_gap": -0.8223
+        },
+        "8w": {
+          "n": 44,
+          "avg": 1.4141,
+          "median": 2.3492,
+          "win_pct": 34.09,
+          "worst": 8.9465,
+          "sharpe": 0.7241,
+          "mean_excess": -0.7008,
+          "median_excess": 0.2343,
+          "excess_hit_pct": 45.45,
+          "mean_median_gap": -0.9351
+        },
+        "12w": {
+          "n": 44,
+          "avg": 3.0149,
+          "median": 4.3232,
+          "win_pct": 25.0,
+          "worst": 12.7985,
+          "sharpe": 1.0234,
+          "mean_excess": -0.0955,
+          "median_excess": 1.2128,
+          "excess_hit_pct": 40.91,
+          "mean_median_gap": -1.3083
+        },
+        "6m": {
+          "n": 44,
+          "avg": 5.3387,
+          "median": 6.0832,
+          "win_pct": 20.45,
+          "worst": 20.0752,
+          "sharpe": 0.9658,
+          "mean_excess": -1.0881,
+          "median_excess": -0.3436,
+          "excess_hit_pct": 50.0,
+          "mean_median_gap": -0.7445
+        },
+        "12m": {
+          "n": 44,
+          "avg": 11.3911,
+          "median": 12.9972,
+          "win_pct": 13.64,
+          "worst": 35.2706,
+          "sharpe": 1.1205,
+          "mean_excess": -1.5669,
+          "median_excess": 0.0392,
+          "excess_hit_pct": 50.0,
+          "mean_median_gap": -1.6061
+        }
+      },
+      "rm_max": 30,
+      "fm_min": 60
+    },
+    {
+      "n": 40,
+      "n_episodes": 40,
+      "n_weeks": 116,
+      "metrics": {
+        "4w": {
+          "n": 40,
+          "avg": 0.7538,
+          "median": 1.5787,
+          "win_pct": 27.5,
+          "worst": 8.6265,
+          "sharpe": 0.6511,
+          "mean_excess": -0.3478,
+          "median_excess": 0.4772,
+          "excess_hit_pct": 42.5,
+          "mean_median_gap": -0.825
+        },
+        "8w": {
+          "n": 40,
+          "avg": 1.9529,
+          "median": 2.6723,
+          "win_pct": 32.5,
+          "worst": 10.2898,
+          "sharpe": 0.9966,
+          "mean_excess": -0.162,
+          "median_excess": 0.5575,
+          "excess_hit_pct": 40.0,
+          "mean_median_gap": -0.7195
+        },
+        "12w": {
+          "n": 40,
+          "avg": 3.9261,
+          "median": 4.6589,
+          "win_pct": 20.0,
+          "worst": 14.4928,
+          "sharpe": 1.3927,
+          "mean_excess": 0.8156,
+          "median_excess": 1.5484,
+          "excess_hit_pct": 37.5,
+          "mean_median_gap": -0.7328
+        },
+        "6m": {
+          "n": 40,
+          "avg": 5.5041,
+          "median": 6.0832,
+          "win_pct": 25.0,
+          "worst": 22.1652,
+          "sharpe": 0.914,
+          "mean_excess": -0.9227,
+          "median_excess": -0.3436,
+          "excess_hit_pct": 50.0,
+          "mean_median_gap": -0.5792
+        },
+        "12m": {
+          "n": 40,
+          "avg": 10.9904,
+          "median": 12.2221,
+          "win_pct": 20.0,
+          "worst": 35.2706,
+          "sharpe": 1.0075,
+          "mean_excess": -1.9676,
+          "median_excess": -0.7358,
+          "excess_hit_pct": 52.5,
+          "mean_median_gap": -1.2317
+        }
+      },
+      "rm_max": 30,
+      "fm_min": 65
+    },
+    {
+      "n": 32,
+      "n_episodes": 32,
+      "n_weeks": 102,
+      "metrics": {
+        "4w": {
+          "n": 32,
+          "avg": -0.0077,
+          "median": 1.1178,
+          "win_pct": 34.38,
+          "worst": 6.1655,
+          "sharpe": -0.0067,
+          "mean_excess": -1.1092,
+          "median_excess": 0.0163,
+          "excess_hit_pct": 50.0,
+          "mean_median_gap": -1.1255
+        },
+        "8w": {
+          "n": 32,
+          "avg": 1.289,
+          "median": 1.9546,
+          "win_pct": 37.5,
+          "worst": 8.9465,
+          "sharpe": 0.6633,
+          "mean_excess": -0.8258,
+          "median_excess": -0.1602,
+          "excess_hit_pct": 50.0,
+          "mean_median_gap": -0.6656
+        },
+        "12w": {
+          "n": 32,
+          "avg": 3.1955,
+          "median": 3.9627,
+          "win_pct": 25.0,
+          "worst": 12.7985,
+          "sharpe": 1.1105,
+          "mean_excess": 0.0851,
+          "median_excess": 0.8522,
+          "excess_hit_pct": 43.75,
+          "mean_median_gap": -0.7672
+        },
+        "6m": {
+          "n": 32,
+          "avg": 4.2809,
+          "median": 4.4969,
+          "win_pct": 28.12,
+          "worst": 20.0752,
+          "sharpe": 0.7085,
+          "mean_excess": -2.1459,
+          "median_excess": -1.93,
+          "excess_hit_pct": 53.12,
+          "mean_median_gap": -0.216
+        },
+        "12m": {
+          "n": 32,
+          "avg": 9.8927,
+          "median": 10.5679,
+          "win_pct": 25.0,
+          "worst": 35.2706,
+          "sharpe": 0.8499,
+          "mean_excess": -3.0653,
+          "median_excess": -2.39,
+          "excess_hit_pct": 59.38,
+          "mean_median_gap": -0.6753
+        }
+      },
+      "rm_max": 30,
+      "fm_min": 70
+    },
+    {
+      "n": 29,
+      "n_episodes": 29,
+      "n_weeks": 79,
+      "metrics": {
+        "4w": {
+          "n": 29,
+          "avg": 0.7508,
+          "median": 1.4562,
+          "win_pct": 37.93,
+          "worst": 10.0495,
+          "sharpe": 0.5916,
+          "mean_excess": -0.3507,
+          "median_excess": 0.3547,
+          "excess_hit_pct": 44.83,
+          "mean_median_gap": -0.7054
+        },
+        "8w": {
+          "n": 29,
+          "avg": 2.0997,
+          "median": 2.6965,
+          "win_pct": 31.03,
+          "worst": 11.4982,
+          "sharpe": 0.9152,
+          "mean_excess": -0.0151,
+          "median_excess": 0.5816,
+          "excess_hit_pct": 37.93,
+          "mean_median_gap": -0.5968
+        },
+        "12w": {
+          "n": 29,
+          "avg": 4.2634,
+          "median": 5.4056,
+          "win_pct": 20.69,
+          "worst": 18.6981,
+          "sharpe": 1.3188,
+          "mean_excess": 1.153,
+          "median_excess": 2.2951,
+          "excess_hit_pct": 37.93,
+          "mean_median_gap": -1.1422
+        },
+        "6m": {
+          "n": 29,
+          "avg": 6.1096,
+          "median": 7.2679,
+          "win_pct": 24.14,
+          "worst": 34.4778,
+          "sharpe": 0.8401,
+          "mean_excess": -0.3172,
+          "median_excess": 0.8411,
+          "excess_hit_pct": 41.38,
+          "mean_median_gap": -1.1583
+        },
+        "12m": {
+          "n": 29,
+          "avg": 10.5905,
+          "median": 9.8369,
+          "win_pct": 20.69,
+          "worst": 57.1302,
+          "sharpe": 0.7489,
+          "mean_excess": -2.3675,
+          "median_excess": -3.1211,
+          "excess_hit_pct": 51.72,
+          "mean_median_gap": 0.7536
+        }
+      },
+      "rm_max": 30,
+      "fm_min": 75
+    },
+    {
+      "n": 48,
+      "n_episodes": 48,
+      "n_weeks": 219,
+      "metrics": {
+        "4w": {
+          "n": 48,
+          "avg": 0.7447,
+          "median": 1.9759,
+          "win_pct": 35.42,
+          "worst": 8.8998,
+          "sharpe": 0.5754,
+          "mean_excess": -0.3568,
+          "median_excess": 0.8743,
+          "excess_hit_pct": 39.58,
+          "mean_median_gap": -1.2312
+        },
+        "8w": {
+          "n": 48,
+          "avg": 1.5339,
+          "median": 3.0613,
+          "win_pct": 31.25,
+          "worst": 11.4839,
+          "sharpe": 0.6838,
+          "mean_excess": -0.5809,
+          "median_excess": 0.9464,
+          "excess_hit_pct": 39.58,
+          "mean_median_gap": -1.5273
+        },
+        "12w": {
+          "n": 48,
+          "avg": 2.9069,
+          "median": 4.3232,
+          "win_pct": 29.17,
+          "worst": 12.0119,
+          "sharpe": 0.9512,
+          "mean_excess": -0.2036,
+          "median_excess": 1.2128,
+          "excess_hit_pct": 41.67,
+          "mean_median_gap": -1.4163
+        },
+        "6m": {
+          "n": 48,
+          "avg": 5.5333,
+          "median": 6.2694,
+          "win_pct": 22.92,
+          "worst": 24.7082,
+          "sharpe": 0.8558,
+          "mean_excess": -0.8935,
+          "median_excess": -0.1575,
+          "excess_hit_pct": 50.0,
+          "mean_median_gap": -0.7361
+        },
+        "12m": {
+          "n": 48,
+          "avg": 11.2652,
+          "median": 11.8138,
+          "win_pct": 12.5,
+          "worst": 38.3303,
+          "sharpe": 1.0383,
+          "mean_excess": -1.6928,
+          "median_excess": -1.1441,
+          "excess_hit_pct": 54.17,
+          "mean_median_gap": -0.5487
+        }
+      },
+      "rm_max": 35,
+      "fm_min": 45
+    },
+    {
+      "n": 51,
+      "n_episodes": 51,
+      "n_weeks": 197,
+      "metrics": {
+        "4w": {
+          "n": 51,
+          "avg": 0.6915,
+          "median": 1.6769,
+          "win_pct": 37.25,
+          "worst": 8.6265,
+          "sharpe": 0.5465,
+          "mean_excess": -0.4101,
+          "median_excess": 0.5754,
+          "excess_hit_pct": 45.1,
+          "mean_median_gap": -0.9854
+        },
+        "8w": {
+          "n": 51,
+          "avg": 1.5795,
+          "median": 2.7867,
+          "win_pct": 31.37,
+          "worst": 10.2418,
+          "sharpe": 0.7325,
+          "mean_excess": -0.5354,
+          "median_excess": 0.6718,
+          "excess_hit_pct": 39.22,
+          "mean_median_gap": -1.2072
+        },
+        "12w": {
+          "n": 51,
+          "avg": 2.8055,
+          "median": 4.2669,
+          "win_pct": 31.37,
+          "worst": 11.2811,
+          "sharpe": 0.9336,
+          "mean_excess": -0.305,
+          "median_excess": 1.1564,
+          "excess_hit_pct": 43.14,
+          "mean_median_gap": -1.4614
+        },
+        "6m": {
+          "n": 51,
+          "avg": 4.725,
+          "median": 5.4338,
+          "win_pct": 25.49,
+          "worst": 20.0752,
+          "sharpe": 0.7773,
+          "mean_excess": -1.7019,
+          "median_excess": -0.993,
+          "excess_hit_pct": 50.98,
+          "mean_median_gap": -0.7088
+        },
+        "12m": {
+          "n": 51,
+          "avg": 10.6105,
+          "median": 11.802,
+          "win_pct": 11.76,
+          "worst": 35.2706,
+          "sharpe": 1.0888,
+          "mean_excess": -2.3475,
+          "median_excess": -1.156,
+          "excess_hit_pct": 58.82,
+          "mean_median_gap": -1.1915
+        }
+      },
+      "rm_max": 35,
+      "fm_min": 50
+    },
+    {
+      "n": 46,
+      "n_episodes": 46,
+      "n_weeks": 174,
+      "metrics": {
+        "4w": {
+          "n": 46,
+          "avg": 0.5891,
+          "median": 1.6254,
+          "win_pct": 34.78,
+          "worst": 8.6265,
+          "sharpe": 0.4842,
+          "mean_excess": -0.5125,
+          "median_excess": 0.5239,
+          "excess_hit_pct": 43.48,
+          "mean_median_gap": -1.0363
+        },
+        "8w": {
+          "n": 46,
+          "avg": 1.5243,
+          "median": 2.7416,
+          "win_pct": 30.43,
+          "worst": 8.294,
+          "sharpe": 0.7292,
+          "mean_excess": -0.5905,
+          "median_excess": 0.6267,
+          "excess_hit_pct": 39.13,
+          "mean_median_gap": -1.2173
+        },
+        "12w": {
+          "n": 46,
+          "avg": 2.5644,
+          "median": 4.1715,
+          "win_pct": 30.43,
+          "worst": 11.564,
+          "sharpe": 0.8559,
+          "mean_excess": -0.5461,
+          "median_excess": 1.061,
+          "excess_hit_pct": 47.83,
+          "mean_median_gap": -1.6071
+        },
+        "6m": {
+          "n": 46,
+          "avg": 4.2815,
+          "median": 5.215,
+          "win_pct": 26.09,
+          "worst": 20.0752,
+          "sharpe": 0.7251,
+          "mean_excess": -2.1453,
+          "median_excess": -1.2118,
+          "excess_hit_pct": 54.35,
+          "mean_median_gap": -0.9335
+        },
+        "12m": {
+          "n": 46,
+          "avg": 10.432,
+          "median": 12.2068,
+          "win_pct": 15.22,
+          "worst": 35.2706,
+          "sharpe": 1.0356,
+          "mean_excess": -2.526,
+          "median_excess": -0.7512,
+          "excess_hit_pct": 56.52,
+          "mean_median_gap": -1.7748
+        }
+      },
+      "rm_max": 35,
+      "fm_min": 55
+    },
+    {
+      "n": 42,
+      "n_episodes": 42,
+      "n_weeks": 155,
+      "metrics": {
+        "4w": {
+          "n": 42,
+          "avg": 1.069,
+          "median": 2.1118,
+          "win_pct": 26.19,
+          "worst": 8.6265,
+          "sharpe": 0.9132,
+          "mean_excess": -0.0325,
+          "median_excess": 1.0103,
+          "excess_hit_pct": 38.1,
+          "mean_median_gap": -1.0428
+        },
+        "8w": {
+          "n": 42,
+          "avg": 1.4831,
+          "median": 2.6723,
+          "win_pct": 30.95,
+          "worst": 8.1029,
+          "sharpe": 0.7517,
+          "mean_excess": -0.6317,
+          "median_excess": 0.5575,
+          "excess_hit_pct": 40.48,
+          "mean_median_gap": -1.1892
+        },
+        "12w": {
+          "n": 42,
+          "avg": 2.4914,
+          "median": 3.9596,
+          "win_pct": 28.57,
+          "worst": 11.564,
+          "sharpe": 0.8575,
+          "mean_excess": -0.6191,
+          "median_excess": 0.8491,
+          "excess_hit_pct": 47.62,
+          "mean_median_gap": -1.4682
+        },
+        "6m": {
+          "n": 42,
+          "avg": 4.2866,
+          "median": 4.8877,
+          "win_pct": 23.81,
+          "worst": 20.0752,
+          "sharpe": 0.7819,
+          "mean_excess": -2.1402,
+          "median_excess": -1.5391,
+          "excess_hit_pct": 59.52,
+          "mean_median_gap": -0.6011
+        },
+        "12m": {
+          "n": 42,
+          "avg": 9.8312,
+          "median": 10.6162,
+          "win_pct": 19.05,
+          "worst": 35.2706,
+          "sharpe": 0.9658,
+          "mean_excess": -3.1268,
+          "median_excess": -2.3418,
+          "excess_hit_pct": 57.14,
+          "mean_median_gap": -0.785
+        }
+      },
+      "rm_max": 35,
+      "fm_min": 60
+    },
+    {
+      "n": 40,
+      "n_episodes": 40,
+      "n_weeks": 132,
+      "metrics": {
+        "4w": {
+          "n": 40,
+          "avg": 1.1858,
+          "median": 2.1118,
+          "win_pct": 25.0,
+          "worst": 8.6265,
+          "sharpe": 1.0749,
+          "mean_excess": 0.0843,
+          "median_excess": 1.0103,
+          "excess_hit_pct": 37.5,
+          "mean_median_gap": -0.926
+        },
+        "8w": {
+          "n": 40,
+          "avg": 1.9272,
+          "median": 2.7416,
+          "win_pct": 30.0,
+          "worst": 10.2898,
+          "sharpe": 0.9915,
+          "mean_excess": -0.1876,
+          "median_excess": 0.6267,
+          "excess_hit_pct": 37.5,
+          "mean_median_gap": -0.8144
+        },
+        "12w": {
+          "n": 40,
+          "avg": 3.3929,
+          "median": 4.1715,
+          "win_pct": 22.5,
+          "worst": 14.4928,
+          "sharpe": 1.235,
+          "mean_excess": 0.2824,
+          "median_excess": 1.061,
+          "excess_hit_pct": 45.0,
+          "mean_median_gap": -0.7786
+        },
+        "6m": {
+          "n": 40,
+          "avg": 4.6724,
+          "median": 5.1064,
+          "win_pct": 27.5,
+          "worst": 22.1652,
+          "sharpe": 0.7856,
+          "mean_excess": -1.7544,
+          "median_excess": -1.3204,
+          "excess_hit_pct": 57.5,
+          "mean_median_gap": -0.4341
+        },
+        "12m": {
+          "n": 40,
+          "avg": 9.5428,
+          "median": 10.0266,
+          "win_pct": 25.0,
+          "worst": 35.2706,
+          "sharpe": 0.8923,
+          "mean_excess": -3.4152,
+          "median_excess": -2.9314,
+          "excess_hit_pct": 60.0,
+          "mean_median_gap": -0.4838
+        }
+      },
+      "rm_max": 35,
+      "fm_min": 65
+    },
+    {
+      "n": 33,
+      "n_episodes": 33,
+      "n_weeks": 116,
+      "metrics": {
+        "4w": {
+          "n": 33,
+          "avg": 0.4116,
+          "median": 1.5739,
+          "win_pct": 33.33,
+          "worst": 6.1655,
+          "sharpe": 0.3721,
+          "mean_excess": -0.6899,
+          "median_excess": 0.4724,
+          "excess_hit_pct": 45.45,
+          "mean_median_gap": -1.1623
+        },
+        "8w": {
+          "n": 33,
+          "avg": 1.1827,
+          "median": 2.2906,
+          "win_pct": 36.36,
+          "worst": 8.1029,
+          "sharpe": 0.6226,
+          "mean_excess": -0.9321,
+          "median_excess": 0.1757,
+          "excess_hit_pct": 48.48,
+          "mean_median_gap": -1.1079
+        },
+        "12w": {
+          "n": 33,
+          "avg": 2.5632,
+          "median": 2.9965,
+          "win_pct": 27.27,
+          "worst": 11.564,
+          "sharpe": 0.9482,
+          "mean_excess": -0.5473,
+          "median_excess": -0.114,
+          "excess_hit_pct": 51.52,
+          "mean_median_gap": -0.4333
+        },
+        "6m": {
+          "n": 33,
+          "avg": 2.9397,
+          "median": 3.3928,
+          "win_pct": 33.33,
+          "worst": 20.0752,
+          "sharpe": 0.5009,
+          "mean_excess": -3.4871,
+          "median_excess": -3.034,
+          "excess_hit_pct": 63.64,
+          "mean_median_gap": -0.4531
+        },
+        "12m": {
+          "n": 33,
+          "avg": 8.1946,
+          "median": 8.6141,
+          "win_pct": 30.3,
+          "worst": 35.2706,
+          "sharpe": 0.7428,
+          "mean_excess": -4.7634,
+          "median_excess": -4.3439,
+          "excess_hit_pct": 69.7,
+          "mean_median_gap": -0.4195
+        }
+      },
+      "rm_max": 35,
+      "fm_min": 70
+    },
+    {
+      "n": 31,
+      "n_episodes": 31,
+      "n_weeks": 90,
+      "metrics": {
+        "4w": {
+          "n": 31,
+          "avg": 1.3582,
+          "median": 2.3658,
+          "win_pct": 35.48,
+          "worst": 10.0495,
+          "sharpe": 1.1302,
+          "mean_excess": 0.2567,
+          "median_excess": 1.2643,
+          "excess_hit_pct": 38.71,
+          "mean_median_gap": -1.0076
+        },
+        "8w": {
+          "n": 31,
+          "avg": 2.2039,
+          "median": 2.8779,
+          "win_pct": 29.03,
+          "worst": 11.4982,
+          "sharpe": 0.9687,
+          "mean_excess": 0.0891,
+          "median_excess": 0.763,
+          "excess_hit_pct": 35.48,
+          "mean_median_gap": -0.674
+        },
+        "12w": {
+          "n": 31,
+          "avg": 4.0388,
+          "median": 4.2669,
+          "win_pct": 22.58,
+          "worst": 18.6981,
+          "sharpe": 1.2709,
+          "mean_excess": 0.9283,
+          "median_excess": 1.1564,
+          "excess_hit_pct": 41.94,
+          "mean_median_gap": -0.2281
+        },
+        "6m": {
+          "n": 31,
+          "avg": 5.2806,
+          "median": 6.702,
+          "win_pct": 29.03,
+          "worst": 34.4778,
+          "sharpe": 0.7196,
+          "mean_excess": -1.1462,
+          "median_excess": 0.2752,
+          "excess_hit_pct": 48.39,
+          "mean_median_gap": -1.4214
+        },
+        "12m": {
+          "n": 31,
+          "avg": 9.5549,
+          "median": 8.6141,
+          "win_pct": 22.58,
+          "worst": 57.1302,
+          "sharpe": 0.6996,
+          "mean_excess": -3.4031,
+          "median_excess": -4.3439,
+          "excess_hit_pct": 61.29,
+          "mean_median_gap": 0.9408
+        }
+      },
+      "rm_max": 35,
+      "fm_min": 75
+    },
+    {
+      "n": 51,
+      "n_episodes": 51,
+      "n_weeks": 244,
+      "metrics": {
+        "4w": {
+          "n": 51,
+          "avg": 0.6454,
+          "median": 1.724,
+          "win_pct": 37.25,
+          "worst": 8.8998,
+          "sharpe": 0.4759,
+          "mean_excess": -0.4561,
+          "median_excess": 0.6225,
+          "excess_hit_pct": 39.22,
+          "mean_median_gap": -1.0786
+        },
+        "8w": {
+          "n": 51,
+          "avg": 1.5285,
+          "median": 3.1765,
+          "win_pct": 31.37,
+          "worst": 11.4839,
+          "sharpe": 0.7161,
+          "mean_excess": -0.5863,
+          "median_excess": 1.0616,
+          "excess_hit_pct": 39.22,
+          "mean_median_gap": -1.648
+        },
+        "12w": {
+          "n": 51,
+          "avg": 2.5653,
+          "median": 4.3796,
+          "win_pct": 33.33,
+          "worst": 12.0119,
+          "sharpe": 0.8417,
+          "mean_excess": -0.5452,
+          "median_excess": 1.2691,
+          "excess_hit_pct": 45.1,
+          "mean_median_gap": -1.8143
+        },
+        "6m": {
+          "n": 51,
+          "avg": 5.8232,
+          "median": 6.3904,
+          "win_pct": 19.61,
+          "worst": 24.7082,
+          "sharpe": 0.9255,
+          "mean_excess": -0.6036,
+          "median_excess": -0.0364,
+          "excess_hit_pct": 50.98,
+          "mean_median_gap": -0.5672
+        },
+        "12m": {
+          "n": 51,
+          "avg": 11.7595,
+          "median": 12.6821,
+          "win_pct": 11.76,
+          "worst": 38.3303,
+          "sharpe": 1.0989,
+          "mean_excess": -1.1985,
+          "median_excess": -0.2759,
+          "excess_hit_pct": 50.98,
+          "mean_median_gap": -0.9226
+        }
+      },
+      "rm_max": 40,
+      "fm_min": 45
+    },
+    {
+      "n": 54,
+      "n_episodes": 54,
+      "n_weeks": 220,
+      "metrics": {
+        "4w": {
+          "n": 54,
+          "avg": 0.6623,
+          "median": 1.6848,
+          "win_pct": 38.89,
+          "worst": 8.6265,
+          "sharpe": 0.4963,
+          "mean_excess": -0.4393,
+          "median_excess": 0.5832,
+          "excess_hit_pct": 44.44,
+          "mean_median_gap": -1.0225
+        },
+        "8w": {
+          "n": 54,
+          "avg": 1.6476,
+          "median": 2.9816,
+          "win_pct": 31.48,
+          "worst": 10.2418,
+          "sharpe": 0.7979,
+          "mean_excess": -0.4673,
+          "median_excess": 0.8667,
+          "excess_hit_pct": 37.04,
+          "mean_median_gap": -1.334
+        },
+        "12w": {
+          "n": 54,
+          "avg": 2.5298,
+          "median": 4.2837,
+          "win_pct": 35.19,
+          "worst": 11.2811,
+          "sharpe": 0.8376,
+          "mean_excess": -0.5807,
+          "median_excess": 1.1732,
+          "excess_hit_pct": 46.3,
+          "mean_median_gap": -1.7539
+        },
+        "6m": {
+          "n": 54,
+          "avg": 5.1021,
+          "median": 5.9121,
+          "win_pct": 22.22,
+          "worst": 19.1103,
+          "sharpe": 0.8553,
+          "mean_excess": -1.3247,
+          "median_excess": -0.5147,
+          "excess_hit_pct": 51.85,
+          "mean_median_gap": -0.81
+        },
+        "12m": {
+          "n": 54,
+          "avg": 11.1843,
+          "median": 12.2068,
+          "win_pct": 11.11,
+          "worst": 30.7,
+          "sharpe": 1.146,
+          "mean_excess": -1.7737,
+          "median_excess": -0.7512,
+          "excess_hit_pct": 55.56,
+          "mean_median_gap": -1.0225
+        }
+      },
+      "rm_max": 40,
+      "fm_min": 50
+    },
+    {
+      "n": 49,
+      "n_episodes": 49,
+      "n_weeks": 196,
+      "metrics": {
+        "4w": {
+          "n": 49,
+          "avg": 0.5307,
+          "median": 1.6769,
+          "win_pct": 36.73,
+          "worst": 8.6265,
+          "sharpe": 0.409,
+          "mean_excess": -0.5708,
+          "median_excess": 0.5754,
+          "excess_hit_pct": 44.9,
+          "mean_median_gap": -1.1462
+        },
+        "8w": {
+          "n": 49,
+          "avg": 1.4515,
+          "median": 2.6659,
+          "win_pct": 30.61,
+          "worst": 8.294,
+          "sharpe": 0.7462,
+          "mean_excess": -0.6633,
+          "median_excess": 0.551,
+          "excess_hit_pct": 38.78,
+          "mean_median_gap": -1.2144
+        },
+        "12w": {
+          "n": 49,
+          "avg": 2.1409,
+          "median": 1.9616,
+          "win_pct": 34.69,
+          "worst": 11.564,
+          "sharpe": 0.7251,
+          "mean_excess": -0.9695,
+          "median_excess": -1.1489,
+          "excess_hit_pct": 51.02,
+          "mean_median_gap": 0.1793
+        },
+        "6m": {
+          "n": 49,
+          "avg": 4.2508,
+          "median": 4.9963,
+          "win_pct": 24.49,
+          "worst": 16.5461,
+          "sharpe": 0.7487,
+          "mean_excess": -2.176,
+          "median_excess": -1.4305,
+          "excess_hit_pct": 57.14,
+          "mean_median_gap": -0.7455
+        },
+        "12m": {
+          "n": 49,
+          "avg": 10.4744,
+          "median": 12.5879,
+          "win_pct": 14.29,
+          "worst": 29.6012,
+          "sharpe": 1.0729,
+          "mean_excess": -2.4836,
+          "median_excess": -0.3701,
+          "excess_hit_pct": 55.1,
+          "mean_median_gap": -2.1135
+        }
+      },
+      "rm_max": 40,
+      "fm_min": 55
+    },
+    {
+      "n": 45,
+      "n_episodes": 45,
+      "n_weeks": 176,
+      "metrics": {
+        "4w": {
+          "n": 45,
+          "avg": 0.9735,
+          "median": 1.795,
+          "win_pct": 28.89,
+          "worst": 8.6265,
+          "sharpe": 0.7684,
+          "mean_excess": -0.1281,
+          "median_excess": 0.6935,
+          "excess_hit_pct": 40.0,
+          "mean_median_gap": -0.8215
+        },
+        "8w": {
+          "n": 45,
+          "avg": 1.4066,
+          "median": 2.6482,
+          "win_pct": 31.11,
+          "worst": 8.1029,
+          "sharpe": 0.7761,
+          "mean_excess": -0.7082,
+          "median_excess": 0.5333,
+          "excess_hit_pct": 40.0,
+          "mean_median_gap": -1.2416
+        },
+        "12w": {
+          "n": 45,
+          "avg": 2.0351,
+          "median": 1.9616,
+          "win_pct": 33.33,
+          "worst": 11.564,
+          "sharpe": 0.7116,
+          "mean_excess": -1.0753,
+          "median_excess": -1.1489,
+          "excess_hit_pct": 51.11,
+          "mean_median_gap": 0.0735
+        },
+        "6m": {
+          "n": 45,
+          "avg": 4.2527,
+          "median": 4.7791,
+          "win_pct": 22.22,
+          "worst": 16.5461,
+          "sharpe": 0.8108,
+          "mean_excess": -2.1741,
+          "median_excess": -1.6477,
+          "excess_hit_pct": 62.22,
+          "mean_median_gap": -0.5264
+        },
+        "12m": {
+          "n": 45,
+          "avg": 9.9174,
+          "median": 10.6415,
+          "win_pct": 17.78,
+          "worst": 29.6012,
+          "sharpe": 1.0078,
+          "mean_excess": -3.0406,
+          "median_excess": -2.3165,
+          "excess_hit_pct": 55.56,
+          "mean_median_gap": -0.7241
+        }
+      },
+      "rm_max": 40,
+      "fm_min": 60
+    },
+    {
+      "n": 43,
+      "n_episodes": 43,
+      "n_weeks": 153,
+      "metrics": {
+        "4w": {
+          "n": 43,
+          "avg": 1.0777,
+          "median": 1.795,
+          "win_pct": 27.91,
+          "worst": 8.6265,
+          "sharpe": 0.8874,
+          "mean_excess": -0.0239,
+          "median_excess": 0.6935,
+          "excess_hit_pct": 39.53,
+          "mean_median_gap": -0.7173
+        },
+        "8w": {
+          "n": 43,
+          "avg": 1.8162,
+          "median": 2.6659,
+          "win_pct": 30.23,
+          "worst": 10.2898,
+          "sharpe": 1.0212,
+          "mean_excess": -0.2987,
+          "median_excess": 0.551,
+          "excess_hit_pct": 37.21,
+          "mean_median_gap": -0.8497
+        },
+        "12w": {
+          "n": 43,
+          "avg": 2.8525,
+          "median": 3.8432,
+          "win_pct": 27.91,
+          "worst": 14.4928,
+          "sharpe": 1.0392,
+          "mean_excess": -0.258,
+          "median_excess": 0.7327,
+          "excess_hit_pct": 48.84,
+          "mean_median_gap": -0.9907
+        },
+        "6m": {
+          "n": 43,
+          "avg": 4.61,
+          "median": 4.7791,
+          "win_pct": 25.58,
+          "worst": 22.1652,
+          "sharpe": 0.8104,
+          "mean_excess": -1.8168,
+          "median_excess": -1.6477,
+          "excess_hit_pct": 60.47,
+          "mean_median_gap": -0.1691
+        },
+        "12m": {
+          "n": 43,
+          "avg": 9.6532,
+          "median": 8.7667,
+          "win_pct": 23.26,
+          "worst": 29.6012,
+          "sharpe": 0.935,
+          "mean_excess": -3.3048,
+          "median_excess": -4.1913,
+          "excess_hit_pct": 58.14,
+          "mean_median_gap": 0.8865
+        }
+      },
+      "rm_max": 40,
+      "fm_min": 65
+    },
+    {
+      "n": 37,
+      "n_episodes": 37,
+      "n_weeks": 134,
+      "metrics": {
+        "4w": {
+          "n": 37,
+          "avg": 0.4458,
+          "median": 1.6926,
+          "win_pct": 32.43,
+          "worst": 6.1655,
+          "sharpe": 0.3643,
+          "mean_excess": -0.6557,
+          "median_excess": 0.5911,
+          "excess_hit_pct": 45.95,
+          "mean_median_gap": -1.2468
+        },
+        "8w": {
+          "n": 37,
+          "avg": 1.3191,
+          "median": 2.2911,
+          "win_pct": 35.14,
+          "worst": 8.1029,
+          "sharpe": 0.7636,
+          "mean_excess": -0.7957,
+          "median_excess": 0.1762,
+          "excess_hit_pct": 45.95,
+          "mean_median_gap": -0.972
+        },
+        "12w": {
+          "n": 37,
+          "avg": 2.1444,
+          "median": 1.9616,
+          "win_pct": 32.43,
+          "worst": 11.564,
+          "sharpe": 0.8068,
+          "mean_excess": -0.9661,
+          "median_excess": -1.1489,
+          "excess_hit_pct": 54.05,
+          "mean_median_gap": 0.1828
+        },
+        "6m": {
+          "n": 37,
+          "avg": 3.201,
+          "median": 3.3928,
+          "win_pct": 29.73,
+          "worst": 16.5461,
+          "sharpe": 0.5774,
+          "mean_excess": -3.2258,
+          "median_excess": -3.034,
+          "excess_hit_pct": 64.86,
+          "mean_median_gap": -0.1918
+        },
+        "12m": {
+          "n": 37,
+          "avg": 8.7646,
+          "median": 7.4403,
+          "win_pct": 27.03,
+          "worst": 29.6012,
+          "sharpe": 0.8246,
+          "mean_excess": -4.1934,
+          "median_excess": -5.5177,
+          "excess_hit_pct": 64.86,
+          "mean_median_gap": 1.3243
+        }
+      },
+      "rm_max": 40,
+      "fm_min": 70
+    },
+    {
+      "n": 36,
+      "n_episodes": 36,
+      "n_weeks": 108,
+      "metrics": {
+        "4w": {
+          "n": 36,
+          "avg": 1.0357,
+          "median": 2.0449,
+          "win_pct": 36.11,
+          "worst": 10.0495,
+          "sharpe": 0.7642,
+          "mean_excess": -0.0659,
+          "median_excess": 0.9434,
+          "excess_hit_pct": 41.67,
+          "mean_median_gap": -1.0092
+        },
+        "8w": {
+          "n": 36,
+          "avg": 2.1368,
+          "median": 2.7719,
+          "win_pct": 30.56,
+          "worst": 11.4982,
+          "sharpe": 1.0375,
+          "mean_excess": 0.022,
+          "median_excess": 0.657,
+          "excess_hit_pct": 36.11,
+          "mean_median_gap": -0.6351
+        },
+        "12w": {
+          "n": 36,
+          "avg": 3.5539,
+          "median": 4.3945,
+          "win_pct": 27.78,
+          "worst": 18.6981,
+          "sharpe": 1.1406,
+          "mean_excess": 0.4435,
+          "median_excess": 1.284,
+          "excess_hit_pct": 44.44,
+          "mean_median_gap": -0.8405
+        },
+        "6m": {
+          "n": 36,
+          "avg": 5.5758,
+          "median": 6.5872,
+          "win_pct": 25.0,
+          "worst": 34.4778,
+          "sharpe": 0.8087,
+          "mean_excess": -0.851,
+          "median_excess": 0.1604,
+          "excess_hit_pct": 50.0,
+          "mean_median_gap": -1.0114
+        },
+        "12m": {
+          "n": 36,
+          "avg": 10.7039,
+          "median": 8.0272,
+          "win_pct": 19.44,
+          "worst": 57.1302,
+          "sharpe": 0.7952,
+          "mean_excess": -2.2541,
+          "median_excess": -4.9308,
+          "excess_hit_pct": 55.56,
+          "mean_median_gap": 2.6767
+        }
+      },
+      "rm_max": 40,
+      "fm_min": 75
+    }
+  ]
+}

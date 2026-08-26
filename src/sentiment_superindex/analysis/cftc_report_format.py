@@ -64,7 +64,7 @@ def format_cell_line(row: dict[str, Any], horizon: str = "12w") -> str:
         f"mean={m.get('mean')}% med={m.get('median')}% gap={m.get('mean_median_gap')}% | "
         f"hit={m.get('hit_pct')}% excess_hit={m.get('hit_excess_pct')}% | "
         f"mean_excess={m.get('mean_excess')}% med_excess={m.get('median_excess')}% | "
-        f"best={m.get('best')}% worst={m.get('worst')}%"
+        f"best_for_signal={m.get('best')}% worst_for_signal={m.get('worst')}%"
     )
 
 
@@ -74,8 +74,12 @@ def format_par_horizon(par: dict[str, Any], horizon: str, benchmark: dict[str, f
         return f"- **{horizon}**: no data"
     bench = (benchmark or {}).get(horizon)
     bench_s = f"{bench}%" if bench is not None else "—"
+    # n falls with the horizon because the last weeks have no full forward window yet. The doc
+    # used to print the sample length at all three horizons while the tab printed the real,
+    # truncated counts -- same report, two different n (Rohit, 24 Aug). The metric's own n is
+    # the true one.
     return (
-        f"- **{horizon}** (bench {bench_s}): n_wk={par.get('n_weeks', 0)} | "
+        f"- **{horizon}** (bench {bench_s}): n_wk={m.get('n', 0)} | "
         f"mean={m.get('mean')}% med={m.get('median')}% | "
         f"mean_excess={m.get('mean_excess')}% med_excess={m.get('median_excess')}% | "
         f"hit={m.get('hit_pct')}% excess_hit={m.get('hit_excess_pct')}%"
@@ -119,20 +123,28 @@ def format_heatmap_cell(row: dict[str, Any] | None, horizon: str = "12w") -> str
     return f"{avg}% (n_ep={row.get('n_episodes', 0)})"
 
 
+SIDE_CONVENTION_NOTE = (
+    "`best_for_signal` / `worst_for_signal` are relative to the side the pattern trades. SQUEEZE is "
+    "long, so best = highest forward return. LIQUIDITY EXIT is short, so best = *most negative* "
+    "forward return. The two tables therefore order these columns in opposite directions on purpose."
+)
+
+
 def format_episode_instances(
     row: dict[str, Any],
     horizon: str = "12w",
     *,
     top_n: int = 9,
     sort_key: str | None = None,
+    long_side: bool = True,
 ) -> str:
-    """Dated list of top episode returns for a cell."""
+    """Dated list of the most favourable episode returns for a cell, best first for its side."""
     key = sort_key or f"ret_{horizon}"
     episodes = row.get("episodes") or row.get("all_episodes") or []
     ranked = [ep for ep in episodes if ep.get(key) is not None]
     if not ranked:
         return "—"
-    ranked = sorted(ranked, key=lambda ep: ep[key], reverse=True)[:top_n]
+    ranked = sorted(ranked, key=lambda ep: ep[key], reverse=long_side)[:top_n]
     parts = [f"{ep.get('date')} {ep[key]:+.4f}%" for ep in ranked]
     return "; ".join(parts)
 
@@ -163,28 +175,59 @@ def cell_distribution_row(
         "worst": m.get("worst"),
     }
     if include_instances:
-        out["top_instances"] = format_episode_instances(row, horizon)
+        # Capped hard: a nine-episode dated list in a table cell produced rows several hundred
+        # characters wide, which is where the LIQUIDITY EXIT rows escaped their table and landed
+        # as loose text with orphan instance tables under them. The full list lives in the dated
+        # instances section instead.
+        out["top_instances"] = format_episode_instances(row, horizon, top_n=3)
     return out
 
 
-def distribution_table_header(*, include_instances: bool = False, include_excess: bool = True) -> str:
-    cols = (
-        "| FM < | RM > | n_wk | n_ep | mean % | median % | gap % | hit % | "
-        "mean_ex % | med_ex % | ex_hit % | best % | worst %"
-    )
+def _distribution_columns(
+    *,
+    include_instances: bool = False,
+    fm_label: str = "FM <",
+    rm_label: str = "RM >",
+) -> list[str]:
+    cols = [
+        fm_label, rm_label, "n_wk", "n_ep", "mean %", "median %", "gap %", "hit %",
+        "mean_ex %", "med_ex %", "ex_hit %", "best_for_signal %", "worst_for_signal %",
+    ]
     if include_instances:
-        cols += " | top instances (date ret)"
-    return cols + " |"
+        cols.append("top instances (date ret)")
+    return cols
 
 
-def distribution_table_sep(*, include_instances: bool = False, include_excess: bool = True) -> str:
-    base = (
-        "|------|------|------|------|--------|----------|-------|-------|"
-        "|----------|----------|----------|--------|---------"
+def distribution_table_header(
+    *,
+    include_instances: bool = False,
+    include_excess: bool = True,
+    fm_label: str = "FM <",
+    rm_label: str = "RM >",
+) -> str:
+    cols = _distribution_columns(
+        include_instances=include_instances, fm_label=fm_label, rm_label=rm_label
     )
-    if include_instances:
-        base += "|-------------------"
-    return base + "|"
+    return "| " + " | ".join(cols) + " |"
+
+
+def distribution_table_sep(
+    *,
+    include_instances: bool = False,
+    include_excess: bool = True,
+    fm_label: str = "FM <",
+    rm_label: str = "RM >",
+) -> str:
+    """Separator built from the same column list as the header.
+
+    It used to be a hand-written string of dashes carrying a stray ``||`` -- one column more than
+    the header, which is enough for a strict renderer to give up on the table and dump the rows as
+    text. Deriving both from one list means they cannot drift again.
+    """
+    cols = _distribution_columns(
+        include_instances=include_instances, fm_label=fm_label, rm_label=rm_label
+    )
+    return "|" + "|".join("-" * max(3, len(c)) for c in cols) + "|"
 
 
 def distribution_table_line(

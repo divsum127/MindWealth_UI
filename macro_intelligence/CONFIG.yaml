@@ -336,6 +336,26 @@ cftc:
   legacy_market_backfill_enabled: true
   market_filter: "S&P 500"
   market_exclude: "E-MINI|MICRO|DIVIDEND|ADJUSTED INT RATE"
+  # Unit basis for the published FM/RM series (Rohit, 24 Aug 2026 -- "restate the whole series
+  # in one unit"). CFTC redefined the "S&P 500 Consolidated" line on 2023-05-02:
+  #   before: Consolidated = E-mini/5 + big  -> big-contract ($250) equivalents, micro excluded
+  #   from:   Consolidated = E-mini + micro/10 -> E-mini ($50) equivalents, micro included
+  # That is the 5.09x seam. "emini_equivalent" rebuilds the series from the component contract
+  # lines at their notional weights instead, which is continuous by construction and needs no
+  # stitch. "consolidated_line" restores the old behaviour (kept for regression tests).
+  unit_basis: "emini_equivalent"
+  # weight = contract notional / E-mini notional. Big S&P = $250 x index = 5 E-minis;
+  # Micro = $5 x index = 1/10 E-mini. Dividend, total-return and adjusted-rate lines are
+  # different products, not size variants, so they are deliberately absent.
+  contract_weights:
+    "E-MINI S&P 500 - CHICAGO MERCANTILE EXCHANGE": 1.0
+    "E-MINI S&P 500 STOCK INDEX - CHICAGO MERCANTILE EXCHANGE": 1.0
+    "S&P 500 STOCK INDEX - CHICAGO MERCANTILE EXCHANGE": 5.0
+    "MICRO E-MINI S&P 500 INDEX - CHICAGO MERCANTILE EXCHANGE": 0.1
+  # Standing seam test: flag any week where the series scales by more than this against the
+  # trailing median level. A real redefinition moves every field at once by the same factor;
+  # positioning does not. 2.5x is well above the largest genuine weekly move in 1054 weeks.
+  unit_break_ratio: 2.5
   fm_classification: "Lev Money|Leveraged Funds"
   rm_classification: "Asset Mgr|Asset Manager"
   pending_status: PENDING_CFTC_CONFIRM

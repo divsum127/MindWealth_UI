@@ -16,9 +16,20 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 OUT_DIR = ROOT / "docs" / "ssi_validation" / "pdf"
-REPORT_MD = ROOT / "docs" / "ssi_validation" / "CFTC_PATTERN_THRESHOLD_REPORT_FOR_ROHIT_20260804.md"
-SQUEEZE_JSON = ROOT / "macro_intelligence" / "analysis" / "ssi_validation" / "03_squeeze_grid_20260804.json"
-LIQ_JSON = ROOT / "macro_intelligence" / "analysis" / "ssi_validation" / "04_liquidity_exit_grid_20260804.json"
+ART_DIR = ROOT / "macro_intelligence" / "analysis" / "ssi_validation"
+DOC_DIR = ROOT / "docs" / "ssi_validation"
+
+
+def _latest(directory: Path, pattern: str) -> Path:
+    """Newest artifact matching ``pattern``.
+
+    These were pinned to the 4 Aug filenames, so every later run re-exported August's numbers
+    under a fresh timestamp -- the export silently disagreed with the grids it was named after.
+    """
+    matches = sorted(directory.glob(pattern))
+    if not matches:
+        raise FileNotFoundError(f"No file matching {pattern} in {directory}")
+    return matches[-1]
 
 CSS = """
 @page { size: A4; margin: 18mm 16mm; }
@@ -131,7 +142,7 @@ def grid_json_to_pdf(json_path: Path, pdf_path: Path, *, kind: str) -> None:
     test_id = data.get("test_id", json_path.stem)
 
     if kind == "squeeze":
-        title = "CFTC SQUEEZE Grid — 03_squeeze_grid_20260804"
+        title = f"CFTC SQUEEZE Grid — {json_path.stem}"
         subtitle = "Condition: FM pctile &lt; FM_max AND RM pctile &gt; RM_min (same week)"
         header = (
             "<tr><th>FM &lt;</th><th>RM &gt;</th><th>n</th>"
@@ -142,7 +153,7 @@ def grid_json_to_pdf(json_path: Path, pdf_path: Path, *, kind: str) -> None:
         tbody = squeeze_rows_html(rows)
         note = "SQUEEZE 12w win % = share of episodes with positive 12w SPX return."
     else:
-        title = "CFTC LIQUIDITY EXIT Grid — 04_liquidity_exit_grid_20260804"
+        title = f"CFTC LIQUIDITY EXIT Grid — {json_path.stem}"
         subtitle = "Condition: RM pctile &lt; RM_max AND FM pctile &gt; FM_min (same week)"
         header = (
             "<tr><th>RM &lt;</th><th>FM &gt;</th><th>n</th>"
@@ -178,13 +189,17 @@ def main() -> None:
     out = args.out_dir
     out.mkdir(parents=True, exist_ok=True)
 
-    report_pdf = out / "CFTC_PATTERN_THRESHOLD_REPORT_FOR_ROHIT_20260804.pdf"
-    squeeze_pdf = out / "03_squeeze_grid_20260804.pdf"
-    liq_pdf = out / "04_liquidity_exit_grid_20260804.pdf"
+    report_md = _latest(DOC_DIR, "CFTC_PATTERN_THRESHOLD_REPORT_FOR_ROHIT_*.md")
+    squeeze_json = _latest(ART_DIR, "03_squeeze_grid_2*.json")
+    liq_json = _latest(ART_DIR, "04_liquidity_exit_grid_2*.json")
 
-    md_to_pdf(REPORT_MD, report_pdf, "CFTC Pattern Threshold Report")
-    grid_json_to_pdf(SQUEEZE_JSON, squeeze_pdf, kind="squeeze")
-    grid_json_to_pdf(LIQ_JSON, liq_pdf, kind="liquidity")
+    report_pdf = out / f"{report_md.stem}.pdf"
+    squeeze_pdf = out / f"{squeeze_json.stem}.pdf"
+    liq_pdf = out / f"{liq_json.stem}.pdf"
+
+    md_to_pdf(report_md, report_pdf, "CFTC Pattern Threshold Report")
+    grid_json_to_pdf(squeeze_json, squeeze_pdf, kind="squeeze")
+    grid_json_to_pdf(liq_json, liq_pdf, kind="liquidity")
 
     print(f"Wrote {report_pdf}")
     print(f"Wrote {squeeze_pdf}")

@@ -1,6 +1,6 @@
 # SSI Validation — Data Gap Report
 
-**Updated: 2026-08-02** (see addenda below; original report dated 2026-06-07)
+**Updated: 2026-08-25** (see addenda below; original report dated 2026-06-07)
 
 Only variables with remaining data gaps are listed. Variables that are fully covered are omitted.
 
@@ -22,7 +22,7 @@ Variables stored in `macro_intelligence/data/runic.db → daily_readings`. Used 
 
 | Data | Spec Requires | Have | Gap | Fixable? |
 |------|--------------|------|-----|----------|
-| CFTC Fast Money (FM/RM) | 2006–2026 | 2010-06-18 → 2026-07-03 · 840 rows | 2006–2010 missing (~4 yr) | **No** — CFTC TFF format (FM/RM split) introduced Sep 2009; earlier data physically does not exist |
+| CFTC Fast Money (FM/RM) | 2006–2026 | **2006-06-13 → today · 1,054 rows** (2026-08-25 — see addendum) | **No gap.** The earlier "2006–2010 missing" was our bug, not CFTC's data. | **Fixed** (2026-08-20 / 2026-08-25) — the June claim below was wrong and is withdrawn. |
 | HY Credit Spreads OAS | 2006–2026 real OAS | **1996-12-31 → today, real (see 2026-08-02 addendum — free wayback backfill)** | **Fixed free.** 6,620 of 6,627 `PROXY` rows replaced with real ICE BofA OAS via a Wayback Machine snapshot of FRED's own CSV. Only 7 dates (bond-market-only holidays with no wayback print) remain on the old BAA10Y+VIX Model v2 estimate — a disclosed, narrow residual. | **Fixed** (free) — was paid-only as of 2026-07-29; see 2026-08-02 addendum. |
 | CPI Surprise | Enough history for 3yr percentile | 2024-01-12 → 2026-07-03 · 27 rows | Only 27 months — 3yr percentile unreliable until mid-2027 | Partial — FRED CPI actuals back to 1947; consensus estimates (needed for "surprise") from Cleveland Fed (free) |
 
@@ -33,8 +33,8 @@ Variables stored in `macro_intelligence/data/runic.db → daily_readings`. Used 
 | Category | Total variables | No gap | Gap — fixable | Gap — paid data only | Gap — structural / impossible |
 |----------|----------------|--------|--------------|---------------------|-------------------------------|
 | SSI | 6 | 6\* | 0 | 0 | 0 |
-| Runic DB | 12 | 10\* | 1 (CPI Surprise) | 0 | 1 (CFTC pre-2010) |
-| **Total** | **18** | **16\*** | **1** | **0** | **1** |
+| Runic DB | 12 | 11\* | 1 (CPI Surprise) | 0 | 0 |
+| **Total** | **18** | **17\*** | **1** | **0** | **0** |
 
 \* HY OAS and CNN F&G both moved from "Gap — paid data only" to "No gap" on 2026-08-02 (free
 wayback/community backfills — see addenda). Each carries a small disclosed residual not covered by
@@ -145,3 +145,39 @@ addendum: `docs/ssi_validation/hy_proxy_consumer_audit_2026-07-29.md`.
 Full detail: `scripts/backfill_cnn_feargreed_free_sources.py`,
 `docs/ssi_validation/cnn_fg_wayback_backfill_2026-08-02.md`.
 
+---
+
+## Addendum 2026-08-25 — the CFTC row in the June report was wrong (withdrawn)
+
+Rohit flagged this on 2026-08-24, and he is right. The June report said the FM/RM split was
+"introduced Sep 2009; earlier data physically does not exist". **That claim is withdrawn.**
+
+**What is actually true.** CFTC publishes Traders in Financial Futures back to **2006-06-13**, and
+the historical TFF files covering June 2006 onward were published in December 2010. The Sep-2009
+start we reported came from the *Historical Compressed* annual files — the wrong endpoint — and cost
+us four years we then told ourselves did not exist.
+
+**Two separate defects, both now fixed:**
+
+1. **Wrong endpoint / silent date drop** (fixed 2026-08-20, commit `18d572586`). The bulk
+   `fin_fut_txt_2006_2016.zip` dates as `M/D/YYYY 12:00:00 AM` while the yearly files are ISO.
+   `_parse_report_dates` only fell back to a mixed parse when *every* row failed, so in the combined
+   frame the bulk rows coerced to `NaT` and were dropped without a word.
+2. **Unit seam at 2023-05-02** (fixed 2026-08-25). CFTC redefined the `S&P 500 Consolidated` line
+   that week — big-contract ($250) equivalents with micro excluded before, E-mini ($50) equivalents
+   with micro included after — so the published series scaled ~5x mid-sample. The series is now
+   summed from the component contract lines at notional weight
+   (`cftc.unit_basis: emini_equivalent`), which is continuous by construction.
+
+**Current state:** 2006-06-13 → latest, 1,054 weekly prints, no detected unit break, first full
+156-week percentile window 2009-06-02.
+
+**One caveat to carry wherever the pre-2010 years are used:** CFTC keeps no history of trader
+classifications, so the 2006–2009 rows classify historical positions using current definitions.
+Mild look-ahead — disclose it, do not silently rely on it.
+
+**Still open, and not a data-availability problem:** GFC-era *forward returns* remain outside the
+percentile grids. With raw data from 2006-06-13 and a full-window requirement, the first rankable
+week is 2009-06-02 — after the crash. Including 2008 needs a shorter window, an explicitly accepted
+partial window, or the legacy non-commercial proxy (built, and measured as not like-for-like). That
+is a methodology decision, not a missing file.

@@ -2906,6 +2906,91 @@ Expect `fm_pctile` on prod to match dev for the same `fm_net` once the zip backf
 
 ---
 
+## 2026-08-25 — CFTC series restated into one unit (E-mini equivalents)
+
+### Git (chatbot-dev → chatbot-prod)
+- [ ] New files: `scripts/export_cftc_restated_series.py`, `tests/test_cftc_unit_basis.py`,
+      `tests/fixtures/cftc/tff_unit_break_sample.csv`
+- [ ] **Not in git:** `macro_intelligence/output/` is gitignored, so the regenerated
+      `cftc_tff_sp500_fm_rm_2006_2026.csv` and the new `cftc_tff_sp500_fm_rm_legacy_consolidated.csv`
+      do **not** travel with the merge. Run `python scripts/export_cftc_restated_series.py` on prod
+      after deploy, or the stale June export stays on disk in the old unit.
+- [ ] Modified files: `macro_intelligence/CONFIG.yaml` (`cftc.unit_basis`, `cftc.contract_weights`,
+      `cftc.unit_break_ratio`), `src/macro_intelligence/data/cftc_pull.py`
+      (`_emini_equivalent_series`, `_positioning_series`, `fetch_cftc_open_interest`,
+      `detect_unit_break`), `src/sentiment_superindex/analysis/cftc_episode_metrics.py`
+      (`weekly_pctile_series` full-window default), regenerated
+      `macro_intelligence/output/cftc_tff_sp500_fm_rm_2006_2026.csv`
+
+### Dev-only / revert before prod
+- [ ] None. `cftc.unit_basis` ships as `emini_equivalent`; `consolidated_line` exists only as a
+      documented fallback for regression comparison.
+
+### Prod runtime (not in git)
+- [ ] `.env` keys: none.
+- [ ] **`macro_intelligence/data_cache/cftc/` must be complete on prod before the first nightly
+      after this merge.** The restatement reads the component contract lines, not just the
+      Consolidated one, so a partial zip cache now changes the *level* of the series rather than
+      only shortening the percentile window. `fut_fin_txt_2006_2016.zip` through the current year
+      must all be present. `macro_intelligence/data_cache/` is untracked (not gitignored) — it is
+      runtime data and should stay out of the commit; confirm nothing sweeps it in with `git add -A`.
+
+### systemd / Nuxt
+- [ ] No unit or Nuxt changes. `mindwealth-api.service` restart on deploy as usual.
+
+### Prod data impact — read before merging
+- [ ] **`fm_net` / `rm_net` change scale for every date before 2023-05-02** (x5, plus micro from
+      2020-07). Anything storing raw contract counts historically — `cftc_positioning` rows in
+      `runic.db`, cached grid outputs, any hard-coded threshold in contracts rather than
+      percentile — is in the old unit and must be rebuilt, not merged alongside.
+- [ ] **`fm_pctile` / `rm_pctile` will move on prod** for recent dates: the window no longer spans
+      a unit change. Expect the Sentiment Layer 3 panel and any combo leg reading
+      `cot_fast_money` to shift on the first nightly. This is the fix, not a regression — but it
+      should not surprise anyone on the call.
+- [ ] The displayed positioning cuts (`squeeze fm_pctile_max: 10`, `liquidity_exit
+      fm_pctile_min: 80`) are unchanged, and remain **unvalidated** — Rohit sir is still holding
+      sign-off and has asked that no placeholder ships.
+
+### Smoke tests
+- [ ] `pytest tests/ -k cftc` → 44 + 9 new pass
+- [ ] `python scripts/export_cftc_restated_series.py` → 1054 weeks, 2006-06-13 → latest,
+      `unit breaks: none`, first ranked week 2009-06-02
+- [ ] After deploy:
+      `curl -s -H "X-API-Key: $KEY" http://127.0.0.1:8506/api/v1/analytics/sentiment/layers | jq '.positioning.inputs.layer3_cftc'`
+      → `fm_net` in E-mini equivalents (order 10^5-10^6, negative), `fm_pctile` present
+
+### Grid re-run (2026-08-25, same change set)
+- [ ] Modified: `src/sentiment_superindex/analysis/cftc_grid_v2.py`, `cftc_episode_metrics.py`,
+      `cftc_report_format.py`, `scripts/compile_cftc_pattern_threshold_report.py`,
+      `scripts/export_cftc_threshold_report_pdfs.py`, `scripts/build_cftc_six_point_report.py`,
+      `docs/ssi_validation/data_gap_report_2026-06-06.md`
+- [ ] Regenerated docs: `docs/ssi_validation/CFTC_PATTERN_THRESHOLD_REPORT_FOR_ROHIT_20260825.md`,
+      `docs/ssi_validation/_generated/cftc_*_20260825.md`, and the grid JSONs under
+      `macro_intelligence/analysis/ssi_validation/`
+- [ ] **No display change ships from this.** Sign-off is still held: the recommended cell runs at par
+      (excess-hit 57.14% vs PAR 56.82%) and LIQUIDITY EXIT cannot fire while the RM leg stays high.
+      The positioning panel keeps its current cuts and its unvalidated label.
+- [ ] Block bootstrap still to run (`scripts/run_cftc_rohit_rerun.py` without `--no-bootstrap`).
+
+### Stored-history rebuild (2026-08-25) — REQUIRED ON PROD, not optional
+- [ ] New file: `scripts/rebuild_cftc_stored_history.py`
+- [ ] **`runic.db` on prod carries the 2023-05-02 unit seam in stored rows.** Fixing the pull does not
+      repair rows already written. On dev: 0 of 672 pre-2023 `daily_readings.CFTC` rows matched the
+      restated series, stored percentiles were off by a mean of 5.2 points (20% of days >10 points),
+      and Combo E's `CFTC >= 85th` leg flipped on 22 days. Prod will show the same.
+- [ ] After the code merge and before trusting any CFTC-derived output on prod, run:
+      `python scripts/rebuild_cftc_stored_history.py --db <prod runic.db>` (dry run first, it prints
+      the diff and writes nothing), then re-run with `--apply`. It takes a timestamped backup itself
+      and refuses to run if the source series still has a unit break.
+- [ ] Expected after: raw 100% match both sides of the seam, percentile error 0.0, Combo E leg
+      disagreement 0 days.
+- [ ] **Order matters:** code merge → `export_cftc_restated_series.py` → `rebuild_cftc_stored_history.py`
+      → restart. Running the rebuild against the old code would write the old units back.
+
+### Status: `[PENDING]` — committed to `chatbot-dev` only; sign-off held by Rohit sir, so nothing here changes prod display, **but the `runic.db` rebuild above is a required prod step, not a display change**. Merge when the CFTC work is taken as a whole.
+
+---
+
 ## Template for future entries
 
 Copy for each new dev feature:
@@ -2940,6 +3025,7 @@ Copy for each new dev feature:
 
 | Date | Change |
 |------|--------|
+| 2026-08-25 | CFTC series restated into E-mini equivalents; **pre-2023-05-02 `fm_net`/`rm_net` change scale x5 — stored contract counts must be rebuilt, not merged**; complete `data_cache/cftc/` is now a hard prerequisite |
 | 2026-08-18 | SSI resilience + coverage gate + CFTC zip completeness + regime feed currency; **SSI_CONFIG.yaml `staleness:` block is now a hard prerequisite on prod** |
 | 2026-08-17 | Sheet-reply truth audit: 3 silent live feed defects (NAAIM scrape, `vix_ratio`, CFTC one release behind), dev/prod CFTC percentile mismatch, prod missing `signal_coverage` + gate label |
 | 2026-08-17 | Logged `pytest` → `run_nightly(as_of="2024-09-18")` clobbering the live `runic_output.json`; prod latent, fix pending |

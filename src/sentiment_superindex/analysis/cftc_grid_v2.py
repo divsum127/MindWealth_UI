@@ -24,6 +24,8 @@ from src.sentiment_superindex.analysis.cftc_report_format import (
     format_episode_instances,
     format_heatmap_cell,
     format_par_section,
+    SIDE_CONVENTION_NOTE,
+    horizon_metrics,
     rank_cells_by_gap,
     worked_examples_section,
 )
@@ -96,6 +98,83 @@ def _mask_dates(
     return idx[mask.fillna(False)]
 
 
+# CFTC redefined the Consolidated line here (see cftc_pull._emini_equivalent_series). The series
+# is restated so it is no longer a seam in the data, but it stays the split date for the standing
+# stability test: Rohit's rule is that a cell which only works on one side of it does not work.
+SEAM_DATE = pd.Timestamp("2023-05-02")
+
+
+def split_stability(
+    ctx: dict[str, Any],
+    dates: pd.DatetimeIndex,
+    *,
+    horizon: str = "12w",
+    long_side: bool = True,
+    split_at: pd.Timestamp = SEAM_DATE,
+) -> dict[str, Any]:
+    """Re-run a cell separately either side of ``split_at`` (Rohit's standing test).
+
+    He found FM<10/RM>55 carried by its post-2023 block -- 13 of 21 episodes, all of the positive
+    excess -- while the pre-2023 side ran at half of par with negative excess. Reporting only the
+    combined number hides that, so every cell that gets recommended now carries this split.
+    """
+    out: dict[str, Any] = {"split_at": str(pd.Timestamp(split_at).date()), "horizon": horizon}
+    for tag, sel in (
+        ("pre", dates[dates < split_at]),
+        ("post", dates[dates >= split_at]),
+        ("all", dates),
+    ):
+        if len(sel) == 0:
+            out[tag] = {"n_weeks": 0, "n_episodes": 0}
+            continue
+        cell = analyze_cell(
+            pd.DatetimeIndex(sel), ctx["spx"], benchmark=ctx["benchmark"],
+            long_side=long_side, sessions=ctx["sessions"], top_episodes=0,
+        )
+        m = (cell.get("metrics") or {}).get(horizon, {})
+        out[tag] = {
+            "n_weeks": cell.get("n_weeks", 0),
+            "n_episodes": cell.get("n_episodes", 0),
+            "mean": m.get("mean"),
+            "mean_excess": m.get("mean_excess"),
+            "hit_excess_pct": m.get("hit_excess_pct"),
+        }
+    pre, post = out.get("pre", {}), out.get("post", {})
+    both_sides = bool(pre.get("n_episodes")) and bool(post.get("n_episodes"))
+    signs = [s.get("mean_excess") for s in (pre, post) if s.get("mean_excess") is not None]
+    out["fires_both_sides"] = both_sides
+    out["consistent_sign"] = bool(len(signs) == 2 and (signs[0] > 0) == (signs[1] > 0))
+    out["survives_split"] = bool(both_sides and out["consistent_sign"])
+    return out
+
+
+def _episode_signature(row: dict[str, Any]) -> tuple[str, ...]:
+    eps = row.get("all_episodes") or row.get("episodes") or []
+    return tuple(sorted(str(e.get("date")) for e in eps if e.get("date")))
+
+
+def flag_duplicate_cells(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Group cells that fire on exactly the same episodes.
+
+    Rohit: "FM<5 / RM>55, >60 and >65 are the same six episodes printed three times. Not three
+    corroborating cells." Three cells agreeing is evidence; one cell printed three times is not,
+    and the reader cannot tell them apart from the grid alone.
+    """
+    groups: dict[tuple[str, ...], list[str]] = {}
+    for row in rows:
+        sig = _episode_signature(row)
+        if not sig:
+            continue
+        groups.setdefault(sig, []).append(str(row.get("condition")))
+    dupes = []
+    for sig, conditions in groups.items():
+        if len(conditions) > 1:
+            dupes.append(
+                {"n_episodes": len(sig), "episodes": list(sig), "conditions": sorted(conditions)}
+            )
+    return sorted(dupes, key=lambda d: -len(d["conditions"]))
+
+
 def run_par_row(ctx: dict[str, Any]) -> dict[str, Any]:
     return analyze_par_row(
         ctx["weekly_index"],
@@ -103,6 +182,73 @@ def run_par_row(ctx: dict[str, Any]) -> dict[str, Any]:
         benchmark=ctx["benchmark"],
         sessions=ctx["sessions"],
     )
+
+
+def rank_cells_by_excess_hit(
+    rows: list[dict[str, Any]],
+    *,
+    horizon: str = "12w",
+    pattern: str | None = None,
+    min_episodes: int = 3,
+    par: dict[str, Any] | None = None,
+) -> list[dict[str, Any]]:
+    """Rank on excess-hit, which is the number Rohit said on 4 Aug he would actually look at.
+
+    The 4 Aug spec asked for mean-median gap as the *tail* marker, and the report ranked on it
+    alone -- which is how the recommendation ended up on FM<10/RM>55 while the report's own
+    excess-hit table put FM<12.5 above it on every RM column. Both orderings are published now,
+    and cells below par on excess-hit are marked rather than silently ranked.
+    """
+    par_hit = None
+    if par:
+        par_hit = ((par.get("metrics") or {}).get(horizon) or {}).get("hit_excess_pct")
+        if par_hit is None:
+            par_hit = ((par.get("metrics") or {}).get(horizon) or {}).get("excess_hit_pct")
+    scored: list[tuple[float, dict[str, Any]]] = []
+    for row in rows:
+        if pattern is not None and row.get("pattern") != pattern:
+            continue
+        m = horizon_metrics(row, horizon)
+        hit = m.get("hit_excess_pct")
+        if hit is None or (m.get("n") or 0) < min_episodes:
+            continue
+        row["beats_par_excess_hit"] = None if par_hit is None else bool(hit > par_hit)
+        scored.append((float(hit), row))
+    scored.sort(key=lambda x: -x[0])
+    return [row for _, row in scored]
+
+
+def _seam_split_for_top_cells(
+    ctx: dict[str, Any],
+    rows: list[dict[str, Any]],
+    *,
+    pattern: str,
+    par: dict[str, Any] | None = None,
+    horizon: str | None = None,
+    top_n: int = 10,
+) -> list[dict[str, Any]]:
+    """Run the pre/post split on every cell a reader might act on, not on a hand-picked list."""
+    long_side = pattern != "LIQUIDITY_EXIT"
+    horizon = horizon or ("12w" if long_side else "4w")
+    grid_rows = [r for r in rows if r.get("pattern") == pattern]
+    by_hit = rank_cells_by_excess_hit(
+        grid_rows, horizon=horizon, pattern=pattern, par=par
+    )[:top_n]
+    by_gap = rank_cells_by_gap(grid_rows, horizon, long_side=long_side)[:top_n]
+    seen: set[str] = set()
+    out: list[dict[str, Any]] = []
+    for row in by_hit + by_gap:
+        cond = str(row.get("condition"))
+        if cond in seen:
+            continue
+        seen.add(cond)
+        if long_side:
+            dates = _mask_dates(ctx, fm_pct_max=row.get("fm_pct_max"), rm_pct_min=row.get("rm_pct_min"))
+        else:
+            dates = _mask_dates(ctx, rm_pct_max=row.get("rm_pct_max"), fm_pct_min=row.get("fm_pct_min"))
+        split = split_stability(ctx, dates, horizon=horizon, long_side=long_side)
+        out.append({"condition": cond, **split})
+    return out
 
 
 def run_squeeze_grid_v2(ctx: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -154,16 +300,77 @@ def run_squeeze_grid_v2(ctx: dict[str, Any] | None = None) -> dict[str, Any]:
                 **cell,
             }
         )
+    # FM as a share of open interest (Rohit §4). A fixed contract-count cut is not comparable
+    # across twenty years of growth in the venue -- and on the old series it was not even
+    # comparable across 2023, because the fixed distribution was computed across the unit change,
+    # so fixed_p10 returned 106 weeks that were all post-May-2023. A ratio has neither problem.
+    ratio = ctx.get("fm_over_oi")
+    if ratio is not None and not ratio.empty:
+        idx = ctx["weekly_index"]
+        aligned = ratio.reindex(idx).dropna()
+        for pct_val in (2.5, 5.0, 10.0):
+            if aligned.empty:
+                break
+            cut = float(np.percentile(aligned.values, pct_val))
+            dates = pd.DatetimeIndex(aligned.index[aligned <= cut])
+            if len(dates) == 0:
+                continue
+            cell = analyze_cell(dates, ctx["spx"], benchmark=ctx["benchmark"], long_side=True)
+            rows.append(
+                {
+                    "pattern": "SQUEEZE_ABS",
+                    "condition": f"FM_net/open_interest <= p{pct_val} ({cut:.4f})",
+                    "fm_over_oi_pctile": pct_val,
+                    "fm_over_oi_cut": round(cut, 6),
+                    **cell,
+                }
+            )
+    par = run_par_row(ctx)
     return {
         "test_id": "03_squeeze_grid_v2",
-        "spec": "rohit_2026-08-04",
+        "spec": "rohit_2026-08-24",
         "data_note": ctx["data_note"],
         "sample_diagnostics": ctx.get("sample_diagnostics"),
         "fm_distribution": ctx["fm_distribution"],
         "benchmark": ctx["benchmark"],
-        "par": run_par_row(ctx),
+        "par": par,
         "rows": rows,
+        "duplicate_cells": flag_duplicate_cells([r for r in rows if r.get("pattern") == "SQUEEZE"]),
+        "seam_split": _seam_split_for_top_cells(ctx, rows, pattern="SQUEEZE", par=par),
     }
+
+
+def leg_availability(ctx: dict[str, Any], *, split_at: pd.Timestamp = SEAM_DATE) -> dict[str, Any]:
+    """Why a pattern is silent: which *leg* stopped being satisfiable, and when.
+
+    LIQUIDITY EXIT has not fired since 2022, and the natural reading was that the FM unit seam
+    pinned the FM percentile so a high-FM condition could never trigger. Restating the units does
+    not bring the pattern back, so that reading is incomplete -- this reports each leg separately
+    so the silence is attributed to the leg that actually caused it rather than assumed.
+    """
+    idx = ctx["weekly_index"]
+    fm_pct, rm_pct = ctx["fm_pct"].loc[idx], ctx["rm_pct"].loc[idx]
+    legs = {
+        "FM_pct>45": fm_pct > 45,
+        "FM_pct>70": fm_pct > 70,
+        "RM_pct<30": rm_pct < 30,
+        "RM_pct<15": rm_pct < 15,
+    }
+    out: dict[str, Any] = {"split_at": str(pd.Timestamp(split_at).date()), "legs": []}
+    for name, mask in legs.items():
+        fired = idx[mask.values]
+        pre = mask[idx < split_at]
+        post = mask[idx >= split_at]
+        out["legs"].append(
+            {
+                "leg": name,
+                "pre_pct_of_weeks": round(100.0 * float(pre.mean()), 1) if len(pre) else None,
+                "post_pct_of_weeks": round(100.0 * float(post.mean()), 1) if len(post) else None,
+                "last_fired": str(fired.max().date()) if len(fired) else None,
+                "weeks_since_last_fired": int((idx.max() - fired.max()).days // 7) if len(fired) else None,
+            }
+        )
+    return out
 
 
 def run_liquidity_exit_grid_v2(ctx: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -187,14 +394,19 @@ def run_liquidity_exit_grid_v2(ctx: dict[str, Any] | None = None) -> dict[str, A
                     **cell,
                 }
             )
+    par = run_par_row(ctx)
     return {
         "test_id": "04_liquidity_exit_grid_v2",
-        "spec": "rohit_2026-08-04",
+        "spec": "rohit_2026-08-24",
         "data_note": ctx["data_note"],
+        "sample_diagnostics": ctx.get("sample_diagnostics"),
         "fm_distribution": ctx["fm_distribution"],
         "benchmark": ctx["benchmark"],
-        "par": run_par_row(ctx),
+        "par": par,
         "rows": rows,
+        "duplicate_cells": flag_duplicate_cells(rows),
+        "seam_split": _seam_split_for_top_cells(ctx, rows, pattern="LIQUIDITY_EXIT", par=par),
+        "leg_availability": leg_availability(ctx),
     }
 
 
@@ -377,16 +589,55 @@ def run_rm_increment_cells(ctx: dict[str, Any] | None = None) -> dict[str, Any]:
     }
 
 
+def robustness_specs_for_grid(
+    squeeze: dict[str, Any] | None,
+    *,
+    top_n: int = 4,
+    horizon: str = "12w",
+) -> list[dict[str, Any]]:
+    """Robustness targets taken from the grid's own ranking, plus the fixed key cells.
+
+    Rohit, 24 Aug: "robustness doesn't cover the cell you recommended." It ran on FM<7.5/RM>45,
+    FM<7.5/RM>40, FM<7.5&FM_net<0 and FM<5/RM>45 -- a list written before the grid existed --
+    while the recommendation was FM<10/RM>55. Deriving the targets from the ranking means the
+    cell that gets recommended is always one of the cells that got tested.
+    """
+    specs = [dict(s) for s in ROBUSTNESS_KEY_CELLS]
+    if not squeeze:
+        return specs
+    grid_rows = [r for r in (squeeze.get("rows") or []) if r.get("pattern") == "SQUEEZE"]
+    par = squeeze.get("par")
+    ranked = rank_cells_by_excess_hit(grid_rows, horizon=horizon, pattern="SQUEEZE", par=par)[:top_n]
+    ranked += rank_cells_by_gap(grid_rows, horizon, long_side=True)[:top_n]
+    known = {s["condition"] for s in specs}
+    for row in ranked:
+        cond = str(row.get("condition"))
+        if cond in known:
+            continue
+        known.add(cond)
+        specs.append(
+            {
+                "condition": cond,
+                "fm_pct_max": row.get("fm_pct_max"),
+                "rm_pct_min": row.get("rm_pct_min"),
+                "long_side": True,
+                "source": "grid_ranking",
+            }
+        )
+    return specs
+
+
 def run_robustness_checks(
     ctx: dict[str, Any] | None = None,
     *,
     run_bootstrap: bool = True,
     bootstrap_draws: int = 10_000,
+    specs: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Primary robustness: 12-offset weekly subsample stability; optional block bootstrap."""
     ctx = ctx or load_analysis_context()
     cells: list[dict[str, Any]] = []
-    for spec in ROBUSTNESS_KEY_CELLS:
+    for spec in (specs or ROBUSTNESS_KEY_CELLS):
         dates = _mask_dates(
             ctx,
             fm_pct_max=spec.get("fm_pct_max"),
@@ -419,9 +670,11 @@ def run_robustness_checks(
         cells.append(
             {
                 "condition": spec["condition"],
+                "source": spec.get("source", "fixed_key_cell"),
                 "n_qualifying_weeks": int(len(dates)),
                 "subsample_stability": stability,
                 "block_bootstrap": boot,
+                "seam_split": split_stability(ctx, dates, horizon="12w", long_side=long_side),
             }
         )
     return {
@@ -441,6 +694,18 @@ def _format_subsample_table(stability: dict[str, Any]) -> list[str]:
         f"hit_excess={stability.get('full', {}).get('hit_excess_pct')}% | "
         f"offsets_positive={stability.get('offsets_positive_excess')}/{stability.get('offsets_with_data')} | "
         f"stable={stability.get('stable_across_offsets')}",
+        "",
+        (
+            f"Offsets carry a median of **{stability.get('median_episodes_per_offset')}** episodes "
+            f"(min {stability.get('min_episodes_per_offset')}). "
+            + (
+                "That is enough for the agreement across offsets to mean something."
+                if stability.get("meaningful_offset_size")
+                else "**At that size the offset agreement is arithmetic, not evidence** — twelve subsamples "
+                "of two or three episodes will agree on sign often enough by chance, so `stable` is "
+                "withheld here regardless of how the signs fall."
+            )
+        ),
         "",
         "| Offset | n_ep | mean % | mean excess % | hit % | excess hit % |",
         "|--------|------|--------|---------------|-------|--------------|",
@@ -610,22 +875,24 @@ def build_fm_distribution_report(ctx: dict[str, Any]) -> tuple[str, Path | None]
         "# CFTC Fast Money Net Position — Fixed Distribution (for Rohit sign-off)",
         "",
         f"**Generated:** {pd.Timestamp.now().strftime('%Y-%m-%d')}",
-        "**Series:** CFTC TFF · S&P 500 (legacy STOCK INDEX → Consolidated stitch) · Leveraged Money",
+        f"**Series:** CFTC TFF · S&P 500 · Leveraged Money · units `{diag.get('unit_basis', 'emini_equivalent')}` "
+        "(component contract lines at notional weight — no Consolidated-line stitch, no 2023 unit seam)",
         f"**Sample:** {diag.get('raw_start', fm.index.min().date())} → "
         f"{diag.get('raw_end', fm.index.max().date())} · **n = {cuts.get('n', len(fm))}** weekly observations",
         "",
-        "## Sample start (answers Rohit row 75)",
+        "## Sample start — one number, everywhere (Rohit row 75)",
         "",
         f"- Raw TFF FM/RM weekly prints from **{diag.get('raw_start', '—')}**",
-        f"- First rolling percentile (≥20 obs): **{diag.get('first_pctile_20obs', '—')}**",
-        f"- First **full 156-week** rolling window: **{diag.get('first_full_156w_window', '—')}**",
+        f"- First **full {diag.get('pctile_window_weeks', 156)}-week** window — and therefore the analysis "
+        f"start, since partial windows are no longer ranked: **{diag.get('first_full_window', '—')}**",
+        f"- Unit-break scan: {diag.get('unit_breaks') or '**none**'}",
         f"- Grid analysis weeks: **{diag.get('analysis_weeks', '—')}** "
         f"({diag.get('analysis_start', '—')} → {diag.get('analysis_end', '—')})",
-        "- **GFC 2008:** present in the grids, contrary to earlier wording here. "
-        "`weekly_pctile_series()` ranks against `tail(156)` with a 20-observation minimum, so percentile "
-        "cells run continuously from the first rank date and the 2008 episodes are included — they are the "
-        "largest negatives in the LIQ EXIT grid. The real caveat is depth, not exclusion: 2008 weeks are "
-        "ranked against a partial (~115-week) lookback rather than a full three years.",
+        "- **GFC 2008:** **not** in the percentile grids, and the earlier wording here saying it was is "
+        "withdrawn. Those 2008 cells existed only because `weekly_pctile_series()` would rank a "
+        "20-observation window and call the result a 3-year percentile. It now requires a full window, so "
+        "the first rankable week is after the crash. Including 2008 needs a shorter window, an explicitly "
+        "accepted partial one, or the legacy proxy — a decision, not a code change.",
         "- **Pre-2006:** TFF Leveraged Money starts 2006-06-13. The legacy COT non-commercial series "
         "(2003+) is now built and cached (`fetch_cftc_legacy_noncommercial_net`), but on the 2006–2010 "
         "overlap it tracks TFF only loosely — level corr 0.64, percentile corr 0.54, mean absolute "
@@ -701,19 +968,54 @@ def build_rohit_report(squeeze: dict, liq: dict, regression: dict, robustness: d
     diag = squeeze.get("sample_diagnostics") or {}
     if diag:
         lines += [
-            "- **Sample start (Rohit row 75):**",
-            f"  - Raw TFF from **{diag.get('raw_start')}**; first rolling pctile **{diag.get('first_pctile_20obs')}**;",
-            f"  first full 156w window **{diag.get('first_full_156w_window')}**.",
-            "  - **GFC 2008 rolling grids:** included. Percentile cells exist from the first rank date; "
-            "2008 weeks rank against a partial ~115-week lookback, which is a depth caveat, not an exclusion.",
-            "  - **2003 rebuild:** legacy COT non-commercial built and cached from 2003, but the 2006–2010 "
-            "overlap (level corr 0.64, pctile corr 0.54, ~half of FM<10 weeks disagree) says it is not a "
-            "like-for-like FM substitute — kept as labelled context, not stitched into the grids.",
+            "- **Sample start — one number, everywhere:**",
+            f"  - Raw TFF weekly prints from **{diag.get('raw_start')}** to **{diag.get('raw_end')}** "
+            f"(**{diag.get('raw_weeks')}** weeks).",
+            f"  - First **full {diag.get('pctile_window_weeks')}-week** window closes "
+            f"**{diag.get('first_full_window')}**, and that *is* the analysis start — partial windows are "
+            f"no longer ranked, so there is no second, looser start date to quote. "
+            f"Analysis: **{diag.get('analysis_weeks')}** weeks "
+            f"({diag.get('analysis_start')} → {diag.get('analysis_end')}).",
+            f"  - **Units:** `{diag.get('unit_basis')}`. CFTC redefined the S&P 500 Consolidated line on "
+            "2023-05-02 (big-contract equivalents with micro excluded → E-mini equivalents with micro "
+            "included), which put a ~5x seam mid-sample in every earlier version of this report. The "
+            "series is now summed from the component contract lines at notional weight, so it is "
+            "continuous by construction.",
+            f"  - **Unit-break scan:** {diag.get('unit_breaks') or '**none** — no week where every field '
+            'scales by a common factor.'}",
+            "  - **GFC 2008:** **not** in the percentile grids. The first rankable week is "
+            f"**{diag.get('first_full_window')}**, after the crash. Earlier statements that the GFC was "
+            "included came from ranking partial windows from 20 observations; those ranks were labelled "
+            "3-year percentiles but were not. Including 2008 needs a shorter window, an explicitly "
+            "accepted partial window, or the legacy proxy — a decision, not a code change.",
+            "  - **Pre-2006:** TFF Leveraged Money starts 2006-06-13, so there is nothing to rebuild from "
+            "2003 in this definition. The legacy COT non-commercial series is built and cached, but the "
+            "2006–2010 overlap (level corr 0.64, pctile corr 0.54, ~half of FM<10 weeks disagree) says it "
+            "is not a like-for-like FM substitute — kept as labelled context, not stitched in.",
             "",
         ]
     else:
         lines += [
             "- **Rolling-percentile grids** require a full 156-week history; earliest valid cells ~2009.",
+            "",
+        ]
+    reg_rows = regression.get("rows", [])
+    if reg_rows:
+        worst_p = max((r.get("p_value") or 0) for r in reg_rows)
+        best_r2 = max((r.get("r_squared") or 0) for r in reg_rows)
+        lines += [
+            "## Executive summary — read this before the grids",
+            "",
+            f"- **FM percentile has no linear relationship with SPX forward returns.** R² tops out at "
+            f"**{best_r2:.4g}** across {len(reg_rows)} horizons, with p-values as weak as **{worst_p:.2g}**; "
+            "nothing is significant at any horizon. That does not rule out a threshold effect in the tail "
+            "— a linear fit would not show one — but it does settle the row 42 question: at that R², "
+            "whether Layer 3 applies `invert=True` to `cot_fast_money` is immaterial either way.",
+            "- **Rank cells on excess-hit, not on the mean−median gap alone.** Both orderings are published "
+            "below; where they disagree, the excess-hit table is the one to act on, and any cell below the "
+            "PAR excess-hit is marked as such.",
+            "- **Any cell worth recommending carries a pre/post 2023-05-02 split** (see the seam-stability "
+            "section). A cell that only works on one side of that date does not work.",
             "",
         ]
     lines += format_par_section(
@@ -769,10 +1071,25 @@ def build_rohit_report(squeeze: dict, liq: dict, regression: dict, robustness: d
         if r.get("pattern") != "SQUEEZE_ABS":
             continue
         lines.append(f"- `{r.get('condition')}`: {format_cell_line(r, '12w')}")
-    lines += ["", "## LIQUIDITY EXIT — top cells by mean−median gap at 4w (short side)", ""]
-    for r in rank_cells_by_gap(liq["rows"], "4w", long_side=False)[:15]:
-        lines.append(f"- `{r.get('condition')}`: {format_cell_line(r, '4w')}")
-        lines.append(f"  - top: {format_episode_instances(r, '4w')}")
+    lines += [
+        "",
+        "## LIQUIDITY EXIT — top cells by mean−median gap at 4w (short side)",
+        "",
+        SIDE_CONVENTION_NOTE,
+        "",
+        distribution_table_header(fm_label="RM <", rm_label="FM >"),
+        distribution_table_sep(),
+    ]
+    liq_top = rank_cells_by_gap(liq["rows"], "4w", long_side=False)[:15]
+    for r in liq_top:
+        lines.append(
+            distribution_table_line(r, "4w", fm_key="rm_pct_max", rm_key="fm_pct_min")
+        )
+    lines += ["", "### LIQUIDITY EXIT — dated instances for the cells above", ""]
+    for r in liq_top:
+        lines.append(
+            f"- `{r.get('condition')}`: {format_episode_instances(r, '4w', long_side=False)}"
+        )
     lines += ["", "## LIQUIDITY EXIT — FM>70 vs FM>75 episode dates (Rohit §7)", ""]
     for rm_thr in [20, 25, 30]:
         for fm_thr in [70, 75]:
@@ -818,6 +1135,63 @@ def build_rohit_report(squeeze: dict, liq: dict, regression: dict, robustness: d
                 lines.append(
                     f"- Bootstrap pctile of observed mean excess: **{b.get('pctile_of_observed')}** "
                     f"({boot.get('n_draws')} draws, block≈12w)"
+                )
+    legs = (liq.get("leg_availability") or {}).get("legs") or []
+    if legs:
+        lines += [
+            "",
+            "## Why LIQUIDITY EXIT has been silent — it is the RM leg, not the FM units",
+            "",
+            "The natural reading of four years of silence was that the FM unit seam pinned the FM "
+            "percentile low, so a high-FM condition could never fire. Restating the units does not bring "
+            "the pattern back. Split by leg, the cause is the **RM** side: asset managers have been "
+            "persistently net long since 2023, so a 156-week rank of RM has not been near its floor.",
+            "",
+            "| leg | % of weeks pre-2023-05-02 | % of weeks post | last fired | weeks since |",
+            "|-----|--------------------------:|----------------:|------------|------------:|",
+        ]
+        for leg in legs:
+            lines.append(
+                f"| `{leg['leg']}` | {leg.get('pre_pct_of_weeks')} | {leg.get('post_pct_of_weeks')} | "
+                f"{leg.get('last_fired')} | {leg.get('weeks_since_last_fired')} |"
+            )
+    for payload, label, horizon in ((squeeze, "SQUEEZE", "12w"), (liq, "LIQUIDITY EXIT", "4w")):
+        splits = payload.get("seam_split") or []
+        if not splits:
+            continue
+        lines += [
+            "",
+            f"## {label} — pre/post 2023-05-02 stability (standing test, {horizon})",
+            "",
+            "The series no longer has a unit seam at this date, so this is a stability test, not a data "
+            "check: a cell whose result lives entirely on one side of it has not been shown to work.",
+            "",
+            "| condition | pre n_ep | pre mean_ex % | post n_ep | post mean_ex % | both sides | same sign | survives |",
+            "|-----------|---------:|--------------:|----------:|---------------:|:----------:|:---------:|:--------:|",
+        ]
+        for s in splits:
+            pre, post = s.get("pre", {}), s.get("post", {})
+            lines.append(
+                f"| `{s.get('condition')}` | {pre.get('n_episodes', 0)} | {pre.get('mean_excess', '—')} | "
+                f"{post.get('n_episodes', 0)} | {post.get('mean_excess', '—')} | "
+                f"{'yes' if s.get('fires_both_sides') else 'NO'} | "
+                f"{'yes' if s.get('consistent_sign') else 'NO'} | "
+                f"{'yes' if s.get('survives_split') else '**NO**'} |"
+            )
+        dupes = payload.get("duplicate_cells") or []
+        if dupes:
+            lines += [
+                "",
+                f"### {label} — cells that are not independent",
+                "",
+                "These cells fire on exactly the same episodes. They corroborate nothing; they are one "
+                "result printed several times.",
+                "",
+            ]
+            for d in dupes[:8]:
+                lines.append(
+                    f"- **{len(d['conditions'])} cells, {d['n_episodes']} shared episodes:** "
+                    + ", ".join(f"`{c}`" for c in d["conditions"])
                 )
     lines += [
         "",
@@ -1038,7 +1412,9 @@ def run_and_report(start: str = "2006-01-01", *, run_bootstrap: bool = True) -> 
     squeeze = run_squeeze_grid_v2(ctx)
     liq = run_liquidity_exit_grid_v2(ctx)
     regression = run_fm_pctile_regression(ctx)
-    robustness = run_robustness_checks(ctx, run_bootstrap=run_bootstrap)
+    robustness = run_robustness_checks(
+        ctx, run_bootstrap=run_bootstrap, specs=robustness_specs_for_grid(squeeze)
+    )
     save_artifact("03_squeeze_grid", _to_legacy_grid_payload(squeeze, pattern="SQUEEZE"))
     save_artifact("04_liquidity_exit_grid", _to_legacy_grid_payload(liq, pattern="LIQ"))
     save_artifact("03_squeeze_grid_v2", squeeze)
