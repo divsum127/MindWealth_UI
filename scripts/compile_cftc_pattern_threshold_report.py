@@ -166,9 +166,10 @@ def compile_report(*, squeeze_path: Path, liq_path: Path, out_path: Path) -> Non
             f"excess_hit={tm.get('hit_excess_pct')}%. Pre/post 2023-05-02: "
             f"{(split.get('pre') or {}).get('n_episodes', 0)} vs "
             f"{(split.get('post') or {}).get('n_episodes', 0)} episodes, "
-            f"survives={split.get('survives_split')}. **At that episode count this is an observation, "
-            "not a threshold to sign** — two of its episodes are seven weeks apart in the same spring, "
-            "and the most recent has no full 12w forward window yet."
+            f"survives={split.get('survives_split')}. **It does not survive out-of-sample testing** — "
+            "see §3b: a random set of five episodes beats the market every time in 1 of 20 draws, the "
+            "result inverts on a 104-week window, and the cell never fires in the first half of the "
+            "sample at all."
         )
     legs = (liq.get("leg_availability") or {}).get("legs") or []
     rm_leg = next((l for l in legs if l.get("leg") == "RM_pct<30"), None)
@@ -190,13 +191,62 @@ def compile_report(*, squeeze_path: Path, liq_path: Path, out_path: Path) -> Non
         "immaterial either way."
     )
     lines.append("")
+    oos_path = sorted(ART.glob("cftc_oos_fm5_check_*.json"))
+    if oos_path:
+        oos = json.loads(oos_path[-1].read_text(encoding="utf-8"))
+        lines.append("")
+        lines.append("### 3b. Out-of-sample checks on the only above-par cells (FM<5)")
+        lines.append("")
+        lines.append(
+            "Small n on its own is not a reason to dismiss these — the 4 Aug spec asked for exactly "
+            "that shape. Four checks were run instead, and the cells fail three of them."
+        )
+        lines.append("")
+        for row in oos.get("placebo", []):
+            lines.append(
+                f"- **Placebo:** a *random* set of {row['n_episodes']} episodes beats the market every "
+                f"time in **{row['p_all_beat_market']}%** of draws — 1 in {row['one_in']}. With 66 grid "
+                "cells searched, the best one showing 100% is close to what chance produces."
+            )
+        wins = {w["weeks"]: w for w in oos.get("window_sensitivity", [])}
+        w104 = (wins.get(104, {}).get("cells", {}) or {}).get("RM>45")
+        if w104:
+            lines.append(
+                f"- **Window sensitivity:** on a 104-week window the same cell gives n={w104['n_episodes']}, "
+                f"mean excess **{w104['mean_excess']}%**, hit {w104['hit_excess_pct']}% — the result "
+                "inverts. A threshold effect should not depend on the window used to define the threshold."
+            )
+        wf = oos.get("walk_forward", {})
+        if wf and not (wf.get("first_half") or {}).get("RM>45"):
+            lines.append(
+                f"- **Walk-forward:** split at {wf.get('split_at')}, the cell fires **zero times** in the "
+                "first half and all of its episodes in the second. It has never been tested out of sample."
+            )
+        nb = oos.get("neighbours", {})
+        if nb.get("FM<2.5") and nb.get("FM<6"):
+            lines.append(
+                f"- **Neighbour stability:** FM<2.5 gives {nb['FM<2.5']['hit_excess_pct']}% and FM<6 gives "
+                f"{nb['FM<6']['hit_excess_pct']}%. 100% exists at exactly 5 and nowhere adjacent — the same "
+                "objection raised against FM<10, and it applies here too."
+            )
+        lines.append(
+            "- **On the bootstrap:** its interval for this cell excludes zero, which looks supportive. It "
+            "is not evidence. The bootstrap resamples the cell's own episodes, so it measures sampling "
+            "variability around a result it assumes is real; the placebo test is the one that asks whether "
+            "the selection was lucky."
+        )
+        lines.append("")
+        lines.append(f"Full tables: `_generated/{oos_path[-1].stem.replace('_check_', '_check_')}.md`")
+        lines.append("")
+
     lines.append("### Recommendation")
     lines.append("")
     lines.append(
-        "**None — sign-off should stay held.** Nothing in this grid clears par by enough, on enough "
-        "episodes, to be worth putting on the page. The two candidates are a 4–5 episode FM<5 cell and "
-        "a LIQUIDITY EXIT pattern whose trigger leg has been unreachable for three years. Shipping a "
-        "placeholder in the meantime would put a flag on the page that the data does not support."
+        "**None — sign-off should stay held.** After out-of-sample testing there is no candidate left. "
+        "The FM<5 cells were the only ones above par and they fail the placebo, window-sensitivity and "
+        "walk-forward checks (§3b). LIQUIDITY EXIT's trigger leg has been unreachable for three years "
+        "and needs a spec decision, not a threshold. Shipping a placeholder in the meantime would put a "
+        "flag on the page that the data does not support."
     )
     lines.append("")
     lines.append("---")

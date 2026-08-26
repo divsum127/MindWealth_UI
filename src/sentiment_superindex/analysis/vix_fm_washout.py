@@ -10,18 +10,19 @@ import pandas as pd
 from src.macro_intelligence.data.cftc_pull import fetch_cftc_fast_money_net
 from src.macro_intelligence.data.yahoo_pull import fetch_yahoo_close
 from src.macro_intelligence.engine.percentiles import percentile_rank
+from src.sentiment_superindex.analysis.cftc_episode_metrics import weekly_pctile_series
 from src.sentiment_superindex.analysis.forward_metrics import load_spx, returns_at_horizons, summarize_returns
 from src.sentiment_superindex.analysis.report_utils import save_artifact, write_md_snippet
 
 
 def _weekly_pctile_series(net: pd.Series, weeks: int = 156) -> pd.Series:
-    out: list[tuple[pd.Timestamp, float]] = []
-    for dt in net.index:
-        window = net.loc[:dt].dropna().tail(weeks)
-        if len(window) < 20:
-            continue
-        out.append((dt, percentile_rank(float(net.loc[dt]), window)))
-    return pd.Series(dict(out)).sort_index()
+    """Delegates to the shared helper, which refuses to rank a partial window.
+
+    This module carried its own copy with a 20-observation minimum, so it began ranking ~136 weeks
+    before a 156-week window could exist and published those partial ranks as 3-year percentiles
+    (Rohit, 24 Aug 2026). Kept as a thin wrapper rather than deleted so the call sites read the same.
+    """
+    return weekly_pctile_series(net, weeks=weeks)
 
 
 def _fm_pctile_asof(fm_pct: pd.Series, dt: pd.Timestamp) -> float | None:

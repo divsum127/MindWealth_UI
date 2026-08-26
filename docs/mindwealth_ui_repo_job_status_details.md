@@ -6159,7 +6159,94 @@ They have already drifted: the API version maps `conviction_bq_score` from the o
 
 ---
 
-## 2026-08-20 — Claude v3 Addendum §2: mechanical read-only consistency checks (CC1/CC2/CC3)
+## 2026-08-26 — Rohit sir's 26 Aug design review, Section I unblocked items + two pipeline bugs
+
+**Where the change lives:** mostly `/home/ubuntu/MindWealth` (core), one file in this repo
+(`api/services/signal_enrichment_service.py`). Logged here because this file is the standing job log.
+
+**Source document.** The mail "MindWealth — Signal Quality Score: Design Review & Test Request"
+(Rohit → Ahil + Divyanshu, 26 Aug 02:13 PT). Sections A–G are analysis, H is Ahil's test list, I is
+the implementation list for me, J is a confirmation list. The body is not in either repo; it was
+read out of Gmail via `gmail-filtered` and extracted to the session scratchpad. **Worth committing
+to `instruction_docs/` next time this thread is touched** — the same gap already bit the v3 addendum.
+
+**Why only part of Section I.** Items 13–18 all depend on definitions Ahil owns (Test 2's MAE
+fields, Test 5's per-function invalidation level). Building them against my own guesses would
+produce exactly the "wrong number with a confident name" problem the whole review is about. His mail
+also says plainly: do not change scoring logic ahead of Section H results. So nothing here changes a
+score formula, a threshold, or a gate.
+
+**Bug A — `build_exit_lookup()` had no filter.**
+The docstring said "from exit-signal CSV rows"; the code added a key for every row passed in. Two
+callers, two different row sets: `_load_exit_lookup()` passes the exit report (all rows are exits, so
+the bug was invisible there) and `enrich_pipeline.enrich_dataframe()` passes the full entry set,
+where every row then found its own key. Result: `exit_fired=true` on all 111 rows of the 25 Aug CSV.
+The predicate is now shared (`has_exit_signal()`) so the detector and the builder cannot drift again.
+
+*What this means for the addendum §2 CC1 check shipped earlier today:* on the CSV it would have fired
+on every row. It reads the payload, which was never wrong, but the check only becomes meaningful
+against the CSV now that this is fixed.
+
+**Bug B — two `tier` functions.**
+`compute_signal_tier()` (payload, tA/best/tierc/exit, exit-first, strict about missing inputs) and
+`enrich_pipeline._compute_tier()` (CSV, tA/best/ok/watch, no exit branch, missing input = pass). Both
+wrote a column called `tier`. The CSV one is deleted; `enrich_dataframe()` now carries the tier
+`enrich_signal_dict()` already produced, and only falls back to `compute_signal_tier()` if it is
+absent. `alpha_interpretation` was likewise a bare label in the CSV and the `{type,label,detail}`
+object everywhere else; the CSV now serialises the object.
+
+**Third defect, found because Bug B exposed it.** `fwd_wr` was parsed inside `enrich_signal_dict()`
+for the tier gate but never written to the row, so the CSV column of that name was null on every row
+and any consumer recomputing a tier from CSV columns could never reach tA. Now published. The
+corrected pipeline reproduces Rohit sir's own count of ten Tier A signals on 25 Aug, which is the
+strongest evidence available that the unified path is right.
+
+**Design decisions worth knowing.**
+- **`rr_original` is a store, not a recomputation.** Freezing needs signal-date levels, and only the
+  current day's report file is retained (`trade_store/US/` has exactly one `outstanding_signal.csv`
+  and one `new_signal.csv`). So the value is computed the first day a signal is seen and written to
+  `trade_store/rr_original_store.json`; first write wins and a stored value is never revised.
+  Anything already outstanding gets null forever. **If daily report retention is ever turned on, a
+  proper backfill becomes possible** — that is the single change that would unlock it.
+- **Only the nightly CSV path persists.** `enrich_signal_dict(..., persist_rr_original=True)` is set
+  in `enrich_pipeline` alone. The API and Streamlit call the same function read-only, so a web
+  request can never write to the store.
+- **`rr_static` kept its name.** Rohit sir asked for a rename. The tier gate, the API, the Streamlit
+  bubble chart and several tests all read `rr_static`, and renaming mid-flight while the gate
+  ordering is itself under review would churn twice. It is marked deprecated in both description
+  blocks and `rr_original` carries the correct semantics. **Do the rename with the C2 gate-ordering
+  change, not before.**
+- **Opposite-entry contemporaneity uses per-row hold, not the interval label.** `t_gap <= max(5,
+  0.15 x H_new)` per his §F. An earlier attempt reused the exit-recency window
+  (`adjusted_retention_days`, 5 days for Daily) and flagged nothing, because two entries ten days
+  apart on the same asset are still both open and still disagreeing.
+- **Detection only, no severity.** The §F veto/downgrade/note table and the pile-up rule are not
+  implemented. They belong with the gate ordering in Test 4, and wiring them now would change tier
+  outcomes ahead of Section H.
+
+**Edge cases not handled.**
+- `cross_function_opposite_entry_*` has no live example in the 25 Aug data (one short open row in
+  111), so it is covered by unit tests only. First real firing should be eyeballed.
+- The asset-class audit still leaves 73 unmapped symbols. They read as single stocks, but three are
+  genuinely uncertain and were left alone rather than guessed: **RINF** (ProShares Inflation
+  Expectations, arguably `bond_etf`), **2807.HK**, **NOVA.F**.
+- Reclassifying EFA / MSE.PA / XLE and the rest moves their `R_ref`, `ALPHA_CLIP` and `CAGR_CLIP`,
+  so their composite scores change from the next run. That is the point of the fix, but it means the
+  25 Aug numbers in Rohit sir's mail will not reproduce exactly for those rows.
+- Sub-scores are emitted but nothing validates that they sum to `composite_score` at runtime; the
+  prompt asks Claude to flag a mismatch, and a unit test covers the arithmetic. A pipeline-side
+  assertion would be cheap if we want belt and braces.
+
+**Not done deliberately.** No `API_VERSION` bump despite new response fields — that belongs to the
+`robust-test-and-dev-deploy` run, along with the OpenAPI regeneration. Nothing committed or pushed in
+either repo; the core tree already carried unrelated uncommitted work before this task.
+
+**Prod impact:** yes, immediate on the next nightly for the core changes (cron runs from the working
+tree). CSV consumers see corrected `tier` / `exit_fired` values and new columns.
+
+---
+
+## 2026-08-26 — Claude v3 Addendum §2: mechanical read-only consistency checks (CC1/CC2/CC3)
 
 **Where the change lives:** `/home/ubuntu/MindWealth/constant.py` (`GOOD_SIGNAL_QUERY`) and
 `/home/ubuntu/MindWealth/tests/test_signals_masterspec_g3.py` — core repo, not this one. Logged here
@@ -6759,3 +6846,79 @@ rebuild, but that is inference. He needs to say what they map to before anyone c
 - `updated_at` on `cftc_positioning` is left alone, so a rebuilt row still shows its original write
   time. Deliberate, to avoid pretending it was freshly pulled, but it does mean the rebuild is not
   visible from the table itself. The backup filename is the record.
+
+---
+
+## 2026-08-26 — CFTC follow-through: what the extra checks changed
+
+### The FM<5 cells are gone, and the reason matters
+
+They were the only cells above par after the restatement, and small n alone was not grounds to drop
+them — Rohit sir's 4 Aug instruction was explicitly to prefer a high hit rate on few episodes. So they
+were tested rather than argued about, and they fail three of four checks:
+
+| check | result |
+|---|---|
+| Placebo (random 5-episode sets) | all five beat the market in **5.1% of draws, 1 in 20** — and 66 cells were searched |
+| 104-week window | inverts to n=11, mean excess **−0.45%**, hit 60% |
+| Walk-forward (split 2018-01-09) | **zero fires** in the first half |
+| Neighbours | FM<2.5 66.7%, FM<5 100%, FM<6 85.7% — a point, not a plateau |
+
+The placebo test is the one that decides it, and it is the test the bootstrap cannot perform. The
+block bootstrap resamples the cell's own episodes, so it measures sampling variability around a
+result it has already assumed is real; its interval for this cell excludes zero, which reads as
+support and is not. Written into the report explicitly so nobody quotes the bootstrap interval as
+evidence later.
+
+### The rebuild I ran on 25 Aug was incomplete
+
+`combo_pctile_from_reading` reads `unconditional_pctile`, not the `pctile_rank_3yr` I had repaired.
+Those are different computations — one is a rolling three *calendar* years with no full-window rule,
+the other a 156-week tail that now refuses partial windows — and only the first drives combo
+detection. 473 rows in `daily_readings` and 478 in `emission_vectors` were still on old-unit
+percentiles, mean error 6.3 points.
+
+Lesson worth keeping: "the DB stores the percentile" was too coarse. Four columns across two tables
+held it, and the one that mattered for decisions was not the one the panel displays.
+
+### `combo_fires` — audited, quantified, deliberately not fixed
+
+4,599 rows carry CFTC as a leg. 2,337 of them (50.8%) sit on a date whose percentile moved, 1,255 by
+more than 10 points, and the boundary crossings are material: 1,080 rows cross the 15th percentile,
+777 the 25th, 115 the 85th. These are stored *decisions*, not stored values, so no column update
+repairs them — it needs a combo-detector replay over history.
+
+Not done, on purpose. A replay would delete and re-derive historical fire records, re-key 4,599
+`forward_returns` rows keyed by `combo_id`, and move hit rates that are already published. That is a
+separate job with its own verification, and doing it quietly inside a data-repair pass would be the
+wrong call. `scripts/backfill_named_combo_fires.py` only *adds* fires it does not already have, so it
+cannot be reused as-is for the correction.
+
+### Assumptions
+
+- `regime_pctile` is rebuilt as the unconditional figure. Every stored CFTC row already had the two
+  equal, which is what `compute_regime_pctile` does when the fed-cycle sample is below the minimum,
+  so this preserves observed behaviour rather than inventing a regime-conditioned value.
+- The placebo uses 400 draws per episode count. Enough to separate 5% from 50%; not enough to quote a
+  precise p-value, and the report does not quote one.
+- Walk-forward splits at the calendar midpoint of the analysis window rather than at a chosen date,
+  to avoid picking a split that flatters or damns the cell.
+
+### Left for future
+
+- **`combo_fires` replay** — the open item above. Needs a decision on whether published hit rates
+  may move.
+- **Prod `runic.db`** still has every defect described here plus the original seam. Same scripts, same
+  order, after the merge.
+- The bootstrap ran at 10,000 draws on eight cells and takes roughly 40 minutes. If it becomes routine
+  it should move to a nightly or on-demand job rather than sitting inside the re-run script.
+- `forward_returns` was audited by join and holds SPX returns only, so the values are sound. It
+  inherits the `combo_fires` problem by association, not by content.
+
+### Edge cases identified, not handled
+
+- The OOS script fixes RM>45 for the neighbour sweep. A cell could be stable in FM and fragile in RM
+  and this would not show it.
+- The placebo draws uniformly from the analysis calendar, so it does not reproduce the clustering of
+  real episodes. Clustered draws would likely make 100% *more* common by chance, not less, so the 1-in-20
+  figure is if anything generous to the cell.

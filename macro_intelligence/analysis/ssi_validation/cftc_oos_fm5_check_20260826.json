@@ -1,0 +1,177 @@
+{
+  "test_id": "cftc_oos_fm5_check",
+  "horizon": "12w",
+  "par_excess_hit": null,
+  "placebo": [
+    {
+      "n_episodes": 4,
+      "draws": 378,
+      "p_all_beat_market": 10.8,
+      "one_in": 9
+    },
+    {
+      "n_episodes": 5,
+      "draws": 373,
+      "p_all_beat_market": 5.1,
+      "one_in": 20
+    }
+  ],
+  "window_sensitivity": [
+    {
+      "weeks": 104,
+      "first_rank": "2008-06-03",
+      "cells": {
+        "RM>40": {
+          "n_episodes": 11,
+          "mean": 3.1381,
+          "mean_excess": 0.0276,
+          "hit_excess_pct": 70.0
+        },
+        "RM>45": {
+          "n_episodes": 11,
+          "mean": 2.6641,
+          "mean_excess": -0.4464,
+          "hit_excess_pct": 60.0
+        },
+        "RM>50": {
+          "n_episodes": 10,
+          "mean": 2.8913,
+          "mean_excess": -0.2192,
+          "hit_excess_pct": 66.67
+        }
+      }
+    },
+    {
+      "weeks": 156,
+      "first_rank": "2009-06-02",
+      "cells": {
+        "RM>40": {
+          "n_episodes": 5,
+          "mean": 5.0201,
+          "mean_excess": 1.9096,
+          "hit_excess_pct": 100.0
+        },
+        "RM>45": {
+          "n_episodes": 5,
+          "mean": 5.3648,
+          "mean_excess": 2.2544,
+          "hit_excess_pct": 100.0
+        },
+        "RM>50": {
+          "n_episodes": 4,
+          "mean": 6.0557,
+          "mean_excess": 2.9453,
+          "hit_excess_pct": 100.0
+        }
+      }
+    },
+    {
+      "weeks": 208,
+      "first_rank": "2010-06-01",
+      "cells": {
+        "RM>40": {
+          "n_episodes": 6,
+          "mean": 7.4997,
+          "mean_excess": 4.3892,
+          "hit_excess_pct": 100.0
+        },
+        "RM>45": {
+          "n_episodes": 3,
+          "mean": 4.3493,
+          "mean_excess": 1.2388,
+          "hit_excess_pct": 100.0
+        },
+        "RM>50": {
+          "n_episodes": 3,
+          "mean": 4.2583,
+          "mean_excess": 1.1478,
+          "hit_excess_pct": 100.0
+        }
+      }
+    },
+    {
+      "weeks": 260,
+      "first_rank": "2011-05-31",
+      "cells": {
+        "RM>40": {
+          "n_episodes": 3,
+          "mean": 8.5745,
+          "mean_excess": 5.464,
+          "hit_excess_pct": 100.0
+        },
+        "RM>45": {
+          "n_episodes": 3,
+          "mean": 8.5745,
+          "mean_excess": 5.464,
+          "hit_excess_pct": 100.0
+        },
+        "RM>50": {
+          "n_episodes": 2,
+          "mean": 5.2245,
+          "mean_excess": 2.114,
+          "hit_excess_pct": 100.0
+        }
+      }
+    }
+  ],
+  "walk_forward": {
+    "split_at": "2018-01-09",
+    "first_half": {
+      "RM>40": null,
+      "RM>45": null,
+      "RM>50": null
+    },
+    "second_half": {
+      "RM>40": {
+        "n_episodes": 5,
+        "mean": 5.0201,
+        "mean_excess": 1.9096,
+        "hit_excess_pct": 100.0
+      },
+      "RM>45": {
+        "n_episodes": 5,
+        "mean": 5.3648,
+        "mean_excess": 2.2544,
+        "hit_excess_pct": 100.0
+      },
+      "RM>50": {
+        "n_episodes": 4,
+        "mean": 6.0557,
+        "mean_excess": 2.9453,
+        "hit_excess_pct": 100.0
+      }
+    }
+  },
+  "neighbours": {
+    "FM<2.5": {
+      "n_episodes": 5,
+      "mean": 4.4232,
+      "mean_excess": 1.3127,
+      "hit_excess_pct": 66.67
+    },
+    "FM<5": {
+      "n_episodes": 5,
+      "mean": 5.3648,
+      "mean_excess": 2.2544,
+      "hit_excess_pct": 100.0
+    },
+    "FM<6": {
+      "n_episodes": 7,
+      "mean": 5.2494,
+      "mean_excess": 2.1389,
+      "hit_excess_pct": 85.71
+    },
+    "FM<7.5": {
+      "n_episodes": 7,
+      "mean": 2.5396,
+      "mean_excess": -0.5709,
+      "hit_excess_pct": 71.43
+    },
+    "FM<10": {
+      "n_episodes": 9,
+      "mean": 3.1892,
+      "mean_excess": 0.0787,
+      "hit_excess_pct": 66.67
+    }
+  }
+}

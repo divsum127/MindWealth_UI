@@ -14,6 +14,10 @@ Measured on the live DB before this script existed:
   5.3% off by more than 25
 * Combo E's ``CFTC >= 85th`` leg: 22 days flip (16 false passes, 6 missed fires)
 
+Four percentile columns carry the contamination, not one. ``pctile_rank_3yr`` is what the SSI panel
+shows, but combo detection reads ``unconditional_pctile`` (see ``combo_pctile_from_reading``), and
+``emission_vectors`` keeps its own copy of both. All of them are rebuilt here.
+
 Default is a dry run that prints the diff and writes nothing.
 
     python scripts/rebuild_cftc_stored_history.py --db macro_intelligence/data/runic.db
@@ -41,7 +45,10 @@ from src.macro_intelligence.data.cftc_pull import (  # noqa: E402
     fetch_cftc_asset_manager_net,
     fetch_cftc_fast_money_net,
 )
-from src.macro_intelligence.engine.percentiles import percentile_rank  # noqa: E402
+from src.macro_intelligence.engine.percentiles import (  # noqa: E402
+    compute_unconditional_pctile,
+    percentile_rank,
+)
 
 SEAM = pd.Timestamp("2023-05-02")
 
@@ -56,6 +63,17 @@ def _rolling_pctile(series: pd.Series, weeks: int) -> pd.Series:
     return pd.Series(out)
 
 
+def _unconditional_series(fm: pd.Series, var_cfg: dict) -> pd.Series:
+    """``unconditional_pctile`` as the engine computes it: rolling 3 calendar years, no full-window rule.
+
+    This is the column combo detection actually reads, so it has to be reproduced the engine's way
+    rather than approximated with the 156-week rank.
+    """
+    return pd.Series(
+        {ts: compute_unconditional_pctile(fm, var_cfg, ts) for ts in fm.index}, dtype=float
+    )
+
+
 def build_reference() -> pd.DataFrame:
     weeks = int(load_config().get("cftc", {}).get("pctile_window_weeks", 156))
     fm = fetch_cftc_fast_money_net(2006)
@@ -65,8 +83,15 @@ def build_reference() -> pd.DataFrame:
     breaks = detect_unit_break(pd.DataFrame({"fm_net": fm, "rm_net": rm}).dropna(how="all"))
     if breaks:
         raise SystemExit(f"refusing to rebuild: the source series itself has a unit break: {breaks}")
+    var_cfg = {"pctile_window": "rolling_3y", "pctile_start": "2006-01-01"}
     return pd.DataFrame(
-        {"fm": fm, "rm": rm, "fm_p": _rolling_pctile(fm, weeks), "rm_p": _rolling_pctile(rm, weeks)}
+        {
+            "fm": fm,
+            "rm": rm,
+            "fm_p": _rolling_pctile(fm, weeks),
+            "rm_p": _rolling_pctile(rm, weeks),
+            "fm_uncond": _unconditional_series(fm, var_cfg),
+        }
     ).sort_index()
 
 
@@ -82,12 +107,14 @@ def rebuild(db: Path, *, apply: bool) -> None:
     conn = sqlite3.connect(db)
 
     readings = pd.read_sql(
-        "SELECT date, raw_value, pctile_rank_3yr FROM daily_readings WHERE var_id='CFTC' ORDER BY date",
+        "SELECT date, raw_value, pctile_rank_3yr, unconditional_pctile FROM daily_readings "
+        "WHERE var_id='CFTC' ORDER BY date",
         conn,
     )
     merged = _asof(readings["date"], ref)
     merged["old_raw"] = readings.sort_values("date")["raw_value"].values
     merged["old_pct"] = readings.sort_values("date")["pctile_rank_3yr"].values
+    merged["old_uncond"] = readings.sort_values("date")["unconditional_pctile"].values
 
     changed_raw = int((merged["fm"] - merged["old_raw"]).abs().gt(1).sum())
     comparable = merged.dropna(subset=["fm_p", "old_pct"])
@@ -96,6 +123,25 @@ def rebuild(db: Path, *, apply: bool) -> None:
     print(f"daily_readings.CFTC: {len(merged)} rows | raw changing: {changed_raw} | pctile changing: {changed_pct}")
     print(f"  pre-seam rows (all in the old unit): {len(pre)}")
     print(f"  median raw pre-seam: stored {pre['old_raw'].median():,.0f} -> restated {pre['fm'].median():,.0f}")
+
+    # unconditional_pctile is the column combo detection reads, so its error is the one that moves
+    # gate decisions. Reported separately from the panel percentile.
+    comp_u = merged.dropna(subset=["fm_uncond", "old_uncond"])
+    if len(comp_u):
+        err = (comp_u["fm_uncond"] - comp_u["old_uncond"]).abs()
+        print(f"  unconditional_pctile: changing {int(err.gt(0.01).sum())} rows | mean |error| {err.mean():.1f} pts")
+        old_leg, new_leg = comp_u["old_uncond"] >= 85, comp_u["fm_uncond"] >= 85
+        print(f"  Combo E 'CFTC >= 85th' leg: {int((old_leg != new_leg).sum())} days flip "
+              f"({int((old_leg & ~new_leg).sum())} false passes, {int((~old_leg & new_leg).sum())} missed)")
+
+    emissions = pd.read_sql(
+        "SELECT date, unconditional_pctile FROM emission_vectors WHERE var_id='CFTC' ORDER BY date", conn
+    )
+    em_merged = _asof(emissions["date"], ref)
+    em_merged["old_uncond"] = emissions.sort_values("date")["unconditional_pctile"].values
+    em_cmp = em_merged.dropna(subset=["fm_uncond", "old_uncond"])
+    print(f"emission_vectors.CFTC: {len(emissions)} rows | "
+          f"unconditional_pctile changing: {int((em_cmp['fm_uncond'] - em_cmp['old_uncond']).abs().gt(0.01).sum())}")
 
     positioning = pd.read_sql("SELECT date, fm_net, rm_net, fm_pctile, rm_pctile FROM cftc_positioning ORDER BY date", conn)
     pos_merged = _asof(positioning["date"], ref)
@@ -114,13 +160,28 @@ def rebuild(db: Path, *, apply: bool) -> None:
         for _, row in merged.iterrows():
             if pd.isna(row["fm"]):
                 continue
+            uncond = None if pd.isna(row["fm_uncond"]) else float(row["fm_uncond"])
             conn.execute(
-                "UPDATE daily_readings SET raw_value=?, pctile_rank_3yr=? WHERE var_id='CFTC' AND date=?",
+                "UPDATE daily_readings SET raw_value=?, pctile_rank_3yr=?, unconditional_pctile=?, "
+                "regime_pctile=? WHERE var_id='CFTC' AND date=?",
                 (
                     float(row["fm"]),
                     None if pd.isna(row["fm_p"]) else float(row["fm_p"]),
+                    uncond,
+                    # regime_pctile falls back to the unconditional figure whenever the fed-cycle
+                    # sample is too thin, which is how every stored CFTC row was written (they match
+                    # column for column). Rebuilding it as the unconditional value preserves that.
+                    uncond,
                     row["date"].strftime("%Y-%m-%d"),
                 ),
+            )
+        for _, row in em_merged.iterrows():
+            if pd.isna(row["fm_uncond"]):
+                continue
+            conn.execute(
+                "UPDATE emission_vectors SET unconditional_pctile=?, regime_pctile=? "
+                "WHERE var_id='CFTC' AND date=?",
+                (float(row["fm_uncond"]), float(row["fm_uncond"]), row["date"].strftime("%Y-%m-%d")),
             )
         for _, row in pos_merged.iterrows():
             if pd.isna(row["fm"]):

@@ -144,7 +144,57 @@ Full details: `docs/mindwealth_ui_job_status.md` (2026-08-20, entry "chatbot-dev
 
 ---
 
-## 2026-08-20 — Claude v3 Addendum §2 mechanical consistency checks (CC1/CC2/CC3) `[PENDING]`
+## 2026-08-26 — Design-review Section I fixes + exit_fired / tier bugs `[PENDING]`
+
+Corrects two pipeline bugs and adds fields Rohit sir's 26 Aug design review asked for. Report values
+change (CSV `tier`, `exit_fired`, `alpha_interpretation`), new columns appear, and composite scores
+move for reclassified ETFs, so this is a real prod change on both sides.
+
+### 1. Files to merge — **core repo `/home/ubuntu/MindWealth`**
+
+| File | Change |
+|------|--------|
+| `helper_functions/claude_lateness_metrics.py` | `has_exit_signal()` + filtered `build_exit_lookup()` (Bug A); `compute_composite_components()` with er/alpha/sharpe/cagr sub-scores; `rr_original` snapshot store (`resolve_rr_original`, `record_rr_original`, `RR_ORIGINAL_STORE_PATH`); `fwd_wr` now written to the row; ETF entries + `.HK/.SI/.PA/.F/.DE` suffix rules in `derive_asset_class`; sub-scores and `rr_original` in `signal_to_surface_row()` |
+| `helper_functions/enrich_pipeline.py` | Local `_compute_tier()` deleted — CSV now carries the payload tier; `alpha_interpretation` serialised as the object; new columns in `new_cols`; `persist_rr_original=True` on the nightly path |
+| `helper_functions/cross_function_exit.py` | `cross_function_exit_avg_hold_days`; `cross_function_opposite_entry_*`; `ANNOTATION_COLUMNS` so the DataFrame wrapper cannot drop new fields |
+| `constant.py` | Prompt 2.2a updated for the four sub-scores; field definitions for `rr_original`, sub-scores and the new cross-function fields; `Signal Quality Composite Score` description corrected to v4; `R:R Static` marked deprecated; `R:R Original` + sub-score description entries |
+| `scripts/audit_asset_class_map.py` | **new** — repeatable ASSET_CLASS_MAP completeness audit |
+| `tests/test_signals_masterspec_g3.py`, `tests/test_cross_function_exit.py` | 8 new tests; suite 66 passed |
+
+### 2. Files to merge — UI repo (`chatbot-dev` → `chatbot-prod`)
+
+| File | Change |
+|------|--------|
+| `api/services/signal_enrichment_service.py` | Emits `er_score` / `alpha_score` / `sharpe_score` / `cagr_score` and `rr_original`, reading the nightly columns when present |
+
+### 3. Dev-only / revert before prod
+
+None.
+
+### 4. Prod runtime (not in git)
+
+- `trade_store/rr_original_store.json` is created on first nightly run. **Do not copy dev's file to
+  prod** — the keys are per signal date and prod will build its own. No schema, no secret.
+
+### 5. systemd / Nuxt
+
+None. **`API_VERSION` bump is due** (the signals response gained fields) — not done here, belongs to
+the next `robust-test-and-dev-deploy` run along with OpenAPI regeneration.
+
+### 6. Smoke tests `[PENDING]`
+
+- After the next nightly: `exit_fired` true count in `trade_store/US/{date}_outstanding_signal.csv`
+  must be far below the row count and must match the number of rows with a real value in
+  `Exit Signal Date/Price[$]`. On 25 Aug data the corrected figure is 52 of 111 (was 111 of 111).
+- `tier` column must contain only `tA` / `best` / `tierc` / `exit`; any `ok` or `watch` means a stale
+  build. Every row with `exit_fired=true` must read `tier=exit`.
+- `fwd_wr` column must be populated (was null on every row).
+- `er_score + alpha_score + sharpe_score + cagr_score` must equal `composite_score` per row.
+- `rr_original` populated only for rows whose signal date is the report date; null elsewhere.
+- Asset class: EFA and MSE.PA must read `equity_etf`, and their composite scores will differ from the
+  25 Aug run.
+
+## 2026-08-26 — Claude v3 Addendum §2 mechanical consistency checks (CC1/CC2/CC3) `[PENDING]`
 
 The nightly Claude signals prompt now carries three read-only consistency checks against the
 pre-computed payload: `exit_fired` true must imply `tier='exit'` (CC1), `tier='tA'` must be
@@ -2987,7 +3037,25 @@ Expect `fm_pctile` on prod to match dev for the same `fm_net` once the zip backf
 - [ ] **Order matters:** code merge → `export_cftc_restated_series.py` → `rebuild_cftc_stored_history.py`
       → restart. Running the rebuild against the old code would write the old units back.
 
-### Status: `[PENDING]` — committed to `chatbot-dev` only; sign-off held by Rohit sir, so nothing here changes prod display, **but the `runic.db` rebuild above is a required prod step, not a display change**. Merge when the CFTC work is taken as a whole.
+### 2026-08-26 additions
+- [ ] New file: `scripts/oos_check_fm5_cells.py`
+- [ ] Modified: `api/main.py` (**API 1.13.0**), `src/sentiment_superindex/analysis/cot_fm_long_gate.py`,
+      `vix_fm_washout.py`, `scripts/rebuild_cftc_stored_history.py`,
+      `scripts/compile_cftc_pattern_threshold_report.py`
+- [ ] **API docs submodule pushed** (`divsum127/mindwealth-api-docs` `main` @ `5c45368`) — parent pointer
+      travels with the `chatbot-dev` commit. Documents the unit change as **breaking for cached client
+      history** despite the response shape being unchanged.
+- [ ] **The rebuild script now covers four columns, not two.** Combo detection reads
+      `unconditional_pctile`, not `pctile_rank_3yr`. On dev, 473 `daily_readings` rows and 478
+      `emission_vectors` rows were still on old-unit percentiles after the first pass. Use the current
+      version of the script on prod — an earlier copy would leave combo detection wrong.
+- [ ] **`combo_fires` is NOT repaired by the script and prod will have the same problem.** 4,599 rows
+      carry CFTC as a leg; 2,337 sit on a moved percentile, with 1,080 crossing the 15th boundary, 777
+      the 25th and 115 the 85th. Fixing these needs a combo-detector replay, which also re-keys
+      `forward_returns` and moves published hit rates. **Decision required before prod cutover** —
+      either replay, or accept and label the pre-2026-08 combo history as computed on the old units.
+
+### Status: `[PENDING]` — dev pushed (`chatbot-dev` @ `f2e8fc78b`, API 1.13.0). Sign-off held by Rohit sir, so no display change ships, **but the `runic.db` rebuild is a required prod step and the `combo_fires` replay is an open decision that blocks a clean cutover**.
 
 ---
 
