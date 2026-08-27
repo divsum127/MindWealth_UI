@@ -41,6 +41,10 @@ def enrich_raw_signal_row(raw_row: dict[str, Any]) -> dict[str, Any]:
         "direction": _parse_direction(enriched),
         "asset_class": enriched.get("asset_class"),
         "er": enriched.get("er"),
+        # Which basis produced E[R]'s loss leg: actual | no_losing_trades |
+        # max_loss_proxy. Only max_loss_proxy means the number rests on an
+        # assumption (Rohit 26 Aug go-ahead item 2).
+        "er_loss_basis": enriched.get("er_loss_basis"),
         "er_annualized": enriched.get("er_annualized"),
         "signal_alpha_per_trade": enriched.get("signal_alpha_per_trade"),
         "signal_alpha_annualized": enriched.get("signal_alpha_annualized"),
@@ -50,6 +54,9 @@ def enrich_raw_signal_row(raw_row: dict[str, Any]) -> dict[str, Any]:
         "reward_remaining_pct": enriched.get("reward_remaining_pct"),
         "intrinsic_lag_days": enriched.get("intrinsic_lag_days"),
         "rr_dynamic": enriched.get("rr_dynamic"),
+        # rr_original: frozen at signal date, never recomputed. rr_static is the
+        # deprecated name kept alongside while the tier gate still reads it.
+        "rr_original": enriched.get("rr_original"),
         "rr_static": enriched.get("rr_static"),
         "tier": enriched.get("tier"),
         "exit_fired": enriched.get("exit_fired"),

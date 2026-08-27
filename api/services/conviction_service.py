@@ -76,6 +76,15 @@ def list_ticker_records(
             "conviction_score": r.get("conviction_score"),
             "fs_class": r.get("fs_class"),
             "yield_trap_warning": r.get("yield_trap_warning"),
+            # Raw vs adjusted earnings multiple. A feed-read P/E prices SPK.NZ at 8.3x
+            # when the business is on 18.4x, so both travel together and the caller can
+            # see which one it is holding (Rohit 26 Aug, conviction spec gap 1).
+            "pe_ttm": r.get("pe_ttm"),
+            "pe_ttm_adjusted": r.get("pe_ttm_adjusted"),
+            "adjusted_eps_ttm": r.get("adjusted_eps_ttm"),
+            "adjusted_eps_basis": r.get("adjusted_eps_basis"),
+            "one_off_pct_of_ni": r.get("one_off_pct_of_ni"),
+            "one_off_review_needed": r.get("one_off_review_needed"),
             "last_daily_update": r.get("last_daily_update"),
         }
         for r in filtered

@@ -604,9 +604,19 @@ def yield_trap_breakdown(record: dict[str, Any], ticker: str) -> dict[str, Any]:
     yield_condition = (
         current_yield is not None and threshold is not None and current_yield >= threshold
     )
+    # Which dividend the numbers above are built on, plus the trailing-basis answer
+    # for comparison. `basis_conflict` True means the trap verdict flips with the
+    # basis choice, so the panel should say so instead of showing one silent answer
+    # (Rohit 26 Aug, conviction spec gap 4).
+    zscore_trailing = _float_or_none(record.get("dividend_yield_zscore_trailing"))
     return {
         "dividend_yield_current": current_yield,
         "dividend_yield_zscore": zscore,
+        "dividend_basis": record.get("dividend_yield_basis"),
+        "dividend_yield_forward": _float_or_none(record.get("dividend_yield_forward")),
+        "dividend_yield_trailing": _float_or_none(record.get("dividend_yield_trailing")),
+        "dividend_yield_zscore_trailing": zscore_trailing,
+        "basis_conflict": bool(record.get("dividend_basis_conflict")),
         "market_threshold": threshold,
         "market_threshold_defined": threshold is not None,
         "zscore_condition_met": zscore_condition,

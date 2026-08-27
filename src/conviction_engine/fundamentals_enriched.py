@@ -16,7 +16,7 @@ from .bq_scoring import (
     score_macro_tailwind,
     score_margin_quality_cyclical,
 )
-from .dividend_yield import compute_dividend_yield_stats
+from .dividend_yield import annual_dividend_windows, compute_dividend_yield_stats
 from .fd_votes import compute_fd_votes
 from .pe_history_core import (  # re-exported: existing `from .fundamentals_enriched import ...` callers keep working
     PE_HISTORY_MAX_STORED_POINTS,
@@ -194,6 +194,12 @@ def fetch_yfinance_enriched(ticker: str, max_attempts: int = 3) -> dict[str, Any
         ("quarterly_income", "quarterly_income_stmt"),
         ("quarterly_balance", "quarterly_balance_sheet"),
         ("quarterly_cashflow", "quarterly_cashflow"),
+        # Annual statements are the only income statement that exists for semi-annual
+        # filers: NZX and ASX names report half-yearly, and yfinance returns an empty
+        # `quarterly_income_stmt` for them. Without this the adjusted-EPS work simply
+        # never ran on the very names it was built for -- SPK.NZ being Rohit's own
+        # worked example (26 Aug, conviction spec gap 1).
+        ("annual_income", "income_stmt"),
     ]:
         try:
             df = getattr(yt, attr, None)
@@ -686,8 +692,17 @@ def build_fundamentals_from_raw(raw: dict[str, Any]) -> dict[str, Any]:
         if equity and equity > 0:
             fundamentals["roic_proxy"] = net_income_ttm / equity
 
-    div_rate = _float_or_none(_first_not_none(info.get("dividendRate"), info.get("trailingAnnualDividendRate")))
+    # Forward declared vs trailing paid -- see fundamentals.py for why both are kept.
+    div_rate_forward = _float_or_none(info.get("dividendRate"))
+    div_rate_trailing = _float_or_none(info.get("trailingAnnualDividendRate"))
+    div_rate = _first_not_none(div_rate_forward, div_rate_trailing)
     fundamentals["annual_div_per_share_stored"] = div_rate
+    fundamentals["annual_div_per_share_forward"] = div_rate_forward
+    fundamentals["annual_div_per_share_trailing"] = div_rate_trailing
+    fundamentals["dividend_basis"] = (
+        "forward_declared" if div_rate_forward is not None
+        else ("trailing_12m" if div_rate_trailing is not None else None)
+    )
     if fcf is not None and div_rate is not None and shares and shares > 0:
         obligation = div_rate * shares
         if obligation > 0:
@@ -731,24 +746,38 @@ def build_fundamentals_from_raw(raw: dict[str, Any]) -> dict[str, Any]:
     divs = raw.get("dividends")
 
     # Dividend-cut flag inputs (item 7): declared annual dividend-per-share, trailing
-    # 12mo vs the 12mo before that, from the actual payment history — same tiered
+    # year vs the year before that, from the actual payment history — same tiered
     # penalty structure as buyback suspension, applied in capital_allocation.py.
+    # Counted by payment cadence rather than a 365-day window: see
+    # dividend_yield.annual_dividend_windows() for the SPK.NZ case that a calendar
+    # window gets wrong.
     if isinstance(divs, pd.Series) and not divs.empty:
         try:
-            div_dates = divs.index.tz_localize(None) if divs.index.tz is not None else divs.index
-            div_series = pd.Series(divs.values, index=div_dates).sort_index()
-            last_date = div_series.index[-1]
-            current_window = div_series[div_series.index > last_date - pd.Timedelta(days=365)]
-            prior_window = div_series[
-                (div_series.index <= last_date - pd.Timedelta(days=365))
-                & (div_series.index > last_date - pd.Timedelta(days=730))
-            ]
-            if not current_window.empty:
-                fundamentals["annual_div_declared_current"] = float(current_window.sum())
-            if not prior_window.empty:
-                fundamentals["annual_div_declared_prior"] = float(prior_window.sum())
+            windows = annual_dividend_windows(divs)
+            if windows.get("annual_dividend_current") is not None:
+                fundamentals["annual_div_declared_current"] = windows["annual_dividend_current"]
+            if windows.get("annual_dividend_prior") is not None:
+                fundamentals["annual_div_declared_prior"] = windows["annual_dividend_prior"]
+            if windows.get("payments_per_year") is not None:
+                fundamentals["dividend_payments_per_year"] = windows["payments_per_year"]
         except Exception:
             pass
+
+    # The true trailing figure is the sum actually paid over the last twelve months, which
+    # is what `annual_div_declared_current` already holds. yfinance's own
+    # `trailingAnnualDividendRate` is not reliable for this: on SPK.NZ it reports 0.16,
+    # the same as the forward rate, while the payment history shows 0.205 actually paid
+    # (12.5c Sep 2025 + 8c Mar 2026). Using the payment history keeps the forward-vs-
+    # trailing comparison honest (Rohit 26 Aug, conviction spec gap 4).
+    declared_trailing = _float_or_none(fundamentals.get("annual_div_declared_current"))
+    if declared_trailing is not None:
+        fundamentals["annual_div_per_share_trailing"] = declared_trailing
+    if fundamentals.get("annual_div_per_share_stored") is None:
+        fundamentals["annual_div_per_share_stored"] = fundamentals.get("annual_div_per_share_trailing")
+    fundamentals["dividend_basis"] = (
+        "forward_declared" if fundamentals.get("annual_div_per_share_forward") is not None
+        else ("trailing_12m" if fundamentals.get("annual_div_per_share_trailing") is not None else None)
+    )
 
     fundamentals["fifty_two_week_high"] = _float_or_none(
         _first_not_none(fast.get("year_high"), fast.get("fiftyDayHigh"), info.get("fiftyTwoWeekHigh"))
@@ -823,7 +852,7 @@ def build_fundamentals_from_raw(raw: dict[str, Any]) -> dict[str, Any]:
     try:
         from .adjusted_eps import compute_adjusted_eps_bundle
 
-        adj = compute_adjusted_eps_bundle(fundamentals, q_inc)
+        adj = compute_adjusted_eps_bundle(fundamentals, q_inc, raw.get("annual_income"))
         if adj:
             fundamentals.update(adj)
     except Exception:
@@ -852,6 +881,9 @@ def map_to_engine_fundamentals(enriched: dict[str, Any]) -> dict[str, Any]:
         "fwd_revenue_stored",
         "revenue_ttm",
         "annual_div_per_share_stored",
+        "annual_div_per_share_forward",
+        "annual_div_per_share_trailing",
+        "dividend_basis",
         "revenue_growth",
         "gross_margin",
         "net_debt_ebitda",
@@ -886,6 +918,7 @@ def map_to_engine_fundamentals(enriched: dict[str, Any]) -> dict[str, Any]:
         "buyback_suspension_flag",
         "annual_div_declared_current",
         "annual_div_declared_prior",
+        "dividend_payments_per_year",
         "dividend_cut_flag",
         "revenue_estimate_current",
         "revenue_miss_pct",
@@ -893,7 +926,14 @@ def map_to_engine_fundamentals(enriched: dict[str, Any]) -> dict[str, Any]:
         "pe_history_thin",
         "pe_history_years",
         "adjusted_eps_ttm",
+        "adjusted_eps_basis",
         "one_off_pct_of_ni",
+        "one_off_items_pretax",
+        "one_off_unclassified_pretax",
+        "one_off_unclassified_pct_of_ni",
+        "one_off_review_needed",
+        "effective_tax_rate",
+        "effective_tax_rate_is_fallback",
         "effective_tax_rate",
         "pe_ttm_adjusted",
     ]
@@ -917,6 +957,7 @@ def fetch_and_compute_fundamentals(ticker: str) -> dict[str, Any]:
         "info": raw.get("info", {}),
         "errors": list(raw.get("errors") or []),
         "quarterly_income": raw.get("quarterly_income"),
+        "annual_income": raw.get("annual_income"),
         "quarterly_balance": raw.get("quarterly_balance"),
         "quarterly_cashflow": raw.get("quarterly_cashflow"),
     }

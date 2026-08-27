@@ -161,11 +161,27 @@ def default_record(ticker: str) -> dict[str, Any]:
         "market_cap": None,
         "enterprise_value": None,
         "pe_ttm": None,
+        # Adjusted earnings (Rohit 26 Aug, conviction spec gap 1). `pe_ttm` stays the
+        # raw feed number; `pe_ttm_adjusted` is populated only when one-off items clear
+        # the 5%-of-net-income materiality gate.
+        "pe_ttm_adjusted": None,
+        "adjusted_eps_ttm": None,
+        "adjusted_eps_basis": None,
+        "one_off_pct_of_ni": None,
+        "one_off_review_needed": False,
         "pe_percentile_20y": None,
         "ev_fwd_rev": None,
         "owner_earnings_yield": None,
         "dividend_yield_current": None,
         "dividend_yield_zscore": None,
+        # Dividend basis split (Rohit 26 Aug, spec gap 4): the trap runs on the
+        # forward declared dividend where one exists; the trailing figures are kept
+        # alongside so a basis-driven flip is visible instead of silent.
+        "dividend_yield_forward": None,
+        "dividend_yield_trailing": None,
+        "dividend_yield_zscore_trailing": None,
+        "dividend_yield_basis": None,
+        "dividend_basis_conflict": False,
         "valuation_tax": 0.0,
         "conviction_score": 0.0,
         "fs_score": 50.0,

@@ -508,3 +508,278 @@ class TestDealDelayAgentScoring(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestDividendBasis(unittest.TestCase):
+    """Rohit 26 Aug, conviction spec gap 4 — the yield trap must state which
+    dividend it ran on, and must not resolve a forward-vs-trailing disagreement
+    silently. SPK.NZ is the live case: 7.3% forward (z +0.8, no trap) against
+    9.4% trailing (z +2.6, trap fires)."""
+
+    def _record(self, **overrides):
+        record = {
+            "business_type": "income",
+            "dividend_yield_5y_mean": 0.063,
+            "dividend_yield_5y_std": 0.012,
+        }
+        record.update(overrides)
+        return record
+
+    def test_breakdown_reports_both_bases_and_flags_the_conflict(self):
+        record = self._record(
+            dividend_yield_current=0.073,
+            dividend_yield_zscore=0.83,
+            dividend_yield_forward=0.073,
+            dividend_yield_trailing=0.094,
+            dividend_yield_zscore_trailing=2.58,
+            dividend_yield_basis="forward_declared",
+            dividend_basis_conflict=True,
+        )
+        breakdown = yield_trap_breakdown(record, "SPK.NZ")
+
+        self.assertEqual(breakdown["dividend_basis"], "forward_declared")
+        self.assertEqual(breakdown["dividend_yield_forward"], 0.073)
+        self.assertEqual(breakdown["dividend_yield_trailing"], 0.094)
+        self.assertEqual(breakdown["dividend_yield_zscore_trailing"], 2.58)
+        self.assertTrue(breakdown["basis_conflict"])
+        # Forward basis: z is 0.83, below the 1.5 trigger, so no trap.
+        self.assertFalse(breakdown["zscore_condition_met"])
+        self.assertFalse(breakdown["fired"])
+
+    def test_no_conflict_when_both_bases_agree(self):
+        record = self._record(
+            dividend_yield_current=0.068,
+            dividend_yield_zscore=0.42,
+            dividend_yield_forward=0.068,
+            dividend_yield_trailing=0.067,
+            dividend_yield_zscore_trailing=0.33,
+            dividend_yield_basis="forward_declared",
+            dividend_basis_conflict=False,
+        )
+        breakdown = yield_trap_breakdown(record, "MCY.NZ")
+        self.assertFalse(breakdown["basis_conflict"])
+
+    def test_engine_derives_both_yields_and_the_conflict_flag(self):
+        from src.conviction_engine.engine import derive_dividend_yield_basis
+
+        record = self._record(
+            annual_div_per_share_stored=0.16,
+            annual_div_per_share_forward=0.16,
+            annual_div_per_share_trailing=0.205,
+            dividend_basis="forward_declared",
+        )
+        derive_dividend_yield_basis(record, 2.19)
+
+        self.assertEqual(record["dividend_yield_basis"], "forward_declared")
+        self.assertAlmostEqual(record["dividend_yield_forward"], 0.16 / 2.19, places=5)
+        self.assertAlmostEqual(record["dividend_yield_trailing"], 0.205 / 2.19, places=5)
+        # Forward yield sits below the trigger, trailing above it -> conflict.
+        self.assertLess(record["dividend_yield_zscore"], 1.5)
+        self.assertGreater(record["dividend_yield_zscore_trailing"], 1.5)
+        self.assertTrue(record["dividend_basis_conflict"])
+
+    def test_trailing_only_ticker_is_labelled_trailing(self):
+        from src.conviction_engine.engine import derive_dividend_yield_basis
+
+        record = self._record(
+            annual_div_per_share_stored=0.7,
+            annual_div_per_share_trailing=0.7,
+        )
+        derive_dividend_yield_basis(record, 10.0)
+        self.assertEqual(record["dividend_yield_basis"], "trailing_12m")
+        self.assertFalse(record["dividend_basis_conflict"])
+
+
+class TestDividendPaymentWindows(unittest.TestCase):
+    """A 365-day window anchored on the last payment date pulls a third payment into
+    a semi-annual payer's year when an anniversary drifts by a day. SPK.NZ is the
+    live case: 12.5c (Mar 2025) + 12.5c (Sep 2025) + 8c (Mar 2026) = 33c against a
+    real trailing 20.5c, which turns a dividend cut into an apparent raise."""
+
+    def _spk_series(self):
+        import pandas as pd
+
+        # Real SPK.NZ payment dates and amounts. The Mar-2025 payment lands one day
+        # after the Mar-2026 anniversary, which is what breaks the calendar window.
+        index = pd.to_datetime(
+            [
+                "2024-03-21", "2024-09-12", "2025-03-20", "2025-09-09", "2026-03-19",
+            ]
+        )
+        return pd.Series([0.135, 0.140, 0.125, 0.125, 0.080], index=index)
+
+    def test_cadence_is_inferred_from_payment_spacing(self):
+        from src.conviction_engine.dividend_yield import payments_per_year
+
+        self.assertEqual(payments_per_year(self._spk_series()), 2)
+
+    def test_trailing_year_counts_payments_not_calendar_days(self):
+        from src.conviction_engine.dividend_yield import annual_dividend_windows
+
+        windows = annual_dividend_windows(self._spk_series())
+        self.assertAlmostEqual(windows["annual_dividend_current"], 0.205, places=6)
+        self.assertAlmostEqual(windows["annual_dividend_prior"], 0.265, places=6)
+        self.assertEqual(windows["payments_per_year"], 2)
+        # Prior year above current year: the cut is visible, not inverted.
+        self.assertGreater(windows["annual_dividend_prior"], windows["annual_dividend_current"])
+
+    def test_quarterly_payer_uses_four_payments(self):
+        import pandas as pd
+
+        from src.conviction_engine.dividend_yield import annual_dividend_windows
+
+        index = pd.date_range("2024-01-15", periods=8, freq="91D")
+        series = pd.Series([0.4] * 4 + [0.5] * 4, index=index)
+        windows = annual_dividend_windows(series)
+        self.assertEqual(windows["payments_per_year"], 4)
+        self.assertAlmostEqual(windows["annual_dividend_current"], 2.0, places=6)
+        self.assertAlmostEqual(windows["annual_dividend_prior"], 1.6, places=6)
+
+    def test_too_few_payments_falls_back_without_raising(self):
+        import pandas as pd
+
+        from src.conviction_engine.dividend_yield import annual_dividend_windows, payments_per_year
+
+        series = pd.Series([0.2], index=pd.to_datetime(["2026-03-19"]))
+        self.assertIsNone(payments_per_year(series))
+        windows = annual_dividend_windows(series)
+        self.assertAlmostEqual(windows["annual_dividend_current"], 0.2, places=6)
+        self.assertIsNone(windows["payments_per_year"])
+
+    def test_empty_input_is_handled(self):
+        from src.conviction_engine.dividend_yield import annual_dividend_windows
+
+        windows = annual_dividend_windows(None)
+        self.assertIsNone(windows["annual_dividend_current"])
+        self.assertIsNone(windows["annual_dividend_prior"])
+
+    def test_five_year_stats_use_the_same_cadence_basis(self):
+        import pandas as pd
+
+        from src.conviction_engine.dividend_yield import compute_dividend_yield_stats
+
+        divs = self._spk_series()
+        prices = pd.Series(
+            2.0, index=pd.date_range(divs.index[0], divs.index[-1], freq="D")
+        )
+        stats = compute_dividend_yield_stats(pd.DataFrame({"Close": prices}), divs)
+        # Trailing-year dividend never exceeds two payments, so on a flat $2.00 price
+        # the yield stays inside (0.205/2, 0.265/2). A 365-day rolling sum would print
+        # a 0.33/2 = 16.5% observation here.
+        self.assertLessEqual(stats["dividend_yield_5y_mean"], 0.265 / 2.0)
+        self.assertGreaterEqual(stats["dividend_yield_5y_mean"], 0.205 / 2.0 * 0.9)
+
+
+class TestAdjustedEpsCoverage(unittest.TestCase):
+    """Rohit 26 Aug, conviction spec gap 1. Semi-annual filers have no quarterly
+    income statement at all, so the adjusted-EPS work never ran on the names it was
+    built for. SPK.NZ: reported FY26 EPS 26.4c, reported P/E 8.3x."""
+
+    def _annual_frame(self, **rows):
+        import pandas as pd
+
+        index = list(rows.keys())
+        return pd.DataFrame({pd.Timestamp("2026-06-30"): [rows[k] for k in index]}, index=index)
+
+    def test_annual_statement_is_used_when_quarterly_is_empty(self):
+        import pandas as pd
+
+        from src.conviction_engine.adjusted_eps import compute_adjusted_eps_bundle
+
+        annual = self._annual_frame(**{
+            "Total Unusual Items": 278_000_000.0,
+            "Tax Provision": 88_000_000.0,
+            "Pretax Income": 574_000_000.0,
+            "Net Income": 499_000_000.0,
+        })
+        bundle = compute_adjusted_eps_bundle(
+            {"shares_outstanding_now": 1_890_000_000.0, "price": 2.19, "net_income_ttm": None},
+            pd.DataFrame(),          # yfinance returns an empty quarterly frame for NZX names
+            annual,
+        )
+
+        self.assertEqual(bundle["adjusted_eps_basis"], "annual_fy")
+        # 278m gain, taxed at the company's own 15.3% effective rate, off a 499m NPAT.
+        tax_rate = 88_000_000.0 / 574_000_000.0
+        expected = (499_000_000.0 - 278_000_000.0 * (1 - tax_rate)) / 1_890_000_000.0
+        self.assertAlmostEqual(bundle["adjusted_eps_ttm"], round(expected, 4), places=4)
+        # Material one-off: adjusted PE substitutes into the percentile calc.
+        self.assertGreater(bundle["one_off_pct_of_ni"], 0.05)
+        self.assertAlmostEqual(bundle["pe_ttm_adjusted"], round(2.19 / expected, 4), places=2)
+
+    def test_quarterly_is_preferred_when_present(self):
+        import pandas as pd
+
+        from src.conviction_engine.adjusted_eps import compute_adjusted_eps_bundle
+
+        quarters = pd.date_range("2025-09-30", periods=4, freq="QE")
+        quarterly = pd.DataFrame(
+            [[10_000_000.0] * 4, [5_000_000.0] * 4, [25_000_000.0] * 4],
+            index=["Total Unusual Items", "Tax Provision", "Pretax Income"],
+            columns=quarters,
+        )
+        annual = self._annual_frame(**{"Total Unusual Items": 999_000_000.0, "Net Income": 1.0})
+        bundle = compute_adjusted_eps_bundle(
+            {"shares_outstanding_now": 100_000_000.0, "price": 10.0, "net_income_ttm": 80_000_000.0},
+            quarterly,
+            annual,
+        )
+        self.assertEqual(bundle["adjusted_eps_basis"], "quarterly_ttm")
+
+    def test_material_unclassified_residual_is_flagged_not_stripped(self):
+        """yfinance files SPK's NZ$278m gain under a catch-all the unusual-items row
+        ignores. Stripping that bucket by default would be wrong for names where it
+        holds recurring FX and interest, so the row is flagged instead."""
+        import pandas as pd
+
+        from src.conviction_engine.adjusted_eps import compute_adjusted_eps_bundle
+
+        annual = self._annual_frame(**{
+            "Total Unusual Items": 12_000_000.0,          # gain on sale of PPE only
+            "Other Non Operating Income Expenses": 301_000_000.0,   # holds the real gain
+            "Tax Provision": 88_000_000.0,
+            "Pretax Income": 574_000_000.0,
+            "Net Income": 499_000_000.0,
+        })
+        bundle = compute_adjusted_eps_bundle(
+            {"shares_outstanding_now": 1_890_000_000.0, "price": 2.19, "net_income_ttm": None},
+            pd.DataFrame(),
+            annual,
+        )
+        # The classified adjustment is small, so adjusted EPS sits near the raw number...
+        self.assertLess(bundle["one_off_pct_of_ni"], 0.05)
+        # ...but the residual is half of net income, so the row is not presented as clean.
+        self.assertTrue(bundle["one_off_review_needed"])
+        self.assertGreater(bundle["one_off_unclassified_pct_of_ni"], 0.05)
+        self.assertEqual(bundle["one_off_unclassified_pretax"], 301_000_000.0)
+
+    def test_clean_statement_publishes_adjusted_equals_raw(self):
+        import pandas as pd
+
+        from src.conviction_engine.adjusted_eps import compute_adjusted_eps_bundle
+
+        quarters = pd.date_range("2025-09-30", periods=4, freq="QE")
+        quarterly = pd.DataFrame(
+            [[5_000_000.0] * 4, [25_000_000.0] * 4],
+            index=["Tax Provision", "Pretax Income"],
+            columns=quarters,
+        )
+        bundle = compute_adjusted_eps_bundle(
+            {"shares_outstanding_now": 100_000_000.0, "price": 10.0, "net_income_ttm": 80_000_000.0},
+            quarterly,
+            None,
+        )
+        # No unusual-items row means no unusual items, which is a result, not a gap.
+        self.assertEqual(bundle["adjusted_eps_ttm"], 0.8)
+        self.assertEqual(bundle["one_off_pct_of_ni"], 0.0)
+        self.assertFalse(bundle["one_off_review_needed"])
+
+    def test_no_statements_at_all_returns_empty(self):
+        from src.conviction_engine.adjusted_eps import compute_adjusted_eps_bundle
+
+        self.assertEqual(
+            compute_adjusted_eps_bundle(
+                {"shares_outstanding_now": 100.0, "price": 10.0, "net_income_ttm": 50.0}, None, None
+            ),
+            {},
+        )

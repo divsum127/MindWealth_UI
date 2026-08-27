@@ -90,7 +90,14 @@ def map_yfinance_fundamentals(
     if net_debt is not None and ebitda and ebitda > 0:
         net_debt_ebitda = round(net_debt / ebitda, 4)
 
-    dividend_rate = _safe_float(_first_not_none(info.get("dividendRate"), info.get("trailingAnnualDividendRate")))
+    # Dividend basis (Rohit 26 Aug, conviction spec gap 4). `dividendRate` is the
+    # forward annual rate implied by the latest declaration; `trailingAnnualDividendRate`
+    # is what was actually paid over the last twelve months. They diverge exactly when a
+    # cut or a raise has been announced -- the SPK.NZ case -- which is when the yield-trap
+    # answer flips. Keep both, and record which one `annual_div_per_share_stored` used.
+    dividend_rate_forward = _safe_float(info.get("dividendRate"))
+    dividend_rate_trailing = _safe_float(info.get("trailingAnnualDividendRate"))
+    dividend_rate = _first_not_none(dividend_rate_forward, dividend_rate_trailing)
     shares = _safe_float(info.get("sharesOutstanding"))
     distribution_coverage = None
     if fcf is not None and dividend_rate is not None and shares and shares > 0:
@@ -108,6 +115,12 @@ def map_yfinance_fundamentals(
         "net_debt_stored": net_debt,
         "fwd_revenue_stored": _safe_float(_first_not_none(info.get("revenueEstimate"), info.get("totalRevenue"))),
         "annual_div_per_share_stored": dividend_rate,
+        "annual_div_per_share_forward": dividend_rate_forward,
+        "annual_div_per_share_trailing": dividend_rate_trailing,
+        "dividend_basis": (
+            "forward_declared" if dividend_rate_forward is not None
+            else ("trailing_12m" if dividend_rate_trailing is not None else None)
+        ),
         "revenue_growth": _safe_float(info.get("revenueGrowth")),
         "fcf_margin": round(fcf / total_revenue, 6) if fcf is not None and total_revenue and total_revenue > 0 else None,
         "gross_margin": _safe_float(info.get("grossMargins")),

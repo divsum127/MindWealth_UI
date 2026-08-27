@@ -19,6 +19,14 @@ CONVICTION_COLUMNS = [
     "fs_score",
     "fs_class",
     "yield_trap_warning",
+    # Raw and adjusted earnings multiples ride into the overlay CSV together, so the
+    # nightly signal payload and every screen built off it can tell an 8.3x feed P/E
+    # from an 18.4x real one (Rohit 26 Aug, conviction spec gap 1).
+    "pe_ttm",
+    "pe_ttm_adjusted",
+    "adjusted_eps_basis",
+    "one_off_pct_of_ni",
+    "one_off_review_needed",
     "verdict",
     "sizing_pct",
     "rationale",

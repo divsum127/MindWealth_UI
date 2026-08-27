@@ -223,6 +223,17 @@ def full_recalculation(
             "annual_div_per_share_stored": _first_not_none(
                 fundamentals.get("annual_div_per_share_stored"), overrides.get("annual_div_per_share_stored")
             ),
+            # Forward-declared and trailing-paid dividends are carried separately so the
+            # yield-trap test can state which basis it used (Rohit 26 Aug, spec gap 4).
+            "annual_div_per_share_forward": _first_not_none(
+                fundamentals.get("annual_div_per_share_forward"), overrides.get("annual_div_per_share_forward")
+            ),
+            "annual_div_per_share_trailing": _first_not_none(
+                fundamentals.get("annual_div_per_share_trailing"), overrides.get("annual_div_per_share_trailing")
+            ),
+            "dividend_basis": _first_not_none(
+                fundamentals.get("dividend_basis"), overrides.get("dividend_basis")
+            ),
             "fd_votes": overrides.get("fd_votes"),
             "fd_direction": overrides.get("fd_direction", record.get("fd_direction")),
             "dividend_yield_5y_mean": _first_not_none(
@@ -245,8 +256,17 @@ def full_recalculation(
             "pe_history_thin": fundamentals.get("pe_history_thin"),
             "pe_history_years": fundamentals.get("pe_history_years"),
             "adjusted_eps_ttm": fundamentals.get("adjusted_eps_ttm"),
+            # Basis + review flags travel with the number: an FY-based adjustment and
+            # one with a material unclassified residual must not read like a clean TTM
+            # figure (Rohit 26 Aug, conviction spec gap 1).
+            "adjusted_eps_basis": fundamentals.get("adjusted_eps_basis"),
             "one_off_pct_of_ni": fundamentals.get("one_off_pct_of_ni"),
+            "one_off_items_pretax": fundamentals.get("one_off_items_pretax"),
+            "one_off_unclassified_pretax": fundamentals.get("one_off_unclassified_pretax"),
+            "one_off_unclassified_pct_of_ni": fundamentals.get("one_off_unclassified_pct_of_ni"),
+            "one_off_review_needed": fundamentals.get("one_off_review_needed"),
             "effective_tax_rate": fundamentals.get("effective_tax_rate"),
+            "effective_tax_rate_is_fallback": fundamentals.get("effective_tax_rate_is_fallback"),
             "pe_ttm_adjusted": fundamentals.get("pe_ttm_adjusted"),
         },
     )
@@ -274,6 +294,55 @@ def full_recalculation(
     )
     save_record(record, store_dir)
     return record
+
+
+def derive_dividend_yield_basis(record: dict[str, Any], stored_price: float | None) -> None:
+    """Fill the dividend-yield fields on `record`, on a stated basis.
+
+    Rohit 26 Aug, conviction spec gap 4. The rule: where a dividend change has already
+    been declared, the trap test runs on the FORWARD declared dividend. Using the
+    trailing twelve months manufactures a false trap out of a cut the market has already
+    absorbed -- SPK.NZ prices at 7.3% forward (z +0.8, no trap) and 9.4% trailing
+    (z +2.6, trap fires), one basis choice away from a hard gate.
+
+    The 5Y mean/std are trailing by construction, since they are built from dividends
+    actually paid. So a forward yield is ranked against a trailing distribution. That is
+    the honest reading of "how does today's declared yield compare with what this company
+    has historically paid", but it is a mixed basis, so both z-scores are published and a
+    disagreement is flagged rather than resolved silently.
+    """
+    annual_div = _safe_float(record.get("annual_div_per_share_stored"))
+    div_forward = _safe_float(record.get("annual_div_per_share_forward"))
+    div_trailing = _safe_float(record.get("annual_div_per_share_trailing"))
+    mean = _safe_float(record.get("dividend_yield_5y_mean"))
+    std = _safe_float(record.get("dividend_yield_5y_std"))
+
+    def _zscore(dividend_yield: float | None) -> float | None:
+        if dividend_yield is None or mean is None or not std or std <= 0:
+            return None
+        return round((dividend_yield - mean) / std, 4)
+
+    if stored_price and stored_price > 0:
+        if annual_div is not None:
+            record["dividend_yield_current"] = round(annual_div / stored_price, 6)
+            record["dividend_yield_zscore"] = _zscore(record["dividend_yield_current"])
+        if div_forward is not None:
+            record["dividend_yield_forward"] = round(div_forward / stored_price, 6)
+        if div_trailing is not None:
+            record["dividend_yield_trailing"] = round(div_trailing / stored_price, 6)
+        record["dividend_yield_zscore_trailing"] = _zscore(record.get("dividend_yield_trailing"))
+
+    record["dividend_yield_basis"] = record.get("dividend_basis") or (
+        "forward_declared" if div_forward is not None
+        else ("trailing_12m" if div_trailing is not None else None)
+    )
+    # True when the two bases fall on opposite sides of the z > 1.5 trap trigger, i.e.
+    # the trap verdict is decided by the basis choice alone and a human should look.
+    z_used = _safe_float(record.get("dividend_yield_zscore"))
+    z_trailing = _safe_float(record.get("dividend_yield_zscore_trailing"))
+    record["dividend_basis_conflict"] = bool(
+        z_used is not None and z_trailing is not None and (z_used > 1.5) != (z_trailing > 1.5)
+    )
 
 
 def daily_update(
@@ -371,13 +440,7 @@ def daily_update(
         # EBITDA is available; only actually consumed for `high_margin_hardware`.
         record["ev_fwd_ebitda"] = round((mcap + net_debt) / ebitda_ttm, 4)
 
-    annual_div = _safe_float(record.get("annual_div_per_share_stored"))
-    if annual_div is not None and stored_price and stored_price > 0:
-        record["dividend_yield_current"] = round(annual_div / stored_price, 6)
-        mean = _safe_float(record.get("dividend_yield_5y_mean"))
-        std = _safe_float(record.get("dividend_yield_5y_std"))
-        if mean is not None and std and std > 0:
-            record["dividend_yield_zscore"] = round((record["dividend_yield_current"] - mean) / std, 4)
+    derive_dividend_yield_basis(record, stored_price)
 
     pe_meta = record.get("pe_history_meta") or {}
     if isinstance(pe_meta, dict) and pe_meta.get("insufficient_20y"):
@@ -698,6 +761,9 @@ def run_daily_universe(tickers: list[str], store_dir: Path | None = None) -> dic
             # Item 19 (Parth hand-off): distinguish confirmed-fired from
             # watching-but-not-fired so the Yield-Traps panel count matches its list.
             flags.append("yield_trap_watching")
+        if yield_breakdown.get("basis_conflict"):
+            # Trap verdict decided by forward-vs-trailing dividend alone (spec gap 4).
+            flags.append("dividend_basis_conflict")
         if record.get("fs_class") in {"weak", "moderate_low"}:
             flags.append(f"fs_{record.get('fs_class')}")
         if (record.get("conviction_score") or 0) < 2:

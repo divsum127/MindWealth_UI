@@ -21,6 +21,174 @@ Reference deploy skill: `.cursor/skills/prod-pull-and-details/SKILL.md`
 | `[PROD-ACTION]` | Manual step on server after git merge (secrets, systemd, bootstrap) |
 | `[DONE]` | Completed on prod (date in notes) |
 
+## 2026-08-27 — Stale quality columns served beside a live price (R:R, timeliness, reward remaining) `[PENDING]`
+
+From Rohit's 27 Aug R:R questions on the MCY.NZ card. Touches both repos. **Numbers move on this** — R:R, Timeliness and Reward Remaining change on any signal older than its last quality computation, and aged signals lose timeliness, which can move tier.
+
+### Git files to merge (`chatbot-dev` → `chatbot-prod`)
+
+**New**
+- `src/utils/quality_refresh.py`
+- `scripts/repair_consolidated_quality_columns.py`
+- `tests/test_quality_refresh.py`
+- `tests/test_stale_duplicate_collapse.py`
+
+**Modified**
+- `chatbot/convert_signals_to_data_structure.py` — price job now recomputes quality columns after refreshing prices
+- `chatbot/smart_data_fetcher.py` — collapses same-identity rows to the freshest vintage, recomputes served rows, merges the R:R audit legs into the payload columns
+- `api/services/signal_enrichment_service.py` — audit legs and `quality_as_of` on the surface
+- `prompts/chatbot_system.txt` — R:R must be printed with the stop it used; noise-level stops called out; stale vintages declared; MTM banned as an entry reason
+- `docs/mindwealth_ui_job_status.md`, `docs/mindwealth_ui_repo_job_status_details.md`
+
+### Core repo (`/home/ubuntu/MindWealth`, not this git remote)
+- `helper_functions/claude_lateness_metrics.py` — both today-price header spellings; unit-aware `parse_elapsed_days`; new `stop_distance_pct`
+- `helper_functions/enrich_pipeline.py` — `ENRICHED_AUDIT_COLUMNS` exported into the report CSV
+- `tests/test_stale_quality_fixes.py` (new)
+- Goes live on the **next nightly run** (cron reads the working tree). Adds seven columns to the report CSV and changes `Timeliness Score` on roughly two thirds of rows.
+
+### `[PROD-ACTION]` after merge
+- Restart the API so the new prompt and fetcher load: `sudo systemctl restart mindwealth-api.service`
+- **Do not** run `scripts/repair_consolidated_quality_columns.py` without Rohit's sign-off — it collapses ~90% of the rows of `chatbot/data/{entry,exit,portfolio_target_achieved}.csv` (runtime data, not in git). It writes a `.prerepair` backup beside each file. Serving is already correct without it.
+- `API_VERSION` bump due on the next `robust-test-and-dev-deploy` run: the signals surface gains `nearest_support_stop`, `nearest_support_stop_type`, `risk_to_nearest_stop`, `proposed_reward`, `bt_avg_exit_price`, `stop_distance_pct`, `rr_null_reason`, `quality_as_of`. **Not bumped here.**
+
+### Smoke tests `[PENDING]`
+- Ask the analyst for an aged open signal and confirm the printed R:R reproduces from the printed stop and reward on the same card
+- Confirm no card presents current MTM as a reason to buy
+- Confirm `Timeliness Score` on a signal older than its interval cutoff is no longer 100
+
+---
+
+## 2026-08-27 — Conviction engine: adjusted-EPS coverage, yield-trap dividend basis, two dividend-window bugs `[PENDING]`
+
+From Rohit's 26 Aug "checking your conviction engine implementation" mail, spec gaps 1 and 4.
+Touches both repos. **Numbers move on this one** — see the recalculation requirement below.
+
+**UI repo files to merge (`chatbot-dev` → `chatbot-prod`)**
+
+| File | Change | Prod effect |
+|------|--------|-------------|
+| `src/conviction_engine/dividend_yield.py` | cadence-based trailing-dividend windows + cadence-based 5Y yield statistics | **Numeric.** 5Y mean/std yield change for every semi-annual payer (SPK.NZ 11.5% → 8.66%). Feeds the yield-trap z-score. |
+| `src/conviction_engine/adjusted_eps.py` | annual-statement fallback, basis label, unclassified-residual review | **Numeric** for semi-annual filers, which previously produced no adjusted EPS at all |
+| `src/conviction_engine/engine.py` | `derive_dividend_yield_basis()` extracted; adjusted-EPS metadata onto the record; `dividend_basis_conflict` alert flag | New record keys; new daily alert flag value |
+| `src/conviction_engine/scoring.py` | `yield_trap_breakdown()` returns both bases + conflict | Additive keys in the breakdown object |
+| `src/conviction_engine/models.py` | new default record keys | Additive |
+| `src/conviction_engine/fundamentals.py`, `fundamentals_enriched.py` | forward/trailing dividend split; annual income statement fetched; new fields mapped through | One extra yfinance property read per ticker (`income_stmt`) |
+| `src/conviction_engine/formatting.py` | `pe_ttm`, `pe_ttm_adjusted`, `adjusted_eps_basis`, `one_off_pct_of_ni`, `one_off_review_needed` in `CONVICTION_COLUMNS` | **Overlay CSV gains five columns.** Anything reading that CSV positionally breaks; by name is fine. |
+| `api/services/conviction_service.py` | list endpoint returns both multiples + review flag | Additive response keys |
+| `api/services/signal_enrichment_service.py` | signal surface carries `pe_ttm`, `pe_ttm_adjusted`, `adjusted_eps_basis`, `one_off_review_needed`, `er_loss_basis` | Additive response keys |
+| `src/pages/conviction_engine_page.py` | raw vs adjusted P/E row, dividend-basis panel, two warnings | Streamlit display only |
+| `tests/test_conviction_engine_v2_fixes.py`, `tests/test_conviction_engine.py` | 20 new cases; two updated | None |
+
+**`API_VERSION` bumped to `1.14.0`** (was 1.13.0) — the signals surface and the conviction list both
+gain response keys. This bump also covers the `cash (IRX)` → `mirrored B&H` wording change queued in
+the entry below, which was deliberately left unbumped at the time. OpenAPI snapshot regenerated
+(`scripts/export_openapi.py`), and the API docs updated on the `mindwealth-api-docs` submodule
+(`main`): `changelog.md`, `services/conviction/endpoints/list-tickers.md`, `get-ticker.md`,
+`services/signals/endpoints/get-surface.md`. **Prod is still on 1.12.0** — this ships at cutover.
+
+**Dev deploy done 2026-08-27** — `mindwealth-api-dev.service` restarted and active, `smoke-test-apis.sh`
+all PASS, dev reporting `version=1.14.0` with `conviction_store` correctly isolated to the dev clone
+and prod still pointing at `/home/ubuntu/uiv2/prod/MindWealth_UI/conviction_store` on 1.12.0.
+
+**Dev recalculation status: partial `[PENDING]`.** `SPK.NZ` and `MCY.NZ` were recalculated as
+verification and now carry the full block live on dev (`dividend_yield_basis=forward_declared`,
+`dividend_yield_forward=0.074419`, `dividend_yield_trailing=0.095349`, `zscore=0.3593` vs
+`zscore_trailing=1.5358`, `dividend_basis_conflict=true`, `adjusted_eps_basis=annual_fy`,
+`one_off_review_needed=true`). **The other ~194 dev records are still stale** and show none of the
+new fields. The full dev run has not been completed — `--mode full` is slow per ticker because it
+also runs the agentic dimensions, so it needs to be run with a long window rather than inside a
+short command timeout.
+
+**Note on the dividend-cut penalty, checked rather than assumed.** The corrected windows do feed
+`detect_dividend_cut` properly now (SPK reads 20.5c current against 26.5c prior, a 22.64% decline,
+where the broken window had it as a raise). But 22.64% sits **below the 25% first tier** of Rohit's
+own penalty structure, so **no penalty fires on SPK** and `capital_return_penalty` stays 0.0. Other
+semi-annual payers may cross 25% once recalculated — worth diffing the flag across the universe
+after the full run rather than letting it move scores unannounced.
+
+**Core repo changes (no git merge — the nightly cron reads the working tree)**
+
+| File | Change | Effect on the next nightly run |
+|------|--------|-------------------------------|
+| `helper_functions/claude_lateness_metrics.py` | `compute_er_with_basis()` + `er_loss_basis` published to the row and the surface JSON | New payload/CSV field. **E[R] itself is unchanged** — verified identical on all 126 rows of the 26 Aug file. |
+| `helper_functions/enrich_pipeline.py` | `er_loss_basis` in the emitted column list | One new CSV column |
+| `send_email.py` | conviction overlay merge carries `pe_ttm`, `pe_ttm_adjusted`, `adjusted_eps_basis`, `one_off_pct_of_ni`, `one_off_review_needed` | Five new keys in the Claude payload |
+| `constant.py` | `Expected Return E[R] [%]` description rewritten around `er_loss_basis`; **`er_loss_basis` reverted out of `GOOD_SIGNAL_QUERY`** | Column-description block only. The prompt is unchanged, per the freeze. |
+| `instruction_docs_2/signals_master_spec/pending_prompt_merge.md` (new) | parked prompt text for the merge | None until the freeze lifts |
+| `instruction_docs_2/signals_master_spec/additional_details.md` | SUPERSEDED banner | None |
+
+**REQUIRED after merge — full conviction recalculation `[PENDING]`**
+
+Every stored record was written with the inflated dividend statistics and without the
+adjusted-EPS metadata, so none of the corrected numbers appear until a full recalculation runs:
+
+```bash
+.venv/bin/python scripts/update_conviction_fundamentals.py --mode full --include-existing-records
+```
+
+Dev first, then prod. **On prod this is a human/ops action** — writing `conviction_store/` under
+`/home/ubuntu/uiv2/prod/` is forbidden for an agent, same rule as the PE-history rollouts.
+Expect `dividend_yield_5y_mean` / `_std`, `dividend_yield_zscore` and any `yield_trap_warning`
+derived from them to move on every dividend payer, and `dividend_cut_flag` to change on
+semi-annual payers whose cut was previously read as a raise.
+
+**Smoke tests after the recalculation `[PENDING]`**
+
+1. `GET /conviction/tickers/SPK.NZ` — `dividend_yield_basis` = `forward_declared`, `adjusted_eps_basis` = `annual_fy`, `one_off_review_needed` true. **`[DONE]` on dev 2026-08-27.**
+2. `GET /conviction?limit=5` — every row carries `pe_ttm` and `pe_ttm_adjusted` keys.
+3. `GET /signals/surface?report=outstanding-signals` — rows carry `er_loss_basis`; spot-check that a 100%-win-rate row reads `no_losing_trades`, not `max_loss_proxy`. **Currently null on all 113 rows and that is correct**: the API treats a CSV carrying the MasterSpec columns as pre-computed and does not re-derive it (Rohit's 2.2a rule), so the field populates only once the nightly pipeline writes the new column. Verified separately that the core fallback path does produce it — an all-signal row with the pre-computed columns stripped returns `er_loss_basis="no_losing_trades"` with an unchanged `er` of 12.69. **Re-check after the next nightly run.**
+4. Streamlit conviction page for SPK.NZ — both P/E metrics render and the one-off review warning shows.
+5. Confirm the daily overlay CSV header contains the five new columns and that `daily_run` still writes.
+
+---
+
+## 2026-08-27 — Rohit's 26 Aug go-ahead items + the four empty annualisation columns `[PENDING]`
+
+Most of this lands in the **core repo** (`/home/ubuntu/MindWealth`), which has its own deploy path —
+the nightly cron reads the working tree directly, so those changes are live on the next run and are
+**not** part of a `chatbot-dev` → `chatbot-prod` merge. Only the two UI-repo files below merge normally.
+
+**UI repo files to merge (`chatbot-dev` → `chatbot-prod`)**
+
+| File | Change | Prod effect |
+|------|--------|-------------|
+| `api/services/signal_enrichment_service.py` | short `alpha_interpretation` benchmark label `cash (IRX)` → `mirrored B&H` | Response **string** changes for short signals with negative CAGR_diff. No numeric change. Any client asserting on the old wording breaks. |
+| `src/utils/signal_quality.py` | emits `rr_original` alongside `rr_static` | New key in the bubble-chart quality row. Additive. |
+| `docs/mindwealth_ui_job_status.md`, `docs/mindwealth_ui_repo_job_status_details.md`, this file | logging | None |
+
+**`API_VERSION` bump due — deliberately NOT bumped here.** The response wording change qualifies.
+Bump on the next `robust-test-and-dev-deploy` run and regenerate the OpenAPI snapshot.
+
+**Core repo changes (no git merge — nightly cron reads the working tree)**
+
+| File | Change | Effect on the next nightly run |
+|------|--------|-------------------------------|
+| `helper_functions/claude_lateness_metrics.py` | publishes `avg_hold_days` + `days_elapsed` to the row; short alpha label reworded | Two previously-empty CSV columns start carrying values |
+| `helper_functions/enrich_pipeline.py` | duplicate compounding `_annualize()` and mirrored `TRADING_DAYS_PER_YEAR` deleted; carries the upstream annualized values | `er_annualized` / `signal_alpha_annualized` go from **0/113 to 113/113**. Values are the *simple* annualization the composite already consumed, so nothing rescored — verified tier split unchanged at exit 56 / best 24 / tierc 23 / tA 10 |
+| `send_email.py` | new `R:R Original` column in the emailed report table | **The daily report gains a column.** Null for signals outstanding before `rr_original` shipped (84 of 113 on the 26 Aug file). Anything indexing that table positionally rather than by header will shift |
+| `constant.py` | column-descriptions block only — E[R] proxy sentence corrected. **`GOOD_SIGNAL_QUERY` untouched** | Field spec in the daily email reads accurately |
+| `instruction_docs_2/signals_master_spec/additional_details.md`, `status_v5.md` | Section C marked SUPERSEDED; stale range corrected | Docs only |
+| `tests/test_signals_masterspec_g3.py` | +5 tests | — |
+
+**Do NOT deploy alongside this**
+
+- `GOOD_SIGNAL_QUERY` is **frozen** by Rohit sir's explicit instruction until Ahil signs off on the prompt
+  design. No prompt edit ships until that clears.
+- `rr_static` is **not** retired and must not be, while the payload tier gate still reads it.
+
+**Smoke tests `[PENDING]`**
+
+1. After the next nightly run, confirm on the new outstanding CSV: `er_annualized`, `signal_alpha_annualized`,
+   `avg_hold_days`, `days_elapsed` all non-null on every row.
+2. Confirm the tier distribution has not moved beyond normal day-to-day change.
+3. Confirm the emailed report renders the `R:R Original` column and that its description is present in the
+   Column Descriptions block.
+4. `grep -r "cash (IRX)"` over both repos returns only comments.
+5. After the UI merge, hit the signals surface endpoint for a short signal and confirm the
+   `alpha_interpretation.detail` string reads `mirrored B&H`.
+
+---
+
 ## 2026-08-20 — CFTC six-point close-out: date-parse fix, FOMC calendar fix, placeholder flag cuts `[PENDING]`
 
 **Pushed 2026-08-20:** `chatbot-dev` @ `18d572586`, `ui-dev` @ `c17c5c6`, docs submodule `main` @ `d91ab61`

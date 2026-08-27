@@ -150,6 +150,20 @@ def _get_direction(row: dict[str, Any]) -> str:
     return "Long"
 
 
+def _coerce_optional_bool(value: Any) -> bool | None:
+    """CSV round-trips turn booleans into 'True'/'False'/'' strings and NaN."""
+    if value is None or value == "":
+        return None
+    if isinstance(value, bool):
+        return value
+    text = str(value).strip().lower()
+    if text in ("true", "1", "yes"):
+        return True
+    if text in ("false", "0", "no"):
+        return False
+    return None
+
+
 def _parse_rr_static(row: dict[str, Any]) -> float | None:
     return _parse_float(row.get("R:R Static"))
 
@@ -174,7 +188,10 @@ def _compute_alpha_interpretation(
     if cagr_diff is None or cagr_diff >= 0:
         return None
     is_short = direction.upper().startswith("SHORT") or direction.upper() == "S"
-    benchmark = "cash (IRX)" if is_short else "B&H"
+    # "mirrored B&H", not "cash (IRX)": the live short benchmark is
+    # -(B&H_CAGR / 252 x avg_hold_days). Kept in step with
+    # claude_lateness_metrics.compute_alpha_interpretation().
+    benchmark = "mirrored B&H" if is_short else "B&H"
     if cagr_diff < _AI_FAIL_THRESHOLD:
         return {
             "type": "fail",
@@ -437,6 +454,9 @@ def enrich_record(
 
     # ── Pre-computed fields (from nightly pipeline or core fallback) ───────────
     er = _parse_float(row.get("Expected Return E[R] [%]")) or core.get("er")
+    # er_loss_basis rides along with er so a consumer can tell an E[R] built on
+    # the -max_loss x 0.6 proxy from one built on real losing trades.
+    er_loss_basis = row.get("er_loss_basis") or core.get("er_loss_basis") or None
     signal_alpha = _parse_signal_alpha(row) or core.get("signal_alpha_per_trade")
     composite_score_raw = (
         _parse_float(row.get("Signal Quality Composite Score"))
@@ -444,6 +464,12 @@ def enrich_record(
         or core.get("composite_score")
     )
     timeliness_score = _parse_float(row.get("Timeliness Score")) or core.get("timeliness_score")
+    # Composite v4 sub-scores (Rohit 26 Aug design review, §I item 11). Read the
+    # nightly columns when present; the core fallback supplies them otherwise.
+    composite_components = {
+        name: _parse_float(row.get(name)) if row.get(name) is not None else core.get(name)
+        for name in ("er_score", "alpha_score", "sharpe_score", "cagr_score")
+    }
     asset_class = (
         str(row.get("Asset Class", "") or core.get("asset_class") or "").strip()
         or "equity"
@@ -473,6 +499,9 @@ def enrich_record(
 
     # ── Tier ────────────────────────────────────────────────────────────────────
     rr_static = _parse_rr_static(row) or core.get("rr_static")
+    # rr_original is frozen at signal date upstream and is never recomputed here;
+    # null means the signal predates the field, not that it failed (§I item 7).
+    rr_original = _parse_float(row.get("rr_original")) or core.get("rr_original")
     rr_dynamic = core.get("rr_dynamic") or _parse_float(row.get("R:R Dynamic")) or _parse_float(row.get("rr_dynamic"))
     fwd_wr_raw = row.get(
         "Forward Testing Win Rate[%]/No. of Analysed Trades/Avg Holding Period "
@@ -497,6 +526,11 @@ def enrich_record(
     conviction_score = _parse_float(conviction.get("conviction_score"))
     conviction_bq_score = _parse_float(conviction.get("bq_raw"))
     conviction_fs_class = conviction.get("fs_class") or None
+    # Earnings multiple, raw and one-off adjusted. Reading trailingEps off a feed
+    # prices SPK.NZ at 8.3x against a real 18.4x, so the surface carries both and says
+    # which basis produced the adjustment (Rohit 26 Aug, conviction spec gap 1).
+    pe_ttm = _parse_float(conviction.get("pe_ttm"))
+    pe_ttm_adjusted = _parse_float(conviction.get("pe_ttm_adjusted"))
 
     # ── Write supplementary fields into output ──────────────────────────────────
     out.update(
@@ -519,14 +553,38 @@ def enrich_record(
             "composite_score": composite_score_raw,
             "timeliness_score": timeliness_score,
             "er": er,
+            "er_loss_basis": er_loss_basis,
             "signal_alpha": signal_alpha,
             "rr_static": rr_static,
+            "rr_original": rr_original,
             "rr_dynamic": rr_dynamic,
+            # Audit legs: the stop the ratio was measured against, the two sides of
+            # the ratio, and why it is null when it is. A consumer that prints R:R
+            # without these cannot be reconciled with the printed stop ladder.
+            "nearest_support_stop": _parse_float(row.get("nearest_support_stop"))
+            or core.get("nearest_support_stop"),
+            "nearest_support_stop_type": row.get("nearest_support_stop_type")
+            or core.get("nearest_support_stop_type"),
+            "risk_to_nearest_stop": _parse_float(row.get("risk_to_nearest_stop"))
+            or core.get("risk_to_nearest_stop"),
+            "proposed_reward": _parse_float(row.get("proposed_reward"))
+            or core.get("proposed_reward"),
+            "bt_avg_exit_price": _parse_float(row.get("bt_avg_exit_price"))
+            or core.get("bt_avg_exit_price"),
+            "stop_distance_pct": _parse_float(row.get("stop_distance_pct"))
+            or core.get("stop_distance_pct"),
+            "rr_null_reason": row.get("rr_null_reason") or core.get("rr_null_reason"),
+            "quality_as_of": row.get("quality_as_of") or None,
+            **composite_components,
             "fwd_wr": fwd_wr,
             "cagr_diff": cagr_diff,
             "conviction_score": conviction_score,
             "conviction_bq_score": conviction_bq_score,
             "conviction_fs_class": conviction_fs_class,
+            "pe_ttm": pe_ttm,
+            "pe_ttm_adjusted": pe_ttm_adjusted,
+            "adjusted_eps_basis": conviction.get("adjusted_eps_basis") or None,
+            "one_off_review_needed": _coerce_optional_bool(conviction.get("one_off_review_needed")),
         }
     )
     xf_triggered = row.get("cross_function_exit_triggered")

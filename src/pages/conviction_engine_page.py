@@ -74,6 +74,35 @@ def _v6_scorecard(record: dict) -> None:
     row1[4].metric("Revenue accelerating", str(record.get("revenue_accelerating", "N/A")))
     row1[5].metric("Debt purpose", str(record.get("debt_purpose") or "N/A"))
 
+    # Earnings multiple, raw and adjusted (Rohit 26 Aug, conviction spec gap 1). The
+    # raw number is what a feed reports; the adjusted one strips disclosed one-offs and
+    # only appears when they clear the 5%-of-net-income materiality gate.
+    pe_raw = record.get("pe_ttm")
+    pe_adj = record.get("pe_ttm_adjusted")
+    if pe_raw is not None or pe_adj is not None:
+        pe_row = st.columns(4)
+        pe_row[0].metric("P/E (reported)", _fmt_num(pe_raw, 2))
+        pe_row[1].metric(
+            "P/E (one-offs stripped)",
+            _fmt_num(pe_adj, 2) if pe_adj is not None else "not material",
+            help="Substitutes for the reported P/E in the percentile ranking only when "
+                 "one-off items exceed 5% of trailing net income.",
+        )
+        pe_row[2].metric("One-offs as % of net income", _fmt_pct(record.get("one_off_pct_of_ni")))
+        pe_row[3].metric(
+            "Adjustment basis",
+            str(record.get("adjusted_eps_basis") or "N/A"),
+            help="annual_fy means the filer reports half-yearly, so the adjustment is "
+                 "the latest full financial year rather than a trailing four quarters.",
+        )
+        if record.get("one_off_review_needed"):
+            st.warning(
+                "One-off review needed: a material amount of non-operating income on this "
+                "filing sits in a catch-all line the unusual-items row does not classify, "
+                f"worth {_fmt_pct(record.get('one_off_unclassified_pct_of_ni'))} of net income. "
+                "The adjusted P/E above may be understating the adjustment."
+            )
+
     bq = record.get("bq_components") or {}
     if bq:
         bq_df = pd.DataFrame(
@@ -130,16 +159,28 @@ def _v6_scorecard(record: dict) -> None:
         fired = yt_breakdown.get("fired")
         watching = yt_breakdown.get("watching")
         status = "FIRED" if fired else ("watching" if watching else "clear")
-        st.markdown(f"**Yield trap** (status **{status}**)")
+        basis = yt_breakdown.get("dividend_basis") or "unknown"
+        st.markdown(f"**Yield trap** (status **{status}**, dividend basis **{basis}**)")
         yt_df = pd.DataFrame(
             [
                 {"field": "dividend_yield_current", "value": yt_breakdown.get("dividend_yield_current")},
                 {"field": "dividend_yield_zscore", "value": yt_breakdown.get("dividend_yield_zscore")},
+                {"field": "dividend_yield_forward", "value": yt_breakdown.get("dividend_yield_forward")},
+                {"field": "dividend_yield_trailing", "value": yt_breakdown.get("dividend_yield_trailing")},
+                {"field": "dividend_yield_zscore_trailing", "value": yt_breakdown.get("dividend_yield_zscore_trailing")},
                 {"field": "market_threshold", "value": yt_breakdown.get("market_threshold")},
                 {"field": "market_threshold_defined", "value": yt_breakdown.get("market_threshold_defined")},
             ]
         )
         st.dataframe(yt_df, use_container_width=True, hide_index=True)
+        if yt_breakdown.get("basis_conflict"):
+            # The verdict flips with the dividend basis, so say so rather than
+            # showing one answer as if it were the only one (spec gap 4).
+            st.warning(
+                "Dividend basis conflict: the z-score crosses the 1.5 trap trigger on one "
+                "basis and not the other. The engine uses the forward declared dividend; "
+                "the trailing figure disagrees."
+            )
 
     # UI transparency (item 20, carried forward): every agentic BQ dimension shows
     # confidence / sources / evidence_against, not just the score, matching the

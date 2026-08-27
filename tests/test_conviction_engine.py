@@ -270,6 +270,10 @@ class TestScoringAndVerdicts(unittest.TestCase):
         self.assertFalse(is_yield_trap(record, "T.TO"))
 
     def test_compute_dividend_yield_stats_aligns_dividend_dates(self):
+        """Dividend rows are timestamped 09:30 while closes are midnight; the stats
+        must still line up. A constant dividend at a constant price is a zero-
+        dispersion series -- the old 365-day rolling sum printed dispersion here
+        purely because the window flipped between two and three payments."""
         import pandas as pd
 
         idx = pd.date_range("2020-01-01", periods=400, freq="D")
@@ -279,6 +283,24 @@ class TestScoringAndVerdicts(unittest.TestCase):
         stats = compute_dividend_yield_stats(pd.DataFrame({"Close": close}), divs)
         self.assertIn("dividend_yield_5y_mean", stats)
         self.assertIn("dividend_yield_5y_std", stats)
+        # Two payments of 0.5 a year against a flat 20.00 price = a flat 5% yield.
+        self.assertAlmostEqual(stats["dividend_yield_5y_mean"], 0.05, places=4)
+        self.assertEqual(stats["dividend_yield_5y_std"], 0.0)
+
+    def test_compute_dividend_yield_stats_moves_when_the_dividend_moves(self):
+        import pandas as pd
+
+        idx = pd.date_range("2020-01-01", periods=1000, freq="D")
+        close = pd.Series(20.0, index=idx)
+        div_idx = pd.to_datetime(
+            [
+                "2020-06-15 09:30:00", "2020-12-15 09:30:00",
+                "2021-06-15 09:30:00", "2021-12-15 09:30:00",
+                "2022-06-15 09:30:00",
+            ]
+        )
+        divs = pd.Series([0.5, 0.5, 0.7, 0.7, 0.7], index=div_idx)
+        stats = compute_dividend_yield_stats(pd.DataFrame({"Close": close}), divs)
         self.assertGreater(stats["dividend_yield_5y_std"], 0)
 
     def test_buy_verdict_and_position_layer(self):

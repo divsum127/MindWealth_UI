@@ -15,6 +15,122 @@ This file captures minute-level implementation context for each completed task:
 
 ---
 
+### 2026-08-27 — Rohit's 27 Aug R:R questions: the quality columns did not move with the price
+
+**Ask:** four WhatsApp messages about one AI Analyst card. How is R:R calculated, how do we get 1.90 today, with price 6.95 and the nearest stop at 6.56 the risk is bigger than the reward so what am I missing, and separately: +0.87% MTM after 64 days should not be a reason to buy anything.
+
+**What the card actually was.** Not a formula question. `chatbot/data/entry.csv` carried 14 rows for `MCY.NZ OSCILLATOR DELTA 2026-06-22`, one per day it was written. The daily price job rewrites Today price, MTM and trading-days on every row and leaves the price-derived quality columns alone, so each duplicate carried today's price beside its own write-date R:R, timeliness, reward remaining and stop ladder. The fetcher served the first row, which is the oldest. Recomputing that row at 6.89 (the 22 June price) reproduces 1.48 / 1.90 to the digit; at 6.95 it gives 1.00 / 0.95. Rohit was right that risk exceeded reward — the number he was shown had simply been computed two months earlier.
+
+**Assumptions made**
+- The freshest vintage is the correct one to serve. Rows carry no per-row computation date before this change, so `quality_as_of` is stamped going forward and legacy ordering falls back to file position (the writer drops and re-appends on update, so later is newer). Because file position proved unreliable on the polluted file — the last MCY row was a 4-day-old vintage, not the newest — the fetcher does not rely on ordering alone: it recomputes what it serves.
+- The vintage stamp is the trading date in the Today-price cell, not the wall clock. A row refreshed against a stale price should read as that price's date.
+- Recompute is bounded at 2,000 served rows. Above that a fetch is a sweep, not a card someone reads number by number.
+- The percentage-string columns (`Reward Remaining [%]`, `Expected Return E[R] [%]`, `Signal Alpha Per Trade [%]`) are rewritten in the report's own `%`-suffixed string form, so the CSV shape does not change under consumers that parse it as text.
+
+**Decisions and trade-offs**
+- Two layers rather than one. Recomputing at write time (the price job) keeps the stored file honest; recomputing at read time (the fetcher) covers rows written before the fix and the gap between the last price refresh and the query. Read-time alone would leave the stored file wrong for anything that reads it directly; write-time alone would not fix history.
+- `refresh_quality_columns` deliberately does **not** create report columns a given report never carried — a report's schema is not ours to widen. The one exception is the audit-leg block, which is created unconditionally, because the entire point is that a ratio must arrive with the stop it was measured against.
+- The nearest-stop rule was left as it is. It picks the tightest protective level below price, which always yields the smallest risk and the most flattering ratio. Silently excluding stops inside a noise band would redefine a published metric without a decision from Rohit, so `stop_distance_pct` is published and the prompt is required to call out anything inside 1.5% instead.
+- The stale-row repair script exists but was not run. It removes ~90% of the rows of three live runtime CSVs, which is a destructive change to data outside git, and the serving-side fix already corrects what a user sees.
+
+**Edge cases identified but not handled**
+- `select_nearest_support_stop()` pools the **Cancellation Level** with protective stops. An invalidation level is not a stop and tends to sit close to price, so it can define the risk leg. Flagged, not changed.
+- `rr_static` applies the backtest average win percentage to the *current* price, which re-grants the full average move to a signal that has already made part of it. The code already calls the field deprecated, but the payload tier gate still reads it; retiring it is open question 3 from the 26 Aug mail.
+- The `or`-chains in `signal_enrichment_service` treat a legitimate `0.0` as missing and fall through to the next source. `compute_rr_to_nearest_support_stop` returns exactly `0.0` when price sits at or through the stop, so that state can be replaced by a fallback value. Noted, not fixed here — it needs its own pass over every `or` chain in that file.
+- Elapsed days now converts months at 30 calendar days and years at 360, while `AGE_CUTOFFS` are expressed in trading days. Far better than dropping the unit entirely, but still two different day counts. The clean fix is to compute elapsed from the signal date to the report date in trading days and stop parsing a formatted string; that changes tiering across the board and needs sign-off.
+
+**Caveats for the next developer**
+- Fixing the elapsed-days parser moves timeliness, the lateness gate, window remaining and tier on roughly two thirds of rows. That is the correct behaviour, and it is also a visible shift in what qualifies. Expect aged signals to drop tier.
+- The two spellings of the Today-price header still both exist across the stack. Core now reads either. Anything new should use the canonical `src.utils.mtm_pricing.TODAY_PRICE_COLUMN` and call `normalize_today_price_column_names` on load.
+- `chatbot/data/entry.csv` is still polluted with 25,244 stale duplicate rows. Serving is correct because the fetcher collapses and recomputes, but any code that reads that file directly will still see them.
+
+### 2026-08-27 — Rohit's 26 Aug conviction-engine mail: gaps 1 and 4, and two dividend-window bugs underneath them
+
+**Ask:** he ran Claude over MCY.NZ and SPK.NZ against the v5 documents and sent the six spec gaps that run exposed. Only gaps 1 and 4 are ours to build: gap 2 he explicitly held back (*"Needs a spec, not a build — do not send to Divyanshu yet"*), gap 5 is Ahil's, gap 3 needs a threshold from him, and gap 6 is a document he did not have rather than a gap in the engine.
+
+**Assumptions made**
+
+- **The unclassified non-operating bucket is measured, not stripped.** The adjustment he wants on SPK — the NZ$278m data-centre gain — is not in the row a feed calls unusual items; it is inside `Other Non Operating Income Expenses` (NZ$301m), which for many companies holds recurring FX and interest. Stripping that bucket by default would corrupt every name that uses it normally, and writing a classification rule he has not specified would be worse than doing nothing. So the residual is sized and the row is flagged `one_off_review_needed`, which answers his actual complaint — *"a row on the proxy has an E[R], a C1 and a composite built on an assumption, and nothing flags it"* — without inventing policy. Question 2 in the reply asks whether the bucket is strippable for this asset class.
+- **The forward declared dividend drives the trap; the trailing figure is published beside it.** His rule is explicit. What he did not resolve is that the 5Y distribution can only ever be trailing, since it is built from dividends actually paid, so a forward yield is always being ranked against a trailing history. Rather than pick one and hide it, both z-scores ship and `dividend_basis_conflict` marks the rows where the choice alone decides the verdict.
+- **`annual_fy` adjusted EPS is a labelled basis, not a silent substitution.** For a semi-annual filer the only income statement that exists is the annual one. Using it is right; letting it be read as a trailing-twelve-months number is not, hence `adjusted_eps_basis` travelling with every adjusted figure.
+- **A statement that reports no unusual items now yields `adjusted_eps == raw`, published.** Previously the function returned an empty dict in that case, which is indistinguishable downstream from "we never looked". AAPL is the example: clean statement, adjusted 8.7783 against raw 8.81, review flag false.
+- **`annual_div_declared_current` kept its name and its role.** It already meant "trailing year declared", is consumed by the dividend-cut detector, and had tests. Its *computation* was fixed; a rename would have churned call sites for nothing.
+
+**Root-cause note worth keeping**
+
+The two dividend bugs are one mistake made twice: **a calendar window standing in for a payment count**. `annual_div_declared_current` summed payments inside 365 days of the last payment date, and `compute_dividend_yield_stats()` took a 365-day rolling sum for every day of history. Both are correct for a quarterly payer whose dates barely drift and wrong for a semi-annual payer whose dates drift by days — the window flips between two and three payments. The consequences were not cosmetic: SPK's trailing dividend read NZ$0.33 against a real NZ$0.205 and its **dividend cut inverted into a raise** in the detector, while its 5Y mean yield read 11.5% against a true 8.66%, distorting the very distribution the yield-trap z-score is measured against. Anywhere else in this codebase that reaches for `Timedelta(days=365)` over an event series should be read with the same suspicion.
+
+**Things deferred / left for future**
+
+- **The stored universe still carries the old numbers.** Every `conviction_store/*.json` record was written with the inflated dividend statistics and without the adjusted-EPS metadata. A full recalculation is required before any of this shows up — logged in `dev_to_prod_migration_todos.md`. Until then the corrected code is only visible on freshly recalculated tickers.
+- **Gap 3 (the sell ladder) is untouched.** `verdict_for_sell()` still maps conviction alone, so a great business that has simply re-rated gets the same HARD EXIT as one whose fundamentals are collapsing — his MCY complaint, and correct as the spec currently reads. Needs his threshold (question 5).
+- **Gap 2 and gap 5 are not ours** and were not started.
+- **`GOOD_SIGNAL_QUERY` was left frozen.** The `er_loss_basis` field definition added earlier the same day was reverted out of it and parked, with the four conviction earnings-multiple definitions, in `instruction_docs_2/signals_master_spec/pending_prompt_merge.md`.
+- **Deal-delay is still double-counted** (once in BQ, once in the tax), which is specced behaviour but worth three points of SPK's −5. Raised as a question, not changed.
+
+**Edge cases identified but not handled**
+
+- **Cadence inference needs three payments.** A newly initiated dividend falls back to the calendar window — the best available answer, and it cannot mis-count what it cannot see, but it is the old behaviour for those names.
+- **A genuinely changed cadence** (semi-annual moving to quarterly) will read the median gap across the transition and can pick the wrong N for one cycle.
+- **`Other Income Expense` and `Other Non Operating Income Expenses` overlap** on some filings; the residual measure takes the first row present, so it does not double count, but on a filing that reports both with different scopes it measures the narrower one.
+- **The 5Y dividend statistics are only as deep as yfinance's dividend history**, which for some non-US tickers is shorter than five years. The window is not padded and no minimum is enforced beyond the existing 20-observation floor.
+
+**Verification**
+
+Live pulls, not fixtures: SPK.NZ (forward 16c / trailing 20.5c / prior 26.5c, 5Y mean 8.66%, adjusted EPS on `annual_fy`, review flag on at 51% of net income), MCY.NZ (27c / 24.4c / 23.6c, 5Y mean 3.71%), KO (quarterly cadence 4, 5Y mean 3.09%), AAPL (clean), GOOGL (raw EPS 19.63 vs adjusted 10.04, adjusted P/E 34.06). 20 new tests; two pre-existing tests updated because the behaviour they pinned was the artefact being removed.
+
+---
+
+### 2026-08-27 — Rohit's 26 Aug "consistent with Payload" mail: the unblocked items, and the annualisation columns that were never written
+
+**Ask:** his 26 Aug 12:55 mail carries an explicit split — a "go ahead now, no sign-off needed" list of six, and a "wait for Ahil" list covering anything that changes which signals qualify. Plus a hard freeze on the prompt: *"The prompt merge goes last, after Ahil has settled the design questions… I want it merged properly rather than layered."* This entry covers only the first list plus one bug of the same class as yesterday's.
+
+**Assumptions made**
+
+- **"Retire the MasterSpec Section C text" means mark superseded, not delete.** `additional_details.md` is the only transcription of what he originally wrote for Section C. Deleting it would destroy the record of a decision we still argue about. A SUPERSEDED banner that names the three substantive errors (component count/weights, per-trade basis, the short "compared to zero" rule) achieves what he asked — nobody can read it as spec — without losing history. If he wants the body gone, that is one command.
+- **`status_*.md` files were left alone.** They are dated progress logs. Rewriting them would make the history claim things that were not true at the time. The one exception is `status_v5.md:397`, which states the bubble chart's Y-axis range as a present-tense fact, so it got a dated inline correction rather than a rewrite.
+- **The E[R] proxy sentence was rewritten, not deleted.** His instruction was conditional — *"if no, delete the sentence"* — and the answer is neither yes nor no: the proxy fires on 40 rows but with mathematically zero weight on every one of them. Deleting outright would leave a reader wondering what happens when there are no losing trades. The replacement states the real behaviour. He treats this block as spec, so silence was the wrong option.
+- **The `compute_er()` fallback branch was left in.** Removing dead logic is a code change he did not ask for, and the branch is only unreachable *given* that `avg_loss` is missing exactly when the win rate is 100%. That equivalence holds today by construction, but it is an inference about the C++ backtest output, not a guarantee in this repo. Asked rather than assumed (question 6).
+- **`mirrored B&H` chosen as the short benchmark wording.** He wrote "the mirrored B&H benchmark" in the go-ahead list; that phrase is used verbatim so the label, the formula comment and his mail all read the same.
+- **`R:R Original` added beside `R:R Static` in the emailed table, not replacing it.** He asked for the new name in the reports. A straight swap would have removed the field the tier gate still reads from the only view he sees daily, right when its value is under discussion.
+
+**Root-cause note worth keeping**
+
+The four empty columns were not four bugs. `enrich_signal_dict()` computes `er_annualized` and `signal_alpha_annualized` correctly and writes them to the row. `enrich_pipeline` then recomputed both with a **second, different** annualizer — compounding `(1+r)^(252/hold) − 1` against the scorer's simple `r × 252/hold` — fed from `enriched.get("avg_hold_days")`, a key `enrich_signal_dict()` never published. That returned `None`, and the pipeline's `enriched.update(...)` overwrote the good values with it. So the visible symptom (empty columns) hid a worse latent one: had `avg_hold_days` ever been published without removing the duplicate, the CSV's `er_annualized` would have silently disagreed with the number C1 actually consumed. This is the third instance of the same pattern in two days — the duplicate `tier` implementation, the unwritten `fwd_wr`, and now this. **The pattern is `enrich_pipeline` re-deriving what `enrich_signal_dict` already produced.** Anything left in that file that recomputes rather than carries should be treated as suspect.
+
+**Things deferred / left for future**
+
+- `rr_static` is still live under its old name and still read by the payload tier gate. The full rename cannot finish until he says which field that gate should use (question 3). Marked deprecated in the field docs and in code comments meanwhile.
+- The `compute_er()` proxy branch, pending question 6.
+- The three dead prompt copies in `constant.py` (`GOOD_SIGNAL_QUERY3_OLD` and friends) still carry "Gate A2e" and pre-v4 composite text. Nothing reads them. He asked for deprecated text to be physically deleted **at merge time**, so they stay until the freeze lifts.
+- `server/utils/signal-parsers.ts:196` in the Vue repo hardcodes `tier: 'tA'` on shortlist rows. Diagnosed, not fixed — outside this repo's editable scope, and he asked for it to go through Parth.
+- The recalibration is explicitly not to be run: *"please don't run that recalibration yourself, and don't start until the day-count basis is settled."*
+- Everything behind the other eleven open questions.
+
+**Edge cases identified but not handled**
+
+- `alpha_interpretation` is `None` whenever `cagr_diff >= 0`, i.e. whenever the strategy beats its benchmark. That is correct — the object is a warning, not a rating — but it means 75 of 113 rows send a null for a field §2.2a lists as pre-computed. The prompt's missing-field rule could read that null as an absent field and route a passing row to Tier C. Not verifiable without a live Claude run, and not fixable anyway while the prompt is frozen. Flagged here so it is not rediscovered from a report anomaly.
+- `rr_original` is null for signals outstanding before it shipped (84 of 113 on the 26 Aug file) and will stay null forever, because daily report files are not retained. His own instruction covers this — *"a wrong 'original' is worse than a missing one"* — and the answer to his G2 question "confirm whether historical level snapshots exist" is no.
+- Adding `R:R Original` changes the emailed table's column set. Any downstream consumer that positionally indexes that table rather than reading by header will shift. None found in either repo, but Parth's Claude-Optimized tab was not checked from this side.
+
+**Caveats for the next developer**
+
+- **Concurrent-session collision on 2026-08-27, ~10:13 UTC.** While this work was being verified, another live
+  session ("Conviction engine implementation review") edited the same core files: it added an `er_loss_basis`
+  field across the enriched dict, the CSV, the surface JSON and **the prompt's field definitions**, rewrote the
+  E[R] column description around it, and replaced the test written here. The result is coherent and the suite is
+  green at 73, and its answer to Rohit sir's proxy question is better than the one in this entry. It briefly
+  edited `GOOD_SIGNAL_QUERY` (the `er_loss_basis` field definition) while the prompt is under an explicit freeze,
+  then **reverted that itself**, parked the intended text in `instruction_docs_2/signals_master_spec/pending_prompt_merge.md`,
+  and added a regression test asserting `er_loss_basis` is NOT in `GOOD_SIGNAL_QUERY`. Audited afterwards
+  (2026-08-27): prompt span back to 316–1007, A2e still a hard exclusion, no scoring logic touched, no git
+  commit, nothing from Rohit sir's wait-for-Ahil or "spec first" lists started. Everything recorded in this
+  entry survived intact.
+
+- **Do not touch `GOOD_SIGNAL_QUERY`.** It is frozen by an explicit instruction until Ahil signs off on the prompt design. The column-descriptions block (`OUTSTANDING_NEW_SIGNAL_COLUMN_DESCRIPTIONS`) lives in the same file but is a different artefact — it is the emailed table's field spec and he asked for it to be edited.
+- Rohit treats the column-descriptions block as spec, not documentation: *"It's the only field description that reaches me daily, and Parth and Ahil read it too."* Wrong text there is a defect, not a doc nit.
+- `constant.py:306` still holds a live OpenAI API key in plaintext in a committed file. Unrelated to this work, out of scope for it, and it should be rotated and moved to `.env`.
+
 ### 2026-08-20 — Claude v3 Addendum §1 re-verification: 9H schema/prose mismatch + NaN conviction leak
 
 **Ask:** the same §1 todo row, handed over again with a stale sheet note ("Not started. No file in either repo references the v3 addendum"). Treated as a re-verification of the rule that landed earlier the same day, not a rewrite.

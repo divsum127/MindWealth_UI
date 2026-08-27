@@ -1,3 +1,31 @@
+> **SUPERSEDED — do not score from this file.**
+>
+> The three-component composite described below (C1 0-50, C2 -15 to +15, C3 -6 to +8,
+> total range approximately -21 to +73) was replaced by **Quality Composite v4**, which
+> is what the scorer and the Claude prompt both run today:
+>
+> - C1 annualised E[R] vs R_ref, 0 to 40 pts
+> - C2 annualised signal alpha, -25 to +25 pts
+> - C3 Sharpe vs a 0.3 baseline, -6 to +8 pts
+> - C4 CAGR_diff vs CAGR_CLIP, -10 to +10 pts
+> - Total range approximately -41 to +83, **not** clamped to 0-100
+>
+> Equity thresholds: R_ref 50, ALPHA_CLIP 45, CAGR_CLIP 5. The other asset classes are
+> still on provisional numbers scaled from the old per-trade values and are not yet
+> calibrated.
+>
+> The short-side C2 text below is also out of date. `signal_alpha = E[R]` for shorts,
+> with no benchmark subtracted, is not what runs: the live formula mirrors the long
+> benchmark, `random_window_return = -(B&H_CAGR / 252 x avg_hold_days)`, so
+> `signal_alpha = er - random_window_return` holds in both directions.
+>
+> Retired on Rohit's 26 Aug instruction ("retire the MasterSpec Section C text -
+> superseded, and we keep tripping over it"). Kept as a record of the original design,
+> not as a specification. Live definitions: `COLUMN_DESCRIPTIONS` in `constant.py` and
+> Section 9H of `GOOD_SIGNAL_QUERY`.
+
+---
+
 The Y-axis composite in the BUBBLE GRAPHS for new signals, outstanding signals and claude signals - ALL DISCUSSED IN THE SIGNALS EMAIL DOCUMENTS - AKA quality composite has three components:
 C1 — E[R] score (0 to 50 pts)
 er_score = clip(E[R] / R_ref, 0, 1.0) × 50
