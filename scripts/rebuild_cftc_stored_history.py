@@ -95,15 +95,70 @@ def build_reference() -> pd.DataFrame:
     ).sort_index()
 
 
-def _asof(stored_dates: pd.Series, ref: pd.DataFrame) -> pd.DataFrame:
-    """Attach the weekly print in effect on each stored (daily) date."""
+def _alignment_map(align_from: Path | None) -> dict[pd.Timestamp, pd.Timestamp]:
+    """date -> the position date that row *originally* carried, read off a pre-restatement backup.
+
+    Without this the rebuild re-derives the mapping with ``merge_asof``, which attaches the latest
+    print at or before each row date. That is right for the 830 rows already on a 3-day lag, and
+    wrong for the ~63 rows that were running staler than that because the nightly had not ingested
+    the release yet. Advancing those rows to a fresher print is look-ahead: it hands a past date a
+    number the pipeline did not have when it made its decision, and it moved combo fires on exactly
+    those dates. Matching the stored value back to the published series recovers the original
+    alignment so the rebuild changes units and nothing else.
+    """
+    if align_from is None or not align_from.exists():
+        return {}
+    legacy_csv = ROOT / "macro_intelligence" / "output" / "cftc_tff_sp500_fm_rm_legacy_consolidated.csv"
+    if not legacy_csv.exists():
+        print(f"  (no legacy export at {legacy_csv}; falling back to as-of alignment)")
+        return {}
+    legacy = pd.read_csv(legacy_csv, parse_dates=["Date"]).set_index("Date")["FM_Net"]
+    by_value: dict[int, list[pd.Timestamp]] = {}
+    for ts, val in legacy.items():
+        by_value.setdefault(round(float(val)), []).append(ts)
+    stored = pd.read_sql(
+        f"SELECT date, raw_value FROM daily_readings WHERE var_id='{'CFTC'}'",
+        sqlite3.connect(align_from),
+    )
+    out: dict[pd.Timestamp, pd.Timestamp] = {}
+    for row in stored.itertuples():
+        hits = by_value.get(round(float(row.raw_value))) if pd.notna(row.raw_value) else None
+        if hits and len(hits) == 1:
+            out[pd.Timestamp(row.date)] = hits[0]
+    return out
+
+
+def _asof(stored_dates: pd.Series, ref: pd.DataFrame, alignment: dict | None = None) -> pd.DataFrame:
+    """Attach the weekly print each stored (daily) row carries.
+
+    Uses the original alignment where it is known, and only falls back to as-of for rows the
+    backup could not resolve.
+    """
     left = pd.DataFrame({"date": pd.to_datetime(stored_dates)}).sort_values("date")
     right = ref.reset_index().rename(columns={"index": "wk"}).sort_values("wk")
-    return pd.merge_asof(left, right, left_on="date", right_on="wk")
+    merged = pd.merge_asof(left, right, left_on="date", right_on="wk")
+    if not alignment:
+        return merged
+    ref_by_date = ref
+    resolved = 0
+    for i, row in merged.iterrows():
+        pos = alignment.get(pd.Timestamp(row["date"]))
+        if pos is None or pos not in ref_by_date.index:
+            continue
+        src = ref_by_date.loc[pos]
+        merged.loc[i, "wk"] = pos
+        for col in ref_by_date.columns:
+            merged.loc[i, col] = src[col]
+        resolved += 1
+    merged.attrs["aligned_rows"] = resolved
+    return merged
 
 
-def rebuild(db: Path, *, apply: bool) -> None:
+def rebuild(db: Path, *, apply: bool, align_from: Path | None = None) -> None:
     ref = build_reference()
+    alignment = _alignment_map(align_from)
+    if alignment:
+        print(f"alignment recovered for {len(alignment)} rows from {align_from.name}")
     conn = sqlite3.connect(db)
 
     readings = pd.read_sql(
@@ -111,7 +166,7 @@ def rebuild(db: Path, *, apply: bool) -> None:
         "WHERE var_id='CFTC' ORDER BY date",
         conn,
     )
-    merged = _asof(readings["date"], ref)
+    merged = _asof(readings["date"], ref, alignment)
     merged["old_raw"] = readings.sort_values("date")["raw_value"].values
     merged["old_pct"] = readings.sort_values("date")["pctile_rank_3yr"].values
     merged["old_uncond"] = readings.sort_values("date")["unconditional_pctile"].values
@@ -137,14 +192,14 @@ def rebuild(db: Path, *, apply: bool) -> None:
     emissions = pd.read_sql(
         "SELECT date, unconditional_pctile FROM emission_vectors WHERE var_id='CFTC' ORDER BY date", conn
     )
-    em_merged = _asof(emissions["date"], ref)
+    em_merged = _asof(emissions["date"], ref, alignment)
     em_merged["old_uncond"] = emissions.sort_values("date")["unconditional_pctile"].values
     em_cmp = em_merged.dropna(subset=["fm_uncond", "old_uncond"])
     print(f"emission_vectors.CFTC: {len(emissions)} rows | "
           f"unconditional_pctile changing: {int((em_cmp['fm_uncond'] - em_cmp['old_uncond']).abs().gt(0.01).sum())}")
 
     positioning = pd.read_sql("SELECT date, fm_net, rm_net, fm_pctile, rm_pctile FROM cftc_positioning ORDER BY date", conn)
-    pos_merged = _asof(positioning["date"], ref)
+    pos_merged = _asof(positioning["date"], ref, alignment)
     pos_changed = int((pos_merged["fm"] - positioning.sort_values("date")["fm_net"].values).__abs__().gt(1).sum())
     print(f"cftc_positioning: {len(positioning)} rows | fm_net changing: {pos_changed}")
 
@@ -203,8 +258,15 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--db", type=Path, default=ROOT / "macro_intelligence" / "data" / "runic.db")
     ap.add_argument("--apply", action="store_true", help="write the rebuild (a timestamped backup is taken first)")
+    ap.add_argument(
+        "--align-from",
+        type=Path,
+        default=None,
+        help="pre-restatement backup DB used to recover each row's original position date "
+        "(prevents the rebuild from advancing stale rows to a fresher print)",
+    )
     args = ap.parse_args()
-    rebuild(args.db, apply=args.apply)
+    rebuild(args.db, apply=args.apply, align_from=args.align_from)
 
 
 if __name__ == "__main__":

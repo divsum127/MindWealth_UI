@@ -36,12 +36,14 @@ From Rohit's 27 Aug R:R questions on the MCY.NZ card. Touches both repos. **Numb
 **Modified**
 - `chatbot/convert_signals_to_data_structure.py` — price job now recomputes quality columns after refreshing prices
 - `chatbot/smart_data_fetcher.py` — collapses same-identity rows to the freshest vintage, recomputes served rows, merges the R:R audit legs into the payload columns
-- `api/services/signal_enrichment_service.py` — audit legs and `quality_as_of` on the surface
-- `prompts/chatbot_system.txt` — R:R must be printed with the stop it used; noise-level stops called out; stale vintages declared; MTM banned as an entry reason
-- `docs/mindwealth_ui_job_status.md`, `docs/mindwealth_ui_repo_job_status_details.md`
+- `api/services/signal_enrichment_service.py` — audit legs and `quality_as_of` on the surface (**already in `29fff0c61`** — swept into a concurrent session's conviction commit)
+- `prompts/engine.py` + `chatbot/config.py` — new `RISK_REWARD_REPORTING_RULES` in the **answering** system prompt: R:R printed with the stop it used, `stop_distance_pct` read in both directions, `rr_null_reason` quoted, stale vintages declared, MTM banned as an entry reason
+- `prompts/chatbot_system.txt` — same rules for the column selector, so the audit columns get picked
+- `chatbot/prompt_changelog.json` — prompt version 13 auto-registered
+- `docs/mindwealth_ui_job_status.md`, `docs/mindwealth_ui_repo_job_status_details.md` (partly in `29fff0c61`)
 
 ### Core repo (`/home/ubuntu/MindWealth`, not this git remote)
-- `helper_functions/claude_lateness_metrics.py` — both today-price header spellings; unit-aware `parse_elapsed_days`; new `stop_distance_pct`
+- `helper_functions/claude_lateness_metrics.py` — both today-price header spellings; unit-aware `parse_elapsed_days`; new `stop_distance_pct`; NaN-safe cell reads; **average-win exit anchored on the signal price** (was Signal Open Price), published as `bt_avg_exit_basis` — this moves every `rr_dynamic`
 - `helper_functions/enrich_pipeline.py` — `ENRICHED_AUDIT_COLUMNS` exported into the report CSV
 - `tests/test_stale_quality_fixes.py` (new)
 - Goes live on the **next nightly run** (cron reads the working tree). Adds seven columns to the report CSV and changes `Timeliness Score` on roughly two thirds of rows.
@@ -55,6 +57,7 @@ From Rohit's 27 Aug R:R questions on the MCY.NZ card. Touches both repos. **Numb
 - Ask the analyst for an aged open signal and confirm the printed R:R reproduces from the printed stop and reward on the same card
 - Confirm no card presents current MTM as a reason to buy
 - Confirm `Timeliness Score` on a signal older than its interval cutoff is no longer 100
+- Confirm `bt_avg_exit_price` equals the Avg % Gain slot of the same row's target ladder
 
 ---
 
@@ -3223,7 +3226,29 @@ Expect `fm_pctile` on prod to match dev for the same `fm_net` once the zip backf
       `forward_returns` and moves published hit rates. **Decision required before prod cutover** —
       either replay, or accept and label the pre-2026-08 combo history as computed on the old units.
 
-### Status: `[PENDING]` — dev pushed (`chatbot-dev` @ `f2e8fc78b`, API 1.13.0). Sign-off held by Rohit sir, so no display change ships, **but the `runic.db` rebuild is a required prod step and the `combo_fires` replay is an open decision that blocks a clean cutover**.
+### 2026-08-27 — combo replay done on dev; prod sequence is now fixed and order-critical
+- [ ] New file: `scripts/replay_cftc_combo_fires.py`
+- [ ] Modified: `scripts/rebuild_cftc_stored_history.py` (**`--align-from` is not optional on prod**)
+- [ ] **Run the prod steps in exactly this order.** Any other order writes wrong data:
+      1. merge + pull code
+      2. `python scripts/export_cftc_restated_series.py`
+      3. `python scripts/rebuild_cftc_stored_history.py --db <prod runic.db> --align-from <a copy of
+         the prod DB taken *before* step 3>` — take that copy first, it is the only record of the
+         original row-to-print alignment. Without `--align-from` the rebuild advances ~7% of rows to
+         a fresher print than the pipeline had at the time, which is look-ahead and moves combo fires.
+      4. `python scripts/replay_cftc_combo_fires.py --db <prod runic.db> --baseline <same pre-rebuild
+         copy>` — dry run first. Without `--baseline` it cannot tell which dates moved and degrades
+         to a dedupe pass.
+      5. restart `mindwealth-api.service`
+- [ ] Expected on prod, from the dev run: ~167 of ~1,065 dates touched, ~1,367 CFTC-leg rows replaced
+      by ~1,073, ~268 duplicates removed, `forward_returns` refilled with 0 orphans and 0 missing.
+- [ ] **Published hit rates will move on prod too**: 3m hit B 74.3 → 71.5, D 70.3 → 68.0,
+      E 76.6 → 75.0, F unchanged. Counts drop (D 454 → 341, B 276 → 193). Tell anyone quoting the old
+      figures before they see it in the UI.
+- [ ] Non-CFTC combo history is untouched by design (10,793 rows before and after on dev) — verify the
+      same holds on prod after the run.
+
+### Status: `[PENDING]` — dev complete and verified (`chatbot-dev`, API 1.13.0). Sign-off still held by Rohit sir, so no display change ships; the prod data steps above are required and order-critical.
 
 ---
 

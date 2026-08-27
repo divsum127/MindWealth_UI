@@ -39,6 +39,18 @@ This file captures minute-level implementation context for each completed task:
 - The `or`-chains in `signal_enrichment_service` treat a legitimate `0.0` as missing and fall through to the next source. `compute_rr_to_nearest_support_stop` returns exactly `0.0` when price sits at or through the stop, so that state can be replaced by a fallback value. Noted, not fixed here — it needs its own pass over every `or` chain in that file.
 - Elapsed days now converts months at 30 calendar days and years at 360, while `AGE_CUTOFFS` are expressed in trading days. Far better than dropping the unit entirely, but still two different day counts. The clean fix is to compute elapsed from the signal date to the report date in trading days and stop parsing a formatted string; that changes tiering across the board and needs sign-off.
 
+**Found only because the recompute started running**
+- Every parser in `claude_lateness_metrics` was written against `csv.DictReader`, which yields `""` for an empty cell. A DataFrame row yields `NaN`, so `_parse_slash_levels` raised `AttributeError` halfway through enrichment and `refresh_quality_columns` swallowed it, leaving the row stale — the exact failure this work removes. Fixed with an `_as_text()` coercion at every cell-reading boundary.
+- The lazy import of the core enricher put `MINDWEALTH_ROOT` at `sys.path[0]`. The core repo has its own top-level `config` module and the chatbot does `from config import CHATBOT_ENTRY_DIR`, so whichever is imported second resolves `config` to the wrong file. Appending the root was not enough — the chatbot's own directory only reaches the path once that package has been imported. The root is now borrowed for the import and removed again in a `finally`, so nothing lingers, with a test asserting it is gone. The same `sys.path.insert(0, root)` pattern still exists in `src/utils/signal_quality.py` and in three places in `api/services/signal_enrichment_service.py`; those are safe today only because the inserts happen inside request-time functions, long after every module import. Worth converting to the same borrow-and-return.
+- Two further prompt rules came out of the replays: R:R Static is a percentage ratio measured from **today's** price and is not the entry's reward-to-risk (a model printed the stored 0.4 and its own 0.55 side by side), and `Reward Remaining [%]` is measured to `bt_avg_exit_price`, never to the pivot (a model guessed the pivot when its own arithmetic disagreed).
+- The prompt rules first went into `prompts/chatbot_system.txt`, which only the column selector and unified extractor read. The answering prompt is `prompts/engine.SYSTEM_PROMPT`, composed in `chatbot/config.py`. Both now carry the rules — the selector needs them to pick the audit columns, the answerer needs them to print the audit trail.
+- The first version of the `stop_distance_pct` rule only described the small-distance case, and a replay had the model call a 12.43% stop "inside normal volatility". The rule now names both directions explicitly.
+
+**The anchor fix, and why it was not the cause of 1.90**
+- An early hypothesis was that the R:R reward leg and the target ladder used different anchors, and that this explained the card. It did not — staleness did — but the anchor inconsistency was real and was found again from the other end when a replay had the model compute Reward Remaining 44.26% where the field said 28.53%. Both are "how much of the average win is left", off two different exit prices.
+- Fixed by anchoring `bt_avg_exit_price` on the signal-date price, matching the ladder and `compute_reward_remaining`. `bt_avg_exit_basis` records which price was used. Every `rr_dynamic` moves; the direction depends on whether the signal price sits above or below the open.
+- `compute_bt_avg_exit_price()` still takes whatever anchor the caller passes, so its own unit tests are unchanged. Only the call site in `enrich_signal_dict` chooses the anchor.
+
 **Caveats for the next developer**
 - Fixing the elapsed-days parser moves timeliness, the lateness gate, window remaining and tier on roughly two thirds of rows. That is the correct behaviour, and it is also a visible shift in what qualifies. Expect aged signals to drop tier.
 - The two spellings of the Today-price header still both exist across the stack. Core now reads either. Anything new should use the canonical `src.utils.mtm_pricing.TODAY_PRICE_COLUMN` and call `normalize_today_price_column_names` on load.
@@ -7038,3 +7050,84 @@ cannot be reused as-is for the correction.
 - The placebo draws uniformly from the analysis calendar, so it does not reproduce the clustering of
   real episodes. Clustered draws would likely make 100% *more* common by chance, not less, so the 1-in-20
   figure is if anything generous to the cell.
+
+---
+
+## 2026-08-27 — Replaying combo_fires, and the look-ahead I introduced
+
+### I broke something on 25 Aug and it took the replay to surface it
+
+The rebuild attached each daily row to a weekly print with `merge_asof` — latest print at or before
+the row date. That reproduces the normal 3-day lag (Tuesday position carried on Friday's row) for 830
+of 893 rows. The other 63 were running staler than that because the nightly had not ingested the
+release yet, and `merge_asof` quietly advanced them to a fresher print.
+
+That is look-ahead. It gives a past date a number the pipeline did not have when it made its
+decision, and it is not cosmetic: those dates were exactly where combo fires started disappearing
+under replay. Found only because the replay's per-date diff looked wrong and I chased it rather than
+applying.
+
+The fix recovers the original alignment instead of re-deriving it: match each stored raw value back
+to the published series to find the position date that row actually carried, then write the restated
+value for *that* date. Units change, alignment does not. `--align-from <backup>` on the rebuild.
+
+**General lesson:** when repairing a time series in a store that was written incrementally, the
+row-to-observation mapping is part of the data, not something to recompute.
+
+### Scoping the replay — two wrong answers before the right one
+
+1. **Replay everything.** A probe first checked whether re-detecting a date reproduces stored
+   history. It does not, and not because of CFTC: the history was written by
+   `backfill_named_combo_fires.py` at a point in time, and HY OAS, CNN F&G and CPI have been
+   backfilled since. On recent dates the churn is dominated by VIX (Combo D needs VIX ≤ 13; today's
+   reading for those dates is 16.4). A blanket replay would have folded every unrelated data change
+   into a commit labelled as a CFTC fix.
+2. **Replay where the percentile moved by more than X.** Too loose — the restatement nudges nearly
+   every date slightly, so this re-derived almost everything and inherited problem 1.
+3. **Replay where the percentile crossed a decision boundary.** Correct. The boundaries are exactly
+   the levels at which the number changes an outcome: 15 (B), 50 (F), 85 (E), 95 (D), plus the
+   RARE/EXTREME tier bands at 5/20/80/95. A percentile that moves without crossing one of these
+   cannot change a fire, so re-deriving that date can only import drift.
+
+Honest caveat, stated in the script and the report: re-derivation still uses today's values for the
+*other* legs, so a change on a boundary-crossing date is CFTC-triggered but not necessarily
+CFTC-only. That residual is accepted because the trigger is attributable; it is not accepted on dates
+where nothing crossed.
+
+### Duplicates
+
+`_persist_fires` has no dedupe, so repeated runs insert the same fire again — 2026-05-29 held 28 rows
+for 14 distinct fires, written 11 minutes apart on 2026-06-05. 268 exact duplicates removed. Dates in
+scope only for duplicates drop the surplus **in place**; they are not re-derived.
+
+**Left for future:** the underlying cause is untouched. `_persist_fires` should be idempotent on
+`(date, var set, runic_combo, status)`, or `combo_fires` should carry a unique index. Until then the
+duplicates come back on any re-run.
+
+### Assumptions
+
+- The boundary list is read off `CONFIG.yaml` named-combo cuts and the CFTC `rare`/`extreme` bands as
+  of today. If a threshold is retuned later, dates that were in scope under the old cuts are not
+  revisited.
+- Dedupe keeps the lowest `combo_id` per key, i.e. the first insert, on the basis that later inserts
+  were re-runs of the same decision.
+- `forward_returns` is refilled by the existing `backfill_forward_returns()` rather than re-keyed by
+  hand, so the returns are computed the same way as every other row.
+
+### What moved, and who needs to know
+
+Published hit rates on CFTC-leg named combos changed: 3m hit B 74.3 → 71.5, D 70.3 → 68.0,
+E 76.6 → 75.0, F unchanged at 73.7. Counts fall (D 454 → 341, B 276 → 193) partly from dedupe and
+partly from fires the corrected percentile no longer supports. Anything quoting the old numbers —
+slides, the todo sheet, prior emails — is now stale.
+
+### Edge cases identified, not handled
+
+- A date that *should* now have a CFTC fire but has no `combo_fires` row at all is invisible: the
+  date list comes from `combo_fires`, so dates that never fired anything are never scanned. Dates
+  with any other combo are covered, which is nearly all of them, but a date with no fires whatsoever
+  would be missed.
+- `macro_regime` stored on each fire is rebuilt from today's `build_python_regime`, so re-derived
+  rows carry a regime label computed now rather than then. Same class of issue as the other legs.
+- The replay is single-threaded and takes ~90 minutes for a full pass. Fine as a one-off, painful if
+  it ever needs to be routine.
