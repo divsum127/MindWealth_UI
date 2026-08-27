@@ -75,7 +75,9 @@ and rebuilt. `/home/ubuntu/MindwealthUI_Vue_prod` and `mindwealth-ui.service` (:
 **Expect the Tier A count on the shortlist page to drop sharply after deploy.** That is the correction,
 not a regression. Rows the payload never rated (regex-fallback shape only) render with no tier badge.
 
-**Not committed, and Rohit sir asked for this to go through Parth** — he needs to review and take it.
+**Pushed 2026-08-27:** `ui-dev` @ `9235f1c`, authored `divsum127` on `D-ParthChauhan/MindwealthUI_Vue`.
+Rohit sir asked for this to go through Parth, so it sits on the dev branch for him to review and
+promote; it has **not** been merged to `presentation-prod`.
 
 Smoke tests `[PENDING]`: after deploy, open the shortlist page and confirm the tier pills show a mix
 rather than Tier A only; confirm an `exit` row is not badged Tier A; confirm the "CLAUDE SHORTLISTED"
