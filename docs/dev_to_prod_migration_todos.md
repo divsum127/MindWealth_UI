@@ -61,6 +61,28 @@ From Rohit's 27 Aug R:R questions on the MCY.NZ card. Touches both repos. **Numb
 
 ---
 
+## 2026-08-27 — Nuxt frontend: shortlist rows no longer relabelled Tier A `[PENDING]`
+
+**Different repo, different promotion path.** `/home/ubuntu/MindwealthUI_Vue` on `ui-dev`. This does
+**not** go through `prod-pull-and-restart.sh`; it is merged `ui-dev` → `presentation-prod` in that repo
+and rebuilt. `/home/ubuntu/MindwealthUI_Vue_prod` and `mindwealth-ui.service` (:8512) were not touched.
+
+| File | Change | Prod effect |
+|------|--------|-------------|
+| `server/utils/signal-parsers.ts` | `normalizeShortlistRecord()` carries the payload tier instead of hardcoding `tier: 'tA'` | **User-visible and large.** On the 26 Aug report the shortlist page showed 103 Tier A rows; the payload says tA 5, best 16, tierc 12, exit 70. After this, the page shows the payload's own split |
+| `test/shortlist-tier.spec.ts`, `test/fixtures/shortlist-records-2026-08-26.json` (both new) | 8 cases incl. the real 103-record distribution | None |
+
+**Expect the Tier A count on the shortlist page to drop sharply after deploy.** That is the correction,
+not a regression. Rows the payload never rated (regex-fallback shape only) render with no tier badge.
+
+**Not committed, and Rohit sir asked for this to go through Parth** — he needs to review and take it.
+
+Smoke tests `[PENDING]`: after deploy, open the shortlist page and confirm the tier pills show a mix
+rather than Tier A only; confirm an `exit` row is not badged Tier A; confirm the "CLAUDE SHORTLISTED"
+count tile is unchanged (it counts shortlist membership, not tier).
+
+---
+
 ## 2026-08-27 — Conviction engine: adjusted-EPS coverage, yield-trap dividend basis, two dividend-window bugs `[PENDING]`
 
 From Rohit's 26 Aug "checking your conviction engine implementation" mail, spec gaps 1 and 4.
@@ -172,6 +194,19 @@ Bump on the next `robust-test-and-dev-deploy` run and regenerate the OpenAPI sna
 | `constant.py` | column-descriptions block only — E[R] proxy sentence corrected. **`GOOD_SIGNAL_QUERY` untouched** | Field spec in the daily email reads accurately |
 | `instruction_docs_2/signals_master_spec/additional_details.md`, `status_v5.md` | Section C marked SUPERSEDED; stale range corrected | Docs only |
 | `tests/test_signals_masterspec_g3.py` | +5 tests | — |
+
+**Second pass, same day — Column Descriptions block (core repo only, no UI merge)**
+
+| File | Change | Effect on the next nightly run |
+|------|--------|-------------------------------|
+| `constant.py` | two dead description keys re-keyed `Moving Avg` → `EMA 200`; four sub-score keys re-keyed to their new report column names | **Targets and Stop Loss gain descriptions** in the daily email for the first time |
+| `send_email.py` | four new columns `Composite C1 (E[R]) [pts]` … `Composite C4 (CAGR Diff) [pts]` | **The daily report gains four columns.** Positional readers of that table shift; by-header readers are fine |
+| `util.py` | `generate_column_descriptions_table()` keeps `Note:`-prefixed entries through the column filter | **Two general notes appear for the first time**, including "all days … are calendar days" |
+| `tests/test_signals_masterspec_g3.py` | +3 integrity tests | — |
+
+Smoke tests `[PENDING]`: after the next nightly run, confirm the emailed description table contains
+rows for the Targets column, the Stop Loss column, all four `Composite C…` columns, and both
+`Note:` footnotes.
 
 **Do NOT deploy alongside this**
 

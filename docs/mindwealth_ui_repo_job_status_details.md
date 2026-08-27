@@ -72,6 +72,42 @@ This file captures minute-level implementation context for each completed task:
 
 The two dividend bugs are one mistake made twice: **a calendar window standing in for a payment count**. `annual_div_declared_current` summed payments inside 365 days of the last payment date, and `compute_dividend_yield_stats()` took a 365-day rolling sum for every day of history. Both are correct for a quarterly payer whose dates barely drift and wrong for a semi-annual payer whose dates drift by days — the window flips between two and three payments. The consequences were not cosmetic: SPK's trailing dividend read NZ$0.33 against a real NZ$0.205 and its **dividend cut inverted into a raise** in the detector, while its 5Y mean yield read 11.5% against a true 8.66%, distorting the very distribution the yield-trap z-score is measured against. Anywhere else in this codebase that reaches for `Timedelta(days=365)` over an event series should be read with the same suspicion.
 
+**Second pass — why the description block was broken and how it stayed broken**
+
+`generate_column_descriptions_table()` takes `columns_in_report` and keeps only the description
+keys present in it. That is sensible — one dict serves several report types — but it makes a
+wrong key **indistinguishable from a deliberately-absent one**. Nothing logs a miss. So a typo in
+a key does not produce a wrong description, it produces silence, and silence in an email nobody
+diffs is invisible. That is how `"Moving Avg"` survived: the string appears nowhere in either repo
+except those keys, so it was never right, and the Targets and Stop Loss columns have shipped
+undocumented for as long as the block has existed.
+
+The same mechanism swallowed yesterday's sub-score work. The descriptions were keyed on the
+payload field names (`er_score`), the report columns are Title Case, so all four were filtered out.
+The task was logged as done because the dict entries existed — the check was "is it in the dict",
+not "does it reach the reader". Rohit's item 11 says the purpose is the report narrating the
+breakdown, so the payload-only version did not satisfy it.
+
+The `Note:` entries are the sharpest case. They are footnotes, correctly have no column, and were
+therefore filtered out on every run. One of them says every day count in the reports is a calendar
+day. He spent a section of the 26 Aug mail working out that `avg_hold_days` is calendar while the
+annualisation uses 252 trading days. The note that would have flagged it was in the code the whole
+time and had never once rendered.
+
+**Design decision:** the fix is a `Note:` prefix carve-out in the renderer rather than a second
+"always show these" dict, so a footnote is added the same way a column description is. The new
+integrity test asserts no non-`Note:` key matches zero columns, which turns the silent-drop class
+into a test failure.
+
+**Assumption:** the four component columns are named `Composite C1 (E[R]) [pts]` through
+`Composite C4 (CAGR Diff) [pts]`. He did not specify names — only that the report should be able to
+narrate the breakdown. Renaming them later is a two-line change plus the description keys.
+
+**Scope note:** `COLUMN_DESCRIPTIONS` (the dict serving the other report types) carries the same two
+dead `Moving Avg` keys. Left alone — its consumers build their tables elsewhere and their real
+column names were not verified from this side. Worth a follow-up sweep with the same test applied
+per report type.
+
 **Things deferred / left for future**
 
 - **The stored universe still carries the old numbers.** Every `conviction_store/*.json` record was written with the inflated dividend statistics and without the adjusted-EPS metadata. A full recalculation is required before any of this shows up — logged in `dev_to_prod_migration_todos.md`. Until then the corrected code is only visible on freshly recalculated tickers.
