@@ -9,7 +9,7 @@ slice tables (including the CRM worked example from the follow-up doc); the
 classification-only universe diff pass; explicit-undefined yield-trap thresholds for
 KR/JP/CN; adjusted-EPS tax-rate handling; and the Tier-2 non-US PE-history reconstruction.
 
-See `instruction_docs/conviction_engine_issues/conviction_fixes_decisions.md` for the
+See `docs/instruction_docs/conviction_engine_issues/conviction_fixes_decisions.md` for the
 full rationale behind each of these.
 """
 

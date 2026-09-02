@@ -719,7 +719,7 @@ api/
     signal_enrichment_service.py      # rr_dynamic pass-through
     reports_service.py                # CSV loaders (used by pipeline)
 
-instruction_docs/portfolio_page/
+docs/instruction_docs/portfolio_page/
   PORTFOLIO_API_HANDOFF.md            # API contract
   OPEN_QUESTIONS_FOR_ROHIT.md         # 5 blocking decisions
   portfolio_implementation_log.md     # this file

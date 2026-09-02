@@ -54,7 +54,7 @@ See `status_v2.md` for file-level detail. Key modules:
 | Ahil A2 / A3 | Ahil | Independent track |
 | Python-authored surface_json | TBD | Claude may still emit old `quality_score` — see doubts #5 |
 | Conviction cron ordering | Ops | Overlay must exist before email run — see doubts #6 |
-| MasterSpec PDF in repo | Docs | PDF not checked into `instruction_docs/` |
+| MasterSpec PDF in repo | Docs | PDF not checked into `docs/instruction_docs/` |
 
 ---
 

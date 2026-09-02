@@ -147,7 +147,7 @@ python3 -m pytest tests/test_signals_masterspec_g3.py -v
 | `MindWealth/tests/test_signals_masterspec_g3.py` | +4 v4 calibration tests (19 total) |
 | `MindWealth_UI/src/components/quality_bubble_chart.py` | v4 labels + hover |
 | `MindWealth_UI/src/utils/signal_quality.py` | Annualized field export |
-| `MindWealth_UI/instruction_docs/signals_master_spec/status_v4.md` | This document |
+| `MindWealth_UI/docs/instruction_docs/signals_master_spec/status_v4.md` | This document |
 
 ---
 

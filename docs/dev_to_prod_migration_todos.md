@@ -966,10 +966,10 @@ The chatbot 503 fix (job status 2026-08-17 #7) still needs its `MindwealthUI_Vue
 
 ## 2026-08-17 — Rohit 21 Jul email audit: three live prod defects found `[PENDING]`
 
-Documentation-only change in git (`instruction_docs/chat_ques/21July_Rohit_feedback_and_priorities - STATUS.md`), but the audit surfaced **three prod-affecting problems that need action outside a normal merge**.
+Documentation-only change in git (`docs/instruction_docs/chat_ques/21July_Rohit_feedback_and_priorities - STATUS.md`), but the audit surfaced **three prod-affecting problems that need action outside a normal merge**.
 
 **Git files to merge** (`chatbot-dev` → `chatbot-prod`):
-- `instruction_docs/chat_ques/21July_Rohit_feedback_and_priorities - STATUS.md` (new)
+- `docs/instruction_docs/chat_ques/21July_Rohit_feedback_and_priorities - STATUS.md` (new)
 - `docs/mindwealth_ui_job_status.md`, `docs/mindwealth_ui_repo_job_status_details.md`, `docs/dev_to_prod_migration_todos.md` (modified)
 
 ### 1. `[PENDING]` The merge itself is overdue — 23 commits, 22 days
@@ -1218,7 +1218,7 @@ The chat UI lives in `/home/ubuntu/MindwealthUI_Vue` (branch `ui-dev`, GitHub `D
 `[PROD-ACTION]` **The 2026-08-07 `vix_bypass` A6 fix is still not on prod (see the entry immediately below).** Prod `:8506` continues to publish `vix_bypass: true` while Combo B is INACTIVE, and the C++ sizing model reads `macro_intelligence/output/runic_output.json` **from disk** — so on prod, `size_mult` is being forced to `1.0` and the SSI multiplier is discarded on ordinary days. Rohit flagged this specifically in the 6 Aug email ("we may be switching off the one overlay showing real risk value, every ordinary day") because the SSI overlay is the strongest risk contributor in Ahil's decomposition (Sharpe 0.82 → 1.04, drawdown −17.09% → −13.41%). This is now **10 days** stale on prod. Merge + nightly rerun + API restart, in that order — the checklist is in the 2026-08-07 entry below.
 
 **Also surfaced by the audit, tracked but not prod-blocking:**
-- `[PENDING]` Jun 18 spec doc still records SPX-below-200DMA as ×0.80 while both dev and prod code run ×0.90 (`instruction_docs/portfolio_page/portfolio_sizer_v2_18June.md:65`, `:257`). Rohit's instruction was "adopt ×0.90 and update the spec" — the code half is already correct on both environments, so this is a doc fix, not a cutover risk.
+- `[PENDING]` Jun 18 spec doc still records SPX-below-200DMA as ×0.80 while both dev and prod code run ×0.90 (`docs/instruction_docs/portfolio_page/portfolio_sizer_v2_18June.md:65`, `:257`). Rohit's instruction was "adopt ×0.90 and update the spec" — the code half is already correct on both environments, so this is a doc fix, not a cutover risk.
 - `[PENDING]` Combo dominance priority still `C(100) > B(90) > F(80) > E > D > G > A` (`testing/5_regime_uplift/README.md:30`) against Rohit's explicit "move B above C". Research-path file, not read by the live sizing chain — but D1 regime buckets derived from it will need regenerating whenever the swap lands.
 - `[PENDING]` Analog tables still served on both environments (`GET /macro/analogs/{combo_id}`, `src/pages/runic_page.py:90-95`) with stub data — Rohit asked for it pulled from the nav until rebuilt. Removing it is a prod-visible surface change and needs its own entry when done.
 - `[PROD-ACTION]` Composite-score `401` for Ahil is a credential handoff, not a deploy: `X-API-Key` against `api/dependencies.py::require_api_key`. No git change; key must be shared over a secure channel (never in git, chat or logs).
@@ -1506,7 +1506,7 @@ cd /home/ubuntu/uiv2/prod/MindWealth_UI
 | `scripts/run_universe_classification_pass.py` | **new** CLI — see prod-action commands above |
 | `src/pages/conviction_engine_page.py` | **modified** — FS-cap/yield-trap breakdown display + agentic-dimension sourcing transparency (Streamlit UI, dev-only tool, no prod-user-facing impact) |
 | `api/schemas/conviction.py` | **modified** — `SignalModificationResponse.coverage_incomplete` field |
-| `instruction_docs/conviction_engine_issues/conviction_fixes_decisions.md` | **new** — decisions/rationale log, docs only |
+| `docs/instruction_docs/conviction_engine_issues/conviction_fixes_decisions.md` | **new** — decisions/rationale log, docs only |
 | `tests/test_conviction_engine_v2_fixes.py` | **new** — 49 tests |
 | `tests/test_conviction_engine.py` | **modified** — 1-field fixture fix (`test_fs_cap_differs_by_timeframe`) |
 
@@ -1730,7 +1730,7 @@ cd /home/ubuntu/uiv2/prod/MindWealth_UI
 
 `[PENDING]` — merge `chatbot-dev` → `chatbot-prod` → `prod-pull-and-restart.sh`. Small, self-contained diff (2 service files + 2 test files) — does **not** need to be bundled with anything else, but note it lands on top of the still-`[PENDING]` 2026-07-22/24 entries below (all uncommitted on the same `chatbot-dev` tree as of this entry).
 
-**Context:** analyzed `instruction_docs/portfolio_page/PORTFOLIO_API_HANDOFF_02.md` + `PORTFOLIO_DATA_ISSUES.md` per user request. Confirmed prod (`:8506`) genuinely 404s on `/portfolio/nav`, `/portfolio/holdings`, `/signals/entries`, `/signals/exits` — this is the *real* remaining Overview blocker, but it's a deploy gap (all of it already exists on `chatbot-dev`, most from earlier uncommitted sessions), not a new code change. See job status details 2026-07-27 for the full analysis (incl. why `:8507` "Squid 503" doesn't reproduce, and why the legacy-vs-`d1_slots` position-count issue is a known Rohit-gated decision, not a bug). **This migration entry only covers the two small code fixes actually made in this pass.**
+**Context:** analyzed `docs/instruction_docs/portfolio_page/PORTFOLIO_API_HANDOFF_02.md` + `PORTFOLIO_DATA_ISSUES.md` per user request. Confirmed prod (`:8506`) genuinely 404s on `/portfolio/nav`, `/portfolio/holdings`, `/signals/entries`, `/signals/exits` — this is the *real* remaining Overview blocker, but it's a deploy gap (all of it already exists on `chatbot-dev`, most from earlier uncommitted sessions), not a new code change. See job status details 2026-07-27 for the full analysis (incl. why `:8507` "Squid 503" doesn't reproduce, and why the legacy-vs-`d1_slots` position-count issue is a known Rohit-gated decision, not a bug). **This migration entry only covers the two small code fixes actually made in this pass.**
 
 | Path | Notes |
 |------|--------|
@@ -2201,8 +2201,8 @@ personal book CRUD. See `docs/mindwealth-api-docs/changelog.md` v1.9.0 for the f
 | `scripts/install_aws_cron.sh` | Adds daily book-snapshot job |
 | `.gitignore` | `portfolio_store/`, `config/personal_holdings.json`, `config/manual_sizing_overrides.json` |
 | `tests/test_api_portfolio.py` | +22 integration tests |
-| `instruction_docs/portfolio_page/OPEN_QUESTIONS_FOR_ROHIT.md` | Ask 3 status note (brokerage still deferred) |
-| `instruction_docs/portfolio_page/PORTFOLIO_API_HANDOFF.md` | New §15 status section, §13 checkbox updates |
+| `docs/instruction_docs/portfolio_page/OPEN_QUESTIONS_FOR_ROHIT.md` | Ask 3 status note (brokerage still deferred) |
+| `docs/instruction_docs/portfolio_page/PORTFOLIO_API_HANDOFF.md` | New §15 status section, §13 checkbox updates |
 | `docs/mindwealth-api-docs/changelog.md`, `services/portfolio/README.md`, `endpoints/get-{nav,holdings,sizer,sizing,risk}.md` | v1.9.0 |
 | `docs/mindwealth-api-docs/openapi/mindwealth-v1.json` | Re-exported |
 

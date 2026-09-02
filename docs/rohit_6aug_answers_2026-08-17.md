@@ -77,7 +77,7 @@ Resolved 2026-08-07 in favour of the stricter A6 reading (`vix_bypass.py`, plus 
 | **Equity ceiling** | Maximum share of NAV deployable into equities in total, after every overlay. Portfolio-level cap. | % of NAV (e.g. 72%) |
 | **Ceiling scalar** | Multiplier applied to an individual position inside `size = (NAV ÷ N) × conviction% × scalar`. | dimensionless (e.g. 0.90) |
 
-Both are now written into `instruction_docs/portfolio_page/portfolio_sizer_v2_18June.md`.
+Both are now written into `docs/instruction_docs/portfolio_page/portfolio_sizer_v2_18June.md`.
 
 ---
 

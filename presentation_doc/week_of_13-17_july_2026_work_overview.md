@@ -3,8 +3,8 @@
 **Author:** Divyanshu  
 **Purpose:** Presentation-ready summary of backend work for the week of 13–17 July 2026  
 **Sources:**
-- [`instruction_docs/ai_analyst/ai_analyst_implementation_log.md`](../instruction_docs/ai_analyst/ai_analyst_implementation_log.md)
-- [`instruction_docs/portfolio_page/portfolio_implementation_log.md`](../instruction_docs/portfolio_page/portfolio_implementation_log.md)
+- [`docs/instruction_docs/ai_analyst/ai_analyst_implementation_log.md`](../docs/instruction_docs/ai_analyst/ai_analyst_implementation_log.md)
+- [`docs/instruction_docs/portfolio_page/portfolio_implementation_log.md`](../docs/instruction_docs/portfolio_page/portfolio_implementation_log.md)
 - [`docs/mindwealth_ui_job_status.md`](../docs/mindwealth_ui_job_status.md) (macro/regime entries for 13–17 July)
 
 **Repo:** `/home/ubuntu/uiv2/git/MindWealth_UI` (branch `chatbot-dev`)
@@ -63,7 +63,7 @@ This week closed those gaps on the backend side — or documented exactly why so
 - ETF/FX rows showed **BLOCKED → $0** instead of base size (Conviction Engine is single-stock only).
 - `rr_dynamic` existed in nightly CSVs but was not always exposed through API enrichment.
 
-**What I did not build:** `/portfolio/nav`, four-book NAV toggle, D1 slot-based sizing (`NAV/N × conviction × SSI`), brokerage/personal books. Those are in [`OPEN_QUESTIONS_FOR_ROHIT.md`](../instruction_docs/portfolio_page/OPEN_QUESTIONS_FOR_ROHIT.md).
+**What I did not build:** `/portfolio/nav`, four-book NAV toggle, D1 slot-based sizing (`NAV/N × conviction × SSI`), brokerage/personal books. Those are in [`OPEN_QUESTIONS_FOR_ROHIT.md`](../docs/instruction_docs/portfolio_page/OPEN_QUESTIONS_FOR_ROHIT.md).
 
 ---
 
@@ -201,13 +201,13 @@ This week spanned three major backend tracks in parallel:
 | 2 | 2026-07-13 | Portfolio | HANDOFF gap audit (4/9 endpoints exist) | 1.0 | *(read-only — no code changes)* |
 | 3 | 2026-07-13 | AI Analyst | Overwatch planning — three channels, scattered-warnings map | 1.5 | *(design notes only)* |
 | 4 | 2026-07-14 | Macro | Test 5 — Regime Sharpe uplift backtest (SPY/TLT/GLD/HYG) | 3.0 | `testing/5_regime_uplift/PLAN.md`, `multiplier_spec.md`, `run_regime_sharpe_uplift.py`, `README.md`, `output_files/*` |
-| 5 | 2026-07-14 | Portfolio | Rohit 14 Jul axioms intake — scope NAV/four-book blockers | 1.0 | *(read `instruction_docs/portfolio_page/14July_axioms_and_specs.md`)* |
+| 5 | 2026-07-14 | Portfolio | Rohit 14 Jul axioms intake — scope NAV/four-book blockers | 1.0 | *(read `docs/instruction_docs/portfolio_page/14July_axioms_and_specs.md`)* |
 | 6 | 2026-07-14 | Portfolio | Cluster sizer bug — discovery + fix ($1.77B vs $80M ceiling) | 1.5 | `api/services/portfolio_service.py`, `tests/test_api_portfolio.py` |
-| 7 | 2026-07-15 | Portfolio | Rohit 15 Jul spec (D1–D7) — endpoint list, book rules | 1.0 | *(read `instruction_docs/portfolio_page/15July_imp_spec_additions.md`)* |
+| 7 | 2026-07-15 | Portfolio | Rohit 15 Jul spec (D1–D7) — endpoint list, book rules | 1.0 | *(read `docs/instruction_docs/portfolio_page/15July_imp_spec_additions.md`)* |
 | 8 | 2026-07-15 | Portfolio | Two-level book model design (`book_id` + `book`, 422 semantics) | 1.0 | `api/services/portfolio_book.py` *(skeleton)* |
 | 9 | 2026-07-15 | AI Analyst | **Overwatch v1.8.0 core** — alerts, brief, SSE, system health, degradation rules, runic + Analog Finder, cron | 5.0 | `api/schemas/analyst.py`, `api/services/analyst_service.py`, `api/services/system_health_service.py`, `api/services/overwatch_event_bus.py`, `api/services/degradation_service.py`, `api/routers/analytics.py`, `api/routers/overwatch.py`, `api/routers/system.py`, `api/routers/signals.py`, `api/main.py`, `api/rate_limit.py`, `src/macro_intelligence/output/json_writer.py`, `scripts/overwatch/run_overwatch_signals.py`, `scripts/overwatch/run_overwatch_macro.py`, `scripts/overwatch/run_overwatch_system.py`, `scripts/install_aws_cron_dual.sh`, `tests/test_api_analyst.py`, `docs/api/services/analyst/` *(README + 5 endpoint pages)*, `docs/api/changelog.md`, `docs/api/openapi/mindwealth-v1.json`, `docs/dev_to_prod_migration_todos.md` |
 | 10 | 2026-07-15 | AI Analyst / Portfolio | Extract shared `macro_override.py` (CAPE + geo banner) | 0.5 | `api/services/macro_override.py` |
-| 11 | 2026-07-15 | Portfolio | Start `OPEN_QUESTIONS_FOR_ROHIT.md` (5 blocking decisions) | 0.5 | `instruction_docs/portfolio_page/OPEN_QUESTIONS_FOR_ROHIT.md` |
+| 11 | 2026-07-15 | Portfolio | Start `OPEN_QUESTIONS_FOR_ROHIT.md` (5 blocking decisions) | 0.5 | `docs/instruction_docs/portfolio_page/OPEN_QUESTIONS_FOR_ROHIT.md` |
 | 12 | 2026-07-16 | Macro | D4 — B4 window audit (3/12 FAIL) | 1.0 | `testing/macro_th_exp/D4_window_audit_rerun_2026-07-16.json`, `testing/macro_th_exp/D4_window_audit_rerun_2026-07-16.md` |
 | 13 | 2026-07-16 | Macro | D5 — Fed-cycle re-slicing on recalibrated D/E | 1.0 | `testing/macro_th_exp/run_d5_fed_cycle_reslice.py`, `testing/macro_th_exp/D5_fed_cycle_reslice_2026-07-16.csv`, `D5_fed_cycle_reslice_2026-07-16.json`, `D5_fed_cycle_reslice_2026-07-16.md`, `D5_fed_cycle_per_fire_2026-07-16.csv` |
 | 14 | 2026-07-16 | Macro | D6 — Open doubts resolution doc | 0.5 | `testing/macro_th_exp/D6_open_doubts_resolution_2026-07-16.md`, `D6_open_doubts_resolution_2026-07-16.json` |
@@ -227,7 +227,7 @@ This week spanned three major backend tracks in parallel:
 | 27 | 2026-07-17 | AI Analyst | **Overwatch v1.8.1** — context bundle, tabs, channel filter, regime/sentiment warnings, chat `page_context` | 1.25 | `api/services/analyst_service.py`, `api/services/macro_override.py`, `api/routers/analytics.py`, `api/schemas/analyst.py`, `api/schemas/chatbot.py`, `api/services/chatbot_service.py`, `tests/test_api_analyst.py`, `tests/test_chatbot_page_context.py`, `docs/mindwealth-api-docs/` *(v1.8.1 submodule sync)* |
 | 28 | 2026-07-17 | AI Analyst | Degradation cache finish + integration health markers + Claude copy hook | 0.5 | `api/services/degradation_cache.py`, `api/services/degradation_service.py`, `api/services/integration_health_store.py`, `api/services/analyst_copy_service.py`, `api/services/system_health_service.py`, `chatbot/agents/web_search_agent.py`, `src/conviction_engine/daily_run.py`, `tests/test_degradation_cache.py`, `scripts/overwatch/run_overwatch_signals.py` |
 | 29 | 2026-07-17 | Ops / AI Analyst | Prod deploy v1.8.0 + dashboard 429 fix + BFF cache | 0.75 | `config/rate_limits.yaml`, `api/main.py`, `api/routers/analytics.py`, `api/routers/overwatch.py`, `api/routers/system.py`, `api/routers/signals.py`, `api/services/analyst_service.py`, `api/services/degradation_service.py`, `api/services/overwatch_event_bus.py`, `api/services/system_health_service.py`, `api/schemas/analyst.py`, `tests/test_api_analyst.py`, `scripts/overwatch/*`; **MindwealthUI_Vue:** `server/utils/mindwealth-client.ts`, `server/utils/mindwealth-data.ts`, `server/utils/performance-aggregates.ts`, `server/utils/unavailable-data.ts` |
-| 30 | 2026-07-17 | Docs | Finalize open questions + migration todos | 0.25 | `instruction_docs/portfolio_page/OPEN_QUESTIONS_FOR_ROHIT.md`, `docs/dev_to_prod_migration_todos.md` |
+| 30 | 2026-07-17 | Docs | Finalize open questions + migration todos | 0.25 | `docs/instruction_docs/portfolio_page/OPEN_QUESTIONS_FOR_ROHIT.md`, `docs/dev_to_prod_migration_todos.md` |
 
 ### Hours by track (week total)
 
@@ -256,7 +256,7 @@ api/services/signal_enrichment_service.py
 api/services/macro_override.py
 tests/test_api_portfolio.py
 tests/test_api_signals_surface.py
-instruction_docs/portfolio_page/OPEN_QUESTIONS_FOR_ROHIT.md
+docs/instruction_docs/portfolio_page/OPEN_QUESTIONS_FOR_ROHIT.md
 ```
 
 #### Track 2 — AI Analyst / Overwatch
@@ -405,7 +405,7 @@ config/.bootstrap_admin_password    (prod clone)
    - **Files:** `config/users.json`, `config/.bootstrap_admin_password` *(prod runtime)*
 
 2. **Portfolio HANDOFF gap analysis** · *Portfolio · 1.0 h*
-   - Audited [`PORTFOLIO_API_HANDOFF.md`](../instruction_docs/portfolio_page/PORTFOLIO_API_HANDOFF.md) against live API.
+   - Audited [`PORTFOLIO_API_HANDOFF.md`](../docs/instruction_docs/portfolio_page/PORTFOLIO_API_HANDOFF.md) against live API.
    - Found only **4 of 9** required endpoints existed (`/sizer`, `/risk`, `/risk/analyze`, `/risk/search`).
    - Parth was blocked on holdings, entries, exits, and book-scoped data for the v5 mock.
    - **Files:** *(read-only — no code changes)*
@@ -419,7 +419,7 @@ config/.bootstrap_admin_password    (prod clone)
    - **Files:** *(design notes only)*
 
 4. **Spec intake (early)** · *Portfolio · included in planning*
-   - Began reading Rohit's 14 July axioms email ([`14July_axioms_and_specs.md`](../instruction_docs/portfolio_page/14July_axioms_and_specs.md)) for portfolio NAV methodology constraints.
+   - Began reading Rohit's 14 July axioms email ([`14July_axioms_and_specs.md`](../docs/instruction_docs/portfolio_page/14July_axioms_and_specs.md)) for portfolio NAV methodology constraints.
 
 #### Blockers
 
@@ -451,7 +451,7 @@ config/.bootstrap_admin_password    (prod clone)
 2. **Rohit axioms — Part I & II** · *Portfolio · 1.0 h*
    - Absorbed six fixed axioms (reconciliation waterfall, position-level NAV, no rebalancing, out-of-sample gates, runtime gate membership, turnover + costs, protective mechanisms in bad markets).
    - Informed portfolio API scope: `/portfolio/nav` and four-book toggle cannot ship until Ahil's A1 four-book attribution replay on axiom-compliant 1C base.
-   - **Files:** *(read `instruction_docs/portfolio_page/14July_axioms_and_specs.md`)*
+   - **Files:** *(read `docs/instruction_docs/portfolio_page/14July_axioms_and_specs.md`)*
 
 3. **AI Analyst — degradation rules locked** · *AI Analyst · included in Wed work*
    - Spec-aligned 60% WATCH/BREACH floor with 4-week `fwd_trend`.
@@ -485,7 +485,7 @@ config/.bootstrap_admin_password    (prod clone)
 #### What I did
 
 1. **Rohit 15 July portfolio finalization spec** · *Portfolio · 1.0 h*
-   - Processed D1–D7 from [`15July_imp_spec_additions.md`](../instruction_docs/portfolio_page/15July_imp_spec_additions.md):
+   - Processed D1–D7 from [`15July_imp_spec_additions.md`](../docs/instruction_docs/portfolio_page/15July_imp_spec_additions.md):
      - D1: Retire interim cluster engine → slot-based sizing (blocked on decisions).
      - D2: ETF/FX/commodity → base size, never BLOCKED → $0.
      - D4: Endpoint list that unblocks Parth.
@@ -512,8 +512,8 @@ config/.bootstrap_admin_password    (prod clone)
    - **Files:** `api/schemas/analyst.py`, `api/services/analyst_service.py`, `api/services/system_health_service.py`, `api/services/overwatch_event_bus.py`, `api/services/degradation_service.py`, `api/routers/analytics.py`, `api/routers/overwatch.py`, `api/routers/system.py`, `api/routers/signals.py`, `api/main.py`, `api/rate_limit.py`, `src/macro_intelligence/output/json_writer.py`, `scripts/overwatch/run_overwatch_signals.py`, `scripts/overwatch/run_overwatch_macro.py`, `scripts/overwatch/run_overwatch_system.py`, `scripts/install_aws_cron_dual.sh`, `tests/test_api_analyst.py`, `docs/api/services/analyst/`, `docs/api/changelog.md`, `docs/api/openapi/mindwealth-v1.json`, `docs/dev_to_prod_migration_todos.md`
 
 4. **Open questions doc — started** · *Portfolio / Docs · 0.5 h*
-   - Began [`OPEN_QUESTIONS_FOR_ROHIT.md`](../instruction_docs/portfolio_page/OPEN_QUESTIONS_FOR_ROHIT.md) with 5 blocking product decisions.
-   - **Files:** `instruction_docs/portfolio_page/OPEN_QUESTIONS_FOR_ROHIT.md`
+   - Began [`OPEN_QUESTIONS_FOR_ROHIT.md`](../docs/instruction_docs/portfolio_page/OPEN_QUESTIONS_FOR_ROHIT.md) with 5 blocking product decisions.
+   - **Files:** `docs/instruction_docs/portfolio_page/OPEN_QUESTIONS_FOR_ROHIT.md`
 
 5. **Shared macro override extraction** · *AI Analyst / Portfolio · 0.5 h*
    - Extracted `compute_macro_override()` into `api/services/macro_override.py`.
@@ -683,7 +683,7 @@ config/.bootstrap_admin_password    (prod clone)
 12. **Documentation finalize** · *Docs · 0.25 h*
     - Finalized `OPEN_QUESTIONS_FOR_ROHIT.md` — 5 blocking decisions with file/line citations.
     - API docs synced to v1.8.1 in `docs/mindwealth-api-docs` submodule.
-    - **Files:** `instruction_docs/portfolio_page/OPEN_QUESTIONS_FOR_ROHIT.md`, `docs/dev_to_prod_migration_todos.md`, `docs/mindwealth-api-docs/`
+    - **Files:** `docs/instruction_docs/portfolio_page/OPEN_QUESTIONS_FOR_ROHIT.md`, `docs/dev_to_prod_migration_todos.md`, `docs/mindwealth-api-docs/`
 
 #### Blockers
 
@@ -834,7 +834,7 @@ api/
   services/portfolio_service.py     # sizer, risk, D2 fix, conviction_summary
   services/signal_enrichment_service.py  # rr_dynamic pass-through
 
-instruction_docs/portfolio_page/
+docs/instruction_docs/portfolio_page/
   OPEN_QUESTIONS_FOR_ROHIT.md
   PORTFOLIO_API_HANDOFF.md
 
@@ -912,7 +912,7 @@ tests/
 
 ## Appendix — Open Questions for Rohit
 
-See [`instruction_docs/portfolio_page/OPEN_QUESTIONS_FOR_ROHIT.md`](../instruction_docs/portfolio_page/OPEN_QUESTIONS_FOR_ROHIT.md):
+See [`docs/instruction_docs/portfolio_page/OPEN_QUESTIONS_FOR_ROHIT.md`](../docs/instruction_docs/portfolio_page/OPEN_QUESTIONS_FOR_ROHIT.md):
 
 | # | Decision | Blocks |
 |---|----------|--------|

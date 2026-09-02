@@ -1,5 +1,5 @@
 # Portfolio policy — single config surface for every currently-open Rohit decision
-# (see instruction_docs/portfolio_page/OPEN_QUESTIONS_FOR_ROHIT.md, Asks 1-5).
+# (see docs/instruction_docs/portfolio_page/OPEN_QUESTIONS_FOR_ROHIT.md, Asks 1-5).
 #
 # Every value below is read by api/services/policy_service.py:get_policy(). Nothing in the
 # engines (sizing_engine, eviction_engine, four_book_engine, ahil_nav_engine_core) hardcodes

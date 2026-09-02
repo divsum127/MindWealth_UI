@@ -1,6 +1,6 @@
 # Status File — "All of Us" WhatsApp Chat (21 Jun – 21 Jul 2026)
 
-Source: `instruction_docs/chat_ques/All of Us - last month (21 Jun - 21 Jul 2026).txt` (810 messages, 1139 lines).
+Source: `docs/instruction_docs/chat_ques/All of Us - last month (21 Jun - 21 Jul 2026).txt` (810 messages, 1139 lines).
 
 This file lists every substantive question / action item Rohit Sir raised in the chat, grouped by topic, with a status against each based on:
 - `docs/mindwealth_ui_job_status.md` + `docs/mindwealth_ui_repo_job_status_details.md` (backend/API work log)

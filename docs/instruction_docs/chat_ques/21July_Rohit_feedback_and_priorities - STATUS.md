@@ -251,7 +251,7 @@ No Treasury / bond-future series is pulled anywhere. The TFF ZIP already downloa
 
 ### Part 11 — spec hygiene ❌ NOT DONE
 
-`claude_prompt_modified.txt` **does not exist anywhere on this machine.** So "put every decision into that file" cannot have been done, and Gate A2d's discrepancy is unresolved: `instruction_docs/signals_master_spec/status.md:133` still records the per-interval CAGR floors (−15% / −20% / −25%) while the composite uses `CAGR_CLIP = 5%` equity. Rohit is right that this is live in the gate logic. **Needs his pick, then one file.**
+`claude_prompt_modified.txt` **does not exist anywhere on this machine.** So "put every decision into that file" cannot have been done, and Gate A2d's discrepancy is unresolved: `docs/instruction_docs/signals_master_spec/status.md:133` still records the per-interval CAGR floors (−15% / −20% / −25%) while the composite uses `CAGR_CLIP = 5%` equity. Rohit is right that this is live in the gate logic. **Needs his pick, then one file.**
 
 ### Part 12 — before handover (was due ~3 Aug) 🟡
 

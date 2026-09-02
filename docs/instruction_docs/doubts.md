@@ -105,9 +105,9 @@
 
 ### 10. MasterSpec PDF not in repo
 
-**Source:** `status.md` references `MindWealth_Signals_MasterSpec.pdf` but file is not under `instruction_docs/`.
+**Source:** `status.md` references `MindWealth_Signals_MasterSpec.pdf` but file is not under `docs/instruction_docs/`.
 
-**Doubt:** Please add PDF to `instruction_docs/signals_master_spec/` or confirm `status_v2.md` + `additional_details.md` are the sole source of truth.
+**Doubt:** Please add PDF to `docs/instruction_docs/signals_master_spec/` or confirm `status_v2.md` + `additional_details.md` are the sole source of truth.
 
 ---
 

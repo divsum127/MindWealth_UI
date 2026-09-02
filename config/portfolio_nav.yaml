@@ -21,10 +21,10 @@ attribution_effects_pp:
 
 workbooks:
   mtm:
-    path: instruction_docs/portfolio_page/ahil_analysis/MindWealth_Ahil_NAV_FILLED_GATED_FIXED_DAILYDD.xlsx
+    path: docs/instruction_docs/portfolio_page/ahil_analysis/MindWealth_Ahil_NAV_FILLED_GATED_FIXED_DAILYDD.xlsx
     version_label: "Version B (all / MTM)"
   closed:
-    path: instruction_docs/portfolio_page/ahil_analysis/MindWealth_Ahil_NAV_FILLED_VersionA_GATED_FIXED_DAILYDD.xlsx
+    path: docs/instruction_docs/portfolio_page/ahil_analysis/MindWealth_Ahil_NAV_FILLED_VersionA_GATED_FIXED_DAILYDD.xlsx
     version_label: "Version A (closed only)"
 
 # Drop Ahil's nav_engine.py beside this adapter module, or set PORTFOLIO_NAV_ENGINE_MODULE.

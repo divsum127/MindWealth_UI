@@ -279,9 +279,9 @@ The stale comment `_ = bt_bh_cagr  # reserved for future IRX-specific short benc
 **Ask:** "Analyze any specs in my codebase / gmail mcp server, create a step by step plan for the fixes starting with fake frontend then moving on to other fixes properly implemented and tested." User then approved editing `MindwealthUI_Vue` and chose **option B** for push mode.
 
 **Spec sources used**
-- `instruction_docs/ai_analyst/ai_analyst_spec_doc.md` (Rohit, 22 May 2026) and `ai_analyst_implementation_log.md` (v1.8.1).
+- `docs/instruction_docs/ai_analyst/ai_analyst_spec_doc.md` (Rohit, 22 May 2026) and `ai_analyst_implementation_log.md` (v1.8.1).
 - `MindwealthUI_Vue/docs/AI_ANALYST_BACKEND_REQUIREMENTS.md` §5/§6/§8/§9 — the written migration plan, previously unstarted.
-- **`instruction_docs/portfolio_page/spec_15July.md` + `15July_imp_spec_additions.md` (D4)** — the agent slide-in mechanic. This was missed by the earlier audit: "auto-open after 1.5 seconds on the target page; badge dot only on other pages; a dismissed alert never re-opens in the same session", driven by an `alerts.json` with `type` + `target_page`. `GET /api/v1/portfolio/alerts` has served exactly that for months with **zero frontend consumers**.
+- **`docs/instruction_docs/portfolio_page/spec_15July.md` + `15July_imp_spec_additions.md` (D4)** — the agent slide-in mechanic. This was missed by the earlier audit: "auto-open after 1.5 seconds on the target page; badge dot only on other pages; a dismissed alert never re-opens in the same session", driven by an `alerts.json` with `type` + `target_page`. `GET /api/v1/portfolio/alerts` has served exactly that for months with **zero frontend consumers**.
 - **Gmail MCP is body-blind for the relevant mail.** `search_emails` finds the threads (22 May "AI Analyst Overwatch agent…" `19e4ee57ecbde55b`, 15 Jul portfolio brief `19f6762ddd4889f3`, 16 Jun "agents → global overwatch" `19ed26367c3b1df4`) but every one returns `body: null`, and `get_email_metadata` on the 22 May id is refused with `ACCESS_DENIED … does not match the active filter configuration`. Only recent messages return bodies, so `privacy.allow_full_body` appears time-scoped. **The repo copies are complete, so nothing was lost — but do not plan a future task around reading old spec mail through this MCP server.**
 
 **Key decisions**
@@ -1988,14 +1988,14 @@ Inverted predictor (100 − pctile) is mathematically identical (sign flip only)
 **Key findings:**
 - **Naming:** "Macro engine" in the chat is colloquial for "the engine that produces per-asset conviction/valuation output across the universe" — i.e. the Conviction Engine. There is no separate macro-engine valuation-tax code path to fix.
 - **Bug confirmed live on prod today:** PYPL prod record — `pe_ttm=10.41`, `pe_20y_array` has only **8 points** covering **0.0–0.56 years** (yfinance quarterly EPS depth, nowhere near 20y), yet `_percentile_rank` still computed `pe_percentile_20y=83.33` off that thin sample → `>=70` tier → `pe_hist_percentile=-2.0` → `valuation_tax=-3.0`. Universe-wide on prod (132 non-`unknown`-type records): 35 show a literal `0.0` percentile, 27 show `100.0`, and 34 total take the full `-3.0` PE-tax hit — all symptomatic of ranking a live PE against a handful of recent, sparse quarterly points instead of a real 20-year distribution. This matches the manager's framing almost exactly ("p/e percentile ~0/extreme for [many], PYPL should be 0 tax but isn't").
-- **Fix already exists on dev, unreleased:** `instruction_docs/ssi_and_conviction_updates/FUNDAMENTAL_AGENT_UPDATE_JULY_2026_STATUS.md` (dated "Completed 2026-07-22") documents this exact PYPL case being fixed: "PE percentile tax: −2 (buggy) → 0 (fixed)". Verified live in dev's `conviction_store/PYPL.json` today: `pe_history_insufficient=true`, `pe_percentile_20y=null`, `pe_hist_percentile=0.0` component, total `valuation_tax=-1.0` (from the separate EV/Revenue `entry_multiple` component, not PE). Mechanism: `engine.py` now sets `pe_percentile_20y=None` whenever `pe_history_meta.insufficient_20y` is true (computed in `fundamentals_enriched.compute_pe_history`, target 20y), and `scoring.py`'s PE-tax branch is guarded by `pe_pct is not None and not pe_insufficient`, so an insufficient-history asset always lands on the neutral `0.0` default instead of a spurious tier.
+- **Fix already exists on dev, unreleased:** `docs/instruction_docs/ssi_and_conviction_updates/FUNDAMENTAL_AGENT_UPDATE_JULY_2026_STATUS.md` (dated "Completed 2026-07-22") documents this exact PYPL case being fixed: "PE percentile tax: −2 (buggy) → 0 (fixed)". Verified live in dev's `conviction_store/PYPL.json` today: `pe_history_insufficient=true`, `pe_percentile_20y=null`, `pe_hist_percentile=0.0` component, total `valuation_tax=-1.0` (from the separate EV/Revenue `entry_multiple` component, not PE). Mechanism: `engine.py` now sets `pe_percentile_20y=None` whenever `pe_history_meta.insufficient_20y` is true (computed in `fundamentals_enriched.compute_pe_history`, target 20y), and `scoring.py`'s PE-tax branch is guarded by `pe_pct is not None and not pe_insufficient`, so an insufficient-history asset always lands on the neutral `0.0` default instead of a spurious tier.
 - **Why prod is still broken:** `git status --short` on `chatbot-dev` shows `src/conviction_engine/engine.py` and `scoring.py` **still uncommitted** (`M`, not committed) — the fix has never even been git-committed, let alone merged to `chatbot-prod` or deployed via `prod-pull-and-restart.sh`. This exact gap was already tracked as `[PENDING]` in `docs/dev_to_prod_migration_todos.md` under "2026-07-22 — Fundamental Agent Update (conviction engine)" before this investigation — the chat complaint is consistent with prod simply not having received that pending deploy yet, not a new/different bug.
 - **New concern surfaced by this pass (not previously flagged):** `PE_HISTORY_TARGET_YEARS=20` in `fundamentals_enriched.py` is a very high bar for yfinance-sourced quarterly EPS (which rarely goes back more than ~4–5 years, often much less). Scanning the current dev universe: **129/133 (97%)** equities now have `pe_percentile_20y=None`/`pe_history_insufficient=True`, and the PE-percentile tax component (`pe_hist_percentile`) is nonzero for **exactly one ticker (SONY, percentile 100 → −3.0)** across the whole store. The July-22 fix correctly stops the *false-positive* taxing (PYPL and friends), but as a side effect it has made the PE-percentile tax mechanism almost entirely inert for the whole universe — this is a product/design question (accept full neutrality until a longer-history data vendor is wired in, vs. lower the minimum-history bar so decent-but-<20y-history names still get a percentile) rather than a code bug per se, and should be called out to Rohit/Divyanshu explicitly rather than assumed.
 - **Scope check on "everything is wrong":** the EV/Revenue-tier `entry_multiple` component (a separate lever in the same `calculate_valuation_tax_components`, untouched by the PE-percentile bug/fix) still produces broad negative tax in the dev universe — 45/133 equities at `-5.0`, 20 at `-7.0`, plus smaller counts at `-1`/`-2`/`-3`/`-4`; only 35/133 show `0.0` total `valuation_tax`. If the manager's "everything is obviously wrong" read includes overall tax magnitude (not just the PE-driven component), this second lever should be separately reviewed/confirmed with the team — it was not part of the July-22 fix's scope and this investigation did not evaluate whether its tier thresholds (`EV_REV_TIERS` in `scoring.py`) are themselves correct.
 
 **Assumptions made:**
 - Treated "macro engine" in the pasted chat as informal shorthand for the Conviction Engine's universe-wide daily output, since no code, doc, or git history anywhere in either in-scope repo ties `valuation_tax`/`pe_percentile` to an actual module named "macro engine" (that name is reserved for `src/macro_intelligence/`, which has unrelated CAPE/VIX/Fed-cycle percentiles).
-- Assumed the pasted chat's timestamps ("12:13 PM", "12:15PM", no date) describe a live/current complaint about the currently-deployed production site, since that is what the numbers actually match (prod PYPL tax=-3, not dev PYPL tax=-1) — did not find this exact chat text anywhere already logged in `instruction_docs/chat_ques/` or agent transcripts, so treated it as a fresh, not-yet-actioned report rather than a duplicate of an already-answered thread.
+- Assumed the pasted chat's timestamps ("12:13 PM", "12:15PM", no date) describe a live/current complaint about the currently-deployed production site, since that is what the numbers actually match (prod PYPL tax=-3, not dev PYPL tax=-1) — did not find this exact chat text anywhere already logged in `docs/instruction_docs/chat_ques/` or agent transcripts, so treated it as a fresh, not-yet-actioned report rather than a duplicate of an already-answered thread.
 - Did not attempt to identify who "Divyanshu Malu IIT B" is relative to the July-22 fix's author — assumed the fix and the complaint are about the same underlying issue based on the exact PYPL match, not on authorship records.
 
 **Things left for future / deferred:**
@@ -2136,9 +2136,9 @@ Inverted predictor (100 − pctile) is mathematically identical (sign flip only)
 
 ### 2026-07-23 — Status/answer file for 11-July consolidated feedback email
 
-**Ask:** Review `instruction_docs/chat_ques/11july_mail.md` (Rohit's "Consolidating everything currently open across the platform" email, Part 1 backend/methodology for Divyanshu/Ahil + Part 2 frontend for Parth) and produce a status file marking already-done items as done — same treatment as the earlier WhatsApp-chat status file in the same folder.
+**Ask:** Review `docs/instruction_docs/chat_ques/11july_mail.md` (Rohit's "Consolidating everything currently open across the platform" email, Part 1 backend/methodology for Divyanshu/Ahil + Part 2 frontend for Parth) and produce a status file marking already-done items as done — same treatment as the earlier WhatsApp-chat status file in the same folder.
 
-**Approach:** Read the full (32-line) source file, itemized each of the ~14 discrete asks (10 in Part 1, 4 in Part 2), and cross-referenced each against `docs/mindwealth_ui_job_status.md`, `docs/mindwealth_ui_repo_job_status_details.md`, `instruction_docs/portfolio_page/portfolio_implementation_log.md`, `instruction_docs/portfolio_page/OPEN_QUESTIONS_FOR_ROHIT.md`, and `git log --oneline` on `chatbot-dev`. Output: `instruction_docs/chat_ques/11july_mail - STATUS.md`.
+**Approach:** Read the full (32-line) source file, itemized each of the ~14 discrete asks (10 in Part 1, 4 in Part 2), and cross-referenced each against `docs/mindwealth_ui_job_status.md`, `docs/mindwealth_ui_repo_job_status_details.md`, `docs/instruction_docs/portfolio_page/portfolio_implementation_log.md`, `docs/instruction_docs/portfolio_page/OPEN_QUESTIONS_FOR_ROHIT.md`, and `git log --oneline` on `chatbot-dev`. Output: `docs/instruction_docs/chat_ques/11july_mail - STATUS.md`.
 
 **Key findings:**
 - **FX "Could not compute" (item 1):** confirmed ✅ done. The job-status entry for this fix ("Portfolio 'Could not compute' / BLOCKED $0 for ETFs & indexes") only lists ETF/index example tickers (^GSPC, FXI, EFA, EWJ), not FX pairs by name — but `portfolio_implementation_log.md`'s "D2 fix — ETF / FX / commodity base size" section explicitly documents FX as one of the three `NOT_APPLICABLE` asset classes the fix covers ("ETFs, FX, indexes"), and the fix itself (`_bq_tier` NaN-hardening + D2 100%-share base sizing) is keyed off the conviction-overlay `verdict=NOT_APPLICABLE` flag, not asset type — so FX pairs go through the identical code path. Treated as done with high confidence despite the job-status one-liner not naming FX tickers explicitly.
@@ -2158,10 +2158,10 @@ Inverted predictor (100 − pctile) is mathematically identical (sign flip only)
 - Did not dig further into `ahil_analysis/` (referenced in `OPEN_QUESTIONS_FOR_ROHIT.md`'s Jul-2026 update) to independently verify the NAV-workbook contents Ahil delivered — took the doc's own summary of "partially answered, Rohit sign-off pending" at face value rather than re-deriving the numbers from the workbook itself.
 
 **Edge cases / caveats for next developer:**
-- This is the **second** status/answer file created in this session for files in the `instruction_docs/chat_ques/` folder (the first covers the 21-Jun–21-Jul WhatsApp export). Several items overlap between the two sources (SBI page, CFTC freshness tag, SSI/SBI-Composite label, cross-function exit scroll) since the 11-July email is itself a mid-period consolidation of items also present in the longer WhatsApp thread — cross-references between the two status files were added where useful rather than duplicating full analysis.
+- This is the **second** status/answer file created in this session for files in the `docs/instruction_docs/chat_ques/` folder (the first covers the 21-Jun–21-Jul WhatsApp export). Several items overlap between the two sources (SBI page, CFTC freshness tag, SSI/SBI-Composite label, cross-function exit scroll) since the 11-July email is itself a mid-period consolidation of items also present in the longer WhatsApp thread — cross-references between the two status files were added where useful rather than duplicating full analysis.
 - Documentation only — no code, config, or runtime changes. Zero prod-deployment impact; `docs/dev_to_prod_migration_todos.md` intentionally not updated for this entry.
 
-**Files changed:** `instruction_docs/chat_ques/11july_mail - STATUS.md` (new).
+**Files changed:** `docs/instruction_docs/chat_ques/11july_mail - STATUS.md` (new).
 
 ---
 
@@ -2179,7 +2179,7 @@ Inverted predictor (100 − pctile) is mathematically identical (sign flip only)
 7. Verified item #7 (401): traced the auth dependency chain (`api/dependencies.py::require_api_key`, `X-API-Key` header checked against `API_KEY` env var) — this is a credential/header issue, not a missing feature or auth-model gap. Recommended action is a key handoff over a secure channel (deliberately did not paste the actual key value into the document).
 8. For item #1 (P3) — the one item that is genuinely unscoped and unbuilt — wrote an honest "here's what I know, here's what I don't, here are the three concrete unknowns before I can commit to a date" answer instead of fabricating a timeline. The three flagged unknowns: (a) backtest compute cost for 9 functions × Daily × ~180 symbols × ~2,000 trading days, (b) whether point-in-time macro/gate inputs exist at the granularity the Daily gates need back to 2018 (distinct from the day-level bucket series in item #5), (c) which rule-set vintage to replay if Daily-interval function logic changed over time — flagged as needing Rohit's product sign-off, not a unilateral engineering decision.
 9. Left one explicit bracketed placeholder (`[fill in date — need to check backtest infra capacity first]`) in the P3 section rather than inventing a commitment date, since no real capacity/scoping data was available to generate one honestly.
-10. Output: `instruction_docs/portfolio_page/23July_reply_to_ahil_7_items.md` — status-at-a-glance table, then one detailed section per item (in Ahil's original priority order) with exact file/function citations, followed by a "priority commitment, mirrored back" closing section.
+10. Output: `docs/instruction_docs/portfolio_page/23July_reply_to_ahil_7_items.md` — status-at-a-glance table, then one detailed section per item (in Ahil's original priority order) with exact file/function citations, followed by a "priority commitment, mirrored back" closing section.
 
 **Key findings surfaced:**
 - 4 of the 7 items were already fully or mostly done in the repo and simply hadn't been confirmed back to Ahil — the email's "still blocked on you" framing for #2, #5, and #6 is stale relative to actual repo state as of 2026-07-23.
@@ -2187,7 +2187,7 @@ Inverted predictor (100 − pctile) is mathematically identical (sign flip only)
 - The genuinely real, unresolved gaps are: (1) P3 itself (no scoping done anywhere), (2) full 5-factor SSI/regime-chain history (VIX/trend/HY, not just SSI), (3) conviction-tier history before 2026-05-15, and (4) the Test-8 numeric-fallback policy decision (currently defaults to `rr=None` + reason string; a numeric fallback would need an explicit ask).
 
 **Assumptions made:**
-- Assumed "Divyanshu" in the user's email is the persona the user is operating as in this session (the MindWealth_UI backend/API owner per the workspace rules), and that "Ahil" is the axiom-test-suite researcher referenced throughout `instruction_docs/portfolio_page/`. This matches every existing doc's role assignment (`PORTFOLIO_PAGE_AIM_AND_STATUS.md` §9 "Who does what").
+- Assumed "Divyanshu" in the user's email is the persona the user is operating as in this session (the MindWealth_UI backend/API owner per the workspace rules), and that "Ahil" is the axiom-test-suite researcher referenced throughout `docs/instruction_docs/portfolio_page/`. This matches every existing doc's role assignment (`PORTFOLIO_PAGE_AIM_AND_STATUS.md` §9 "Who does what").
 - Did not fabricate a P3 completion date, a specific dollar/date value for anything not in the repo, or a Test-8 fallback numeric policy — treated all three as open questions for the user/Rohit/Ahil to close, per the "no fabrication" pattern already established in `four_book_engine.py`'s own docstrings (which this task explicitly modeled its honesty policy on).
 - Did not paste the live `API_KEY` value into the document (security — a shared secret should not live in a committed markdown file); recommended out-of-band handoff instead.
 
@@ -2205,7 +2205,7 @@ Inverted predictor (100 − pctile) is mathematically identical (sign flip only)
 
 ### 2026-07-23 — Status/answer file for "All of Us" WhatsApp chat questions (21 Jun – 21 Jul 2026)
 
-**Ask:** Review `instruction_docs/chat_ques/All of Us - last month (21 Jun - 21 Jul 2026).txt` (WhatsApp export, 810 messages / 1139 lines, group chat with Rohit Sir, Ahil, Divyanshu, Parth), extract every question/ask directed at the team, and produce a status file marking items already done as done.
+**Ask:** Review `docs/instruction_docs/chat_ques/All of Us - last month (21 Jun - 21 Jul 2026).txt` (WhatsApp export, 810 messages / 1139 lines, group chat with Rohit Sir, Ahil, Divyanshu, Parth), extract every question/ask directed at the team, and produce a status file marking items already done as done.
 
 **Approach:**
 1. Read the full chat export in three passes (lines 1–400, 400–800, 800–1139) to get complete coverage — the file exceeds the single-read character limit.
@@ -2213,7 +2213,7 @@ Inverted predictor (100 − pctile) is mathematically identical (sign flip only)
 3. Cross-referenced every item against: `docs/mindwealth_ui_job_status.md` (grep for topic keywords — DRIFT, forced portfolio, Claude Shortlisted, SSI Composite, McClellan, CFTC, portfolio cluster, login/password, etc.), `docs/mindwealth_ui_repo_job_status_details.md`, and `git log --oneline` on `chatbot-dev` (336 commits) for corroborating commit subjects.
 4. Where an item is pure frontend UI copy/layout work with no corresponding job-status entry, tagged it **❓ UNVERIFIED (frontend)** rather than guessing — the actual Nuxt/Vue frontend (`/home/ubuntu/MindwealthUI_Vue`, github.com/D-ParthChauhan/MindwealthUI_Vue, branch `ui-dev`) lives **outside** the two repos this workspace is scoped to per the repository rules (`MindWealth` core + `MindWealth_UI`), so its source could not be inspected in depth to confirm these. A light `git log`/`git remote` check on that repo was done only to confirm its existence/branch, not to read its file contents at length, to stay within the intended scope.
 5. Where an item is Ahil's personal quantitative/analysis work (Sharpe scenario testing, portfolio-sizer scripts, SBI percentile tables, transaction-cost disclosures) with no artifact in either tracked repo, tagged **❓ UNVERIFIED (analysis)** — likely lives in local Excel/Notion files not under git.
-6. Output: `instruction_docs/chat_ques/All of Us - last month (21 Jun - 21 Jul 2026) - STATUS.md` — one table per theme (date | ask | status-tag + evidence), plus a summary roll-up table and a "biggest open items" callout.
+6. Output: `docs/instruction_docs/chat_ques/All of Us - last month (21 Jun - 21 Jul 2026) - STATUS.md` — one table per theme (date | ask | status-tag + evidence), plus a summary roll-up table and a "biggest open items" callout.
 
 **Key findings surfaced:**
 - The single most-repeated, highest-friction thread in the whole chat (22/06 → 02/07, escalating to multiple all-caps/expletive messages on 02/07) was the dashboard's "average FWD win rate must be gated-(>60%)-combos-only" number flip-flopping between 61%/72%/74.33%/75.92%/77.3% — confirmed resolved 02/07 ("looks fine now"), landing on 74.33% (trade-weighted average of the 19–22 Model-Approved combos). This one thread is also the root motivation for the DRIFT rename, Function-Health gating, and portfolio sizing-engine rebuild that followed it.
@@ -2234,7 +2234,7 @@ Inverted predictor (100 − pctile) is mathematically identical (sign flip only)
 - The source `.txt` file has at least two instances of large verbatim message blocks appearing twice in sequence (23/06 ~05:38–06:01 signals-v9 block; 24/06 ~16:02–16:37 SBI/percentile block) — these are WhatsApp export artifacts (likely a forwarded/re-sent duplicate), not two separate asks. The STATUS.md file de-duplicates these; if re-generating this status file from a fresh export, watch for the same duplication pattern before double-counting items.
 - This task produced **documentation only** — no code, config, or runtime changes. Zero prod-deployment impact; `docs/dev_to_prod_migration_todos.md` intentionally not updated for this entry.
 
-**Files changed:** `instruction_docs/chat_ques/All of Us - last month (21 Jun - 21 Jul 2026) - STATUS.md` (new).
+**Files changed:** `docs/instruction_docs/chat_ques/All of Us - last month (21 Jun - 21 Jul 2026) - STATUS.md` (new).
 
 ---
 
@@ -2589,7 +2589,7 @@ todos marked `in_progress` → `completed` per phase, no stopping between phases
 
 ### 2026-07-21 — JULY presentation slides 5–7 review
 
-**Scope:** Read-only review of `instruction_docs/JULY_MindWealth_Presentation_v3.pptx` (slides 5 Macro Runic, 6 Independent Validation, 7 Combo A forward returns).
+**Scope:** Read-only review of `docs/instruction_docs/JULY_MindWealth_Presentation_v3.pptx` (slides 5 Macro Runic, 6 Independent Validation, 7 Combo A forward returns).
 
 **Critical findings:**
 - Slide 5 priority stack `G→C→B→E→D→F→A` contradicts production `CONFIG.yaml` `dominant.PRIORITY`: `C(100) > B(90) > F(80) > E(70) > D(60) > G(50) > A(40)`.
@@ -2634,7 +2634,7 @@ todos marked `in_progress` → `completed` per phase, no stopping between phases
 
 **Purpose:** Single presentation artifact for stakeholder review — frames AI Analyst, Portfolio, and macro/regime work as one week (13–17 Jul 2026).
 
-**Sources:** `instruction_docs/ai_analyst/ai_analyst_implementation_log.md`, `instruction_docs/portfolio_page/portfolio_implementation_log.md`, `docs/mindwealth_ui_job_status.md` (13–17 Jul entries).
+**Sources:** `docs/instruction_docs/ai_analyst/ai_analyst_implementation_log.md`, `docs/instruction_docs/portfolio_page/portfolio_implementation_log.md`, `docs/mindwealth_ui_job_status.md` (13–17 Jul entries).
 
 **Structure:** Executive summary, deliverables tables, day-by-day (work / blockers / issues+resolutions), technical deep-dives (Analyst + Portfolio), verification, outstanding items, presentation guidance, Rohit open questions appendix. **Simple Explanation** at top — plain-language overview of three tracks, day flow, headline fixes, and what was not finished.
 
@@ -5093,7 +5093,7 @@ These were out of scope for this fix (user asked specifically for the revenue-gr
 
 **Task:** User asked (via `/explain-simple`) to elaborate every outstanding clarification Divyanshu still needs from Rohit for the portfolio page, using context from the "Portfolio page backend review" agent chat.
 
-**Source located:** Agent transcript `4b247cde-4c9f-451f-8fdb-c943fc0f497d` (385 turns, 2026-07-20 → 2026-07-22) — the session that produced `instruction_docs/portfolio_page/OPEN_QUESTIONS_FOR_ROHIT.md` (Asks 1–5) and the later blocker-table follow-ups after the 21 July review email and `ikbr_details.md`.
+**Source located:** Agent transcript `4b247cde-4c9f-451f-8fdb-c943fc0f497d` (385 turns, 2026-07-20 → 2026-07-22) — the session that produced `docs/instruction_docs/portfolio_page/OPEN_QUESTIONS_FOR_ROHIT.md` (Asks 1–5) and the later blocker-table follow-ups after the 21 July review email and `ikbr_details.md`.
 
 **What was done:**
 - Re-read `OPEN_QUESTIONS_FOR_ROHIT.md` (Asks 1–5: notional/N, rebalancing rule, IBKR, SLEEVES table, `same_asset_siblings` scope) for the original five blocking decisions.
@@ -5696,7 +5696,7 @@ broader repo-wide audit of other `toFixed()`/sign-check call sites).
 - Public reachability from this host: `51.20.53.218:8506` and `:8514` respond; `:8507` **times out** (not hairpin-only — `:8506` works via same public IP). Strong signal port 8507 is blocked inbound (likely AWS SG) or otherwise unreachable externally.
 - `mindwealth-ui-dev.service` (`:8514`) proxies auth to `127.0.0.1:8507`; login path verified (`POST /api/v1/auth/login` via `:8514` → fast 401 with wrong creds).
 - UI logs show repeated `429 Too Many Requests` on `POST /api/v1/signals/check-degradation` during dashboard/overwatch loads — explains slowness/degraded data after login, not login itself.
-- Stale doc `instruction_docs/portfolio_page/PORTFOLIO_DATA_ISSUES.md` still tells readers to use `NUXT_API_BASE_URL=http://51.20.53.218:8507` — will break for anyone running local Nuxt off-host.
+- Stale doc `docs/instruction_docs/portfolio_page/PORTFOLIO_DATA_ISSUES.md` still tells readers to use `NUXT_API_BASE_URL=http://51.20.53.218:8507` — will break for anyone running local Nuxt off-host.
 
 **Recommendations given to user:** Teammate should use `http://51.20.53.218:8514/login` (dev UI), not `:8507`. For local dev off-server, either use the hosted `:8514` BFF or SSH-tunnel `127.0.0.1:8507`; do not point Nuxt at public `:8507`. Optional ops: open SG port 8507 only if direct API access is required; fix misleading doc; tune rate limits for dashboard polling.
 
@@ -5900,7 +5900,7 @@ The on-disk XBRL cache (`{TICKER}_sec.json`, 80-day TTL) has no concept of *code
 
 **Ask:** Implement all 22 items of `.cursor/plans/conviction_engine_fixes_v2_62be381f.plan.md` end to end (plan file itself not edited, per instruction) — the second and final phase of the conviction-engine gap-fixing work that started from the 28 July consolidated note, after Rohit answered the 11 open questions raised in `conviction_fixes_open_questions.md` and sent a follow-up correcting two of those answers.
 
-**Primary source of truth for every decision/threshold/correction made:** `instruction_docs/conviction_engine_issues/conviction_fixes_decisions.md` (written as part of this task) — it has a full section-by-section rationale for each of the 11 Rohit answers, the two follow-up corrections, the CRM bug root-cause, and every implementation-level micro-decision not fully pinned down by the source docs (bank/hardware keyword lists, precedence ordering, flag-surfacing mechanism, etc.). This details entry summarizes the engineering side; that doc has the business/spec side.
+**Primary source of truth for every decision/threshold/correction made:** `docs/instruction_docs/conviction_engine_issues/conviction_fixes_decisions.md` (written as part of this task) — it has a full section-by-section rationale for each of the 11 Rohit answers, the two follow-up corrections, the CRM bug root-cause, and every implementation-level micro-decision not fully pinned down by the source docs (bank/hardware keyword lists, precedence ordering, flag-surfacing mechanism, etc.). This details entry summarizes the engineering side; that doc has the business/spec side.
 
 **Architecture decision — why `bank_valuation.py`, `adjusted_eps.py`, `tam_sourcing.py` are separate new modules instead of inlining into `scoring.py`/`fundamentals_enriched.py`:** each encapsulates a self-contained substitution model with its own constants (P/TBV-vs-ROE's `BANK_COST_OF_EQUITY`/`BANK_SUSTAINABLE_GROWTH`/tier tables; adjusted-EPS's tax-rate/materiality constants; TAM's SEC XBRL concept name) that would otherwise clutter the two already-large core files, and each is independently unit-testable without needing the full scoring pipeline in scope.
 
@@ -6332,7 +6332,7 @@ They have already drifted: the API version maps `conviction_bq_score` from the o
 (Rohit → Ahil + Divyanshu, 26 Aug 02:13 PT). Sections A–G are analysis, H is Ahil's test list, I is
 the implementation list for me, J is a confirmation list. The body is not in either repo; it was
 read out of Gmail via `gmail-filtered` and extracted to the session scratchpad. **Worth committing
-to `instruction_docs/` next time this thread is touched** — the same gap already bit the v3 addendum.
+to `docs/instruction_docs/` next time this thread is touched** — the same gap already bit the v3 addendum.
 
 **Why only part of Section I.** Items 13–18 all depend on definitions Ahil owns (Test 2's MAE
 fields, Test 5's per-function invalidation level). Building them against my own guesses would
@@ -6421,7 +6421,7 @@ because this file is the standing job log.
 the earlier extraction under the 18 Aug session scratchpad
 (`.../47fc1406-.../scratchpad/att/pkg/Divyanshu_Prompt_v3_Package/`). **If that scratchpad is
 cleaned, the addendum text is only recoverable from Gmail again** — worth committing to
-`instruction_docs/` next time someone touches this thread.
+`docs/instruction_docs/` next time someone touches this thread.
 
 **The one real decision: A2e stays a hard exclusion.**
 §2 says the R:R test "should be labeled as a new mechanical check, not attributed to an existing
