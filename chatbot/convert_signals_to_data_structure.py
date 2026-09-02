@@ -24,6 +24,7 @@ if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
 from src.utils.atomic_io import read_csv_optional_locked, write_dataframe_csv_atomic_guarded
+from src.utils.quality_refresh import refresh_quality_columns
 from src.utils.mtm_pricing import (
     MTM_HOLDING_COLUMN,
     TODAY_PRICE_COLUMN,
@@ -966,6 +967,10 @@ def update_current_prices_in_data_files(data_base_dir=None, stock_data_dir=None)
             if rows_updated_in_file > 0:
                 if TODAY_PRICE_COLUMN_LEGACY in df.columns:
                     df = df.drop(columns=[TODAY_PRICE_COLUMN_LEGACY])
+                # The quality columns are derived from the price we just moved, so
+                # they have to move with it. Leaving them behind is what let a June
+                # R:R sit next to an August price on the same card (Rohit 27 Aug).
+                df = refresh_quality_columns(df)
                 write_dataframe_csv_atomic_guarded(df, csv_path)
                 updated_count += 1
                 total_rows_updated += rows_updated_in_file

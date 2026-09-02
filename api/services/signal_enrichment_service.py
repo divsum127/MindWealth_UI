@@ -571,6 +571,10 @@ def enrich_record(
             or core.get("proposed_reward"),
             "bt_avg_exit_price": _parse_float(row.get("bt_avg_exit_price"))
             or core.get("bt_avg_exit_price"),
+            # Which price the average-win exit was anchored on. signal_price is the
+            # normal case and matches the published Avg % Gain target.
+            "bt_avg_exit_basis": row.get("bt_avg_exit_basis")
+            or core.get("bt_avg_exit_basis"),
             "stop_distance_pct": _parse_float(row.get("stop_distance_pct"))
             or core.get("stop_distance_pct"),
             "rr_null_reason": row.get("rr_null_reason") or core.get("rr_null_reason"),

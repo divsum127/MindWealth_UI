@@ -48,6 +48,11 @@ _project_root = Path(__file__).resolve().parent.parent
 if str(_project_root) not in sys.path:
     sys.path.insert(0, str(_project_root))
 from src.utils.mtm_pricing import normalize_today_price_column_names
+from src.utils.quality_refresh import QUALITY_AS_OF_COLUMN
+
+# Above this many rows a fetch is a broad sweep, not a card the user will read
+# number by number; recomputing every row there would cost more than it returns.
+QUALITY_REFRESH_ROW_LIMIT = 2000
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -123,6 +128,22 @@ CONSOLIDATED_MTM_REPORT_COLUMN_NAMES = (
     SIGNAL_DATA_SOURCE_COL,
 )
 
+# Audit legs behind every R:R. Merged in alongside the MTM columns so a quoted
+# ratio always arrives with the stop it was measured against and the vintage of
+# the computation; without them the ratio cannot be checked against the printed
+# stop ladder (Rohit 27 Aug).
+RR_AUDIT_COLUMN_NAMES = (
+    "nearest_support_stop",
+    "nearest_support_stop_type",
+    "risk_to_nearest_stop",
+    "proposed_reward",
+    "bt_avg_exit_price",
+    "bt_avg_exit_basis",
+    "stop_distance_pct",
+    "rr_null_reason",
+    QUALITY_AS_OF_COLUMN,
+)
+
 ENTRY_TARGETS_COLUMN = (
     "Targets (Historic Rise or Fall to Pivot/Avg % Gain of Historic Winning trades/"
     "Function Specific Target/Horizontal/F-Stack 1/F-Stack 2/EMA 200) [$]"
@@ -149,7 +170,7 @@ def _merge_mtm_report_columns(
         return columns_to_keep
     seen = set(columns_to_keep)
     out = list(columns_to_keep)
-    for col in CONSOLIDATED_MTM_REPORT_COLUMN_NAMES:
+    for col in CONSOLIDATED_MTM_REPORT_COLUMN_NAMES + RR_AUDIT_COLUMN_NAMES:
         if col in df.columns and col not in seen:
             out.append(col)
             seen.add(col)
@@ -518,6 +539,41 @@ class SmartDataFetcher:
         return df
 
     @classmethod
+    def collapse_stale_identity_duplicates(cls, df: pd.DataFrame) -> pd.DataFrame:
+        """Keep one row per signal identity: the freshest quality vintage.
+
+        The consolidated CSVs accumulated several rows for the same signal, one per
+        day it was written. A later price refresh rewrote the Today/MTM columns on
+        every one of them, so each duplicate carried today's price beside the R:R,
+        timeliness and stop ladder frozen on its own write date. Exact-duplicate
+        dedupe could not see them because the stale columns differ, and the fetcher
+        served whichever came first, which was the oldest.
+
+        Preference order: newest ``quality_as_of``, then latest position in the file
+        (the writer appends the refreshed row at the end).
+        """
+        if df is None or df.empty or SYMBOL_SIGNAL_COMPOUND_COL not in df.columns:
+            return df
+        work = df.copy()
+        work["_idkey"] = work.apply(cls._entry_signal_identity_key, axis=1)
+        work["_order"] = range(len(work))
+        if QUALITY_AS_OF_COLUMN in work.columns:
+            work["_vintage"] = work[QUALITY_AS_OF_COLUMN].astype(str)
+        else:
+            work["_vintage"] = ""
+        work = work.sort_values(["_vintage", "_order"], ascending=[False, False])
+        before = len(work)
+        work = work.drop_duplicates(subset=["_idkey"], keep="first")
+        if len(work) != before:
+            logger.info(
+                "Collapsed %s stale duplicate row(s) of %s to the freshest vintage",
+                before - len(work),
+                before,
+            )
+        work = work.sort_values("_order")
+        return work.drop(columns=["_idkey", "_order", "_vintage"], errors="ignore")
+
+    @classmethod
     def collapse_latest_per_function_interval(cls, df: pd.DataFrame) -> pd.DataFrame:
         """
         For one ticker with multiple open rows sharing function+interval, keep latest signal date.
@@ -549,6 +605,7 @@ class SmartDataFetcher:
         if df.empty:
             return df
         df = normalize_today_price_column_names(df)
+        df = self.collapse_stale_identity_duplicates(df)
         if prefer_open_only:
             df = self._filter_outstanding_open_rows(df)
         df = self._filter_df_by_assets(df, assets)
@@ -557,7 +614,28 @@ class SmartDataFetcher:
         if not df.empty and "SignalType" not in df.columns:
             df = df.copy()
             df["SignalType"] = "entry"
-        return df
+        return self._refresh_quality_for_served_rows(df)
+
+    @staticmethod
+    def _refresh_quality_for_served_rows(df: pd.DataFrame) -> pd.DataFrame:
+        """Recompute price-derived quality columns on the rows about to be served.
+
+        Picking the freshest stored row is not enough on its own: rows written
+        before the vintage stamp existed cannot be ordered reliably, and even the
+        newest stored row is a day behind the price refresh. Recomputing here means
+        a quoted R:R always belongs to the price printed beside it.
+
+        Bounded by row count so a broad fetch never pays for a full-file enrichment.
+        """
+        if df is None or df.empty or len(df) > QUALITY_REFRESH_ROW_LIMIT:
+            return df
+        try:
+            from src.utils.quality_refresh import refresh_quality_columns
+
+            return refresh_quality_columns(df)
+        except Exception as exc:  # noqa: BLE001 - serving stale beats serving nothing
+            logger.warning(f"Quality refresh skipped for served rows: {exc}")
+            return df
 
     def _load_entry_source_dataframe(
         self,
@@ -1251,6 +1329,11 @@ class SmartDataFetcher:
                         )
             if assets and len(assets) == 1 and signal_type in ("entry", "exit"):
                 df = self.dedupe_single_asset_signals(df)
+
+            # Quality columns are derived from the price in this frame, so they are
+            # recomputed here rather than trusted from disk, and the R:R audit legs
+            # are materialised before column selection so they can be merged in.
+            df = self._refresh_quality_for_served_rows(df)
 
             # Apply column selection - use indices if provided for 100% accuracy
             if column_indices and len(column_indices) > 0:
