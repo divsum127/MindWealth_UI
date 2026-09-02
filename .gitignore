@@ -63,3 +63,6 @@ docs/cursor_chat_archive/
 # snippets straight from the API; only the scrubbed records in index.jsonl
 # are meant to be tracked. Same reasoning as docs/cursor_chat_archive/ above.
 docs/memory/.mail_cache.json
+# Per-machine sync cursor, not a shared artifact. Tracking it would dirty the
+# tree on every sync and defeat scheduled runs.
+docs/memory/.sync_state.json
