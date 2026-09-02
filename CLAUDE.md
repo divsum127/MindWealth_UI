@@ -142,6 +142,40 @@ Living checklist for promoting `chatbot-dev` work to `chatbot-prod` / production
 
 ---
 
+### File 4 — Harness memory layer (start here for context)
+
+**Path:** `/home/ubuntu/uiv2/git/MindWealth_UI/docs/memory/`
+
+The single entry point for project context. Read it **before** searching `docs/`
+or `docs/instruction_docs/` by hand.
+
+| File | What it answers |
+|------|-----------------|
+| `docs/memory/MAP.md` | Which Claude Code chat worked which mail thread, with `claude --resume <id>` per row |
+| `docs/memory/PROD_QUEUE.md` | Pending dev→prod blocks by age, and which carry a DEV-ONLY revert |
+| `docs/memory/features_index.md` | The seven features and their thread/chat/job/pending counts |
+| `docs/instruction_docs/<feature>/_HUB.md` | Per feature: spec sources, mail threads, chats, decisions ledger, open questions |
+| `docs/memory/index.jsonl` | The machine index everything above is generated from |
+
+Refresh with `/sync-memory` (or `python3 scripts/memory_sync.py --fetch-mail`).
+Stamp a chat↔thread link with `/link-thread`.
+
+**Generated — never hand-edit:** `MAP.md`, `PROD_QUEUE.md`, `features_index.md`,
+and everything between the `MEMORY:BEGIN generated` / `MEMORY:END generated`
+markers in a hub. Rebuilt on every sync.
+
+**Yours — the sync never touches these:** each hub's **Decisions ledger** and
+**Open questions** tables. Open questions is the record of what has been asked
+of Rohit and what has not; keep its `status` column honest.
+
+**Never commit** `docs/memory/.mail_cache.json` — raw unscrubbed mail subjects
+and snippets, gitignored for the same reason as `docs/cursor_chat_archive/`.
+
+A `[PENDING]` migration block becomes `[DONE]` when it is **on prod**, never
+merely on committing to `chatbot-dev`.
+
+---
+
 ## Mandatory Logging Protocol
 
 After completing any task, whether SUCCESSFUL or UNSUCCESSFUL:

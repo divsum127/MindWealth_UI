@@ -58,3 +58,8 @@ macro_intelligence/data/ssi.db
 # Cursor chat archive — transcripts routinely contain pasted tokens and keys.
 # A live GitHub PAT was found in INDEX.md/index.json on 2026-08-18 and blocked a push.
 docs/cursor_chat_archive/
+
+# Memory layer — raw Gmail metadata cache. Holds unscrubbed subjects and
+# snippets straight from the API; only the scrubbed records in index.jsonl
+# are meant to be tracked. Same reasoning as docs/cursor_chat_archive/ above.
+docs/memory/.mail_cache.json

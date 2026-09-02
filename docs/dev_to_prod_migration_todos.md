@@ -21,6 +21,65 @@ Reference deploy skill: `.cursor/skills/prod-pull-and-details/SKILL.md`
 | `[PROD-ACTION]` | Manual step on server after git merge (secrets, systemd, bootstrap) |
 | `[DONE]` | Completed on prod (date in notes) |
 
+## 2026-09-02 — `instruction_docs/` nested under `docs/` + harness memory layer `[PENDING]`
+
+The rename is the part that matters for prod: it moves a path that
+`src/portfolio_nav/workbook_provider.py` resolves at runtime. The memory layer
+itself is scripts and docs and runs nowhere in the prod serving path.
+
+### Git files to merge (`chatbot-dev` → `chatbot-prod`)
+
+**Renamed — 58 files (`fa3299f87`)**
+- `instruction_docs/**` → `docs/instruction_docs/**`
+
+**Modified — reference repoint**
+- `config/portfolio_nav.yaml` — **load-bearing.** The two Ahil NAV workbook
+  paths are joined to BASE_DIR by `src/portfolio_nav/workbook_provider.py:35`.
+  If this file merges without the rename, or the rename lands without this file,
+  the NAV history endpoint raises FileNotFoundError. **They must merge together.**
+- `config/portfolio_policy.yaml`, `tests/test_conviction_engine_v2_fixes.py` — comments only
+- `docs/dev_to_prod_migration_todos.md`, `docs/mindwealth_ui_job_status.md`,
+  `docs/mindwealth_ui_repo_job_status_details.md`, `docs/rohit_6aug_answers_2026-08-17.md`,
+  `presentation_doc/week_of_13-17_july_2026_work_overview.md`, and six files inside
+  the moved tree — prose references
+- `.gitignore` — adds `docs/memory/.mail_cache.json`
+
+**New — memory layer**
+- `scripts/memory_sync.py`, `scripts/gmail_fetch.py`
+- `.claude/skills/sync-memory/SKILL.md`, `.claude/skills/link-thread/SKILL.md`
+- `.claude/hooks/memory_status.sh`, `.claude/settings.json`
+- `docs/memory/{index.jsonl, MAP.md, PROD_QUEUE.md, features_index.md, .sync_state.json}`
+- `docs/instruction_docs/*/_HUB.md` — 7 hubs
+
+### Dev-only / revert before prod
+
+None. No dev shortcut was taken.
+
+### Prod runtime (not in git)
+
+Nothing required. The memory layer is not part of the API serving path and is
+never invoked by `mindwealth-api.service`. `scripts/gmail_fetch.py` needs
+`~/.gmail_mcp/token.json` and the gmail-mcp virtualenv, **neither of which
+exists on prod and neither of which should be created there** — sync runs on the
+dev box only.
+
+### systemd / Nuxt
+
+No changes. No new Python dependency: the Google client libraries are used via
+the gmail-mcp virtualenv, so `requirements.txt` is untouched and the prod
+install is unchanged.
+
+### Smoke tests `[PENDING]`
+
+1. After merge, confirm the NAV workbooks still resolve on prod:
+   `python -c "from src.portfolio_nav.workbook_provider import _workbook_path; print(_workbook_path('mtm'))"`
+   — must print a path under `docs/instruction_docs/portfolio_page/ahil_analysis/` that exists.
+2. Hit the portfolio NAV history endpoint and confirm no FileNotFoundError.
+3. `grep -rn "[^/]instruction_docs/" --include='*.py' --include='*.yaml' .` on the
+   prod clone must return nothing outside `instruction_docs_2` references.
+
+---
+
 ## 2026-08-27 — Stale quality columns served beside a live price (R:R, timeliness, reward remaining) `[PENDING]`
 
 From Rohit's 27 Aug R:R questions on the MCY.NZ card. Touches both repos. **Numbers move on this** — R:R, Timeliness and Reward Remaining change on any signal older than its last quality computation, and aged signals lose timeliness, which can move tier.

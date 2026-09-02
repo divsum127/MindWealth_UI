@@ -7230,3 +7230,89 @@ would have lost running production logic with no copy anywhere.
 - `emailscript.sh` now fans trade-data refresh out to four `MindWealth_UI` checkouts including the
   prod clone. Committed as found; the prod write is by an existing cron path, not something added
   here, but it is worth knowing that the nightly job touches prod runtime data.
+
+---
+
+## 2026-09-02 — Harness memory layer (`docs/memory/`, feature hubs, `docs/instruction_docs/` nesting)
+
+### Assumptions made
+
+- **Seven features are the right partition**, taken from the existing
+  `instruction_docs/` subdirectories rather than invented. If work starts on
+  something that fits none of them, it lands in `unassigned` until a feature is
+  added to `FEATURES` in `scripts/memory_sync.py`.
+- **The Gmail sender allowlist stays as the privacy boundary.** `filters.yaml`
+  currently lists only Rohit, so the memory layer sees only his mail. WhatsApp
+  and every other correspondent are outside this index entirely — a real gap,
+  and the original request named WhatsApp.
+- **A chat's `cwd` identifies the project.** Sessions whose cwd is not this repo
+  are skipped, which is why one of the 49 transcripts (cwd `E:\`) is not indexed.
+- **`docs/memory/` is tracked in git.** Chosen over local-only so the map
+  survives the box and reaches other clones; the scrubber plus the gitignored
+  mail cache are what make that safe.
+
+### Things deferred
+
+- **No scheduled run yet.** `/sync-memory` is manual. A daily cron or a
+  `scheduled-tasks` entry is the obvious next step; the SessionStart hook only
+  reports staleness, it never syncs.
+- **Open questions are not auto-populated.** The table is seeded empty in all
+  seven hubs and filled by hand. Extracting questions from mail bodies was left
+  out deliberately — a wrong `ANSWERED` is worse than an empty row.
+- **`chat_ques` and `ssi_and_conviction` have weak keyword sets** and classify
+  almost nothing. They need either better keywords or folding into their
+  neighbours.
+- **291 job entries, 108 still unassigned.** Job titles are single lines and
+  often name no feature. The sub-bullets underneath usually do, but parsing them
+  was not attempted in this pass.
+
+### Edge cases identified but not handled
+
+- **A thread can legitimately span features** (a mail covering both conviction
+  and SSI). The index stores exactly one feature per thread, so the second
+  feature's hub will not show it.
+- **Session ids are truncated to 8 characters in the views.** `claude --resume`
+  accepts a prefix, but a collision across 48+ sessions would make two rows
+  ambiguous. Not guarded.
+- **The scrubber is pattern-based.** It catches known credential shapes; a
+  bespoke secret pasted into a first prompt would survive into a title. The
+  gitignored mail cache limits blast radius, the scrubber does not eliminate it.
+- **`_within_window` allows 21 days after a thread's last message.** Work that
+  resumes months later will not link automatically and needs `/link-thread`.
+- **Deleted transcripts orphan their records.** Nothing prunes `session`
+  records whose `.jsonl` has been removed.
+
+### Key decisions
+
+- **Index, do not absorb.** The job status and migration docs stay canonical and
+  hand-written per CLAUDE.md; memory holds records with line anchors. Copying
+  them would have created a second source of truth that drifts.
+- **`docs/instruction_docs/` rather than a new top-level parent.** Nesting under
+  `docs/` cost 18 files of reference fixes; a new parent over both trees would
+  have cost 21 code files plus 758 prose links, moved the nested
+  `docs/mindwealth-api-docs/.git` mirror, and landed 255 files as delete+add
+  against `chatbot-prod` on top of 24 already-pending blocks.
+- **Provenance split preserved.** `docs/` is what we wrote, `docs/instruction_docs/`
+  is what we were told. The path is the cheapest provenance signal available and
+  flattening the two would have destroyed it.
+- **Subprocess to the gmail-mcp virtualenv, not a new dependency.** Importing the
+  Google client libraries would have put them in `requirements.txt` and therefore
+  into the prod install for a tool prod never runs.
+- **Inferred links render in italics and never overwrite explicit ones.** A
+  wrong link presented as fact is worse than a missing one.
+
+### Caveats for the next developer
+
+- **Everything between the `MEMORY:BEGIN generated` markers is rewritten on every
+  sync**, as are all three files in `docs/memory/` except `index.jsonl` itself.
+  Edit the Decisions ledger and Open questions only.
+- **`index.jsonl` is the only precious file.** The views regenerate from it with
+  `--render-only`.
+- **Never commit `docs/memory/.mail_cache.json`.** It holds unscrubbed subjects
+  and snippets straight from the API.
+- **Committing to `chatbot-dev` does not make a migration block `[DONE]`.** Only
+  reaching prod does. The prod queue's accuracy depends on that discipline.
+- The queue currently reads **24 pending against 1 done, oldest 16 days**. Some
+  of the 17–20 Aug blocks are likely covered by the `2026-08-20 MERGE CLOSURE`
+  block and never re-tagged; the rollup will keep over-reporting until they are
+  reconciled by hand.
