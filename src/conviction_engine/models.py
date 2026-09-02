@@ -120,6 +120,10 @@ class SignalModification:
     rationale: list[str] = field(default_factory=list)
     position_layers: PositionLayers = field(default_factory=PositionLayers)
     not_applicable_reason: str | None = None
+    # Why the sell verdict is what it is — QUALITY_COLLAPSE vs VALUATION_STRETCH vs
+    # NORMAL_TECHNICAL, or the hard gate that fired. The label used to imply a cause it
+    # had not tested (Rohit 1 Sep, C4).
+    sell_reason_code: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         data = asdict(self)
@@ -157,6 +161,12 @@ def default_record(ticker: str) -> dict[str, Any]:
         "dividend_cut_flag": None,
         "capital_return_penalty": 0.0,
         "manual_overrides": {},
+        # Agentic dimension provenance (Rohit 1 Sep, E1): "ran" | "skipped" |
+        # "no_api_key", plus a per-dimension breakdown, so a 0 on an agentic line can
+        # never again be read as evidence when it only means the search never ran.
+        "agent_dims_status": "skipped",
+        "agent_dims_ran": False,
+        "agent_dim_provenance": {},
         "price": None,
         "market_cap": None,
         "enterprise_value": None,
@@ -187,6 +197,7 @@ def default_record(ticker: str) -> dict[str, Any]:
         "fs_score": 50.0,
         "fs_class": FsClass.MODERATE.value,
         "yield_trap_warning": False,
+        "sell_reason_code": None,
         "flags": [],
         "position_layers": PositionLayers().to_dict(),
         "last_full_calc": None,

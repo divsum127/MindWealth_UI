@@ -230,9 +230,10 @@ class TestCoverageIncompleteGate(unittest.TestCase):
         self.assertEqual(verdict, "CANCEL BUY")
 
     def test_verdict_for_sell_coverage_incomplete(self):
-        verdict, sizing = verdict_for_sell(9.0, "long", coverage_incomplete=True)
+        verdict, sizing, reason = verdict_for_sell(9.0, "long", coverage_incomplete=True)
         self.assertEqual(verdict, "COVERAGE INCOMPLETE")
         self.assertEqual(sizing, 0.0)
+        self.assertEqual(reason, "COVERAGE_INCOMPLETE")
 
     def test_modify_signal_uncalibrated_business_type_gets_coverage_incomplete(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -272,9 +273,12 @@ class TestBuybackDividendFlags(unittest.TestCase):
         self.assertEqual(below_threshold["penalty"], 0.0)
 
     def test_dividend_cut_tiers(self):
+        # No coverage or leverage history: the policy_reset discount has to be earned
+        # with positive evidence, so an unexplained elimination keeps the full penalty.
         tier3 = detect_dividend_cut({"annual_div_declared_current": 0.0, "annual_div_declared_prior": 2.0})
         self.assertEqual(tier3["penalty"], -3.0)
         self.assertTrue(tier3["triggered"])
+        self.assertFalse(tier3["policy_reset"])
 
     def test_combined_penalty_capped_at_negative_4(self):
         buyback = {"penalty": -3.0}
@@ -783,3 +787,302 @@ class TestAdjustedEpsCoverage(unittest.TestCase):
             ),
             {},
         )
+
+
+class TestFrameworkCoverage(unittest.TestCase):
+    """Rohit 1 Sep, section F (28 July note §12). A business type with no purpose-built
+    valuation module falls through to generic EV/Revenue logic and produces a confident
+    wrong number. `coverage_incomplete` does not catch it, because these names ARE
+    typed — MCY is `income`, SPK is `compounder`. The distinction is whether a module
+    was built, not whether the business was recognised."""
+
+    def test_only_modelled_types_have_coverage(self):
+        from src.conviction_engine.scoring import has_framework_coverage
+
+        for modelled in ("bank", "high_margin_hardware", "saas"):
+            self.assertTrue(has_framework_coverage(modelled), modelled)
+        for unmodelled in ("income", "compounder", "cyclical", "unknown", None, ""):
+            self.assertFalse(has_framework_coverage(unmodelled), str(unmodelled))
+
+    def test_unmodelled_type_is_capped_not_penalised(self):
+        from src.conviction_engine.scoring import apply_framework_coverage_cap
+
+        # SPK currently scores +8 on generic machinery. Capped, not zeroed or reversed.
+        score, note = apply_framework_coverage_cap(8.0, "compounder")
+        self.assertEqual(score, 4.0)
+        self.assertIn("no valuation module", note)
+        self.assertIn("compounder", note)
+
+    def test_score_below_the_cap_is_untouched(self):
+        from src.conviction_engine.scoring import apply_framework_coverage_cap
+
+        # The July rule: missing data is neutral and never a penalty.
+        for raw in (-5.0, 0.0, 4.0):
+            score, note = apply_framework_coverage_cap(raw, "income")
+            self.assertEqual(score, raw)
+            self.assertIsNone(note)
+
+    def test_modelled_type_is_never_capped(self):
+        from src.conviction_engine.scoring import apply_framework_coverage_cap
+
+        score, note = apply_framework_coverage_cap(9.0, "bank")
+        self.assertEqual(score, 9.0)
+        self.assertIsNone(note)
+
+
+class TestAgentDimensionProvenance(unittest.TestCase):
+    """Rohit 1 Sep, E1: a 0 on an agentic dimension must say whether the search ran and
+    found nothing, or never ran at all. Every stored record in the universe carried 0.00
+    on all five agentic dimensions because the switch defaults to skipped."""
+
+    def test_record_defaults_declare_the_agents_did_not_run(self):
+        from src.conviction_engine.models import default_record
+
+        record = default_record("TEST")
+        self.assertEqual(record["agent_dims_status"], "skipped")
+        self.assertFalse(record["agent_dims_ran"])
+        self.assertEqual(record["agent_dim_provenance"], {})
+
+
+class TestSellLadder(unittest.TestCase):
+    """Rohit 1 Sep, C4. The old ladder read conviction alone, so MCY at conviction 0
+    got the same HARD EXIT as a business genuinely falling apart, and the label claimed
+    a cause it had never tested. bq_raw now decides the cause, and a reason code makes
+    it permanent."""
+
+    def test_quality_collapse_requires_negative_bq(self):
+        verdict, retain, reason = verdict_for_sell(-5.0, "long", bq_raw=-2.0)
+        self.assertEqual((verdict, retain, reason), ("HARD EXIT", 0.0, "QUALITY_COLLAPSE"))
+
+    def test_valuation_stretch_is_trimmed_not_dumped(self):
+        # A quality business whose price has simply run: retained at 50%.
+        verdict, retain, reason = verdict_for_sell(0.0, "long", bq_raw=5.0)
+        self.assertEqual((verdict, retain, reason), ("PARTIAL EXIT", 50.0, "VALUATION_STRETCH"))
+
+    def test_middle_band_is_a_normal_technical_exit(self):
+        verdict, retain, reason = verdict_for_sell(1.0, "long", bq_raw=2.0)
+        self.assertEqual((verdict, retain, reason), ("FULL EXIT", 0.0, "NORMAL_TECHNICAL"))
+
+    def test_hard_gates_override_business_quality(self):
+        # Yield trap, weak FS, and an uncovered dividend cut each force HARD EXIT even
+        # on a name whose business quality would otherwise buy it a partial exit.
+        for kwargs, expected in (
+            ({"yield_trap": True}, "YIELD_TRAP"),
+            ({"fs_class": "weak"}, "FS_WEAK"),
+            ({"dividend_cut_uncovered": True}, "DIVIDEND_CUT_UNCOVERED"),
+        ):
+            verdict, retain, reason = verdict_for_sell(0.0, "long", bq_raw=9.0, **kwargs)
+            self.assertEqual(verdict, "HARD EXIT", kwargs)
+            self.assertEqual(retain, 0.0, kwargs)
+            self.assertEqual(reason, expected)
+
+    def test_conviction_at_or_above_two_keeps_the_v5_table(self):
+        self.assertEqual(verdict_for_sell(9.0, "long", bq_raw=-5.0)[:2], ("PAUSE SELL", 70.0))
+        self.assertEqual(verdict_for_sell(6.0, "long", bq_raw=-5.0)[:2], ("PARTIAL EXIT", 50.0))
+        self.assertEqual(verdict_for_sell(3.0, "long", bq_raw=-5.0)[:2], ("FULL EXIT", 0.0))
+        self.assertEqual(verdict_for_sell(9.0, "short", bq_raw=0.0)[:2], ("PAUSE SELL", 0.0))
+
+    def test_his_two_names_land_where_he_said_without_intervention(self):
+        # "MCY at bq_raw +5, conviction 0 becomes PARTIAL EXIT, which is the override I
+        # applied by hand. SPK at bq_raw -2, conviction -5 stays HARD EXIT."
+        self.assertEqual(verdict_for_sell(0.0, "long", bq_raw=5.0)[0], "PARTIAL EXIT")
+        self.assertEqual(verdict_for_sell(-5.0, "long", bq_raw=-2.0)[0], "HARD EXIT")
+
+    def test_missing_bq_is_treated_as_the_middle_case(self):
+        # Absent data must not be read as collapse.
+        verdict, _, reason = verdict_for_sell(0.0, "long", bq_raw=None)
+        self.assertEqual((verdict, reason), ("FULL EXIT", "NORMAL_TECHNICAL"))
+
+
+class TestDividendSeriesConstruction(unittest.TestCase):
+    """Rohit 1 Sep, C2: stop using date windows, sum declarations until the periods they
+    cover span twelve months, sample month-end, store frequency as a history."""
+
+    def _spk(self):
+        import pandas as pd
+
+        return pd.Series(
+            [0.135, 0.140, 0.125, 0.125, 0.080],
+            index=pd.to_datetime(["2024-03-21", "2024-09-12", "2025-03-20", "2025-09-09", "2026-03-19"]),
+        )
+
+    def test_anniversary_drift_no_longer_pulls_in_a_third_payment(self):
+        import pandas as pd
+
+        from src.conviction_engine.dividend_series import trailing_twelve_month_dividend
+
+        window = trailing_twelve_month_dividend(self._spk(), pd.Timestamp("2026-08-31"))
+        self.assertAlmostEqual(window["amount"], 0.205, places=6)
+        self.assertEqual(window["payments_used"], 2)
+        self.assertTrue(window["complete"])
+
+    def test_frequency_does_not_change_the_annual_total(self):
+        """Four payments of 7.5c and two of 15c must both read 30c."""
+        import pandas as pd
+
+        from src.conviction_engine.dividend_series import trailing_twelve_month_dividend
+
+        quarterly = pd.Series([0.075] * 8, index=pd.date_range("2024-03-15", periods=8, freq="91D"))
+        semi = pd.Series([0.15] * 4, index=pd.date_range("2024-03-15", periods=4, freq="182D"))
+        as_of = pd.Timestamp("2026-01-31")
+        q_amount = trailing_twelve_month_dividend(quarterly, as_of)["amount"]
+        s_amount = trailing_twelve_month_dividend(semi, as_of)["amount"]
+        self.assertAlmostEqual(q_amount, 0.30, places=4)
+        self.assertAlmostEqual(s_amount, 0.30, places=4)
+
+    def test_frequency_is_stored_as_a_history(self):
+        import pandas as pd
+
+        from src.conviction_engine.dividend_series import frequency_changed, frequency_history
+
+        # A payer that moved from monthly to quarterly, like PPL.TO in 2023.
+        monthly = pd.date_range("2022-01-15", periods=12, freq="30D")
+        quarterly = pd.date_range("2023-02-15", periods=8, freq="91D")
+        series = pd.Series([0.1] * 12 + [0.3] * 8, index=monthly.append(quarterly))
+        history = frequency_history(series)
+        self.assertGreater(history[2022], history[2023])
+        self.assertTrue(frequency_changed(series))
+
+    def test_yield_series_is_sampled_month_end(self):
+        import pandas as pd
+
+        from src.conviction_engine.dividend_series import dividend_yield_series
+
+        prices = pd.Series(2.0, index=pd.date_range("2024-01-01", "2026-06-30", freq="D"))
+        series = dividend_yield_series(prices, self._spk())
+        self.assertGreater(len(series), 6)
+        # Month-end stamps only.
+        for stamp in series.index:
+            self.assertEqual(stamp, stamp + pd.offsets.MonthEnd(0))
+        # Constant 20.5c-27.5c a year on a flat $2.00 price stays a sane yield.
+        self.assertTrue(all(0.05 < v < 0.20 for v in series.values))
+
+    def test_single_payment_history_is_not_assumed_annual(self):
+        import pandas as pd
+
+        from src.conviction_engine.dividend_series import trailing_twelve_month_dividend
+
+        one = pd.Series([0.5], index=pd.to_datetime(["2026-03-19"]))
+        window = trailing_twelve_month_dividend(one, pd.Timestamp("2026-08-31"))
+        self.assertFalse(window["complete"])
+
+
+class TestDealDelayTaxGate(unittest.TestCase):
+    """Rohit 1 Sep, C5: keep both legs, but the tax leg only where a growth premium
+    exists to lose. KXS at 5x unaffected; SPK at 1.36x stops being taxed twice."""
+
+    def _components(self, ev_rev, business_type="compounder"):
+        from src.conviction_engine.scoring import calculate_valuation_tax_components
+
+        record = {
+            "business_type": business_type,
+            "ev_fwd_rev": ev_rev,
+            "manual_overrides": {"deal_delay_flag": True},
+        }
+        return calculate_valuation_tax_components(record), record
+
+    def test_expensive_name_still_pays_the_tax(self):
+        components, _ = self._components(5.0)
+        self.assertEqual(components["deal_delay_signal"], -1.0)
+
+    def test_cheap_name_is_not_taxed_twice(self):
+        components, record = self._components(1.36)
+        self.assertEqual(components["deal_delay_signal"], 0.0)
+        self.assertTrue(record.get("deal_delay_tax_gated"))
+
+    def test_missing_multiple_does_not_tax(self):
+        components, _ = self._components(None)
+        self.assertEqual(components["deal_delay_signal"], 0.0)
+
+    def test_gate_is_inclusive_at_four_times(self):
+        components, _ = self._components(4.0)
+        self.assertEqual(components["deal_delay_signal"], -1.0)
+
+
+class TestDividendCutPolicyReset(unittest.TestCase):
+    """Rohit 1 Sep, C3: full penalty only where coverage deteriorates or leverage rises
+    alongside the cut. Otherwise half penalty, flagged policy_reset. Spark is the case:
+    net debt down 35%, payout moved onto FCF."""
+
+    def _fundamentals(self, **overrides):
+        base = {
+            "annual_div_declared_current": 0.16,   # a 40% cut, into the -1 tier
+            "annual_div_declared_prior": 0.265,
+            "distribution_coverage_ratio": 1.4,
+            "distribution_coverage_ratio_prior": 1.1,
+            "net_debt_ebitda": 1.7,
+            "net_debt_ebitda_prior": 2.6,
+        }
+        base.update(overrides)
+        return base
+
+    def test_deliberate_reset_gets_half_penalty_and_a_flag(self):
+        from src.conviction_engine.capital_allocation import detect_dividend_cut
+
+        flag = detect_dividend_cut(self._fundamentals())
+        self.assertTrue(flag["policy_reset"])
+        self.assertEqual(flag["penalty"], -0.5)
+        self.assertEqual(flag["distress_signals"], [])
+
+    def test_cut_with_deteriorating_coverage_gets_the_full_penalty(self):
+        from src.conviction_engine.capital_allocation import detect_dividend_cut
+
+        flag = detect_dividend_cut(
+            self._fundamentals(distribution_coverage_ratio=0.9, distribution_coverage_ratio_prior=1.3)
+        )
+        self.assertFalse(flag["policy_reset"])
+        self.assertEqual(flag["penalty"], -1.0)
+        self.assertIn("coverage_deteriorated", flag["distress_signals"])
+        self.assertIn("coverage_below_1x", flag["distress_signals"])
+
+    def test_cut_with_rising_leverage_gets_the_full_penalty(self):
+        from src.conviction_engine.capital_allocation import detect_dividend_cut
+
+        flag = detect_dividend_cut(self._fundamentals(net_debt_ebitda=3.4, net_debt_ebitda_prior=2.6))
+        self.assertFalse(flag["policy_reset"])
+        self.assertEqual(flag["penalty"], -1.0)
+        self.assertIn("leverage_rose", flag["distress_signals"])
+
+    def test_reset_discount_requires_positive_evidence(self):
+        from src.conviction_engine.capital_allocation import detect_dividend_cut
+
+        # Cut with no coverage or leverage history at all: no discount.
+        flag = detect_dividend_cut(
+            {"annual_div_declared_current": 0.16, "annual_div_declared_prior": 0.265}
+        )
+        self.assertFalse(flag["policy_reset"])
+        self.assertEqual(flag["penalty"], -1.0)
+
+    def test_no_cut_no_penalty(self):
+        from src.conviction_engine.capital_allocation import detect_dividend_cut
+
+        flag = detect_dividend_cut(self._fundamentals(annual_div_declared_current=0.27))
+        self.assertFalse(flag["triggered"])
+        self.assertEqual(flag["penalty"], 0.0)
+
+
+class TestMarginNormalisedMultiple(unittest.TestCase):
+    """Rohit 1 Sep, E2: no cliff. "A cliff at 50% means 49.9% and 50.1% get different
+    treatment for no reason." Raw EV/Rev divided by net margin over a 20% base, every
+    name, no bucket gate."""
+
+    def test_normalisation_is_continuous_across_the_old_cliff(self):
+        from src.conviction_engine.scoring import margin_normalised_ev_rev
+
+        just_below = margin_normalised_ev_rev(8.0, 0.399)
+        just_above = margin_normalised_ev_rev(8.0, 0.401)
+        self.assertAlmostEqual(just_below, just_above, places=1)
+
+    def test_higher_margin_earns_a_lower_effective_multiple(self):
+        from src.conviction_engine.scoring import margin_normalised_ev_rev
+
+        # 40% margin on 8x revenue normalises to the same place as 20% on 4x.
+        self.assertAlmostEqual(margin_normalised_ev_rev(8.0, 0.40), 4.0, places=4)
+        self.assertAlmostEqual(margin_normalised_ev_rev(4.0, 0.20), 4.0, places=4)
+
+    def test_loss_making_or_missing_margin_leaves_the_multiple_alone(self):
+        from src.conviction_engine.scoring import margin_normalised_ev_rev
+
+        self.assertEqual(margin_normalised_ev_rev(3.0, None), 3.0)
+        self.assertEqual(margin_normalised_ev_rev(3.0, -0.1), 3.0)
+        self.assertIsNone(margin_normalised_ev_rev(None, 0.3))

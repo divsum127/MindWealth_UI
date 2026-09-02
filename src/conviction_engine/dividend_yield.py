@@ -6,55 +6,35 @@ import pandas as pd
 
 
 def compute_dividend_yield_stats(history: pd.DataFrame | None, dividends: pd.Series | None) -> dict[str, float]:
-    """Compute 5Y dividend-yield mean/std from daily close and dividend series.
+    """5Y dividend-yield mean/std, delegating to the month-end series (Rohit 1 Sep, C2).
 
-    Aligns price and dividend timestamps to calendar dates so yfinance dividend
-    rows (often 09:30) match daily close rows (midnight).
+    These are the mean and standard deviation of dividend **yields**, not of dividend
+    amounts — a distinction worth stating because the two were used interchangeably in
+    earlier correspondence.
+
+    The construction is his: a twelve-month dividend built from the periods each
+    declaration covers, divided by the price, sampled at month-end, sixty observations
+    over five years. It replaces a 365-day rolling sum which, for a semi-annual payer,
+    flipped between two and three payments every year of history and inflated both the
+    mean and the dispersion of the distribution the yield-trap z-score is measured
+    against (SPK.NZ read an 11.5% mean yield on the old basis).
     """
-    if history is None or dividends is None or history.empty or dividends.empty or "Close" not in history.columns:
+    from .dividend_series import dividend_yield_stats
+
+    close = None
+    if history is not None and not getattr(history, "empty", True) and "Close" in history.columns:
+        close = history["Close"]
+    stats = dividend_yield_stats(close, dividends)
+    # Keep the historical return contract: numeric stats only, empty when too thin.
+    if "dividend_yield_5y_mean" not in stats:
         return {}
-
-    close = history["Close"].dropna()
-    if close.empty:
-        return {}
-
-    dividends = dividends.dropna()
-    if dividends.empty:
-        return {}
-
-    if close.index.tz is not None:
-        close.index = close.index.tz_localize(None)
-    if dividends.index.tz is not None:
-        dividends.index = dividends.index.tz_localize(None)
-
-    close_daily = close.groupby(close.index.normalize()).last()
-    div_daily = dividends.groupby(dividends.index.normalize()).sum()
-
-    # Trailing-year dividend at each date, counted by payment cadence rather than by a
-    # 365-day rolling sum. A rolling sum over a semi-annual payer flips between two and
-    # three payments as anniversaries drift, which inflates both the mean and the
-    # dispersion of the very distribution the yield-trap z-score is measured against.
-    # SPK.NZ came out at an 11.5% 5Y mean yield on the rolling basis against roughly
-    # 6-7% on the real one (Rohit 26 Aug, conviction spec gap 4).
-    per_year = payments_per_year(div_daily)
-    if per_year is not None and len(div_daily) >= per_year:
-        cumulative = div_daily.cumsum()
-        trailing_at_payment = cumulative - cumulative.shift(per_year).fillna(0.0)
-        # Only meaningful once a full cadence of payments has been seen.
-        trailing_at_payment = trailing_at_payment.iloc[per_year - 1 :]
-        annual_dividends = trailing_at_payment.reindex(close_daily.index, method="ffill")
-    else:
-        daily_dividends = div_daily.reindex(close_daily.index, fill_value=0.0)
-        annual_dividends = daily_dividends.rolling(window=365, min_periods=60).sum()
-
-    dividend_yield = (annual_dividends / close_daily).replace([float("inf"), float("-inf")], pd.NA).dropna()
-    dividend_yield = dividend_yield[dividend_yield > 0]
-    if len(dividend_yield) < 20:
-        return {}
-
     return {
-        "dividend_yield_5y_mean": round(float(dividend_yield.mean()), 6),
-        "dividend_yield_5y_std": round(float(dividend_yield.std(ddof=0)), 6),
+        "dividend_yield_5y_mean": stats["dividend_yield_5y_mean"],
+        "dividend_yield_5y_std": stats["dividend_yield_5y_std"],
+        "dividend_yield_observations": stats["dividend_yield_observations"],
+        "dividend_frequency_history": stats["dividend_frequency_history"],
+        "dividend_frequency_changed": stats["dividend_frequency_changed"],
+        "dividend_series_basis": stats["dividend_series_basis"],
     }
 
 

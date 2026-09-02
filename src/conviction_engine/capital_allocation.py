@@ -121,7 +121,17 @@ def detect_buyback_suspension(fundamentals: dict[str, Any]) -> dict[str, Any]:
 
 def detect_dividend_cut(fundamentals: dict[str, Any]) -> dict[str, Any]:
     """Declared-annual-dividend-per-share tiered decline flag (same tier structure
-    as buyback suspension, no minimum-size gate — any declared dividend cut counts)."""
+    as buyback suspension, no minimum-size gate — any declared dividend cut counts).
+
+    Rohit 1 Sep, C3: "A cut that's a deliberate reset to an FCF-linked payout with
+    leverage falling is good capital allocation, not distress. Spark is exactly that —
+    net debt down 35%, payout now 90-100% of FCF. Rule: full penalty only where coverage
+    deteriorates or leverage rises alongside the cut. Otherwise half penalty, flagged
+    policy_reset."
+
+    The three comparisons are against the prior stored record and both inputs are
+    already carried: distribution coverage and net-debt-to-EBITDA.
+    """
     current = _float_or_none(fundamentals.get("annual_div_declared_current"))
     prior = _float_or_none(fundamentals.get("annual_div_declared_prior"))
     result: dict[str, Any] = {
@@ -130,14 +140,49 @@ def detect_dividend_cut(fundamentals: dict[str, Any]) -> dict[str, Any]:
         "decline_pct": None,
         "current_rate": current,
         "prior_rate": prior,
+        "policy_reset": False,
+        "distress_signals": [],
     }
     if prior is None or prior <= 0:
         return result
     decline = _decline_pct(current, prior)
     penalty = _tiered_decline_penalty(decline)
     result["decline_pct"] = round(decline, 4) if decline is not None else None
-    result["penalty"] = penalty
-    result["triggered"] = penalty < 0.0
+
+    if penalty < 0.0:
+        # Does the cut come with deteriorating coverage or rising leverage?
+        distress: list[str] = []
+        coverage_now = _float_or_none(fundamentals.get("distribution_coverage_ratio"))
+        coverage_prior = _float_or_none(fundamentals.get("distribution_coverage_ratio_prior"))
+        if coverage_now is not None and coverage_prior is not None and coverage_now < coverage_prior:
+            distress.append("coverage_deteriorated")
+        if coverage_now is not None and coverage_now < 1.0:
+            distress.append("coverage_below_1x")
+        leverage_now = _float_or_none(fundamentals.get("net_debt_ebitda"))
+        leverage_prior = _float_or_none(fundamentals.get("net_debt_ebitda_prior"))
+        if leverage_now is not None and leverage_prior is not None and leverage_now > leverage_prior:
+            distress.append("leverage_rose")
+
+        # A reset has to be evidenced, not merely un-contradicted. Requiring positive
+        # improvement — coverage up or leverage down — rather than accepting the absence
+        # of distress means a cut to zero on a name we hold no coverage data for takes
+        # the full penalty instead of a discount it has not earned. Spark still gets the
+        # half penalty because both of its comparisons genuinely improved.
+        improvement: list[str] = []
+        if coverage_now is not None and coverage_prior is not None and coverage_now > coverage_prior:
+            improvement.append("coverage_improved")
+        if leverage_now is not None and leverage_prior is not None and leverage_now < leverage_prior:
+            improvement.append("leverage_fell")
+
+        result["distress_signals"] = distress
+        result["improvement_signals"] = improvement
+        if distress or not improvement:
+            result["penalty"] = penalty
+        else:
+            # Deliberate reset to a sustainable payout: half penalty, flagged.
+            result["penalty"] = penalty / 2.0
+            result["policy_reset"] = True
+    result["triggered"] = result["penalty"] < 0.0
     return result
 
 

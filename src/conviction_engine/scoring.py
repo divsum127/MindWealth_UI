@@ -102,6 +102,34 @@ INSURER_INDUSTRY_TOKENS = ("insurance",)
 
 HIGH_MARGIN_HARDWARE_NET_MARGIN_THRESHOLD = 0.40
 
+# ── Margin-normalised EV/Revenue (Rohit 1 Sep, E2 / 28 July note §5.7) ────────────
+# "On the threshold itself — don't set one. A cliff at 50% means 49.9% and 50.1% get
+# different treatment for no reason. Use the continuous version already in Section 5.7:
+# margin-normalised EV/Revenue, raw EV/Rev divided by net margin over 20%. Every name,
+# no bucket gate."
+#
+# The shipped threshold was 40%, not the 50% the note argued against, but the objection
+# is the same either way: it is a cliff, and it also decides the tie-break question for
+# names spanning two buckets. The continuous form removes both problems — there is no
+# bucket to be on the wrong side of.
+MARGIN_NORMALISATION_BASE = 0.20
+
+
+def margin_normalised_ev_rev(ev_rev: float | None, net_margin: float | None) -> float | None:
+    """Raw EV/Revenue divided by net margin expressed over a 20% base.
+
+    A 40%-margin name on 8x revenue normalises to 4x — the same as a 20%-margin name on
+    4x, which is the point: the multiple is judged against the profitability backing it
+    rather than against a bucket the name was sorted into. Returns ``None`` when either
+    input is missing, and leaves ``ev_rev`` untouched for a loss-making name, where the
+    normalisation has no meaning.
+    """
+    if ev_rev is None:
+        return None
+    if net_margin is None or net_margin <= 0:
+        return ev_rev
+    return round(ev_rev / (net_margin / MARGIN_NORMALISATION_BASE), 4)
+
 
 def is_hardware_or_semiconductor_sector(info: dict[str, Any] | None) -> bool:
     """Raw sector/industry token check (item 6) — independent of the 40%-margin
@@ -202,6 +230,60 @@ def detect_business_type(info: dict[str, Any] | None = None, overrides: dict[str
 def is_coverage_incomplete(business_type: str | None) -> bool:
     """True when `business_type` isn't one of the 6 calibrated types (item 5)."""
     return str(business_type or "").lower() not in KNOWN_BUSINESS_TYPES
+
+
+# ── Framework coverage (Rohit 1 Sep, section F / 28 July note §12) ─────────────────
+# A business type with no purpose-built valuation module does not fail loudly. It falls
+# through to the generic EV/Revenue path and produces a confident, wrong number. Proven
+# on NVDA, and again on MCY and SPK: both are capital-intensive names whose economics run
+# on EV/EBITDA and FCF yield, but they route to EV/Revenue tiers they sit far below, so
+# the valuation tax contributes almost nothing and the score reads as conviction.
+#
+# `coverage_incomplete` does not catch this, because these names ARE typed — they are
+# `income` and `compounder`, which are "known". The distinction that matters is not
+# whether we recognised the business, it is whether we built a model for it.
+#
+# Only three types have a purpose-built valuation slice today: banks (P/TBV vs ROE),
+# high-margin hardware (EV/EBITDA), and SaaS (the EV/Revenue tiers were calibrated on
+# SaaS multiples). Everything else borrows SaaS-shaped machinery.
+MODELLED_BUSINESS_TYPES: frozenset[str] = frozenset(
+    {
+        BusinessType.BANK.value,
+        BusinessType.HIGH_MARGIN_HARDWARE.value,
+        BusinessType.SAAS.value,
+    }
+)
+
+# Conviction ceiling applied where no module exists. Not a penalty — the July rule is
+# that missing data scores neutral and never negative — but a cap, so an unmodelled name
+# cannot present as a high-conviction buy on machinery that was never built for it.
+UNMODELLED_CONVICTION_CAP = 4.0
+
+
+def has_framework_coverage(business_type: str | None) -> bool:
+    """True when this business type has a purpose-built valuation module."""
+    return str(business_type or "").lower() in MODELLED_BUSINESS_TYPES
+
+
+def apply_framework_coverage_cap(
+    conviction_score: float,
+    business_type: str | None,
+) -> tuple[float, str | None]:
+    """Cap conviction where the business type has no built module.
+
+    Returns ``(score, note)``; ``note`` is None when no cap applied.
+    """
+    if has_framework_coverage(business_type):
+        return conviction_score, None
+    if conviction_score <= UNMODELLED_CONVICTION_CAP:
+        return conviction_score, None
+    label = str(business_type or "unknown")
+    return (
+        UNMODELLED_CONVICTION_CAP,
+        f"Framework coverage: no valuation module built for business_type='{label}'; "
+        f"conviction capped at +{UNMODELLED_CONVICTION_CAP:.0f} (scored on generic "
+        "EV/Revenue machinery calibrated for other business types)",
+    )
 
 
 def _float_or_none(value: Any) -> float | None:
@@ -364,9 +446,16 @@ def calculate_valuation_tax_components(record: dict[str, Any]) -> dict[str, floa
         # EV/EBITDA multiple here is backed by current profit, not a growth story.
     else:
         tiers = EV_REV_TIERS.get(business_type, EV_REV_TIERS[BusinessType.UNKNOWN.value])
-        if ev_rev is not None:
-            components["entry_multiple"] = _tiered_tax(ev_rev, tiers)
-            if business_type == BusinessType.INCOME.value and ev_rev < tiers[0]:
+        # Margin-normalised, so the multiple is judged against the profitability backing
+        # it rather than against the bucket the name landed in (Rohit 1 Sep, E2). The raw
+        # figure is kept alongside, since that is what a reader recognises.
+        net_margin = _float_or_none(record.get("net_margin"))
+        ev_rev_normalised = margin_normalised_ev_rev(ev_rev, net_margin)
+        record["ev_fwd_rev_margin_normalised"] = ev_rev_normalised
+        ev_rev_for_tax = ev_rev_normalised if ev_rev_normalised is not None else ev_rev
+        if ev_rev_for_tax is not None:
+            components["entry_multiple"] = _tiered_tax(ev_rev_for_tax, tiers)
+            if business_type == BusinessType.INCOME.value and ev_rev_for_tax < tiers[0]:
                 components["business_type_relief"] = 1.0
         if ev_rev is not None and ev_rev >= UNIVERSAL_FLOOR_EV_REV_TRIGGER:
             components["entry_multiple"] = min(components["entry_multiple"], UNIVERSAL_FLOOR_VALUE)
@@ -394,8 +483,19 @@ def calculate_valuation_tax_components(record: dict[str, Any]) -> dict[str, floa
         components["oey_penalty"] = -2.0
 
     overrides = record.get("manual_overrides") or {}
+    # Deal delay is counted in BQ as well. The tax leg exists because a delayed deal
+    # signals slowing growth and a hard multiple re-rate — but that risk only exists if
+    # there is a growth premium in the price to lose. SPK trades at 1.36x revenue, so
+    # taxing it there punished the same fact twice for nothing. Gated at EV/forward
+    # revenue of 4x and above; below that, deal delay counts once, in BQ.
+    # (Rohit 1 Sep, C5. KXS at 5x is unaffected; SPK's tax goes from -3 to -1.)
     if overrides.get("deal_delay_flag") or overrides.get("deal_delay_risk"):
-        components["deal_delay_signal"] = -1.0
+        ev_rev_for_gate = _float_or_none(record.get("ev_fwd_rev"))
+        if ev_rev_for_gate is not None and ev_rev_for_gate >= DEAL_DELAY_TAX_EV_REV_FLOOR:
+            components["deal_delay_signal"] = -1.0
+        else:
+            # Recorded so the absence is visible rather than looking like no signal.
+            record["deal_delay_tax_gated"] = True
     regime = _float_or_none(overrides.get("market_regime_beta"))
     if regime is not None and regime > 1.2:
         components["market_regime_beta"] = -1.0
@@ -559,6 +659,10 @@ UNDEFINED_YIELD_TRAP_SUFFIXES = (".KS", ".KQ", ".T", ".HK", ".SS", ".SZ")
 
 BANK_YIELD_TRAP_THRESHOLD_ADDON = 0.02  # +2pp on top of the market threshold, item 3
 
+# The deal-delay valuation tax only applies where there is a growth premium in the price
+# to re-rate away (Rohit 1 Sep, C5).
+DEAL_DELAY_TAX_EV_REV_FLOOR = 4.0
+
 
 def market_yield_threshold(ticker: str, business_type: str | None = None) -> float | None:
     symbol = ticker.upper()
@@ -658,28 +762,80 @@ def verdict_for_buy(
     return "CANCEL BUY", 0.0
 
 
+# ── Sell ladder (Rohit 1 Sep, C4) ─────────────────────────────────────────────────
+# His complaint was that the label lied about the cause: a conviction of 0 on MCY mapped
+# to HARD EXIT, described in the spec as "fundamentals deteriorating or yield trap", when
+# MCY had just beaten guidance and cut leverage. The score was low because the PRICE was
+# high. So the ladder now reads bq_raw separately from conviction, and every verdict
+# carries a reason code saying which of the three cases produced it.
+#
+#   conviction < +2 and bq_raw < 0        HARD EXIT     retain 0%    QUALITY_COLLAPSE
+#   conviction < +2 and bq_raw 0 to +4    FULL EXIT     retain 0%    NORMAL_TECHNICAL
+#   conviction < +2 and bq_raw >= +5      PARTIAL EXIT  retain 50%   VALUATION_STRETCH
+#   conviction >= +2                      existing v5 table
+#
+# Hard gates override all of it and force HARD EXIT: yield trap, fs_class weak, or a
+# dividend cut with coverage below 1.0x.
+SELL_REASON_QUALITY_COLLAPSE = "QUALITY_COLLAPSE"
+SELL_REASON_NORMAL_TECHNICAL = "NORMAL_TECHNICAL"
+SELL_REASON_VALUATION_STRETCH = "VALUATION_STRETCH"
+SELL_REASON_YIELD_TRAP = "YIELD_TRAP"
+SELL_REASON_FS_WEAK = "FS_WEAK"
+SELL_REASON_DIVIDEND_CUT_UNCOVERED = "DIVIDEND_CUT_UNCOVERED"
+SELL_REASON_COVERAGE_INCOMPLETE = "COVERAGE_INCOMPLETE"
+SELL_REASON_CONVICTION_INTACT = "CONVICTION_INTACT"
+
+BQ_QUALITY_COLLAPSE_BELOW = 0.0
+BQ_VALUATION_STRETCH_AT_OR_ABOVE = 5.0
+
+
 def verdict_for_sell(
     score: float,
     signal_timeframe: str,
     yield_trap: bool = False,
     coverage_incomplete: bool = False,
-) -> tuple[str, float]:
+    bq_raw: float | None = None,
+    fs_class: str | None = None,
+    dividend_cut_uncovered: bool = False,
+) -> tuple[str, float, str]:
+    """Return ``(verdict, retain_pct, sell_reason_code)``.
+
+    ``bq_raw`` is the business-quality score BEFORE the valuation tax, which is the
+    whole point: it separates a business whose quality has collapsed from one whose
+    price has simply run.
+    """
     if coverage_incomplete:
-        return "COVERAGE INCOMPLETE", 0.0
+        return "COVERAGE INCOMPLETE", 0.0, SELL_REASON_COVERAGE_INCOMPLETE
+
+    # Hard gates, in his order. Each forces HARD EXIT regardless of bq_raw.
     if yield_trap:
-        return "HARD EXIT", 0.0
-    if signal_timeframe == "short":
-        if score >= 8:
-            return "PAUSE SELL", 0.0
-        if score >= 5:
-            return "PARTIAL EXIT", 0.0
-        if score >= 2:
-            return "FULL EXIT", 0.0
-        return "HARD EXIT", 0.0
-    if score >= 8:
-        return "PAUSE SELL", 70.0
-    if score >= 5:
-        return "PARTIAL EXIT", 50.0
+        return "HARD EXIT", 0.0, SELL_REASON_YIELD_TRAP
+    if str(fs_class or "").lower() == FsClass.WEAK.value:
+        return "HARD EXIT", 0.0, SELL_REASON_FS_WEAK
+    if dividend_cut_uncovered:
+        return "HARD EXIT", 0.0, SELL_REASON_DIVIDEND_CUT_UNCOVERED
+
     if score >= 2:
-        return "FULL EXIT", 0.0
-    return "HARD EXIT", 0.0
+        # Conviction intact — the existing v5 table, unchanged.
+        if signal_timeframe == "short":
+            if score >= 8:
+                return "PAUSE SELL", 0.0, SELL_REASON_CONVICTION_INTACT
+            if score >= 5:
+                return "PARTIAL EXIT", 0.0, SELL_REASON_CONVICTION_INTACT
+            return "FULL EXIT", 0.0, SELL_REASON_CONVICTION_INTACT
+        if score >= 8:
+            return "PAUSE SELL", 70.0, SELL_REASON_CONVICTION_INTACT
+        if score >= 5:
+            return "PARTIAL EXIT", 50.0, SELL_REASON_CONVICTION_INTACT
+        return "FULL EXIT", 0.0, SELL_REASON_CONVICTION_INTACT
+
+    # Conviction below +2: the cause is decided by business quality, not by the score.
+    # A missing bq_raw is treated as the middle case rather than assumed to be collapse.
+    bq = bq_raw if bq_raw is not None else 0.0
+    if bq < BQ_QUALITY_COLLAPSE_BELOW:
+        return "HARD EXIT", 0.0, SELL_REASON_QUALITY_COLLAPSE
+    if bq >= BQ_VALUATION_STRETCH_AT_OR_ABOVE:
+        # Retain 50%: a quality business that has simply re-rated gets trimmed, not
+        # dumped. Retain fractions stay deliberately simple pending Ahil's sizing work.
+        return "PARTIAL EXIT", 50.0, SELL_REASON_VALUATION_STRETCH
+    return "FULL EXIT", 0.0, SELL_REASON_NORMAL_TECHNICAL

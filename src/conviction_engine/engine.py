@@ -15,6 +15,8 @@ from .fundamentals_enriched import compute_bq_components_auto
 from .fd_votes import compute_fd_votes
 from .scoring import (
     apply_fs_cap,
+    apply_framework_coverage_cap,
+    has_framework_coverage,
     calculate_bq_raw,
     classify_fs,
     clamp,
@@ -105,6 +107,14 @@ def full_recalculation(
 
     existing = load_record(symbol, store_dir) or default_record(symbol)
     record = {**existing, "ticker": symbol}
+
+    # Prior-record comparators for the dividend-cut policy_reset rule (Rohit 1 Sep, C3).
+    # A cut with coverage improving and leverage falling is capital allocation, not
+    # distress, and the comparison is against what was stored last time.
+    for field_name in ("distribution_coverage_ratio", "net_debt_ebitda"):
+        prior_value = existing.get(field_name)
+        if prior_value is not None:
+            fundamentals.setdefault(f"{field_name}_prior", prior_value)
     record["manual_overrides"] = {**record.get("manual_overrides", {}), **overrides}
     record["quote_type"] = info.get("quoteType") or fundamentals.get("quote_type") or record.get("quote_type")
     quote_type = str(record.get("quote_type") or "").upper()
@@ -115,9 +125,29 @@ def full_recalculation(
     record["business_type_source"] = source
 
     manual = dict(record.get("manual_overrides") or {})
+    # Agentic dimension provenance (Rohit 1 Sep, E1). The five agentic dimensions used
+    # to default to skipped, and a skipped dimension scored a silent 0 that looked
+    # identical to "the search ran and found nothing". Every stored record in the
+    # universe carried 0.00 on all five as a result. The switch still exists, because
+    # each run costs API calls, but the record now always states which of the three
+    # cases produced the number: the agent ran, it was skipped, or no API key was
+    # available. A 0 is never again ambiguous.
     skip_agents = overrides.get("skip_agent_dims", True)
     if os.environ.get("CONVICTION_RUN_AGENT_DIMS") == "1":
         skip_agents = False
+    has_api_key = bool(os.environ.get("ANTHROPIC_API_KEY"))
+    if skip_agents:
+        agent_status = "skipped"
+    elif not has_api_key:
+        agent_status = "no_api_key"
+    else:
+        agent_status = "ran"
+    record["agent_dims_status"] = agent_status
+    record["agent_dims_ran"] = agent_status == "ran"
+    # Whether a purpose-built valuation module exists for this business type. Set here as
+    # well as in modify_signal so the stored record — and therefore the API, the CSV and
+    # the drawer — carries it without needing a signal to be evaluated first.
+    record["framework_coverage"] = has_framework_coverage(business_type)
     if not skip_agents:
         company = str(info.get("longName") or info.get("shortName") or symbol)
         agent_out = run_agent_dimensions(
@@ -152,6 +182,47 @@ def full_recalculation(
             elif signal == "supply_constraint" and "supply_constraint_flag" not in manual:
                 manual["supply_constraint_flag"] = deal_delay_detail.get("supply_constraint_detail") or "Supply-constrained per latest transcript scan"
         record["manual_overrides"] = manual
+
+    # Per-dimension provenance, so the score drawer can distinguish a real 0 from an
+    # absent one on each line rather than only at record level (Rohit 1 Sep, E1).
+    AGENT_DIMENSION_DETAILS = {
+        "macro_tailwind": "macro_tailwind_detail",
+        "ceo_quality": "ceo_quality_detail",
+        "competitive_moat": "competitive_moat_detail",
+        "deal_delay_risk": "deal_delay_detail",
+        "reinvestment_runway": "reinvestment_runway_detail",
+    }
+    provenance: dict[str, dict[str, Any]] = {}
+    for dim, detail_key in AGENT_DIMENSION_DETAILS.items():
+        detail = manual.get(detail_key)
+        if isinstance(detail, dict) and detail.get("rationale") != "Agent unavailable":
+            provenance[dim] = {
+                "source": "agent",
+                "confidence": detail.get("confidence"),
+                "sources": detail.get("sources") or [],
+                "evidence_against": detail.get("evidence_against"),
+                "rationale": detail.get("rationale"),
+            }
+        elif isinstance(detail, dict):
+            # The agent was attempted and failed — distinct from never attempted.
+            provenance[dim] = {
+                "source": "agent_failed",
+                "confidence": 0.0,
+                "sources": [],
+                "evidence_against": None,
+                "rationale": detail.get("rationale"),
+            }
+        elif dim in manual or f"{dim}_score" in manual:
+            provenance[dim] = {"source": "manual", "confidence": None, "sources": [], "evidence_against": None, "rationale": None}
+        else:
+            provenance[dim] = {
+                "source": "not_run",
+                "confidence": None,
+                "sources": [],
+                "evidence_against": None,
+                "rationale": f"Agentic dimension did not run ({agent_status}); scored 0 by absence, not by evidence.",
+            }
+    record["agent_dim_provenance"] = provenance
 
     # Divergence counter — update before BQ so divergence_signal uses persisted days
     from .divergence import bootstrap_days_below_from_history, update_divergence_state
@@ -253,6 +324,7 @@ def full_recalculation(
             "revenue_estimate_current": fundamentals.get("revenue_estimate_current"),
             "revenue_miss_pct": fundamentals.get("revenue_miss_pct"),
             "revenue_miss_gt_10pct": fundamentals.get("revenue_miss_gt_10pct"),
+            "net_margin": fundamentals.get("net_margin"),
             "pe_history_thin": fundamentals.get("pe_history_thin"),
             "pe_history_years": fundamentals.get("pe_history_years"),
             "adjusted_eps_ttm": fundamentals.get("adjusted_eps_ttm"),
@@ -265,6 +337,11 @@ def full_recalculation(
             "one_off_unclassified_pretax": fundamentals.get("one_off_unclassified_pretax"),
             "one_off_unclassified_pct_of_ni": fundamentals.get("one_off_unclassified_pct_of_ni"),
             "one_off_review_needed": fundamentals.get("one_off_review_needed"),
+            "one_off_sizing_cap_pct": fundamentals.get("one_off_sizing_cap_pct"),
+            "adjusted_eps_source": fundamentals.get("adjusted_eps_source"),
+            "adjusted_eps_citation": fundamentals.get("adjusted_eps_citation"),
+            "adjusted_eps_period": fundamentals.get("adjusted_eps_period"),
+            "statement_coverage": fundamentals.get("statement_coverage"),
             "effective_tax_rate": fundamentals.get("effective_tax_rate"),
             "effective_tax_rate_is_fallback": fundamentals.get("effective_tax_rate_is_fallback"),
             "pe_ttm_adjusted": fundamentals.get("pe_ttm_adjusted"),
@@ -592,6 +669,14 @@ def modify_signal(
     raw_score = float(record.get("conviction_score", 0.0) or 0.0)
     fs_class = str(record.get("fs_class") or classify_fs(record.get("fs_score")))
     final_score, cap_reason = apply_fs_cap(raw_score, fs_class, signal_timeframe)
+    # Framework coverage cap (Rohit 1 Sep, section F): an unmodelled business type is
+    # scored on machinery built for a different one, so it cannot present as a
+    # high-conviction buy. Applied after the FS cap and never below it.
+    final_score, coverage_cap_reason = apply_framework_coverage_cap(
+        final_score, record.get("business_type")
+    )
+    record["framework_coverage"] = has_framework_coverage(record.get("business_type"))
+    record["framework_coverage_capped"] = coverage_cap_reason is not None
     yield_trap = bool(record.get("yield_trap_warning"))
     coverage_incomplete = is_coverage_incomplete(record.get("business_type"))
     rationale = [
@@ -600,6 +685,8 @@ def modify_signal(
     ]
     if cap_reason:
         rationale.append(cap_reason)
+    if coverage_cap_reason:
+        rationale.append(coverage_cap_reason)
     supply_flag = (record.get("manual_overrides") or {}).get("supply_constraint_flag")
     if supply_flag:
         # Item 9 (Q8 answer): informational only, lands in rationale the same way TAM
@@ -625,7 +712,27 @@ def modify_signal(
             verdict, sizing = "CANCEL BUY", 0.0
             rationale.append("TACTICAL_ADD_WARNING: conviction deteriorated since core opened")
     elif technical_signal == "SELL":
-        verdict, sizing = verdict_for_sell(final_score, signal_timeframe, yield_trap, coverage_incomplete)
+        # bq_raw is passed separately from conviction so the ladder can tell a quality
+        # collapse from a price that has simply run (Rohit 1 Sep, C4).
+        dividend_flag = record.get("dividend_cut_flag") or {}
+        coverage_ratio = _safe_float(record.get("distribution_coverage_ratio"))
+        dividend_cut_uncovered = bool(
+            isinstance(dividend_flag, dict)
+            and dividend_flag.get("triggered")
+            and coverage_ratio is not None
+            and coverage_ratio < 1.0
+        )
+        verdict, sizing, sell_reason_code = verdict_for_sell(
+            final_score,
+            signal_timeframe,
+            yield_trap,
+            coverage_incomplete,
+            bq_raw=_safe_float(record.get("bq_raw")),
+            fs_class=fs_class,
+            dividend_cut_uncovered=dividend_cut_uncovered,
+        )
+        record["sell_reason_code"] = sell_reason_code
+        rationale.append(f"Sell reason: {sell_reason_code} (bq_raw {record.get('bq_raw')}, conviction {final_score})")
     else:
         verdict, sizing = "NOT_APPLICABLE", 0.0
         rationale.append("Unknown technical signal")
@@ -636,6 +743,19 @@ def modify_signal(
         )
     elif yield_trap:
         rationale.append("Yield trap hard gate fired")
+
+    # Unverified-earnings sizing cap (Rohit 1 Sep, section B). Where more than 20% of net
+    # income sits in a line the engine cannot identify, the SCORE is left exactly where
+    # it lands — missing data stays neutral, per the July rule — and what gets limited is
+    # how much would be bought on a number nobody has verified.
+    one_off_cap = _safe_float(record.get("one_off_sizing_cap_pct"))
+    if one_off_cap is not None and sizing > one_off_cap:
+        rationale.append(
+            f"Unverified earnings: {(record.get('one_off_unclassified_pct_of_ni') or 0) * 100:.0f}% of net income "
+            f"sits in an unidentified line; sizing capped {sizing:.0f}% -> {one_off_cap:.0f}% (score unchanged)"
+        )
+        sizing = one_off_cap
+        record["one_off_sizing_capped"] = True
 
     if update_layers:
         _update_position_layers(layers, verdict, sizing, technical_signal, signal_timeframe, quant_model_name, signal_date)
@@ -650,6 +770,7 @@ def modify_signal(
         signal_timeframe=signal_timeframe,
         verdict=verdict,
         sizing_pct=sizing,
+        sell_reason_code=record.get("sell_reason_code"),
         conviction_score=round(final_score, 2),
         conviction_raw=round(raw_score, 2),
         fs_score=record.get("fs_score"),

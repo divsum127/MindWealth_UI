@@ -85,6 +85,17 @@ def list_ticker_records(
             "adjusted_eps_basis": r.get("adjusted_eps_basis"),
             "one_off_pct_of_ni": r.get("one_off_pct_of_ni"),
             "one_off_review_needed": r.get("one_off_review_needed"),
+            # Which of the four sourcing paths produced the adjusted figure, so a
+            # screen can show whether it came from the issuer or from a statement row
+            # (Rohit 1 Sep, section B).
+            "adjusted_eps_source": r.get("adjusted_eps_source"),
+            "one_off_sizing_cap_pct": r.get("one_off_sizing_cap_pct"),
+            # Whether the agentic dimensions actually ran for this name. A 0 on an
+            # agentic line means nothing without this (E1).
+            "agent_dims_status": r.get("agent_dims_status"),
+            # Whether a valuation module exists for this business type at all (section F).
+            "framework_coverage": r.get("framework_coverage"),
+            "sell_reason_code": r.get("sell_reason_code"),
             "last_daily_update": r.get("last_daily_update"),
         }
         for r in filtered

@@ -200,6 +200,11 @@ def fetch_yfinance_enriched(ticker: str, max_attempts: int = 3) -> dict[str, Any
         # never ran on the very names it was built for -- SPK.NZ being Rohit's own
         # worked example (26 Aug, conviction spec gap 1).
         ("annual_income", "income_stmt"),
+        # Annual cash flow: the only place a prior-year buyback comparator can come
+        # from. yfinance returns about five quarterly columns, never the eight needed
+        # to put a trailing year beside the year before it, so the buyback-suspension
+        # trigger was structurally unable to fire for any ticker (Rohit 1 Sep, E4).
+        ("annual_cashflow", "cashflow"),
     ]:
         try:
             df = getattr(yt, attr, None)
@@ -474,6 +479,36 @@ def build_fundamentals_from_raw(raw: dict[str, Any]) -> dict[str, Any]:
     q_inc = raw.get("quarterly_income")
     q_bal = raw.get("quarterly_balance")
     q_cf = raw.get("quarterly_cashflow")
+    annual_inc = raw.get("annual_income")
+
+    # Statement availability, recorded rather than inferred (Rohit 1 Sep, G2). An empty
+    # quarterly income statement used to be indistinguishable from a statement with no
+    # one-off items, so the adjusted-EPS work silently produced nothing for every
+    # semi-annual filer for a year. Nothing raises here — a missing statement is a real
+    # state for 78 of the 196 names in the universe, not an exception — but it is now
+    # named, counted and reportable per ticker instead of being invisible.
+    def _frame_cols(frame: Any) -> int:
+        return 0 if frame is None or getattr(frame, "empty", True) else int(len(frame.columns))
+
+    statement_coverage = {
+        "quarterly_income_cols": _frame_cols(q_inc),
+        "quarterly_balance_cols": _frame_cols(q_bal),
+        "quarterly_cashflow_cols": _frame_cols(q_cf),
+        "annual_income_cols": _frame_cols(annual_inc),
+    }
+    statement_coverage["quarterly_income_empty"] = statement_coverage["quarterly_income_cols"] == 0
+    # Eight quarters are needed to compare a trailing year of buyback spend against the
+    # year before it; yfinance commonly returns five, which is why that comparator was
+    # null for half the universe and the buyback-suspension trigger could never fire.
+    statement_coverage["cashflow_prior_year_available"] = statement_coverage["quarterly_cashflow_cols"] >= 8
+    missing = [name for name, cols in statement_coverage.items() if name.endswith("_cols") and cols == 0]
+    if missing:
+        ticker_label = raw.get("ticker") or info.get("symbol") or "?"
+        logger.warning(
+            "[statement_coverage] %s: empty statements from the feed: %s",
+            ticker_label, ", ".join(sorted(missing)),
+        )
+        errors.extend(f"empty_statement:{name[:-5]}" for name in sorted(missing))
     shares = _float_or_none(
         _first_not_none(info.get("sharesOutstanding"), info.get("impliedSharesOutstanding"))
     )
@@ -670,16 +705,53 @@ def build_fundamentals_from_raw(raw: dict[str, Any]) -> dict[str, Any]:
     # prior, same 8-quarter windowing pattern already used for fcf_prior_year. This is
     # a *spend*-based signal, distinct from the existing share-count-based buyback
     # vote in fd_votes.py (that vote is unaffected and keeps running as-is).
-    if q_cf is not None and "Repurchase Of Capital Stock" in getattr(q_cf, "index", []):
-        try:
-            buyback_row = q_cf.loc["Repurchase Of Capital Stock"].dropna().sort_index()
-            if len(buyback_row) >= 4:
-                # Cash outflow is reported negative; buyback spend is the absolute value.
-                fundamentals["buyback_spend_ttm"] = abs(float(buyback_row.iloc[-4:].sum()))
-            if len(buyback_row) >= 8:
-                fundamentals["buyback_spend_prior_year"] = abs(float(buyback_row.iloc[-8:-4].sum()))
-        except Exception:
-            pass
+    BUYBACK_ROWS = ("Repurchase Of Capital Stock", "Repurchase Of Common Stock")
+    buyback_basis = None
+    if q_cf is not None:
+        for label in BUYBACK_ROWS:
+            if label not in getattr(q_cf, "index", []):
+                continue
+            try:
+                buyback_row = q_cf.loc[label].dropna().sort_index()
+                if len(buyback_row) >= 4:
+                    # Cash outflow is reported negative; buyback spend is the absolute value.
+                    fundamentals["buyback_spend_ttm"] = abs(float(buyback_row.iloc[-4:].sum()))
+                    buyback_basis = "quarterly_ttm"
+                if len(buyback_row) >= 8:
+                    fundamentals["buyback_spend_prior_year"] = abs(float(buyback_row.iloc[-8:-4].sum()))
+            except Exception:
+                pass
+            break
+
+    # The prior-year comparator needs eight quarters and yfinance returns about five for
+    # roughly half the universe, so it was null everywhere and the suspension trigger
+    # could never fire — including on GOOGL, the case Rohit flagged (Rohit 1 Sep, E4).
+    # The annual statement carries the same figure with real year-on-year depth.
+    annual_cf = raw.get("annual_cashflow")
+    if fundamentals.get("buyback_spend_prior_year") is None and annual_cf is not None:
+        for label in BUYBACK_ROWS:
+            if label not in getattr(annual_cf, "index", []):
+                continue
+            try:
+                annual_row = annual_cf.loc[label].dropna().sort_index()
+                if len(annual_row) >= 2:
+                    fundamentals["buyback_spend_prior_year"] = abs(float(annual_row.iloc[-2]))
+                    if fundamentals.get("buyback_spend_ttm") is None:
+                        fundamentals["buyback_spend_ttm"] = abs(float(annual_row.iloc[-1]))
+                        buyback_basis = "annual_fy"
+                    else:
+                        # TTM spend from quarters against a prior FULL YEAR: comparable
+                        # in size, but the two legs come from different statements.
+                        buyback_basis = "quarterly_ttm_vs_annual_prior"
+            except Exception:
+                pass
+            break
+    if buyback_basis:
+        fundamentals["buyback_spend_basis"] = buyback_basis
+
+    # Net margin, for the margin-normalised EV/Revenue that replaced the hardware
+    # margin cliff (Rohit 1 Sep, E2).
+    fundamentals["net_margin"] = _normalize_ratio(_float_or_none(info.get("profitMargins")))
 
     roe = _normalize_ratio(_float_or_none(info.get("returnOnEquity")))
     roa = _normalize_ratio(_float_or_none(info.get("returnOnAssets")))
@@ -858,6 +930,7 @@ def build_fundamentals_from_raw(raw: dict[str, Any]) -> dict[str, Any]:
     except Exception:
         logger.debug("fundamentals_enriched: adjusted EPS computation failed", exc_info=True)
 
+    fundamentals["statement_coverage"] = statement_coverage
     fundamentals["fetch_errors"] = errors
     return fundamentals
 
@@ -886,6 +959,7 @@ def map_to_engine_fundamentals(enriched: dict[str, Any]) -> dict[str, Any]:
         "dividend_basis",
         "revenue_growth",
         "gross_margin",
+        "net_margin",
         "net_debt_ebitda",
         "distribution_coverage_ratio",
         "gross_margin_trend",
@@ -915,6 +989,7 @@ def map_to_engine_fundamentals(enriched: dict[str, Any]) -> dict[str, Any]:
         "noninterest_income_ttm",
         "buyback_spend_ttm",
         "buyback_spend_prior_year",
+        "buyback_spend_basis",
         "buyback_suspension_flag",
         "annual_div_declared_current",
         "annual_div_declared_prior",
@@ -925,6 +1000,7 @@ def map_to_engine_fundamentals(enriched: dict[str, Any]) -> dict[str, Any]:
         "revenue_miss_gt_10pct",
         "pe_history_thin",
         "pe_history_years",
+        "statement_coverage",
         "adjusted_eps_ttm",
         "adjusted_eps_basis",
         "one_off_pct_of_ni",
@@ -932,6 +1008,10 @@ def map_to_engine_fundamentals(enriched: dict[str, Any]) -> dict[str, Any]:
         "one_off_unclassified_pretax",
         "one_off_unclassified_pct_of_ni",
         "one_off_review_needed",
+        "one_off_sizing_cap_pct",
+        "adjusted_eps_source",
+        "adjusted_eps_citation",
+        "adjusted_eps_period",
         "effective_tax_rate",
         "effective_tax_rate_is_fallback",
         "effective_tax_rate",

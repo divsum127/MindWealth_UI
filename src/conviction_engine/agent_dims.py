@@ -32,18 +32,65 @@ def _clamp_score(score: Any, low: int = -1, high: int = 2) -> int:
 
 
 def _parse_json_text(text: str) -> dict[str, Any]:
+    """Extract the JSON object from a model reply.
+
+    With server-side web search the model routinely answers with prose first and the
+    JSON after it, or wraps the JSON in a fenced block. The old parser called
+    ``json.loads`` on the whole reply, so any preamble raised "Expecting value: line 1
+    column 1" and the dimension was recorded as failed. That is how MCY and SPK ended
+    up with four of five agentic dimensions failing on a working API key.
+    """
     cleaned = text.strip()
+    if not cleaned:
+        raise ValueError("empty model reply")
+
     if cleaned.startswith("```"):
         lines = cleaned.split("\n")
         cleaned = "\n".join(lines[1:-1] if lines[-1].strip() == "```" else lines[1:])
-    return json.loads(cleaned)
+        cleaned = cleaned.strip()
+
+    try:
+        return json.loads(cleaned)
+    except ValueError:
+        pass
+
+    # Fall back to the first balanced {...} object anywhere in the reply.
+    start = cleaned.find("{")
+    while start != -1:
+        depth = 0
+        in_string = False
+        escape = False
+        for index in range(start, len(cleaned)):
+            char = cleaned[index]
+            if in_string:
+                if escape:
+                    escape = False
+                elif char == "\\":
+                    escape = True
+                elif char == '"':
+                    in_string = False
+                continue
+            if char == '"':
+                in_string = True
+            elif char == "{":
+                depth += 1
+            elif char == "}":
+                depth -= 1
+                if depth == 0:
+                    candidate = cleaned[start : index + 1]
+                    try:
+                        return json.loads(candidate)
+                    except ValueError:
+                        break
+        start = cleaned.find("{", start + 1)
+    raise ValueError("no JSON object found in model reply")
 
 
 def _call_claude_web_search(
     *,
     system: str,
     user: str,
-    max_tokens: int = 400,
+    max_tokens: int = 1500,
 ) -> dict[str, Any]:
     import anthropic
 
@@ -87,7 +134,7 @@ def compute_macro_tailwind(
     year = current_year or datetime.now().year
     system = """You are a fundamental investment analyst. Score conservatively.
 Look specifically for THREATS before tailwinds.
-Respond ONLY with this exact JSON (no other text, no markdown):
+Search first, then end your reply with this exact JSON object and nothing after it:
 {"score": <-1|0|1|2>,
  "rationale": "<max 120 chars>",
  "key_risk": "<main threat>",
@@ -124,14 +171,14 @@ specific URL search returns — do not attempt a direct domain fetch. Good sourc
 Harvard Business Review's "Best-Performing CEOs" rankings (tenure-based financial + ESG
 performance — cite even if the ranking edition is a few years old, note it as dated
 directional evidence), LinkedIn (employee/analyst commentary), Comparably (employee-rated
-CEO scores). Respond ONLY JSON:
+CEO scores). Search, then end your reply with the JSON object and nothing after it. JSON shape:
 {"score_0_10": <0-10>, "rationale": "<max 120 chars>", "sources": [], "confidence": <0-0-1>,
  "evidence_for": "", "evidence_against": ""}"""
     user = f"Search {company_name} ({ticker}) CEO tenure track record domain expertise {year}."
 
     try:
         with _AGENT_SEMAPHORE:
-            raw = _call_claude_web_search(system=system, user=user, max_tokens=350)
+            raw = _call_claude_web_search(system=system, user=user, max_tokens=1500)
         score_10 = _float_or_none(raw.get("score_0_10"))
         if score_10 is None:
             score_10 = _float_or_none(raw.get("score"))
@@ -141,11 +188,15 @@ CEO scores). Respond ONLY JSON:
              "evidence_against": raw.get("evidence_against", "")},
             default_score=0,
         )
-        detail["score_0_10"] = score_10 if score_10 is not None else 5.0
+        # None, not 5.0: a reply that carried no score is not evidence of an average CEO.
+        detail["score_0_10"] = score_10
         return detail
     except Exception as exc:
         logger.warning("[ceo_quality] %s failed: %s", ticker, exc)
-        return {"score_0_10": 5.0, "rationale": "Agent unavailable", "confidence": 0.0, "sources": []}
+        # score_0_10 = None, NOT 5.0. A 5.0 maps to +1 BQ, so a failed search used to
+        # award a point of business quality it had no evidence for — the same class of
+        # bug as a skipped dimension scoring a silent 0 (Rohit 1 Sep, E1).
+        return {"score_0_10": None, "rationale": "Agent unavailable", "confidence": 0.0, "sources": []}
 
 
 def compute_competitive_moat_agent(
@@ -175,7 +226,7 @@ def compute_competitive_moat_agent(
         )
     system += (
         "Search first, then fetch the specific URL returned by search — do not attempt a "
-        "direct domain fetch. Return JSON: "
+        "direct domain fetch. End your reply with this JSON object and nothing after it: "
         '{"score_0_10":<0-10>,"rationale":"<120chars>","threats":["str","str","str"],'
         '"moat_sources":["str"],"evidence_against":"<str>","sources":["str"],"confidence":<float>}'
     )
@@ -183,8 +234,10 @@ def compute_competitive_moat_agent(
 
     try:
         with _AGENT_SEMAPHORE:
-            raw = _call_claude_web_search(system=system, user=user, max_tokens=350)
-        score_10 = _float_or_none(raw.get("score_0_10")) or 5.0
+            raw = _call_claude_web_search(system=system, user=user, max_tokens=3000)
+        # `or 5.0` also swallowed a legitimate score of 0, which is falsy — a moat rated
+        # 0/10 was being reported as an average 5/10.
+        score_10 = _float_or_none(raw.get("score_0_10"))
         detail = _apply_confidence_rules(
             {
                 "score": 0,
@@ -196,11 +249,15 @@ def compute_competitive_moat_agent(
             },
             default_score=0,
         )
-        detail["score_0_10"] = score_10 if float(detail.get("confidence", 0)) >= 0.7 else 5.0
+        # Below the confidence bar the dimension is unscored, not average. A 5.0 maps to
+        # +1 BQ, so the old fallback awarded a point of business quality on an answer the
+        # engine had just decided not to trust (Rohit 1 Sep, E1).
+        detail["score_0_10"] = score_10 if float(detail.get("confidence", 0) or 0) >= 0.7 else None
         return detail
     except Exception as exc:
         logger.warning("[competitive_moat] %s failed: %s", ticker, exc)
-        return {"score_0_10": 5.0, "rationale": "Agent unavailable", "confidence": 0.0, "sources": []}
+        # See the ceo_quality note: None, never a mid-scale score.
+        return {"score_0_10": None, "rationale": "Agent unavailable", "confidence": 0.0, "sources": []}
 
 
 def compute_deal_delay_agent(ticker: str, company_name: str, current_year: int | None = None) -> dict[str, Any]:
@@ -228,7 +285,7 @@ any) actually applies, do not force a result:
    fulfilled, demand outstripping supply — the OPPOSITE signal (often a positive demand
    proxy paired with a margin/capex risk, not a negative one).
 If transcript language does not clearly support either, use "none".
-Respond ONLY with this exact JSON (no other text, no markdown):
+Search first, then end your reply with this exact JSON object and nothing after it:
 {"signal": "<deal_delay|supply_constraint|none>",
  "score": <-2|-1|0>,
  "rationale": "<max 120 chars>",
@@ -243,7 +300,7 @@ If sources list is empty: confidence MUST be below 0.4."""
 
     try:
         with _AGENT_SEMAPHORE:
-            result = _call_claude_web_search(system=system, user=user, max_tokens=350)
+            result = _call_claude_web_search(system=system, user=user, max_tokens=3000)
         detail = _apply_confidence_rules(result, default_score=0)
         if detail.get("signal") != "deal_delay":
             detail["score"] = 0
@@ -310,7 +367,8 @@ def compute_reinvestment_runway_agent(
    specifically to be cited; do not attempt a direct domain fetch).
 If the company doesn't publish a TAM figure, say so explicitly and rely on #2 plus any
 backlog/demand-proxy context provided.
-Return JSON: {"tam_usd": <float|null, company-stated>, "tam_source": "<source>",
+Search first, then end your reply with this JSON object and nothing after it:
+{"tam_usd": <float|null, company-stated>, "tam_source": "<source>",
 "independent_tam_usd": <float|null>, "independent_tam_source": "<research firm + report>",
 "rationale": "<includes both figures + sources, and a note if they diverge meaningfully>",
 "sources": ["url"], "confidence": <0-1>}"""
@@ -320,7 +378,7 @@ Return JSON: {"tam_usd": <float|null, company-stated>, "tam_source": "<source>",
     )
     try:
         with _AGENT_SEMAPHORE:
-            raw = _call_claude_web_search(system=system, user=user, max_tokens=450)
+            raw = _call_claude_web_search(system=system, user=user, max_tokens=3000)
         result = _apply_confidence_rules(raw, default_score=0)
         if backlog_detail:
             result["revenue_backlog_detail"] = backlog_detail
