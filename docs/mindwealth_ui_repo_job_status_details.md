@@ -7167,3 +7167,66 @@ slides, the todo sheet, prior emails — is now stale.
   rows carry a regime label computed now rather than then. Same class of issue as the other legs.
 - The replay is single-threaded and takes ~90 minutes for a full pass. Fine as a one-off, painful if
   it ever needs to be routine.
+
+---
+
+## 2026-09-02 — Committing the outstanding working trees on both repos
+
+### Why this needed doing at all
+
+Both trees had drifted for months. `MindWealth_UI` held 44 dirty entries; `/home/ubuntu/MindWealth`
+held 148. The worst of it: `claude_lateness_metrics.py` (1,641 lines) and `enrich_pipeline.py` had
+been running the nightly pipeline for weeks and had **never been committed** — cron reads the working
+tree, so the code was live in production while existing in exactly one place on one disk. A lost disk
+would have lost running production logic with no copy anywhere.
+
+### Assumptions made
+
+- The 27 Aug R:R work needed **no new job-status entries** — `29fff0c61` had already swept all three
+  status docs in under its own message. Verified before assuming, not after.
+- Where a repo had an established identity, that identity was used rather than imposing one:
+  `divsum127` for the UI repos per the deploy skill, `Mindwealth <mindwealth0011@gmail.com>` for the
+  core repo per its own 80-commit history. The core repo is **not** in the skill's push allowlist, so
+  its rules were taken as not applying there.
+- The core repo's own convention is one-character `.` commit messages. Deliberately not followed —
+  the user asked for messages describing the work, and that request wins over local habit.
+
+### Key decisions and trade-offs
+
+- **File-level grouping, not hunk-level.** `util.py` (34 hunks), `send_email.py` (35) and
+  `constant.py` interleave four months of unrelated work inside single files. Splitting by hunk would
+  have produced commits that do not import cleanly. Each file landed in the commit matching its
+  dominant change, with secondary changes named explicitly in the body. This is a real compromise and
+  is recorded as one: a reviewer bisecting `util.py` will find the YMD_FORMAT hoist and the
+  `day_parser` delegation inside a commit titled for the losing-trade columns.
+- **`horizonal.py` carries a genuine bug fix inside a feature commit.** `pivot()` indexed a pandas
+  Series positionally, which reads by label once rows are filtered; `generate_fig_and_y_values()` now
+  resets the index after `dropna()`. It sits in the losing-trade commit because that file also carries
+  the same mechanical column addition as its nine siblings. Called out in the body, but a title would
+  have been better.
+- **The 318 tracked `__pycache__` files were left alone.** Untracking deletes them from every other
+  checkout on the next pull. Correct to do, wrong to do unilaterally on a repo shared with Ahil.
+  `.gitignore` now covers `__pycache__/`, which affects only newly created dirs.
+- **Bytecode committed last, on its own.** Matches the repo's convention that `.pyc` is tracked,
+  without padding any feature diff.
+
+### Things deferred / left for future
+
+- **Neither repo is pushed.** `chatbot-dev` 17 ahead; core `main` 115 ahead of an origin ref last
+  fetched 2026-06-24, so the real remote state is unknown and a fetch must precede any push decision.
+- Untracking the 318 `__pycache__` files, `Support_Resistance_json/` and `out/` — all three are
+  already in `.gitignore` and tracked anyway, so the rules do nothing. Needs agreement with whoever
+  else pulls the core repo.
+- `scripts/repair_consolidated_quality_columns.py` remains unrun, pending Rohit sir's sign-off.
+
+### Edge cases identified, not handled
+
+- `fetch_missing_ipo_dates.py` changed from append to overwrite, taking `data/observationstake.csv`
+  from 501 rows to 2. Deliberate per its own comment, and committed as-is rather than "fixed", but
+  **anything treating that file as the cumulative observation universe will now read it as nearly
+  empty.** Stated in the commit body. Not audited for consumers — that is the open risk here.
+- The core repo's `origin/main` ref is over two months stale. "115 ahead" is measured against that
+  stale ref and may not survive a fetch.
+- `emailscript.sh` now fans trade-data refresh out to four `MindWealth_UI` checkouts including the
+  prod clone. Committed as found; the prod write is by an existing cron path, not something added
+  here, but it is worth knowing that the nightly job touches prod runtime data.
