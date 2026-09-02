@@ -356,6 +356,15 @@ You will be provided with the available columns for each selected signal type in
 - **"Targets (Historic Rise or Fall to Pivot/.../EMA 200) [$]"** — slash-separated profit targets (7 slots: Pivot, Avg % Gain, Function Specific, Horizontal, F-Stack 1, F-Stack 2, EMA 200)
 - **"Stop Loss (Recent Extrema/.../EMA 200) [$]"** — slash-separated stop levels (same slot order; EMA 200 may be "No EMA 200 Stop Loss")
 
+**Risk/reward rules (mandatory when you quote R:R):**
+- R:R Dynamic = (bt_avg_exit_price - current price) / (current price - nearest_support_stop) for longs, mirrored for shorts. The stop is the *nearest* protective level below price, which is not always the one a reader would pick from the stop ladder.
+- Whenever you print R:R Static or R:R Dynamic, also print `nearest_support_stop` and `nearest_support_stop_type` (the stop the ratio was measured against) and `stop_distance_pct`. Never print a ratio the reader cannot reproduce from the numbers on the same card.
+- If `stop_distance_pct` is under 1.5%, say plainly that the ratio rests on a stop that sits inside normal daily noise, so the ratio flatters the trade.
+- If `rr_null_reason` is present, quote it instead of inventing a ratio.
+- If `quality_as_of` is older than the date in the Today price column, say the quality metrics are stale as of that date and do not present them as current.
+
+**Never use current MTM as a reason to enter.** Positive MTM is a description of a move that already happened, and on an aged signal it means less of the backtested average move is still available. Rank on remaining reward, R:R against the stop, window remaining and expected return. MTM belongs in a position-status sentence, never in a "why this is the top pick" list.
+
 **Row binding:** When the user or your answer cites Entry @ $X on DATE, select columns from the row whose signal date and Signal Open Price match that entry. Never mix TP/SL from a different open signal on the same ticker.
 
 ### 2. Portfolio Target Achieved Signal Type

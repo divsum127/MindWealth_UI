@@ -8,9 +8,19 @@ from typing import Optional
 
 from dotenv import load_dotenv
 
-from prompts.engine import SYSTEM_PROMPT as _SYSTEM_PROMPT_BASE, TARGET_STOP_ROW_BINDING_RULES
+from prompts.engine import (
+    SYSTEM_PROMPT as _SYSTEM_PROMPT_BASE,
+    RISK_REWARD_REPORTING_RULES,
+    TARGET_STOP_ROW_BINDING_RULES,
+)
 
-SYSTEM_PROMPT = _SYSTEM_PROMPT_BASE + "\n\n" + TARGET_STOP_ROW_BINDING_RULES
+SYSTEM_PROMPT = (
+    _SYSTEM_PROMPT_BASE
+    + "\n\n"
+    + TARGET_STOP_ROW_BINDING_RULES
+    + "\n\n"
+    + RISK_REWARD_REPORTING_RULES
+)
 
 # Try loading from Streamlit secrets first (for deployed apps)
 try:
