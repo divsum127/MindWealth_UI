@@ -1035,8 +1035,8 @@ date,exposure,source
 2026-04-29,93.79,naaim_scrape
 2026-05-06,96.67,naaim_scrape
 2026-05-13,77.34,naaim_scrape
-2026-05-20,82.02,naaim_legacy
-2026-05-27,98.39,naaim_legacy
+2026-05-20,82.02,naaim_scrape
+2026-05-27,98.39,naaim_scrape
 2026-06-03,86.82,naaim_legacy
 2026-06-10,79.27,naaim_legacy
 2026-06-17,92.83,naaim_legacy
