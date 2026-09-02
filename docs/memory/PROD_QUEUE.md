@@ -2,7 +2,7 @@
 
 # Prod queue
 
-Generated 2026-09-02 14:00 UTC from `docs/dev_to_prod_migration_todos.md`.
+Built from `docs/dev_to_prod_migration_todos.md`.
 
 **25 pending** · **1 carries a DEV-ONLY revert** · oldest **16d**
 

@@ -2,7 +2,7 @@
 
 # Thread ↔ chat map
 
-Generated 2026-09-02 14:00 UTC. Source of truth is `docs/memory/index.jsonl`.
+Source of truth is `docs/memory/index.jsonl`; sync time is in `docs/memory/.sync_state.json`.
 
 *Italic* chats are heuristic matches — confirm with `/link-thread`.
 

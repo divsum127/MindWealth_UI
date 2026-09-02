@@ -2,8 +2,6 @@
 
 # Feature index
 
-Generated 2026-09-02 14:00 UTC.
-
 | Feature | Hub | Threads | Chats | Jobs done | Prod pending |
 |---|---|---|---|---|---|
 | ai_analyst | `docs/instruction_docs/ai_analyst/_HUB.md` | 4 | 4 | 4 | 2 |

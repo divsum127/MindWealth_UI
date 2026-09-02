@@ -135,6 +135,16 @@ def full_recalculation(
     skip_agents = overrides.get("skip_agent_dims", True)
     if os.environ.get("CONVICTION_RUN_AGENT_DIMS") == "1":
         skip_agents = False
+    # Never spend agent calls on something the engine will refuse to score anyway. The
+    # conviction engine applies to individual equities; ETFs, indices, FX and crypto are
+    # gated out downstream in daily_update() and modify_signal(). Without this check a
+    # universe run fires five web-search agents at SPY, ^VIX and every FX pair — roughly
+    # 60 of the 196 records, and about a third of the bill, for numbers that are then
+    # discarded.
+    if not skip_agents:
+        is_equity, _asset_type, _reason = is_equity_asset(record, symbol)
+        if not is_equity:
+            skip_agents = True
     has_api_key = bool(os.environ.get("ANTHROPIC_API_KEY"))
     if skip_agents:
         agent_status = "skipped"

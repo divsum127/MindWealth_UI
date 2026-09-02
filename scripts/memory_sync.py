@@ -630,9 +630,9 @@ def render_map(records: dict) -> str:
         if sid in sessions:
             by_thread[tid].append((sessions[sid], link.get("conf", "inferred")))
 
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     out = [BANNER, "# Thread ↔ chat map\n",
-           f"Generated {now}. Source of truth is `docs/memory/index.jsonl`.\n",
+           "Source of truth is `docs/memory/index.jsonl`; "
+           "sync time is in `docs/memory/.sync_state.json`.\n",
            "*Italic* chats are heuristic matches — confirm with `/link-thread`.\n"]
 
     grouped: dict[str, list[dict]] = defaultdict(list)
@@ -675,9 +675,8 @@ def render_prod_queue(records: dict) -> str:
                      key=lambda r: r.get("age_days", 0), reverse=True)
     dev_only = [m for m in pending if m.get("dev_only")]
 
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     out = [BANNER, "# Prod queue\n",
-           f"Generated {now} from `docs/dev_to_prod_migration_todos.md`.\n",
+           "Built from `docs/dev_to_prod_migration_todos.md`.\n",
            f"**{len(pending)} pending** · "
            f"**{len(dev_only)} {'carries' if len(dev_only) == 1 else 'carry'} "
            f"a DEV-ONLY revert** · "
@@ -704,13 +703,12 @@ def render_prod_queue(records: dict) -> str:
 
 
 def render_features_index(records: dict) -> str:
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     threads = _by_type(records, "thread")
     sessions = _by_type(records, "session")
     jobs = _by_type(records, "job")
     migrations = _by_type(records, "migration")
 
-    out = [BANNER, "# Feature index\n", f"Generated {now}.\n",
+    out = [BANNER, "# Feature index\n",
            "| Feature | Hub | Threads | Chats | Jobs done | Prod pending |",
            "|---|---|---|---|---|---|"]
 
