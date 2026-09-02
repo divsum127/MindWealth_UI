@@ -36,11 +36,21 @@ From Rohit's 27 Aug R:R questions on the MCY.NZ card. Touches both repos. **Numb
 **Modified**
 - `chatbot/convert_signals_to_data_structure.py` — price job now recomputes quality columns after refreshing prices
 - `chatbot/smart_data_fetcher.py` — collapses same-identity rows to the freshest vintage, recomputes served rows, merges the R:R audit legs into the payload columns
-- `api/services/signal_enrichment_service.py` — audit legs and `quality_as_of` on the surface (**already in `29fff0c61`** — swept into a concurrent session's conviction commit)
+- `api/services/signal_enrichment_service.py` — audit legs and `quality_as_of` on the surface (split across two commits: most of it was swept into a concurrent session's conviction commit `29fff0c61`, `bt_avg_exit_basis` landed with the rest of this work in `e4df75841`)
 - `prompts/engine.py` + `chatbot/config.py` — new `RISK_REWARD_REPORTING_RULES` in the **answering** system prompt: R:R printed with the stop it used, `stop_distance_pct` read in both directions, `rr_null_reason` quoted, stale vintages declared, MTM banned as an entry reason
 - `prompts/chatbot_system.txt` — same rules for the column selector, so the audit columns get picked
 - `chatbot/prompt_changelog.json` — prompt version 13 auto-registered
 - `docs/mindwealth_ui_job_status.md`, `docs/mindwealth_ui_repo_job_status_details.md` (partly in `29fff0c61`)
+
+
+### Commits carrying this work on `chatbot-dev`
+
+| Commit | Carries |
+|---|---|
+| `e4df75841` | the fix — `quality_refresh.py`, the price job, the fetcher collapse + recompute, the audit legs on the API surface, both test files |
+| `b3d25fcb6` | `scripts/repair_consolidated_quality_columns.py` (sign-off gated, see `[PROD-ACTION]` below) |
+| `959a90b9e` | the prompt rules — `prompts/engine.py`, `chatbot/config.py`, `prompts/chatbot_system.txt`, `chatbot/prompt_changelog.json` |
+| `29fff0c61` | the three status docs, plus most of `signal_enrichment_service.py` (swept in by a concurrent session) |
 
 ### Core repo (`/home/ubuntu/MindWealth`, not this git remote)
 - `helper_functions/claude_lateness_metrics.py` — both today-price header spellings; unit-aware `parse_elapsed_days`; new `stop_distance_pct`; NaN-safe cell reads; **average-win exit anchored on the signal price** (was Signal Open Price), published as `bt_avg_exit_basis` — this moves every `rr_dynamic`
