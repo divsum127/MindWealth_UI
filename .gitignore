@@ -23,6 +23,8 @@ activity_logs/
 
 # Runic Agent runtime artifacts
 macro_intelligence/data/runic.db
+# Pre-restate rollback snapshots written by the CFTC replay scripts (~25 MB each)
+macro_intelligence/data/runic.pre_*.db
 macro_intelligence/output/runic_output.json
 macro_intelligence/data/*.csv
 macro_intelligence/data_cache/cftc/*.zip
