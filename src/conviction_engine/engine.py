@@ -173,6 +173,34 @@ def full_recalculation(
         for key, val in agent_out.items():
             if val:
                 manual[key] = val
+        usage_rows = [
+            val.get("_api_usage")
+            for val in agent_out.values()
+            if isinstance(val, dict) and isinstance(val.get("_api_usage"), dict)
+        ]
+        if usage_rows:
+            usage_keys = (
+                "input_tokens",
+                "output_tokens",
+                "cache_creation_input_tokens",
+                "cache_read_input_tokens",
+                "web_search_requests",
+            )
+            record["agent_run_usage"] = {
+                "model": next(
+                    (
+                        val.get("_api_model")
+                        for val in agent_out.values()
+                        if isinstance(val, dict) and val.get("_api_model")
+                    ),
+                    None,
+                ),
+                "dimension_calls": len(usage_rows),
+                **{
+                    key: sum(int(row.get(key, 0) or 0) for row in usage_rows)
+                    for key in usage_keys
+                },
+            }
         if isinstance(manual.get("reinvestment_runway_detail"), dict):
             tam_mult = manual["reinvestment_runway_detail"].get("tam_revenue_multiple")
             if tam_mult is not None:
@@ -212,6 +240,8 @@ def full_recalculation(
                 "sources": detail.get("sources") or [],
                 "evidence_against": detail.get("evidence_against"),
                 "rationale": detail.get("rationale"),
+                "api_model": detail.get("_api_model"),
+                "api_usage": detail.get("_api_usage"),
             }
         elif isinstance(detail, dict):
             # The agent was attempted and failed — distinct from never attempted.
@@ -254,8 +284,25 @@ def full_recalculation(
 
     bq_inputs = {**fundamentals, "roic": fundamentals.get("roic_proxy"), "ticker": symbol}
     bq_components = compute_bq_components_auto(bq_inputs, business_type, manual)
-    if not any(bq_components.values()):
+    # An all-neutral automatic result is still valid. Falling back only because
+    # every numeric component is zero drops the automatic path's audit fields.
+    if not bq_components:
         bq_components = compute_bq_components(fundamentals, manual)
+    # `compute_bq_components_auto()` enriches its input with audit fields. It receives
+    # a copy so aliases such as `roic` cannot mutate the fetched payload, therefore the
+    # derived flags must be copied back explicitly before they are persisted. Without
+    # this, the penalty changed BQ but the record carried no buyback/dividend flag and
+    # no approval state to explain why.
+    for derived_key in (
+        "debt_purpose",
+        "capital_allocation_detail",
+        "buyback_suspension_flag",
+        "dividend_cut_flag",
+        "dividend_cut_penalty_applied",
+        "dividend_cut_penalty_pending_approval",
+    ):
+        if derived_key in bq_inputs:
+            fundamentals[derived_key] = bq_inputs[derived_key]
     record["bq_components"] = bq_components
     record["bq_raw"] = float(overrides.get("bq_raw", calculate_bq_raw(bq_components)))
     record["fs_quality_base"] = round(50 + (record["bq_raw"] * 2.5), 2)
@@ -331,6 +378,8 @@ def full_recalculation(
             "tangible_book_value": fundamentals.get("tangible_book_value"),
             "buyback_suspension_flag": fundamentals.get("buyback_suspension_flag"),
             "dividend_cut_flag": fundamentals.get("dividend_cut_flag"),
+            "dividend_cut_penalty_applied": fundamentals.get("dividend_cut_penalty_applied"),
+            "dividend_cut_penalty_pending_approval": fundamentals.get("dividend_cut_penalty_pending_approval"),
             "revenue_estimate_current": fundamentals.get("revenue_estimate_current"),
             "revenue_miss_pct": fundamentals.get("revenue_miss_pct"),
             "revenue_miss_gt_10pct": fundamentals.get("revenue_miss_gt_10pct"),
@@ -729,6 +778,7 @@ def modify_signal(
         dividend_cut_uncovered = bool(
             isinstance(dividend_flag, dict)
             and dividend_flag.get("triggered")
+            and record.get("dividend_cut_penalty_applied") is True
             and coverage_ratio is not None
             and coverage_ratio < 1.0
         )

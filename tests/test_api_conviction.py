@@ -14,6 +14,7 @@ if str(_ROOT) not in sys.path:
 from fastapi.testclient import TestClient
 
 from api.main import app
+from api.services import conviction_service
 from tests.api_test_helpers import disable_rate_limits
 
 
@@ -57,6 +58,78 @@ class TestConvictionReadAPI(unittest.TestCase):
     def test_get_ticker_not_found(self) -> None:
         response = self.client.get("/api/v1/conviction/tickers/ZZZZNOTICKER999")
         self.assertEqual(response.status_code, 404)
+
+    def test_get_engine_audit_route(self) -> None:
+        fake = {
+            "policies": {"dividend_penalty_requires_explicit_approval": True},
+            "summary": {"total_records": 0},
+            "records": [],
+        }
+        with patch(
+            "api.services.conviction_service.get_engine_audit",
+            return_value=fake,
+        ):
+            response = self.client.get("/api/v1/conviction/audit")
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(
+            response.json()["policies"]["dividend_penalty_requires_explicit_approval"]
+        )
+
+    def test_engine_audit_distinguishes_fixed_and_legacy_state(self) -> None:
+        records = [
+            {
+                "ticker": "FIXED",
+                "asset_type": "EQUITY",
+                "conviction_score": 0,
+                "business_type": "compounder",
+                "bq_components": {"ceo_quality": 0, "competitive_moat": 0},
+                "dividend_cut_flag": {"triggered": True, "decline_pct": 0.25},
+                "dividend_cut_penalty_applied": False,
+                "dividend_cut_penalty_pending_approval": True,
+                "agent_dims_status": "ran",
+                "agent_dim_provenance": {
+                    "ceo_quality": {"source": "agent", "confidence": 0.55},
+                },
+                "agent_run_usage": {
+                    "model": "test-model",
+                    "dimension_calls": 5,
+                    "input_tokens": 100,
+                    "output_tokens": 20,
+                    "web_search_requests": 5,
+                },
+                "framework_coverage": False,
+                "framework_coverage_capped": True,
+                "pe_20y_array": [10, 11],
+                "pe_history_meta": {
+                    "years_available": 12,
+                    "point_count": 2,
+                    "target_years": 20,
+                },
+                "statement_coverage": {
+                    "quarterly_income_empty": False,
+                    "cashflow_prior_year_available": True,
+                },
+            },
+            {
+                "ticker": "LEGACY",
+                "asset_type": "EQUITY",
+                "conviction_score": 1,
+                "business_type": "compounder",
+            },
+        ]
+        with patch.object(conviction_service, "list_records", return_value=records):
+            audit = conviction_service.get_engine_audit()
+
+        self.assertEqual(audit["summary"]["total_records"], 2)
+        self.assertEqual(audit["summary"]["dividend_pending_approval"], 1)
+        self.assertEqual(audit["summary"]["dividend_gate_not_recorded"], 1)
+        self.assertEqual(audit["summary"]["low_confidence_neutralized"], 1)
+        self.assertEqual(audit["summary"]["framework_capped"], 1)
+        fixed, legacy = audit["records"]
+        self.assertEqual(fixed["pe_history_band"], "10_to_20")
+        self.assertEqual(fixed["quarterly_income_status"], "available")
+        self.assertEqual(legacy["dividend_status"], "not_recorded")
+        self.assertEqual(legacy["quarterly_income_status"], "not_recorded")
 
 
 class TestConvictionEvaluateAPI(unittest.TestCase):

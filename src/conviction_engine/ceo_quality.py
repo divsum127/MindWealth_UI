@@ -112,6 +112,9 @@ def compute_ceo_quality_score(
         from .agent_dims import analyst_score_to_bq
 
         agent = overrides["ceo_quality_detail"]
+        confidence = _float_or_none(agent.get("confidence"))
+        if confidence is not None and confidence < 0.7:
+            return 0.0, {"source": "agent_unscored", **agent}
         score_10 = _float_or_none(agent.get("score_0_10"))
         if score_10 is not None:
             bq = analyst_score_to_bq(score_10)

@@ -67,6 +67,16 @@ def _records() -> list[tuple[str, dict[str, Any]]]:
     return out
 
 
+def _statement_status(record: dict[str, Any], coverage: dict[str, Any], key: str) -> str:
+    """Return a tri-state status instead of treating absent legacy metadata as false."""
+    asset_type = str(record.get("asset_type") or record.get("quote_type") or "").upper()
+    if asset_type and asset_type not in {"EQUITY", "UNKNOWN"}:
+        return "not_applicable"
+    if key not in coverage:
+        return "not_recorded"
+    return "available" if bool(coverage.get(key)) else "unavailable"
+
+
 def earnings_report(records: list[tuple[str, dict[str, Any]]]) -> pd.DataFrame:
     """G1: the adjusted-earnings picture across the whole universe."""
     rows = []
@@ -103,6 +113,16 @@ def field_coverage_report(records: list[tuple[str, dict[str, Any]]]) -> pd.DataF
         coverage = record.get("statement_coverage") or {}
         provenance = record.get("agent_dim_provenance") or {}
         missing = [f for f in LOAD_BEARING_FIELDS if record.get(f) is None]
+        income_status = _statement_status(record, coverage, "quarterly_income_empty")
+        if income_status == "available":
+            # The stored field is named as an emptiness flag, so invert its readable
+            # status after preserving the not-recorded/not-applicable states.
+            income_status = "unavailable"
+        elif income_status == "unavailable":
+            income_status = "available"
+        cashflow_prior_status = _statement_status(
+            record, coverage, "cashflow_prior_year_available"
+        )
         agents_not_run = [
             dim for dim in AGENT_DIMENSIONS
             if (provenance.get(dim) or {}).get("source") in (None, "not_run", "agent_failed")
@@ -113,9 +133,11 @@ def field_coverage_report(records: list[tuple[str, dict[str, Any]]]) -> pd.DataF
                 "business_type": record.get("business_type"),
                 "quarterly_income_cols": coverage.get("quarterly_income_cols"),
                 "quarterly_income_empty": coverage.get("quarterly_income_empty"),
+                "quarterly_income_status": income_status,
                 "annual_income_cols": coverage.get("annual_income_cols"),
                 "quarterly_cashflow_cols": coverage.get("quarterly_cashflow_cols"),
                 "cashflow_prior_year_available": coverage.get("cashflow_prior_year_available"),
+                "cashflow_prior_year_status": cashflow_prior_status,
                 "missing_field_count": len(missing),
                 "missing_fields": ";".join(missing),
                 "agent_dims_status": record.get("agent_dims_status"),
@@ -157,8 +179,10 @@ def main() -> int:
     print(f"  sizing capped:           {int(earnings['one_off_sizing_cap_pct'].notna().sum())}")
 
     print("\n-- Field coverage (G2) --")
-    print(f"  empty quarterly income statement: {int(coverage['quarterly_income_empty'].fillna(False).astype(bool).sum())}")
-    print(f"  no prior-year cash flow:          {int((~coverage['cashflow_prior_year_available'].fillna(False).astype(bool)).sum())}")
+    income_counts = coverage["quarterly_income_status"].value_counts().to_dict()
+    cashflow_counts = coverage["cashflow_prior_year_status"].value_counts().to_dict()
+    print(f"  quarterly income status:          {income_counts}")
+    print(f"  prior-year cash-flow status:      {cashflow_counts}")
     agent_status = coverage["agent_dims_status"].fillna("unknown").value_counts().to_dict()
     print(f"  agent_dims_status:                {agent_status}")
     worst = coverage.head(10)

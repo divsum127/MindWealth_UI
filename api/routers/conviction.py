@@ -222,6 +222,15 @@ def get_pe_history_coverage() -> dict[str, Any]:
     return svc.get_pe_history_coverage()
 
 
+@router.get(
+    "/audit",
+    operation_id="get_conviction_engine_audit",
+    summary="Live Conviction Engine safeguards and per-ticker audit state",
+)
+def get_conviction_engine_audit() -> dict[str, Any]:
+    return svc.get_engine_audit()
+
+
 @router.post(
     "/pipeline/daily",
     operation_id="run_daily_pipeline",

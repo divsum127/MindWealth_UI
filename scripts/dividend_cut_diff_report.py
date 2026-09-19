@@ -54,11 +54,11 @@ def prior_year_window(dividends: pd.Series, as_of: pd.Timestamp) -> dict[str, An
     current = trailing_twelve_month_dividend(dividends, as_of)
     series = normalize_dividends(dividends)
     if series is None or not current["payments_used"]:
-        return {"amount": None, "payments_used": 0}
+        return {"amount": None, "payments_used": 0, "complete": False, "coverage_days": None}
     used = current["payments_used"]
     remaining = series.iloc[: max(0, len(series) - used)]
     if remaining.empty:
-        return {"amount": None, "payments_used": 0}
+        return {"amount": None, "payments_used": 0, "complete": False, "coverage_days": None}
     return trailing_twelve_month_dividend(remaining, remaining.index[-1])
 
 
@@ -93,6 +93,11 @@ def build_report(tickers: list[str] | None = None) -> pd.DataFrame:
 
         current = trailing_twelve_month_dividend(series, as_of)
         prior = prior_year_window(series, as_of)
+        asset_type = str(record.get("asset_type") or record.get("quote_type") or "").upper()
+        is_equity = asset_type in {"", "UNKNOWN", "EQUITY"}
+        latest_payment = series.index[-1]
+        latest_payment_age_days = int((as_of - latest_payment).days)
+        stale_history = latest_payment_age_days > 550
 
         median = float(series.median())
         specials = [
@@ -112,10 +117,27 @@ def build_report(tickers: list[str] | None = None) -> pd.DataFrame:
             }
         )
 
+        changed = bool(recomputed["triggered"]) != stored_triggered
+        review_reasons: list[str] = []
+        if not is_equity:
+            review_reasons.append("not_equity")
+        if stale_history:
+            review_reasons.append("stale_dividend_history")
+        if not current.get("complete"):
+            review_reasons.append("incomplete_current_period")
+        if not prior.get("complete"):
+            review_reasons.append("incomplete_prior_period")
+        if specials:
+            review_reasons.append("possible_special_distribution")
+
         rows.append(
             {
                 "ticker": ticker,
-                "flag_changed": bool(recomputed["triggered"]) != stored_triggered,
+                "asset_type": asset_type or "UNKNOWN",
+                "is_equity": is_equity,
+                "flag_changed": changed,
+                "eligible_for_approval": changed and not review_reasons,
+                "review_reasons": ";".join(review_reasons),
                 "stored_triggered": stored_triggered,
                 "new_triggered": bool(recomputed["triggered"]),
                 "stored_penalty": stored_penalty,
@@ -127,6 +149,10 @@ def build_report(tickers: list[str] | None = None) -> pd.DataFrame:
                 "payments_used_current": current["payments_used"],
                 "payments_used_prior": prior.get("payments_used", 0),
                 "coverage_days_current": current["coverage_days"],
+                "current_period_complete": current.get("complete"),
+                "prior_period_complete": prior.get("complete"),
+                "latest_payment_date": str(latest_payment.date()),
+                "latest_payment_age_days": latest_payment_age_days,
                 "decline_pct": recomputed["decline_pct"],
                 "policy_reset": recomputed["policy_reset"],
                 "distress_signals": ";".join(recomputed.get("distress_signals") or []),
@@ -156,8 +182,10 @@ def main() -> int:
     report.to_csv(args.out, index=False)
 
     changed = report[report["flag_changed"]]
+    clean = changed[changed["eligible_for_approval"]]
     print(f"Dividend payers examined: {len(report)}")
     print(f"Flag CHANGES: {len(changed)}")
+    print(f"Clean approval candidates: {len(clean)}")
     for _, row in changed.iterrows():
         print(
             f"  {row['ticker']:14s} triggered {row['stored_triggered']} -> {row['new_triggered']}"
@@ -165,6 +193,7 @@ def main() -> int:
             f" | {row['stored_current_rate']}/{row['stored_prior_rate']}"
             f" -> {row['new_current_rate']}/{row['new_prior_rate']}"
             f" | payments {row['payments_used_current']}/{row['payments_used_prior']}"
+            f"{' | REVIEW: ' + row['review_reasons'] if row['review_reasons'] else ''}"
             f"{' | POLICY_RESET' if row['policy_reset'] else ''}"
             f"{' | SPECIAL: ' + row['possible_special_in_window'] if row['possible_special_in_window'] else ''}"
         )

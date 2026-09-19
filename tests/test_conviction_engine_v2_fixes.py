@@ -19,6 +19,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import pandas as pd
 
@@ -27,6 +28,7 @@ if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
 from src.conviction_engine.adjusted_eps import compute_adjusted_eps_bundle, compute_effective_tax_rate
+from src.conviction_engine.agent_dims import compute_ceo_quality_agent
 from src.conviction_engine.bank_valuation import (
     bank_fs_valuation_slice,
     bank_ptbv_valuation_tax,
@@ -41,8 +43,10 @@ from src.conviction_engine.capital_allocation import (
     detect_buyback_suspension,
     detect_dividend_cut,
 )
-from src.conviction_engine.engine import modify_signal
+from src.conviction_engine.ceo_quality import compute_ceo_quality_score
+from src.conviction_engine.engine import full_recalculation, modify_signal
 from src.conviction_engine.fundamentals import classify_universe_diff
+from src.conviction_engine.fundamentals_enriched import compute_bq_components_auto
 from src.conviction_engine.models import default_record
 from src.conviction_engine.pe_history_core import compute_pe_history, reconstruct_quarterly_eps_from_net_income
 from src.conviction_engine.scoring import (
@@ -289,6 +293,115 @@ class TestBuybackDividendFlags(unittest.TestCase):
         buyback = {"penalty": -1.0}
         dividend = {"penalty": -2.0}
         self.assertEqual(combined_capital_return_penalty(buyback, dividend), -3.0)
+
+    def test_dividend_cut_is_reported_but_held_from_score_until_approved(self):
+        fundamentals = {
+            "annual_div_declared_current": 0.0,
+            "annual_div_declared_prior": 2.0,
+        }
+        components = compute_bq_components_auto(fundamentals, "compounder", {})
+        self.assertTrue(fundamentals["dividend_cut_flag"]["triggered"])
+        self.assertEqual(components["capital_return_flags"], 0.0)
+        self.assertFalse(fundamentals["dividend_cut_penalty_applied"])
+        self.assertTrue(fundamentals["dividend_cut_penalty_pending_approval"])
+
+    def test_dividend_cut_penalty_can_be_explicitly_approved(self):
+        fundamentals = {
+            "annual_div_declared_current": 0.0,
+            "annual_div_declared_prior": 2.0,
+        }
+        components = compute_bq_components_auto(
+            fundamentals,
+            "compounder",
+            {"apply_dividend_cut_penalty": True},
+        )
+        self.assertEqual(components["capital_return_flags"], -3.0)
+        self.assertTrue(fundamentals["dividend_cut_penalty_applied"])
+        self.assertFalse(fundamentals["dividend_cut_penalty_pending_approval"])
+
+    def test_full_recalculation_persists_candidate_flag_and_approval_state(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            record = full_recalculation(
+                "DIVTEST",
+                fundamentals={
+                    "ticker": "DIVTEST",
+                    "annual_div_declared_current": 0.0,
+                    "annual_div_declared_prior": 2.0,
+                    "price": 10.0,
+                },
+                info={
+                    "quoteType": "EQUITY",
+                    "sector": "Technology",
+                    "industry": "Software - Application",
+                },
+                raw_fetch={"errors": []},
+                store_dir=Path(tmp),
+            )
+        self.assertTrue(record["dividend_cut_flag"]["triggered"])
+        self.assertFalse(record["dividend_cut_penalty_applied"])
+        self.assertTrue(record["dividend_cut_penalty_pending_approval"])
+        self.assertEqual(record["bq_components"]["capital_return_flags"], 0.0)
+
+    def test_unapproved_dividend_candidate_cannot_fire_dividend_hard_exit(self):
+        base = default_record("DIVEXIT")
+        base.update(
+            {
+                "asset_type": "EQUITY",
+                "business_type": "compounder",
+                "bq_raw": 0.0,
+                "dividend_cut_flag": {"triggered": True},
+                "distribution_coverage_ratio": 0.5,
+            }
+        )
+        held = modify_signal(
+            "DIVEXIT", "SELL", "long", record=dict(base), persist=False
+        )
+        approved_record = dict(base)
+        approved_record["dividend_cut_penalty_applied"] = True
+        approved = modify_signal(
+            "DIVEXIT", "SELL", "long", record=approved_record, persist=False
+        )
+        self.assertNotEqual(held.sell_reason_code, "DIVIDEND_CUT_UNCOVERED")
+        self.assertEqual(approved.verdict, "HARD EXIT")
+        self.assertEqual(approved.sell_reason_code, "DIVIDEND_CUT_UNCOVERED")
+
+
+class TestAgentConfidenceGates(unittest.TestCase):
+    def test_low_confidence_ceo_score_is_unscored(self):
+        with patch(
+            "src.conviction_engine.agent_dims._call_claude_web_search",
+            return_value={
+                "score_0_10": 8,
+                "confidence": 0.55,
+                "rationale": "Mixed evidence",
+                "sources": ["https://example.com/a", "https://example.com/b"],
+            },
+        ):
+            detail = compute_ceo_quality_agent("TEST", "Test Company")
+        self.assertIsNone(detail["score_0_10"])
+        self.assertEqual(detail["score"], 0)
+
+    def test_stored_low_confidence_ceo_answer_is_also_unscored(self):
+        score, detail = compute_ceo_quality_score(
+            {"ticker": "TEST"},
+            {
+                "ceo_quality_detail": {
+                    "score_0_10": 8,
+                    "confidence": 0.55,
+                    "rationale": "Mixed evidence",
+                }
+            },
+        )
+        self.assertEqual(score, 0.0)
+        self.assertEqual(detail["source"], "agent_unscored")
+
+    def test_stored_low_confidence_moat_answer_is_also_unscored(self):
+        components = compute_bq_components_auto(
+            {},
+            "compounder",
+            {"competitive_moat_detail": {"score_0_10": 9, "confidence": 0.55}},
+        )
+        self.assertEqual(components["competitive_moat"], 0.0)
 
 
 class TestFsScoreSlice(unittest.TestCase):

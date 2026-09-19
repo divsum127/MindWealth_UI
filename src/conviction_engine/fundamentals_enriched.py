@@ -407,7 +407,10 @@ def compute_bq_components_auto(
     if overrides.get("competitive_moat_score") is None and isinstance(overrides.get("competitive_moat_detail"), dict):
         from .agent_dims import analyst_score_to_bq
 
-        moat_score = analyst_score_to_bq(_float_or_none(overrides["competitive_moat_detail"].get("score_0_10")))
+        moat_detail = overrides["competitive_moat_detail"]
+        confidence = _float_or_none(moat_detail.get("confidence"))
+        if confidence is None or confidence >= 0.7:
+            moat_score = analyst_score_to_bq(_float_or_none(moat_detail.get("score_0_10")))
 
     cap_score = score_manual("mgmt_alloc_score", overrides)
     if overrides.get("mgmt_alloc_score") is None:
@@ -425,9 +428,27 @@ def compute_bq_components_auto(
 
     buyback_flag = detect_buyback_suspension(fundamentals)
     dividend_flag = detect_dividend_cut(fundamentals)
-    capital_return_penalty = combined_capital_return_penalty(buyback_flag, dividend_flag)
+
+    # Rohit 1 Sep, C3: the corrected dividend-cut calculation must be shown as a
+    # universe diff before it is allowed to change any score. Keep calculating and
+    # persisting the candidate flag, but default its scoring contribution to zero.
+    # After approval it can be enabled explicitly per run/record; buyback suspension
+    # remains live and independent.
+    apply_dividend_cut_penalty = overrides.get("apply_dividend_cut_penalty") is True
+    dividend_flag_for_scoring = (
+        dividend_flag
+        if apply_dividend_cut_penalty
+        else {**dividend_flag, "penalty": 0.0}
+    )
+    capital_return_penalty = combined_capital_return_penalty(
+        buyback_flag, dividend_flag_for_scoring
+    )
     fundamentals["buyback_suspension_flag"] = buyback_flag
     fundamentals["dividend_cut_flag"] = dividend_flag
+    fundamentals["dividend_cut_penalty_applied"] = apply_dividend_cut_penalty
+    fundamentals["dividend_cut_penalty_pending_approval"] = bool(
+        dividend_flag.get("triggered") and not apply_dividend_cut_penalty
+    )
 
     div_flag = overrides.get("divergence_signal")
     if div_flag is None:
@@ -995,6 +1016,8 @@ def map_to_engine_fundamentals(enriched: dict[str, Any]) -> dict[str, Any]:
         "annual_div_declared_prior",
         "dividend_payments_per_year",
         "dividend_cut_flag",
+        "dividend_cut_penalty_applied",
+        "dividend_cut_penalty_pending_approval",
         "revenue_estimate_current",
         "revenue_miss_pct",
         "revenue_miss_gt_10pct",

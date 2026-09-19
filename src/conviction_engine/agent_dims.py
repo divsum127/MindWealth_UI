@@ -11,7 +11,13 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 _AGENT_SEMAPHORE = threading.Semaphore(4)
-_DEFAULT_MODEL = "claude-sonnet-4-5-20250929"
+# Keep the model configurable: the pinned 4.5 snapshot is still active today but its
+# published deprecation date is approaching. A controlled dev run can switch models
+# without another code change, while production keeps the last verified snapshot until
+# the replacement has been compared on the same tickers.
+_DEFAULT_MODEL = os.environ.get(
+    "CONVICTION_AGENT_MODEL", "claude-sonnet-4-5-20250929"
+)
 
 
 def _float_or_none(value: Any) -> float | None:
@@ -103,7 +109,27 @@ def _call_claude_web_search(
         messages=[{"role": "user", "content": user}],
     )
     result_text = "".join(b.text for b in response.content if getattr(b, "type", None) == "text")
-    return _parse_json_text(result_text)
+    result = _parse_json_text(result_text)
+
+    # Preserve raw metering on every dimension. A universe run is five model calls per
+    # equity, and without these counters its cost cannot be audited after the fact.
+    usage = getattr(response, "usage", None)
+    server_tool_use = getattr(usage, "server_tool_use", None)
+    result["_api_model"] = _DEFAULT_MODEL
+    result["_api_usage"] = {
+        "input_tokens": int(getattr(usage, "input_tokens", 0) or 0),
+        "output_tokens": int(getattr(usage, "output_tokens", 0) or 0),
+        "cache_creation_input_tokens": int(
+            getattr(usage, "cache_creation_input_tokens", 0) or 0
+        ),
+        "cache_read_input_tokens": int(
+            getattr(usage, "cache_read_input_tokens", 0) or 0
+        ),
+        "web_search_requests": int(
+            getattr(server_tool_use, "web_search_requests", 0) or 0
+        ),
+    }
+    return result
 
 
 def _apply_confidence_rules(result: dict[str, Any], *, default_score: int = 0) -> dict[str, Any]:
@@ -188,8 +214,12 @@ CEO scores). Search, then end your reply with the JSON object and nothing after 
              "evidence_against": raw.get("evidence_against", "")},
             default_score=0,
         )
-        # None, not 5.0: a reply that carried no score is not evidence of an average CEO.
-        detail["score_0_10"] = score_10
+        # Below the confidence bar the CEO dimension is unscored, exactly like moat.
+        # `_apply_confidence_rules()` zeros its generic `score`, but BQ consumes
+        # `score_0_10`; leaving the raw value here let a low-confidence 8/10 award +2.
+        detail["score_0_10"] = (
+            score_10 if float(detail.get("confidence", 0) or 0) >= 0.7 else None
+        )
         return detail
     except Exception as exc:
         logger.warning("[ceo_quality] %s failed: %s", ticker, exc)

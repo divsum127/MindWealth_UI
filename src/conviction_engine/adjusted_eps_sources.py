@@ -44,15 +44,37 @@ DISCLOSED_ADJUSTED_PATH = Path(CONVICTION_STORE_DIR) / "reference" / "disclosed_
 
 # SEC XBRL concepts that tag genuine one-off items. Each names a specific event, unlike
 # the aggregate buckets this whole exercise exists to avoid.
+#
+# The first five are the tags named explicitly in §6 of the 28 July consolidated note.
+# `DebtAndEquitySecuritiesGainLoss` matters most: that is where Alphabet's ~$98B
+# unrealized equity gain sits, and missing it is why an adjusted EPS built off
+# yfinance's catch-all row was never going to be right. The rest are the Section 13
+# appendix categories expressed as their us-gaap tags.
 XBRL_ONE_OFF_CONCEPTS = (
+    # Named directly in §6.
+    "DebtAndEquitySecuritiesGainLoss",
+    "GainLossOnInvestments",
+    "RestructuringCharges",
+    "ImpairmentOfLongLivedAssetsHeldForUse",
+    "GainsLossesOnExtinguishmentOfDebt",
+    # Section 13 appendix categories: disposals, impairments, litigation, insurance,
+    # acquisition costs, and one-off pension adjustments.
     "GainLossOnSaleOfBusiness",
     "GainLossOnDispositionOfAssets",
     "GainLossOnDispositionOfBusiness",
-    "RestructuringCharges",
     "AssetImpairmentCharges",
     "GoodwillImpairmentLoss",
     "BusinessCombinationAcquisitionRelatedCosts",
+    "LitigationSettlementAmountAwardedToOtherParty",
+    "ProceedsFromInsuranceSettlementOperatingActivities",
+    "DefinedBenefitPlanRecognizedNetGainLossDueToSettlements1",
 )
+
+# Explicitly NOT a one-off, per the Section 13 note: "stock-based compensation is NOT one
+# of these — it's a real, ongoing cost even though non-cash, and should be tracked as its
+# own GAAP-vs-non-GAAP toggle rather than stripped out as a one-off." Listed here so
+# nobody adds it to the tuple above later.
+XBRL_NEVER_STRIP_CONCEPTS = ("ShareBasedCompensation",)
 
 
 def _float_or_none(value: Any) -> float | None:
@@ -134,21 +156,32 @@ def xbrl_tagged_one_offs(ticker: str) -> dict[str, Any] | None:
     if not cik:
         return None
 
+    # §6 names the Company Facts endpoint, and it is also the cheaper call: one request
+    # returns every tagged fact for the company, against fifteen if each concept is
+    # fetched separately.
+    url = f"{SEC_BASE_URL}/api/xbrl/companyfacts/CIK{cik}.json"
+    try:
+        response = _get_with_backoff(url)
+    except Exception:
+        return None
+    if response is None or getattr(response, "status_code", 200) != 200:
+        return None
+    try:
+        facts = (response.json() or {}).get("facts", {}).get("us-gaap", {})
+    except ValueError:
+        return None
+    if not facts:
+        return None
+
     total = 0.0
     matched: list[str] = []
     for concept in XBRL_ONE_OFF_CONCEPTS:
-        url = f"{SEC_BASE_URL}/api/xbrl/companyconcept/CIK{cik}/us-gaap/{concept}.json"
-        try:
-            response = _get_with_backoff(url)
-        except Exception:
+        if concept in XBRL_NEVER_STRIP_CONCEPTS:
             continue
-        if response is None or getattr(response, "status_code", 200) != 200:
+        entry = facts.get(concept)
+        if not isinstance(entry, dict):
             continue
-        try:
-            payload = response.json()
-        except ValueError:
-            continue
-        value = _latest_annual_value(payload)
+        value = _latest_annual_value(entry)
         if value is not None:
             total += value
             matched.append(concept)

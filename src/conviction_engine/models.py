@@ -159,6 +159,8 @@ def default_record(ticker: str) -> dict[str, Any]:
         "pe_history_years": None,
         "buyback_suspension_flag": None,
         "dividend_cut_flag": None,
+        "dividend_cut_penalty_applied": False,
+        "dividend_cut_penalty_pending_approval": False,
         "capital_return_penalty": 0.0,
         "manual_overrides": {},
         # Agentic dimension provenance (Rohit 1 Sep, E1): "ran" | "skipped" |
@@ -167,6 +169,7 @@ def default_record(ticker: str) -> dict[str, Any]:
         "agent_dims_status": "skipped",
         "agent_dims_ran": False,
         "agent_dim_provenance": {},
+        "agent_run_usage": None,
         "price": None,
         "market_cap": None,
         "enterprise_value": None,
