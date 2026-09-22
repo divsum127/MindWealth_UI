@@ -121,7 +121,8 @@ def detect_buyback_suspension(fundamentals: dict[str, Any]) -> dict[str, Any]:
 
 def detect_dividend_cut(fundamentals: dict[str, Any]) -> dict[str, Any]:
     """Declared-annual-dividend-per-share tiered decline flag (same tier structure
-    as buyback suspension, no minimum-size gate — any declared dividend cut counts).
+    as buyback suspension). A decline of 25% or less is recorded but scores zero;
+    larger verified cuts enter the -1/-2/-3 tiers.
 
     Rohit 1 Sep, C3: "A cut that's a deliberate reset to an FCF-linked payout with
     leverage falling is good capital allocation, not distress. Spark is exactly that —

@@ -21,6 +21,44 @@ Reference deploy skill: `.cursor/skills/prod-pull-and-details/SKILL.md`
 | `[PROD-ACTION]` | Manual step on server after git merge (secrets, systemd, bootstrap) |
 | `[DONE]` | Completed on prod (date in notes) |
 
+## 2026-09-22 — Conviction audit semantics and provenance, API 1.17.0 `[PENDING]`
+
+### Git files to merge
+
+**MindWealth_UI, `chatbot-dev` to `chatbot-prod`:**
+
+- `api/main.py`
+- `api/services/conviction_service.py`
+- `src/conviction_engine/{agent_dims,capital_allocation,data_coverage,engine,fundamentals_enriched}.py`
+- `tests/test_api_conviction.py`
+- `tests/test_conviction_engine_v2_fixes.py`
+- `docs/mindwealth-api-docs/` release 1.17.0
+
+**MindwealthUI_Vue, `ui-dev` to the production UI branch:**
+
+- `components/conviction/ConvictionAuditPanel.vue`
+- `server/utils/{mindwealth-data,conviction-mock-data,unavailable-data}.ts`
+- `types/conviction.ts`
+- `test/conviction-audit.spec.ts`
+
+### Deployment boundary
+
+- No new environment variables, runtime files, systemd definitions or dev-only source settings.
+- Keep production Nuxt pointed at API 8506; do not copy the dev `conviction_store` to prod.
+- Merge/deploy backend and frontend together so the UI sees the expanded audit contract.
+- This release changes audit wording and provenance only. Do not bulk-recalculate, enable the
+  dividend rollout, buy/enable a provider, change P/E scoring, or change SELL behavior without the
+  outstanding Rohit decisions.
+
+### Smoke tests
+
+- [ ] Production health reports API 1.17.0 and the production store path.
+- [ ] Authenticated production Conviction audit loads and shows the six P/E bands.
+- [ ] Policy card says rollout approval, event verification and incoming-SELL-only behavior.
+- [ ] Production API/UI tests and store isolation pass; verify dev still points to 8507.
+
+### Status: `[PENDING]` — verified on dev 2026-09-22; production untouched
+
 ## 2026-09-02 — `instruction_docs/` nested under `docs/` + harness memory layer `[PENDING]`
 
 The rename is the part that matters for prod: it moves a path that

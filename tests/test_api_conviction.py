@@ -61,7 +61,10 @@ class TestConvictionReadAPI(unittest.TestCase):
 
     def test_get_engine_audit_route(self) -> None:
         fake = {
-            "policies": {"dividend_penalty_requires_explicit_approval": True},
+            "policies": {
+                "dividend_scoring_rollout_requires_approval": True,
+                "dividend_penalty_requires_explicit_approval": True,
+            },
             "summary": {"total_records": 0},
             "records": [],
         }
@@ -73,6 +76,9 @@ class TestConvictionReadAPI(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(
             response.json()["policies"]["dividend_penalty_requires_explicit_approval"]
+        )
+        self.assertTrue(
+            response.json()["policies"]["dividend_scoring_rollout_requires_approval"]
         )
 
     def test_engine_audit_distinguishes_fixed_and_legacy_state(self) -> None:
@@ -88,7 +94,17 @@ class TestConvictionReadAPI(unittest.TestCase):
                 "dividend_cut_penalty_pending_approval": True,
                 "agent_dims_status": "ran",
                 "agent_dim_provenance": {
-                    "ceo_quality": {"source": "agent", "confidence": 0.55},
+                    "ceo_quality": {
+                        "source": "agent",
+                        "reported_confidence": 0.8,
+                        "confidence": 0.55,
+                        "confidence_caps_applied": [
+                            {"rule": "opposing_evidence_text_longer", "cap": 0.55}
+                        ],
+                        "sources": ["one", "two"],
+                        "evidence_for": "support",
+                        "evidence_against": "counter evidence",
+                    },
                 },
                 "agent_run_usage": {
                     "model": "test-model",
@@ -126,10 +142,35 @@ class TestConvictionReadAPI(unittest.TestCase):
         self.assertEqual(audit["summary"]["low_confidence_neutralized"], 1)
         self.assertEqual(audit["summary"]["framework_capped"], 1)
         fixed, legacy = audit["records"]
-        self.assertEqual(fixed["pe_history_band"], "10_to_20")
+        self.assertEqual(fixed["pe_history_band"], "10_to_15")
+        self.assertEqual(fixed["dividend_verification_status"], "candidate_unverified")
+        self.assertEqual(audit["summary"]["dividend_candidates_unverified"], 1)
+        self.assertEqual(audit["summary"]["pe_10_to_15"], 1)
+        self.assertEqual(audit["summary"]["pe_no_series"], 1)
+        confidence = fixed["agent_confidence_details"][0]
+        self.assertEqual(confidence["reported_confidence"], 0.8)
+        self.assertEqual(confidence["final_confidence"], 0.55)
+        self.assertEqual(confidence["source_count"], 2)
+        self.assertTrue(confidence["neutralized"])
         self.assertEqual(fixed["quarterly_income_status"], "available")
         self.assertEqual(legacy["dividend_status"], "not_recorded")
+        self.assertIn("dividend rollout state", legacy["legacy_audit_note"])
         self.assertEqual(legacy["quarterly_income_status"], "not_recorded")
+
+    def test_pe_history_audit_bands_match_requested_breaks(self) -> None:
+        cases = (
+            (20.0, True, "20_plus"),
+            (15.0, True, "15_to_20"),
+            (10.0, True, "10_to_15"),
+            (5.0, True, "5_to_10"),
+            (4.99, True, "under_5"),
+            (25.0, False, "no_series"),
+        )
+        for years, has_series, expected in cases:
+            with self.subTest(years=years, has_series=has_series):
+                self.assertEqual(
+                    conviction_service._pe_history_band(years, has_series), expected
+                )
 
 
 class TestConvictionEvaluateAPI(unittest.TestCase):

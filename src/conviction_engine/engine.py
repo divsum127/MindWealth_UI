@@ -236,8 +236,11 @@ def full_recalculation(
         if isinstance(detail, dict) and detail.get("rationale") != "Agent unavailable":
             provenance[dim] = {
                 "source": "agent",
+                "reported_confidence": detail.get("reported_confidence"),
                 "confidence": detail.get("confidence"),
+                "confidence_caps_applied": detail.get("confidence_caps_applied") or [],
                 "sources": detail.get("sources") or [],
+                "evidence_for": detail.get("evidence_for"),
                 "evidence_against": detail.get("evidence_against"),
                 "rationale": detail.get("rationale"),
                 "api_model": detail.get("_api_model"),
@@ -247,18 +250,24 @@ def full_recalculation(
             # The agent was attempted and failed — distinct from never attempted.
             provenance[dim] = {
                 "source": "agent_failed",
+                "reported_confidence": None,
                 "confidence": 0.0,
+                "confidence_caps_applied": [],
                 "sources": [],
+                "evidence_for": None,
                 "evidence_against": None,
                 "rationale": detail.get("rationale"),
             }
         elif dim in manual or f"{dim}_score" in manual:
-            provenance[dim] = {"source": "manual", "confidence": None, "sources": [], "evidence_against": None, "rationale": None}
+            provenance[dim] = {"source": "manual", "reported_confidence": None, "confidence": None, "confidence_caps_applied": [], "sources": [], "evidence_for": None, "evidence_against": None, "rationale": None}
         else:
             provenance[dim] = {
                 "source": "not_run",
+                "reported_confidence": None,
                 "confidence": None,
+                "confidence_caps_applied": [],
                 "sources": [],
+                "evidence_for": None,
                 "evidence_against": None,
                 "rationale": f"Agentic dimension did not run ({agent_status}); scored 0 by absence, not by evidence.",
             }

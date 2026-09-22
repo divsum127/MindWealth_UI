@@ -28,7 +28,7 @@ if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
 from src.conviction_engine.adjusted_eps import compute_adjusted_eps_bundle, compute_effective_tax_rate
-from src.conviction_engine.agent_dims import compute_ceo_quality_agent
+from src.conviction_engine.agent_dims import _apply_confidence_rules, compute_ceo_quality_agent
 from src.conviction_engine.bank_valuation import (
     bank_fs_valuation_slice,
     bank_ptbv_valuation_tax,
@@ -367,6 +367,42 @@ class TestBuybackDividendFlags(unittest.TestCase):
 
 
 class TestAgentConfidenceGates(unittest.TestCase):
+    def test_confidence_audit_preserves_reported_value_and_source_cap(self):
+        detail = _apply_confidence_rules(
+            {
+                "score": 2,
+                "confidence": 0.82,
+                "sources": ["one source"],
+                "evidence_for": "Strong execution",
+                "evidence_against": "",
+            }
+        )
+        self.assertEqual(detail["reported_confidence"], 0.82)
+        self.assertEqual(detail["confidence"], 0.35)
+        self.assertEqual(
+            detail["confidence_caps_applied"],
+            [{"rule": "fewer_than_two_sources", "cap": 0.35}],
+        )
+        self.assertEqual(detail["score"], 0)
+
+    def test_confidence_audit_preserves_opposing_evidence_cap(self):
+        detail = _apply_confidence_rules(
+            {
+                "score": 2,
+                "confidence": 0.9,
+                "sources": ["one", "two"],
+                "evidence_for": "Short support",
+                "evidence_against": "A substantially longer body of opposing evidence that exceeds the support.",
+            }
+        )
+        self.assertEqual(detail["reported_confidence"], 0.9)
+        self.assertEqual(detail["confidence"], 0.55)
+        self.assertEqual(
+            detail["confidence_caps_applied"],
+            [{"rule": "opposing_evidence_text_longer", "cap": 0.55}],
+        )
+        self.assertEqual(detail["score"], 0)
+
     def test_low_confidence_ceo_score_is_unscored(self):
         with patch(
             "src.conviction_engine.agent_dims._call_claude_web_search",

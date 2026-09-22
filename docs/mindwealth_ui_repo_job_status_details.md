@@ -15,6 +15,35 @@ This file captures minute-level implementation context for each completed task:
 
 ---
 
+### 2026-09-22 — Conviction audit clarification, provenance and dev redeploy
+
+**Ask:** complete the end-to-end evidence audit behind Rohit's reply, implement the safe fixes that
+do not require his product decisions, and expose them correctly on the development website.
+
+- **Terminology corrected:** the global dividend-scoring rollout gate and per-event source
+  verification are now separate fields and labels. The audit explicitly says that Conviction can
+  modify an incoming quant SELL but cannot originate an exit.
+- **Confidence provenance:** new calculations preserve the model-reported confidence and each
+  deterministic cap alongside final confidence, source count, sources and evidence. Legacy rows
+  remain honest: missing historical fields are shown as not recorded, not reconstructed.
+- **Coverage audit:** P/E bands are 20+, 15–20, 10–15, 5–10, under 5 and no series. The denominator
+  is the 136 equities, fixing the earlier audit aggregate that counted non-equities as no-series.
+  Live dev counts are 18 / 10 / 6 / 9 / 66 / 27 respectively across 197 total records.
+- **Deliberate non-changes:** no scoring rule, exit ladder, business classification, provider,
+  model default, shared-store record or production service was changed. No bulk recalculation was
+  run. Those remain decision-dependent.
+- **Verification:** targeted Conviction/API 169 passed plus 6 subtests; Vue 64 passed; Nuxt build
+  passed; direct API and Nuxt-BFF smoke checks both returned the live 197-record audit. Full backend
+  suite reached 1,038 passes; its four failures are unrelated existing signals/SSI state issues.
+- **Deployment:** restarted only `mindwealth-api-dev.service` and `mindwealth-ui-dev.service`.
+  Dev is API v1.17.0 on 8507 and UI on 8514. Prod API 8506 stayed active at v1.12.0 with its own
+  conviction store.
+- **Caveat:** the public `/conviction` route redirects unauthenticated requests as expected. The
+  authenticated BFF data path was exercised locally and returned `data_source=live`, 197 audit rows,
+  `pe_no_series=27`, and `modifies_incoming_quant_sell_only`.
+
+---
+
 ### 2026-08-27 — Rohit's 27 Aug R:R questions: the quality columns did not move with the price
 
 **Ask:** four WhatsApp messages about one AI Analyst card. How is R:R calculated, how do we get 1.90 today, with price 6.95 and the nearest stop at 6.56 the risk is bigger than the reward so what am I missing, and separately: +0.87% MTM after 64 days should not be a reason to buy anything.

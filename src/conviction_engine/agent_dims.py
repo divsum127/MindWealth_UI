@@ -133,13 +133,34 @@ def _call_claude_web_search(
 
 
 def _apply_confidence_rules(result: dict[str, Any], *, default_score: int = 0) -> dict[str, Any]:
+    """Apply deterministic confidence caps and preserve how the final value was reached.
+
+    The original implementation only retained the final confidence. That made a 0.35
+    indistinguishable from a model-reported 0.35 even when Python had reduced a much
+    higher answer because it had fewer than two sources. Keep both values and the caps
+    for future audit rows; the scoring rule itself is unchanged.
+    """
+    try:
+        reported_confidence = float(result.get("confidence", 0.0))
+    except (TypeError, ValueError):
+        reported_confidence = 0.0
+    result["reported_confidence"] = reported_confidence
+    confidence_caps_applied: list[dict[str, Any]] = []
+
     sources = result.get("sources") or []
     if len(sources) < 2:
-        result["confidence"] = min(float(result.get("confidence", 0.3)), 0.35)
+        result["confidence"] = min(reported_confidence, 0.35)
+        confidence_caps_applied.append(
+            {"rule": "fewer_than_two_sources", "cap": 0.35}
+        )
     ev_for = str(result.get("evidence_for") or "")
     ev_against = str(result.get("evidence_against") or "")
     if len(ev_against) > len(ev_for) + 30:
         result["confidence"] = min(float(result.get("confidence", 0.5)), 0.55)
+        confidence_caps_applied.append(
+            {"rule": "opposing_evidence_text_longer", "cap": 0.55}
+        )
+    result["confidence_caps_applied"] = confidence_caps_applied
     if float(result.get("confidence", 0)) < 0.7:
         result["score"] = default_score
         rationale = str(result.get("rationale") or "")

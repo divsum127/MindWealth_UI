@@ -76,9 +76,13 @@ def _pe_history_band(years: float, has_series: bool) -> str:
         return "no_series"
     if years >= 20:
         return "20_plus"
+    if years >= 15:
+        return "15_to_20"
     if years >= 10:
-        return "10_to_20"
-    return "under_10"
+        return "10_to_15"
+    if years >= 5:
+        return "5_to_10"
+    return "under_5"
 
 
 def _filter_records(
@@ -287,6 +291,7 @@ def get_engine_audit() -> dict[str, Any]:
         low_confidence_answers: list[str] = []
         low_confidence_neutralized: list[str] = []
         low_confidence_needs_recalc: list[str] = []
+        confidence_details: list[dict[str, Any]] = []
         for dimension in _AUDITED_AGENT_DIMENSIONS:
             detail = provenance.get(dimension)
             if not isinstance(detail, dict):
@@ -295,14 +300,33 @@ def get_engine_audit() -> dict[str, Any]:
                 confidence = float(detail.get("confidence"))
             except (TypeError, ValueError):
                 continue
-            if confidence >= _AGENT_CONFIDENCE_THRESHOLD:
-                continue
-            low_confidence_answers.append(dimension)
             score = _bq_component_score(record, dimension)
-            if score == 0:
-                low_confidence_neutralized.append(dimension)
-            else:
-                low_confidence_needs_recalc.append(dimension)
+            neutralized = confidence < _AGENT_CONFIDENCE_THRESHOLD and score == 0
+            needs_recalc = confidence < _AGENT_CONFIDENCE_THRESHOLD and score != 0
+            if confidence < _AGENT_CONFIDENCE_THRESHOLD:
+                low_confidence_answers.append(dimension)
+                if neutralized:
+                    low_confidence_neutralized.append(dimension)
+                else:
+                    low_confidence_needs_recalc.append(dimension)
+            confidence_details.append(
+                {
+                    "dimension": dimension,
+                    "source": detail.get("source"),
+                    "reported_confidence": detail.get("reported_confidence"),
+                    "final_confidence": confidence,
+                    "confidence_caps_applied": list(
+                        detail.get("confidence_caps_applied") or []
+                    ),
+                    "source_count": len(detail.get("sources") or []),
+                    "sources": list(detail.get("sources") or []),
+                    "evidence_for": detail.get("evidence_for"),
+                    "evidence_against": detail.get("evidence_against"),
+                    "rationale": detail.get("rationale"),
+                    "neutralized": neutralized,
+                    "needs_recalc": needs_recalc,
+                }
+            )
 
         framework_coverage = record.get("framework_coverage")
         if framework_coverage is True:
@@ -320,6 +344,13 @@ def get_engine_audit() -> dict[str, Any]:
         usage = usage if isinstance(usage, dict) else None
         statement_coverage = record.get("statement_coverage")
         statement_coverage = statement_coverage if isinstance(statement_coverage, dict) else {}
+        legacy_fields: list[str] = []
+        if dividend_status == "not_recorded":
+            legacy_fields.append("dividend rollout state")
+        if framework_status == "not_recorded":
+            legacy_fields.append("framework coverage")
+        if usage is None:
+            legacy_fields.append("model usage")
 
         rows.append(
             {
@@ -328,6 +359,13 @@ def get_engine_audit() -> dict[str, Any]:
                 "business_type": record.get("business_type"),
                 "last_full_calc": record.get("last_full_calc"),
                 "dividend_status": dividend_status,
+                "dividend_verification_status": (
+                    "candidate_unverified"
+                    if dividend_status == "pending_approval"
+                    else "verified_scored"
+                    if dividend_status == "applied"
+                    else dividend_status
+                ),
                 "dividend_triggered": dividend_triggered,
                 "dividend_decline_pct": (
                     dividend_flag.get("decline_pct")
@@ -337,6 +375,7 @@ def get_engine_audit() -> dict[str, Any]:
                 "low_confidence_answers": low_confidence_answers,
                 "low_confidence_neutralized": low_confidence_neutralized,
                 "low_confidence_needs_recalc": low_confidence_needs_recalc,
+                "agent_confidence_details": confidence_details,
                 "agent_dims_status": record.get("agent_dims_status") or "not_recorded",
                 "agent_run_usage": usage,
                 "framework_status": framework_status,
@@ -344,6 +383,7 @@ def get_engine_audit() -> dict[str, Any]:
                 "pe_history_years": years_available,
                 "pe_history_band": _pe_history_band(years_available, has_pe_series),
                 "pe_has_series": has_pe_series,
+                "pe_history_source": pe_row.get("source"),
                 "quarterly_income_status": _statement_status(
                     record, "quarterly_income_empty", inverted=True
                 ),
@@ -356,6 +396,12 @@ def get_engine_audit() -> dict[str, Any]:
                 "one_off_review_needed": bool(record.get("one_off_review_needed")),
                 "one_off_sizing_cap_pct": record.get("one_off_sizing_cap_pct"),
                 "statement_coverage_recorded": bool(statement_coverage),
+                "legacy_audit_note": (
+                    "Last full calculation predates these September audit fields: "
+                    + ", ".join(legacy_fields)
+                    if legacy_fields
+                    else None
+                ),
             }
         )
 
@@ -368,6 +414,13 @@ def get_engine_audit() -> dict[str, Any]:
 
     return {
         "policies": {
+            "dividend_scoring_rollout_requires_approval": True,
+            "dividend_cut_requires_source_verification": True,
+            "conviction_sell_mode": "modifies_incoming_quant_sell_only",
+            "conviction_generates_standalone_exits": False,
+            "confidence_source_minimum": 2,
+            "confidence_fewer_than_two_sources_cap": 0.35,
+            "confidence_opposing_evidence_cap": 0.55,
             "dividend_penalty_requires_explicit_approval": True,
             "dividend_hard_exit_requires_approved_penalty": True,
             "agent_confidence_threshold": _AGENT_CONFIDENCE_THRESHOLD,
@@ -380,11 +433,19 @@ def get_engine_audit() -> dict[str, Any]:
             "dividend_pending_approval": sum(
                 row["dividend_status"] == "pending_approval" for row in rows
             ),
+            "dividend_candidates_unverified": sum(
+                row["dividend_verification_status"] == "candidate_unverified"
+                for row in rows
+            ),
             "dividend_penalty_applied": sum(
                 row["dividend_status"] == "applied" for row in rows
             ),
             "dividend_gate_not_recorded": sum(
                 row["dividend_status"] == "not_recorded" for row in rows
+            ),
+            "dividend_rollout_not_recorded": sum(
+                row["dividend_verification_status"] == "not_recorded"
+                for row in rows
             ),
             "low_confidence_answers": sum(
                 len(row["low_confidence_answers"]) for row in rows
@@ -408,10 +469,22 @@ def get_engine_audit() -> dict[str, Any]:
             "statement_coverage_recorded": sum(
                 row["statement_coverage_recorded"] for row in rows
             ),
-            "pe_20_plus": sum(row["pe_history_band"] == "20_plus" for row in rows),
-            "pe_10_to_20": sum(row["pe_history_band"] == "10_to_20" for row in rows),
-            "pe_under_10": sum(row["pe_history_band"] == "under_10" for row in rows),
-            "pe_no_series": sum(row["pe_history_band"] == "no_series" for row in rows),
+            "pe_history_equity_records": len(equity_rows),
+            "pe_20_plus": sum(row["pe_history_band"] == "20_plus" for row in equity_rows),
+            "pe_15_to_20": sum(row["pe_history_band"] == "15_to_20" for row in equity_rows),
+            "pe_10_to_15": sum(row["pe_history_band"] == "10_to_15" for row in equity_rows),
+            "pe_5_to_10": sum(row["pe_history_band"] == "5_to_10" for row in equity_rows),
+            "pe_under_5": sum(row["pe_history_band"] == "under_5" for row in equity_rows),
+            "pe_no_series": sum(row["pe_history_band"] == "no_series" for row in equity_rows),
+            # Backward-compatible aggregates for clients on the 1.16 contract.
+            "pe_10_to_20": sum(
+                row["pe_history_band"] in {"10_to_15", "15_to_20"}
+                for row in equity_rows
+            ),
+            "pe_under_10": sum(
+                row["pe_history_band"] in {"under_5", "5_to_10"}
+                for row in equity_rows
+            ),
         },
         "records": rows,
     }

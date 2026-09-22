@@ -111,6 +111,16 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
 
 ---
 
+### 2026-09-22
+
+1. **Conviction audit clarification, evidence provenance and dev redeploy** — SUCCESSFUL
+   - Date: 2026-09-22
+   - Summary: Corrected the 8514 audit wording so a one-time dividend-scoring rollout decision is not confused with source verification of each dividend event; made clear that Conviction only modifies an incoming quant SELL and never creates a standalone exit. Added per-answer reported/final confidence, deterministic caps, sources/evidence, P/E source and legacy-record explanations. Split P/E coverage into 20+, 15–20, 10–15, 5–10, under 5 and no-series bands using the 136-equity denominator. No score, threshold, store record or production behavior changed.
+   - Verification: 169 Conviction/API tests passed with 6 subtests; Vue 64 tests passed; Nuxt build passed. Full repository run: 1,038 passed, 11 skipped and 9 xfailed, with four unrelated pre-existing failures (shortlist calendar-age, two stale SSI history rows and one strict XPASS). Dev API 8507 is active on v1.17.0; dev UI 8514 returns the live 197-record audit; prod remains isolated on v1.12.0.
+   - Files changed: Conviction agent/audit service and tests; API v1.17.0 docs/OpenAPI; Nuxt audit component, types, mapping/fallbacks and tests; Rohit reply draft; job/details/migration logs.
+
+---
+
 ### 2026-09-02
 
 1. **Rohit sir's 1 Sep conviction-engine reply — all phases: agentic provenance, adjusted-EPS sourcing hierarchy, dividend series rebuild, sell ladder, coverage flag** — SUCCESSFUL

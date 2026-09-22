@@ -430,10 +430,10 @@ def compute_bq_components_auto(
     dividend_flag = detect_dividend_cut(fundamentals)
 
     # Rohit 1 Sep, C3: the corrected dividend-cut calculation must be shown as a
-    # universe diff before it is allowed to change any score. Keep calculating and
-    # persisting the candidate flag, but default its scoring contribution to zero.
-    # After approval it can be enabled explicitly per run/record; buyback suspension
-    # remains live and independent.
+    # universe diff before the one-time scoring rollout is enabled. Keep calculating
+    # and persisting candidates, but default their contribution to zero. The current
+    # override is the controlled-run mechanism for that global rollout decision; it is
+    # not intended to require Rohit to approve every verified cut individually.
     apply_dividend_cut_penalty = overrides.get("apply_dividend_cut_penalty") is True
     dividend_flag_for_scoring = (
         dividend_flag

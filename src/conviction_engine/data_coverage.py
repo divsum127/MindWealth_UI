@@ -132,6 +132,7 @@ def summarize_pe_history_distribution(records: list[dict[str, Any]]) -> dict[str
                 "years_available": years,
                 "insufficient_20y": bool(pe.get("insufficient_20y", years < PE_HISTORY_TARGET_YEARS)),
                 "has_pe_series": bool(pe.get("has_pe_series")),
+                "source": pe.get("source"),
                 "start_date": pe.get("start_date"),
                 "end_date": pe.get("end_date"),
             }
