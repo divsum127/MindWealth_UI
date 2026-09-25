@@ -21,6 +21,47 @@ Reference deploy skill: `.cursor/skills/prod-pull-and-details/SKILL.md`
 | `[PROD-ACTION]` | Manual step on server after git merge (secrets, systemd, bootstrap) |
 | `[DONE]` | Completed on prod (date in notes) |
 
+## 2026-09-25 — Dashboard audit fixes and regression suite `[PENDING]`
+
+### Frontend files to promote
+
+**MindwealthUI_Vue, `ui-dev` to the production UI branch:**
+
+- `app.vue`, `nuxt.config.ts`
+- `assets/css/{main,mobile}.css`
+- `components/{AppTopbar,ImagePopup}.vue`
+- `components/mobile/MobileTerminalLayout.vue`
+- `components/portfolio/PortfolioOverviewView.vue`
+- `constants/{page-meta,regime-strip}.ts`
+- `pages/{dashboard,index,macro}.vue`
+- `composables/useLandingStats.ts`
+- `server/api/landing-stats.get.ts`
+- `server/utils/{mindwealth-data,mock-data,unavailable-data}.ts`
+- `types/api.ts`, `utils/performance-aggregates.ts`
+- `test/dashboard-audit-regressions.spec.ts`
+- `docs/{DASHBOARD_BACKEND_REQUIREMENTS,URGENT_ITEMS_BACKEND_VS_FRONTEND}.md`, `hardcoded-stuff.md`
+
+### Deployment boundary
+
+- Dev UI `:8514` is rebuilt/restarted and verified; production UI/service remains untouched.
+- No backend merge, environment variable, runtime-data migration or systemd definition change is
+  required. Promote the frontend commit as one unit so contracts and display changes stay aligned.
+- MW-035 changes an investor-facing methodology presentation. Before production, Rohit must choose
+  simple approved-gate mean (currently 71.82%) or trade-weighted mean (73.95% over 4,208 trades).
+  Both are visible on dev; if weighting changes, update the label/test and preserve count/as-of date.
+
+### Production smoke checklist
+
+- [ ] `npm test` → 73/73 or better; `npm run build` passes.
+- [ ] Authenticated `/dashboard`: VIX and valuation regimes are independently correct; chart title
+      says “Forward Win Rate by Function”; KPI reconciles to the dated gate payload.
+- [ ] Desktop 1440x900 and mobile 390x844: one main/H1, unique title, `lang=en`, no visible control
+      below 24px, chart/regime/macro scrollers keyboard-focus and scroll.
+- [ ] All seven terminal routes retain exactly one main/H1 after Portfolio's nested main removal.
+- [ ] Restart production Nuxt only after the production build; do not change API 8506.
+
+### Status: `[PENDING]` — dev fixed, green and live-retested at frontend commit `06399d3`; awaiting MW-035 methodology sign-off, a valid GitHub PAT to push the local commits, and production promotion
+
 ## 2026-09-22 — Conviction audit semantics and provenance, API 1.17.0 `[PENDING]`
 
 ### Git files to merge
@@ -59,6 +100,254 @@ Reference deploy skill: `.cursor/skills/prod-pull-and-details/SKILL.md`
 
 ### Status: `[PENDING]` — verified on dev 2026-09-22; production untouched
 
+## 2026-09-19 — Conviction Engine live audit API and Nuxt verification view `[PENDING]`
+
+### Git files to merge
+
+**MindWealth_UI, `chatbot-dev` to `chatbot-prod`:**
+
+- `api/main.py`
+- `api/routers/conviction.py`
+- `api/services/conviction_service.py`
+- `tests/test_api_conviction.py`
+- `docs/mindwealth-api-docs/` release 1.16.0, including the OpenAPI snapshot
+- The 17 Sep Conviction safety-fix files listed in the block immediately below
+
+**MindwealthUI_Vue, `ui-dev` to the production UI branch:**
+
+- `components/conviction/ConvictionAuditPanel.vue`
+- `constants/terminal-configs.ts`
+- `pages/conviction.vue`
+- `server/utils/{mindwealth-data,conviction-mock-data,unavailable-data}.ts`
+- `types/conviction.ts`
+- `test/conviction-audit.spec.ts`
+
+### Behaviour and data boundary
+
+- New `GET /api/v1/conviction/audit` is read-only and exposes live safeguard policy plus compact
+  per-ticker audit state.
+- The Nuxt page adds **Safeguards & audit**, backed by the real API. Dev runs with mock fallback
+  disabled.
+- Do not copy dev `conviction_store` or the isolated report `targeted_store` into production.
+- No dev-only source config needs reverting. At cutover the production Nuxt service must continue
+  pointing to production API 8506, not dev 8507.
+- Most shared dev records still show `not_recorded` for September audit fields. This is intentional
+  until the approved controlled recalculation; do not relabel it as unavailable.
+
+### `[PROD-ACTION]`
+
+1. Merge both dev branches and the API-docs release.
+2. Build the production Nuxt tree and restart its production service.
+3. Restart `mindwealth-api.service` through the standard prod pull workflow.
+4. Run the approved production Conviction recalculation only after the SBUX/multi-segment policy is
+   settled. Do not enable dividend penalties without ticker-level approval.
+
+### Smoke tests
+
+- `[DONE 2026-09-19 dev]` API 1.16.0 audit returns 197 records and both dividend gates `true`.
+- `[DONE 2026-09-19 dev]` authenticated 8514 browser check renders 197 audit rows with no errors.
+- `[DONE 2026-09-19 dev]` Vue 63 tests, Nuxt build, backend targeted 166, API 195.
+- `[DONE 2026-09-19 dev]` prod isolation verified: prod 8506 remains API 1.12.0 and uses the prod
+  store.
+- `[PENDING prod]` repeat audit endpoint, authenticated UI, store-path isolation and ticker search.
+
+## 2026-09-17 — Conviction Engine approval gates, confidence hardening and audit provenance `[PENDING]`
+
+### Git files to merge (`chatbot-dev` → `chatbot-prod`)
+
+- `src/conviction_engine/engine.py`
+- `src/conviction_engine/fundamentals_enriched.py`
+- `src/conviction_engine/agent_dims.py`
+- `src/conviction_engine/ceo_quality.py`
+- `src/conviction_engine/models.py`
+- `scripts/conviction_coverage_report.py`
+- `scripts/dividend_cut_diff_report.py`
+- `tests/test_conviction_engine_v2_fixes.py`
+- `reports/conviction_engine_closeout_2026-09-17/` (decision/audit artifacts; runtime records in
+  `targeted_store/` are test evidence, not production seed data)
+
+### Behaviour changes
+
+- Dividend-cut candidates remain visible but contribute no BQ penalty and cannot fire the dividend
+  HARD EXIT unless `apply_dividend_cut_penalty=true` is explicitly approved.
+- All-neutral automatic BQ calculations retain their audit fields instead of falling back to the
+  legacy component map.
+- Explicitly low-confidence (<70%) CEO/moat evidence is neutral even if an older stored answer
+  contains a numeric score.
+- Agent model and actual API usage are recorded for future cost/model audits.
+- Coverage reporting distinguishes legacy `not_recorded` data from real fetch unavailability.
+
+### Pre-prod decisions/actions
+
+1. Obtain Rohit's seven remaining decisions in the close-out report, especially dividend approval,
+   classification tie-break, P/E policy and agent budget/model.
+2. Run the Ahil live-test pack and fix accepted defects.
+3. Run the full development-universe recalculation only after the SBUX/tie-break rule is approved.
+4. Do not copy `reports/.../targeted_store/*.json` into the production `conviction_store`.
+
+### `[PROD-ACTION]` after merge
+
+Run the reviewed full recalculation against production runtime data through the standard controlled
+workflow, restart `mindwealth-api.service`, and compare dividend approval fields, framework
+coverage, BQ/FS/conviction, and position-layer exit output against the signed-off dev sample.
+
+### Verification
+
+- `[DONE 2026-09-17 on dev source]` conviction/API regression set: **164 passed**.
+- `[DONE 2026-09-17 isolated store]` NVDA and GOOGL full updates: 2 updated, 0 errors.
+- `[PENDING]` shared dev universe, Ahil acceptance, prod smoke tests and prod runtime recalculation.
+
+## 2026-09-15 — Macro Runic overview and Combo E/F/SSI semantics `[PENDING]`
+
+### Git files to merge (`chatbot-dev` → `chatbot-prod`)
+
+- `api/services/macro_service.py`
+- `src/macro_intelligence/engine/combo_detector.py`
+- `src/macro_intelligence/jobs/nightly_run.py`
+- `src/macro_intelligence/output/briefing_renderer.py`
+- `scripts/rebuild_ssi_history.py`
+- `tests/test_macro_overview_issue_regressions.py`
+- `tests/test_rebuild_ssi_history_cleanup.py`
+- Relevant updates in `tests/test_api_macro.py`, `tests/test_mcclellan_pull.py`, and
+  `tests/test_ssi_known_gaps.py`
+- `docs/MACRO_INTELLIGENCE_MASTER.md` and `docs/mindwealth-api-docs/`
+
+### Contract and behavior changes
+
+- `/macro/status`: `watch_combos` is now an ID list; use new `watch_combo_details` for objects.
+- `/macro/overview/kpis`: adds `simultaneous_active_combos`, `ssi_layer2`, and structured `combo_e`.
+- `/macro/regime` and `/macro/narrative`: recommendation text is rebuilt from current state.
+- `/macro/combo-c/cancel`: adds sigma units/source and labelled probability components.
+- `/macro/combo-f/window`: adds `lifecycle_status` and `window_message`; F expires after week 26
+  and cannot restart in the same uninterrupted above-50WMA episode.
+- Combo E remains a strict three-of-three rule: CAPE ≥32, NFCI ≤−0.15, CFTC ≥85th percentile.
+
+### Dev-only / revert before prod
+
+None.
+
+### `[PROD-ACTION]` after merge
+
+1. Run `python scripts/run_macro_nightly.py` to write `combo_f_status`, the F episode anchor,
+   updated WATCH metadata, and current recommendation text into `runic_output.json`.
+2. Restart `mindwealth-api.service` using the standard deploy workflow.
+3. Run `python scripts/rebuild_ssi_history.py --limit 20` if prod contains historical SSI rows
+   written since the 2026-09-03 no-lookahead guard; the new cleanup removes obsolete non-engine
+   dates only inside that exact rebuilt range. Do not copy dev's untracked `ssi.db` to prod.
+4. Verify the separate Nuxt repo maps `watch_combos` as IDs and uses `watch_combo_details`,
+   `simultaneous_active_combos`, `ssi_layer2.display_status`, and `combo_e` for visible labels.
+
+### Smoke tests
+
+- `[DONE 2026-09-15 on dev source]` new issue regressions: **15 passed**.
+- `[DONE 2026-09-15 on dev source]` Macro/API/SSI compatibility suite: **98 passed, 1 skipped**.
+- `[DONE 2026-09-15 on dev source]` full suite: **1,028 passed, 12 skipped, 10 xfailed,
+  40 subtests passed**, zero failures.
+- `[PENDING prod]` Confirm status renders WATCH `E`, not `[object Object]`; dominant F also lists
+  active C; SSI reads CONTESTED with votes; E reads WATCH 2/3 with CFTC not met; cancel sigma says
+  WTI annualised volatility; F reports EXPIRED after week 26 without a new episode.
+
+## 2026-09-03 — SSI dev remediation: breadth backfill, history endpoint, margin-debt quarantine, Test 15 unblock `[PENDING]`
+
+All of this is on `chatbot-dev`. Prod is deliberately **not** being touched in this pass — the
+prod-side SSI defects are logged in the separate 2026-09-03 block below and wait for a merge.
+
+### Git files to merge (`chatbot-dev` → `chatbot-prod`)
+
+| File | Change |
+|---|---|
+| `scripts/backfill_sp500_breadth.py` | **new.** Downloads one long S&P 500 window explicitly and merges all three breadth series. The daily path still uses `period="5y"` |
+| `macro_intelligence/data/ssi/pct_above_200dma.csv` | 1,643 → **3,186 rows**, now starts 2014-01-02 (was 2020-01-02) |
+| `macro_intelligence/data/ssi/nh_nl_ratio.csv` | 2,925 → **3,176 rows**, now starts 2014-01-02 |
+| `macro_intelligence/data/ssi/mcclellan_oscillator.csv` | recomputed; 16 exact-zero artefacts removed |
+| `api/routers/macro.py` | `/macro/ssi/history` accepts `start`/`end` and returns the full window uncapped; the `days` path keeps its 90 clamp |
+| `api/services/macro_service.py` | `get_ssi_history(start=, end=)` date-range query; `_round2` collapses negative zero |
+| `src/sentiment_superindex/data/margin_debt_pull.py` | source quarantined — see below |
+| `src/macro_intelligence/data/cftc_pull.py` | `_parse_report_dates` legacy-format fast path + `_TFF_SERIES_CACHE` for the derived FM/RM series. **24.3s → 0.028s per positioning payload build.** Speeds the live Sentiment path too, not just the rebuild |
+| `src/sentiment_superindex/engine/positioning.py` | `_regime_block_for()` — Layer 4 regime is attached only when `as_of` is today, so backdated rows stop carrying today's labels |
+| `src/sentiment_superindex/engine/ssi_score.py` | `compute_ssi_at_date(..., superindex=)` so the caller's composite is reused |
+| `macro_intelligence/data/ssi/margin_debt.csv` | **renamed** to `margin_debt_MDSP_mislabelled_quarantined.csv` |
+| `scripts/mindwealth_adapters/sbi_breadth.py` | `data.initialize_data()` added; scan errors surfaced instead of swallowed; refuses to report a result when 0 dates evaluated |
+| `scripts/run_test15_sbi_parallel.sh` | interpreter `${MW}/.venv` (3.12) → `${MW}/venv` (3.10); clears `/tmp/sbi_shard_*.json` unless `RESUME=1` |
+| `tests/test_api_macro.py`, `tests/test_margin_debt_pull.py`, `tests/test_ssi_display_rounding.py`, `tests/test_cftc_unit_basis.py`, `tests/test_ssi_regime_block.py`, `tests/test_ssi_superindex.py`, `tests/test_ssi_staleness.py`, `tests/test_ssi_layer2.py` | new regression tests for each of the above |
+| `tests/test_ssi_contract.py` | **new** — 43 invariant + end-to-end tests pinning everything fixed today |
+| `tests/test_ssi_known_gaps.py` | **new** — 11 `xfail(strict=True)` tests encoding what is still broken; each becomes a hard failure the day it starts passing |
+| `tests/conftest.py` | registers the `e2e` marker |
+| `src/sentiment_superindex/data/pct_200dma_pull.py`, `nh_nl_pull.py`, `mcclellan_pull.py` | stop filtering their own cache by the caller's `start` — that silently reverted the breadth backfill on every daily run. `mcclellan` additionally stops zero-filling missing days into the EMA (a fabricated neutral market reading) |
+| `src/sentiment_superindex/engine/superindex.py` | `_no_negative_zero` applied to `norm` and `contribution` — 118 stored negative zeros, all `dbmf_beta` |
+| `macro_intelligence/CONFIG.yaml` | `cftc.positioning_patterns_signoff: held` — gates the SQUEEZE / LIQUIDITY EXIT flags |
+| `macro_intelligence/SSI_CONFIG.yaml` | `staleness.publication_lag_days` for the three COT series |
+| `docs/ssi_validation/SIGNOFF.md`, `STALE_BACKTESTS_AFTER_CNN_HY_FIXES.md`, `SHEET_SSI_ROWS_VERIFICATION_20260903.md`, `testing/ssi_th_exp/SSI_OPEN_QUESTIONS_STATUS.md` | corrections + the new sheet verification |
+
+### `[PROD-ACTION]` after the merge
+
+1. **`scripts/rebuild_ssi_history.py` on prod.** `ssi.db` is untracked, so no merge fixes it. Prod
+   currently holds **49 rows** (2026-06-30 →). Run it only after the CNN and CFTC input files are
+   correct on prod, or it just bakes the wrong inputs into a longer series.
+2. Re-run `run_ssi_daily.py` and restart `mindwealth-api.service` so `positioning.json` and the
+   endpoints pick up the new shape.
+3. Nothing to do for `margin_debt` beyond the merge — it is not scored.
+
+### `[BLOCKER — not a deploy step]` Dev API is not reachable from the internet
+
+`mindwealth-api-dev.service` binds `0.0.0.0:8507` and answers on the box, but
+`51.20.53.218:8507` times out from outside while `:8506` returns 401. `ufw` is inactive and the
+`iptables` INPUT policy is ACCEPT, so this is the **AWS security group**: 8506 has an inbound rule
+and 8507 does not. Needs someone with EC2 console access. Until it exists, Ahil cannot use the dev
+API and has to go through an SSH tunnel or a CSV export.
+
+### Smoke tests
+
+- `[DONE 2026-09-03 on dev :8507]` `GET /macro/ssi/history?start=2015-01-01&end=2026-09-03` →
+  `days_available: 3201`, `days_requested: null`. `?days=999` → clamped to 90. API restarted, active.
+- `[DONE 2026-09-03]` full suite `pytest tests/ -q` → **958 passed, 3 skipped, 0 failed**.
+- `[DONE 2026-09-03]` `ssi.db` rebuilt and reconciled: **2,935 rows, 2015-01-01 → 2026-09-03**,
+  zero old-vintage rows, NYSE sessions only. 465 pre-fix rows removed (444 non-sessions incl. 420
+  Saturdays; 21 sessions the engine declines to score inside the put/call gap). Served over HTTP:
+  `days_available: 2935`.
+- `[IN PROGRESS 2026-09-03]` Test 15 re-run under the 3.10 interpreter. Note the runner also needed
+  `rm -f /tmp/sbi_shard_*.json` — the 2026-08-11 shard caches carried `scan_complete: true` with
+  zero short dates, so every re-run since had been replaying that failure in ~25 seconds without
+  scanning anything.
+
+---
+
+## 2026-09-03 — SSI data on prod is wrong in three ways (audit finding, no code change) `[PENDING]`
+
+Found while answering Rohit sir's 3 Sep question. No new dev code — these are
+**prod data/deploy defects** that make prod's published SSI differ from dev's.
+Live proof today: `GET /macro/ssi/summary` returns `ssi_level 0.0766 / pctile
+40.18` on `:8506` and `0.0793 / 44.70` on `:8507`.
+
+| # | Defect on prod | Evidence | Fix |
+|---|---|---|---|
+| 1 | `macro_intelligence/data/ssi/cnn_fear_greed.csv` starts **2018-02-01** (3,182 rows, all `real_cnn_api`) — the 2012 wayback backfill is gone. Lost when the 2026-08-20 merge resolved this file "in favour of prod's own fresher cron data". | `cut -d, -f3 … \| uniq -c` on both clones | Merge the dev CSV **and** confirm the nightly CNN pull appends rather than overwrites, or it will be lost again |
+| 2 | `macro_intelligence/output/cftc_tff_sp500_fm_rm_2006_2026.csv` is the pre-restatement file — the 2023-05-02 unit seam is intact (`FM_Net −95,014 → −457,123` in one week) and `unit_basis: emini_equivalent` is absent from prod's `CONFIG.yaml`. | prod file dated 29 Jun, 835 rows, no `Unit` column; dev 1,055 rows from 2006 | Ships with the 2026-08-20/24 CFTC entries; regenerate on prod after the merge |
+| 3 | `macro_intelligence/data/ssi/ssi.db` holds **49 rows** (2026-06-30 → today) vs dev's 3,196 (2015-01-01 →). `ssi.db` is untracked, so no merge fixes this. | `select count(*), min(date), max(date) from ssi_daily` | `[PROD-ACTION]` run `scripts/rebuild_ssi_history.py` on prod **after** defects 1 and 2 are closed |
+
+**`[PROD-ACTION]` on dev first — the SSI history is pre-fix vintage on *both*
+clones.** `ssi_daily.created_at` shows 3,129 of dev's 3,196 rows written in a
+single pass on **2026-07-21**; everything since is a one-row daily append. That
+series therefore predates the CNN backfill (Aug 2), the staleness caps (Aug 7),
+the McClellan / %>200DMA repairs (Aug 7), the truth-telling fields (Aug 20) and
+the CFTC restatement (Aug 24–25). Old rows carry no `staleness_policy`,
+`coverage_ok` or `partial_score`; today's row carries all three. Run
+`scripts/rebuild_ssi_history.py` on dev, re-run the SSI validation suite against
+the rebuilt series, then repeat on prod. Until that happens **no SSI backtest —
+ours or Ahil's — is running on the fixed numbers.**
+
+**Not a deploy item, but blocking the same question:** `GET /macro/ssi/history`
+is clamped to 90 days (`api/routers/macro.py:415`), so the endpoint cannot serve
+a multi-year SSI series to an external backtest. Either raise the clamp or hand
+over a CSV export of `ssi_daily`.
+
+**Already verified fixed and live on prod** (do not re-open): the A6
+`vix_bypass` defect — prod `runic_output.json` reads `vix_bypass: false` today —
+and the staleness caps 8/3/30, present in prod's `SSI_CONFIG.yaml` and stamped
+into prod's `positioning.json`.
+
+---
+
 ## 2026-09-02 — `instruction_docs/` nested under `docs/` + harness memory layer `[PENDING]`
 
 The rename is the part that matters for prod: it moves a path that
@@ -88,6 +377,16 @@ itself is scripts and docs and runs nowhere in the prod serving path.
 - `.claude/hooks/memory_status.sh`, `.claude/settings.json`
 - `docs/memory/{index.jsonl, MAP.md, PROD_QUEUE.md, features_index.md, .sync_state.json}`
 - `docs/instruction_docs/*/_HUB.md` — 7 hubs
+
+**Added 2026-09-03 — memory-layer emptiness repair (same block, still `[PENDING]`)**
+- `docs/memory/UNASSIGNED.md` — new generated view for records no feature claimed
+- `docs/memory/asset_map/{README.md, ssi.md, macro_intelligence.md, conviction_engine.md, portfolio_page.md}`
+- `scripts/asset_map_verify.py`, `scripts/asset_map_sync.py`, `tests/test_asset_map_paths.py`
+- `.claude/skills/sync-asset-map/SKILL.md`
+- `scripts/memory_sync.py` — widened `FEATURES` keywords, `render_unassigned()`,
+  `reclassify()` and the `--reclassify` flag. Still dev-box only; nothing here
+  runs in the API serving path.
+- `CLAUDE.md`, `.claude/skills/sync-memory/SKILL.md` — document the new view and flag
 
 ### Dev-only / revert before prod
 
@@ -3396,6 +3695,69 @@ Expect `fm_pctile` on prod to match dev for the same `fm_net` once the zip backf
 
 ---
 
+## 2026-09-03 — Dev API port 8507 opened in the AWS security group (host change, no git)
+
+### Git (chatbot-dev → chatbot-prod)
+
+- **None.** No source, config or runtime file changed. Diagnosis was read-only.
+
+### Dev-only / revert before prod
+
+- **None.** The change is additive on the dev port only. Prod `:8506` already had
+  its inbound rule and was untouched.
+
+### Prod runtime (not in git)
+
+- **Nothing to copy.** Recorded here for the standing fact it surfaced:
+  `API_KEY` is one shared secret and **dev and prod currently hold the identical
+  48-character value** (dev `.env:15`, prod `.env:13`). `api/dependencies.py:49`
+  compares the `X-API-Key` header to it by exact equality — there is no key table.
+  Since dev `:8507` is now reachable from the whole internet, a leak on the dev side
+  is a prod credential leak.
+  - **Follow-up, not yet done:** give dev its own `API_KEY`, restart the dev API
+    service, reissue to Rohit sir over WhatsApp. Prod's value stays as-is so no
+    prod caller breaks. Offered to the user on 2026-09-03; left as their call.
+
+### systemd / Nuxt
+
+- **None.** No unit file or Nuxt env touched. `API_KEY` is not set in
+  `/etc/systemd/system/mindwealth*.service`; each service reads the `.env` in its
+  own clone.
+
+### AWS (console change, already applied)
+
+- Instance `i-04ce99e3f32de2153`, region `eu-north-1`, security group `launch-wizard-6`.
+- Inbound rule added by the user in the console: **Custom TCP, port 8507, source `0.0.0.0/0`**.
+- Applied because nothing on the box can do it: no IAM instance role is attached
+  (IMDS `iam/security-credentials/` → 404) and `~/.aws` holds no credentials, so
+  `aws sts get-caller-identity` returns `NoCredentials`.
+- **Optional tightening:** Rohit sir offered his source IP so the rule can be
+  scoped to a `/32`. One console edit; nothing else depends on it.
+
+### Smoke tests
+
+- External no key: `curl -s -o /dev/null -w '%{http_code}' http://51.20.53.218:8507/api/v1/health`
+  → `401` in 3ms. Was an 8s timeout before the rule.
+- External with key: same URL with `-H "X-API-Key: $API_KEY"` → `200`,
+  `{"status":"ok","version":"1.14.0","conviction_store_writable":true}`.
+- Public surface confirmed closed: `/docs`, `/redoc`, `/openapi.json` all `404`
+  (disabled via `_docs_enabled`, `api/main.py:69-71`); every route including
+  `/api/v1/health` carries `Depends(require_api_key)`; slowapi rate limiting active.
+- **Caveat:** probes originated on the instance against its own public IP. That path
+  hairpins through the internet gateway and is evaluated by the security group — the
+  before/after flip proves the rule took effect — but it is not a third-party
+  vantage point. Rohit sir to confirm from his own network.
+
+### Fallback if a future port is blocked and nobody can reach the console
+
+`/etc/nginx/sites-enabled/mindwealth-ui-dev` already serves `server_name 51.20.53.218`
+on `:80` (→ dev Nuxt `127.0.0.1:8514`), and `:80`/`:443` are externally reachable.
+Adding a `location /dev-api/` block proxying to `127.0.0.1:8507` exposes the dev API
+with **no AWS access required**. Not used on 2026-09-03; kept as the documented escape hatch.
+
+### Status: `[DONE]` 2026-09-03 — SG rule live and verified. The dev/prod key split remains `[PENDING]`.
+
+
 ## Template for future entries
 
 Copy for each new dev feature:
@@ -3430,6 +3792,7 @@ Copy for each new dev feature:
 
 | Date | Change |
 |------|--------|
+| 2026-09-03 | Dev API port 8507 opened in AWS SG `launch-wizard-6`; dev/prod share one `API_KEY` (split pending) |
 | 2026-08-25 | CFTC series restated into E-mini equivalents; **pre-2023-05-02 `fm_net`/`rm_net` change scale x5 — stored contract counts must be rebuilt, not merged**; complete `data_cache/cftc/` is now a hard prerequisite |
 | 2026-08-18 | SSI resilience + coverage gate + CFTC zip completeness + regime feed currency; **SSI_CONFIG.yaml `staleness:` block is now a hard prerequisite on prod** |
 | 2026-08-17 | Sheet-reply truth audit: 3 silent live feed defects (NAAIM scrape, `vix_ratio`, CFTC one release behind), dev/prod CFTC percentile mismatch, prod missing `signal_coverage` + gate label |
