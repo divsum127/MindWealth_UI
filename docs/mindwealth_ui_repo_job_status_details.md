@@ -13,6 +13,50 @@ This file captures minute-level implementation context for each completed task:
 
 ---
 
+### 2026-09-25 — Signals audit: exits, shortlist metrics and active-view lazy loading
+
+**Ask:** Move to another page, fix its audit issues one by one with tests, and keep explicit status,
+blocker and Rohit-question fields in the shared Sheet.
+
+#### Test-first implementation
+
+- Added `test/signals-audit-regressions.spec.ts`. The pre-fix run produced three expected failures
+  for MW-007, MW-008 and MW-041; MW-009 is an explicit TODO because the required product contract
+  is not documented. Each implemented issue was turned green before the final suite.
+- MW-007: added an `exits` view backed by `GET /api/v1/signals/exits?book_id=model`, which was already
+  documented and used by Portfolio as the same Signals exit feed. The view has its own KPI counts,
+  as-of label, exit-type/price/P&L/detail columns and independent loading/error/empty state. Added
+  `exits` to the valid Signals navigation IDs so it no longer resets/falls through to Outstanding.
+- MW-008: normalized the rich shortlist keys `win_rate_historical`, `forward_test_win_rate` and
+  `signal_date` into the Signal record contract. Missing win-rate data is represented as unavailable
+  and excluded from averages; table/detail/top-row formatters show a dash instead of a fabricated
+  0%. Existing legacy CSV parsing remains supported.
+- MW-041: added opt-in `immediate` flags to Signals fetch helpers. New, shortlist, exits, all,
+  breadth, horizontal and performance resources now start idle and execute only when their subview
+  is selected. The active-view refresh path no longer reloads every report.
+
+#### Verification and boundary
+
+- `npx vitest run test/signals-audit-regressions.spec.ts`: 3 passed, 1 TODO. `npm test`: 76 passed,
+  1 TODO. `npm run build`: passed. The repository-wide typecheck still has its pre-existing error
+  set; the production Nuxt compiler accepted the changed Signals code.
+- Rebuilt/restarted only `mindwealth-ui-dev` on `:8514`. Live desktop evidence: New Exits shows 16
+  model exits as of 2026-09-24 and the shortlist's XLE row shows 95.0% BT, 65.5% FWD and Sep 24.
+  Network evidence shows the exits and shortlist APIs first appear when those views are selected.
+  Mobile 390x844 has zero body overflow; current-session browser console has zero errors.
+- Frontend commit: `543ab3a`. Production and all portfolio/trade/runtime state were untouched.
+  Remote push remains blocked by the invalid stored divsum127 PAT.
+
+#### MW-009 decision still required
+
+- `/refer` found historical confirmation that visible dates should use authoritative report metadata,
+  but no decision tying Signals and Conviction to one feed or defining duplicate identity. Todo
+  evidence also describes prior report freshness fixes, not this contract. Direct Gmail retrieval of
+  the promising messages was denied by the connector's active privacy filter.
+- Ask Rohit: (1) which feed is canonical, (2) which report/as-of date wins when inputs differ, and
+  (3) which exact composite key defines a duplicate. The TODO test must become a concrete fixture
+  test before MW-009 is implemented or closed.
+
 ### 2026-09-25 — Dashboard audit: nine fixes, green suite and authenticated live retest
 
 **Ask:** Begin with MW-005, fix one issue at a time, turn its test green before moving on, continue

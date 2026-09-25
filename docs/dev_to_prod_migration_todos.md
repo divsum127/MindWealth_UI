@@ -21,6 +21,43 @@ Reference deploy skill: `.cursor/skills/prod-pull-and-details/SKILL.md`
 | `[PROD-ACTION]` | Manual step on server after git merge (secrets, systemd, bootstrap) |
 | `[DONE]` | Completed on prod (date in notes) |
 
+## 2026-09-25 — Signals audit fixes and regression suite `[PENDING]`
+
+### Frontend files to promote
+
+**MindwealthUI_Vue, `ui-dev` to the production UI branch:**
+
+- `pages/signals.vue`
+- `composables/useApi.ts`
+- `server/utils/signal-parsers.ts`
+- `utils/{signal-detail,signal-filters,signals}.ts`
+- `test/signals-audit-regressions.spec.ts`
+
+### Behaviour and deployment boundary
+
+- New Exits uses the existing authenticated model exit endpoint and renders its own view; no backend
+  route, runtime data or portfolio state change is included.
+- Rich shortlist rows map their real performance/date fields; missing performance displays as
+  unavailable rather than 0%.
+- Inactive Signals report resources are lazy-loaded on first selection and active-only refresh is
+  preserved. Global terminal-layout preload remains a separate open issue (MW-036).
+- MW-009 is intentionally not implemented. Before production or a later dev fix, Rohit must define
+  the canonical Signals/Conviction feed, as-of precedence and composite deduplication key.
+
+### Production smoke checklist
+
+- [ ] `npm test` → 76 passing + the documented MW-009 TODO or better; `npm run build` passes.
+- [ ] New Exits count/as-of/first rows match `/api/v1/signals/exits?book_id=model`; Outstanding rows
+      do not remain visible.
+- [ ] Claude Shortlisted source and UI agree for BT WR, FWD WR and signal date; missing metrics show
+      an unavailable dash, never 0%.
+- [ ] Cold Outstanding load omits inactive `/new`, `/shortlist`, `/all`, breadth, horizontal and
+      performance requests; each appears only after its view is selected.
+- [ ] Repeat desktop and 390x844 checks; require no body overflow or new console errors.
+- [ ] Keep production Nuxt pointed at API 8506 and do not modify backend/runtime/prod data.
+
+### Status: `[PENDING]` — dev fixed and live at frontend commit `543ab3a`; MW-009 awaits Rohit's contract and remote push awaits a valid PAT
+
 ## 2026-09-25 — Dashboard audit fixes and regression suite `[PENDING]`
 
 ### Frontend files to promote
