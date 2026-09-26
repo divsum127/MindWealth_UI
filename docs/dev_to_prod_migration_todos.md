@@ -3936,6 +3936,33 @@ Copy for each new dev feature:
 
 ### Status: [PENDING] production promotion. Dev verified in backend commit `9f62d67d2`; production untouched; remote push blocked by invalid PAT.
 
+## 2026-09-26 — Portfolio conviction population disclosure MW-020
+
+### Git (`chatbot-dev` / `ui-dev` to production)
+
+- [ ] Backend commit `d78960fc8`: explicit Portfolio conviction row/name population contract and regression fixture.
+- [ ] Frontend commit `880559b`: Risk and Overview dual-unit rendering, exclusions, mapper/types and component regressions.
+- [x] API docs commit `3002b45` pushed to the documentation repository.
+- [ ] Push the backend/frontend dev branches after valid non-interactive GitHub credentials are available, then merge through the normal production workflows.
+
+### Dev-only / revert before prod
+
+- [x] None. The contract preserves legitimate signal legs and adds investor-facing disclosure; it does not rewrite runtime portfolio data.
+
+### Prod runtime
+
+- [x] No environment variable, database, cache or manual data migration is required.
+- [ ] Restart the production API and UI only after approved merges. Do not copy dev portfolio data into production.
+
+### Smoke tests
+
+- [ ] Run the MW-020 backend regression, Portfolio API tests, portfolio engine tests and frontend Portfolio regression suite on the release commits.
+- [ ] Require tier signal-position totals to equal `population_count`, per-tier unique ticker totals to equal `unique_ticker_count` when `tier_conflict_ticker_count=0`, and example-name lists to be unique.
+- [ ] Confirm Overview and Risk show both units, as-of date and explicit N/A/other-blocked exclusions from the production payload.
+- [ ] Check desktop/mobile overflow and require a clean browser console, separating any pre-existing global rate-limit issue under MW-044.
+
+### Status: [PENDING] production promotion. Dev verified in backend `d78960fc8` and frontend `880559b`; production untouched; app-repo remote sync blocked by credentials.
+
 ## 2026-09-26 — Shareable Conviction depth MW-017
 
 ### Git (ui-dev → production UI release)
