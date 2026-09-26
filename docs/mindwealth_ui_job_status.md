@@ -2892,3 +2892,8 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
    - Missing-token and backend-confirmed invalid/expired links now remove the activation form and show the exact reason, administrator/new-link guidance and a Return to sign in action. Present-token and transient-error states keep the usable activation flow.
    - Verification: 3 focused tests passed; full frontend suite passed 104 with 1 todo; production build passed. Live missing/present/rejected-token checks passed, including the expected 400 transition, 390px width and 40px recovery target.
    - Git: frontend `f334922`, deployed to dev `:8514`. The fake-token check changed no account. Production untouched; remote push remains blocked by the invalid PAT. Sheet retest row 36 is PASS.
+
+13. **8514 audit: Public-route protected-call isolation MW-028** — SUCCESSFUL ON DEV
+   - Centralized the anonymous-route contract for Landing, Login and Invite. Session hydration now exits before `fetchMe` on those surfaces, route middleware reuses the same contract, and the global Analyst tree requires a known authenticated user on a non-public route.
+   - Verification: 4 focused tests passed; full frontend suite passed 108 with 1 todo; production build passed. After clearing cookies/storage, fresh Landing and Invite tabs each ran 65 seconds with zero `auth/me`, Overwatch, page-alert or chat-history requests, zero Analyst controls and a clean Invite console.
+   - Git: frontend `c6452ab`, deployed to dev `:8514`. Login keeps its intentional middleware session check without plugin duplication. Production untouched; remote push blocked by invalid PAT. Sheet retest row 37 is PASS.

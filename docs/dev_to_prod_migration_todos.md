@@ -4052,6 +4052,22 @@ Copy for each new dev feature:
 
 ### Status: [PENDING] production promotion. Dev verified in frontend `f334922`; production untouched; remote push blocked by invalid PAT.
 
+## 2026-09-26 — Public-route protected-call isolation MW-028
+
+### Git (`ui-dev` to production UI release)
+
+- [ ] Frontend commit `c6452ab`: shared public-route helper, session-hydration guard, middleware reuse, authenticated Analyst mount and regressions.
+- [ ] Push `ui-dev` after fixing the stored PAT, then merge through the normal UI production workflow.
+
+### Prod runtime and smoke tests
+
+- [x] No backend, environment, database, cache or migration change is required.
+- [ ] In a clean signed-out context, open Landing and Invite for more than 60 seconds and require zero `auth/me`, Overwatch, page-alert or chat-history requests and no Analyst controls.
+- [ ] Open Login and confirm an existing valid session still redirects through its single intentional middleware check.
+- [ ] Sign in and confirm a protected route hydrates the user and restores the Analyst normally.
+
+### Status: [PENDING] production promotion. Dev verified in frontend `c6452ab`; production untouched; remote push blocked by invalid PAT.
+
 ## 2026-09-26 — Shareable Conviction depth MW-017
 
 ### Git (ui-dev → production UI release)
