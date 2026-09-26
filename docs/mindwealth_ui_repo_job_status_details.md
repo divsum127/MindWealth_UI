@@ -8535,3 +8535,27 @@ point — this did not create a new class of risk, it extended an existing one.
 **Verification:** The live dev contract reconciled 659 classified signal positions across 86 unique tickers: MAX 324/40, TACTICAL 184/29, REDUCED 145/15 and YIELD TRAP 6/2. It explicitly excluded 359 N/A and 271 other-blocked rows, reported zero tier conflicts and used as-of 2026-09-26. The focused backend regression, 79 Portfolio API/regression tests, 65 engine tests, 2 focused frontend tests, 93-test frontend suite plus 1 todo, Nuxt build and full backend suite with 1,050 passes all completed. The same 3 unrelated SSI historical-contract failures remain. Clean live Overview/Risk checks had no overflow and zero console warnings/errors.
 
 **Delivery:** Backend `chatbot-dev` commit `d78960fc8`, frontend `ui-dev` commit `880559b`, and API docs commit `3002b45`. API docs were pushed. Dev services were restarted and production remained untouched. Backend/frontend pushes remain blocked by invalid or missing GitHub credentials. The shared Sheet closes MW-020 in `09_PORTFOLIO` and `16_ISSUE_REGISTER`, with retest PASS in row 31.
+
+## 2026-09-26 — Portfolio correlation trigger disclosure MW-021
+
+**Visible issue:** Semiconductors / US Tech displayed `action` beside 17.6% exposure and a 20% cap, without saying that correlation crossed its action threshold while exposure remained within cap. Overview and the global alert feed reused similarly ambiguous breach wording.
+
+**Root cause:** `get_portfolio_risk()` derived `level` only from rho and represented exposure-cap state indirectly through the presence or absence of a recommendation. The payload had no correlation threshold, exposure status, rebalance boolean or structured trigger reasons, so UI consumers collapsed two independent rules into generic action/breach copy.
+
+**Test-first implementation:** A parameterized fixture covered 17.6%, exactly 20.0% and 24.0% at rho 0.88. All three initially failed on missing `correlation_threshold`; the mounted Risk fixture also failed on `pair cap 20% · action level`. The API now returns `correlation_threshold`, `correlation_threshold_breached`, `exposure_status`, `exposure_threshold_breached`, `requires_rebalance`, `trigger_reasons` and `explanation`. Risk, Overview chips and Analyst alerts consume the same fields. Recommendations remain exclusive to strict pair-cap breaches.
+
+**Verification:** Three MW-021 tests and 155 related Portfolio tests passed. Frontend reached 95 passes and 1 todo; build passed. The full backend suite recorded 1,183 passes, 12 skips, 9 xfails and the same 3 unrelated SSI historical-contract failures. Live dev returned 0.93/24.0% as correlation action plus cap breach with a trim and 0.88/17.6% as correlation action plus exposure within cap with no recommendation. Risk, Overview and Analyst matched, and the final console was clean.
+
+**Delivery:** Backend `43de81e32`, frontend `98f2716`, API docs `7ecdcbe` and parent docs pointer `d35789895`. API docs were pushed; dev API/UI restarted; production untouched. App repo pushes remain blocked by invalid or missing credentials. Sheet rows are closed and retest row 32 is PASS.
+
+## 2026-09-26 — Truthful disconnected Brokerage state MW-022
+
+**Visible issue:** The selectable Brokerage book claimed `IBKR source of truth` while IBKR integration was pending. Its missing data could render as zero/unavailable account metrics, allowing a new user to interpret the book as genuinely empty or risk-free.
+
+**Root cause:** The backend correctly rejects `book_id=brokerage` with 422 until Phase 8, but `PortfolioOverviewView` eagerly instantiated Brokerage NAV, holdings, entry and exit requests and formatted their missing outputs. There was no disconnected branch before Overview or P&L rendering.
+
+**Test-first implementation:** The source/component regression first failed because no Brokerage branch or disconnected component existed. Added `PortfolioBrokerageDisconnectedView`, routed every Brokerage view to it before metric components, replaced the source-of-truth claim, keyed Overview by active book and changed it to request only the active supported ledger. Personal entry/exit preloads are also disabled because those endpoints are unsupported.
+
+**Verification:** Focused MW-022 passed; full frontend suite passed 95 with 1 todo; Nuxt build passed. Live dev showed the dominant not-connected/no-query/timestamp requirement, made zero requests containing `book_id=brokerage`, contained no account metric or zero/risk-free implication, produced zero console errors/warnings and had no 390px overflow. Switching back to Model rendered its live metrics and risk chips normally.
+
+**Delivery:** Frontend `ui-dev` commit `714c056`, dev `:8514` restarted and production untouched. The truthful disconnected state is complete; actual IBKR data remains deferred to Phase 8. Remote push lacks valid credentials. Sheet rows are closed and retest row 33 is PASS.

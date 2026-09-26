@@ -3963,6 +3963,47 @@ Copy for each new dev feature:
 
 ### Status: [PENDING] production promotion. Dev verified in backend `d78960fc8` and frontend `880559b`; production untouched; app-repo remote sync blocked by credentials.
 
+## 2026-09-26 — Portfolio correlation trigger disclosure MW-021
+
+### Git (`chatbot-dev` / `ui-dev` to production)
+
+- [ ] Backend commit `43de81e32`: structured correlation and exposure trigger contract, Portfolio/Overview alerts and boundary tests.
+- [ ] Frontend commit `98f2716`: BFF mapping, types and exact Risk wording.
+- [x] API docs commit `7ecdcbe` pushed; parent pointer recorded in `d35789895`.
+- [ ] Push app dev branches after credentials are restored, then merge through the standard production workflows.
+
+### Dev-only / revert before prod
+
+- [x] None. Existing threshold values are unchanged; only their independent outcomes are made explicit.
+
+### Prod runtime and smoke tests
+
+- [x] No environment, database, cache or data migration is required.
+- [ ] Run MW-021 below/equal/above-cap boundaries and related Portfolio suites on the release commit.
+- [ ] Confirm the 0.88/17.6% pair says correlation action, exposure within cap and no trim; confirm any >20% pair supplies the actual cap-breach recommendation.
+- [ ] Verify Risk, Overview and alert feed wording agrees and the console is clean.
+
+### Status: [PENDING] production promotion. Dev verified; production untouched; app-repo remote sync blocked by credentials.
+
+## 2026-09-26 — Truthful disconnected Brokerage state MW-022
+
+### Git (`ui-dev` to production UI release)
+
+- [ ] Frontend commit `714c056`: disconnected Brokerage component, supported-ledger-only requests and MW-022 regression.
+- [ ] Push `ui-dev` after valid credentials are available, then merge through the normal UI production workflow.
+
+### Dev-only / revert before prod
+
+- [x] None while IBKR Phase 8 is unavailable. When a verified integration is delivered, replace the static pending branch only with an authoritative connection flag and data timestamp.
+
+### Prod runtime and smoke tests
+
+- [x] No backend or data migration is required for the disconnected-state release.
+- [ ] Select Brokerage and require the not-connected/no-query state, zero `book_id=brokerage` requests, no account metrics and no console errors.
+- [ ] Check desktop and mobile, then switch to Model and Personal to confirm their supported ledgers still render.
+
+### Status: [PENDING] production promotion. Dev verified in frontend `714c056`; actual IBKR integration remains Phase 8; production untouched.
+
 ## 2026-09-26 — Shareable Conviction depth MW-017
 
 ### Git (ui-dev → production UI release)
