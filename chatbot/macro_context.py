@@ -102,6 +102,44 @@ def _combo_line(combo: Dict[str, Any]) -> str:
     return "- " + " | ".join(bits)
 
 
+def _current_variable_lines(data: Dict[str, Any]) -> List[str]:
+    """Expose the two regime dimensions most often confused in chat answers."""
+    snapshot_as_of = _fmt(data.get("date"))
+    rows = data.get("variables_dashboard") or []
+    by_name = {
+        str(row.get("variable", "")).upper(): row
+        for row in rows
+        if isinstance(row, dict) and row.get("variable")
+    }
+
+    lines = [
+        "Current internal VIX and CAPE fields:",
+        "- VIX is a volatility input; CAPE is a valuation input. "
+        "Never use CAPE's valuation regime as a substitute for the VIX regime.",
+    ]
+    for name, meaning in (("VIX", "volatility"), ("CAPE", "valuation")):
+        row = by_name.get(name)
+        if not row:
+            lines.append(
+                f"- {name}: unavailable in variables_dashboard; Runic snapshot_as_of: "
+                f"{snapshot_as_of}"
+            )
+            continue
+
+        lines.append(f"- {name} level: {_fmt(row.get('current'))}")
+        lines.append(f"- {name} {meaning} regime/tier: {_fmt(row.get('tier'))}")
+        if row.get("pctile_3yr") is not None:
+            lines.append(f"- {name} 3y percentile: {_fmt(row.get('pctile_3yr'))}")
+        source_date = row.get("source_date")
+        if source_date:
+            lines.append(f"- {name} source_as_of: {_fmt(source_date)}")
+        else:
+            lines.append(
+                f"- {name} source_as_of: unavailable; Runic snapshot_as_of: {snapshot_as_of}"
+            )
+    return lines
+
+
 class MacroContextBuilder:
     """Assembles the SOURCE D text block from the local MindWealth API."""
 
@@ -127,6 +165,7 @@ class MacroContextBuilder:
             f"layer2: {_fmt(data.get('ssi_layer2_status'))} | "
             f"vix_bypass: {_fmt(data.get('vix_bypass'))}",
         ]
+        lines += _current_variable_lines(data)
         active = data.get("active_combos") or []
         watch = data.get("watch_combos") or []
         if active:
