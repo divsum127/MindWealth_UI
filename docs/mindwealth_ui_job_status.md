@@ -2887,3 +2887,8 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
    - Live dev reconciled 433 source rows to 249 active groups. SIGNALS shows 8 drift, 236 position groups and 420 trade rows. SFTBY renders once, expands to 58 unique source IDs and displays the API-worst -80.70% P&L.
    - Verification: 4 focused tests passed; full frontend suite passed 101 with 1 todo; production build passed. Desktop/mobile overflow, 28px details target and console passed. Repository typecheck still has 40 unrelated existing errors and none in the MW-024 files.
    - Git: frontend `b87f44e`, deployed to dev `:8514`. Production untouched; remote push failed because the stored PAT is invalid. Sheet retest row 35 is PASS.
+
+12. **8514 audit: Terminal invalid-invite states MW-025** — SUCCESSFUL ON DEV
+   - Missing-token and backend-confirmed invalid/expired links now remove the activation form and show the exact reason, administrator/new-link guidance and a Return to sign in action. Present-token and transient-error states keep the usable activation flow.
+   - Verification: 3 focused tests passed; full frontend suite passed 104 with 1 todo; production build passed. Live missing/present/rejected-token checks passed, including the expected 400 transition, 390px width and 40px recovery target.
+   - Git: frontend `f334922`, deployed to dev `:8514`. The fake-token check changed no account. Production untouched; remote push remains blocked by the invalid PAT. Sheet retest row 36 is PASS.

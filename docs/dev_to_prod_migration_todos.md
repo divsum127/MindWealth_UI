@@ -4035,6 +4035,23 @@ Copy for each new dev feature:
 
 ### Status: [PENDING] production promotion. Dev verified in frontend `b87f44e`; production untouched; remote push blocked by invalid PAT. Repo-wide typecheck debt is separate and has zero MW-024-file errors.
 
+## 2026-09-26 — Terminal invalid-invite states MW-025
+
+### Git (`ui-dev` to production UI release)
+
+- [ ] Frontend commit `f334922`: missing/invalid terminal-state gate, recovery UX and three-state regression.
+- [ ] Push `ui-dev` after fixing the stored PAT, then merge through the normal UI production workflow.
+
+### Prod runtime and smoke tests
+
+- [x] No backend, environment, database, cache or migration change is required.
+- [ ] Open `/accept-invite` without a token and require zero form/password/submit controls plus the recovery action.
+- [ ] Open a current invite link and require the usable two-password form.
+- [ ] Use a non-production fake token once and require the expected 400 to replace the form with the terminal recovery state. Do not consume a real invitation during smoke testing.
+- [ ] Check desktop/mobile overflow and keyboard focus.
+
+### Status: [PENDING] production promotion. Dev verified in frontend `f334922`; production untouched; remote push blocked by invalid PAT.
+
 ## 2026-09-26 — Shareable Conviction depth MW-017
 
 ### Git (ui-dev → production UI release)
