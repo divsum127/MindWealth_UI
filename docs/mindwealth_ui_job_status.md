@@ -2876,3 +2876,14 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
    - Removed eager unsupported Brokerage NAV, holdings, entry and exit requests. Overview now requests only the active supported ledger, and unsupported Personal signal-pipeline preloads are disabled as well.
    - Verification: focused regression passed; full frontend suite passed 95 with 1 todo; build passed. Live Brokerage made zero `book_id=brokerage` requests, showed no account/zero/risk conclusion, had no console errors and fit 390px without overflow. Returning to Model rendered real metrics normally.
    - Git: frontend `714c056`, deployed to dev `:8514`. Production untouched; remote push remains blocked by missing GitHub credentials. Sheet retest row 33 is PASS.
+
+10. **8514 audit: Distinct Overwatch sidebar views MW-023** — SUCCESSFUL ON DEV
+   - Wired all five sidebar IDs to distinct Function Health, Degradation Alerts, Data Pipeline, Auto-Correction Log and Version Monitor surfaces. Missing auto-correction/version telemetry now has named empty states instead of repeating unrelated health content.
+   - Verification: 2 focused tests passed; full frontend suite passed 97 with 1 todo; production build passed. The authenticated five-click matrix, 1440px and 390px layout, 28px mobile nav targets and browser console all passed.
+   - Git: frontend `fd57e1c`, deployed to dev `:8514`. Production untouched; remote push remains blocked by invalid credentials. Sheet retest row 34 is PASS.
+
+11. **8514 audit: Lossless AI Analyst alert grouping MW-024** — SUCCESSFUL ON DEV
+   - Replaced the ambiguous raw-row count with explicit active-group and source-row units. Exact position identities group by symbol/function/interval/direction/trigger; the worst P&L represents each collapsed card and every trade row remains expandable with its evidence.
+   - Live dev reconciled 433 source rows to 249 active groups. SIGNALS shows 8 drift, 236 position groups and 420 trade rows. SFTBY renders once, expands to 58 unique source IDs and displays the API-worst -80.70% P&L.
+   - Verification: 4 focused tests passed; full frontend suite passed 101 with 1 todo; production build passed. Desktop/mobile overflow, 28px details target and console passed. Repository typecheck still has 40 unrelated existing errors and none in the MW-024 files.
+   - Git: frontend `b87f44e`, deployed to dev `:8514`. Production untouched; remote push failed because the stored PAT is invalid. Sheet retest row 35 is PASS.

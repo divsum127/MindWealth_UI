@@ -8559,3 +8559,23 @@ point — this did not create a new class of risk, it extended an existing one.
 **Verification:** Focused MW-022 passed; full frontend suite passed 95 with 1 todo; Nuxt build passed. Live dev showed the dominant not-connected/no-query/timestamp requirement, made zero requests containing `book_id=brokerage`, contained no account metric or zero/risk-free implication, produced zero console errors/warnings and had no 390px overflow. Switching back to Model rendered its live metrics and risk chips normally.
 
 **Delivery:** Frontend `ui-dev` commit `714c056`, dev `:8514` restarted and production untouched. The truthful disconnected state is complete; actual IBKR data remains deferred to Phase 8. Remote push lacks valid credentials. Sheet rows are closed and retest row 33 is PASS.
+
+## 2026-09-26 — Distinct Overwatch sidebar views MW-023
+
+**Visible issue:** Degradation, Data Pipeline, Auto-Correction and Version Monitor changed only the selected sidebar styling while leaving Function Health/System Health content in place.
+
+**Root cause:** The shared terminal layout updated `terminal-nav-id`, but `pages/overwatch.vue` never read it and rendered one unconditional body. The health status class also checked `drifting` while the live API returns `degrading`.
+
+**Test-first implementation:** Two source/interaction regressions first failed because no nav-state branch or per-view marker existed. The page now renders five named data surfaces, projects existing degradation/system events into their matching views, and shows explicit empty states when auto-correction or version telemetry is absent. No records are fabricated.
+
+**Verification and delivery:** The focused tests passed; the full frontend suite passed 97 with 1 todo; the Nuxt build passed. The live five-click matrix, desktop/mobile width, 28px mobile nav targets and clean console passed. Frontend `ui-dev` commit `fd57e1c`; dev restarted, production untouched, Sheet retest row 34 PASS. Remote push remains blocked by invalid credentials.
+
+## 2026-09-26 — Lossless AI Analyst alert grouping MW-024
+
+**Visible issue:** AI Analyst labelled 433 raw source rows as 433 actionable alerts. The feed contained 420 position-risk rows but only 236 exact current-position keys, including 58 repetitions of one SFTBY key.
+
+**Root cause:** `useOverwatch` counted raw rows, `AnalystAlertsView` paginated raw rows and `AnalystPositionRiskCard` offered no grouping/drill-down contract. Backend deletion would lose distinct trade-level evidence, so the defect required transparent frontend grouping rather than destructive deduplication.
+
+**Test-first implementation:** The regression initially failed because no grouping module existed. `utils/overwatch-alert-groups.ts` now groups only identical symbol/function/interval/direction/trigger identities, preserves first-seen group order, selects the lowest P&L row as the representative and retains every source row. The card exposes all IDs, timestamps, P&L values and recommendations in expandable details. Header and pagination units now explicitly name active groups, source rows, position groups, trade rows and drift alerts.
+
+**Verification and delivery:** Four focused tests and the full suite with 101 passes plus 1 todo completed; Nuxt build passed. Live API/UI reconciliation showed 433 source rows, 249 active groups, 8 drift, 236 position groups and 420 trade rows. SFTBY rendered once, expanded to 58 unique IDs and matched the API-worst -80.70% P&L. Desktop/mobile overflow, 28px target and console checks passed. The repository typecheck still reports 40 existing unrelated errors and zero in changed MW-024 files. Frontend `ui-dev` commit `b87f44e`; dev restarted, production untouched, Sheet retest row 35 PASS. Remote push failed because the stored PAT is invalid.

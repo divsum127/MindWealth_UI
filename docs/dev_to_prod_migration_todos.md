@@ -4004,6 +4004,37 @@ Copy for each new dev feature:
 
 ### Status: [PENDING] production promotion. Dev verified in frontend `714c056`; actual IBKR integration remains Phase 8; production untouched.
 
+## 2026-09-26 — Distinct Overwatch sidebar views MW-023
+
+### Git (`ui-dev` to production UI release)
+
+- [ ] Frontend commit `fd57e1c`: five explicit Overwatch view branches, named empty states, status-literal correction and regressions.
+- [ ] Push `ui-dev` after valid credentials are restored, then merge through the normal UI production workflow.
+
+### Prod runtime and smoke tests
+
+- [x] No backend, environment, database, cache or migration change is required.
+- [ ] Click Function Health, Degradation Alerts, Data Pipeline, Auto-Correction Log and Version Monitor; require a unique heading/body for each selection.
+- [ ] Require unavailable telemetry to show a named empty state, not stale health content, and check desktop/mobile plus console.
+
+### Status: [PENDING] production promotion. Dev verified in frontend `fd57e1c`; production untouched; remote sync blocked by invalid credentials.
+
+## 2026-09-26 — Lossless AI Analyst alert grouping MW-024
+
+### Git (`ui-dev` to production UI release)
+
+- [ ] Frontend commit `b87f44e`: exact-key grouping utility, lossless trade-row drill-down, explicit count units, group pagination and four regressions.
+- [ ] Push `ui-dev` after fixing the stored PAT, then merge through the normal UI production workflow.
+
+### Prod runtime and smoke tests
+
+- [x] No backend/data migration is required. All source alerts remain retained.
+- [ ] Reconcile `/api/overwatch` source counts to the ACTIVE and SIGNALS unit labels.
+- [ ] Require SFTBY to render once, expand to every retained trade row and show the worst P&L representative without merging a distinct trigger.
+- [ ] Check group-based pagination, 390px overflow, details target and console.
+
+### Status: [PENDING] production promotion. Dev verified in frontend `b87f44e`; production untouched; remote push blocked by invalid PAT. Repo-wide typecheck debt is separate and has zero MW-024-file errors.
+
 ## 2026-09-26 — Shareable Conviction depth MW-017
 
 ### Git (ui-dev → production UI release)
