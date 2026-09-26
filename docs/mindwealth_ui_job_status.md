@@ -2903,3 +2903,8 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
    - Verification: 2 focused and 14 related chatbot/API tests passed. Full backend reached 1,185 passes with the same 3 unrelated SSI failures. Fresh live INTERNAL/Macro Overlay answer reported VIX 15.67/NORMAL/29.23% with Sep 24/Sep 25 dates and CAPE 40.94/EXTREME/98.91% dated Sep 18, explicitly distinguishing volatility from valuation.
    - Git: backend `a4d05c292`, deployed to dev `:8507`; Sheet retest row 38 PASS. Remote push blocked by invalid PAT.
    - Operational disclosure: `mindwealth-api.service` was accidentally restarted once while targeting dev. It restarted the unchanged production checkout/config on `:8506`; no production code, data or configuration changed. The correct dev service was then restarted on `:8507`.
+
+15. **8514 audit: Admin invite role accessible name MW-034** — SUCCESSFUL ON DEV
+   - Added a visible `Role` label with a native `for="invite-role"` / `id="invite-role"` association while preserving the User/Admin options, User default and invite behavior.
+   - Verification: the focused regression passed; the full frontend suite passed 109 with 1 todo; the Nuxt production build passed. Live authenticated `/admin/users` exposed combobox `Role`, native label association was true, Tab reached the selector in form order, User/Admin selection worked without submission, 390px had no overflow, and the console was clean.
+   - Git: frontend `8d85bc8`, deployed to dev `:8514`; Sheet issue/register rows are Closed and retest row 39 is PASS. Production untouched. Remote push remains blocked by the invalid stored PAT.

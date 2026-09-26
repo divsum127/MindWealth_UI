@@ -8611,3 +8611,13 @@ point — this did not create a new class of risk, it extended an existing one.
 **Verification and delivery:** Two focused and 14 related chatbot/API tests passed. The full backend suite reached 1,185 passes, 12 skips and 9 xfails with the same 3 unrelated SSI historical-contract failures. Current SOURCE D renders VIX 15/NORMAL/29.2328 with unavailable variable date and Runic snapshot 2026-09-25, plus CAPE 40.94/EXTREME/98.9143 sourced 2026-09-18. Fresh live session `e386b65b-36a6-4ef0-95e3-d80462fa2603` used INTERNAL/Macro Overlay and answered VIX 15.67/NORMAL/29.23% (Sep 24/Sep 25) separately from CAPE 40.94/EXTREME/98.91% (Sep 18). Backend commit `a4d05c292`; dev `:8507` restarted; Sheet retest row 38 PASS. Remote push is blocked by invalid PAT.
 
 **Operational disclosure:** The production API process was accidentally restarted once while targeting the dev service. It used its existing unchanged checkout/config on `:8506`; no production code, data or configuration changed. `mindwealth-api-dev.service` was then correctly restarted on `:8507`.
+
+## 2026-09-26 — Admin invite role accessible name MW-034
+
+**Visible issue:** The Admin invite form showed a User/Admin permission selector with no accessible name, so a screen-reader admin could not identify the control's purpose.
+
+**Root cause:** `pages/admin/users.vue` rendered the select directly with no `id`, label, `aria-label` or `aria-labelledby`. Option text identified the choices but not what permission-impacting field they belonged to.
+
+**Test-first implementation:** The mounted regression first failed because `label[for="invite-role"]` did not exist. The form now has a visible `Role` label natively associated with `select#invite-role`; the existing `v-model`, options, default and submit flow are unchanged. The test mounts into the document so jsdom validates the actual `HTMLLabelElement.control` relationship.
+
+**Verification and delivery:** The focused test passed; the full frontend suite passed 109 with 1 todo; the Nuxt build passed. Live authenticated `/admin/users` exposed combobox `Role`, Tab focused it after the two inputs, User/Admin selection and restoration worked with zero POSTs, 390px body width matched the viewport, and the console had zero errors. Frontend `ui-dev` commit `8d85bc8`; dev `:8514` restarted; production untouched; Sheet retest row 39 PASS. Remote push failed because the stored PAT is invalid.

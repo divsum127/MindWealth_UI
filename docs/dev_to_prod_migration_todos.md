@@ -3911,6 +3911,22 @@ Copy for each new dev feature:
 
 ### Status: [PENDING] production promotion. Dev verified 2026-09-26; production untouched; remote push blocked by invalid PAT.
 
+## 2026-09-26 — Admin invite role accessible name MW-034
+
+### Git (`ui-dev` to production UI release)
+
+- [ ] Frontend commit `8d85bc8`: visible/native Role label for the Admin invite selector and mounted accessibility regression.
+- [ ] Push `ui-dev` after fixing the stored `divsum127` PAT, then promote through the standard UI release workflow.
+
+### Prod runtime and smoke tests
+
+- [x] No backend, environment, database, cache or migration change is required.
+- [ ] Sign in as an admin and open `/admin/users`; require the accessibility tree to expose combobox `Role` and native `label.control` association.
+- [ ] Tab from email through name to Role, change User/Admin and restore User without submitting an invite.
+- [ ] Verify 390px layout, no horizontal overflow and a clean console.
+
+### Status: [PENDING] production promotion. Dev `:8514` and Sheet retest row 39 passed; production untouched; remote push blocked by invalid PAT.
+
 ## 2026-09-26 — Portfolio cancellation allocation safeguard MW-019
 
 ### Git (`chatbot-dev` to `chatbot-prod`)
