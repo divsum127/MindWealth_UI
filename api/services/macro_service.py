@@ -6,6 +6,7 @@ import json
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo
 
 from src.config_paths import MACRO_INTEL_JSON_PATH
 from src.macro_intelligence.engine.vix_bypass import VIX_BYPASS_BANNER, combo_b_is_active
@@ -22,6 +23,10 @@ def _load_runic() -> dict[str, Any]:
 
 def _safe(d: dict[str, Any], key: str, default: Any = None) -> Any:
     return d.get(key, default)
+
+
+def _today_et() -> str:
+    return datetime.now(ZoneInfo("America/New_York")).strftime("%Y-%m-%d")
 
 
 def _effective_vix_bypass(data: dict[str, Any]) -> bool:
@@ -105,22 +110,37 @@ def _db_friday_cancel_log() -> list[dict[str, Any]]:
 def _db_latest_cpi_print() -> dict[str, Any] | None:
     try:
         from src.macro_intelligence.db.connection import get_connection
+        from src.macro_intelligence.data.macro_calendar import sanitize_release_values
+
+        today = _today_et()
         with get_connection() as conn:
-            row = conn.execute(
+            rows = conn.execute(
                 """SELECT release_date, actual, consensus, surprise_pp
                    FROM pending_releases
                    WHERE release_type='CPI' AND actual IS NOT NULL
-                   ORDER BY release_date DESC LIMIT 1"""
-            ).fetchone()
-        if not row:
-            return None
-        return {
-            "release_date": row["release_date"],
-            "actual": float(row["actual"]),
-            "consensus": float(row["consensus"]),
-            "surprise_pp": row["surprise_pp"],
-            "not_hot": float(row["actual"]) <= float(row["consensus"]),
-        }
+                     AND release_date <= ?
+                   ORDER BY release_date DESC LIMIT 6""",
+                (today,),
+            ).fetchall()
+        for row in rows:
+            values = sanitize_release_values(
+                "CPI",
+                str(row["release_date"]),
+                consensus=row["consensus"],
+                actual=row["actual"],
+            )
+            if values["actual"] is None or values["consensus"] is None:
+                continue
+            actual = float(values["actual"])
+            consensus = float(values["consensus"])
+            return {
+                "release_date": row["release_date"],
+                "actual": actual,
+                "consensus": consensus,
+                "surprise_pp": values["surprise_pp"],
+                "not_hot": actual <= consensus,
+            }
+        return None
     except Exception:
         return None
 
@@ -408,10 +428,7 @@ _COMBO_STATIC: dict[str, dict[str, Any]] = {
         "legs_required": 3,
         "total_legs": 3,
         "variables": ["WTI", "CPI", "WALCL"],
-        "description": (
-            "WTI >+10% rolling 28-day AND CPI not hot AND WALCL flat. "
-            "83% bearish 1–6m. ~4–5 instances since 2005."
-        ),
+        "description": "WTI >+10% rolling 28-day AND CPI not hot AND WALCL flat.",
     },
     "D": {
         "name": "FOMO Top / Euphoria Tactical",
@@ -463,6 +480,41 @@ _COMBO_STATIC: dict[str, dict[str, Any]] = {
         ),
     },
 }
+
+
+def _combo_evidence(stats: dict[str, Any]) -> dict[str, Any]:
+    n = int(stats.get("n_obs_primary") or 0)
+    minimum_n = int(stats.get("min_episodes_required") or _min_matured_episodes())
+    insufficient = bool(stats.get("insufficient_episodes")) or n < minimum_n
+    return {
+        "primary_horizon": str(stats.get("primary_label") or "3M"),
+        "n": n,
+        "minimum_n": minimum_n,
+        "status": "INSUFFICIENT HISTORY" if insufficient else "VALIDATED",
+        "hit_rate": None if insufficient else stats.get("hit_rate_primary"),
+        "avg_return": None if insufficient else stats.get("avg_return_primary"),
+    }
+
+
+def _description_with_evidence(
+    combo_id: str,
+    description: str | None,
+    evidence: dict[str, Any] | None,
+) -> str | None:
+    if combo_id != "C" or not evidence:
+        return description
+    if evidence["status"] == "INSUFFICIENT HISTORY":
+        return (
+            f"{description} Primary evidence: {evidence['primary_horizon']}, "
+            f"n={evidence['n']}; insufficient history (minimum n={evidence['minimum_n']}). "
+            "No validated hit-rate claim."
+        )
+    rate = evidence.get("hit_rate")
+    rate_label = f"{float(rate):.0%} hit" if rate is not None else "validated"
+    return (
+        f"{description} Primary evidence: {evidence['primary_horizon']}, "
+        f"n={evidence['n']}, {rate_label}."
+    )
 
 _VARIABLE_META: dict[str, dict[str, Any]] = {
     "NFCI":  {"source": "FRED: NFCI", "compute": "Weekly level, 3yr pctile rank", "rare_gate": ">+0.3 (tight) or <−0.3 (easy)", "extreme_gate": ">+0.8 or <−0.6", "combos": ["A", "E"]},
@@ -647,6 +699,14 @@ def get_all_combos() -> dict[str, Any]:
         if isinstance(row, dict) and row.get("combo")
     }
 
+    combo_evidence: dict[str, dict[str, Any]] = {}
+    try:
+        from src.macro_intelligence.engine.combo_metadata import combo_hit_rate_stats
+
+        combo_evidence["C"] = _combo_evidence(combo_hit_rate_stats("C"))
+    except Exception:
+        pass
+
     combos = []
     for letter in "ABCDEFG":
         static = _COMBO_STATIC.get(letter, {})
@@ -664,7 +724,12 @@ def get_all_combos() -> dict[str, Any]:
             "legs_required": static.get("legs_required"),
             "total_legs": static.get("total_legs"),
             "variables": static.get("variables", []),
-            "description": static.get("description"),
+            "description": _description_with_evidence(
+                letter,
+                static.get("description"),
+                combo_evidence.get(letter),
+            ),
+            "evidence": combo_evidence.get(letter),
             "status": live.get("status") or (status_row or {}).get("status") or ("WATCH" if is_watch else "INACTIVE"),
             "is_active": is_active,
             "is_watch": is_watch,
@@ -730,6 +795,7 @@ def get_combo_detail(combo_id: str) -> dict[str, Any]:
     analog_details = _db_analog_details(combo_id)
     matured = len([a for a in analog_details if a.get("date")])
     min_episodes = _min_matured_episodes()
+    evidence = _combo_evidence(hr_stats) if hr_stats else None
 
     return {
         "combo": combo_id,
@@ -739,7 +805,8 @@ def get_combo_detail(combo_id: str) -> dict[str, Any]:
         "legs_required": static.get("legs_required"),
         "total_legs": static.get("total_legs"),
         "variables": static.get("variables", []),
-        "description": static.get("description"),
+        "description": _description_with_evidence(combo_id, static.get("description"), evidence),
+        "evidence": evidence,
         "status": live.get("status") or (status_row or {}).get("status") or ("WATCH" if combo_id in watch_ids else "INACTIVE"),
         "is_active": combo_id in active_map,
         "is_watch": combo_id in watch_ids,

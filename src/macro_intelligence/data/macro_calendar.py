@@ -7,6 +7,7 @@ import re
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any
+from zoneinfo import ZoneInfo
 
 import pandas as pd
 import requests
@@ -33,6 +34,8 @@ _NFP_PATTERNS = (
     r"non-farm payrolls",
     r"non farm payrolls",
 )
+
+_EASTERN = ZoneInfo("America/New_York")
 
 
 @dataclass
@@ -264,9 +267,16 @@ def ingest_macro_release_date(
     actual: float | None = None,
     event_name: str | None = None,
 ) -> None:
-    surprise = None
-    if actual is not None and consensus is not None:
-        surprise = actual - consensus
+    values = sanitize_release_values(
+        release_type,
+        release_date,
+        consensus=consensus,
+        actual=actual,
+    )
+    consensus = values["consensus"]
+    actual = values["actual"]
+    surprise = values["surprise_pp"]
+    release_is_live = int(release_has_occurred(release_type, release_date))
     with get_connection() as conn:
         conn.execute(
             """
@@ -274,12 +284,27 @@ def ingest_macro_release_date(
             (release_type, release_date, actual, consensus, surprise_pp, source, applied)
             VALUES (?, ?, ?, ?, ?, ?, 0)
             ON CONFLICT(release_type, release_date) DO UPDATE SET
-              actual=COALESCE(excluded.actual, pending_releases.actual),
+              actual=CASE
+                WHEN ? = 0 THEN NULL
+                ELSE COALESCE(excluded.actual, pending_releases.actual)
+              END,
               consensus=COALESCE(excluded.consensus, pending_releases.consensus),
-              surprise_pp=COALESCE(excluded.surprise_pp, pending_releases.surprise_pp),
+              surprise_pp=CASE
+                WHEN ? = 0 THEN NULL
+                ELSE COALESCE(excluded.surprise_pp, pending_releases.surprise_pp)
+              END,
               source=excluded.source
             """,
-            (release_type, release_date, actual, consensus, surprise, source),
+            (
+                release_type,
+                release_date,
+                actual,
+                consensus,
+                surprise,
+                source,
+                release_is_live,
+                release_is_live,
+            ),
         )
 
 
@@ -319,6 +344,39 @@ def event_datetime_et(release_type: str, release_date: str) -> pd.Timestamp:
     return pd.Timestamp(f"{release_date} {hour:02d}:{minute:02d}")
 
 
+def release_has_occurred(
+    release_type: str,
+    release_date: str,
+    *,
+    now: datetime | pd.Timestamp | None = None,
+) -> bool:
+    """Whether the official release timestamp has passed in US Eastern time."""
+    current = pd.Timestamp(now if now is not None else datetime.now(_EASTERN))
+    if current.tzinfo is None:
+        current = current.tz_localize(_EASTERN)
+    else:
+        current = current.tz_convert(_EASTERN)
+    scheduled = event_datetime_et(release_type, release_date).tz_localize(_EASTERN)
+    return bool(current >= scheduled)
+
+
+def sanitize_release_values(
+    release_type: str,
+    release_date: str,
+    *,
+    consensus: float | None,
+    actual: float | None,
+    now: datetime | pd.Timestamp | None = None,
+) -> dict[str, float | None]:
+    """Keep forecasts but suppress actual/surprise until the official timestamp."""
+    if not release_has_occurred(release_type, release_date, now=now):
+        return {"consensus": consensus, "actual": None, "surprise_pp": None}
+    surprise = None
+    if actual is not None and consensus is not None:
+        surprise = round(float(actual) - float(consensus), 10)
+    return {"consensus": consensus, "actual": actual, "surprise_pp": surprise}
+
+
 def hours_since_event(release_type: str, release_date: str, as_of: str) -> float:
     """Hours from scheduled event time to nightly as_of (~18:00 ET)."""
     event_dt = event_datetime_et(release_type, release_date)
@@ -355,7 +413,18 @@ def list_scheduled_events(
             """,
             (*event_types, start, end),
         ).fetchall()
-    return [dict(r) for r in rows]
+    events: list[dict[str, Any]] = []
+    for raw in rows:
+        row = dict(raw)
+        values = sanitize_release_values(
+            str(row["release_type"]),
+            str(row["release_date"]),
+            consensus=row.get("consensus"),
+            actual=row.get("actual"),
+        )
+        row.update(values)
+        events.append(row)
+    return events
 
 
 def get_upcoming_event(as_of: str | None = None) -> dict[str, Any] | None:
@@ -410,4 +479,6 @@ __all__ = [
     "hours_since_event",
     "ingest_macro_release_date",
     "list_scheduled_events",
+    "release_has_occurred",
+    "sanitize_release_values",
 ]
