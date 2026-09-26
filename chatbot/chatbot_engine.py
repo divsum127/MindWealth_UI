@@ -186,13 +186,36 @@ def _user_explicitly_mentions_date_window(user_message: str) -> bool:
 def _row_limit_for_query(
     query_kind: Optional[str],
     assets: Optional[List[str]],
+    user_message: str = "",
 ) -> Optional[int]:
-    """Row cap per signal type; deep dive on a single asset uses MAX_ROWS_DEEP_DIVE."""
+    """Choose a row cap without corrupting whole-book totals or rankings."""
     if query_kind == "deep_dive" and assets and len(assets) == 1:
         if MAX_ROWS_DEEP_DIVE <= 0:
             return None
         return MAX_ROWS_DEEP_DIVE
+    if not assets and _query_requires_complete_signal_book(user_message):
+        return None
     return MAX_ROWS_TO_INCLUDE
+
+
+def _query_requires_complete_signal_book(user_message: str) -> bool:
+    """True when a broad signal-book answer would be wrong if rows were sampled."""
+    text = user_message or ""
+    if "CURRENT QUESTION:" in text:
+        text = text.rsplit("CURRENT QUESTION:", 1)[-1].split("\n\nNOTE:", 1)[0]
+    low = text.lower()
+    names_the_book = bool(
+        re.search(r"\b(?:current|outstanding|open)\s+(?:signal\s+)?(?:book|inventory|signals?)\b", low)
+        or re.search(r"\bsignal\s+(?:book|inventory)\b", low)
+    )
+    needs_complete_population = bool(
+        re.search(
+            r"\b(?:total|count|how many|split|breakdown|mix|exposure|rank(?:ing|ed)?|"
+            r"top\s+\d+|highest|lowest|best|worst)\b",
+            low,
+        )
+    )
+    return names_the_book and needs_complete_population
 
 
 class ChatbotEngine:
@@ -1165,7 +1188,7 @@ class ChatbotEngine:
             
             fetched_data = {}
             total_rows = 0
-            row_limit = _row_limit_for_query(query_kind, assets)
+            row_limit = _row_limit_for_query(query_kind, assets, user_message)
             deep_dive_date_fallback_used = False
             
             # Only fetch table data for non-claude_report signal types
@@ -1626,7 +1649,7 @@ class ChatbotEngine:
             extraction_metadata: dict with columns_by_signal_type, reasoning_by_signal_type, etc.
         """
         from datetime import datetime, timedelta
-        from .config import MAX_EXTRACTION_HISTORY_LENGTH, MAX_ROWS_TO_INCLUDE
+        from .config import MAX_EXTRACTION_HISTORY_LENGTH
 
         NO_DATA_MESSAGE = (
             "No Signal in the Specified date duration choosen, Please choose different date duration."
@@ -1796,6 +1819,11 @@ class ChatbotEngine:
             logger.info("[_fetch_signal_data] date_filter_mode=%s", date_filter_mode)
         fetched_data: Dict = {}
         total_rows = 0
+        row_limit = _row_limit_for_query(
+            extraction_result.get("query_kind"),
+            assets,
+            user_message,
+        )
 
         for signal_type in table_signal_types:
             required_cols = columns_by_signal_type[signal_type]
@@ -1814,7 +1842,7 @@ class ChatbotEngine:
                 functions=functions,
                 from_date=from_date,
                 to_date=to_date,
-                limit_rows=MAX_ROWS_TO_INCLUDE,
+                limit_rows=row_limit,
                 column_indices=indices_dict,
                 position_side=position_side,
                 date_filter_mode=date_filter_mode,
@@ -1849,7 +1877,7 @@ class ChatbotEngine:
                     functions=functions,
                     from_date=None,
                     to_date=None,
-                    limit_rows=MAX_ROWS_TO_INCLUDE,
+                    limit_rows=row_limit,
                     column_indices=indices_dict,
                     position_side=position_side,
                     user_message=user_message,
@@ -1898,7 +1926,7 @@ class ChatbotEngine:
                         functions=functions,
                         from_date=None,
                         to_date=None,
-                        limit_rows=MAX_ROWS_TO_INCLUDE,
+                        limit_rows=row_limit,
                         column_indices=indices_dict,
                         position_side=position_side,
                         user_message=user_message,
@@ -1949,7 +1977,7 @@ class ChatbotEngine:
                         functions=functions,
                         from_date=expanded_from_date,
                         to_date=expanded_to_date,
-                        limit_rows=MAX_ROWS_TO_INCLUDE,
+                        limit_rows=row_limit,
                         column_indices=indices_dict,
                         position_side=position_side,
                         user_message=user_message,
@@ -3974,4 +4002,3 @@ Please analyze this batch. Your response will be combined with other batches lat
             return True
         
         return False
-
