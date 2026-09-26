@@ -2851,3 +2851,10 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
    - Verification: 8 focused tests passed; full Nuxt suite 91 passed, 1 todo; production build passed. Desktop and 390px live checks covered click-through, direct reload, layers, Back/history, query restoration, unknown ticker, overflow, target size and a clean console.
    - Git: frontend `ui-dev` `5f24ec7`, authored by `divsum127`. Dev `:8514` deployed. Production untouched. Remote push failed because no valid non-interactive GitHub credential is available.
    - Separate finding: MW-044 records a shared 100/minute BFF rate limit that caused `auth/me` 429 responses and a false Login redirect during stress navigation.
+
+6. **8514 audit: Portfolio cancellation allocation safeguard MW-019** — SUCCESSFUL ON DEV
+   - Added a final Portfolio sizing gate for `CANCEL`, `CANCEL BUY` and `YIELD TRAP`. These verdicts now override positive BQ and both sizing engines, returning `BLOCKED`, a zero conviction multiplier, zero dollars, zero percentage and the explicit verdict reason.
+   - Test-first baseline reproduced the defect with MAR at BQ 6 and `CANCEL BUY`: the pre-fix row was not blocked. Eight focused regressions now cover verdict normalization plus both `legacy` and `d1_slots`; the Portfolio API plus regression suite passed 78 tests and the portfolio-engine suite passed 65.
+   - Deployed verification on `:8514` scanned 258 hard-gated rows with zero violations. Every MAR row returned `BLOCKED / $0 / 0%`, the rendered Portfolio table matched, and the browser console had zero warnings/errors.
+   - Full backend suite: 1,049 passed, 12 skipped, 9 xfailed and 3 previously known SSI historical-contract failures unrelated to Portfolio. All dev/prod services remained active; the production checkout stayed on `chatbot-prod` `59e351294` and was not modified.
+   - Git: backend `chatbot-dev` `9f62d67d2`, authored by `divsum127`. Required push failed because the stored PAT is invalid. The Google audit Sheet closes MW-019 in `09_PORTFOLIO` and `16_ISSUE_REGISTER` and records PASS in `17_RETEST_LOG` row 30.

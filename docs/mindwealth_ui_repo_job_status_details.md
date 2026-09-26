@@ -8511,3 +8511,15 @@ point — this did not create a new class of risk, it extended an existing one.
 **Verification:** Eight focused tests, the full frontend suite with 91 passes and 1 todo, and the Nuxt production build passed. On dev `:8514`, click-through, direct reload, BQ/FD switching, Back/history/query restoration, unknown ticker, mobile 390px overflow/targets and a clean final console all passed. Frontend `ui-dev` commit `5f24ec7`, authored by `divsum127`; production untouched. Remote push has no valid GitHub credential.
 
 **Separate issue discovered:** MW-044 records that the IP-wide BFF rate limit can return 429 for `auth/me`; the global route middleware then treats the transient failure as logged out. It is fully documented in the audit sheet and remains open.
+
+## 2026-09-26 — Portfolio cancellation allocation safeguard MW-019
+
+**Visible issue:** Portfolio showed MAR with a `CANCEL BUY` conviction verdict but still treated the row as TACTICAL and allocated about $40,060. There was no exit-pending execution state or override authority explaining why a cancelled name still carried capital.
+
+**Root cause:** `get_portfolio_sizer()` derived a tier and base share from `bq_raw`, then only hard-gated yield-trap flags or BQ below 2. It did not inspect the final conviction verdict text before either the legacy or D1 allocation path. A positive BQ could therefore override `CANCEL` or `CANCEL BUY`.
+
+**Test-first implementation:** Added `tests/test_portfolio_audit_regressions.py`. The controlled MAR fixture uses BQ 6 and `CANCEL BUY`; before the fix it failed exactly because `blocked` was false. `_conviction_hard_gate_reason()` now normalizes spaces, underscores, hyphens and case for only `CANCEL`, `CANCEL BUY` and `YIELD TRAP`. The result is applied before adjusted share and allocation, carried through both sizing engines, and returned as `blocked_reason`.
+
+**Verification:** Eight focused regressions passed. `tests/test_api_portfolio.py` plus the new file passed 78 tests; `tests/test_portfolio_backend_engines.py` passed 65. After restarting only `mindwealth-api-dev.service`, the authenticated dev BFF returned 258 hard-gated rows and zero rows with non-zero allocation or missing blocked state. Every MAR row was `BLOCKED / $0 / 0%`, the rendered table matched and the console was clean. The full backend suite recorded 1,049 passed, 12 skipped, 9 xfailed and the same 3 unrelated SSI historical-contract failures. Production services and checkout were untouched.
+
+**Delivery:** Backend `chatbot-dev` commit `9f62d67d2`, authored by `divsum127`. The required push helper was run and failed because the stored GitHub PAT is invalid. The shared Google Sheet contains the final visible issue, root cause, fix, procedure, test file, evidence and status in both MW-019 rows plus retest row 30.

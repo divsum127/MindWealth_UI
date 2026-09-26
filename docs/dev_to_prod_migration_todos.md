@@ -3911,6 +3911,31 @@ Copy for each new dev feature:
 
 ### Status: [PENDING] production promotion. Dev verified 2026-09-26; production untouched; remote push blocked by invalid PAT.
 
+## 2026-09-26 — Portfolio cancellation allocation safeguard MW-019
+
+### Git (`chatbot-dev` to `chatbot-prod`)
+
+- [ ] Backend commit `9f62d67d2`: final zero-allocation verdict gate in `api/services/portfolio_service.py` and `tests/test_portfolio_audit_regressions.py`.
+- [ ] Push `chatbot-dev` after fixing the invalid stored `divsum127` PAT, then merge through the standard production workflow.
+
+### Dev-only / revert before prod
+
+- [x] None. This is an environment-independent capital-safety boundary.
+
+### Prod runtime
+
+- [x] No environment variable, database, cache or manual data migration is required.
+- [ ] Restart only the production API after the approved merge. Do not copy dev runtime portfolio data into production.
+
+### Smoke tests
+
+- [ ] Run `tests/test_portfolio_audit_regressions.py`, `tests/test_api_portfolio.py` and `tests/test_portfolio_backend_engines.py` on the release commit.
+- [ ] Scan every Portfolio row whose verdict is `CANCEL`, `CANCEL BUY` or `YIELD TRAP`; require `blocked=true`, `size_tier=BLOCKED`, `allocation_usd=0`, `allocation_pct=0` and the verdict in `blocked_reason`.
+- [ ] Confirm MAR renders `BLOCKED / $0` and that no manual override is applied unless its authority and state are explicitly present.
+- [ ] Retest the existing production book separately; do not assume dev's 258 gated rows or MAR population is identical.
+
+### Status: [PENDING] production promotion. Dev verified in backend commit `9f62d67d2`; production untouched; remote push blocked by invalid PAT.
+
 ## 2026-09-26 — Shareable Conviction depth MW-017
 
 ### Git (ui-dev → production UI release)
