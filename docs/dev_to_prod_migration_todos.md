@@ -4068,6 +4068,22 @@ Copy for each new dev feature:
 
 ### Status: [PENDING] production promotion. Dev verified in frontend `c6452ab`; production untouched; remote push blocked by invalid PAT.
 
+## 2026-09-26 — Analyst VIX/CAPE regime grounding MW-029
+
+### Git (`chatbot-dev` to production API release)
+
+- [ ] Backend commit `a4d05c292`: SOURCE D VIX/CAPE variable formatter and deterministic complete/missing-date regressions.
+- [ ] Push `chatbot-dev` after fixing the stored PAT, then merge through the standard backend production workflow.
+
+### Prod runtime and smoke tests
+
+- [x] No environment, database, cache or data migration is required.
+- [ ] Ask a fresh Analyst session for current internal VIX and CAPE regimes with exact fields/dates.
+- [ ] Reconcile VIX level/tier/percentile and CAPE level/tier/percentile with the production Runic payload. Require separate volatility/valuation wording and no invented variable source date.
+- [ ] Run the focused macro-context tests and related chatbot API/page-context suite on the release commit.
+
+### Status: [PENDING] production promotion. Dev verified in backend `a4d05c292`; remote push blocked by invalid PAT. Operationally, the unchanged production process was accidentally restarted during dev verification, but no production code/data/config was changed.
+
 ## 2026-09-26 — Shareable Conviction depth MW-017
 
 ### Git (ui-dev → production UI release)

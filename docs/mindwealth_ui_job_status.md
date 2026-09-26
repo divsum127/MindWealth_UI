@@ -2897,3 +2897,9 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
    - Centralized the anonymous-route contract for Landing, Login and Invite. Session hydration now exits before `fetchMe` on those surfaces, route middleware reuses the same contract, and the global Analyst tree requires a known authenticated user on a non-public route.
    - Verification: 4 focused tests passed; full frontend suite passed 108 with 1 todo; production build passed. After clearing cookies/storage, fresh Landing and Invite tabs each ran 65 seconds with zero `auth/me`, Overwatch, page-alert or chat-history requests, zero Analyst controls and a clean Invite console.
    - Git: frontend `c6452ab`, deployed to dev `:8514`. Login keeps its intentional middleware session check without plugin duplication. Production untouched; remote push blocked by invalid PAT. Sheet retest row 37 is PASS.
+
+14. **8514 audit: Analyst VIX/CAPE regime grounding MW-029** — SUCCESSFUL ON DEV
+   - SOURCE D now exposes separate VIX volatility and CAPE valuation fields from `variables_dashboard`: levels, tiers, 3-year percentiles and source dates, with the Runic snapshot date disclosed separately when a variable date is unavailable.
+   - Verification: 2 focused and 14 related chatbot/API tests passed. Full backend reached 1,185 passes with the same 3 unrelated SSI failures. Fresh live INTERNAL/Macro Overlay answer reported VIX 15.67/NORMAL/29.23% with Sep 24/Sep 25 dates and CAPE 40.94/EXTREME/98.91% dated Sep 18, explicitly distinguishing volatility from valuation.
+   - Git: backend `a4d05c292`, deployed to dev `:8507`; Sheet retest row 38 PASS. Remote push blocked by invalid PAT.
+   - Operational disclosure: `mindwealth-api.service` was accidentally restarted once while targeting dev. It restarted the unchanged production checkout/config on `:8506`; no production code, data or configuration changed. The correct dev service was then restarted on `:8507`.

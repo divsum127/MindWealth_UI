@@ -8599,3 +8599,15 @@ point — this did not create a new class of risk, it extended an existing one.
 **Test-first implementation:** The regression first failed because no shared public-route module existed. Added `utils/auth-routes.ts` for Landing, Login and Invite; the session plugin now exits before `fetchMe`, middleware reuses the same helper, and the app mounts the Analyst only for a known user on a non-public/non-Overwatch route. Login retains its deliberate middleware session check so an already-authenticated user can redirect without a duplicate plugin request.
 
 **Verification and delivery:** Four focused tests and the full frontend suite with 108 passes plus 1 todo completed; Nuxt build passed. Cookies and browser storage were cleared, then fresh Landing and Invite tabs each stayed open for 65 seconds. Both recorded zero requests matching `auth/me|overwatch|page-alerts|chat/history` and zero Analyst controls; Invite logged zero console warnings/errors. Frontend `ui-dev` commit `c6452ab`; dev restarted, production untouched, Sheet retest row 37 PASS. Remote push is blocked by the invalid PAT.
+
+## 2026-09-26 — Analyst VIX/CAPE regime grounding MW-029
+
+**Visible issue:** A fresh Analyst regime answer correctly surfaced CAPE EXTREME near 40.94 but claimed internal data had no VIX level or VIX regime, even though Runic exposed VIX near 15 with NORMAL tier.
+
+**Root cause:** `MacroContextBuilder` fetched the complete `/macro/runic/nightly` payload but `_regime()` formatted only top-level regime fields. It ignored `variables_dashboard`, so CAPE appeared indirectly through `val_regime` while the model had no VIX level, tier, percentile or variable-date evidence.
+
+**Test-first implementation:** Two deterministic fixtures first failed on missing VIX/CAPE field lines and missing-date provenance. Added `_current_variable_lines()` to SOURCE D for VIX volatility and CAPE valuation levels, tiers, 3-year percentiles and dates. When `source_date` is absent, the prompt says unavailable and separately identifies the Runic snapshot date instead of inventing provenance.
+
+**Verification and delivery:** Two focused and 14 related chatbot/API tests passed. The full backend suite reached 1,185 passes, 12 skips and 9 xfails with the same 3 unrelated SSI historical-contract failures. Current SOURCE D renders VIX 15/NORMAL/29.2328 with unavailable variable date and Runic snapshot 2026-09-25, plus CAPE 40.94/EXTREME/98.9143 sourced 2026-09-18. Fresh live session `e386b65b-36a6-4ef0-95e3-d80462fa2603` used INTERNAL/Macro Overlay and answered VIX 15.67/NORMAL/29.23% (Sep 24/Sep 25) separately from CAPE 40.94/EXTREME/98.91% (Sep 18). Backend commit `a4d05c292`; dev `:8507` restarted; Sheet retest row 38 PASS. Remote push is blocked by invalid PAT.
+
+**Operational disclosure:** The production API process was accidentally restarted once while targeting the dev service. It used its existing unchanged checkout/config on `:8506`; no production code, data or configuration changed. `mindwealth-api-dev.service` was then correctly restarted on `:8507`.
