@@ -518,6 +518,16 @@ def _bq_tier(bq: float | None) -> tuple[str, float]:
     return "BLOCKED", 0.0
 
 
+def _conviction_hard_gate_reason(verdict: Any) -> str | None:
+    """Return the canonical zero-allocation reason for a blocking verdict."""
+    normalized = " ".join(
+        str(verdict or "").upper().replace("_", " ").replace("-", " ").split()
+    )
+    if normalized in {"CANCEL", "CANCEL BUY", "YIELD TRAP"}:
+        return normalized
+    return None
+
+
 def _detect_flags(row: dict[str, Any], multi_sig_tickers: set[str]) -> list[str]:
     flags: list[str] = []
     ticker = str(row.get("ticker") or row.get("Symbol") or "").upper()
@@ -877,6 +887,7 @@ def get_portfolio_sizer(scenario: str = "normal") -> dict[str, Any]:
         bq = _safe_float(row.get("bq_raw"))
 
         verdict = str(row.get("verdict") or "")
+        hard_gate_reason = _conviction_hard_gate_reason(verdict)
         not_applicable = verdict.upper() == "NOT_APPLICABLE"
         unscored = bq is None and not not_applicable and not verdict
         tier_label, base_share = _bq_tier(bq)
@@ -887,9 +898,13 @@ def get_portfolio_sizer(scenario: str = "normal") -> dict[str, Any]:
 
         flags = _detect_flags(row, multi_sig_tickers)
         direction = str(row.get("Signal") or row.get("direction") or "Long")
-        adj_share = _adjusted_share(base_share, flags, combo_c, direction)
+        adj_share = (
+            0.0
+            if hard_gate_reason is not None
+            else _adjusted_share(base_share, flags, combo_c, direction)
+        )
 
-        blocked = adj_share == 0.0 or tier_label == "BLOCKED"
+        blocked = hard_gate_reason is not None or adj_share == 0.0 or tier_label == "BLOCKED"
         rank_weight = 0.0 if blocked else _cluster_rank_weight(adj_share, flags)
 
         pending_by_cluster[cluster_id].append({
@@ -899,6 +914,7 @@ def get_portfolio_sizer(scenario: str = "normal") -> dict[str, Any]:
             "cluster_id": cluster_id,
             "bq": bq,
             "verdict": verdict,
+            "hard_gate_reason": hard_gate_reason,
             "not_applicable": not_applicable,
             "unscored": unscored,
             "tier_label": tier_label,
@@ -973,6 +989,7 @@ def get_portfolio_sizer(scenario: str = "normal") -> dict[str, Any]:
             direction = p["direction"]
             bq = p["bq"]
             verdict = p["verdict"]
+            hard_gate_reason = p["hard_gate_reason"]
 
             allocation_usd = p["allocation_usd"]
             allocation_pct = sizing_engine.clamp_display_pct(
@@ -1025,7 +1042,8 @@ def get_portfolio_sizer(scenario: str = "normal") -> dict[str, Any]:
                 "flags": flags,
                 "blocked": blocked,
                 "blocked_reason": (
-                    "YIELD TRAP" if "YIELD TRAP" in flags
+                    hard_gate_reason if hard_gate_reason is not None
+                    else "YIELD TRAP" if "YIELD TRAP" in flags
                     else "No conviction score — run conviction engine" if unscored and blocked
                     else "No conviction score — conservative REDUCED tier" if unscored
                     else "BQ < 2" if tier_label == "BLOCKED" and not not_applicable
