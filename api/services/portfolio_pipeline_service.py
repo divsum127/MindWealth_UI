@@ -669,12 +669,25 @@ def _risk_chips_from_breaches(breaches: list[dict[str, Any]]) -> list[dict[str, 
         labels = breach.get("pair_labels") or breach.get("pair") or []
         pair_text = " / ".join(str(x) for x in labels) if labels else "cluster pair"
         level = str(breach.get("level") or "watch")
+        requires_rebalance = bool(
+            breach.get("requires_rebalance")
+            or breach.get("exposure_threshold_breached")
+        )
         chips.append({
             "id": f"correlation-breach-{idx}",
             "icon": "⚠",
-            "title": f"Correlation breach ({level})",
-            "body": breach.get("recommendation")
-            or f"{pair_text} ρ={breach.get('rho')}",
+            "title": (
+                f"Correlation {level} + exposure cap breach"
+                if requires_rebalance
+                else f"Correlation {level} · exposure within cap"
+            ),
+            "body": (
+                f"{breach.get('explanation')} {breach.get('recommendation')}"
+                if breach.get("explanation") and breach.get("recommendation")
+                else breach.get("explanation")
+                or breach.get("recommendation")
+                or f"{pair_text} ρ={breach.get('rho')}"
+            ),
             "target_view": "risk",
             "action_label": "VIEW RISK",
         })

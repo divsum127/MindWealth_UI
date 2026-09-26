@@ -7,7 +7,7 @@ from unittest.mock import patch
 import pandas as pd
 import pytest
 
-from api.services import portfolio_service
+from api.services import portfolio_pipeline_service, portfolio_service
 
 
 def _cancel_buy_vt_row() -> pd.DataFrame:
@@ -159,3 +159,70 @@ def test_MW_020_conviction_summary_declares_rows_and_unique_equity_tickers() -> 
     assert summary["tier_conflict_ticker_count"] == 0
     assert summary["max_names"] == ["AAPL"]
     assert summary["yield_trap_names"] == ["SPK.NZ"]
+
+
+@pytest.mark.parametrize(
+    ("weights", "expected_pct", "expected_status", "requires_rebalance"),
+    [
+        ((8.8, 8.8), 17.6, "within_cap", False),
+        ((10.0, 10.0), 20.0, "within_cap", False),
+        ((12.0, 12.0), 24.0, "breach", True),
+    ],
+)
+def test_MW_021_correlation_and_exposure_triggers_are_independent(
+    weights: tuple[float, float],
+    expected_pct: float,
+    expected_status: str,
+    requires_rebalance: bool,
+) -> None:
+    """High correlation must not imply that the displayed exposure cap was breached."""
+
+    labels = ["semiconductors", "us_tech"]
+    matrix = [[1.0, 0.88], [0.88, 1.0]]
+    sizer = {
+        "as_of": "2026-09-26T12:00:00+00:00",
+        "pnl_rows": [],
+        "clusters": [
+            {"id": labels[0], "deployed_pct": weights[0]},
+            {"id": labels[1], "deployed_pct": weights[1]},
+        ],
+    }
+
+    with (
+        patch.object(
+            portfolio_service,
+            "_load_correlation_matrix",
+            return_value=(labels, matrix, {"source": "fixture", "as_of": "2026-09-26"}),
+        ),
+        patch.object(portfolio_service, "get_portfolio_sizer", return_value=sizer),
+        patch.object(portfolio_service, "get_portfolio_notional", return_value=100_000_000),
+    ):
+        breach = portfolio_service.get_portfolio_risk()["breaches"][0]
+
+    assert breach["level"] == "action"
+    assert breach["rho"] == 0.88
+    assert breach["correlation_threshold"] == 0.85
+    assert breach["correlation_threshold_breached"] is True
+    assert breach["combined_weight_pct"] == expected_pct
+    assert breach["exposure_status"] == expected_status
+    assert breach["exposure_threshold_breached"] is requires_rebalance
+    assert breach["requires_rebalance"] is requires_rebalance
+    assert "correlation_action" in breach["trigger_reasons"]
+    assert ("pair_cap_breach" in breach["trigger_reasons"]) is requires_rebalance
+    assert (breach["recommendation"] is not None) is requires_rebalance
+    if requires_rebalance:
+        assert "Exposure breach: 24.0% > 20.0%" in breach["explanation"]
+    else:
+        assert f"Exposure within cap: {expected_pct:.1f}% <= 20.0%" in breach["explanation"]
+
+    chip = portfolio_pipeline_service._risk_chips_from_breaches([breach])[0]
+    assert chip["title"] == (
+        "Correlation action + exposure cap breach"
+        if requires_rebalance
+        else "Correlation action · exposure within cap"
+    )
+    assert chip["body"] == (
+        f"{breach['explanation']} {breach['recommendation']}"
+        if requires_rebalance
+        else breach["explanation"]
+    )

@@ -1273,23 +1273,47 @@ def get_portfolio_risk(scenario: str = "normal") -> dict[str, Any]:
                 combined_usd = round(notional * combined_pct / 100)
                 cap_pct = 20.0  # max combined for correlated pair
                 level = "action" if rho > _BREACH_RHO_ACTION else "watch"
+                correlation_threshold = (
+                    _BREACH_RHO_ACTION if level == "action" else _BREACH_RHO_WARN
+                )
+                exposure_threshold_breached = combined_pct > cap_pct
+                exposure_status = "breach" if exposure_threshold_breached else "within_cap"
 
                 ci_label = next((c["label"] for c in _CLUSTERS if c["id"] == ci), ci)
                 cj_label = next((c["label"] for c in _CLUSTERS if c["id"] == cj), cj)
 
                 rec = ""
-                if combined_pct > cap_pct:
+                if exposure_threshold_breached:
                     excess_usd = round((combined_pct - cap_pct) / 100 * notional)
                     rec = f"Reduce {cj_label} by ~${excess_usd:,} or trim {ci_label}."
+
+                trigger_reasons = [f"correlation_{level}"]
+                if exposure_threshold_breached:
+                    trigger_reasons.append("pair_cap_breach")
+                correlation_text = (
+                    f"Correlation {level}: ρ {rho:.2f} > {correlation_threshold:.2f}."
+                )
+                exposure_text = (
+                    f"Exposure breach: {combined_pct:.1f}% > {cap_pct:.1f}%."
+                    if exposure_threshold_breached
+                    else f"Exposure within cap: {combined_pct:.1f}% <= {cap_pct:.1f}%."
+                )
 
                 breaches.append({
                     "pair": [ci, cj],
                     "pair_labels": [ci_label, cj_label],
                     "rho": round(rho, 2),
                     "level": level,
+                    "correlation_threshold": correlation_threshold,
+                    "correlation_threshold_breached": rho > correlation_threshold,
                     "combined_weight_pct": combined_pct,
                     "combined_weight_usd": combined_usd,
                     "cap_pct": cap_pct,
+                    "exposure_status": exposure_status,
+                    "exposure_threshold_breached": exposure_threshold_breached,
+                    "requires_rebalance": exposure_threshold_breached,
+                    "trigger_reasons": trigger_reasons,
+                    "explanation": f"{correlation_text} {exposure_text}",
                     "recommendation": rec or None,
                 })
 

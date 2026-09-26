@@ -32,12 +32,26 @@ def _correlation_alerts(scenario: str) -> list[dict[str, Any]]:
         labels = breach.get("pair_labels") or []
         pair_text = " / ".join(str(x) for x in labels) if labels else "cluster pair"
         level = str(breach.get("level") or "watch")
+        requires_rebalance = bool(
+            breach.get("requires_rebalance")
+            or breach.get("exposure_threshold_breached")
+        )
         alerts.append({
             "id": f"correlation-{idx}",
             "type": "correlation_breach",
-            "severity": "critical" if level == "breach" else "warning",
-            "title": f"Correlation breach ({level})",
-            "body": breach.get("recommendation") or f"{pair_text} \u03c1={breach.get('rho')}",
+            "severity": "critical" if requires_rebalance else "warning",
+            "title": (
+                f"Correlation {level} + exposure cap breach"
+                if requires_rebalance
+                else f"Correlation {level} · exposure within cap"
+            ),
+            "body": (
+                f"{breach.get('explanation')} {breach.get('recommendation')}"
+                if breach.get("explanation") and breach.get("recommendation")
+                else breach.get("explanation")
+                or breach.get("recommendation")
+                or f"{pair_text} \u03c1={breach.get('rho')}"
+            ),
             "target_page": "risk",
             "ticker": None,
         })
