@@ -3911,6 +3911,27 @@ Copy for each new dev feature:
 
 ### Status: [PENDING] production promotion. Dev verified 2026-09-26; production untouched; remote push blocked by invalid PAT.
 
+## 2026-09-26 — Shareable Conviction depth MW-017
+
+### Git (ui-dev → production UI release)
+- [ ] Frontend commit `5f24ec7`: sibling Conviction breadth/depth routes, ticker URL/query restoration, dynamic terminal configuration, accessible FS labels and MW-017 regressions.
+- [ ] Push `ui-dev` after providing a valid non-interactive GitHub credential. The branch-aware helper rejected `ui-dev`; direct push then failed because no username/token was available.
+
+### Dev-only / revert before prod
+- [x] None. The route follows the newest developer specification found by the refer review. Older `/fs` and `/fs-depth` aliases are not implemented.
+
+### Prod runtime
+- [x] No backend, environment, database, cache or migration change required.
+
+### Smoke tests
+- [ ] From Conviction, click an equity FS action and require `/conviction/:ticker` with the requested ticker and depth layer.
+- [ ] Reload the depth URL directly, switch layers and tickers, and verify terminal chrome remains intact.
+- [ ] Use Back to breadth and require `/conviction?ticker=:ticker` with the matching row selected and drawer open.
+- [ ] Verify browser history, `/conviction/UNKNOWN`, 390px body width, target sizes and a clean console.
+- [ ] Retest alongside MW-044 so auth-check throttling cannot falsely redirect the release smoke test to Login.
+
+### Status: [PENDING] production promotion. Dev `:8514` verified 2026-09-26; production untouched; remote push blocked by missing/invalid GitHub credentials.
+
 ## 2026-09-26 — Conviction dimension disclosure MW-043
 
 ### Git (ui-dev → production UI release)

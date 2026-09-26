@@ -2843,3 +2843,11 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
    - Added mounted 15- and 16-dimension component fixtures as well as source guards, so a future feed with either schema must display the matching count.
    - Verification: 5 focused tests passed; full Nuxt suite 88 passed, 1 todo; production build passed. The live MAR drawer reconciled API count 16, heading 16 and 16 rendered tiles, with zero browser warnings/errors. Dev/prod services remained active.
    - Git: frontend `ui-dev` `584b184`, authored by `divsum127`. Dev `:8514` deployed. Production untouched. Push remains blocked by the invalid stored PAT.
+
+5. **8514 audit: Shareable Conviction depth MW-017** — SUCCESSFUL ON DEV
+   - Replaced the inline-only FS arrow with a dedicated `/conviction/:ticker` depth route while preserving the terminal chrome and BQ, FS, FD, valuation and yield-trap layer navigation.
+   - Added `/conviction?ticker=:ticker` breadth restoration, matching-row selection and drawer reopening. Invalid tickers render a safe empty state.
+   - Live testing caught and corrected a Nuxt route-nesting mistake by moving the breadth page to `pages/conviction/index.vue` beside `[ticker].vue`.
+   - Verification: 8 focused tests passed; full Nuxt suite 91 passed, 1 todo; production build passed. Desktop and 390px live checks covered click-through, direct reload, layers, Back/history, query restoration, unknown ticker, overflow, target size and a clean console.
+   - Git: frontend `ui-dev` `5f24ec7`, authored by `divsum127`. Dev `:8514` deployed. Production untouched. Remote push failed because no valid non-interactive GitHub credential is available.
+   - Separate finding: MW-044 records a shared 100/minute BFF rate limit that caused `auth/me` 429 responses and a false Login redirect during stress navigation.

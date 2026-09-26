@@ -8499,3 +8499,15 @@ point — this did not create a new class of risk, it extended an existing one.
 **Implementation:** The drawer now renders the actual array length and states that the count reflects dimensions available for that record, with optional or conditional factors able to vary. `test/conviction-audit-regressions.spec.ts` rejects the old fixed copy and mounts explicit 15- and 16-dimension fixtures to require matching headings.
 
 **Verification:** Five focused tests passed; the full frontend suite passed with 88 tests and 1 todo; the Nuxt production build passed. On deployed dev `:8514`, MAR reconciled to API count 16, heading 16 and 16 visible factor tiles, and the browser console had zero warnings/errors. Frontend `ui-dev` commit `584b184`, authored by `divsum127`; production untouched. The required push failed because the stored PAT is invalid.
+
+## 2026-09-26 — Shareable Conviction depth MW-017
+
+**Visible issue:** The FS arrow only opened an inline drawer and left the URL unchanged, so an investor could not bookmark, reload or share a ticker's depth view.
+
+**Root cause:** `goFsPage()` only wrote local drawer state. There was no ticker route, breadth-query restoration or terminal configuration for dynamic Conviction paths. The first implementation also exposed a Nuxt file-routing detail: `conviction.vue` plus `conviction/[ticker].vue` creates a parent/child route, so the child cannot render unless the parent has a nested page outlet.
+
+**Implementation:** Added sibling `pages/conviction/index.vue` and `pages/conviction/[ticker].vue` routes, changed FS actions to navigate to `/conviction/:ticker`, preserved shared terminal layer controls and ticker switching, and made Back return to `/conviction?ticker=:ticker` where the matching drawer reopens. Dynamic routes now inherit Conviction terminal configuration and page metadata. Invalid tickers fail safely.
+
+**Verification:** Eight focused tests, the full frontend suite with 91 passes and 1 todo, and the Nuxt production build passed. On dev `:8514`, click-through, direct reload, BQ/FD switching, Back/history/query restoration, unknown ticker, mobile 390px overflow/targets and a clean final console all passed. Frontend `ui-dev` commit `5f24ec7`, authored by `divsum127`; production untouched. Remote push has no valid GitHub credential.
+
+**Separate issue discovered:** MW-044 records that the IP-wide BFF rate limit can return 429 for `auth/me`; the global route middleware then treats the transient failure as logged out. It is fully documented in the audit sheet and remains open.
