@@ -3890,3 +3890,23 @@ Copy for each new dev feature:
 - [ ] Require zero browser warnings/errors on cold `/sentiment` and `/macro` loads.
 
 ### Status: [PENDING] production promotion. Dev `:8514` verified 2026-09-26; production untouched; remote push blocked by invalid PAT.
+
+## 2026-09-26 — Conviction sizing safeguard MW-016
+
+### Git (ui-dev → production UI release)
+- [ ] Frontend commit `34eb17c`: final CANCEL/YIELD TRAP zero-size gate, exact-source-row dedupe and MW-016 regressions.
+- [ ] Push `ui-dev` after fixing the stored `divsum127` PAT.
+
+### Dev-only / revert before prod
+- [x] None. This is a final safety boundary and exact duplicate suppression.
+
+### Prod runtime
+- [x] No backend, environment, database, cache or migration change required.
+
+### Smoke tests
+- [ ] Assert every `/api/conviction` CANCEL/YIELD TRAP row has `sizeModifier=0%`.
+- [ ] Confirm only one exact CSCO source row renders and it reads `CANCEL / 0%`.
+- [ ] Confirm non-identical same-ticker rows are not removed; MW-009 feed/dedup policy remains separate.
+- [ ] Require a clean Conviction console and no Vue duplicate-key warning.
+
+### Status: [PENDING] production promotion. Dev verified 2026-09-26; production untouched; remote push blocked by invalid PAT.

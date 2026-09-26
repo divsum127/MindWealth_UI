@@ -8477,3 +8477,15 @@ point — this did not create a new class of risk, it extended an existing one.
 - `smoke-test-apis.sh` passed for prod `:8506` and dev `:8507`, including store isolation. Production code and services were untouched.
 - Frontend commit: `83bfcc0` on `ui-dev`, author `divsum127`. The required push script failed because the stored `divsum127` GitHub PAT is invalid.
 - `vue-tsc --noEmit` still reports the repository's existing unrelated type errors; it reported no new error in the added regression, coverage/topbar logic or the changed VIX-ratio paths. The production build remains green.
+
+## 2026-09-26 — Conviction sizing safeguard remediation (MW-016)
+
+**Visible issue:** Conviction showed two CSCO rows with `CANCEL` and `50%`, while the page's own sizing legend says CANCEL must be 0%.
+
+**Root cause:** The raw 2026-09-23 score-sheet returned the same CSCO object twice. That object carried source verdict `PARTIAL EXIT` and `sizing_pct=50`. The frontend verdict mapper does not support PARTIAL EXIT and conservatively maps it to CANCEL, but `sizingFromVerdict()` trusted a positive source size before checking the mapped hard-gate verdict. The lifecycle verdict and old size therefore crossed boundaries inconsistently.
+
+**Fix:** `sizingFromVerdict()` now returns `0%` for CANCEL/YIELD TRAP before consulting any source size. `loadConviction()` removes only source objects with an identical full JSON serialization before mapping. It deliberately does not define a ticker/date/function composite key; that broader cross-page feed decision remains MW-009 and still needs Rohit.
+
+**Files:** frontend `server/utils/mindwealth-data.ts` and `test/conviction-audit-regressions.spec.ts`.
+
+**Verification:** Both new MW-016 regressions passed; full frontend suite 85 passed and 1 todo; production build passed. Live `/api/conviction` returned 8 rows, one CSCO, `CANCEL / 0%`, no non-zero CANCEL/YIELD TRAP row and no serialized duplicate. The table visually matched, console had zero warnings/errors, and API isolation smoke passed. Frontend `ui-dev` commit `34eb17c`, authored by `divsum127`; dev deployed, production untouched. Required push failed because the stored PAT is invalid.

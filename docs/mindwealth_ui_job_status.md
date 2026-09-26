@@ -2831,3 +2831,9 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
    - Defined the two VIX term-structure conventions. Sentiment is `VIX (30-day) ÷ VIX3M (93-day)` and Macro VXTS is the reciprocal `VIX3M (93-day) ÷ VIX (30-day)`. Both rows now show as-of dates and warn that reciprocal arithmetic is valid only for same-date observations.
    - Verification: new regression file 5 passed; full Nuxt suite 83 passed, 1 todo; production build passed; dev/prod isolation smoke passed; authenticated live checks on `/sentiment` and `/macro` passed with zero browser warnings/errors.
    - Git: frontend `ui-dev` `83bfcc0`, authored by `divsum127`. Dev `:8514` deployed. Production untouched. Push is blocked by the invalid stored `divsum127` PAT.
+
+3. **8514 audit: Conviction sizing safeguard MW-016** — SUCCESSFUL ON DEV
+   - Enforced the final rule `CANCEL/YIELD TRAP → 0%` before any upstream `sizing_pct` is accepted. The live CSCO source row was `PARTIAL EXIT / 50%`; the mapper converted its unsupported verdict to CANCEL but previously retained the stale 50%.
+   - Removed only byte-equivalent score-sheet objects before mapping. The two CSCO source objects were identical; dev now renders one CSCO row at `CANCEL / 0%` without inventing the broader MW-009 product dedup key.
+   - Verification: 2 focused tests passed; full Nuxt suite 85 passed, 1 todo; production build passed; live `/api/conviction` has zero hard-gate violations and no exact duplicate output; visual row and zero-warning console checks passed; dev/prod isolation smoke passed.
+   - Git: frontend `ui-dev` `34eb17c`, authored by `divsum127`. Dev `:8514` deployed. Production untouched. Push remains blocked by the invalid stored PAT.
