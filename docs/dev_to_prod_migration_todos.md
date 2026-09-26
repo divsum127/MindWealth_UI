@@ -3844,3 +3844,25 @@ Copy for each new dev feature:
 | 2026-07-16 | D6: analytics collapse helpers + Combo C min-n guard (`insufficient episodes`) |
 | 2026-07-11 | Release A prod deploy: merge `chatbot-prod` `1f84f86ad`, prod env/bootstrap, Nuxt BFF `7661255`, smoke tests |
 | 2026-06-30 | Initial auth + activity logging migration checklist; documented Nuxt → `:8507` dev shortcut |
+## 2026-09-26 — Macro audit MW-010 to MW-013
+
+### Git (chatbot-dev → chatbot-prod)
+- [ ] Backend commit `0f73f06af`: `api/services/macro_service.py`, `src/macro_intelligence/data/macro_calendar.py`, `tests/test_macro_audit_regressions.py`
+- [ ] Frontend commit `a7148df`: Macro overview children, page tab mounting, CFTC mapper/types/formatter, and Macro regression tests
+
+### Dev-only / revert before prod
+- [x] None. The release boundary, evidence metadata, signed CFTC label, and hydration fixes are environment-independent.
+
+### Prod runtime
+- [x] No environment variables, database migrations, or manual data edits required. Read-time sanitization protects existing poisoned future rows; later ingestion clears their future actual/surprise fields.
+
+### systemd / Nuxt
+- [ ] Merge backend commit to `chatbot-prod`, build the corresponding frontend commit in the production checkout, then restart only the production services through the production deployment workflow.
+
+### Smoke tests
+- [ ] Confirm future CPI events retain consensus but return null actual/surprise before release.
+- [ ] Confirm Combo C displays canonical sample size and minimum, not the removed 83% claim.
+- [ ] Confirm negative CFTC contracts render NET SHORT.
+- [ ] Load `/macro` twice, require zero hydration messages, then open all six tabs including Analog.
+
+### Status: [PENDING] production promotion. Dev verified 2026-09-26; production untouched.

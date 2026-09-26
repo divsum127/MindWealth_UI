@@ -2815,3 +2815,12 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
      - `testing/combo_all_thresholds/run_extended_c_g_sweep.py` (new)
      - `testing/combo_all_thresholds/generate_enhanced_analysis.py` (new)
      - `testing/combo_all_thresholds/output_files/ANALYSIS.md`, `combo_C_extended_sweep_summary.csv`, `combo_G_extended_sweep_summary.csv`
+### 2026-09-26
+
+1. **8514 audit: Macro page MW-010 to MW-013** — SUCCESSFUL ON DEV
+   - Fixed future-release leakage: scheduled CPI consensus stays visible, but actual and surprise are suppressed until the official US Eastern release timestamp. The poisoned 2026-10-14 actual no longer reaches either the calendar or Combo C cancellation logic.
+   - Replaced Combo C's unsupported `83%` copy with canonical 6M evidence metadata. The live page now states `n=3`, minimum `n=5`, `INSUFFICIENT HISTORY`, and publishes no validated hit rate.
+   - Corrected the CFTC banner to derive NET LONG/NET SHORT from the signed contract count. Dev now shows `FM NET SHORT 311,831 contracts, 64th percentile`.
+   - Removed duplicate Macro fetch graphs from the page and overview children. Only the active panel mounts, Analog remains stable while loading, and two consecutive cold loads produce no hydration mismatch.
+   - Verification: backend focused suite 61 passed, 1 skipped; new backend regressions 3 passed; Nuxt 78 passed, 1 todo; Nuxt production build passed; all six Macro tabs passed live on `:8514`; dev/prod API isolation smoke passed. Full backend suite was 1,041 passed, 12 skipped, 9 xfailed, 3 unrelated SSI historical-contract failures. `vue-tsc` remains blocked by unrelated existing errors outside the Macro files.
+   - Git: backend `chatbot-dev` `0f73f06af`; frontend `ui-dev` `a7148df`. Production untouched.
