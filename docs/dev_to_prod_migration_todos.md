@@ -3927,6 +3927,23 @@ Copy for each new dev feature:
 
 ### Status: [PENDING] production promotion. Dev `:8514` and Sheet retest row 39 passed; production untouched; remote push blocked by invalid PAT.
 
+## 2026-09-26 — Route-scoped terminal data loading MW-036
+
+### Git (`ui-dev` to production UI release)
+
+- [ ] Frontend commits `1f39716`, `532f8c9` and `182b36f`: route-scoped layout data, on-demand Analyst/Overwatch, cold API budget and Portfolio cache reuse.
+- [ ] Push `ui-dev` after fixing the stored `divsum127` PAT, then promote through the standard UI release workflow.
+
+### Prod runtime and smoke tests
+
+- [x] No backend, environment, database, cache or migration change is required.
+- [ ] From cleared browser state at 390x844, sign in and capture all Dashboard API response bodies. Require total <=250,000 bytes and no full `/api/portfolio`, `/api/conviction` or `/api/overwatch` request.
+- [ ] Open AI Analyst and require Overwatch to load on demand; close/reopen it and verify polling still works.
+- [ ] Navigate Dashboard, Signals, Macro, Sentiment, Conviction, Portfolio and Overwatch; require correct H1/data, no mobile overflow and a clean console.
+- [ ] On first Portfolio visit, require exactly one full model-book request.
+
+### Status: [PENDING] production promotion. Dev measured 64,013 API bytes, 97.3% below baseline, and Sheet retest row 40 passed. Production untouched; remote push blocked by invalid PAT.
+
 ## 2026-09-26 — Portfolio cancellation allocation safeguard MW-019
 
 ### Git (`chatbot-dev` to `chatbot-prod`)
