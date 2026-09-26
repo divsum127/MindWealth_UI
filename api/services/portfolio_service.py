@@ -12,6 +12,7 @@ from __future__ import annotations
 import json
 import math
 import os
+from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -1312,33 +1313,86 @@ def get_portfolio_risk(scenario: str = "normal") -> dict[str, Any]:
         "breach_threshold_watch": _BREACH_RHO_WARN,
         "breach_threshold_action": _BREACH_RHO_ACTION,
         "cluster_weights": weight_bars,
-        "conviction_summary": build_conviction_summary({"pnl_rows": sizer.get("pnl_rows", [])}),
+        "conviction_summary": build_conviction_summary(sizer),
     }
 
 
 def build_conviction_summary(sizer: dict[str, Any]) -> dict[str, Any]:
-    """Conviction tier counts from sizer pnl_rows (HANDOFF §8)."""
+    """Conviction tier counts with explicit row and unique-ticker populations.
+
+    Portfolio ``pnl_rows`` are signal-position rows. Repeated tickers can be legitimate
+    function/interval/date legs, so they are retained in the row counts and separately
+    deduplicated for the investor-facing unique-name counts.
+    """
     counts = {"max_count": 0, "tactical_count": 0, "reduced_count": 0, "yield_trap_count": 0}
+    unique_by_tier: dict[str, set[str]] = {
+        "max": set(),
+        "tactical": set(),
+        "reduced": set(),
+        "yield_trap": set(),
+    }
+    ticker_tiers: dict[str, set[str]] = defaultdict(set)
     max_names: list[str] = []
     yield_trap_names: list[str] = []
+    excluded_not_applicable_count = 0
+    excluded_blocked_count = 0
+    excluded_unclassified_count = 0
+
     for row in sizer.get("pnl_rows", []):
-        if row.get("blocked"):
+        ticker = str(row.get("ticker") or "").strip().upper()
+        tier = str(row.get("size_tier") or "").strip().upper()
+        verdict = str(row.get("verdict") or "")
+        blocked_reason = str(row.get("blocked_reason") or "").strip().upper()
+        flags = {str(flag).strip().upper() for flag in (row.get("flags") or [])}
+
+        is_yield_trap = (
+            _conviction_hard_gate_reason(verdict) == "YIELD TRAP"
+            or blocked_reason == "YIELD TRAP"
+            or "YIELD TRAP" in flags
+        )
+        if is_yield_trap:
+            category = "yield_trap"
+        elif row.get("not_applicable") or verdict.strip().upper() == "NOT_APPLICABLE" or tier.startswith("N/A"):
+            excluded_not_applicable_count += 1
             continue
-        ticker = str(row.get("ticker") or "")
-        tier = str(row.get("size_tier") or "").upper()
-        flags = row.get("flags") or []
-        if "YIELD TRAP" in flags:
-            counts["yield_trap_count"] += 1
-            yield_trap_names.append(ticker)
-        if tier.startswith("MAX"):
-            counts["max_count"] += 1
-            max_names.append(ticker)
+        elif row.get("blocked"):
+            excluded_blocked_count += 1
+            continue
+        elif tier.startswith("MAX"):
+            category = "max"
         elif tier.startswith("TACTICAL"):
-            counts["tactical_count"] += 1
-        elif tier.startswith("REDUCED") or tier == "N/A":
-            counts["reduced_count"] += 1
+            category = "tactical"
+        elif tier.startswith("REDUCED"):
+            category = "reduced"
+        else:
+            excluded_unclassified_count += 1
+            continue
+
+        counts[f"{category}_count"] += 1
+        if ticker:
+            if ticker not in unique_by_tier[category]:
+                if category == "max":
+                    max_names.append(ticker)
+                elif category == "yield_trap":
+                    yield_trap_names.append(ticker)
+            unique_by_tier[category].add(ticker)
+            ticker_tiers[ticker].add(category)
+
+    population_count = sum(counts.values())
     return {
         **counts,
+        "count_unit": "signal_positions",
+        "as_of": sizer.get("as_of") or sizer.get("date"),
+        "population_count": population_count,
+        "unique_ticker_count": len(ticker_tiers),
+        "max_unique_ticker_count": len(unique_by_tier["max"]),
+        "tactical_unique_ticker_count": len(unique_by_tier["tactical"]),
+        "reduced_unique_ticker_count": len(unique_by_tier["reduced"]),
+        "yield_trap_unique_ticker_count": len(unique_by_tier["yield_trap"]),
+        "excluded_not_applicable_count": excluded_not_applicable_count,
+        "excluded_blocked_count": excluded_blocked_count,
+        "excluded_unclassified_count": excluded_unclassified_count,
+        "tier_conflict_ticker_count": sum(1 for tiers in ticker_tiers.values() if len(tiers) > 1),
         "max_names": max_names[:10],
         "yield_trap_names": yield_trap_names[:10],
     }

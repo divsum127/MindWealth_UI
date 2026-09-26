@@ -102,3 +102,60 @@ def test_MW_019_cancel_buy_is_a_final_zero_allocation_gate(sizing_version: str) 
     assert row["allocation_pct"] == 0.0
     assert row["blocked_reason"] == "CANCEL BUY"
     assert payload["summary"]["open_position_count"] == 0
+
+
+def test_MW_020_conviction_summary_declares_rows_and_unique_equity_tickers() -> None:
+    """Risk counts must distinguish legitimate signal legs from deduplicated names."""
+
+    payload = {
+        "as_of": "2026-09-26T12:00:00+00:00",
+        "pnl_rows": [
+            {"ticker": "AAPL", "size_tier": "MAX 100%", "blocked": False},
+            {"ticker": "AAPL", "size_tier": "MAX 80%", "blocked": False},
+            {"ticker": "MSFT", "size_tier": "TACTICAL 55%", "blocked": False},
+            {"ticker": "NVO", "size_tier": "REDUCED 20%", "blocked": False},
+            {
+                "ticker": "SPK.NZ",
+                "size_tier": "BLOCKED",
+                "blocked": True,
+                "verdict": "YIELD TRAP",
+                "blocked_reason": "YIELD TRAP",
+                "flags": ["YIELD TRAP"],
+            },
+            {
+                "ticker": "QQQ",
+                "size_tier": "N/A 100%",
+                "blocked": False,
+                "not_applicable": True,
+            },
+            {
+                "ticker": "MAR",
+                "size_tier": "BLOCKED",
+                "blocked": True,
+                "verdict": "CANCEL BUY",
+                "blocked_reason": "CANCEL BUY",
+            },
+        ],
+    }
+
+    summary = portfolio_service.build_conviction_summary(payload)
+
+    assert summary["count_unit"] == "signal_positions"
+    assert summary["as_of"] == payload["as_of"]
+    assert summary["population_count"] == 5
+    assert summary["population_count"] == sum(
+        summary[key]
+        for key in ("max_count", "tactical_count", "reduced_count", "yield_trap_count")
+    )
+    assert summary["unique_ticker_count"] == 4
+    assert summary["max_count"] == 2
+    assert summary["max_unique_ticker_count"] == 1
+    assert summary["tactical_unique_ticker_count"] == 1
+    assert summary["reduced_unique_ticker_count"] == 1
+    assert summary["yield_trap_count"] == 1
+    assert summary["yield_trap_unique_ticker_count"] == 1
+    assert summary["excluded_not_applicable_count"] == 1
+    assert summary["excluded_blocked_count"] == 1
+    assert summary["tier_conflict_ticker_count"] == 0
+    assert summary["max_names"] == ["AAPL"]
+    assert summary["yield_trap_names"] == ["SPK.NZ"]
