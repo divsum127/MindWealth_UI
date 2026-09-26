@@ -2837,3 +2837,9 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
    - Removed only byte-equivalent score-sheet objects before mapping. The two CSCO source objects were identical; dev now renders one CSCO row at `CANCEL / 0%` without inventing the broader MW-009 product dedup key.
    - Verification: 2 focused tests passed; full Nuxt suite 85 passed, 1 todo; production build passed; live `/api/conviction` has zero hard-gate violations and no exact duplicate output; visual row and zero-warning console checks passed; dev/prod isolation smoke passed.
    - Git: frontend `ui-dev` `34eb17c`, authored by `divsum127`. Dev `:8514` deployed. Production untouched. Push remains blocked by the invalid stored PAT.
+
+4. **8514 audit: Conviction dimension disclosure MW-043** — SUCCESSFUL ON DEV
+   - Replaced the row drawer's fixed `15 business-quality dimensions` claim with the actual `detail.dimensions.length` for each record and explained that optional or conditional factors can vary by record.
+   - Added mounted 15- and 16-dimension component fixtures as well as source guards, so a future feed with either schema must display the matching count.
+   - Verification: 5 focused tests passed; full Nuxt suite 88 passed, 1 todo; production build passed. The live MAR drawer reconciled API count 16, heading 16 and 16 rendered tiles, with zero browser warnings/errors. Dev/prod services remained active.
+   - Git: frontend `ui-dev` `584b184`, authored by `divsum127`. Dev `:8514` deployed. Production untouched. Push remains blocked by the invalid stored PAT.

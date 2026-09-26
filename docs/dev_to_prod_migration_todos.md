@@ -3910,3 +3910,22 @@ Copy for each new dev feature:
 - [ ] Require a clean Conviction console and no Vue duplicate-key warning.
 
 ### Status: [PENDING] production promotion. Dev verified 2026-09-26; production untouched; remote push blocked by invalid PAT.
+
+## 2026-09-26 — Conviction dimension disclosure MW-043
+
+### Git (ui-dev → production UI release)
+- [ ] Frontend commit `584b184`: dynamic per-record BQ dimension count, optional/conditional-factor disclosure and 15/16 fixture regressions.
+- [ ] Push `ui-dev` after fixing the stored `divsum127` PAT.
+
+### Dev-only / revert before prod
+- [x] None. The change documents the existing record-specific API array and does not alter scoring.
+
+### Prod runtime
+- [x] No backend, environment, database, cache or migration change required.
+
+### Smoke tests
+- [ ] Open at least one equity Conviction drawer and reconcile the heading count with `detail.dimensions.length` and the visible tile count.
+- [ ] Confirm the fixed `15 business-quality dimensions` copy is absent.
+- [ ] Confirm the per-record optional/conditional-factor note is visible and the browser console is clean.
+
+### Status: [PENDING] production promotion. Dev verified 2026-09-26; production untouched; remote push blocked by invalid PAT.

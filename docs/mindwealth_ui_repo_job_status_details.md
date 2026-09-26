@@ -8489,3 +8489,13 @@ point — this did not create a new class of risk, it extended an existing one.
 **Files:** frontend `server/utils/mindwealth-data.ts` and `test/conviction-audit-regressions.spec.ts`.
 
 **Verification:** Both new MW-016 regressions passed; full frontend suite 85 passed and 1 todo; production build passed. Live `/api/conviction` returned 8 rows, one CSCO, `CANCEL / 0%`, no non-zero CANCEL/YIELD TRAP row and no serialized duplicate. The table visually matched, console had zero warnings/errors, and API isolation smoke passed. Frontend `ui-dev` commit `34eb17c`, authored by `divsum127`; dev deployed, production untouched. Required push failed because the stored PAT is invalid.
+
+## 2026-09-26 — Conviction dimension disclosure MW-043
+
+**Visible issue:** The row drawer always said `15 business-quality dimensions` even though the heading described a record-specific tile array and the audit snapshot contained different counts. This made the displayed methodology contradict the payload and visible factor tiles.
+
+**Root cause:** `ConvictionRowDrawer.vue` used a literal `15` and never referenced `detail.dimensions.length`. The BFF already supplied the complete per-record array, so no scoring or backend schema change was required.
+
+**Implementation:** The drawer now renders the actual array length and states that the count reflects dimensions available for that record, with optional or conditional factors able to vary. `test/conviction-audit-regressions.spec.ts` rejects the old fixed copy and mounts explicit 15- and 16-dimension fixtures to require matching headings.
+
+**Verification:** Five focused tests passed; the full frontend suite passed with 88 tests and 1 todo; the Nuxt production build passed. On deployed dev `:8514`, MAR reconciled to API count 16, heading 16 and 16 visible factor tiles, and the browser console had zero warnings/errors. Frontend `ui-dev` commit `584b184`, authored by `divsum127`; production untouched. The required push failed because the stored PAT is invalid.
