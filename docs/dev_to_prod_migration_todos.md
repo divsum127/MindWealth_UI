@@ -3866,3 +3866,27 @@ Copy for each new dev feature:
 - [ ] Load `/macro` twice, require zero hydration messages, then open all six tabs including Analog.
 
 ### Status: [PENDING] production promotion. Dev verified 2026-09-26; production untouched.
+
+## 2026-09-26 — Sentiment audit MW-014 and MW-015
+
+### Git (ui-dev → production UI release)
+- [ ] Frontend commit `83bfcc0`: live SSI coverage summary/banner/topbar, exact Sentiment and Macro VIX-ratio definitions/dates, and `test/sentiment-audit-regressions.spec.ts`.
+- [ ] Push `ui-dev` after rotating/fixing the stored `divsum127` PAT. The required push script currently fails authentication.
+
+### Dev-only / revert before prod
+- [x] None. Coverage derives from the existing API contract and the ratio labels document the existing formulas.
+
+### Prod runtime
+- [x] No environment variable, backend endpoint, database, cache, or migration change is required.
+
+### systemd / Nuxt
+- [ ] Merge/release frontend commit `83bfcc0` through the production UI workflow, run a clean production build in the production checkout, and restart only the production UI service.
+
+### Smoke tests
+- [ ] With NAAIM unavailable, confirm `/sentiment` shows the live active/designed count and composite degraded-coverage warning.
+- [ ] Confirm Layer 1 names NAAIM's last observation and says weights are renormalised.
+- [ ] Confirm Sentiment defines VIX/VIX3M as 30-day ÷ 93-day and Macro defines VXTS as 93-day ÷ 30-day.
+- [ ] Confirm both ratio rows show their own dates and do not imply different-date values must be exact reciprocals.
+- [ ] Require zero browser warnings/errors on cold `/sentiment` and `/macro` loads.
+
+### Status: [PENDING] production promotion. Dev `:8514` verified 2026-09-26; production untouched; remote push blocked by invalid PAT.

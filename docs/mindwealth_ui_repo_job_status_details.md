@@ -8447,3 +8447,33 @@ point — this did not create a new class of risk, it extended an existing one.
 **Live evidence:** October 14 CPI now returns `actual=null` and `surprise_pp=null`; cancellation tracker uses September 25; Combo C publishes 6M `n=3`, minimum 5, insufficient history; overview reads `FM NET SHORT 311,831 contracts, 64th percentile`; two cold loads have zero hydration errors; Overview, Variables, Combos, Tracker, Analog, and Nightly Brief all render without fetch failures on dev `:8514`.
 
 **Boundaries:** No production files, services, branches, or data were changed. Backend full-suite red items are the pre-existing nine SSI history rows containing live regime labels plus an obsolete strict xfail. Frontend typecheck failures are existing non-Macro errors; the production build and full runtime test suite pass.
+
+## 2026-09-26 — Sentiment page audit remediation (MW-014 and MW-015)
+
+### Visible issues
+
+- Layer 1 showed NAAIM unavailable since 2026-07-29 and `3 of 4 signals · weights renormalised`, but the topbar still made the static claim `SSI · 13 SIGNALS`. No composite-level warning qualified the score for an investor who did not open Layer 1.
+- Sentiment showed VIX term structure `0.81` while Macro VXTS showed `1.197`. The labels did not state the numerator, denominator, 30-day/93-day maturities, observation dates, or the intentional reciprocal relationship.
+
+### Root causes
+
+- `buildTopbarStatus('/sentiment')` hardcoded 13. The live SSI configuration contains 4 Layer 1, 6 Layer 2 and 4 Layer 3 inputs, for 14 designed inputs.
+- `buildDataQualityBanners()` only warned when `coverage_ok === false`. Layer 1 is allowed to score at 3/4 and 65% nominal weight retained, so its missing 35%-nominal NAAIM input was formally reliable but still materially degraded and invisible at composite level.
+- The two ratios were intentional reciprocal conventions: `src/sentiment_superindex/data/yahoo_inputs.py` computes VIX/VIX3M, while `src/macro_intelligence/data/yahoo_pull.py` computes VIX3M/VIX. The live observations were also from different dates, Sentiment 2026-09-22 and Macro 2026-09-25, so `0.81` was not expected to equal `1 / 1.197`.
+
+### Fix
+
+- Added a structured Sentiment coverage summary derived from each layer's `configured_count` and `available_count`, then wired it into the topbar.
+- Added a `coverage_degraded` banner for missing designed inputs even when the formal scoring reliability gate remains open. The regime strip labels this as `DATA QUALITY`, not as a market `L3 FLAG`.
+- Relabelled the Sentiment row as `VIX/VIX3M (30-day ÷ 93-day)` and included direction meaning, derived observation date, reciprocal convention, and same-date comparison guidance.
+- Relabelled Macro VXTS as `VIX3M (93-day) ÷ VIX (30-day)`, added the reciprocal explanation, and published the Macro observation date in both variable-mapper paths.
+- Added `/home/ubuntu/MindwealthUI_Vue/test/sentiment-audit-regressions.spec.ts` with five MW-014/MW-015 tests.
+
+### Verification and deployment
+
+- RED baseline: four of five new tests failed before implementation; the fifth established that the two current different-date values do not reconcile numerically.
+- GREEN: 5/5 targeted tests passed; full frontend suite 83 passed and 1 todo; `npm run build` passed.
+- Authenticated dev `:8514` showed `SSI · 13/14 ACTIVE`, the NAAIM composite warning, exact ratio definitions and both dates. `/api/sentiment` returned 13 active of 14 designed. Browser console: zero warnings/errors.
+- `smoke-test-apis.sh` passed for prod `:8506` and dev `:8507`, including store isolation. Production code and services were untouched.
+- Frontend commit: `83bfcc0` on `ui-dev`, author `divsum127`. The required push script failed because the stored `divsum127` GitHub PAT is invalid.
+- `vue-tsc --noEmit` still reports the repository's existing unrelated type errors; it reported no new error in the added regression, coverage/topbar logic or the changed VIX-ratio paths. The production build remains green.

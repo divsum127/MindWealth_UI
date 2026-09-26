@@ -2824,3 +2824,10 @@ _Completed tasks. Each entry includes status, date, outcome summary, and files c
    - Removed duplicate Macro fetch graphs from the page and overview children. Only the active panel mounts, Analog remains stable while loading, and two consecutive cold loads produce no hydration mismatch.
    - Verification: backend focused suite 61 passed, 1 skipped; new backend regressions 3 passed; Nuxt 78 passed, 1 todo; Nuxt production build passed; all six Macro tabs passed live on `:8514`; dev/prod API isolation smoke passed. Full backend suite was 1,041 passed, 12 skipped, 9 xfailed, 3 unrelated SSI historical-contract failures. `vue-tsc` remains blocked by unrelated existing errors outside the Macro files.
    - Git: backend `chatbot-dev` `0f73f06af`; frontend `ui-dev` `a7148df`. Production untouched.
+
+2. **8514 audit: Sentiment page MW-014 and MW-015** — SUCCESSFUL ON DEV
+   - Replaced the hardcoded `SSI · 13 SIGNALS` promise with coverage derived from the three live SSI layer contracts. The configured model has 14 designed inputs; with NAAIM unavailable, dev now reports `SSI · 13/14 ACTIVE`.
+   - Added a composite-level degraded-coverage warning even when the remaining inputs still clear the formal reliability gate. It names Layer 1, the 3-of-4 state, NAAIM's 2026-07-29 last observation, and the fact that weights were renormalised.
+   - Defined the two VIX term-structure conventions. Sentiment is `VIX (30-day) ÷ VIX3M (93-day)` and Macro VXTS is the reciprocal `VIX3M (93-day) ÷ VIX (30-day)`. Both rows now show as-of dates and warn that reciprocal arithmetic is valid only for same-date observations.
+   - Verification: new regression file 5 passed; full Nuxt suite 83 passed, 1 todo; production build passed; dev/prod isolation smoke passed; authenticated live checks on `/sentiment` and `/macro` passed with zero browser warnings/errors.
+   - Git: frontend `ui-dev` `83bfcc0`, authored by `divsum127`. Dev `:8514` deployed. Production untouched. Push is blocked by the invalid stored `divsum127` PAT.
