@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS combo_c_cancel (
     last_check_date TEXT,
     cpi_leg_passed INTEGER DEFAULT 1,
     active INTEGER DEFAULT 0,
+    entry_date TEXT,
     cancel_date TEXT,
     updated_at TEXT DEFAULT (datetime('now'))
 );

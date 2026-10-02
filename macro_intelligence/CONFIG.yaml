@@ -397,6 +397,13 @@ combo_hit_rates:
     direction: bullish
     primary_horizon: spx_3m
     show_hit_rate: true
+    # Signed-off historical panel. Do not replace this with the accumulating
+    # combo_fires table: that table contains repeated weekly rows, not the
+    # de-duplicated validation episodes used for the card claim.
+    validated_display:
+      source: testing/macro_th_exp/testingv1_feedback/feedback_sectionwise_answers.md
+      config_id: B_validated_fed_cycle_panel
+      primary: {n: 274, hit_rate: 0.748, avg_return: 4.63}
   C:
     direction: bearish
     primary_horizon: spx_6m
@@ -408,6 +415,11 @@ combo_hit_rates:
     primary_horizon: spx_1w
     secondary_horizon: spx_2w
     show_hit_rate: true
+    validated_display:
+      source: testing/macro_th_exp/D5_fed_cycle_reslice_2026-07-21.json
+      config_id: D_v1.18_c95_x13_l2
+      primary: {n: 46, hit_rate: 0.5652, avg_return: -0.3499}
+      secondary: {n: 46, hit_rate: 0.4348, avg_return: -0.1314}
     # D5 recalibrated gates (D_v1.18_c95_x13_l2); min_episodes=9 per Divyanshu 2026-07-21 (QE n=9)
     fed_cycle_slices:
       min_episodes: 9
@@ -429,6 +441,8 @@ combo_hit_rates:
     primary_horizon: spx_12m
     secondary_horizon: spx_6m
     show_hit_rate: true
+    publication_status: pending
+    publication_reason: MR-004 validation is unresolved
   F:
     direction: bullish
     primary_horizon: spx_6m

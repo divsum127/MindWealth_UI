@@ -113,6 +113,35 @@ def evaluate_combo_e_legs(
     return passed, pending
 
 
+def evaluate_combo_f_window(
+    *,
+    above_50wma: bool,
+    entry_gate_passes: bool,
+    episode_weeks: int | None,
+    max_weeks: int = 26,
+) -> dict[str, Any]:
+    """Resolve the lifecycle of one Combo F episode.
+
+    ``episode_weeks`` is ``None`` only when no F fire exists after the most recent
+    below-50WMA week.  Once an episode exists it may stay active through ``max_weeks``
+    but cannot silently re-arm while SPX remains above the average.  A fresh episode
+    therefore requires a later below-then-above cycle.
+    """
+    if not above_50wma:
+        return {
+            "status": "INVALIDATED",
+            "active": False,
+            "week": episode_weeks,
+        }
+    if episode_weeks is not None:
+        if episode_weeks <= max_weeks:
+            return {"status": "ACTIVE", "active": True, "week": episode_weeks}
+        return {"status": "EXPIRED", "active": False, "week": episode_weeks}
+    if entry_gate_passes:
+        return {"status": "ACTIVE", "active": True, "week": 1}
+    return {"status": "INACTIVE", "active": False, "week": None}
+
+
 def _cftc_pctile_delta(
     as_of: str,
     current_pctile: float | None,
@@ -230,36 +259,37 @@ def detect_named_combos(
     if spx_w is not None and not spx_w.empty and cftc_r:
         as_of_ts = pd.Timestamp(as_of)
         row = spx_w.loc[:as_of_ts].iloc[-1]
-        prev = spx_w.loc[:as_of_ts].iloc[-2] if len(spx_w.loc[:as_of_ts]) > 1 else row
         above = bool(row["above_50wma"])
-        if not above:
-            pass  # SPX below 50WMA — invalidate any active window
-        else:
-            reclaim = above and not bool(prev["above_50wma"])
-            # Spec: "SPX weekly close was ≥3% higher than the 50-week moving average"
-            # — this is a LEVEL test (close vs WMA), not a weekly return test.
-            pct_above_wma = (float(row["close"]) / float(row["wma50"]) - 1.0) * 100.0
-            cftc_pct = combo_pctile_from_reading(cftc_r) or 50
-            new_entry = (
-                reclaim or pct_above_wma >= f_cfg.get("spx_50wma_reclaim_weekly_pct", 3.0)
-            ) and cftc_pct <= f_cfg.get("cftc_max_pctile", 50)
-            f_weeks = _combo_f_weeks(as_of)  # None if no prior fire in DB
-            in_window = f_weeks is not None and f_weeks <= max_weeks
-            if new_entry or in_window:
-                fw = f_weeks if in_window else 1
-                ep_start = _combo_f_episode_start(as_of)
-                fires.append(
-                    ComboFire(
-                        date=as_of,
-                        runic_combo="F",
-                        var_ids=["SPX", "CFTC"],
-                        directions=["UP", cftc_r.get("direction")],
-                        status="ACTIVE",
-                        duration_weeks=fw,
-                        duration_bucket=_duration_bucket(fw),
-                        macro_regime={"episode_start": ep_start} if ep_start else None,
-                    )
+        # Spec: "SPX weekly close was ≥3% higher than the 50-week moving average"
+        # — this is a LEVEL test (close vs WMA), not a weekly return test.
+        pct_above_wma = (float(row["close"]) / float(row["wma50"]) - 1.0) * 100.0
+        cftc_pct = combo_pctile_from_reading(cftc_r) or 50
+        entry_gate_passes = (
+            pct_above_wma >= f_cfg.get("spx_50wma_reclaim_weekly_pct", 3.0)
+            and cftc_pct <= f_cfg.get("cftc_max_pctile", 50)
+        )
+        f_weeks = _combo_f_weeks(as_of)  # None if no prior fire in current above-MA cycle
+        decision = evaluate_combo_f_window(
+            above_50wma=above,
+            entry_gate_passes=entry_gate_passes,
+            episode_weeks=f_weeks,
+            max_weeks=max_weeks,
+        )
+        if decision["active"]:
+            fw = int(decision["week"])
+            ep_start = _combo_f_episode_start(as_of)
+            fires.append(
+                ComboFire(
+                    date=as_of,
+                    runic_combo="F",
+                    var_ids=["SPX", "CFTC"],
+                    directions=["UP", cftc_r.get("direction")],
+                    status="ACTIVE",
+                    duration_weeks=fw,
+                    duration_bucket=_duration_bucket(fw),
+                    macro_regime={"episode_start": ep_start} if ep_start else None,
                 )
+            )
 
     # Combo C — entry OR persistence (stays active until 4-Friday cancel rule fires)
     c_cfg = named.get("C", {})
@@ -275,6 +305,8 @@ def detect_named_combos(
         and walcl_r
         and abs(walcl_r.get("raw_value") or 0) < 0.8
     )
+    if c_new_entry:
+        _activate_combo_c_episode(as_of)
     # Persist: WTI has dropped below entry threshold but cancel rule hasn't triggered yet
     c_persist = not c_new_entry and _combo_c_still_active()
     if c_new_entry or c_persist:
@@ -524,33 +556,40 @@ def _combo_f_weeks(as_of: str) -> int | None:
 
 
 def _combo_c_still_active() -> bool:
-    """True when Combo C was previously triggered and the 4-Friday cancel rule has not yet fired."""
+    """True only for an episode whose valid three-leg entry was recorded."""
     with get_connection() as conn:
-        row = conn.execute("SELECT active FROM combo_c_cancel WHERE id=1").fetchone()
-    return bool(row and row["active"])
+        row = conn.execute(
+            "SELECT active, entry_date FROM combo_c_cancel WHERE id=1"
+        ).fetchone()
+    return bool(row and row["active"] and row["entry_date"])
+
+
+def _activate_combo_c_episode(as_of: str) -> None:
+    """Record the start of a genuinely valid C episode and clear old cancel state."""
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT active, entry_date FROM combo_c_cancel WHERE id=1"
+        ).fetchone()
+        if not row or not row["active"] or not row["entry_date"]:
+            conn.execute(
+                """
+                UPDATE combo_c_cancel
+                SET active=1, entry_date=?, cancel_date=NULL, wti_potential_week=0,
+                    last_check_date=NULL, cpi_leg_passed=0, updated_at=datetime('now')
+                WHERE id=1
+                """,
+                (as_of,),
+            )
 
 
 def _combo_c_episode_start(as_of: str) -> str | None:
-    """First C fire after the most recent WTI 4wk reading below the 10% entry threshold."""
-    as_of_ts = pd.Timestamp(as_of)
-    series = load_all_series()
-    wti: pd.Series = series.get("WTI")  # type: ignore[assignment]
-    if wti is None or wti.empty:
-        with get_connection() as conn:
-            rows = conn.execute(
-                "SELECT date FROM combo_fires WHERE runic_combo='C' AND date <= ? ORDER BY date ASC LIMIT 1",
-                (as_of,),
-            ).fetchall()
-        return rows[0]["date"] if rows else None
-    hist = wti.loc[:as_of_ts]
-    below = hist[hist < 10.0]
-    last_below_ts = below.index[-1] if not below.empty else pd.Timestamp("1900-01-01")
+    """Recorded date on which all three Combo C entry legs passed."""
     with get_connection() as conn:
-        rows = conn.execute(
-            "SELECT date FROM combo_fires WHERE runic_combo='C' AND date > ? AND date <= ? ORDER BY date ASC LIMIT 1",
-            (last_below_ts.strftime("%Y-%m-%d"), as_of),
-        ).fetchall()
-    return rows[0]["date"] if rows else None
+        row = conn.execute(
+            "SELECT entry_date FROM combo_c_cancel WHERE id=1 AND active=1"
+        ).fetchone()
+    entry_date = row["entry_date"] if row else None
+    return entry_date if entry_date and entry_date <= as_of else None
 
 
 def _combo_c_weeks(as_of: str) -> int:

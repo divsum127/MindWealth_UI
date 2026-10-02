@@ -36,9 +36,36 @@ class TestComboMetadata(unittest.TestCase):
         self.assertTrue(combo_bullish("B"))
         self.assertEqual(combo_primary_horizon("B"), "spx_3m")
 
-    def test_combo_d_5d_horizon(self) -> None:
+    def test_combo_b_uses_validated_panel_not_raw_weekly_rows(self) -> None:
+        from unittest.mock import patch
+
+        with patch(
+            "src.macro_intelligence.engine.combo_metadata.raw_hit_rate",
+            side_effect=AssertionError("validated card data must not query raw weekly rows"),
+        ):
+            stats = combo_hit_rate_stats("B")
+        self.assertEqual(stats["publication_status"], "VALIDATED")
+        self.assertEqual(stats["n_obs_primary"], 274)
+        self.assertAlmostEqual(stats["hit_rate_primary"], 0.748)
+        self.assertAlmostEqual(stats["avg_return_primary"], 4.63)
+
+    def test_combo_d_1w_horizon(self) -> None:
         self.assertEqual(combo_primary_horizon("D"), "spx_1w")
-        self.assertEqual(horizon_display_label("spx_1w"), "5D")
+        self.assertEqual(horizon_display_label("spx_1w"), "1W")
+
+    def test_combo_d_uses_validated_production_score(self) -> None:
+        stats = combo_hit_rate_stats("D")
+        self.assertEqual(stats["n_obs_primary"], 46)
+        self.assertAlmostEqual(stats["hit_rate_primary"], 0.5652)
+        self.assertAlmostEqual(stats["avg_return_primary"], -0.3499)
+        self.assertEqual(format_hit_rate_display(stats), ("56.5% (1W)", "-0.3% (1W)"))
+
+    def test_combo_e_suppresses_metric_until_mr004_is_resolved(self) -> None:
+        stats = combo_hit_rate_stats("E")
+        self.assertEqual(stats["publication_status"], "PENDING")
+        self.assertIsNone(stats["hit_rate_primary"])
+        self.assertIsNone(stats["avg_return_primary"])
+        self.assertEqual(format_hit_rate_display(stats), ("pending", "pending"))
 
     def test_combo_c_min_episodes_config(self) -> None:
         self.assertEqual(min_episodes_for_hit_rate("C"), 5)
@@ -82,7 +109,7 @@ class TestComboMetadata(unittest.TestCase):
         self.assertEqual(qe_1w["n"], 9)
         self.assertAlmostEqual(qe_1w["hit_rate"], 0.4444, places=4)
         self.assertAlmostEqual(qe_1w["avg_return"], 0.649, places=3)
-        self.assertEqual(qe_1w["label"], "5D")
+        self.assertEqual(qe_1w["label"], "1W")
 
     def test_combo_b_no_fed_cycle_slices(self) -> None:
         self.assertIsNone(combo_fed_cycle_slice_stats("B"))

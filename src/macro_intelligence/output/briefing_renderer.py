@@ -102,12 +102,15 @@ def _fmt_num(val: Any, *, decimals: int = 2) -> str:
 
 
 def build_system_recommendation(payload: dict[str, Any]) -> str:
-    if payload.get("system_recommendation"):
-        return str(payload["system_recommendation"])
     dom = payload.get("dominant_signal")
     brave = payload.get("brave_fearful", "NEUTRAL")
     cancel = payload.get("combo_c_cancel", {})
     pending_cpi = payload.get("pending_cpi_release")
+    active_map = {
+        combo.get("combo"): combo
+        for combo in payload.get("active_combos", [])
+        if isinstance(combo, dict) and combo.get("combo")
+    }
     parts: list[str] = [brave.replace("_", " ")]
     if dom == "C":
         parts.append(
@@ -115,10 +118,18 @@ def build_system_recommendation(payload: dict[str, Any]) -> str:
             "(WTI 4wk below +5% for 4 consecutive Fridays AND CPI not hot)."
         )
     elif dom == "F":
-        parts.append(
-            "Combo F recovery window active; hold/add tactically per conviction. "
-            "Respect Combo C if also active."
-        )
+        recommendation = "Combo F recovery window active; hold/add tactically per conviction."
+        c_combo = active_map.get("C")
+        if c_combo:
+            c_week = c_combo.get("duration_weeks")
+            c_bucket = c_combo.get("duration_bucket")
+            c_detail = "Combo C ACTIVE"
+            if c_week is not None and c_bucket:
+                c_detail += f" (week {c_week}, {c_bucket})"
+            elif c_week is not None:
+                c_detail += f" (week {c_week})"
+            recommendation += f" {c_detail}; bearish energy-shock risk remains active alongside F."
+        parts.append(recommendation)
     else:
         parts.append("Monitor regime, Friday CFTC release, and competing combo signals.")
     if cancel.get("active"):
@@ -137,12 +148,21 @@ def build_system_recommendation(payload: dict[str, Any]) -> str:
         sigma_source = cancel.get("model_sigma_source")
         sigma = cancel.get("model_sigma")
         if sigma is not None and sigma_source:
-            label = {
-                "ovx_implied": "OVX option-implied",
-                "realised_60d": "60d realised",
-                "config_default": "config default (NOT measured)",
-            }.get(str(sigma_source), str(sigma_source))
-            cancel_bits.append(f"sigma {float(sigma):.0%} from {label}")
+            sigma_text = {
+                "ovx_implied": f"WTI annualised implied volatility {float(sigma):.0%} from OVX",
+                "realised_60d": (
+                    f"WTI annualised realised volatility {float(sigma):.0%} "
+                    "from 60d realised returns"
+                ),
+                "config_default": (
+                    f"WTI annualised model volatility {float(sigma):.0%} "
+                    "from config default (NOT measured)"
+                ),
+            }.get(
+                str(sigma_source),
+                f"WTI annualised model volatility {float(sigma):.0%} from {sigma_source}",
+            )
+            cancel_bits.append(sigma_text)
         parts.append("; ".join(cancel_bits) + ".")
     if pending_cpi:
         parts.append("CPI release pending this week — watch inflation leg.")
@@ -183,6 +203,23 @@ def build_combo_status_rows(payload: dict[str, Any]) -> list[dict[str, Any]]:
                     "name": label,
                     "status": "CANCELLED",
                     "duration": f"cancelled {c_cancel['cancel_date']}",
+                    "direction": directions.get(letter, "—"),
+                    "hit_rate_3m": hr_disp,
+                    "avg_return_3m": avg_disp,
+                }
+            )
+            continue
+        if letter == "F" and not match and payload.get("combo_f_status") == "EXPIRED":
+            started = payload.get("combo_f_episode_start")
+            duration = "26-week recovery window completed"
+            if started:
+                duration += f" · started {started}"
+            rows.append(
+                {
+                    "combo": letter,
+                    "name": label,
+                    "status": "EXPIRED",
+                    "duration": duration,
                     "direction": directions.get(letter, "—"),
                     "hit_rate_3m": hr_disp,
                     "avg_return_3m": avg_disp,
@@ -235,7 +272,7 @@ def build_combo_status_rows(payload: dict[str, Any]) -> list[dict[str, Any]]:
             if legs:
                 duration += f" ({', '.join(legs)})"
             if pending:
-                duration += f" · pending {pending}"
+                duration += f" · not met {pending}"
             rows.append(
                 {
                     "combo": letter,
@@ -249,6 +286,7 @@ def build_combo_status_rows(payload: dict[str, Any]) -> list[dict[str, Any]]:
                     "legs_confirmed": n,
                     "total_legs": total,
                     "pending": pending,
+                    "unmet_legs": w.get("unmet_legs") or ([pending] if pending else []),
                 }
             )
         else:

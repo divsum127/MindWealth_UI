@@ -12,6 +12,7 @@ _MIGRATIONS = [
     "ALTER TABLE forward_returns ADD COLUMN spx_9m REAL",
     "ALTER TABLE forward_returns ADD COLUMN spx_12m REAL",
     "ALTER TABLE combo_c_cancel ADD COLUMN cancel_date TEXT",
+    "ALTER TABLE combo_c_cancel ADD COLUMN entry_date TEXT",
 ]
 
 _V2_TABLES_SQL = """

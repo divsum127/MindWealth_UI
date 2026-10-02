@@ -56,11 +56,28 @@ def run_combo_c_cancel_check(as_of: str, wti_4wk_pct: float | None, combo_c_acti
 
     with get_connection() as conn:
         row = conn.execute(
-            "SELECT wti_potential_week, last_check_date, cancel_date FROM combo_c_cancel WHERE id=1"
+            """SELECT wti_potential_week, last_check_date, cancel_date, active, entry_date
+               FROM combo_c_cancel WHERE id=1"""
         ).fetchone()
     week = int(row["wti_potential_week"]) if row else 0
     last_check = row["last_check_date"] if row else None
     cancel_date = row["cancel_date"] if row else None
+    entry_date = row["entry_date"] if row else None
+
+    # A detector-confirmed active signal is the only route into a new episode.
+    # This also makes direct callers/tests record the invariant explicitly.
+    if combo_c_active and not entry_date:
+        entry_date = as_of
+        cancel_date = None
+        week = 0
+        last_check = None
+        with get_connection() as conn:
+            conn.execute(
+                """UPDATE combo_c_cancel
+                   SET active=1, entry_date=?, cancel_date=NULL, wti_potential_week=0,
+                       last_check_date=NULL, updated_at=datetime('now') WHERE id=1""",
+                (as_of,),
+            )
 
     if cancel_date:
         return {
@@ -71,12 +88,13 @@ def run_combo_c_cancel_check(as_of: str, wti_4wk_pct: float | None, combo_c_acti
         }
 
     if not combo_c_active:
-        with get_connection() as conn:
-            existing = conn.execute("SELECT active FROM combo_c_cancel WHERE id=1").fetchone()
-        if not (existing and existing["active"]):
+        if not (row and row["active"] and entry_date):
             with get_connection() as conn:
                 conn.execute(
-                    "UPDATE combo_c_cancel SET wti_potential_week=0, active=0, last_check_date=?, updated_at=datetime('now') WHERE id=1",
+                    """UPDATE combo_c_cancel
+                       SET wti_potential_week=0, active=0, entry_date=NULL,
+                           cancel_date=NULL, last_check_date=?, updated_at=datetime('now')
+                       WHERE id=1""",
                     (as_of,),
                 )
             return {"wti_potential_week": 0, "cancelled": False, "active": False, "cancel_date": None}
@@ -102,9 +120,11 @@ def run_combo_c_cancel_check(as_of: str, wti_4wk_pct: float | None, combo_c_acti
         conn.execute(
             """
             UPDATE combo_c_cancel SET wti_potential_week=?, last_check_date=?, cpi_leg_passed=?,
-            active=?, cancel_date=COALESCE(?, cancel_date), updated_at=datetime('now') WHERE id=1
+            active=?, entry_date=CASE WHEN ? THEN NULL ELSE entry_date END,
+            cancel_date=COALESCE(?, cancel_date), updated_at=datetime('now') WHERE id=1
             """,
-            (week, as_of, 1 if cpi_ok else 0, 0 if cancelled else 1, new_cancel_date),
+            (week, as_of, 1 if cpi_ok else 0, 0 if cancelled else 1,
+             1 if cancelled else 0, new_cancel_date),
         )
 
     return {

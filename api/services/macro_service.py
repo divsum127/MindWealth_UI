@@ -47,6 +47,93 @@ def _watch_combo_map(watch_list: list[Any]) -> dict[str, dict[str, Any]]:
     return out
 
 
+def _normalise_watch_detail(raw: dict[str, Any]) -> dict[str, Any]:
+    """Keep unmet rule legs separate from genuinely pending data/publication."""
+    detail = dict(raw)
+    unmet = detail.get("unmet_legs") or []
+    if not unmet and detail.get("pending"):
+        unmet = [leg.strip() for leg in str(detail["pending"]).split(",") if leg.strip()]
+    detail["unmet_legs"] = unmet
+    detail["pending_data"] = []
+    detail.pop("pending", None)
+    return detail
+
+
+def build_ssi_layer2_display(positioning: dict[str, Any]) -> dict[str, Any]:
+    """Translate the legacy SSI status into an explicit directional vote summary."""
+    inputs = positioning.get("inputs") or {}
+    votes = inputs.get("layer2_gate_votes") or []
+    long_votes = int(inputs.get("layer2_gate_conf_long") or 0)
+    short_votes = int(inputs.get("layer2_gate_conf_short") or 0)
+    confirmed_votes = int(
+        positioning.get("layer2_confirmed_count")
+        if positioning.get("layer2_confirmed_count") is not None
+        else sum(1 for vote in votes if vote.get("vote"))
+    )
+    gate_total = len(votes)
+    neutral_votes = max(0, gate_total - confirmed_votes)
+    direction = positioning.get("layer2_gate_direction") or "UNCONFIRMED"
+    status = positioning.get("layer2_status")
+    multiplier = positioning.get("ssi_multiplier")
+
+    if status == "COVERAGE_INCOMPLETE":
+        display_status = "DATA COVERAGE INCOMPLETE"
+        explanation = "SSI sizing stays neutral because the required input coverage is incomplete."
+    elif direction == "CONTESTED":
+        display_status = "CONTESTED"
+        explanation = "Both bullish and bearish sides are confirmed, so sizing stays neutral at 1.00x."
+    elif direction == "LONG_CONFIRMED":
+        display_status = "LONG CONFIRMED"
+        explanation = "The bullish side is confirmed."
+    elif direction == "SHORT_CONFIRMED":
+        display_status = "SHORT CONFIRMED"
+        explanation = "The bearish side is confirmed."
+    else:
+        display_status = "UNCONFIRMED"
+        explanation = "Neither direction has enough confirming votes."
+
+    return {
+        "date": positioning.get("date"),
+        "status": status,
+        "display_status": display_status,
+        "direction": direction,
+        "confirmed_votes": confirmed_votes,
+        "gate_total": gate_total,
+        "long_votes": long_votes,
+        "short_votes": short_votes,
+        "neutral_votes": neutral_votes,
+        "multiplier": multiplier,
+        "label": positioning.get("layer2_gate_label"),
+        "explanation": explanation,
+    }
+
+
+def _current_ssi_layer2_display(runic: dict[str, Any]) -> dict[str, Any]:
+    """Load the richer SSI vote payload, with a truthful legacy fallback."""
+    try:
+        from src.macro_intelligence.output.json_writer import read_positioning_data
+
+        positioning = read_positioning_data() or {}
+    except (OSError, json.JSONDecodeError, TypeError, ValueError):
+        positioning = {}
+    if positioning:
+        return build_ssi_layer2_display(positioning)
+    status = _safe(runic, "ssi_layer2_status")
+    return {
+        "status": status,
+        "display_status": status,
+        "multiplier": _safe(runic, "ssi_multiplier"),
+        "explanation": "Directional vote detail is unavailable in the current positioning snapshot.",
+    }
+
+
+def _current_system_recommendation(runic: dict[str, Any]) -> str:
+    """Derive recommendation copy from structured state, never cached prose."""
+    from src.macro_intelligence.output.briefing_renderer import build_system_recommendation
+
+    return build_system_recommendation(runic)
+
+
 def _combo_confirmed_legs(
     letter: str,
     active_map: dict[str, dict[str, Any]],
@@ -74,7 +161,7 @@ def _db_combo_c_cancel() -> dict[str, Any]:
         from src.macro_intelligence.db.connection import get_connection
         with get_connection() as conn:
             row = conn.execute(
-                """SELECT wti_potential_week, active, last_check_date, cancel_date,
+                """SELECT wti_potential_week, active, entry_date, last_check_date, cancel_date,
                           cpi_leg_passed
                    FROM combo_c_cancel WHERE id=1"""
             ).fetchone()
@@ -83,6 +170,7 @@ def _db_combo_c_cancel() -> dict[str, Any]:
         return {
             "wti_potential_week": row["wti_potential_week"],
             "active": bool(row["active"]),
+            "entry_date": row["entry_date"],
             "last_check_date": row["last_check_date"],
             "cancel_date": row["cancel_date"],
             "cancelled": bool(row["cancel_date"]),
@@ -399,14 +487,14 @@ def _db_combo_fire_detail(combo_id: str) -> dict[str, Any] | None:
 _COMBO_STATIC: dict[str, dict[str, Any]] = {
     "A": {
         "name": "Global Liquidity / FCI Regime",
-        "direction": "BRAVE OR FEARFUL",
+        "direction": "EASY MONEY OR TIGHT MONEY",
         "horizon": "3–6m",
         "legs_required": 2,
         "total_legs": 4,
         "variables": ["NFCI", "HY", "WALCL", "CNH"],
         "description": (
             "NFCI + HY direction + WALCL + CNH · ≥2 of 4 required simultaneously. "
-            "BRAVE +12% avg / FEARFUL −8% avg SPX 3–6m."
+            "The resulting posture is labelled EASY MONEY or TIGHT MONEY."
         ),
     },
     "B": {
@@ -418,7 +506,7 @@ _COMBO_STATIC: dict[str, dict[str, Any]] = {
         "variables": ["VIX", "HY", "CFTC"],
         "description": (
             "VIX >25 AND >80th pctile AND HY >400bps AND CFTC <15th pctile. "
-            "All 3 required. 87.5% hit rate. +14% avg SPX 3m."
+            "All 3 required."
         ),
     },
     "C": {
@@ -428,7 +516,10 @@ _COMBO_STATIC: dict[str, dict[str, Any]] = {
         "legs_required": 3,
         "total_legs": 3,
         "variables": ["WTI", "CPI", "WALCL"],
-        "description": "WTI >+10% rolling 28-day AND CPI not hot AND WALCL flat.",
+        "description": (
+            "WTI >+10% rolling 28-day AND CPI surprise >=+0.2pp AND WALCL flat/shrinking. "
+            "'CPI not hot' is a cancellation condition only; it never fires Combo C."
+        ),
     },
     "D": {
         "name": "FOMO Top / Euphoria Tactical",
@@ -439,7 +530,7 @@ _COMBO_STATIC: dict[str, dict[str, Any]] = {
         "variables": ["VXTS", "CFTC", "VIX"],
         "description": (
             "VXTS≥1.18 AND CFTC≥95th pctile AND VIX≤13. "
-            "2 of 3 required. ~56.5% bear @1W (n=46 production score)."
+            "2 of 3 required."
         ),
     },
     "E": {
@@ -483,16 +574,38 @@ _COMBO_STATIC: dict[str, dict[str, Any]] = {
 
 
 def _combo_evidence(stats: dict[str, Any]) -> dict[str, Any]:
+    publication_status = str(stats.get("publication_status") or "").upper()
+    if publication_status == "PENDING":
+        return {
+            "primary_horizon": str(stats.get("primary_label") or "3M"),
+            "secondary_horizon": stats.get("secondary_label"),
+            "n": None,
+            "secondary_n": None,
+            "minimum_n": int(stats.get("min_episodes_required") or _min_matured_episodes()),
+            "status": "PENDING",
+            "reason": stats.get("publication_reason"),
+            "hit_rate": None,
+            "avg_return": None,
+            "secondary_hit_rate": None,
+            "secondary_avg_return": None,
+            "source": None,
+        }
     n = int(stats.get("n_obs_primary") or 0)
     minimum_n = int(stats.get("min_episodes_required") or _min_matured_episodes())
     insufficient = bool(stats.get("insufficient_episodes")) or n < minimum_n
     return {
         "primary_horizon": str(stats.get("primary_label") or "3M"),
+        "secondary_horizon": stats.get("secondary_label"),
         "n": n,
+        "secondary_n": stats.get("n_obs_secondary"),
         "minimum_n": minimum_n,
         "status": "INSUFFICIENT HISTORY" if insufficient else "VALIDATED",
         "hit_rate": None if insufficient else stats.get("hit_rate_primary"),
         "avg_return": None if insufficient else stats.get("avg_return_primary"),
+        "secondary_hit_rate": None if insufficient else stats.get("hit_rate_secondary"),
+        "secondary_avg_return": None if insufficient else stats.get("avg_return_secondary"),
+        "source": stats.get("validated_source"),
+        "config_id": stats.get("validated_config_id"),
     }
 
 
@@ -501,8 +614,10 @@ def _description_with_evidence(
     description: str | None,
     evidence: dict[str, Any] | None,
 ) -> str | None:
-    if combo_id != "C" or not evidence:
+    if not evidence or combo_id not in {"B", "C", "D", "E"}:
         return description
+    if evidence["status"] == "PENDING":
+        return f"{description} Performance evidence: pending until MR-004 is resolved."
     if evidence["status"] == "INSUFFICIENT HISTORY":
         return (
             f"{description} Primary evidence: {evidence['primary_horizon']}, "
@@ -510,10 +625,28 @@ def _description_with_evidence(
             "No validated hit-rate claim."
         )
     rate = evidence.get("hit_rate")
-    rate_label = f"{float(rate):.0%} hit" if rate is not None else "validated"
+    rate_label = f"{float(rate):.1%} hit" if rate is not None else "validated"
+    avg = evidence.get("avg_return")
+    avg_label = f", {float(avg):+.2f}% average" if avg is not None else ""
+    secondary_rate = evidence.get("secondary_hit_rate")
+    secondary_horizon = evidence.get("secondary_horizon")
+    secondary_n = evidence.get("secondary_n")
+    secondary = ""
+    if secondary_rate is not None and secondary_horizon:
+        secondary_avg = evidence.get("secondary_avg_return")
+        secondary_avg_label = (
+            f", {float(secondary_avg):+.2f}% average"
+            if secondary_avg is not None
+            else ""
+        )
+        secondary_n_label = f", n={int(secondary_n)}" if secondary_n is not None else ""
+        secondary = (
+            f" Secondary evidence: {float(secondary_rate):.1%} hit at {secondary_horizon}"
+            f"{secondary_avg_label}{secondary_n_label}."
+        )
     return (
-        f"{description} Primary evidence: {evidence['primary_horizon']}, "
-        f"n={evidence['n']}, {rate_label}."
+        f"{description} Validated evidence: {rate_label} at {evidence['primary_horizon']}"
+        f"{avg_label} (n={evidence['n']}).{secondary}"
     )
 
 _VARIABLE_META: dict[str, dict[str, Any]] = {
@@ -538,13 +671,20 @@ def get_status_bar() -> dict[str, Any]:
     active = _safe(data, "active_combos", [])
     watch = _safe(data, "watch_combos", [])
     c_cancel = _safe(data, "combo_c_cancel", {})
+    watch_details = []
+    for watch_entry in watch:
+        detail = dict(watch_entry) if isinstance(watch_entry, dict) else {"combo": watch_entry}
+        watch_details.append(_normalise_watch_detail(detail))
     return {
         "date": _safe(data, "date"),
         "dominant_signal": _safe(data, "dominant_signal"),
         "brave_fearful": _safe(data, "brave_fearful"),
         "brave_fearful_display": _safe(data, "brave_fearful_display"),
         "active_combos": [c.get("combo") for c in active if c.get("combo")],
-        "watch_combos": watch if isinstance(watch, list) else list(watch),
+        # Both ID lists are safe to interpolate or join in a frontend.  Detailed
+        # WATCH metadata remains available under a separately named field.
+        "watch_combos": [w.get("combo") for w in watch_details if w.get("combo")],
+        "watch_combo_details": watch_details,
         "cftc_status": _safe(data, "cftc_status"),
         "vix_bypass": _effective_vix_bypass(data),
         "vix_bypass_banner": VIX_BYPASS_BANNER if _effective_vix_bypass(data) else None,
@@ -558,6 +698,13 @@ def get_overview_kpis() -> dict[str, Any]:
     """Five KPI cards for the overview tab."""
     data = _load_runic()
     active = _safe(data, "active_combos", [])
+    watch = _safe(data, "watch_combos", [])
+    watch_map = _watch_combo_map(watch if isinstance(watch, list) else [])
+    status_rows = {
+        row.get("combo"): row
+        for row in (_safe(data, "combo_status_rows", []) or [])
+        if isinstance(row, dict) and row.get("combo")
+    }
     variables = _safe(data, "variables_dashboard", [])
     var_map = {v["variable"]: v for v in variables if isinstance(v, dict)}
 
@@ -568,6 +715,42 @@ def get_overview_kpis() -> dict[str, Any]:
     wti_var = var_map.get("WTI", {})
 
     f_combo = next((c for c in active if c.get("combo") == "F"), None)
+    f_overview_weeks = _safe(data, "combo_f_weeks_elapsed")
+    f_overview_status = _safe(data, "combo_f_status") or (
+        "ACTIVE" if f_combo else "EXPIRED" if f_overview_weeks is not None and f_overview_weeks > 26 else "INACTIVE"
+    )
+    e_active = next((c for c in active if c.get("combo") == "E"), None)
+    e_watch = watch_map.get("E")
+    e_row = status_rows.get("E", {})
+    e_confirmed = list(
+        (e_active or {}).get("confirmed_legs")
+        or (e_watch or {}).get("confirmed_legs")
+        or e_row.get("confirmed_legs")
+        or []
+    )
+    e_status = (
+        (e_active or {}).get("status")
+        or e_row.get("status")
+        or ("WATCH" if e_watch else "INACTIVE")
+    )
+    e_total = int((e_watch or {}).get("total_legs") or e_row.get("total_legs") or 3)
+    e_count = int((e_watch or {}).get("legs_confirmed") or e_row.get("legs_confirmed") or len(e_confirmed))
+    e_variables = ["CAPE", "NFCI", "CFTC"]
+    e_unmet = [leg for leg in e_variables if leg not in e_confirmed]
+    nfci_var = var_map.get("NFCI", {})
+    cftc_var = var_map.get("CFTC", {})
+    cftc_pctile = cftc_var.get("pctile_3yr")
+    simultaneous = [
+        {
+            "combo": combo.get("combo"),
+            "status": combo.get("status"),
+            "duration_weeks": combo.get("duration_weeks"),
+            "duration_bucket": combo.get("duration_bucket"),
+        }
+        for combo in active
+        if combo.get("combo") and combo.get("combo") != dominant
+    ]
+    ssi_detail = _current_ssi_layer2_display(data)
 
     return {
         "date": _safe(data, "date"),
@@ -577,6 +760,8 @@ def get_overview_kpis() -> dict[str, Any]:
             "hit_rate": dom_combo.get("hit_rate_3m"),
             "avg_return": dom_combo.get("avg_return_3m"),
         },
+        "simultaneous_active_combos": simultaneous,
+        "ssi_layer2": ssi_detail,
         "combo_c_duration": {
             "combo": "C",
             "duration_weeks": dom_combo.get("duration_weeks") if dominant == "C" else next(
@@ -589,18 +774,31 @@ def get_overview_kpis() -> dict[str, Any]:
         },
         "combo_f_window": {
             "combo": "F",
-            "weeks_elapsed": _safe(data, "combo_f_weeks_elapsed"),
+            "weeks_elapsed": f_overview_weeks,
             "active": _safe(data, "combo_f_active", False),
+            "lifecycle_status": f_overview_status,
             "mtm_pct": f_combo.get("mtm_pct") if f_combo else None,
         },
         "cape": {
             "variable": "CAPE",
             "current": cape_var.get("current"),
             "tier": cape_var.get("tier"),
-            "combo_e_status": next(
-                (c.get("status") for c in active if c.get("combo") == "E"),
-                "INACTIVE",
-            ),
+            "combo_e_status": e_status,
+        },
+        "combo_e": {
+            "combo": "E",
+            "status": e_status,
+            "is_active": e_active is not None,
+            "is_watch": e_watch is not None,
+            "legs_confirmed": e_count,
+            "total_legs": e_total,
+            "confirmed_legs": e_confirmed,
+            "unmet_legs": e_unmet,
+            "leg_values": {
+                "CAPE": {"value": cape_var.get("current"), "threshold": ">=32", "passes": "CAPE" in e_confirmed},
+                "NFCI": {"value": nfci_var.get("current"), "threshold": "<=-0.15", "passes": "NFCI" in e_confirmed},
+                "CFTC": {"value": cftc_pctile, "threshold": ">=85th percentile", "passes": "CFTC" in e_confirmed},
+            },
         },
         "wti_4wk": {
             "variable": "WTI",
@@ -614,6 +812,7 @@ def get_overview_kpis() -> dict[str, Any]:
 def get_regime() -> dict[str, Any]:
     """Regime classification — 5 dimensions, brave/fearful posture, narrative."""
     data = _load_runic()
+    ssi_detail = _current_ssi_layer2_display(data)
     return {
         "date": _safe(data, "date"),
         "regime": _safe(data, "regime", {}),
@@ -622,11 +821,12 @@ def get_regime() -> dict[str, Any]:
         "dominant_signal": _safe(data, "dominant_signal"),
         "dominant_reason": _safe(data, "dominant_reason"),
         "narrative": _safe(data, "narrative"),
-        "system_recommendation": _safe(data, "system_recommendation"),
+        "system_recommendation": _current_system_recommendation(data),
         "vix_bypass": _effective_vix_bypass(data),
         "vix_bypass_banner": VIX_BYPASS_BANNER if _effective_vix_bypass(data) else None,
         "ssi_layer2_status": _safe(data, "ssi_layer2_status"),
         "ssi_multiplier": _safe(data, "ssi_multiplier"),
+        "ssi_layer2_detail": ssi_detail,
         "regime_grid": _safe(data, "regime_grid"),
     }
 
@@ -703,7 +903,10 @@ def get_all_combos() -> dict[str, Any]:
     try:
         from src.macro_intelligence.engine.combo_metadata import combo_hit_rate_stats
 
-        combo_evidence["C"] = _combo_evidence(combo_hit_rate_stats("C"))
+        combo_evidence = {
+            letter: _combo_evidence(combo_hit_rate_stats(letter))
+            for letter in "ABCDEFG"
+        }
     except Exception:
         pass
 
@@ -716,6 +919,8 @@ def get_all_combos() -> dict[str, Any]:
         is_watch = letter in watch_ids
         confirmed_legs = _combo_confirmed_legs(letter, active_map, watch_map, status_row)
         watch_entry = watch_map.get(letter, {})
+        normalised_watch = _normalise_watch_detail(watch_entry)
+        evidence = combo_evidence.get(letter)
         combos.append({
             "combo": letter,
             "name": static.get("name"),
@@ -727,9 +932,9 @@ def get_all_combos() -> dict[str, Any]:
             "description": _description_with_evidence(
                 letter,
                 static.get("description"),
-                combo_evidence.get(letter),
+                evidence,
             ),
-            "evidence": combo_evidence.get(letter),
+            "evidence": evidence,
             "status": live.get("status") or (status_row or {}).get("status") or ("WATCH" if is_watch else "INACTIVE"),
             "is_active": is_active,
             "is_watch": is_watch,
@@ -737,10 +942,14 @@ def get_all_combos() -> dict[str, Any]:
             "duration_bucket": live.get("duration_bucket"),
             "confirmed_legs": confirmed_legs,
             "legs_confirmed": watch_entry.get("legs_confirmed", len(confirmed_legs)),
-            "pending": watch_entry.get("pending") or (status_row or {}).get("pending"),
+            "pending_data": normalised_watch.get("pending_data", []),
+            "unmet_legs": normalised_watch.get("unmet_legs") or (
+                (status_row or {}).get("unmet_legs")
+                or ([(status_row or {}).get("pending")] if (status_row or {}).get("pending") else [])
+            ),
             "episode_start": live.get("episode_start"),
-            "hit_rate_primary": live.get("hit_rate_primary") or live.get("hit_rate_3m"),
-            "avg_return_primary": live.get("avg_return_primary") or live.get("avg_return_3m"),
+            "hit_rate_primary": evidence.get("hit_rate") if evidence else None,
+            "avg_return_primary": evidence.get("avg_return") if evidence else None,
             "combo_status_row": status_row,
         })
     return {
@@ -772,6 +981,7 @@ def get_combo_detail(combo_id: str) -> dict[str, Any]:
     static = _COMBO_STATIC.get(combo_id, {})
     live = active_map.get(combo_id, {})
     watch_entry = watch_map.get(combo_id, {})
+    normalised_watch = _normalise_watch_detail(watch_entry)
     fire_detail = _db_combo_fire_detail(combo_id)
     confirmed_legs = _combo_confirmed_legs(combo_id, active_map, watch_map, status_row)
     if not confirmed_legs:
@@ -814,7 +1024,11 @@ def get_combo_detail(combo_id: str) -> dict[str, Any]:
         "duration_bucket": live.get("duration_bucket") or (fire_detail or {}).get("duration_bucket"),
         "confirmed_legs": confirmed_legs,
         "legs_confirmed": watch_entry.get("legs_confirmed", len(confirmed_legs)),
-        "pending": watch_entry.get("pending") or (status_row or {}).get("pending"),
+        "pending_data": normalised_watch.get("pending_data", []),
+        "unmet_legs": normalised_watch.get("unmet_legs") or (
+            (status_row or {}).get("unmet_legs")
+            or ([(status_row or {}).get("pending")] if (status_row or {}).get("pending") else [])
+        ),
         "episode_start": live.get("episode_start") or (fire_detail or {}).get("episode_start"),
         "hit_rate_stats": hr_stats,
         "hit_rate_primary": hr_stats.get("hit_rate_primary"),
@@ -899,11 +1113,14 @@ def get_combo_f_window() -> dict[str, Any]:
         or (fire_detail or {}).get("duration_weeks")
         or 0
     )
-    total_weeks = 26
-    progress_pct = round((weeks_elapsed / total_weeks) * 100, 1) if weeks_elapsed else 0.0
+    from src.macro_intelligence.config import load_config
+
+    total_weeks = int(load_config().get("named_combos", {}).get("F", {}).get("active_weeks", 26))
+    progress_pct = min(100.0, round((weeks_elapsed / total_weeks) * 100, 1)) if weeks_elapsed else 0.0
 
     episode_start = (
         (f_combo.get("episode_start") if f_combo else None)
+        or _safe(data, "combo_f_episode_start")
         or (fire_detail or {}).get("episode_start")
         or (fire_detail or {}).get("date")
     )
@@ -923,9 +1140,25 @@ def get_combo_f_window() -> dict[str, Any]:
     except Exception:
         hr_stats = {}
 
+    active_now = bool(_safe(data, "combo_f_active", False))
+    lifecycle_status = _safe(data, "combo_f_status") or (
+        "ACTIVE" if active_now else "EXPIRED" if weeks_elapsed > total_weeks else "INACTIVE"
+    )
+    window_message = {
+        "ACTIVE": f"Combo F recovery window is active, week {weeks_elapsed} of {total_weeks}.",
+        "EXPIRED": (
+            "Combo F window completed. It is no longer a fresh tactical tailwind; "
+            "this is not an automatic portfolio exit."
+        ),
+        "INACTIVE": "Combo F is inactive.",
+        "INVALIDATED": "Combo F was invalidated because SPX moved back below its 50-week average.",
+    }.get(lifecycle_status, f"Combo F status: {lifecycle_status}.")
+
     return {
         "date": _safe(data, "date"),
-        "active": _safe(data, "combo_f_active", False),
+        "active": active_now,
+        "lifecycle_status": lifecycle_status,
+        "window_message": window_message,
         "fire_date": episode_start,
         "expiry_date": expiry,
         "weeks_elapsed": weeks_elapsed,
@@ -989,7 +1222,7 @@ def get_narrative() -> dict[str, Any]:
     return {
         "date": _safe(data, "date"),
         "narrative": _safe(data, "narrative"),
-        "system_recommendation": _safe(data, "system_recommendation"),
+        "system_recommendation": _current_system_recommendation(data),
         "brave_fearful_display": _safe(data, "brave_fearful_display"),
         "dominant_signal": _safe(data, "dominant_signal"),
         "dominant_reason": _safe(data, "dominant_reason"),

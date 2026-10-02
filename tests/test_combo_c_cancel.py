@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import sys
+import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 _ROOT = Path(__file__).resolve().parent.parent
 if str(_ROOT) not in sys.path:
@@ -17,7 +19,13 @@ from src.macro_intelligence.data.bls_pull import ingest_cpi_release
 
 class TestComboCCancel(unittest.TestCase):
     def setUp(self) -> None:
-        init_db()
+        self._tmp = tempfile.TemporaryDirectory()
+        self._db = Path(self._tmp.name) / "runic.db"
+        self._db_patch = patch(
+            "src.macro_intelligence.db.connection.db_path", return_value=self._db
+        )
+        self._db_patch.start()
+        init_db(self._db)
         with get_connection() as conn:
             conn.execute(
                 """
@@ -29,6 +37,10 @@ class TestComboCCancel(unittest.TestCase):
             )
             conn.commit()
         ingest_cpi_release("2026-05-20", 0.1, 0.3)
+
+    def tearDown(self) -> None:
+        self._db_patch.stop()
+        self._tmp.cleanup()
 
     def test_wti_ok_increments_week_on_friday(self) -> None:
         r = run_combo_c_cancel_check("2026-05-22", wti_4wk_pct=2.0, combo_c_active=True)

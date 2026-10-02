@@ -10,7 +10,7 @@ from src.macro_intelligence.engine.hit_rates import raw_hit_rate
 MIN_EPISODES_HIT_RATE_DEFAULT = 5
 
 _HORIZON_LABELS = {
-    "spx_1w": "5D",
+    "spx_1w": "1W",
     "spx_2w": "2W",
     "spx_1m": "1M",
     "spx_3m": "3M",
@@ -65,6 +65,26 @@ def horizon_display_label(horizon_col: str | None) -> str:
 
 def combo_hit_rate_stats(letter: str) -> dict[str, Any]:
     """Primary (and optional secondary) hit rate from historical combo fires."""
+    cfg = _combo_cfg(letter)
+    primary = combo_primary_horizon(letter) or "spx_3m"
+    secondary = combo_secondary_horizon(letter)
+    publication_status = str(cfg.get("publication_status") or "published").upper()
+    if publication_status == "PENDING":
+        return {
+            "show_hit_rate": True,
+            "publication_status": "PENDING",
+            "publication_reason": cfg.get("publication_reason"),
+            "insufficient_episodes": False,
+            "primary_horizon": primary,
+            "primary_label": horizon_display_label(primary),
+            "hit_rate_primary": None,
+            "avg_return_primary": None,
+            "n_obs_primary": None,
+            "hit_rate_secondary": None,
+            "avg_return_secondary": None,
+            "secondary_label": horizon_display_label(secondary) if secondary else None,
+            "n_obs_secondary": None,
+        }
     if not combo_show_hit_rate(letter):
         return {
             "show_hit_rate": False,
@@ -79,8 +99,29 @@ def combo_hit_rate_stats(letter: str) -> dict[str, Any]:
     bullish = combo_bullish(letter)
     if bullish is None:
         bullish = True
-    primary = combo_primary_horizon(letter) or "spx_3m"
-    secondary = combo_secondary_horizon(letter)
+    validated = cfg.get("validated_display") or {}
+    validated_primary = validated.get("primary")
+    if validated_primary:
+        validated_secondary = validated.get("secondary") or {}
+        return {
+            "show_hit_rate": True,
+            "publication_status": "VALIDATED",
+            "validated_source": validated.get("source"),
+            "validated_config_id": validated.get("config_id"),
+            "insufficient_episodes": False,
+            "min_episodes_required": min_episodes_for_hit_rate(letter),
+            "primary_horizon": primary,
+            "primary_label": horizon_display_label(primary),
+            "hit_rate_primary": validated_primary.get("hit_rate"),
+            "avg_return_primary": validated_primary.get("avg_return"),
+            "n_obs_primary": int(validated_primary.get("n") or 0),
+            "hit_rate_secondary": validated_secondary.get("hit_rate"),
+            "avg_return_secondary": validated_secondary.get("avg_return"),
+            "secondary_label": horizon_display_label(secondary) if secondary else None,
+            "n_obs_secondary": (
+                int(validated_secondary.get("n") or 0) if validated_secondary else None
+            ),
+        }
     primary_stats = raw_hit_rate(letter, horizon=primary, bullish=bullish)
     secondary_stats = (
         raw_hit_rate(letter, horizon=secondary, bullish=bullish) if secondary else None
@@ -123,6 +164,8 @@ def hit_rate_reason_clause(stats: dict[str, Any]) -> str:
     """Full hit-rate phrase for dominant_reason (neutral, numeric)."""
     if not stats.get("show_hit_rate"):
         return "Timing signal only (no validated hit rate)."
+    if stats.get("publication_status") == "PENDING":
+        return "Hit-rate publication pending validation."
     if stats.get("insufficient_episodes"):
         n_obs = stats.get("n_obs_primary") or 0
         min_n = stats.get("min_episodes_required", MIN_EPISODES_HIT_RATE_DEFAULT)
@@ -139,6 +182,8 @@ def hit_rate_reason_short(stats: dict[str, Any]) -> str | None:
     """Compact hit-rate for outrank parens; None when not displayable."""
     if not stats.get("show_hit_rate"):
         return None
+    if stats.get("publication_status") == "PENDING":
+        return "pending validation"
     if stats.get("insufficient_episodes"):
         return "insufficient episodes"
     hr = stats.get("hit_rate_primary")
@@ -204,6 +249,8 @@ def format_hit_rate_display(stats: dict[str, Any]) -> tuple[str, str]:
     """Return (hit_rate_cell, avg_return_cell) for briefing table."""
     if not stats.get("show_hit_rate"):
         return "N/A", "N/A"
+    if stats.get("publication_status") == "PENDING":
+        return "pending", "pending"
     if stats.get("insufficient_episodes"):
         return "insufficient episodes", "—"
     hr = stats.get("hit_rate_primary")

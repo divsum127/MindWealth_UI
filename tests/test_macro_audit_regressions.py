@@ -108,7 +108,16 @@ def test_mw011_combo_c_suppresses_unvalidated_83_percent_claim() -> None:
     assert "6M" in combo_c["description"]
     assert "n=3" in combo_c["description"]
     assert "minimum n=5" in combo_c["description"]
-    assert combo_c["evidence"] == {
+    assert {
+        "secondary_horizon", "secondary_n", "secondary_hit_rate",
+        "secondary_avg_return", "source", "config_id",
+    }.issubset(combo_c["evidence"])
+    assert {
+        key: combo_c["evidence"][key]
+        for key in (
+            "primary_horizon", "n", "minimum_n", "status", "hit_rate", "avg_return"
+        )
+    } == {
         "primary_horizon": "6M",
         "n": 3,
         "minimum_n": 5,

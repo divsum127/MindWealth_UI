@@ -8,10 +8,16 @@ from typing import Any
 
 from src.macro_intelligence.claude.nightly_briefing import generate_nightly_briefing
 from src.macro_intelligence.claude.regime_classifier import classify_regime
+from src.macro_intelligence.config import load_config
 from src.macro_intelligence.data.pull_all import get_readings_as_of, pull_all_series
 from src.macro_intelligence.data.source_freshness import get_last_freshness_audit
 from src.macro_intelligence.db.connection import init_db
-from src.macro_intelligence.engine.combo_detector import detect_all_combos, detect_named_combos
+from src.macro_intelligence.engine.combo_detector import (
+    _combo_f_episode_start,
+    _combo_f_weeks,
+    detect_all_combos,
+    detect_named_combos,
+)
 from src.macro_intelligence.engine.prefilter import apply_prefilter
 from src.macro_intelligence.models import GateFlag
 from src.macro_intelligence.engine.dominant import find_analog_dates, find_analog_details, resolve_dominant
@@ -73,6 +79,7 @@ def _active_combo_dicts(fires) -> tuple[list[dict[str, Any]], list[dict[str, Any
                     "total_legs": total_legs.get(f.runic_combo or "", 3),
                     "confirmed_legs": legs,
                     "pending": pending,
+                    "unmet_legs": pending_list,
                 }
             )
         elif f.status in ("ACTIVE", "PARTIAL", "CONFIRMED", "CONFIRMED_3_OF_3", "ESCALATION_ALERT"):
@@ -220,6 +227,13 @@ def run_nightly(
 
     f_active = any(c.get("combo") == "F" and c.get("status") == "ACTIVE" for c in active)
     f_weeks = next((c.get("duration_weeks") for c in active if c.get("combo") == "F"), None)
+    if f_weeks is None:
+        f_weeks = _combo_f_weeks(as_of)
+    f_max_weeks = int(load_config().get("named_combos", {}).get("F", {}).get("active_weeks", 26))
+    f_status = "ACTIVE" if f_active else (
+        "EXPIRED" if f_weeks is not None and f_weeks > f_max_weeks else "INACTIVE"
+    )
+    f_episode_start = _combo_f_episode_start(as_of)
     vix_bypass = compute_vix_bypass(active)
     pre_catalyst = compute_pre_catalyst_fragility(as_of, readings)
     post_event_regime = detect_post_event_transition(as_of)
@@ -247,6 +261,8 @@ def run_nightly(
         post_event_regime=post_event_regime,
     )
     payload["generic_combo_watch"] = generic_watch[:10]
+    payload["combo_f_status"] = f_status
+    payload["combo_f_episode_start"] = f_episode_start
     payload["source_freshness"] = get_last_freshness_audit()
     payload["combo_c_cancel"] = {
         **_combo_c_cancel_state(),

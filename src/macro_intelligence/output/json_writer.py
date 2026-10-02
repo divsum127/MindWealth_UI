@@ -53,13 +53,15 @@ def ssi_confirmed_for_combo_f() -> bool:
 def _combo_c_cancel_state() -> dict[str, Any]:
     with get_connection() as conn:
         row = conn.execute(
-            "SELECT wti_potential_week, active, last_check_date, cancel_date FROM combo_c_cancel WHERE id=1"
+            """SELECT wti_potential_week, active, entry_date, last_check_date, cancel_date
+               FROM combo_c_cancel WHERE id=1"""
         ).fetchone()
     if not row:
         return {"wti_potential_week": 0, "active": False, "cancel_date": None}
     return {
         "wti_potential_week": row["wti_potential_week"],
         "active": bool(row["active"]),
+        "entry_date": row["entry_date"],
         "last_check_date": row["last_check_date"],
         "cancel_date": row["cancel_date"],
         "cancelled": bool(row["cancel_date"]),

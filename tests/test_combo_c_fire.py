@@ -25,7 +25,14 @@ def _readings(wti: float, cpi_surprise: float, walcl_mom: float = 0.1) -> dict:
 class TestComboCFire(unittest.TestCase):
     @patch("src.macro_intelligence.engine.combo_detector._combo_c_still_active", return_value=False)
     def test_hot_surprise_fires(self, _mock: object) -> None:
-        fires = detect_named_combos("2026-04-01", _readings(wti=12.0, cpi_surprise=0.25))
+        with (
+            patch("src.macro_intelligence.engine.combo_detector._activate_combo_c_episode"),
+            patch(
+                "src.macro_intelligence.engine.combo_detector._combo_c_episode_start",
+                return_value=None,
+            ),
+        ):
+            fires = detect_named_combos("2026-04-01", _readings(wti=12.0, cpi_surprise=0.25))
         c_fires = [f for f in fires if f.runic_combo == "C"]
         self.assertEqual(len(c_fires), 1)
 
