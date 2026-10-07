@@ -26,7 +26,6 @@ TRADING_DAYS_PER_YEAR = 252
 # Tier gate thresholds (Supplementary §1)
 _TIER_A_COMPOSITE = 40.0
 _TIER_A_WINDOW = 30.0
-_TIER_A_RR = 1.0
 _TIER_A_FWD_WR = 60.0
 _BEST_COMPOSITE = 20.0
 _BEST_WINDOW = 15.0
@@ -245,10 +244,10 @@ def _compute_tier(
     composite_score: float | None,
     window_remaining_pct: float | None,
     alpha_interp: dict | None,
-    rr_static: float | None,
     fwd_wr: float | None,
     exit_fired: bool,
 ) -> str:
+    """Compute the payload tier; R:R is a review flag, not a hard gate."""
     if exit_fired:
         return "exit"
     ai_type = (alpha_interp or {}).get("type")
@@ -258,8 +257,6 @@ def _compute_tier(
         and window_remaining_pct is not None
         and window_remaining_pct > _TIER_A_WINDOW
         and ai_type != "fail"
-        and rr_static is not None
-        and rr_static >= _TIER_A_RR
         and fwd_wr is not None
         and fwd_wr >= _TIER_A_FWD_WR
     ):
@@ -510,7 +507,7 @@ def enrich_record(
     fwd_wr = _parse_fwd_wr(fwd_wr_raw)
     tier = core.get("tier") or _compute_tier(
         composite_score_raw, window_remaining_pct,
-        alpha_interpretation, rr_static, fwd_wr, exit_fired,
+        alpha_interpretation, fwd_wr, exit_fired,
     )
 
     # ── Parse symbol / function / interval for conviction lookup ────────────────

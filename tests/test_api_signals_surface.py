@@ -5,6 +5,21 @@ from api.main import app
 
 client = TestClient(app)
 BASE = "/api/v1"
+
+
+def test_tier_a_uses_quality_gates_but_not_risk_reward():
+    """Rohit's 14 Sep direction: the R:R check is flag-only, not exclusionary."""
+    from api.services.signal_enrichment_service import _compute_tier
+
+    assert _compute_tier(50, 80, None, 70, False) == "tA"
+
+
+def test_tier_a_still_requires_forward_win_rate():
+    from api.services.signal_enrichment_service import _compute_tier
+
+    assert _compute_tier(50, 80, None, 59.99, False) == "best"
+
+
 def test_outstanding_signals_enriched():
     r = client.get(f"{BASE}/signals/reports/outstanding-signals/latest")
     assert r.status_code == 200
@@ -307,4 +322,3 @@ def test_report_limit_param():
     assert len(d["records"]) <= 5
     assert "returned_count" in d
     assert d["returned_count"] == len(d["records"])
-
