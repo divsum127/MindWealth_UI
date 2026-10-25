@@ -1,0 +1,1980 @@
+{
+  "universe_size": 197,
+  "flipped_tickers": [
+    "AVGO",
+    "NA.TO"
+  ],
+  "flipped_count": 2,
+  "results": [
+    {
+      "ticker": "000660.KS",
+      "status": "classified",
+      "old_business_type": "high_margin_hardware",
+      "new_business_type": "high_margin_hardware",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "005930.KS",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "0700.HK",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "2807.HK",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "3033.HK",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "3690.HK",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "AAPL",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "ABNB",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "ACWX",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "ADBE",
+      "status": "classified",
+      "old_business_type": "saas",
+      "new_business_type": "saas",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "AEM.TO",
+      "status": "classified",
+      "old_business_type": "cyclical",
+      "new_business_type": "cyclical",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "AIA.NZ",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "AMD",
+      "status": "classified",
+      "old_business_type": "cyclical",
+      "new_business_type": "cyclical",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "AMZN",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "ARM",
+      "status": "classified",
+      "old_business_type": "cyclical",
+      "new_business_type": "cyclical",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "ASHR",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "ASML",
+      "status": "classified",
+      "old_business_type": "cyclical",
+      "new_business_type": "cyclical",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "ATD.TO",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "ATM.NZ",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "ATZ.TO",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "AVGO",
+      "status": "classified",
+      "old_business_type": "cyclical",
+      "new_business_type": "high_margin_hardware",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": true,
+      "needs_full_recalculation": true
+    },
+    {
+      "ticker": "BABA",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "BAC",
+      "status": "classified",
+      "old_business_type": "bank",
+      "new_business_type": "bank",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "BBD-B.TO",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "BBTC.NS",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "BDGI.TO",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "BDL.NS",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "BEL.NS",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "BIPC.TO",
+      "status": "classified",
+      "old_business_type": "income",
+      "new_business_type": "income",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "BN.TO",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "BNS.TO",
+      "status": "classified",
+      "old_business_type": "bank",
+      "new_business_type": "bank",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "BPCL.NS",
+      "status": "classified",
+      "old_business_type": "cyclical",
+      "new_business_type": "cyclical",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "BRK-B",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto_coverage_incomplete",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "BTC-USD",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "BTI",
+      "status": "classified",
+      "old_business_type": "income",
+      "new_business_type": "income",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "BYD.TO",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "BYDDY",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "C6L.SI",
+      "status": "classified",
+      "old_business_type": "income",
+      "new_business_type": "income",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "CAD=X",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "CEN.NZ",
+      "status": "classified",
+      "old_business_type": "income",
+      "new_business_type": "income",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "CNQ.TO",
+      "status": "classified",
+      "old_business_type": "cyclical",
+      "new_business_type": "cyclical",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "CNR.TO",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "CNU.NZ",
+      "status": "classified",
+      "old_business_type": "income",
+      "new_business_type": "income",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "COIN",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "CRM",
+      "status": "classified",
+      "old_business_type": "saas",
+      "new_business_type": "saas",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "CSCO",
+      "status": "classified",
+      "old_business_type": "cyclical",
+      "new_business_type": "cyclical",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "CSU.TO",
+      "status": "classified",
+      "old_business_type": "saas",
+      "new_business_type": "saas",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "CVS",
+      "status": "classified",
+      "old_business_type": "income",
+      "new_business_type": "income",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "DBC",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "DIA",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "DIS",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "DOL.TO",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "EBO.NZ",
+      "status": "classified",
+      "old_business_type": "income",
+      "new_business_type": "income",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "EEM",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "EFA",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "EFN.TO",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "EIF.TO",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "EMAMILTD.NS",
+      "status": "classified",
+      "old_business_type": "income",
+      "new_business_type": "income",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "ENZL",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "ETH-USD",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "EURUSD=X",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "EWJ",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "FBU.NZ",
+      "status": "classified",
+      "old_business_type": "cyclical",
+      "new_business_type": "cyclical",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "FMCC",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "FPH.NZ",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "FRW.NZ",
+      "status": "classified",
+      "old_business_type": "income",
+      "new_business_type": "income",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "FSF.NZ",
+      "status": "classified",
+      "old_business_type": "income",
+      "new_business_type": "income",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "FUTU",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "FXI",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "GBPSGD=X",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "GBPUSD=X",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "GDX",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "GILD",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "GLD",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "GLXY",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "GNE.NZ",
+      "status": "classified",
+      "old_business_type": "income",
+      "new_business_type": "income",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "GNRC",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "GOOG",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "GRANULES.NS",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "GS",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "HDB",
+      "status": "classified",
+      "old_business_type": "bank",
+      "new_business_type": "bank",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "HDFCBANK.NS",
+      "status": "classified",
+      "old_business_type": "bank",
+      "new_business_type": "bank",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "HOOD",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "HYG",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "IBIT",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "IBKR",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "IEI",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "IFT.NZ",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "IHI",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "IMO.TO",
+      "status": "classified",
+      "old_business_type": "cyclical",
+      "new_business_type": "cyclical",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "INDA",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "INDY",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "INFY",
+      "status": "classified",
+      "old_business_type": "income",
+      "new_business_type": "income",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "IREN",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "IWM",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "JD",
+      "status": "classified",
+      "old_business_type": "income",
+      "new_business_type": "income",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "JETS",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "JPM",
+      "status": "classified",
+      "old_business_type": "bank",
+      "new_business_type": "bank",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "JPY=X",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "KWEB",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "KXS.TO",
+      "status": "classified",
+      "old_business_type": "saas",
+      "new_business_type": "saas",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "LULU",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "LYFT",
+      "status": "classified",
+      "old_business_type": "saas",
+      "new_business_type": "saas",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "MA",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "MAR",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "MAZDOCK.NS",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "MCD",
+      "status": "classified",
+      "old_business_type": "income",
+      "new_business_type": "income",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "MCHI",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "MCY.NZ",
+      "status": "classified",
+      "old_business_type": "income",
+      "new_business_type": "income",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "MEL.NZ",
+      "status": "classified",
+      "old_business_type": "income",
+      "new_business_type": "income",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "META",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "MFT.NZ",
+      "status": "classified",
+      "old_business_type": "income",
+      "new_business_type": "income",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "MSE.PA",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "MSFT",
+      "status": "classified",
+      "old_business_type": "saas",
+      "new_business_type": "saas",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "MTY.TO",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "MU",
+      "status": "classified",
+      "old_business_type": "high_margin_hardware",
+      "new_business_type": "high_margin_hardware",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "MX.TO",
+      "status": "classified",
+      "old_business_type": "cyclical",
+      "new_business_type": "cyclical",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "NA.TO",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "bank",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": true,
+      "needs_full_recalculation": true
+    },
+    {
+      "ticker": "NAUKRI.NS",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "NBIS",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "NFLX",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "NIFTY_MIDCAP_100.NS",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "NIO",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "NKE",
+      "status": "classified",
+      "old_business_type": "income",
+      "new_business_type": "income",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "NOVA.F",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "NU",
+      "status": "classified",
+      "old_business_type": "bank",
+      "new_business_type": "bank",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "NVDA",
+      "status": "classified",
+      "old_business_type": "high_margin_hardware",
+      "new_business_type": "high_margin_hardware",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "NVO",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "NZDCAD=X",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "NZDUSD=X",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "ORCL",
+      "status": "classified",
+      "old_business_type": "saas",
+      "new_business_type": "saas",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "PERSISTENT.NS",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "PFE",
+      "status": "classified",
+      "old_business_type": "income",
+      "new_business_type": "income",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "PG",
+      "status": "classified",
+      "old_business_type": "income",
+      "new_business_type": "income",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "PLTR",
+      "status": "classified",
+      "old_business_type": "saas",
+      "new_business_type": "saas",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "PPH",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "PPL.TO",
+      "status": "classified",
+      "old_business_type": "cyclical",
+      "new_business_type": "cyclical",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "PYPL",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "QQQ",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "RELIANCE.NS",
+      "status": "classified",
+      "old_business_type": "cyclical",
+      "new_business_type": "cyclical",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "RHHBY",
+      "status": "classified",
+      "old_business_type": "income",
+      "new_business_type": "income",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "RINF",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "RY.TO",
+      "status": "classified",
+      "old_business_type": "bank",
+      "new_business_type": "bank",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "SBUX",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "income",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": true,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "SFM",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "SFTBY",
+      "status": "classified",
+      "old_business_type": "income",
+      "new_business_type": "income",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "SJ.TO",
+      "status": "classified",
+      "old_business_type": "cyclical",
+      "new_business_type": "cyclical",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "SLV",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "SONY",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "SOXX",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "SPK.NZ",
+      "status": "classified",
+      "old_business_type": "income",
+      "new_business_type": "income",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "SPOT",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "SPY",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "SUM.NZ",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "SUNPHARMA.NS",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "T.TO",
+      "status": "classified",
+      "old_business_type": "income",
+      "new_business_type": "income",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "TCEHY",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "TCS.NS",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "TD.TO",
+      "status": "classified",
+      "old_business_type": "bank",
+      "new_business_type": "bank",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "TD",
+      "status": "classified",
+      "old_business_type": "bank",
+      "new_business_type": "bank",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "TFII.TO",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "TLT",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "TRI.TO",
+      "status": "classified",
+      "old_business_type": "income",
+      "new_business_type": "income",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "TSLA",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "TSM",
+      "status": "classified",
+      "old_business_type": "high_margin_hardware",
+      "new_business_type": "high_margin_hardware",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "TWR.NZ",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto_coverage_incomplete",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "UBER",
+      "status": "classified",
+      "old_business_type": "saas",
+      "new_business_type": "saas",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "UPS",
+      "status": "classified",
+      "old_business_type": "income",
+      "new_business_type": "income",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "URNM",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "USCI",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "USDCHF=X",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "USO",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "VEEV",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "VGT",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "WCN.TO",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "WFG.TO",
+      "status": "classified",
+      "old_business_type": "cyclical",
+      "new_business_type": "cyclical",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "WIPRO.NS",
+      "status": "classified",
+      "old_business_type": "income",
+      "new_business_type": "income",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "WMT",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "WPM.TO",
+      "status": "classified",
+      "old_business_type": "cyclical",
+      "new_business_type": "cyclical",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "WPM",
+      "status": "classified",
+      "old_business_type": "cyclical",
+      "new_business_type": "cyclical",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "XIU.TO",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "XLE",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "XLF",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "XLU",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "XLV",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "XLY",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "ZM",
+      "status": "classified",
+      "old_business_type": "saas",
+      "new_business_type": "saas",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "ZTS",
+      "status": "classified",
+      "old_business_type": "compounder",
+      "new_business_type": "compounder",
+      "business_type_source": "auto",
+      "coverage_incomplete": false,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "^BVSP",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "^DJI",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "^GSPC",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "^NDX",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "^NSEI",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "^NZ50",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "^STI",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "^TNX",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    },
+    {
+      "ticker": "^VIX",
+      "status": "classified",
+      "old_business_type": "unknown",
+      "new_business_type": "unknown",
+      "business_type_source": "auto",
+      "coverage_incomplete": true,
+      "flipped": false,
+      "needs_full_recalculation": false
+    }
+  ]
+}

@@ -1,0 +1,571 @@
+{
+  "NVDA": {
+    "stored": {
+      "macro_tailwind_detail": null,
+      "ceo_quality_detail": null,
+      "competitive_moat_detail": null,
+      "deal_delay_detail": null,
+      "reinvestment_runway_detail": null
+    },
+    "claude-opus-5-5": {
+      "macro_tailwind_detail": {
+        "score": 0,
+        "rationale": "Hyperscaler capex ~$720B+ drives record sales; offset by China limits, 25% H200 tariff, memory costs, rising rates [defaulted: confidence below threshold]",
+        "key_risk": "Rate hikes and AI-capex deceleration in 2027 plus HBM cost inflation squeezing margins; China export restrictions",
+        "evidence_for": "Q2 FY27 revenue $96.2B (+106% YoY), 75% GM; big-4 hyperscaler 2026 capex guidance $720-745B",
+        "evidence_against": "Nvidia can't make a competitive data-center chip both governments approve for China; H200 sales face 25% tariff; long rates at multi-decade highs",
+        "sources": [
+          "https://www.sec.gov/Archives/edgar/data/0001045810/000104581026000073/q2fy27pr.htm",
+          "https://www.sec.gov/Archives/edgar/data/0001045810/000104581026000075/nvda-20260726.htm",
+          "https://www.tmtfinance.com/intel/2026-hyperscaler-capex-tops-us700bn-analysis",
+          "https://www.bloomberg.com/news/articles/2026-01-14/us-sets-25-tariff-on-some-chip-sales-as-part-of-nvidia-deal",
+          "https://www.trendforce.com/news/2026/08/27/news-nvidias-supply-commitments-soar-to-279b-as-memory-costs-surge-new-nvhbm-boosts-bandwidth-30-cuts-power-15/",
+          "https://facet.com/investing/q3-2026-performance-review/",
+          "https://www.bloomberg.com/opinion/articles/2026-10-21/the-ai-boom-is-setting-up-the-fed-for-a-rate-seesaw"
+        ],
+        "confidence": 0.55,
+        "_api_model": "claude-opus-5-5",
+        "_api_effort": "medium",
+        "_api_usage": {
+          "input_tokens": 34386,
+          "output_tokens": 2204,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "web_search_requests": 0
+        },
+        "reported_confidence": 0.7,
+        "confidence_caps_applied": [
+          {
+            "rule": "opposing_evidence_text_longer",
+            "cap": 0.55
+          }
+        ]
+      },
+      "ceo_quality_detail": {
+        "score": 0,
+        "rationale": "33-yr founder-CEO, deep chip expertise, AI pivot built $5T co; key-person/succession risk caps score",
+        "sources": [
+          "https://www.unifygtm.com/insights/executives/nvidia-ceo",
+          "https://www.chinadaily.com.cn/a/202003/05/WS5e602e40a31012821727c607.html",
+          "https://www.comparably.com/companies/nvidia/ceo-rating",
+          "https://www.bloomberg.com/news/articles/2026-01-27/nvidia-lacks-clear-successor-for-superstar-ceo-who-built-company",
+          "https://www.benzinga.com/markets/tech/26/08/61371395/nvidia-jensen-huang-children-succession-madison-spencer",
+          "https://www.carnegie.org/awards/honoree/jensen-huang/"
+        ],
+        "confidence": 0.85,
+        "evidence_for": "CEO since 1993; AMD/LSI engineer; GPU-to-AI pivot; most valuable co (~$5.2T); HBR #1 CEO 2019 (dated); Comparably 87/100 top 5%",
+        "evidence_against": "No clear successor and Huang rejects succession plans; children's rise sparks family-succession talk; CEO also on board since 1993",
+        "reported_confidence": 0.85,
+        "confidence_caps_applied": [],
+        "score_0_10": 9.5
+      },
+      "competitive_moat_detail": {
+        "score": 0,
+        "rationale": "CUDA/NVLink/systems lock-in + 75% GM intact, but ASIC TCO gap, AMD GW deals, China loss erode pricing power [defaulted: confidence below threshold]",
+        "sources": [
+          "https://www.sec.gov/Archives/edgar/data/0001045810/000104581026000073/q2fy27pr.htm",
+          "https://www.sec.gov/Archives/edgar/data/0001045810/000104581026000075/nvda-20260726.htm",
+          "https://www.gartner.com/en/newsroom/press-releases/2026-08-24-gartner-forecasts-worldwide-semiconductor-revenue-to-reach-1-trillion-dollars-in-2026",
+          "https://newsletter.semianalysis.com/p/can-amd-break-the-cuda-moat-amd-advancing",
+          "https://www.tomshardware.com/tech-industry/semiconductors/custom-ai-asics-examined-from-broadcom-to-mtia",
+          "https://commandlinux.com/statistics/ai-gpu-market-share-nvidia-vs-amd-vs-intel/",
+          "https://www.spheron.network/blog/nvidia-h200-china-shipment-2026/",
+          "https://daloopa.com/blog/analyst-pov/nvidia-customer-concentration-a-big-4-earnings-preview",
+          "https://patentlyze.com/patent/nvidia-distributed-neural-network-training-system/"
+        ],
+        "confidence": 0.55,
+        "evidence_against": "Q2 FY27 revenue $96.2B (+106% YoY) at 75.0% gross margin; ~75-81% accelerator share; $1T backlog shows no erosion yet",
+        "threats": [
+          "Hyperscaler custom ASICs (TPU 8t/8i, Trainium, MTIA) with up to 65% inference TCO edge, 20+GW ramping through 2027",
+          "AMD MI450 rack-scale with OpenAI/Meta 6GW deals plus ROCm/Triton/AI-agent porting eroding CUDA switching costs",
+          "China share collapse (~40% to ~8%) plus 3 direct customers at 44% of revenue and memory cost inflation pressuring margins"
+        ],
+        "reported_confidence": 0.7,
+        "confidence_caps_applied": [
+          {
+            "rule": "opposing_evidence_text_longer",
+            "cap": 0.55
+          }
+        ],
+        "score_0_10": null
+      },
+      "deal_delay_detail": {
+        "signal": "supply_constraint",
+        "score": 0,
+        "rationale": "FY28 guide +70% called supply-constrained vs customer demand ~2x; supply bottleneck through FY28",
+        "supply_constraint_detail": "Q2 FY27 rev $96.2B (+106% y/y); FY28 guide ~+70% vs customer forecasts ~+100%; memory/foundry/power/construction constrained through FY28; prior $500B Blackwell+Rubin visibility",
+        "evidence_for": "Kress: 'We expect to grow revenue by approximately 70% in fiscal 2028. This is a supply-constrained outlook.'",
+        "evidence_against": "China DC revenue removed from outlook on US licensing (regulatory), but excluded rather than delayed; memory costs pressure GM",
+        "sources": [
+          "https://s201.q4cdn.com/141608511/files/content_files/TRANSCRIPT_-NVIDIA-Corp-NVDA-US-Q2-2027-Earnings-Call-26-August-2026-5_00-PM-ET.pdf",
+          "https://www.alphaspread.com/security/nasdaq/nvda/investor-relations/earnings-call/q2-2027",
+          "https://stockanalysis.com/stocks/nvda/transcripts/676136-q2-2027/",
+          "https://finance.yahoo.com/markets/stocks/articles/nvidia-q2-earnings-call-puts-140000690.html"
+        ],
+        "confidence": 0.9,
+        "_api_model": "claude-opus-5-5",
+        "_api_effort": "medium",
+        "_api_usage": {
+          "input_tokens": 42350,
+          "output_tokens": 2237,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "web_search_requests": 0
+        },
+        "reported_confidence": 0.9,
+        "confidence_caps_applied": []
+      },
+      "reinvestment_runway_detail": {
+        "tam_usd": 3500000000000.0,
+        "tam_source": "NVIDIA management, spoken (Jensen Huang on earnings calls and at Goldman Sachs Communacopia, reaffirmed 2026; CFO Colette Kress): $3-4T annual AI infrastructure spend by 2030, midpoint used",
+        "independent_tam_usd": 1200000000000.0,
+        "independent_tam_source": "Dell'Oro Group, Data Center IT Capex 5-Year Forecast (July 2025): ~$1.2T worldwide data center capex by 2029; cross-check Gartner: $1.48T AI infrastructure spend in 2026 (out of $2.67T total AI spending)",
+        "rationale": "NVIDIA's own figure is $3-4T (midpoint $3.5T) of annual AI infrastructure spend by 2030, stated by Jensen Huang and reaffirmed in 2026. Dell'Oro's independent estimate is ~$1.2T of data center capex by 2029, and Gartner puts 2026 AI infrastructure spend at $1.48T. NVIDIA's figure is about 3x Dell'Oro's, which is a meaningful gap, mainly because NVIDIA counts all AI infrastructure (power, facilities, sovereign and enterprise AI) while Dell'Oro counts data center capex only. Chip-only estimates are much smaller: GM Insights $154.6B in 2026 and Grand View $578B gen-AI chipsets by 2033. The SEC-filed RPO of $3.2B as of 2026-07-26 was not needed as a proxy because a company TAM exists; it is tiny next to either market figure and mostly reflects software/service contracts, so it is a weak demand signal.",
+        "sources": [
+          "https://www.fool.com/investing/2026/10/13/jensen-huang-reaffirmed-his-forecast-that-ai-infra/",
+          "https://finance.yahoo.com/technology/ai/articles/nvidia-ceo-jensen-huang-doubles-164700985.html",
+          "https://www.kucoin.com/news/flash/nvidia-s-jensen-huang-predicts-4-trillion-ai-infrastructure-spending-by-2030",
+          "https://www.delloro.com/news/data-center-capex-to-grow-at-21-percent-cagr-through-2029/",
+          "https://thejournal.com/articles/2026/09/21/gartner-worldwide-ai-spending-to-reach-2-67-trillion-in-2026.aspx",
+          "https://www.gminsights.com/industry-analysis/ai-accelerator-chips-market"
+        ],
+        "confidence": 0.8,
+        "_api_model": "claude-opus-5-5",
+        "_api_effort": "medium",
+        "_api_usage": {
+          "input_tokens": 36166,
+          "output_tokens": 2740,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "web_search_requests": 0
+        },
+        "reported_confidence": 0.8,
+        "confidence_caps_applied": [],
+        "score": 0,
+        "revenue_backlog_detail": {
+          "backlog_usd": 3200000000.0,
+          "as_of": "2026-07-26",
+          "filed": "2026-08-26",
+          "form": "10-Q",
+          "source": "sec_xbrl_RevenueRemainingPerformanceObligation"
+        }
+      }
+    },
+    "claude-sonnet-5-5": {
+      "macro_tailwind_detail": {
+        "score": 1,
+        "rationale": "AI capex boom strongly supports demand, but China foreclosure, export-control risk and capex-cycle fragility cap the score.",
+        "key_risk": "Export controls and China foreclosure, plus a hyperscaler capex pullback if AI returns disappoint",
+        "evidence_for": "Q4 FY26 revenue of $68.1B (+73% YoY), Data Center +75%, Q1 guide of $78B vs $72.6B expected; 2026 AI investment forecast near $1T",
+        "evidence_against": "10-K says NVIDIA is effectively foreclosed from China data center market; hyperscaler capex is about 102% of cloud revenue",
+        "sources": [
+          "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000021/nvda-20260125.htm",
+          "https://www.cnbc.com/2026/02/25/nvidia-nvda-earnings-report-q4-2026.html",
+          "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-fourth-quarter-and-fiscal-2026",
+          "https://www.goldmansachs.com/insights/articles/global-investment-is-forecast-to-exceed-1-trillion-in-2026",
+          "https://finance.yahoo.com/technology/ai/articles/ai-absurd-spending-boom-hyperscalers-162709082.html"
+        ],
+        "confidence": 0.7,
+        "_api_model": "claude-sonnet-5-5",
+        "_api_effort": "medium",
+        "_api_usage": {
+          "input_tokens": 30715,
+          "output_tokens": 1667,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "web_search_requests": 0
+        },
+        "reported_confidence": 0.7,
+        "confidence_caps_applied": []
+      },
+      "ceo_quality_detail": {
+        "score": 0,
+        "rationale": "Founder-CEO since 1993; HBR #1 (2019, dated); Comparably 87/100; AI leadership; key-person/valuation risk",
+        "sources": [
+          "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000019/q4fy26pr.htm",
+          "https://www.unifygtm.com/insights/executives/nvidia-ceo",
+          "https://www.britannica.com/money/Jensen-Huang",
+          "https://www.chinadaily.com.cn/a/202003/05/WS5e602e40a31012821727c607.html",
+          "https://www.comparably.com/companies/nvidia/ceo-rating"
+        ],
+        "confidence": 0.85,
+        "evidence_for": "Founder-CEO since 1993 with deep domain expertise; HBR #1 in 2019 (dated); Comparably 87/100, top 5%; $41.1B returned in FY2026; Blackwell/Rubin roadmap",
+        "evidence_against": "Key-person concentration; HBR ranking is old; Comparably is self-selected; valuation and AI capex cyclicality; no LinkedIn commentary found",
+        "reported_confidence": 0.85,
+        "confidence_caps_applied": [],
+        "score_0_10": 9.5
+      },
+      "competitive_moat_detail": {
+        "score": 0,
+        "rationale": "Full-stack/CUDA lead and 75% GM persist, but hyperscaler ASICs, Triton portability and China loss are narrowing the moat. [defaulted: confidence below threshold]",
+        "sources": [
+          "https://introl.com/blog/custom-silicon-inflection-2026-hyperscaler-asics-nvidia-gpu",
+          "https://newsletter.semianalysis.com/p/can-amd-break-the-cuda-moat-amd-advancing",
+          "https://builtin.com/articles/nvidias-cuda-future-ai-infrastructure",
+          "https://www.kiplinger.com/investing/live/nvidia-earnings-live-updates-and-commentary-august-2026",
+          "https://sec-api.io/insights/nvidia-financial-analysis",
+          "https://chinaaidispatch.com/topics/chips-export-controls/"
+        ],
+        "confidence": 0.5,
+        "evidence_against": "Gross margin held near 75% and data center revenue is growing fast. SemiAnalysis says AMD's software gains are still incremental, so erosion is not yet visible in results.",
+        "threats": [
+          "Hyperscaler custom ASICs (TPU, Trainium, Maia, MTIA, Broadcom) taking inference share",
+          "CUDA lock-in eroding via Triton/MLIR and improving AMD ROCm",
+          "Margin pressure (memory costs, ASIC pricing) plus China loss to Huawei and $279bn supply commitments"
+        ],
+        "reported_confidence": 0.5,
+        "confidence_caps_applied": [
+          {
+            "rule": "opposing_evidence_text_longer",
+            "cap": 0.55
+          }
+        ],
+        "score_0_10": null
+      },
+      "deal_delay_detail": {
+        "signal": "supply_constraint",
+        "score": 0,
+        "rationale": "Q4 FY26 call: supply tight for Blackwell/Rubin; purchase commitments up to secure supply into 2027; no deal-delay language",
+        "supply_constraint_detail": "Supply expected to remain tight; inventory +8% q/q; purchase commitments up significantly for 2027 demand; no backlog $ figure found; gaming supply-limited",
+        "evidence_for": "Kress: 'we expect supply constraints to be the headwind to Gaming in Q1 and beyond'; supply tight for advanced architectures despite higher commitments",
+        "evidence_against": "China-related uncertainty noted as a risk, but no order pushouts, budget freezes or shipment holds cited; only summary-level text reviewed",
+        "sources": [
+          "https://www.fool.com/earnings/call-transcripts/2026/02/25/nvidia-nvda-q4-2026-earnings-call-transcript/",
+          "https://stockanalysis.com/stocks/nvda/transcripts/"
+        ],
+        "confidence": 0.8,
+        "_api_model": "claude-sonnet-5-5",
+        "_api_effort": "medium",
+        "_api_usage": {
+          "input_tokens": 47420,
+          "output_tokens": 1573,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "web_search_requests": 0
+        },
+        "reported_confidence": 0.8,
+        "confidence_caps_applied": []
+      },
+      "reinvestment_runway_detail": {
+        "tam_usd": 4000000000000.0,
+        "tam_source": "Jensen Huang / NVIDIA management, $3-4T annual AI infrastructure spend by 2030 (repeated on FY26-FY27 earnings calls; Motley Fool, Oct 2026)",
+        "independent_tam_usd": 372680000000.0,
+        "independent_tam_source": "MarketsandMarkets, Data Center Accelerator Market report (Sept 21, 2026): $372.68B by 2030",
+        "rationale": "Management states $3-4T of AI infrastructure spend by 2030 (upper end used: $4T). MarketsandMarkets independently sizes the data center accelerator market at $372.68B by 2030 (from $170.81B in 2025). The figures diverge about 10x because management's covers total data center/AI capex (power, buildings, networking, systems) while the research firm's covers accelerator chips only. Management also cites a per-gigawatt revenue opportunity of $40B for Vera Rubin. The supplied SEC RPO of $3.2B is a small demand proxy relative to NVDA's scale and was not used to size TAM.",
+        "sources": [
+          "https://www.fool.com/investing/2026/10/13/jensen-huang-reaffirmed-his-forecast-that-ai-infra/",
+          "https://www.fool.com/earnings/call-transcripts/2026/02/25/nvidia-nvda-q4-2026-earnings-call-transcript/",
+          "https://s201.q4cdn.com/141608511/files/content_files/TRANSCRIPT_-NVIDIA-Corp-NVDA-US-Q2-2027-Earnings-Call-26-August-2026-5_00-PM-ET.pdf",
+          "https://www.globenewswire.com/news-release/2026/09/21/3365598/0/en/data-center-accelerator-market-to-reach-usd-372-68-billion-by-2030-growing-at-16-9-cagr-says-marketsandmarkets.html",
+          "https://www.bloomberg.com/company/press/ai-accelerator-market-looks-set-to-exceed-600-billion-by-2033-driven-by-hyperscale-spending-and-asic-adoption-according-to-bloomberg-intelligence/"
+        ],
+        "confidence": 0.8,
+        "_api_model": "claude-sonnet-5-5",
+        "_api_effort": "medium",
+        "_api_usage": {
+          "input_tokens": 32824,
+          "output_tokens": 2343,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "web_search_requests": 0
+        },
+        "reported_confidence": 0.8,
+        "confidence_caps_applied": [],
+        "score": 0,
+        "revenue_backlog_detail": {
+          "backlog_usd": 3200000000.0,
+          "as_of": "2026-07-26",
+          "filed": "2026-08-26",
+          "form": "10-Q",
+          "source": "sec_xbrl_RevenueRemainingPerformanceObligation"
+        }
+      }
+    }
+  },
+  "GOOG": {
+    "stored": {
+      "macro_tailwind_detail": null,
+      "ceo_quality_detail": null,
+      "competitive_moat_detail": null,
+      "deal_delay_detail": null,
+      "reinvestment_runway_detail": null
+    },
+    "claude-opus-5-5": {
+      "macro_tailwind_detail": {
+        "score": 0,
+        "rationale": "Ad market +11.9% and AI/cloud demand strong; offset by hawkish Fed, debt/equity-funded capex, regulation [defaulted: confidence below threshold]",
+        "key_risk": "Capex ~$200B in 2026 (rising in 2027) funded partly by debt at up to 6.5% and new equity amid possible Fed hike",
+        "evidence_for": "WARC: 2026 global ad spend +11.9%, search +14.2%; Cloud revenue +82% YoY in Q2 2026",
+        "evidence_against": "Fed on hold at 3.75-4.00% with ~17% hike odds; equity offering to fund capex; Australia digital tax",
+        "sources": [
+          "https://ppc.land/warc-forecasts-social-media-ad-spend-gains-21-3-to-394-6bn-in-2026/",
+          "https://www.noradarealestate.com/blog/fed-interest-rate-predictions-october-2026/",
+          "https://www.sec.gov/Archives/edgar/data/0001652044/000119312526257724/d83560dex991.htm",
+          "https://www.relevantaudience.com/google-ads-en/brinkema-rejects-adx-divestiture-behavioural-remedies/",
+          "https://www.sec.gov/Archives/edgar/data/0001652044/000165204426000066/googexhibit991q22026.htm"
+        ],
+        "confidence": 0.65,
+        "_api_model": "claude-opus-5-5",
+        "_api_effort": "medium",
+        "_api_usage": {
+          "input_tokens": 49209,
+          "output_tokens": 2609,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "web_search_requests": 0
+        },
+        "reported_confidence": 0.65,
+        "confidence_caps_applied": []
+      },
+      "ceo_quality_detail": {
+        "score": 0,
+        "rationale": "11-yr tenure, engineer, 24% rev growth, $4T cap, AI pivot; Gemini delays, antitrust, talent loss [defaulted: confidence below threshold]",
+        "sources": [
+          "https://www.unifygtm.com/insights/executives/google-ceo",
+          "https://time.com/collection/100-most-influential-people/2026/sundar-pichai/",
+          "https://blog.google/company-news/inside-google/message-ceo/alphabet-earnings-q2-2026/",
+          "https://www.comparably.com/companies/google/ceo-rating",
+          "https://www.statista.com/chart/19823/best-performing-ceos/",
+          "https://www.calcalistech.com/ctechnews/article/b1rkzxysfx",
+          "https://www.cnbc.com/2026/09/02/google-starts-september-with-ai-momentum-after-long-losing-streak.html",
+          "https://www.cnbc.com/2026/01/07/alphabets-market-cap-surpasses-apples-for-first-time-since-2019.html",
+          "https://www.sec.gov/Archives/edgar/data/0001652044/000165204426000071/goog-20260630.htm",
+          "https://247wallst.com/investing/2026/10/21/alphabet-slips-2-despite-nasdaq-rally-as-pichai-says-google-cloud-is-giving-up-revenue-for-ai-capacity-amazon-dips-microsoft-holds-steady/"
+        ],
+        "confidence": 0.55,
+        "evidence_for": "CEO since 2015; IIT/Stanford/Wharton; Q2'26 rev +24%; merged Brain+DeepMind into Gemini; ~$4T mkt cap; Comparably 79/100 top 5% (dated)",
+        "evidence_against": "Gemini 3.5 Pro delay, defensive Q2 call; 4-month stock losing streak; AI researcher departures; Cloud capacity limits; search antitrust loss under appeal; no HBR ranking found",
+        "reported_confidence": 0.7,
+        "confidence_caps_applied": [
+          {
+            "rule": "opposing_evidence_text_longer",
+            "cap": 0.55
+          }
+        ],
+        "score_0_10": null
+      },
+      "competitive_moat_detail": {
+        "score": 0,
+        "rationale": "Durable search/cloud/YouTube scale, but AI-chat displacement, AI Overview click erosion, and data-sharing remedies cap it [defaulted: confidence below threshold]",
+        "sources": [
+          "https://colorlib.com/wp/search-engine-statistics/",
+          "https://technologychecker.io/blog/search-engine-market-share",
+          "https://www.reporteroutreach.com/blog/ai-search-statistics",
+          "https://www.sec.gov/Archives/edgar/data/0001652044/000119312526251733/d160205dfwp.htm",
+          "https://www.investing.com/news/company-news/alphabet-q2-2026-slides-24-revenue-growth-cloud-surges-despite-capex-93CH-4807148",
+          "https://www.alpha-sense.com/earnings/goog/",
+          "https://www.searchenginejournal.com/googles-antitrust-ruling-what-the-remedies-mean-for-search-seo-and-ai-assistants/555086/",
+          "https://www.hugheshubbard.com/news-insights/insights/court-issues-remedies-ruling-in-united-states-v-google-search-case",
+          "https://www.adexchanger.com/platforms/the-court-just-unsealed-judge-brinkemas-remedies-decision-in-the-google-ad-tech-antitrust-case-heres-your-tldr/",
+          "https://ppc.land/ai-overviews-cut-publisher-clicks-39-8-in-first-randomized-study/",
+          "https://9to5mac.com/2026/05/22/google-defends-its-safari-deal-with-apple-in-antitrust-ruling-appeal/"
+        ],
+        "confidence": 0.55,
+        "evidence_against": "Search revenue +19% YoY Q1'26, record queries, chatbots 0.29% of referrals, Cloud +82% at 35.6% margin, AdX divestiture rejected",
+        "threats": [
+          "AI chatbots (ChatGPT ~64% chatbot share) diverting queries/attention from Google Search",
+          "AI Overviews cutting paid/organic clicks while $180-190B+ capex pressures ROIC",
+          "Antitrust remedies: no exclusive defaults, mandated index/interaction data sharing with rivals"
+        ],
+        "reported_confidence": 0.68,
+        "confidence_caps_applied": [
+          {
+            "rule": "opposing_evidence_text_longer",
+            "cap": 0.55
+          }
+        ],
+        "score_0_10": null
+      },
+      "deal_delay_detail": {
+        "signal": "supply_constraint",
+        "score": 0,
+        "rationale": "Q2'26: mgmt says capacity-constrained; $514B cloud backlog outpaces compute; capex to $195-205B, 3rd-party bridge",
+        "supply_constraint_detail": "Cloud backlog $514B (vs $460B Q1'26, $106B Q2'25), ~50% to be recognized in ~24mo; 2026 capex $195-205B; Q2 capex ~$45B; renting 3rd-party capacity in Q3 at a modest margin cost; TPU sales ramp mainly 2027",
+        "evidence_for": "Pichai: Google remains 'in a supply-constrained environment'; Investing.com summary says demand is outpacing capacity and slowing revenue conversion",
+        "evidence_against": "Cloud revenue still +82% YoY and op margin 35.6%, so the constraint caps upside rather than causing lost deals; no deal-push language",
+        "sources": [
+          "https://finance.yahoo.com/quote/GOOG/earnings/GOOG-Q2-2026-earnings_call-657320.html",
+          "https://www.investing.com/news/transcripts/earnings-call-transcript-alphabet-beats-q2-2026-estimates-shares-fall-on-capex-surge-93CH-4807140",
+          "https://finance.yahoo.com/technology/ai/articles/alphabet-q2-earnings-call-highlights-220547983.html",
+          "https://www.fierce-network.com/cloud/google-cloud-surges-alphabets-ai-capex-problem-grows",
+          "https://seekingalpha.com/news/4617114-alphabet-signals-195b-205b-2026-capex-while-expanding-third-party-capacity-as-a-bridge"
+        ],
+        "confidence": 0.88,
+        "_api_model": "claude-opus-5-5",
+        "_api_effort": "medium",
+        "_api_usage": {
+          "input_tokens": 44894,
+          "output_tokens": 2397,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "web_search_requests": 0
+        },
+        "reported_confidence": 0.88,
+        "confidence_caps_applied": []
+      },
+      "reinvestment_runway_detail": {
+        "tam_usd": null,
+        "tam_source": "None published. Alphabet management (Q1 and Q2 2026 earnings calls) only says, without a number, that selling TPUs into customer data centers expands its addressable market",
+        "independent_tam_usd": 1300000000000.0,
+        "independent_tam_source": "WPP Media, This Year Next Year 2026 Global Midyear Forecast (global ad revenue 2026, $1.3T); cross-check: Gartner public cloud end-user spending ($723.4B in 2025, ~ $850B in 2026 per a secondary source)",
+        "rationale": "Alphabet gives no dollar TAM. On the Q1/Q2 2026 calls, management and CFO Ashkenazi only said that selling TPUs into customer data centers expands its addressable market. So the demand proxy is the SEC-filed backlog of $519.5B as of 2026-06-30, which matches the $514B Google Cloud backlog stated on the Q2 2026 call. Independent figure: WPP Media puts 2026 global ad revenue at $1.3T (excl. US political), which fits Alphabet's ad-led revenue. Dentsu's estimate is lower at $1.06T. For Cloud, Gartner puts public cloud end-user spending at $723.4B for 2025; the ~ $850B 2026 figure comes from a secondary source citing Gartner. With no company TAM, there is nothing for the independent figure to diverge from. The backlog equals about 40% of the 2026 ad market and about 60% of 2026 cloud spending, but it covers multiple years. Adding ads and cloud gives ~ $2.1T, but the definitions differ, so only the ad figure is used as the headline.",
+        "sources": [
+          "https://www.fool.com/earnings/call-transcripts/2026/04/29/alphabet-googl-q1-2026-earnings-call-transcript/",
+          "https://abc.xyz/investor/events/event-details/2026/2026-Q2-Earnings-Call-2026-GgTAq7Is0z/default.aspx",
+          "https://finance.yahoo.com/quote/GOOG/earnings/GOOG-Q2-2026-earnings_call-657320.html",
+          "https://www.wppmedia.com/news/report-this-year-next-year-midyear-2026",
+          "https://www.gartner.com/en/newsroom/press-releases/2024-11-19-gartner-forecasts-worldwide-public-cloud-end-user-spending-to-total-723-billion-dollars-in-2025",
+          "https://cnicsolutions.com/statistics/cloud-infrastructure/cloud-computing-statistics-for-2026/",
+          "https://www.salehoo.com/reports/digital-ad-spend"
+        ],
+        "confidence": 0.7,
+        "_api_model": "claude-opus-5-5",
+        "_api_effort": "medium",
+        "_api_usage": {
+          "input_tokens": 68428,
+          "output_tokens": 3692,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "web_search_requests": 0
+        },
+        "reported_confidence": 0.7,
+        "confidence_caps_applied": [],
+        "score": 0,
+        "revenue_backlog_detail": {
+          "backlog_usd": 519500000000.0,
+          "as_of": "2026-06-30",
+          "filed": "2026-07-23",
+          "form": "10-Q",
+          "source": "sec_xbrl_RevenueRemainingPerformanceObligation"
+        }
+      }
+    },
+    "claude-sonnet-5-5": {
+      "macro_tailwind_detail": {
+        "score": 0,
+        "rationale": "Strong AI/cloud demand offset by record capex, antitrust appeals/remedies and cyclical ad exposure; net neutral. [defaulted: confidence below threshold]",
+        "key_risk": "Capex surge ($195-205B) squeezing FCF plus adtech/search antitrust remedies in 2026",
+        "evidence_for": "Q4 2025 revenue $113.8B beat; Q2 2026 capex raised on strong AI demand",
+        "evidence_against": "DOJ appealed in Feb 2026 for tougher remedies; capex guide above expectations and shares fell",
+        "sources": [
+          "https://capital.com/en-int/market-updates/alphabet-stock-forecast-19-03-2026",
+          "https://www.cnbc.com/2026/07/22/google-earnings-q2-goog-live-updates.html",
+          "https://phemex.com/academy/alphabet-googl-stock-2026"
+        ],
+        "confidence": 0.55,
+        "_api_model": "claude-sonnet-5-5",
+        "_api_effort": "medium",
+        "_api_usage": {
+          "input_tokens": 28947,
+          "output_tokens": 1133,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "web_search_requests": 0
+        },
+        "reported_confidence": 0.55,
+        "confidence_caps_applied": []
+      },
+      "ceo_quality_detail": {
+        "score": 0,
+        "rationale": "10-yr CEO, product/AI expertise, strong employee ratings; HBR ranking not found, execution/AI-race risk [defaulted: confidence below threshold]",
+        "sources": [
+          "https://www.comparably.com/companies/google/ceo-rating",
+          "https://www.sec.gov/Archives/edgar/data/0001652044/000130817926000342/goog-20260424.htm",
+          "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000026/goog-20260304.htm",
+          "https://hbsp.harvard.edu/product/W25879-PDF-ENG?Ntt=sundar+pichai"
+        ],
+        "confidence": 0.55,
+        "evidence_for": "About 10 years as CEO. Product and AI background (Chrome, Android). Comparably approval 79/100, top 5% of similar-size firms. Conservative pay structure.",
+        "evidence_against": "No HBR ranking or LinkedIn data retrieved. A Harvard case questions his leadership style. Competitive AI pressure and antitrust risk. Page fetch unavailable, so snippets only.",
+        "reported_confidence": 0.55,
+        "confidence_caps_applied": [],
+        "score_0_10": null
+      },
+      "competitive_moat_detail": {
+        "score": 0,
+        "rationale": "Wide distribution/data/TPU moat, but AI search cannibalization, antitrust appeal and $175-185B capex cloud durability. [defaulted: confidence below threshold]",
+        "sources": [
+          "https://seekingalpha.com/news/4547610-alphabet-outlines-175b-185b-2026-capex-plan-as-ai-momentum-accelerates-across-search-cloud",
+          "https://capital.com/en-int/market-updates/alphabet-stock-forecast-19-03-2026",
+          "https://seekingalpha.com/article/4888764-nobody-believed-in-alphabet-in-2026-it-faces-its-biggest-test",
+          "https://www.cnbc.com/2026/02/04/alphabet-googl-q4-2025-earnings.html"
+        ],
+        "confidence": 0.55,
+        "evidence_against": "Capex nearly doubling signals the moat must be rebuilt constantly; 27x P/E after ~100% gain prices in success; YouTube ad miss; search monetization in AI mode unproven.",
+        "threats": [
+          "AI answer engines disrupting search and cannibalizing ad monetization",
+          "Antitrust appeal/remedies eroding default distribution and data advantages",
+          "$175-185B capex compressing margins and FCF amid AI arms race"
+        ],
+        "reported_confidence": 0.55,
+        "confidence_caps_applied": [
+          {
+            "rule": "opposing_evidence_text_longer",
+            "cap": 0.55
+          }
+        ],
+        "score_0_10": null
+      },
+      "deal_delay_detail": {
+        "signal": "supply_constraint",
+        "score": 0,
+        "rationale": "Pichai: compute constrained, cloud rev would be higher with capacity; backlog $462B; capex raised to $180-190B",
+        "supply_constraint_detail": "Cloud backlog ~$462B (nearly doubled QoQ); compute constrained near term; 2026 capex guide $180-190B, 2027 to rise significantly",
+        "evidence_for": "Pichai: 'we are compute constrained in the near term... cloud revenue would have been higher if you were able to meet the demand.'",
+        "evidence_against": "No deal delays or budget freezes cited; only about half of backlog converts to revenue within 24 months.",
+        "sources": [
+          "https://www.fool.com/earnings/call-transcripts/2026/04/29/alphabet-googl-q1-2026-earnings-call-transcript/",
+          "https://finance.yahoo.com/quote/GOOGL/earnings/GOOGL-Q1-2026-earnings_call-551989.html",
+          "https://www.investing.com/news/transcripts/earnings-call-transcript-alphabet-q1-2026-earnings-soar-stock-dips-93CH-4647252"
+        ],
+        "confidence": 0.9,
+        "_api_model": "claude-sonnet-5-5",
+        "_api_effort": "medium",
+        "_api_usage": {
+          "input_tokens": 31029,
+          "output_tokens": 1126,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "web_search_requests": 0
+        },
+        "reported_confidence": 0.9,
+        "confidence_caps_applied": []
+      },
+      "reinvestment_runway_detail": {
+        "tam_usd": null,
+        "tam_source": "No numeric TAM stated by management; Q2 2026 earnings call only refers qualitatively to an 'expansion of our total addressable market'. Demand proxy: SEC RPO/backlog $519.5B (call cites Cloud backlog $514B)",
+        "independent_tam_usd": 850000000000.0,
+        "independent_tam_source": "Gartner worldwide public cloud end-user spending forecast (~$850B in 2026; $723.4B in 2025), via secondary summary. Cross-checks: IDC >$1T public cloud 2026; Gartner $267B AI cloud market by 2030",
+        "rationale": "Alphabet gives no company-stated dollar TAM, so tam_usd is null. The Q2 2026 call mentions only a qualitative TAM expansion, and the SEC RPO backlog of $519.5B is the demand proxy (the call cites Cloud backlog of $514B). Independent estimates: Gartner public cloud ~$850B in 2026 (used as the headline), IDC >$1T in 2026, and Gartner AI cloud $267B by 2030. The estimates diverge widely because of scope: SaaS is included in the broad figures, and the AI cloud figure is narrower and dated 2030. The backlog is large relative to these market sizes, which indicates strong contracted demand. The Gartner and IDC figures come from secondary summaries, not the firms' own pages. [defaulted: confidence below threshold]",
+        "sources": [
+          "https://finance.yahoo.com/quote/GOOG/earnings/GOOG-Q2-2026-earnings_call-657320.html",
+          "https://finance.yahoo.com/quote/GOOGCL1.SN/earnings/GOOGCL1.SN-Q2-2026-earnings_call-657320.html",
+          "https://cnicsolutions.com/statistics/cloud-infrastructure/cloud-computing-statistics-for-2026/",
+          "https://www.secondtalent.com/resources/top-cloud-development-statistics-market-size-adoption-rates/",
+          "https://www.gartner.com/en/newsroom/press-releases/2026-06-23-gartner-predicts-neocloud-providers-will-capture-20-percent-of-the-267-billion-dollar-ai-cloud-market-by-2030",
+          "https://www.gartner.com/en/newsroom/press-releases/2025-08-06-gartner-says-worldwide-iaas-public-cloud-services-market-grew-22-point-5-percent-in-2024"
+        ],
+        "confidence": 0.5,
+        "_api_model": "claude-sonnet-5-5",
+        "_api_effort": "medium",
+        "_api_usage": {
+          "input_tokens": 32449,
+          "output_tokens": 2384,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "web_search_requests": 0
+        },
+        "reported_confidence": 0.5,
+        "confidence_caps_applied": [],
+        "score": 0,
+        "revenue_backlog_detail": {
+          "backlog_usd": 519500000000.0,
+          "as_of": "2026-06-30",
+          "filed": "2026-07-23",
+          "form": "10-Q",
+          "source": "sec_xbrl_RevenueRemainingPerformanceObligation"
+        }
+      }
+    }
+  }
+}

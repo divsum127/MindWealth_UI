@@ -1,0 +1,199 @@
+ticker,asset_type,business_type,business_type_source,business_type_label,sector,industry,issuer_country,framework_coverage,conviction_score,last_full_calc
+000660.KS,EQUITY,high_margin_hardware,auto,,Technology,Semiconductors,,True,14.0,2026-10-25T05:35:12+00:00
+005930.KS,EQUITY,compounder,auto,,Technology,Consumer Electronics,,False,14.0,2026-10-25T05:35:14+00:00
+0700.HK,EQUITY,compounder,auto,,Communication Services,Internet Content & Information,,False,5.0,2026-10-25T05:35:17+00:00
+2807.HK,ETF,unknown,auto,,,,,False,,2026-10-25T05:35:18+00:00
+3033.HK,ETF,unknown,auto,,,,,False,,2026-10-25T05:35:19+00:00
+3690.HK,EQUITY,compounder,auto,,Consumer Cyclical,Internet Retail,China,False,-3.0,2026-10-25T05:46:30+00:00
+AAPL,EQUITY,compounder,auto,,Technology,Consumer Electronics,,False,4.0,2026-10-25T05:35:25+00:00
+ABNB,EQUITY,compounder,auto,,Consumer Cyclical,Travel Services,,False,7.0,2026-10-25T05:35:28+00:00
+ACWX,ETF,unknown,auto,,,,,False,,2026-10-25T05:35:29+00:00
+ADBE,EQUITY,saas,auto,,Technology,Software - Application,,True,5.0,2026-10-25T05:35:34+00:00
+AEM.TO,EQUITY,cyclical,auto,,Basic Materials,Gold,,False,4.0,2026-10-25T05:35:36+00:00
+AIA.NZ,EQUITY,compounder,auto,,Industrials,Airports & Air Services,New Zealand,False,-9.0,2026-10-25T05:46:32+00:00
+AMD,EQUITY,cyclical,auto,,Technology,Semiconductors,,False,-5.0,2026-10-25T05:35:43+00:00
+AMZN,EQUITY,compounder,auto,,Consumer Cyclical,Internet Retail,,False,0.0,2026-10-25T05:35:47+00:00
+ARM,EQUITY,cyclical,auto,,Technology,Semiconductors,,False,1.0,2026-10-25T05:35:49+00:00
+ASHR,ETF,unknown,auto,,,,,False,,2026-10-25T05:35:50+00:00
+ASML,EQUITY,cyclical,auto,,Technology,Semiconductor Equipment & Materials,,False,5.0,2026-10-25T05:35:53+00:00
+ATD.TO,EQUITY,compounder,auto,,Consumer Cyclical,Specialty Retail,,False,6.0,2026-10-25T05:35:56+00:00
+ATM.NZ,EQUITY,compounder,auto,,Consumer Defensive,Packaged Foods,New Zealand,False,5.0,2026-10-25T05:46:34+00:00
+ATZ.TO,EQUITY,compounder,auto,,Consumer Cyclical,Apparel Retail,,False,5.0,2026-10-25T05:36:00+00:00
+AVGO,EQUITY,high_margin_hardware,auto,,Technology,Semiconductors,,True,4.0,2026-10-25T05:36:03+00:00
+BABA,EQUITY,compounder,auto,,Consumer Cyclical,Internet Retail,,False,-4.0,2026-10-25T05:36:05+00:00
+BAC,EQUITY,bank,auto,,Financial Services,Banks - Diversified,,True,3.0,2026-10-25T05:36:10+00:00
+BBD-B.TO,EQUITY,compounder,auto,,Industrials,Aerospace & Defense,,False,-6.0,2026-10-25T05:36:13+00:00
+BBTC.NS,EQUITY,compounder,auto,,Consumer Defensive,Packaged Foods,,False,10.5,2026-10-25T05:36:15+00:00
+BDGI.TO,EQUITY,compounder,auto,,Industrials,Engineering & Construction,,False,1.0,2026-10-25T05:36:18+00:00
+BDL.NS,EQUITY,compounder,auto,,Industrials,Aerospace & Defense,,False,4.0,2026-10-25T05:36:20+00:00
+BEL.NS,EQUITY,compounder,auto,,Industrials,Aerospace & Defense,,False,-1.5,2026-10-25T05:36:22+00:00
+BIPC.TO,EQUITY,regulated_utility,auto_coverage_incomplete,,Utilities,Utilities - Regulated Gas,United States,False,-4.0,2026-10-25T05:46:36+00:00
+BN.TO,EQUITY,compounder,auto,,Financial Services,Asset Management,,False,-10.0,2026-10-25T05:36:27+00:00
+BNS.TO,EQUITY,bank,auto,,Financial Services,Banks - Diversified,,True,0.0,2026-10-25T05:36:30+00:00
+BPCL.NS,EQUITY,cyclical,auto,,Energy,Oil & Gas Refining & Marketing,,False,3.0,2026-10-25T05:36:32+00:00
+BRK-B,EQUITY,unknown,auto_coverage_incomplete,,Financial Services,Insurance - Diversified,,False,1.5,2026-10-25T05:36:36+00:00
+BTC-USD,CRYPTOCURRENCY,unknown,auto,,,,,False,,2026-10-25T05:36:37+00:00
+BTI,EQUITY,income,auto,,Consumer Defensive,Tobacco,United Kingdom,False,-3.0,2026-10-25T05:46:38+00:00
+BYD.TO,EQUITY,compounder,auto,,Consumer Cyclical,Auto & Truck Dealerships,,False,-2.5,2026-10-25T05:36:42+00:00
+BYDDY,EQUITY,compounder,auto,,Consumer Cyclical,Auto Manufacturers,China,False,-1.0,2026-10-25T05:46:40+00:00
+C6L.SI,EQUITY,income,auto,,Industrials,Airlines,,False,0.0,2026-10-25T05:36:46+00:00
+CAD=X,CURRENCY,unknown,auto,,,,,False,,2026-10-25T05:36:48+00:00
+CEN.NZ,EQUITY,income,auto,,Utilities,Utilities - Renewable,New Zealand,False,0.5,2026-10-25T05:46:42+00:00
+CNQ.TO,EQUITY,cyclical,auto,,Energy,Oil & Gas E&P,,False,9.0,2026-10-25T05:36:53+00:00
+CNR.TO,EQUITY,compounder,auto,,Industrials,Railroads,,False,1.0,2026-10-25T05:36:56+00:00
+CNU.NZ,EQUITY,telco,auto_coverage_incomplete,,Communication Services,Telecom Services,New Zealand,False,-5.0,2026-10-25T05:46:44+00:00
+COIN,EQUITY,compounder,auto,,Financial Services,Financial Data & Stock Exchanges,,False,-6.0,2026-10-25T05:37:00+00:00
+CRM,EQUITY,saas,auto,,Technology,Software - Application,,True,3.0,2026-10-25T05:37:03+00:00
+CSCO,EQUITY,cyclical,auto,,Technology,Communication Equipment,,False,0.0,2026-10-25T05:37:08+00:00
+CSU.TO,EQUITY,saas,auto,,Technology,Software - Application,,True,2.0,2026-10-25T05:37:10+00:00
+CVS,EQUITY,income,auto,,Healthcare,Healthcare Plans,,False,-3.0,2026-10-25T05:37:15+00:00
+DBC,ETF,unknown,auto,,,,,False,,2026-10-25T05:37:17+00:00
+DIA,ETF,unknown,auto,,,,,False,,2026-10-25T05:37:19+00:00
+DIS,EQUITY,compounder,auto,,Communication Services,Entertainment,,False,2.5,2026-10-25T05:37:24+00:00
+DOL.TO,EQUITY,compounder,auto,,Consumer Defensive,Discount Stores,,False,3.0,2026-10-25T05:37:26+00:00
+EBO.NZ,EQUITY,income,auto,,Healthcare,Medical Distribution,Australia,False,3.0,2026-10-25T05:46:46+00:00
+EEM,ETF,unknown,auto,,,,,False,,2026-10-25T05:37:30+00:00
+EFA,ETF,unknown,auto,,,,,False,,2026-10-25T05:37:32+00:00
+EFN.TO,EQUITY,income,auto,,Industrials,Rental & Leasing Services,,False,2.0,2026-10-25T05:37:34+00:00
+EIF.TO,EQUITY,income,auto,,Industrials,Airlines,,False,-2.0,2026-10-25T05:37:36+00:00
+EMAMILTD.NS,EQUITY,income,auto,,Consumer Defensive,Household & Personal Products,,False,2.0,2026-10-25T05:37:43+00:00
+ENZL,ETF,unknown,auto,,,,,False,,2026-10-25T05:37:45+00:00
+ETH-USD,CRYPTOCURRENCY,unknown,auto,,,,,False,,2026-10-25T05:37:46+00:00
+EURUSD=X,CURRENCY,unknown,auto,,,,,False,,2026-10-25T05:37:48+00:00
+EWJ,ETF,unknown,auto,,,,,False,,2026-10-25T05:37:50+00:00
+FBU.NZ,EQUITY,cyclical,auto,,Basic Materials,Building Materials,New Zealand,False,-4.0,2026-10-25T05:46:48+00:00
+FMCC,EQUITY,compounder,auto,,Financial Services,Mortgage Finance,United States,False,2.0,2026-10-25T05:46:50+00:00
+FPH.NZ,EQUITY,compounder,auto,,Healthcare,Medical Instruments & Supplies,New Zealand,False,4.0,2026-10-25T05:46:52+00:00
+FRW.NZ,EQUITY,income,auto,,Industrials,Integrated Freight & Logistics,New Zealand,False,2.5,2026-10-25T05:46:54+00:00
+FSF.NZ,EQUITY,compounder,auto,,Financial Services,Asset Management,New Zealand,False,-0.5,2026-10-25T05:46:56+00:00
+FUTU,EQUITY,compounder,auto,,Financial Services,Capital Markets,,False,11.0,2026-10-25T05:38:02+00:00
+FXI,ETF,unknown,auto,,,,,False,,2026-10-25T05:38:04+00:00
+GBPSGD=X,CURRENCY,unknown,auto,,,,,False,,2026-10-25T05:38:05+00:00
+GBPUSD=X,CURRENCY,unknown,auto,,,,,False,,2026-10-25T05:38:07+00:00
+GDX,ETF,unknown,auto,,,,,False,,2026-10-25T05:38:09+00:00
+GILD,EQUITY,compounder,auto,,Healthcare,Drug Manufacturers - General,,False,-7.0,2026-10-25T05:38:14+00:00
+GLD,ETF,unknown,auto,,,,,False,,2026-10-25T05:38:15+00:00
+GLXY,EQUITY,compounder,auto,,Financial Services,Capital Markets,United States,False,-2.0,2026-10-25T05:46:58+00:00
+GNE.NZ,EQUITY,income,auto,,Utilities,Utilities - Independent Power Producers,New Zealand,False,1.0,2026-10-25T05:47:00+00:00
+GNRC,EQUITY,compounder,auto,,Industrials,Specialty Industrial Machinery,,False,-4.5,2026-10-25T05:38:22+00:00
+GOOG,EQUITY,compounder,auto,,Communication Services,Internet Content & Information,,False,-3.0,2026-10-25T05:38:25+00:00
+GRANULES.NS,EQUITY,compounder,auto,,Healthcare,Drug Manufacturers - Specialty & Generic,,False,1.0,2026-10-25T05:38:27+00:00
+GS,EQUITY,compounder,auto,,Financial Services,Capital Markets,,False,-2.0,2026-10-25T05:38:31+00:00
+HDB,EQUITY,bank,auto,,Financial Services,Banks - Regional,India,True,4.0,2026-10-25T05:47:02+00:00
+HDFCBANK.NS,EQUITY,bank,auto,,Financial Services,Banks - Regional,India,True,2.0,2026-10-25T05:47:04+00:00
+HOOD,EQUITY,compounder,auto,,Financial Services,Capital Markets,,False,-2.0,2026-10-25T05:38:38+00:00
+HYG,ETF,unknown,auto,,,,,False,,2026-10-25T05:38:40+00:00
+IBIT,ETF,unknown,auto,,,,,False,,2026-10-25T05:38:41+00:00
+IBKR,EQUITY,compounder,auto,,Financial Services,Capital Markets,,False,4.0,2026-10-25T05:38:45+00:00
+IEI,ETF,unknown,auto,,,,,False,,2026-10-25T05:38:47+00:00
+IFT.NZ,EQUITY,compounder,auto,,Industrials,Conglomerates,New Zealand,False,-2.5,2026-10-25T05:47:06+00:00
+IHI,ETF,unknown,auto,,,,,False,,2026-10-25T05:38:51+00:00
+IMO.TO,EQUITY,cyclical,auto,,Energy,Oil & Gas Integrated,,False,8.5,2026-10-25T05:38:53+00:00
+INDA,ETF,unknown,auto,,,,,False,,2026-10-25T05:38:55+00:00
+INDY,ETF,unknown,auto,,,,,False,,2026-10-25T05:38:56+00:00
+INFY,EQUITY,income,auto,,Technology,Information Technology Services,,False,9.0,2026-10-25T05:38:59+00:00
+IREN,EQUITY,compounder,auto,,Financial Services,Capital Markets,,False,-9.0,2026-10-25T05:39:02+00:00
+IWM,ETF,unknown,auto,,,,,False,,2026-10-25T05:39:04+00:00
+JD,EQUITY,income,auto,,Consumer Cyclical,Internet Retail,,False,5.0,2026-10-25T05:39:06+00:00
+JETS,ETF,unknown,auto,,,,,False,,2026-10-25T05:39:08+00:00
+JNK,ETF,unknown,auto,,,,,False,,2026-10-25T05:39:09+00:00
+JPM,EQUITY,bank,auto,,Financial Services,Banks - Diversified,,True,2.0,2026-10-25T05:39:14+00:00
+JPY=X,CURRENCY,unknown,auto,,,,,False,,2026-10-25T05:39:16+00:00
+KWEB,ETF,unknown,auto,,,,,False,,2026-10-25T05:39:18+00:00
+KXS.TO,EQUITY,saas,auto,,Technology,Software - Application,,True,6.0,2026-10-25T05:39:20+00:00
+LULU,EQUITY,compounder,auto,,Consumer Cyclical,Apparel Retail,,False,7.5,2026-10-25T05:39:23+00:00
+LYFT,EQUITY,saas,auto,,Technology,Software - Application,,True,12.0,2026-10-25T05:39:25+00:00
+MA,EQUITY,compounder,auto,,Financial Services,Credit Services,,False,5.0,2026-10-25T05:39:28+00:00
+MAR,EQUITY,compounder,auto,,Consumer Cyclical,Lodging,,False,-1.0,2026-10-25T05:39:32+00:00
+MAZDOCK.NS,EQUITY,compounder,auto,,Industrials,Aerospace & Defense,,False,-3.0,2026-10-25T05:39:34+00:00
+MCD,EQUITY,income,auto,,Consumer Cyclical,Restaurants,,False,1.0,2026-10-25T05:39:40+00:00
+MCHI,ETF,unknown,auto,,,,,False,,2026-10-25T05:39:42+00:00
+MCY.NZ,EQUITY,income,auto,,Utilities,Utilities - Renewable,New Zealand,False,-3.0,2026-10-25T05:47:08+00:00
+MEL.NZ,EQUITY,income,auto,,Utilities,Utilities - Renewable,New Zealand,False,-3.5,2026-10-25T05:47:10+00:00
+META,EQUITY,compounder,auto,,Communication Services,Internet Content & Information,,False,-1.0,2026-10-25T05:39:49+00:00
+MFT.NZ,EQUITY,income,auto,,Industrials,Integrated Freight & Logistics,New Zealand,False,5.5,2026-10-25T05:47:12+00:00
+MSE.PA,ETF,unknown,auto,,,,,False,,2026-10-25T05:39:52+00:00
+MSFT,EQUITY,saas,auto,,Technology,Software - Infrastructure,,True,-1.0,2026-10-25T05:39:57+00:00
+MTY.TO,EQUITY,compounder,auto,,Consumer Cyclical,Restaurants,,False,5.5,2026-10-25T05:39:59+00:00
+MU,EQUITY,high_margin_hardware,auto,,Technology,Semiconductors,,True,7.0,2026-10-25T05:40:04+00:00
+MX.TO,EQUITY,cyclical,auto,,Basic Materials,Chemicals,,False,-2.0,2026-10-25T05:40:06+00:00
+NA.TO,EQUITY,bank,auto,,Financial Services,Banks - Diversified,,True,3.0,2026-10-25T05:40:09+00:00
+NAUKRI.NS,EQUITY,compounder,auto,,Communication Services,Internet Content & Information,,False,1.0,2026-10-25T05:40:11+00:00
+NBIS,EQUITY,compounder,auto,,Communication Services,Internet Content & Information,,False,-5.0,2026-10-25T05:40:13+00:00
+NFLX,EQUITY,compounder,auto,,Communication Services,Entertainment,,False,2.0,2026-10-25T05:40:16+00:00
+NIFTY_MIDCAP_100.NS,INDEX,unknown,auto,,,,,False,,2026-10-25T05:40:18+00:00
+NIO,EQUITY,compounder,auto,,Consumer Cyclical,Auto Manufacturers,China,False,0.0,2026-10-25T05:47:14+00:00
+NKE,EQUITY,income,auto,,Consumer Cyclical,Footwear & Accessories,,False,0.0,2026-10-25T05:40:25+00:00
+NOVA.F,EQUITY,income,auto,,Healthcare,Drug Manufacturers - General,,False,5.0,2026-10-25T05:40:27+00:00
+NU,EQUITY,bank,auto,,Financial Services,Banks - Regional,,True,6.0,2026-10-25T05:40:29+00:00
+NVDA,EQUITY,high_margin_hardware,auto,,Technology,Semiconductors,,True,5.0,2026-10-25T05:40:33+00:00
+NVO,EQUITY,income,auto,,Healthcare,Drug Manufacturers - General,,False,5.0,2026-10-25T05:40:36+00:00
+NZDCAD=X,CURRENCY,unknown,auto,,,,,False,,2026-10-25T05:40:38+00:00
+NZDUSD=X,CURRENCY,unknown,auto,,,,,False,,2026-10-25T05:40:39+00:00
+ORCL,EQUITY,saas,auto,,Technology,Software - Infrastructure,,True,-5.0,2026-10-25T05:40:43+00:00
+PERSISTENT.NS,EQUITY,compounder,auto,,Technology,Information Technology Services,,False,6.5,2026-10-25T05:40:45+00:00
+PFE,EQUITY,income,auto,,Healthcare,Drug Manufacturers - General,,False,-6.0,2026-10-25T05:40:51+00:00
+PG,EQUITY,income,auto,,Consumer Defensive,Household & Personal Products,,False,-1.0,2026-10-25T05:40:56+00:00
+PLTR,EQUITY,saas,auto,,Technology,Software - Infrastructure,,True,3.0,2026-10-25T05:40:59+00:00
+PPH,ETF,unknown,auto,,,,,False,,2026-10-25T05:41:01+00:00
+PPL.TO,EQUITY,cyclical,auto,,Energy,Oil & Gas Midstream,,False,-2.0,2026-10-25T05:41:04+00:00
+PYPL,EQUITY,compounder,auto,,Financial Services,Credit Services,,False,6.0,2026-10-25T05:41:06+00:00
+QQQ,ETF,unknown,auto,,,,,False,,2026-10-25T05:41:09+00:00
+RELIANCE.NS,EQUITY,cyclical,auto,,Energy,Oil & Gas Refining & Marketing,,False,-1.0,2026-10-25T05:41:11+00:00
+RHHBY,EQUITY,income,auto,,Healthcare,Drug Manufacturers - General,Switzerland,False,-5.0,2026-10-25T05:47:16+00:00
+RINF,ETF,unknown,auto,,,,,False,,2026-10-25T05:41:15+00:00
+RY.TO,EQUITY,bank,auto,,Financial Services,Banks - Diversified,,True,2.0,2026-10-25T05:41:18+00:00
+SBUX,EQUITY,compounder,config_override,mature/transitioning compounder,Consumer Cyclical,Restaurants,,False,-12.5,2026-10-25T05:41:22+00:00
+SFM,EQUITY,compounder,auto,,Consumer Defensive,Grocery Stores,,False,4.0,2026-10-25T05:41:25+00:00
+SFTBY,EQUITY,holding_company,config_override,tech venture capital / holding company,Communication Services,Telecom Services,,False,-1.0,2026-10-25T05:41:28+00:00
+SJ.TO,EQUITY,cyclical,auto,,Basic Materials,Lumber & Wood Production,,False,4.5,2026-10-25T05:41:30+00:00
+SLV,ETF,unknown,auto,,,,,False,,2026-10-25T05:41:32+00:00
+SONY,EQUITY,compounder,auto,,Technology,Consumer Electronics,Japan,False,7.5,2026-10-25T05:47:19+00:00
+SOXX,ETF,unknown,auto,,,,,False,,2026-10-25T05:41:36+00:00
+SPK.NZ,EQUITY,telco,auto_coverage_incomplete,,Communication Services,Telecom Services,New Zealand,False,5.0,2026-10-25T05:47:21+00:00
+SPOT,EQUITY,compounder,auto,,Communication Services,Internet Content & Information,,False,5.0,2026-10-25T05:41:41+00:00
+SPY,ETF,unknown,auto,,,,,False,,2026-10-25T05:41:43+00:00
+SUM.NZ,EQUITY,compounder,auto,,Healthcare,Medical Care Facilities,New Zealand,False,-5.0,2026-10-25T05:47:22+00:00
+SUNPHARMA.NS,EQUITY,compounder,auto,,Healthcare,Drug Manufacturers - Specialty & Generic,,False,2.0,2026-10-25T05:41:47+00:00
+T.TO,EQUITY,telco,auto_coverage_incomplete,,Communication Services,Telecom Services,,False,-5.5,2026-10-25T05:41:50+00:00
+TCEHY,EQUITY,compounder,auto,,Communication Services,Internet Content & Information,,False,7.0,2026-10-25T05:41:52+00:00
+TCS.NS,EQUITY,compounder,auto,,Technology,Information Technology Services,,False,8.0,2026-10-25T05:41:54+00:00
+TD.TO,EQUITY,bank,auto,,Financial Services,Banks - Diversified,,True,1.5,2026-10-25T05:42:00+00:00
+TD,EQUITY,bank,auto,,Financial Services,Banks - Diversified,,True,3.5,2026-10-25T05:41:57+00:00
+TFII.TO,EQUITY,compounder,auto,,Industrials,Trucking,,False,1.5,2026-10-25T05:42:03+00:00
+TLT,ETF,unknown,auto,,,,,False,,2026-10-25T05:42:05+00:00
+TRI.TO,EQUITY,compounder,auto,,Industrials,Specialty Business Services,,False,8.0,2026-10-25T05:42:07+00:00
+TSLA,EQUITY,compounder,auto,,Consumer Cyclical,Auto Manufacturers,,False,-4.5,2026-10-25T05:42:10+00:00
+TSM,EQUITY,high_margin_hardware,auto,,Technology,Semiconductors,,True,7.0,2026-10-25T05:42:13+00:00
+TWR.NZ,EQUITY,unknown,auto_coverage_incomplete,,Financial Services,Insurance - Property & Casualty,New Zealand,False,6.0,2026-10-25T05:47:24+00:00
+UBER,EQUITY,saas,auto,,Technology,Software - Application,,True,9.0,2026-10-25T05:42:18+00:00
+UPS,EQUITY,income,auto,,Industrials,Integrated Freight & Logistics,,False,-3.5,2026-10-25T05:42:22+00:00
+URNM,ETF,unknown,auto,,,,,False,,2026-10-25T05:42:23+00:00
+USCI,ETF,unknown,auto,,,,,False,,2026-10-25T05:42:25+00:00
+USDCHF=X,CURRENCY,unknown,auto,,,,,False,,2026-10-25T05:42:27+00:00
+USO,ETF,unknown,auto,,,,,False,,2026-10-25T05:42:28+00:00
+VEEV,EQUITY,compounder,auto,,Healthcare,Health Information Services,,False,7.0,2026-10-25T05:42:31+00:00
+VGT,ETF,unknown,auto,,,,,False,,2026-10-25T05:42:33+00:00
+WCN.TO,EQUITY,compounder,auto,,Industrials,Waste Management,,False,-0.5,2026-10-25T05:42:36+00:00
+WFG.TO,EQUITY,cyclical,auto,,Basic Materials,Lumber & Wood Production,Canada,False,-5.0,2026-10-25T05:47:27+00:00
+WIPRO.NS,EQUITY,income,auto,,Technology,Information Technology Services,,False,10.5,2026-10-25T05:42:41+00:00
+WMT,EQUITY,compounder,auto,,Consumer Defensive,Discount Stores,,False,0.0,2026-10-25T05:42:46+00:00
+WPM.TO,EQUITY,cyclical,auto,,Basic Materials,Gold,,False,-2.0,2026-10-25T05:42:51+00:00
+WPM,EQUITY,cyclical,auto,,Basic Materials,Gold,,False,-2.0,2026-10-25T05:42:49+00:00
+XIU.TO,ETF,unknown,auto,,,,,False,,2026-10-25T05:42:53+00:00
+XLE,ETF,unknown,auto,,,,,False,,2026-10-25T05:42:55+00:00
+XLF,ETF,unknown,auto,,,,,False,,2026-10-25T05:42:57+00:00
+XLU,ETF,unknown,auto,,,,,False,,2026-10-25T05:42:59+00:00
+XLV,ETF,unknown,auto,,,,,False,,2026-10-25T05:43:01+00:00
+XLY,ETF,unknown,auto,,,,,False,,2026-10-25T05:43:03+00:00
+ZM,EQUITY,saas,auto,,Technology,Software - Application,,True,4.0,2026-10-25T05:43:05+00:00
+ZTS,EQUITY,compounder,auto,,Healthcare,Drug Manufacturers - Specialty & Generic,,False,1.0,2026-10-25T05:43:09+00:00
+^BVSP,INDEX,unknown,auto,,,,,False,,2026-10-25T05:43:10+00:00
+^DJI,INDEX,unknown,auto,,,,,False,,2026-10-25T05:43:12+00:00
+^GSPC,INDEX,unknown,auto,,,,,False,,2026-10-25T05:43:14+00:00
+^NDX,INDEX,unknown,auto,,,,,False,,2026-10-25T05:43:16+00:00
+^NSEI,INDEX,unknown,auto,,,,,False,,2026-10-25T05:43:17+00:00
+^NZ50,INDEX,unknown,auto,,,,,False,,2026-10-25T05:43:19+00:00
+^STI,INDEX,unknown,auto,,,,,False,,2026-10-25T05:43:20+00:00
+^TNX,INDEX,unknown,auto,,,,,False,,2026-10-25T05:43:22+00:00
+^VIX,INDEX,unknown,auto,,,,,False,,2026-10-25T05:43:24+00:00

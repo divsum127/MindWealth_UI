@@ -23,6 +23,20 @@ from typing import Any
 import pandas as pd
 
 PE_HISTORY_TARGET_YEARS = 20
+# History-confidence tiers (Rohit 21 Sep 2026, mail 1a0c341380f3954b): "20+ years for
+# full confidence, 10–20 years as provisional, and under 10 years as neutral". Only the
+# minimum-history gate changes; the percentile and its valuation point table do not.
+PE_HISTORY_PROVISIONAL_MIN_YEARS = 10
+
+
+def pe_history_confidence(years_available: float | None, has_series: bool = True) -> str:
+    """``full`` (20y+), ``provisional`` (10 to <20y) or ``neutral`` (<10y / no series)."""
+    years = float(years_available or 0.0)
+    if not has_series or years < PE_HISTORY_PROVISIONAL_MIN_YEARS:
+        return "neutral"
+    if years < PE_HISTORY_TARGET_YEARS:
+        return "provisional"
+    return "full"
 # 30Y of month-end P/E samples for JSON + percentile ranking. Raised from 240 (~20Y)
 # on 2026-07-29 when the SEC-legacy-filing extension (pe_history_sec_legacy.py) started
 # pushing some tickers' real coverage past 20Y (e.g. MSFT to ~32Y via EX-27 schedules

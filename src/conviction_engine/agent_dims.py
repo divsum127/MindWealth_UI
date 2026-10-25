@@ -11,13 +11,40 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 _AGENT_SEMAPHORE = threading.Semaphore(4)
-# Keep the model configurable: the pinned 4.5 snapshot is still active today but its
-# published deprecation date is approaching. A controlled dev run can switch models
-# without another code change, while production keeps the last verified snapshot until
-# the replacement has been compared on the same tickers.
-_DEFAULT_MODEL = os.environ.get(
-    "CONVICTION_AGENT_MODEL", "claude-sonnet-4-5-20250929"
-)
+# Keep the model configurable so the request-only pilot (Rohit 24 Sep 2026: NVDA and
+# GOOGL, hard USD 5 cap) can compare candidates without a code change. The previous
+# default, claude-sonnet-4-5-20250929, passed its retirement window on 29 Sep 2026.
+_DEFAULT_MODEL = os.environ.get("CONVICTION_AGENT_MODEL", "claude-opus-5-5")
+# Effort is the depth control on current models (thinking is always on). Opus 5.5
+# defaults to "medium"; it is set explicitly so a model switch cannot change it silently.
+_DEFAULT_EFFORT = os.environ.get("CONVICTION_AGENT_EFFORT", "medium")
+
+# Models with thinking always on: thinking tokens count against max_tokens, so the old
+# 1500/3000 caps would truncate the JSON reply mid-object.
+_THINKING_MODEL_PREFIXES = ("claude-opus-5", "claude-sonnet-5", "claude-fable-5", "claude-haiku-5")
+_THINKING_MIN_MAX_TOKENS = 16000
+# Dynamic-filtering web search needs Opus 4.6+/Sonnet 4.6+; older models keep the basic tool.
+_DYNAMIC_SEARCH_PREFIXES = _THINKING_MODEL_PREFIXES + ("claude-opus-4-6", "claude-opus-4-7", "claude-opus-4-8", "claude-sonnet-4-6")
+# Server-side refusal fallback ("default" routes by refusal category, no model list).
+_FALLBACK_MODEL_PREFIXES = ("claude-opus-5", "claude-sonnet-5-5", "claude-fable-5")
+
+
+def _request_options(model: str, max_tokens: int) -> dict[str, Any]:
+    """Model-dependent request fields. Sent via extra_body/extra_headers because the
+    pinned SDK (anthropic 0.43) predates output_config, fallbacks and the new tool type."""
+    options: dict[str, Any] = {
+        "max_tokens": max_tokens,
+        "tools": [{"type": "web_search_20250305", "name": "web_search"}],
+    }
+    if model.startswith(_DYNAMIC_SEARCH_PREFIXES):
+        options["tools"] = [{"type": "web_search_20260209", "name": "web_search"}]
+    if model.startswith(_THINKING_MODEL_PREFIXES):
+        options["max_tokens"] = max(max_tokens, _THINKING_MIN_MAX_TOKENS)
+        options["extra_body"] = {"output_config": {"effort": _DEFAULT_EFFORT}}
+    if model.startswith(_FALLBACK_MODEL_PREFIXES):
+        options.setdefault("extra_body", {})["fallbacks"] = "default"
+        options["extra_headers"] = {"anthropic-beta": "server-side-fallback-2026-07-01"}
+    return options
 
 
 def _float_or_none(value: Any) -> float | None:
@@ -103,11 +130,17 @@ def _call_claude_web_search(
     client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
     response = client.messages.create(
         model=_DEFAULT_MODEL,
-        max_tokens=max_tokens,
-        tools=[{"type": "web_search_20250305", "name": "web_search"}],
         system=system,
         messages=[{"role": "user", "content": user}],
+        **_request_options(_DEFAULT_MODEL, max_tokens),
     )
+    stop_reason = getattr(response, "stop_reason", None)
+    if stop_reason == "refusal":
+        # Callers treat any exception as "dimension not scored" (neutral 0), which is the
+        # July rule for missing data; a refusal must never read as a scored answer.
+        raise ValueError(f"model declined the request (stop_reason=refusal, model={getattr(response, 'model', _DEFAULT_MODEL)})")
+    if stop_reason == "max_tokens":
+        raise ValueError("model reply hit max_tokens before the JSON closed")
     result_text = "".join(b.text for b in response.content if getattr(b, "type", None) == "text")
     result = _parse_json_text(result_text)
 
@@ -115,7 +148,9 @@ def _call_claude_web_search(
     # equity, and without these counters its cost cannot be audited after the fact.
     usage = getattr(response, "usage", None)
     server_tool_use = getattr(usage, "server_tool_use", None)
-    result["_api_model"] = _DEFAULT_MODEL
+    # The served model can differ from the requested one when a fallback ran.
+    result["_api_model"] = getattr(response, "model", None) or _DEFAULT_MODEL
+    result["_api_effort"] = _DEFAULT_EFFORT if _DEFAULT_MODEL.startswith(_THINKING_MODEL_PREFIXES) else None
     result["_api_usage"] = {
         "input_tokens": int(getattr(usage, "input_tokens", 0) or 0),
         "output_tokens": int(getattr(usage, "output_tokens", 0) or 0),

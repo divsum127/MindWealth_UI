@@ -15,6 +15,12 @@ class BusinessType(str, Enum):
     CYCLICAL = "cyclical"
     BANK = "bank"
     HIGH_MARGIN_HARDWARE = "high_margin_hardware"
+    # Typed but deliberately uncovered: no valuation framework exists for these yet.
+    # Telco / regulated utility: Rohit 24 Sep 2026 "till i do, keep as not covered".
+    # Holding company: Rohit 24 Sep 2026 on SFTBY ("tech venture cap/holding company").
+    TELCO = "telco"
+    REGULATED_UTILITY = "regulated_utility"
+    HOLDING_COMPANY = "holding_company"
     UNKNOWN = "unknown"
 
 
@@ -31,6 +37,21 @@ KNOWN_BUSINESS_TYPES: frozenset[str] = frozenset(
         BusinessType.HIGH_MARGIN_HARDWARE.value,
     }
 )
+
+# Uncovered types still need threshold tables (WACC, net-debt bands, EV/Rev tiers) for
+# the audit numbers they show. They keep the profile they were scored on before being
+# split out, so the only behaviour change is the `coverage_incomplete` gate.
+THRESHOLD_PROFILE_ALIASES: dict[str, str] = {
+    BusinessType.TELCO.value: BusinessType.INCOME.value,
+    BusinessType.REGULATED_UTILITY.value: BusinessType.INCOME.value,
+    BusinessType.HOLDING_COMPANY.value: BusinessType.COMPOUNDER.value,
+}
+
+
+def threshold_profile(business_type: str | None) -> str:
+    """Business type whose threshold tables apply to ``business_type``."""
+    key = str(business_type or "").lower()
+    return THRESHOLD_PROFILE_ALIASES.get(key, key)
 
 
 class FsClass(str, Enum):
@@ -124,6 +145,17 @@ class SignalModification:
     # NORMAL_TECHNICAL, or the hard gate that fired. The label used to imply a cause it
     # had not tested (Rohit 1 Sep, C4).
     sell_reason_code: str | None = None
+    # Record-level fields the nightly payload reads from the overlay CSV. The overlay is
+    # built from this dataclass, so a field that is not here never reaches the payload.
+    market_cap: float | None = None
+    pe_ttm: float | None = None
+    pe_ttm_adjusted: float | None = None
+    adjusted_eps_basis: str | None = None
+    one_off_pct_of_ni: float | None = None
+    one_off_review_needed: bool | None = None
+    pe_history_confidence: str | None = None
+    fundamental_anomaly_flag: bool = False
+    fundamental_anomaly_reasons: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         data = asdict(self)

@@ -183,6 +183,21 @@ def detect_dividend_cut(fundamentals: dict[str, Any]) -> dict[str, Any]:
             # Deliberate reset to a sustainable payout: half penalty, flagged.
             result["penalty"] = penalty / 2.0
             result["policy_reset"] = True
+    # A cut that depends on a payment queued for review (an outlier the feed cannot
+    # classify) is held, not scored: Rohit 24 Sep approved the method only if it is
+    # "not corrupted by an extraordinary dividend".
+    # Same for a cut that spans a hole in the payment record.
+    review_pending = fundamentals.get("dividend_review_pending") or []
+    data_gaps = fundamentals.get("dividend_data_gaps") or []
+    if (review_pending or data_gaps) and result["penalty"] < 0.0:
+        result["held_for_review"] = True
+        result["held_penalty"] = result["penalty"]
+        result["review_pending"] = review_pending
+        result["data_gaps"] = data_gaps
+        result["penalty"] = 0.0
+    excluded = fundamentals.get("dividend_excluded_specials") or []
+    if excluded:
+        result["excluded_specials"] = excluded
     result["triggered"] = result["penalty"] < 0.0
     return result
 

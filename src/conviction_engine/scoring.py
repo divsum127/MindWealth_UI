@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import Any
 
-from .models import KNOWN_BUSINESS_TYPES, BusinessType, FsClass
+from .models import KNOWN_BUSINESS_TYPES, BusinessType, FsClass, threshold_profile
 
 NON_EQUITY_TYPES = {"ETF", "INDEX", "CURRENCY", "CRYPTOCURRENCY", "FUTURE", "MUTUALFUND"}
 COMMON_ETFS = {
@@ -171,12 +173,42 @@ def is_equity_asset(record: dict[str, Any], ticker: str) -> tuple[bool, str, str
     return True, final_type or "EQUITY", None
 
 
-def detect_business_type(info: dict[str, Any] | None = None, overrides: dict[str, Any] | None = None) -> tuple[str, str]:
+BUSINESS_TYPE_OVERRIDES_PATH = Path(__file__).resolve().parents[2] / "config" / "conviction_business_type_overrides.json"
+
+
+def load_business_type_overrides(path: Path | None = None) -> dict[str, dict[str, Any]]:
+    """Reviewed per-ticker business_type decisions, keyed by upper-case ticker."""
+    target = path or BUSINESS_TYPE_OVERRIDES_PATH
+    try:
+        raw = json.loads(target.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return {}
+    return {
+        str(ticker).upper(): entry
+        for ticker, entry in raw.items()
+        if not str(ticker).startswith("_") and isinstance(entry, dict) and entry.get("business_type")
+    }
+
+
+def business_type_override_for(ticker: str | None) -> dict[str, Any] | None:
+    if not ticker:
+        return None
+    return load_business_type_overrides().get(str(ticker).upper())
+
+
+def detect_business_type(
+    info: dict[str, Any] | None = None,
+    overrides: dict[str, Any] | None = None,
+    ticker: str | None = None,
+) -> tuple[str, str]:
     overrides = overrides or {}
     info = info or {}
     manual_type = overrides.get("business_type")
     if manual_type:
         return str(manual_type).lower(), "manual"
+    config_override = business_type_override_for(ticker)
+    if config_override:
+        return str(config_override["business_type"]).lower(), "config_override"
 
     quote_type = str(info.get("quoteType") or info.get("quote_type") or "").upper()
     if quote_type and quote_type != "EQUITY":
@@ -196,6 +228,15 @@ def detect_business_type(info: dict[str, Any] | None = None, overrides: dict[str
         return BusinessType.UNKNOWN.value, "auto_coverage_incomplete"
     if not sector and not industry:
         return BusinessType.UNKNOWN.value, "auto_coverage_incomplete"
+
+    # Telcos and regulated utilities are capital-intensive and run on EV/EBITDA and FCF
+    # yield; no framework exists for them yet, so they gate as coverage incomplete
+    # (Rohit 24 Sep 2026: "till i do, keep as not covered"). Renewable / independent
+    # power producers are not regulated and stay income.
+    if "telecom" in industry:
+        return BusinessType.TELCO.value, "auto_coverage_incomplete"
+    if "regulated" in industry and "utilit" in f"{sector} {industry}":
+        return BusinessType.REGULATED_UTILITY.value, "auto_coverage_incomplete"
 
     income_tokens = ("utility", "telecom", "pipeline", "reit", "regulated utility", "regulated")
     cyclical_tokens = ("energy", "materials", "mining", "metal", "oil", "gas", "commodity")
@@ -225,6 +266,37 @@ def detect_business_type(info: dict[str, Any] | None = None, overrides: dict[str
     if dividend_yield and dividend_yield >= 0.025 and (payout is None or payout >= 0.45):
         return BusinessType.INCOME.value, "auto"
     return BusinessType.COMPOUNDER.value, "auto"
+
+
+# Fundamental anomaly flag (Rohit 26 Aug, Signal Quality Score design review G1(a)):
+#     "The flag fires on simple bands: P/E < 5 or > 80, negative book value, or net income
+#     implausible relative to revenue."
+# "Implausible" is read as net income larger in size than revenue (|net margin| > 100%),
+# which ordinary operations cannot produce; it catches feed errors and giant one-offs.
+ANOMALY_PE_LOW = 5.0
+ANOMALY_PE_HIGH = 80.0
+ANOMALY_NET_MARGIN_LIMIT = 1.0
+
+
+def fundamental_anomaly_flags(record: dict[str, Any]) -> list[str]:
+    """Reasons a record's fundamentals look anomalous; empty when nothing fires."""
+    reasons: list[str] = []
+    pe = _float_or_none(record.get("pe_ttm"))
+    if pe is not None and pe > 0:
+        if pe < ANOMALY_PE_LOW:
+            reasons.append("pe_below_5")
+        elif pe > ANOMALY_PE_HIGH:
+            reasons.append("pe_above_80")
+    # Book value, not tangible book: tangible book is negative for any acquisitive name.
+    book = _float_or_none(record.get("stockholders_equity"))
+    if book is None:
+        book = _float_or_none(record.get("book_value_per_share"))
+    if book is not None and book < 0:
+        reasons.append("negative_book_value")
+    margin = _float_or_none(record.get("net_margin"))
+    if margin is not None and abs(margin) > ANOMALY_NET_MARGIN_LIMIT:
+        reasons.append("net_income_implausible_vs_revenue")
+    return reasons
 
 
 def is_coverage_incomplete(business_type: str | None) -> bool:
@@ -445,7 +517,7 @@ def calculate_valuation_tax_components(record: dict[str, Any]) -> dict[str, floa
         # Fully exempt from the universal -5 floor (item 4/Section 5.5) — a high
         # EV/EBITDA multiple here is backed by current profit, not a growth story.
     else:
-        tiers = EV_REV_TIERS.get(business_type, EV_REV_TIERS[BusinessType.UNKNOWN.value])
+        tiers = EV_REV_TIERS.get(threshold_profile(business_type), EV_REV_TIERS[BusinessType.UNKNOWN.value])
         # Margin-normalised, so the multiple is judged against the profitability backing
         # it rather than against the bucket the name landed in (Rohit 1 Sep, E2). The raw
         # figure is kept alongside, since that is what a reader recognises.
@@ -455,7 +527,7 @@ def calculate_valuation_tax_components(record: dict[str, Any]) -> dict[str, floa
         ev_rev_for_tax = ev_rev_normalised if ev_rev_normalised is not None else ev_rev
         if ev_rev_for_tax is not None:
             components["entry_multiple"] = _tiered_tax(ev_rev_for_tax, tiers)
-            if business_type == BusinessType.INCOME.value and ev_rev_for_tax < tiers[0]:
+            if threshold_profile(business_type) == BusinessType.INCOME.value and ev_rev_for_tax < tiers[0]:
                 components["business_type_relief"] = 1.0
         if ev_rev is not None and ev_rev >= UNIVERSAL_FLOOR_EV_REV_TRIGGER:
             components["entry_multiple"] = min(components["entry_multiple"], UNIVERSAL_FLOOR_VALUE)
@@ -552,7 +624,7 @@ def _fs_oey_points(oey: float | None, business_type: str) -> float:
     """Anchored to the existing per-type OEY_STRONG thresholds."""
     if oey is None:
         return 0.0
-    strong = OEY_STRONG.get(business_type, OEY_STRONG[BusinessType.UNKNOWN.value])
+    strong = OEY_STRONG.get(threshold_profile(business_type), OEY_STRONG[BusinessType.UNKNOWN.value])
     expensive = OEY_EXPENSIVE
     if oey >= strong * 1.5:
         return 10.0
@@ -611,7 +683,7 @@ def fs_score_breakdown(record: dict[str, Any]) -> dict[str, Any]:
         components["ev_fwd_ebitda"] = _fs_tiered_points(ev_ebitda, EV_EBITDA_TIERS)
     else:
         ev_rev = _float_or_none(record.get("ev_fwd_rev"))
-        tiers = EV_REV_TIERS.get(business_type, EV_REV_TIERS[BusinessType.UNKNOWN.value])
+        tiers = EV_REV_TIERS.get(threshold_profile(business_type), EV_REV_TIERS[BusinessType.UNKNOWN.value])
         components["ev_fwd_rev"] = _fs_tiered_points(ev_rev, tiers)
 
     total = round(clamp(sum(v for k, v in components.items() if isinstance(v, (int, float))), 0, 100), 2)

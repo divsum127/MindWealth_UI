@@ -16,7 +16,8 @@ from .bq_scoring import (
     score_macro_tailwind,
     score_margin_quality_cyclical,
 )
-from .dividend_yield import annual_dividend_windows, compute_dividend_yield_stats
+from .dividend_series import declared_annual_dividends
+from .dividend_yield import compute_dividend_yield_stats
 from .fd_votes import compute_fd_votes
 from .pe_history_core import (  # re-exported: existing `from .fundamentals_enriched import ...` callers keep working
     PE_HISTORY_MAX_STORED_POINTS,
@@ -33,6 +34,7 @@ from .scoring import (
     _score_insider,
     _score_reinvestment,
     score_manual,
+    threshold_profile,
 )
 
 logger = logging.getLogger(__name__)
@@ -259,9 +261,9 @@ def compute_fd_direction(
 def score_balance_sheet(net_debt_ebitda: float | None, business_type: str) -> float:
     if net_debt_ebitda is None:
         return 0.0
-    safe = NET_DEBT_SAFE.get(business_type, NET_DEBT_SAFE[BusinessType.UNKNOWN.value])
-    concern = NET_DEBT_CONCERN.get(business_type, NET_DEBT_CONCERN[BusinessType.UNKNOWN.value])
-    danger = NET_DEBT_DANGER.get(business_type, NET_DEBT_DANGER[BusinessType.UNKNOWN.value])
+    safe = NET_DEBT_SAFE.get(threshold_profile(business_type), NET_DEBT_SAFE[BusinessType.UNKNOWN.value])
+    concern = NET_DEBT_CONCERN.get(threshold_profile(business_type), NET_DEBT_CONCERN[BusinessType.UNKNOWN.value])
+    danger = NET_DEBT_DANGER.get(threshold_profile(business_type), NET_DEBT_DANGER[BusinessType.UNKNOWN.value])
     if net_debt_ebitda <= safe:
         return 1.0
     if net_debt_ebitda <= concern:
@@ -283,7 +285,7 @@ def score_margin_quality(
         from .bank_valuation import score_bank_margin_quality
 
         return score_bank_margin_quality(fundamentals or {})
-    if business_type == BusinessType.INCOME.value and distribution_coverage is not None:
+    if threshold_profile(business_type) == BusinessType.INCOME.value and distribution_coverage is not None:
         if distribution_coverage > 2.0:
             return 2.0
         if distribution_coverage >= 1.2:
@@ -345,7 +347,7 @@ def score_growth_trajectory(revenue_growth: float | None, revenue_accel: bool | 
 def score_roic_spread(roic: float | None, business_type: str) -> float:
     if roic is None:
         return 0.0
-    wacc = WACC_BY_TYPE.get(business_type, WACC_BY_TYPE[BusinessType.UNKNOWN.value])
+    wacc = WACC_BY_TYPE.get(threshold_profile(business_type), WACC_BY_TYPE[BusinessType.UNKNOWN.value])
     spread = roic - wacc
     if spread >= 0.05:
         return 2.0
@@ -844,17 +846,24 @@ def build_fundamentals_from_raw(raw: dict[str, Any]) -> dict[str, Any]:
     # Counted by payment cadence rather than a 365-day window: see
     # dividend_yield.annual_dividend_windows() for the SPK.NZ case that a calendar
     # window gets wrong.
+    # Both years are built by covered period with specials excluded (Rohit 1 Sep, C2/C3),
+    # the same basis as the yield series and scripts/dividend_cut_diff_report.py, so
+    # the diff he approves is what the engine scores. Median-gap cadence is gone.
     if isinstance(divs, pd.Series) and not divs.empty:
         try:
-            windows = annual_dividend_windows(divs)
-            if windows.get("annual_dividend_current") is not None:
-                fundamentals["annual_div_declared_current"] = windows["annual_dividend_current"]
-            if windows.get("annual_dividend_prior") is not None:
-                fundamentals["annual_div_declared_prior"] = windows["annual_dividend_prior"]
-            if windows.get("payments_per_year") is not None:
-                fundamentals["dividend_payments_per_year"] = windows["payments_per_year"]
+            declared = declared_annual_dividends(divs, announcements=raw.get("dividend_announcements"))
+            if declared.get("current") is not None:
+                fundamentals["annual_div_declared_current"] = declared["current"]
+            if declared.get("prior") is not None and declared.get("prior_complete"):
+                fundamentals["annual_div_declared_prior"] = declared["prior"]
+            if declared.get("payments_used_current"):
+                fundamentals["dividend_payments_per_year"] = declared["payments_used_current"]
+            fundamentals["dividend_annual_basis"] = declared.get("basis")
+            fundamentals["dividend_excluded_specials"] = declared.get("excluded_specials") or []
+            fundamentals["dividend_review_pending"] = declared.get("review_pending") or []
+            fundamentals["dividend_data_gaps"] = declared.get("data_gaps") or []
         except Exception:
-            pass
+            logger.debug("fundamentals_enriched: declared annual dividends failed", exc_info=True)
 
     # The true trailing figure is the sum actually paid over the last twelve months, which
     # is what `annual_div_declared_current` already holds. yfinance's own
@@ -1015,6 +1024,10 @@ def map_to_engine_fundamentals(enriched: dict[str, Any]) -> dict[str, Any]:
         "annual_div_declared_current",
         "annual_div_declared_prior",
         "dividend_payments_per_year",
+        "dividend_annual_basis",
+        "dividend_excluded_specials",
+        "dividend_review_pending",
+        "dividend_data_gaps",
         "dividend_cut_flag",
         "dividend_cut_penalty_applied",
         "dividend_cut_penalty_pending_approval",

@@ -181,8 +181,23 @@ class TestScoringAndVerdicts(unittest.TestCase):
                 "payoutRatio": 0.6,
             }
         )
-        self.assertEqual(telecom_type, "income")
+        # Telcos are uncovered until Rohit's framework exists (24 Sep 2026).
+        self.assertEqual(telecom_type, "telco")
         self.assertEqual(high_yield_type, "income")
+
+    def test_telco_buy_gates_as_coverage_incomplete(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            record = full_recalculation(
+                "T.TO",
+                info={"quoteType": "EQUITY", "sector": "Communication Services", "industry": "Telecom Services"},
+                fundamentals={"price": 22.05, "market_cap": 25_000_000_000, "eps_ttm": 0.65},
+                overrides={"bq_raw": 9},
+                store_dir=Path(tmp),
+            )
+            self.assertEqual(record["business_type"], "telco")
+            mod = modify_signal("T.TO", "BUY", "long", record=record, store_dir=Path(tmp), persist=False)
+            self.assertEqual(mod.verdict, "COVERAGE INCOMPLETE")
+            self.assertEqual(mod.sizing_pct, 0.0)
 
     def test_business_type_skips_non_equities(self):
         business_type, _ = detect_business_type({"quoteType": "ETF", "dividendYield": 1.2})
@@ -211,7 +226,8 @@ class TestScoringAndVerdicts(unittest.TestCase):
                     "eps_ttm": 0.65,
                     "pe_20y_array": [12, 14, 18, 22, 25, 30, 35],
                 },
-                overrides={"bq_raw": -5},
+                # Pinned to income: this tests yield-trap mechanics, not telco coverage.
+                overrides={"bq_raw": -5, "business_type": "income"},
                 store_dir=Path(tmp),
             )
             self.assertEqual(record["business_type"], "income")
@@ -233,7 +249,8 @@ class TestScoringAndVerdicts(unittest.TestCase):
                     "eps_ttm": 0.65,
                     "pe_20y_array": [12, 14, 18, 22, 25, 30, 35],
                 },
-                overrides={"bq_raw": 9},
+                # Pinned to income: this tests yield-trap mechanics, not telco coverage.
+                overrides={"bq_raw": 9, "business_type": "income"},
                 store_dir=Path(tmp),
             )
             self.assertTrue(record["yield_trap_warning"])

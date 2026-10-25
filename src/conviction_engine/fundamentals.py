@@ -345,7 +345,7 @@ def classify_universe_diff(
             results.append({"ticker": symbol, "status": "error", "error": info["_fetch_error"], "old_business_type": old_business_type})
             continue
 
-        new_business_type, source = detect_business_type(info, existing.get("manual_overrides"))
+        new_business_type, source = detect_business_type(info, existing.get("manual_overrides"), ticker=symbol)
         new_coverage_incomplete = is_coverage_incomplete(new_business_type)
         old_coverage_incomplete = is_coverage_incomplete(old_business_type)
         # "Flip" (per Rohit's Q11 answer) means landing in one of the 3 buckets this

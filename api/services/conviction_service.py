@@ -20,6 +20,7 @@ from src.conviction_engine import (
 )
 from src.conviction_engine.daily_run import conviction_score_sheet
 from src.conviction_engine.data_coverage import summarize_pe_history_distribution
+from src.conviction_engine.pe_history_core import PE_HISTORY_PROVISIONAL_MIN_YEARS, pe_history_confidence
 from src.conviction_engine.formatting import summarize_overlay
 from src.conviction_engine.fundamentals import discover_universe
 from src.conviction_engine.signals import resolve_report_date, signal_file_for_report_date
@@ -122,6 +123,10 @@ def list_ticker_records(
             "ticker": r.get("ticker"),
             "asset_type": r.get("asset_type"),
             "business_type": r.get("business_type"),
+            "business_type_label": r.get("business_type_label"),
+            "pe_history_confidence": r.get("pe_history_confidence"),
+            "pe_history_years": r.get("pe_history_years"),
+            "pe_history_source": r.get("pe_history_source"),
             "bq_raw": r.get("bq_raw"),
             "conviction_score": r.get("conviction_score"),
             "fs_class": r.get("fs_class"),
@@ -162,6 +167,87 @@ def recalculate_ticker(ticker: str) -> dict[str, Any]:
     result = update_ticker_fundamentals(ticker, mode="full")
     record = load_record(ticker)
     return record if record is not None else result
+
+
+def lookup_ticker_score(ticker: str, *, refresh: bool = False) -> dict[str, Any]:
+    """Score any ticker with a systematic breakdown (Rohit 24 Sep 2026).
+
+    "cant we have a field somewhere on teh cion iciton engien page where we just ...
+    specify any stock and ask for the score with soem systematic breakdown of it"
+
+    A ticker already in the store is read as stored unless ``refresh`` is set. Anything
+    else is computed in a throwaway directory, so a look-up never adds a record to the
+    shared store or changes what the nightly overlays carry. Agent dimensions stay
+    request-only (Rohit 24 Sep) and are not run here.
+    """
+    import tempfile
+
+    from src.conviction_engine.fundamentals import update_ticker_fundamentals
+    from src.conviction_engine.scoring import (
+        fs_score_breakdown,
+        is_coverage_incomplete,
+        valuation_tax_breakdown,
+        verdict_for_buy,
+        yield_trap_breakdown,
+    )
+    from src.conviction_engine.store import sanitize_ticker
+
+    symbol = sanitize_ticker(ticker)
+    record = None if refresh else load_record(symbol)
+    source = "store"
+    if record is None:
+        source = "on_demand"
+        with tempfile.TemporaryDirectory(prefix="conviction_lookup_") as tmp:
+            update_ticker_fundamentals(symbol, mode="full", store_dir=Path(tmp))
+            record = load_record(symbol, Path(tmp))
+    if record is None:
+        raise ValueError(f"no data could be fetched for {symbol}")
+
+    if record.get("not_applicable_reason"):
+        return {
+            "ticker": symbol,
+            "source": source,
+            "applicable": False,
+            "asset_type": record.get("asset_type"),
+            "reason": record.get("not_applicable_reason"),
+        }
+
+    coverage_incomplete = is_coverage_incomplete(record.get("business_type"))
+    score = record.get("conviction_score")
+    buy_verdict, buy_sizing = verdict_for_buy(
+        float(score or 0.0), record.get("fd_direction"), bool(record.get("yield_trap_warning")), coverage_incomplete
+    )
+    return {
+        "ticker": symbol,
+        "source": source,
+        "applicable": True,
+        "last_full_calc": record.get("last_full_calc"),
+        "business_type": record.get("business_type"),
+        "business_type_label": record.get("business_type_label"),
+        "business_type_source": record.get("business_type_source"),
+        "coverage_incomplete": coverage_incomplete,
+        "conviction_score": score,
+        "conviction_raw": record.get("conviction_raw"),
+        "framework_coverage_capped": record.get("framework_coverage_capped"),
+        "bq_raw": record.get("bq_raw"),
+        "bq_components": record.get("bq_components") or {},
+        "valuation_tax": record.get("valuation_tax"),
+        "valuation_tax_breakdown": valuation_tax_breakdown(record),
+        "fs_score": record.get("fs_score"),
+        "fs_class": record.get("fs_class"),
+        "fs_score_breakdown": fs_score_breakdown(record),
+        "yield_trap_warning": record.get("yield_trap_warning"),
+        "yield_trap_breakdown": yield_trap_breakdown(record, symbol),
+        "pe_history": {
+            "confidence": record.get("pe_history_confidence"),
+            "years": record.get("pe_history_years"),
+            "source": record.get("pe_history_source"),
+            "percentile": record.get("pe_percentile_20y"),
+        },
+        "agent_dims": record.get("agent_dim_provenance") or {},
+        "if_buy_signal": {"verdict": buy_verdict, "sizing_pct": buy_sizing},
+        "report_only": True,
+    }
 
 
 def daily_refresh_ticker(ticker: str) -> dict[str, Any]:
@@ -357,6 +443,7 @@ def get_engine_audit() -> dict[str, Any]:
                 "ticker": ticker,
                 "asset_type": record.get("asset_type") or record.get("quote_type"),
                 "business_type": record.get("business_type"),
+                "business_type_label": record.get("business_type_label"),
                 "last_full_calc": record.get("last_full_calc"),
                 "dividend_status": dividend_status,
                 "dividend_verification_status": (
@@ -382,6 +469,7 @@ def get_engine_audit() -> dict[str, Any]:
                 "framework_coverage_capped": record.get("framework_coverage_capped"),
                 "pe_history_years": years_available,
                 "pe_history_band": _pe_history_band(years_available, has_pe_series),
+                "pe_history_confidence": pe_history_confidence(years_available, has_pe_series),
                 "pe_has_series": has_pe_series,
                 "pe_history_source": pe_row.get("source"),
                 "quarterly_income_status": _statement_status(
@@ -425,7 +513,8 @@ def get_engine_audit() -> dict[str, Any]:
             "dividend_hard_exit_requires_approved_penalty": True,
             "agent_confidence_threshold": _AGENT_CONFIDENCE_THRESHOLD,
             "pe_full_confidence_years": int(pe_coverage.get("target_years") or 20),
-            "short_history_pe_policy": "pending_rohit_decision_strict_20y_active",
+            "pe_provisional_min_years": PE_HISTORY_PROVISIONAL_MIN_YEARS,
+            "short_history_pe_policy": "tiered_20y_full_10y_provisional_under_10y_neutral",
         },
         "summary": {
             "total_records": len(rows),

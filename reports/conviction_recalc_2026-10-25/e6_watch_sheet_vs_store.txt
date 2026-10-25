@@ -1,0 +1,3 @@
+symbol_to_watch (Sheet1) vs dev conviction_store, 2026-10-25
+watch-sheet symbols: 62; in store: 55
+missing from store: CRWV, DX-Y.NYB, CDNS, SAMS.PA, INR=X, SNPS, FISV

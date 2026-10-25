@@ -30,16 +30,11 @@ import pandas as pd  # noqa: E402
 from src.config_paths import CONVICTION_STORE_DIR  # noqa: E402
 from src.conviction_engine.capital_allocation import detect_dividend_cut  # noqa: E402
 from src.conviction_engine.dividend_series import (  # noqa: E402
+    declared_annual_dividends,
     frequency_changed,
     frequency_history,
     normalize_dividends,
-    trailing_twelve_month_dividend,
 )
-
-# A payment this far above the name's own trailing median is very likely a special or a
-# capital return rather than an ordinary dividend. Flagged for the report, never
-# silently dropped — classification belongs in the ingest pipeline, not here.
-SPECIAL_MULTIPLE = 2.5
 
 
 def _float_or_none(value: Any) -> float | None:
@@ -47,19 +42,6 @@ def _float_or_none(value: Any) -> float | None:
         return None if value is None else float(value)
     except (TypeError, ValueError):
         return None
-
-
-def prior_year_window(dividends: pd.Series, as_of: pd.Timestamp) -> dict[str, Any]:
-    """The twelve months before the current trailing year, on the same basis."""
-    current = trailing_twelve_month_dividend(dividends, as_of)
-    series = normalize_dividends(dividends)
-    if series is None or not current["payments_used"]:
-        return {"amount": None, "payments_used": 0, "complete": False, "coverage_days": None}
-    used = current["payments_used"]
-    remaining = series.iloc[: max(0, len(series) - used)]
-    if remaining.empty:
-        return {"amount": None, "payments_used": 0, "complete": False, "coverage_days": None}
-    return trailing_twelve_month_dividend(remaining, remaining.index[-1])
 
 
 def build_report(tickers: list[str] | None = None) -> pd.DataFrame:
@@ -91,20 +73,28 @@ def build_report(tickers: list[str] | None = None) -> pd.DataFrame:
         if series is None:
             continue
 
-        current = trailing_twelve_month_dividend(series, as_of)
-        prior = prior_year_window(series, as_of)
+        # Same function the engine scores with (ingest classifier, specials excluded,
+        # covered-period years), so the approved diff is exactly what goes live.
+        declared = declared_annual_dividends(series, as_of)
+        current = {
+            "amount": declared["current"],
+            "payments_used": declared["payments_used_current"],
+            "complete": declared["current_complete"],
+            "coverage_days": None,
+        }
+        prior = {
+            "amount": declared["prior"] if declared["prior_complete"] else None,
+            "payments_used": declared["payments_used_prior"],
+            "complete": declared["prior_complete"],
+        }
         asset_type = str(record.get("asset_type") or record.get("quote_type") or "").upper()
         is_equity = asset_type in {"", "UNKNOWN", "EQUITY"}
         latest_payment = series.index[-1]
         latest_payment_age_days = int((as_of - latest_payment).days)
         stale_history = latest_payment_age_days > 550
 
-        median = float(series.median())
-        specials = [
-            (str(stamp.date()), float(value))
-            for stamp, value in series.tail(current["payments_used"] + prior.get("payments_used", 0)).items()
-            if median > 0 and value > SPECIAL_MULTIPLE * median
-        ]
+        specials = [(e["date"], e["amount"]) for e in declared["excluded_specials"]]
+        review = [(e["date"], e["amount"]) for e in declared["review_pending"]]
 
         recomputed = detect_dividend_cut(
             {
@@ -114,6 +104,9 @@ def build_report(tickers: list[str] | None = None) -> pd.DataFrame:
                 "distribution_coverage_ratio_prior": record.get("distribution_coverage_ratio_prior"),
                 "net_debt_ebitda": record.get("net_debt_ebitda"),
                 "net_debt_ebitda_prior": record.get("net_debt_ebitda_prior"),
+                "dividend_review_pending": declared["review_pending"],
+                "dividend_excluded_specials": declared["excluded_specials"],
+                "dividend_data_gaps": declared["data_gaps"],
             }
         )
 
@@ -127,8 +120,12 @@ def build_report(tickers: list[str] | None = None) -> pd.DataFrame:
             review_reasons.append("incomplete_current_period")
         if not prior.get("complete"):
             review_reasons.append("incomplete_prior_period")
+        if review:
+            review_reasons.append("outlier_payment_queued_for_review")
+        if declared["data_gaps"]:
+            review_reasons.append("dividend_data_gap")
         if specials:
-            review_reasons.append("possible_special_distribution")
+            review_reasons.append("special_excluded")
 
         rows.append(
             {
@@ -159,7 +156,11 @@ def build_report(tickers: list[str] | None = None) -> pd.DataFrame:
                 "improvement_signals": ";".join(recomputed.get("improvement_signals") or []),
                 "frequency_changed_5y": frequency_changed(series),
                 "frequency_history": json.dumps(frequency_history(series)),
-                "possible_special_in_window": ";".join(f"{d}:{v}" for d, v in specials) or "",
+                "possible_special_in_window": ";".join(f"{d}:{v}" for d, v in review) or "",
+                "excluded_specials": ";".join(f"{d}:{v}" for d, v in specials) or "",
+                "held_for_review": bool(recomputed.get("held_for_review")),
+                "data_gaps": ";".join(f"{g['date']}:{g['gap_days']}d" for g in declared["data_gaps"]) or "",
+                "held_penalty": recomputed.get("held_penalty"),
             }
         )
 

@@ -242,3 +242,208 @@ def dividend_yield_stats(
         stats["dividend_yield_5y_mean"] = round(float(series.mean()), 6)
         stats["dividend_yield_5y_std"] = round(float(series.std(ddof=0)), 6)
     return stats
+
+
+# ── Specials classifier (Rohit 1 Sep, C2) ──────────────────────────────────────────
+#
+#     "Classify them in the ingest pipeline. It fires once per new dividend
+#     announcement, reads the announcement text, returns a type code ... Gate it on
+#     three things: was the announcement retrieved, does it contain an explicit type
+#     word, is the amount an outlier against the name's own trailing median. Two of
+#     three agreeing classifies it, anything else queues for review."
+#
+# The current feed carries no announcement text, so the first two legs cannot fire yet.
+# An outlier with no text is therefore queued for review rather than classified, and a
+# cut that touches a queued payment is held instead of scored (Rohit 24 Sep: the method
+# is approved "assuming ... it is not corrupted by an extraordinary dividend").
+
+# A payment this far above the name's own trailing median is very likely a special or a
+# capital return. Same multiple the dividend-cut diff report has used since 17 Sep.
+SPECIAL_OUTLIER_MULTIPLE = 2.5
+# Trailing median of the ordinary payments before this one; fewer than the minimum on
+# file says nothing about what "normal" is for the name, so no outlier vote is cast.
+SPECIAL_TRAILING_WINDOW = 8
+SPECIAL_TRAILING_MIN = 3
+SPECIAL_TYPE_WORDS = (
+    "special",
+    "extraordinary",
+    "supplementary",
+    "supplemental",
+    "one-off",
+    "one off",
+    "one-time",
+    "one time",
+    "non-recurring",
+    "return of capital",
+    "capital return",
+    "capital repayment",
+    "bonus dividend",
+)
+
+TYPE_REGULAR = "regular"
+TYPE_SPECIAL = "special"
+TYPE_REVIEW = "review"
+
+
+def _contains_type_word(text: str | None) -> bool:
+    lowered = str(text or "").lower()
+    return any(word in lowered for word in SPECIAL_TYPE_WORDS)
+
+
+def classify_dividend_events(
+    dividends: pd.Series | None,
+    announcements: dict[Any, str] | None = None,
+) -> list[dict[str, Any]]:
+    """One entry per payment with the three gate legs and a deterministic type code.
+
+    ``announcements`` maps a payment timestamp to its announcement text when a source can
+    supply it. Two or more legs true -> ``special``; an outlier without retrieved text ->
+    ``review``; everything else -> ``regular``.
+
+    The outlier leg compares the payment's **rate** (amount per day since the previous
+    ordinary payment) with the trailing median rate, not the raw amount. A name moving
+    from monthly to quarterly pays three times as much per payment at the same rate,
+    which is a frequency change, not a special (PPL.TO, 2023). A special paid between
+    two regular dates covers few days and stands out.
+    """
+    series = normalize_dividends(dividends)
+    if series is None:
+        return []
+    texts: dict[pd.Timestamp, str] = {}
+    for key, text in (announcements or {}).items():
+        stamp = pd.Timestamp(key)
+        texts[stamp.tz_localize(None) if stamp.tzinfo is not None else stamp] = text
+    events: list[dict[str, Any]] = []
+    ordinary_rates: list[float] = []
+    last_ordinary: pd.Timestamp | None = None
+    for stamp, value in series.items():
+        amount = float(value)
+        covered_days = (stamp - last_ordinary).days if last_ordinary is not None else None
+        rate = amount / max(covered_days, 1) if covered_days is not None else None
+        window = ordinary_rates[-SPECIAL_TRAILING_WINDOW:]
+        median = float(pd.Series(window).median()) if len(window) >= SPECIAL_TRAILING_MIN else None
+        text = texts.get(stamp)
+        legs = {
+            "retrieved": bool(text and str(text).strip()),
+            "type_word": _contains_type_word(text),
+            "outlier": rate is not None and median is not None and median > 0 and rate > SPECIAL_OUTLIER_MULTIPLE * median,
+        }
+        votes = sum(legs.values())
+        if votes >= 2:
+            type_code = TYPE_SPECIAL
+        elif legs["outlier"] and not legs["retrieved"]:
+            type_code = TYPE_REVIEW
+        else:
+            type_code = TYPE_REGULAR
+        if type_code == TYPE_REGULAR:
+            if rate is not None:
+                ordinary_rates.append(rate)
+            last_ordinary = stamp
+        events.append(
+            {
+                "date": str(stamp.date()),
+                "amount": round(amount, 6),
+                "covered_days": covered_days,
+                "trailing_median_rate": round(median, 8) if median is not None else None,
+                "legs": legs,
+                "type_code": type_code,
+            }
+        )
+    return events
+
+
+# A gap this much longer than the name's usual spacing, followed by a return to that
+# spacing, is missing data rather than a cut: yfinance drops payments (TD has no Oct
+# 2025 or Jan 2026 row, leaving one 273-day gap between quarterly payments). A
+# frequency change does not return to the old spacing, so it is not mistaken for one.
+DATA_GAP_MULTIPLE = 1.75
+DATA_GAP_RETURN_MULTIPLE = 1.25
+
+
+def find_data_gaps(dividends: pd.Series | None) -> list[dict[str, Any]]:
+    """Payments that close a gap the record itself shows to be missing data."""
+    series = normalize_dividends(dividends)
+    if series is None or len(series) < 4:
+        return []
+    stamps = list(series.index)
+    gaps = [(stamps[i] - stamps[i - 1]).days for i in range(1, len(stamps))]
+    found: list[dict[str, Any]] = []
+    for i in range(SPECIAL_TRAILING_MIN, len(gaps)):
+        usual = float(pd.Series(gaps[max(0, i - SPECIAL_TRAILING_WINDOW) : i]).median())
+        if usual <= 0 or gaps[i] <= DATA_GAP_MULTIPLE * usual:
+            continue
+        following = gaps[i + 1] if i + 1 < len(gaps) else None
+        if following is not None and following > DATA_GAP_RETURN_MULTIPLE * usual:
+            continue  # spacing stayed long: a frequency change, not a hole
+        found.append(
+            {
+                "date": str(stamps[i + 1].date()),
+                "gap_days": gaps[i],
+                "usual_gap_days": round(usual, 1),
+                "confirmed": following is not None,
+            }
+        )
+    return found
+
+
+def declared_annual_dividends(
+    dividends: pd.Series | None,
+    as_of: pd.Timestamp | None = None,
+    announcements: dict[Any, str] | None = None,
+) -> dict[str, Any]:
+    """Current and prior twelve-month declared dividend, specials excluded.
+
+    Both years are built by covered period (``trailing_twelve_month_dividend``), so the
+    dividend-cut flag uses the same frequency-free basis as the yield series and the
+    universe diff Rohit approves. Payments queued for review stay in the sums but are
+    listed, so a cut that depends on one can be held rather than scored.
+    """
+    result: dict[str, Any] = {
+        "current": None,
+        "prior": None,
+        "payments_used_current": 0,
+        "payments_used_prior": 0,
+        "current_complete": False,
+        "prior_complete": False,
+        "excluded_specials": [],
+        "review_pending": [],
+        "data_gaps": [],
+        "basis": "no_data",
+    }
+    series = normalize_dividends(dividends)
+    if series is None:
+        return result
+    as_of = as_of if as_of is not None else series.index[-1]
+    events = classify_dividend_events(series, announcements)
+    by_date = {e["date"]: e for e in events}
+    keep = [stamp for stamp in series.index if by_date[str(stamp.date())]["type_code"] != TYPE_SPECIAL]
+    ordinary = series.loc[keep]
+    if ordinary.empty:
+        return result
+
+    current = trailing_twelve_month_dividend(ordinary, as_of)
+    used_current = int(current["payments_used"])
+    remaining = ordinary.iloc[: max(0, len(ordinary[ordinary.index <= as_of]) - used_current)]
+    prior = (
+        trailing_twelve_month_dividend(remaining, remaining.index[-1])
+        if used_current and not remaining.empty
+        else {"amount": None, "payments_used": 0, "complete": False}
+    )
+    window_start = (
+        remaining.index[-int(prior["payments_used"])] if prior["payments_used"] else
+        (ordinary[ordinary.index <= as_of].index[-used_current] if used_current else as_of)
+    )
+    in_window = [e for e in events if pd.Timestamp(e["date"]) >= window_start and pd.Timestamp(e["date"]) <= as_of]
+    result.update(
+        current=current["amount"],
+        prior=prior["amount"],
+        payments_used_current=used_current,
+        payments_used_prior=int(prior["payments_used"]),
+        current_complete=bool(current.get("complete")),
+        prior_complete=bool(prior.get("complete")),
+        excluded_specials=[e for e in in_window if e["type_code"] == TYPE_SPECIAL],
+        review_pending=[e for e in in_window if e["type_code"] == TYPE_REVIEW],
+        data_gaps=[g for g in find_data_gaps(ordinary) if window_start <= pd.Timestamp(g["date"]) <= as_of],
+        basis=current["basis"],
+    )
+    return result

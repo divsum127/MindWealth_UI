@@ -1,0 +1,19 @@
+{
+  "_comment": "Reviewed per-ticker business_type decisions for the Conviction Engine. Read by src/conviction_engine/scoring.py::detect_business_type on every classification (full recalc included), so they reach prod through a normal merge. A record-level manual_overrides.business_type still wins over this file.",
+  "SBUX": {
+    "business_type": "compounder",
+    "label": "mature/transitioning compounder",
+    "reason": "Dividend-yield/payout auto-rule would reclassify SBUX as income; Rohit keeps it a compounder in transition.",
+    "decided_by": "Rohit",
+    "decided_on": "2026-09-24",
+    "source": "mail 1a0d2e5829a0cf71 \"Comments; Answers to the 4 questions\": \"Confirm SBUX as compounder with a mature/transitioning override for now.\" -> \"ok\""
+  },
+  "SFTBY": {
+    "business_type": "holding_company",
+    "label": "tech venture capital / holding company",
+    "reason": "yfinance lists Telecom Services; Rohit: not a telco. No holding-company valuation framework exists, so it stays coverage incomplete for the right reason.",
+    "decided_by": "Rohit",
+    "decided_on": "2026-09-24",
+    "source": "mail 1a0d2e5829a0cf71: \"SFTBY on paper / started out as a telco but is one of teh biggest tech venture cap/holding companies\""
+  }
+}

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .models import BusinessType
+from .models import BusinessType, threshold_profile
 from .scoring import _float_or_none
 
 NET_DEBT_SAFE = {
@@ -104,7 +104,7 @@ def score_debt_maturity_risk(financials: dict[str, Any], business_type: str, ove
     nd_ebitda = _float_or_none(financials.get("net_debt_ebitda"))
     if st_pct is None:
         return 0.0
-    safe = NET_DEBT_SAFE.get(business_type, NET_DEBT_SAFE[BusinessType.UNKNOWN.value])
+    safe = NET_DEBT_SAFE.get(threshold_profile(business_type), NET_DEBT_SAFE[BusinessType.UNKNOWN.value])
     if st_pct > 0.5 and nd_ebitda is not None and nd_ebitda > safe:
         return -1.0
     return 0.0
@@ -137,9 +137,9 @@ def score_balance_sheet_v6(
         return 2.0, purpose
 
     nd_ebitda = _float_or_none(financials.get("net_debt_ebitda"))
-    safe = NET_DEBT_SAFE.get(business_type, NET_DEBT_SAFE[BusinessType.UNKNOWN.value])
-    concern = NET_DEBT_CONCERN.get(business_type, NET_DEBT_CONCERN[BusinessType.UNKNOWN.value])
-    danger = NET_DEBT_DANGER.get(business_type, NET_DEBT_DANGER[BusinessType.UNKNOWN.value])
+    safe = NET_DEBT_SAFE.get(threshold_profile(business_type), NET_DEBT_SAFE[BusinessType.UNKNOWN.value])
+    concern = NET_DEBT_CONCERN.get(threshold_profile(business_type), NET_DEBT_CONCERN[BusinessType.UNKNOWN.value])
+    danger = NET_DEBT_DANGER.get(threshold_profile(business_type), NET_DEBT_DANGER[BusinessType.UNKNOWN.value])
 
     if purpose == "capex_cycle":
         st_pct = _float_or_none(financials.get("short_term_debt_pct")) or 0.0

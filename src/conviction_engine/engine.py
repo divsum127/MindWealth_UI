@@ -12,9 +12,12 @@ from ..utils.atomic_io import write_dataframe_csv_atomic_guarded
 from .models import PositionLayers, QuantSignal, SignalModification, default_record, utc_now_iso
 from .agent_dims import run_agent_dimensions
 from .fundamentals_enriched import compute_bq_components_auto
+from .pe_history_core import pe_history_confidence
 from .fd_votes import compute_fd_votes
 from .scoring import (
     apply_fs_cap,
+    business_type_override_for,
+    fundamental_anomaly_flags,
     apply_framework_coverage_cap,
     has_framework_coverage,
     calculate_bq_raw,
@@ -120,9 +123,17 @@ def full_recalculation(
     quote_type = str(record.get("quote_type") or "").upper()
     record["asset_type"] = quote_type if quote_type else record.get("asset_type", "UNKNOWN")
 
-    business_type, source = detect_business_type(info, record.get("manual_overrides"))
+    business_type, source = detect_business_type(info, record.get("manual_overrides"), ticker=symbol)
     record["business_type"] = business_type
     record["business_type_source"] = source
+    override = business_type_override_for(symbol) if source == "config_override" else None
+    record["business_type_label"] = (override or {}).get("label")
+    # Issuer domicile from the feed, kept apart from the ticker suffix: a bare US-style
+    # symbol (SONY, TCEHY) says where it trades, not where the company files.
+    record["issuer_country"] = info.get("country") or record.get("issuer_country")
+    record["business_type_override"] = (
+        {k: override.get(k) for k in ("label", "reason", "decided_by", "decided_on", "source")} if override else None
+    )
 
     manual = dict(record.get("manual_overrides") or {})
     # Agentic dimension provenance (Rohit 1 Sep, E1). The five agentic dimensions used
@@ -588,7 +599,24 @@ def daily_update(
     derive_dividend_yield_basis(record, stored_price)
 
     pe_meta = record.get("pe_history_meta") or {}
-    if isinstance(pe_meta, dict) and pe_meta.get("insufficient_20y"):
+    if isinstance(pe_meta, dict) and pe_meta:
+        # Tiered gate: 20y+ full, 10–20y provisional (scored, labelled), <10y neutral.
+        # Set both ways so a record that has since gained history is not stuck excluded.
+        confidence = pe_history_confidence(
+            pe_meta.get("years_available"), bool(pe_meta.get("point_count", 1))
+        )
+        record["pe_history_confidence"] = confidence
+        record["pe_history_years"] = pe_meta.get("years_available")
+        record["pe_history_source"] = pe_meta.get("source") or "yfinance"
+        record["pe_history_insufficient"] = confidence == "neutral"
+        if confidence == "neutral":
+            record["pe_percentile_20y"] = None
+    else:
+        # No history metadata means the depth behind any stored percentile is unknown
+        # (SONY ranked 100 on a thin yfinance series this way), so it scores neutral.
+        record["pe_history_confidence"] = "neutral"
+        record["pe_history_years"] = None
+        record["pe_history_source"] = None
         record["pe_history_insufficient"] = True
         record["pe_percentile_20y"] = None
     if not pe_for_percentile or (pe_for_percentile or 0) <= 0:
@@ -853,7 +881,25 @@ def modify_signal(
         asset_type=asset_type,
         rationale=rationale,
         position_layers=layers,
+        **_payload_fields(record),
     )
+
+
+def _payload_fields(record: dict[str, Any]) -> dict[str, Any]:
+    """Record-level fields the nightly Claude payload reads from the overlay CSV."""
+    anomalies = fundamental_anomaly_flags(record)
+    review = record.get("one_off_review_needed")
+    return {
+        "market_cap": _safe_float(record.get("market_cap")),
+        "pe_ttm": _safe_float(record.get("pe_ttm")),
+        "pe_ttm_adjusted": _safe_float(record.get("pe_ttm_adjusted")),
+        "adjusted_eps_basis": record.get("adjusted_eps_basis"),
+        "one_off_pct_of_ni": _safe_float(record.get("one_off_pct_of_ni")),
+        "one_off_review_needed": bool(review) if review is not None else None,
+        "pe_history_confidence": record.get("pe_history_confidence"),
+        "fundamental_anomaly_flag": bool(anomalies),
+        "fundamental_anomaly_reasons": ";".join(anomalies) or None,
+    }
 
 
 def _update_position_layers(
@@ -960,6 +1006,8 @@ def run_daily_universe(tickers: list[str], store_dir: Path | None = None) -> dic
             flags.append("low_conviction")
         if record.get("pe_history_insufficient"):
             flags.append("pe_history_insufficient")
+        elif record.get("pe_history_confidence") == "provisional":
+            flags.append("pe_history_provisional")
         if record.get("pe_history_thin"):
             flags.append("pe_history_thin")
         if is_coverage_incomplete(record.get("business_type")):

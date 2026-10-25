@@ -57,6 +57,24 @@ def get_ticker(ticker: str) -> dict[str, Any]:
     return record
 
 
+@router.get(
+    "/lookup/{ticker}",
+    operation_id="lookup_ticker_score",
+    summary="Score any ticker with a systematic breakdown (never writes the store)",
+)
+def lookup_ticker_score(
+    ticker: str,
+    refresh: bool = Query(default=False, description="Recompute even if the ticker is in the store"),
+) -> dict[str, Any]:
+    try:
+        return svc.lookup_ticker_score(ticker, refresh=refresh)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Look-up failed for {ticker}: {exc}",
+        ) from exc
+
+
 @router.post(
     "/tickers/{ticker}/recalculate",
     operation_id="recalculate_ticker",

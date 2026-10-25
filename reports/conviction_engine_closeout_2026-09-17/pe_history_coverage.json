@@ -1,0 +1,39 @@
+{
+  "target_years": 20,
+  "total_equity_records": 136,
+  "with_pe_series": 109,
+  "without_pe_series": 27,
+  "insufficient_20y_count": 118,
+  "insufficient_20y_pct": 86.8,
+  "sufficient_20y_count": 18,
+  "years_distribution": [
+    {
+      "bucket": "0",
+      "count": 29
+    },
+    {
+      "bucket": "0-2",
+      "count": 61
+    },
+    {
+      "bucket": "2-5",
+      "count": 3
+    },
+    {
+      "bucket": "5-10",
+      "count": 9
+    },
+    {
+      "bucket": "10-15",
+      "count": 6
+    },
+    {
+      "bucket": "15-20",
+      "count": 10
+    },
+    {
+      "bucket": "20+",
+      "count": 18
+    }
+  ]
+}
