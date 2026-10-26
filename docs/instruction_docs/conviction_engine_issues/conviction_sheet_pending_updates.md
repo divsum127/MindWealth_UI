@@ -125,11 +125,11 @@ Third batch, 60 cells (user-confirmed, read back 60/60): dev-done rows → Compl
 
 </details>
 
-## Pending batch
+Fourth batch, 53 cells (54 logged; CE-36 H appeared twice, latest kept; user-confirmed, read back 53/53): CE-06, 11, 24, 29, 30, 33, 34, 36, 37, 38, 39, 43, 49, 50.
 
-_Loop batch (25 Oct) — Nuxt dev branch, built and live on 8514; Nuxt files left uncommitted on `ui-dev` (that checkout also holds others' uncommitted work)._
+<details><summary>Fourth batch as written</summary>
 
-| Row | CE | Column | Current | Proposed |
+| Row | CE | Column | Previous | Written |
 |---|---|---|---|---|
 | 12 | CE-11 | F | (current) | Completed |
 | 12 | CE-11 | H | (current) | Done on dev (8514), prod pending merge. |
@@ -186,6 +186,15 @@ _Loop batch (25 Oct) — Nuxt dev branch, built and live on 8514; Nuxt files lef
 | 31 | CE-30 | G | (empty) | Merge HARD and FULL EXIT (replay shows no difference)? Keep the ladder's BQ cuts as they are, since no cut separates winners from losers? |
 | 31 | CE-30 | H | Deferred until CE-29. | Calibrated against the replay: no BQ cut gives a significant split (best t = −1.4 at BQ 4); no change made. Waiting on Rohit's merge decision. |
 
+</details>
+
+## Pending batch
+
+_Empty — add rows here as new work lands._
+
+| Row | CE | Column | Current | Proposed |
+|---|---|---|---|---|
+
 ## Progress log
 
 - 2026-10-25 — CE-28 pilot run ($3.50 of $5): report `reports/conviction_agent_pilot_2026-10-25/SUMMARY.md`.
@@ -204,3 +213,4 @@ _Loop batch (25 Oct) — Nuxt dev branch, built and live on 8514; Nuxt files lef
 - 2026-10-25 — CE-06 built (src/conviction_engine/segments.py + engine wiring + 4 tests); live on GOOG/MSFT/AMZN; universe scan: 6 mixed US names. Type changes wait on Rohit's mapping.
 - 2026-10-25 — CE-24 built (src/conviction_engine/ceo_tenure.py + engine wiring + tests). First pass misread AMD/PLTR/HOOD as new CEOs (unnamed earlier years); fixed, caches cleared, US equities recalculated. Diff: reports/conviction_recalc_2026-10-25/ce24_ce06_us_pass/.
 - 2026-10-26 — CE-29 full replay done (scripts/sp500_pit_replay/, reports/sp500_pit_replay_2026-10-26/). CE-30 calibrated: no evidence-based cut; merge HARD/FULL recommended. Both added to the reply draft.
+- 2026-10-26 — Fourth batch written (53 cells). Tab now: 24 Completed, 14 Inprogress, 7 Pending from Rohit sir, 2 Pending from Ahil, 4 Not started.
