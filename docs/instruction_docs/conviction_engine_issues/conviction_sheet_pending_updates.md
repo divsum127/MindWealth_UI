@@ -166,6 +166,25 @@ _Loop batch (25 Oct) — Nuxt dev branch, built and live on 8514; Nuxt files lef
 | 51 | CE-50 | H | (current) | Done (docs only, no prod step). |
 | 51 | CE-50 | J | (empty) | Done. Conviction hub decisions ledger and open questions updated for 21/24 Sep; asset map re-verified 25 Oct (87 paths, 0 failing; P/E, dividend and coverage traps rewritten); memory layer re-synced; stale PAT note corrected in the migration doc. |
 | 51 | CE-50 | L | (empty) | 2026-10-25 |
+| 50 | CE-49 | F | Not started | Completed |
+| 50 | CE-49 | H | (empty) | Done (git only). |
+| 50 | CE-49 | J | (empty) | Done. Close-out and follow-up reports committed in e194e1140 (targeted_store left out) and pushed to chatbot-dev; migration block for 2a804c709 written. |
+| 50 | CE-49 | L | (empty) | 2026-10-25 |
+| 7 | CE-06 | F | Not started | Pending from Rohit sir |
+| 7 | CE-06 | G | (empty) | Type mixed businesses by dominant segment: AVGO hardware, MSFT SaaS, AMZN compounder, DIS compounder, BRK-B uncovered? Segment split to use for Infratil and Spark? |
+| 7 | CE-06 | H | (current) | Built on dev: segment revenue from each US filer's 10-K XBRL; mixed flag below 60%; tie-break by dominant segment where a documented override maps segments to types. 20 of 63 US equities report segments; 6 mixed (list in reports/conviction_recalc_2026-10-25/ce06_segment_mix_us.csv). Needs your mapping before any type changes. |
+| 25 | CE-24 | F | Not started | Completed |
+| 25 | CE-24 | H | (empty) | Done on dev, prod pending merge. |
+| 25 | CE-24 | J | (empty) | Done on dev, prod pending merge. CEO start dates now come from each US filer's proxy (DEF 14A pay-versus-performance table). 10 names have a CEO change inside the window and get a dated start (e.g. SBUX Niccol, NKE Hill, CVS Joyner, PG Jejurikar), used for the CEO-quality TSR score; 33 long-serving CEOs only get an "at least since" date, which is stored but not scored. Dates err late so TSR never credits the predecessor. |
+| 25 | CE-24 | K | (empty) | Visible issue / - ceo_start_date was never populated, so CEO quality always scored neutral. / Root cause (what I found) / - No structured source was wired. / Fix (what I did) / - Parse the proxy's PEO-by-year tags; use the first year of the current CEO (or the end of a handover year); same CEO across the window = lower bound only. / Verified / - 63 US equities recalculated; dates checked against known appointments; 5 tests. / Remaining / - Non-US names have no proxy filing; prod promotion pending. |
+| 25 | CE-24 | L | (empty) | 2026-10-25 |
+| 30 | CE-29 | F | Inprogress | Completed |
+| 30 | CE-29 | H | (current) | Done (research on dev data; no prod step). |
+| 30 | CE-29 | J | (empty) | Done. Point-in-time S&P 500 replay, quarter-ends 2010–2026 (20,099 name-dates). Today 15% / 57% / 28% of the index sit below 0 / 0–5 / 5+ BQ. HARD and FULL EXIT show no significant difference, so the recommendation is to merge them. BQ 5+ names beat the index by 3–4% in the 3–6 months after bear lows. Report: reports/sp500_pit_replay_2026-10-26/REPORT.md. |
+| 30 | CE-29 | L | (empty) | 2026-10-26 |
+| 31 | CE-30 | F | Not started | Pending from Rohit sir |
+| 31 | CE-30 | G | (empty) | Merge HARD and FULL EXIT (replay shows no difference)? Keep the ladder's BQ cuts as they are, since no cut separates winners from losers? |
+| 31 | CE-30 | H | Deferred until CE-29. | Calibrated against the replay: no BQ cut gives a significant split (best t = −1.4 at BQ 4); no change made. Waiting on Rohit's merge decision. |
 
 ## Progress log
 
@@ -181,3 +200,7 @@ _Loop batch (25 Oct) — Nuxt dev branch, built and live on 8514; Nuxt files lef
 - 2026-10-25 — Loop iteration 1: Nuxt dev changes for CE-11/33/34/36/37/38/39 built and live on 8514 (`npm run build`, dev UI restarted; 143 Nuxt tests pass; no new type errors). Found and fixed: COVERAGE INCOMPLETE mapped to CANCEL in the UI; missing P/E percentile shown as 0th; "degrading" used the BT-vs-FWD gap the backend spec rules out. Nuxt changes uncommitted on `ui-dev` (mixed with others' WIP).
 - 2026-10-25 — CE-43: parked field definitions updated (overlay gap, coverage_incomplete, 25 Oct fields, Nuxt path); Ahil WhatsApp drafted.
 - 2026-10-25 — CE-50: asset map updated + verified (0 failing), memory sync run (hubs regenerated; ledger rows kept).
+- 2026-10-25 — Committed e194e1140 (56 conviction files) and pushed chatbot-dev (also carried 33 earlier local commits). CE-49 migration block for 2a804c709 written. Core repo edits (send_email.py, pending_prompt_merge.md) left uncommitted.
+- 2026-10-25 — CE-06 built (src/conviction_engine/segments.py + engine wiring + 4 tests); live on GOOG/MSFT/AMZN; universe scan: 6 mixed US names. Type changes wait on Rohit's mapping.
+- 2026-10-25 — CE-24 built (src/conviction_engine/ceo_tenure.py + engine wiring + tests). First pass misread AMD/PLTR/HOOD as new CEOs (unnamed earlier years); fixed, caches cleared, US equities recalculated. Diff: reports/conviction_recalc_2026-10-25/ce24_ce06_us_pass/.
+- 2026-10-26 — CE-29 full replay done (scripts/sp500_pit_replay/, reports/sp500_pit_replay_2026-10-26/). CE-30 calibrated: no evidence-based cut; merge HARD/FULL recommended. Both added to the reply draft.

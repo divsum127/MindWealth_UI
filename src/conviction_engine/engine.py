@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import os
 from pathlib import Path
 from typing import Any
@@ -13,10 +14,13 @@ from .models import PositionLayers, QuantSignal, SignalModification, default_rec
 from .agent_dims import run_agent_dimensions
 from .fundamentals_enriched import compute_bq_components_auto
 from .pe_history_core import pe_history_confidence
+from .ceo_tenure import fetch_ceo_tenure_sec
+from .segments import resolve_segment_mix, segment_tiebreak_type
 from .fd_votes import compute_fd_votes
 from .scoring import (
     apply_fs_cap,
     business_type_override_for,
+    load_business_type_overrides,
     fundamental_anomaly_flags,
     apply_framework_coverage_cap,
     has_framework_coverage,
@@ -39,6 +43,8 @@ from .scoring import (
 from .signals import load_signal_file, normalize_signal_dataframe, normalize_signal_row
 from .data_coverage import apply_coverage_to_record
 from .store import load_or_create_record, load_record, overlay_path, save_record, sanitize_ticker
+
+logger = logging.getLogger(__name__)
 
 
 def _try_yfinance_ticker(ticker: str) -> Any | None:
@@ -131,6 +137,20 @@ def full_recalculation(
     # Issuer domicile from the feed, kept apart from the ticker suffix: a bare US-style
     # symbol (SONY, TCEHY) says where it trades, not where the company files.
     record["issuer_country"] = info.get("country") or record.get("issuer_country")
+
+    # Operating-segment mix and the dominant-segment tie-break (Rohit 21 Sep, CE-06). SEC is
+    # only queried on a live fetch (raw_fetch present), never from synthetic test inputs.
+    segment_override = load_business_type_overrides().get(symbol)
+    us_filer = bool(raw_fetch) and str(info.get("country") or "").lower() in ("united states", "")
+    try:
+        record["segment_mix"] = resolve_segment_mix(symbol, segment_override, us_filer=us_filer)
+    except Exception:
+        logger.debug("segment mix failed for %s", symbol, exc_info=True)
+        record["segment_mix"] = record.get("segment_mix")
+    tiebreak = segment_tiebreak_type(record.get("segment_mix"), segment_override)
+    if tiebreak and source not in ("manual", "config_override"):
+        record["business_type"] = business_type = str(tiebreak).lower()
+        record["business_type_source"] = source = "segment_tiebreak"
     record["business_type_override"] = (
         {k: override.get(k) for k in ("label", "reason", "decided_by", "decided_on", "source")} if override else None
     )
@@ -302,6 +322,20 @@ def full_recalculation(
     fundamentals["days_below_high"] = record.get("days_below_high")
     fundamentals["fd_direction"] = record.get("fd_direction")
 
+    # CEO start date from the proxy's Pay-versus-Performance table (CE-24): only a change
+    # observed inside the window is used for scoring; a same-CEO window is a lower bound.
+    if us_filer and not manual.get("ceo_start_date"):
+        try:
+            tenure = fetch_ceo_tenure_sec(symbol)
+        except Exception:
+            logger.debug("CEO tenure fetch failed for %s", symbol, exc_info=True)
+            tenure = None
+        record["ceo_tenure_source"] = tenure
+        # Set both ways, so a date from an earlier run never outlives the evidence for it.
+        record["ceo_start_date"] = (tenure or {}).get("ceo_start_date")
+        record["ceo_tenure_at_least_since"] = (tenure or {}).get("at_least_since")
+        if record["ceo_start_date"]:
+            fundamentals["ceo_start_date"] = record["ceo_start_date"]
     bq_inputs = {**fundamentals, "roic": fundamentals.get("roic_proxy"), "ticker": symbol}
     bq_components = compute_bq_components_auto(bq_inputs, business_type, manual)
     # An all-neutral automatic result is still valid. Falling back only because

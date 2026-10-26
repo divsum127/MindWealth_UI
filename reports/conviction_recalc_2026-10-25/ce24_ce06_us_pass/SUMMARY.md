@@ -1,0 +1,8 @@
+- Records: 198 kept, 0 added, 0 removed; 10 with at least one changed field.
+- Changed fields: bq_raw 9, conviction_score 9, fs_score 9, pe_history_years 2, fs_class 1
+- Business-type moves: none
+- P/E history confidence after: neutral 102, None 62, full 18, provisional 16
+- Dividend-cut state after: no_cut 189, triggered_pending_approval 5, held_for_review 4
+- Conviction moved by 2 or more points: 2
+  - CVS: -3.0 -> -1.0 (bq -1.0 -> 1.0, tax -2.0 -> -2.0, type income)
+  - META: -1.0 -> -3.0 (bq 4.0 -> 2.0, tax -5.0 -> -5.0, type compounder)

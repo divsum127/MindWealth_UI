@@ -50,6 +50,12 @@ recalculation, which I'd propose for [date] once you've seen this list.
    running it next.
 
 **Questions for you**
+- Mixed businesses (your 21 Sep tie-break): the engine now reads each US filer's segment revenue
+  from its 10-K. Five names straddle two business types: AVGO (semis 58% / infrastructure
+  software 42%), MSFT (productivity 42% / cloud 42% / PC 16%), AMZN (retail 82% / AWS 18%), DIS
+  (entertainment / parks / sports) and BRK-B (conglomerate). Shall I type each by its dominant
+  segment (AVGO hardware, MSFT SaaS, AMZN compounder, DIS compounder) and keep BRK-B uncovered?
+  For Infratil and Spark, which have no SEC filing, I need the segment split you'd like used.
 - Yield-trap "watching" fires when either of the two conditions is met. The z-score leg alone
   catches low-yield growth names (25 today, including NVDA at a 0.47% yield). Should "watching"
   require the yield condition, so it only lists names close to an actual trap?
@@ -74,6 +80,26 @@ recalculation, which I'd propose for [date] once you've seen this list.
 | "Please share the 27 names" | Now 24 after the recalculation: BTI, C6L.SI, CEN.NZ, CVS, EBO.NZ, EFN.TO, EIF.TO, EMAMILTD.NS, FRW.NZ, GNE.NZ, INFY, JD, MCD, MCY.NZ, MEL.NZ, MFT.NZ, NKE, NOVA.F, NVO, PFE, PG, RHHBY, UPS, WIPRO.NS. |
 | "what is this 'bear market replay'" | Running the engine as it would have scored the S&P 500 at past dates, including 2008 and 2022, using only data known on each date, to see whether low BQ names really did worse; that evidence decides whether HARD and FULL EXIT should merge. Not started yet: it needs historical index membership and point-in-time fundamentals. |
 | "5.2 — we can discuss when we speak" | Noted for our next call. |
+
+---
+
+## Your 21 Sep ask: S&P 500 BQ distribution, today and in bear markets, and the HARD/FULL merge
+
+Done as a point-in-time replay: every quarter-end 2010–2026, every S&P 500 member on that date
+with SEC filings, scored on what was filed by that date (20,099 name-dates; coverage 24% of
+members in 2010 rising to 93% now, because smaller filers only started XBRL in 2011). Full report:
+`reports/sp500_pit_replay_2026-10-26/REPORT.md`.
+
+- **Distribution:** today 15% of the index is below BQ 0, 57% between 0 and 5, 28% at 5 or above.
+  At the 2020 low it was 21% / 58% / 21%; at the 2022 low 13% / 52% / 35%.
+- **Merge HARD and FULL EXIT: yes.** Names the ladder would label HARD did no worse than FULL at
+  3, 6 or 12 months (differences +0.3% to +0.7%, none significant).
+- **Ladder cut points:** no BQ cut separates winners from losers reliably (best t = −1.4 at BQ 4),
+  so I would not re-tune them; that also supports keeping conviction non-binding on SELL.
+- **Where BQ does help:** from bear-market lows, BQ 5+ names beat the index by 3.1% over 3 months
+  and 4.4% over 6 months (hit rate 62% and 57%); by 12 months low-BQ names catch up.
+
+Not replayed (scored neutral): insider ownership, the agentic dimensions, the P/E-percentile tax.
 
 ---
 

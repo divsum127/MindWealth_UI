@@ -186,7 +186,10 @@ def load_business_type_overrides(path: Path | None = None) -> dict[str, dict[str
     return {
         str(ticker).upper(): entry
         for ticker, entry in raw.items()
-        if not str(ticker).startswith("_") and isinstance(entry, dict) and entry.get("business_type")
+        if not str(ticker).startswith("_")
+        and isinstance(entry, dict)
+        # A business_type override, or a documented segment mix for the tie-break (CE-06).
+        and (entry.get("business_type") or entry.get("segment_types"))
     }
 
 
@@ -207,7 +210,7 @@ def detect_business_type(
     if manual_type:
         return str(manual_type).lower(), "manual"
     config_override = business_type_override_for(ticker)
-    if config_override:
+    if config_override and config_override.get("business_type"):
         return str(config_override["business_type"]).lower(), "config_override"
 
     quote_type = str(info.get("quoteType") or info.get("quote_type") or "").upper()

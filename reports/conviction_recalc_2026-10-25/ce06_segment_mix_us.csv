@@ -1,0 +1,64 @@
+ticker,business_type,has_segments,dominant_segment,dominant_share,multi_segment,segments
+AAPL,compounder,False,,,,
+ABNB,compounder,True,abnb:ReportableSegmentMember,1.0,False,abnb:ReportableSegmentMember 100%
+ADBE,saas,True,adbe:DigitalMediaMember,0.7425,False,adbe:DigitalMediaMember 74%; adbe:DigitalExperienceMember 25%; adbe:PublishingAndAdvertisingMember 1%
+AMD,cyclical,False,,,,
+AMZN,compounder,True,amzn:NorthAmericaSegmentMember,0.5946,True,amzn:NorthAmericaSegmentMember 59%; amzn:InternationalSegmentMember 23%; amzn:AmazonWebServicesSegmentMember 18%
+ARM,cyclical,False,,,,
+ASML,cyclical,False,,,,
+AVGO,high_margin_hardware,True,avgo:SemiconductorSolutionsMember,0.5769,True,avgo:SemiconductorSolutionsMember 58%; avgo:InfrastructureSoftwareMember 42%
+BABA,compounder,False,,,,
+BAC,bank,False,,,,
+BRK-B,unknown,True,brka:InsuranceCorporateAndOtherMember,0.2918,True,brka:InsuranceCorporateAndOtherMember 29%; brka:ManufacturingBusinessesMember 21%; brka:McLaneCompanyMember 14%; brka:ServiceAndRetailingBusinessesMember 11%; brka:PilotTravelCentersLLCMember 11%; brka:BerkshireHathawayEnergyCompanyMember 7%; brka:BurlingtonNorthernSantaFeCorporationMember 6%
+COIN,compounder,False,,,,
+CRM,saas,False,,,,
+CSCO,cyclical,False,,,,
+CVS,income,False,,,,
+DIS,compounder,True,dis:EntertainmentSegmentMember,0.441,True,dis:EntertainmentSegmentMember 44%; dis:ExperiencesSegmentMember 38%; dis:SportsSegmentMember 18%
+FMCC,compounder,False,,,,
+FUTU,compounder,False,,,,
+GILD,compounder,False,,,,
+GLXY,compounder,True,glxy:DigitalAssetsMember,0.9996,False,glxy:DigitalAssetsMember 100%; glxy:TreasuryAndCorporateMember 0%; glxy:DataCentersMember 0%
+GNRC,compounder,True,gnrc:DomesticMember,0.8246,False,gnrc:DomesticMember 82%; gnrc:InternationalMember 18%
+GOOG,compounder,True,goog:GoogleServicesMember,0.8505,False,goog:GoogleServicesMember 85%; goog:GoogleCloudMember 15%; us-gaap:AllOtherSegmentsMember 0%
+GS,compounder,False,,,,
+HOOD,compounder,False,,,,
+IBKR,compounder,False,,,,
+INFY,income,False,,,,
+IREN,compounder,False,,,,
+JD,income,False,,,,
+JPM,bank,False,,,,
+LULU,compounder,False,,,,
+LYFT,saas,False,,,,
+MA,compounder,True,ma:PaymentSolutionsMember,1.0,False,ma:PaymentSolutionsMember 100%
+MAR,compounder,False,,,,
+MCD,income,True,mcd:InternationalOperatedMarketsMember,0.5071,True,mcd:InternationalOperatedMarketsMember 51%; mcd:USMarketMember 40%; mcd:InternationalDevelopmentalLicensedMarketsandCorporateMember 9%
+META,compounder,True,meta:FamilyOfAppsMember,0.989,False,meta:FamilyOfAppsMember 99%; meta:RealityLabsMember 1%
+MSFT,saas,True,msft:ProductivityAndBusinessProcessesMember,0.4219,True,msft:ProductivityAndBusinessProcessesMember 42%; msft:IntelligentCloudMember 42%; msft:MorePersonalComputingMember 16%
+MU,high_margin_hardware,False,,,,
+NBIS,compounder,False,,,,
+NFLX,compounder,True,nflx:ReportableSegmentMember,1.0,False,nflx:ReportableSegmentMember 100%
+NKE,income,False,,,,
+NU,bank,False,,,,
+NVDA,high_margin_hardware,False,,,,
+NVO,income,False,,,,
+ORCL,saas,False,,,,
+PFE,income,True,pfe:BiopharmaSegmentMember,1.0,False,pfe:BiopharmaSegmentMember 100%
+PG,income,False,,,,
+PLTR,saas,False,,,,
+PYPL,compounder,True,pypl:ReportableSegmentMember,1.0,False,pypl:ReportableSegmentMember 100%
+SBUX,compounder,False,,,,
+SFM,compounder,True,sfm:HealthyGroceryStoresSegmentMember,1.0,False,sfm:HealthyGroceryStoresSegmentMember 100%
+SFTBY,holding_company,False,,,,
+SPOT,compounder,False,,,,
+TCEHY,compounder,False,,,,
+TD,bank,False,,,,
+TSLA,compounder,True,tsla:AutomotiveSegmentMember,0.8653,False,tsla:AutomotiveSegmentMember 87%; tsla:EnergyGenerationAndStorageSegmentMember 13%
+TSM,high_margin_hardware,False,,,,
+UBER,saas,False,,,,
+UPS,income,False,,,,
+VEEV,compounder,True,veev:ReportableSegmentMember,1.0,False,veev:ReportableSegmentMember 100%
+WMT,compounder,True,wmt:WalmartUSMember,0.6837,False,wmt:WalmartUSMember 68%; wmt:WalmartInternationalMember 18%; wmt:SamsClubUSMember 13%
+WPM,cyclical,False,,,,
+ZM,saas,False,,,,
+ZTS,compounder,False,,,,
