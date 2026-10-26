@@ -83,6 +83,24 @@ recalculation, which I'd propose for [date] once you've seen this list.
 
 ---
 
+## Your 14 Sep ask: "Send me the actual slice breakdowns for both [MCY, SPK]"
+
+FS score = quality base (50 + BQ × 2.5) plus the daily valuation points, clamped 0–100.
+
+| | MCY.NZ (income) | SPK.NZ (telco) |
+|---|---:|---:|
+| Quality base | 52.5 (BQ +1) | 62.5 (BQ +5) |
+| P/E percentile | 0 (not scored: no P/E history) | 0 (not scored: no P/E history) |
+| Owner earnings yield | −5 (0.5%) | +10 (27.4%, see note) |
+| EV / forward revenue | +10 (3.6×) | 0 (no forward revenue in the feed) |
+| **FS score** | **57.5, moderate-high** | **72.5, moderate-high** |
+
+Note on SPK: the 27.4% yield comes from the feed's NZ$975m free cash flow against a NZ$3.56bn
+market cap, which most likely includes the one-off data-centre sale proceeds, so I would not rely
+on it. SPK is now COVERAGE INCOMPLETE, so this slice no longer drives a verdict.
+
+---
+
 ## Your 21 Sep ask: S&P 500 BQ distribution, today and in bear markets, and the HARD/FULL merge
 
 Done as a point-in-time replay: every quarter-end 2010–2026, every S&P 500 member on that date

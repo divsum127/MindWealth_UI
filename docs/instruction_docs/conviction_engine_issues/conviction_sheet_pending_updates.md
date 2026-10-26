@@ -188,6 +188,71 @@ Fourth batch, 53 cells (54 logged; CE-36 H appeared twice, latest kept; user-con
 
 </details>
 
+Fifth batch, 56 cells (user-confirmed, read back 56/56): 14 rows → Completed — CE-13, 15, 16, 18, 20, 32, 36, 40, 41, 42, 44, 45, 46, 47.
+
+<details><summary>Fifth batch as written</summary>
+
+| Row | CE | Column | Previous | Written |
+|---|---|---|---|---|
+| 14 | CE-13 | F | Inprogress | Completed |
+| 14 | CE-13 | H | (current) | Done (answer only, no code change). |
+| 14 | CE-13 | J | (empty) | Done. The +4 cap is your 1 Sep F rule for business types with no purpose-built valuation module, compounder included; the note only shows when the cap actually bites, which is why BDGI.TO (+1) never showed it. After the 25 Oct recalculation IBKR sits at +4 without needing the cap. |
+| 14 | CE-13 | L | (empty) | 2026-10-26 |
+| 16 | CE-15 | F | Inprogress | Completed |
+| 16 | CE-15 | H | (current) | Done on dev (report attached to the reply). |
+| 16 | CE-15 | J | (empty) | Done. Full-universe CSV with pe_ttm, pe_ttm_adjusted, adjusted_eps_basis, adjusted_eps_source and one_off_review_needed: reports/conviction_recalc_2026-10-25/g1_pe_adjusted_eps_universe.csv. |
+| 16 | CE-15 | L | (empty) | 2026-10-26 |
+| 17 | CE-16 | F | Inprogress | Completed |
+| 17 | CE-16 | H | (current) | Done on dev (report attached to the reply). |
+| 17 | CE-16 | J | (empty) | Done. Empty statements are logged loudly at every recalculation, and the per-name report of what came back empty is reports/conviction_recalc_2026-10-25/g2_empty_statement_fields.csv (38 equities; the other 62 rows are ETFs, indices and FX, which have no statements). |
+| 17 | CE-16 | L | (empty) | 2026-10-26 |
+| 19 | CE-18 | F | Inprogress | Completed |
+| 19 | CE-18 | H | (current) | Done (answer only, no code change). |
+| 19 | CE-18 | J | (empty) | Done. High-margin hardware needs net margin of 40% or more, otherwise the name is cyclical; debt purpose classification came from your 24 May v5 brief, Part 4. |
+| 19 | CE-18 | L | (empty) | 2026-10-26 |
+| 21 | CE-20 | F | Inprogress | Completed |
+| 21 | CE-20 | H | (current) | Done on dev (report attached to the reply). |
+| 21 | CE-20 | J | (empty) | Done. Business type for every record is in reports/conviction_recalc_2026-10-25/e6_business_type_universe.csv; 55 of the 62 watch-sheet symbols are in the store, missing CRWV, CDNS, SAMS.PA, SNPS, FISV (no signals yet) plus DX-Y.NYB and INR=X (index/FX). |
+| 21 | CE-20 | L | (empty) | 2026-10-26 |
+| 33 | CE-32 | F | Not started | Completed |
+| 33 | CE-32 | H | (current) | Done (superseded, no code change). |
+| 33 | CE-32 | J | (empty) | Done. Superseded by your 6 Aug "Conviction sizing: accept as implemented." |
+| 33 | CE-32 | L | (empty) | 2026-10-26 |
+| 37 | CE-36 | F | Inprogress | Completed |
+| 37 | CE-36 | H | (current) | Done on dev (8514), prod pending merge. |
+| 37 | CE-36 | J | (empty) | Done on dev, prod pending merge. "Degrading" now follows the backend drift rule (forward win rate below 61%), never the gap to backtest, so a 75% forward win rate no longer reads degrading; every left-hand tab on the sentiment and conviction pages is routed to a view. |
+| 37 | CE-36 | L | (empty) | 2026-10-26 |
+| 41 | CE-40 | F | Inprogress | Completed |
+| 41 | CE-40 | H | (current) | Done on dev, prod pending merge (Parth's 8512 build). |
+| 41 | CE-40 | J | (empty) | Done on dev, prod pending merge. The conviction page header and source strip read the same report date; it reaches the live site with Parth's next prod build. |
+| 41 | CE-40 | L | (empty) | 2026-10-26 |
+| 42 | CE-41 | F | Inprogress | Completed |
+| 42 | CE-41 | H | (current) | Done (answers drafted in the reply). |
+| 42 | CE-41 | J | (empty) | Done. All eleven 24 Sep questions answered in reports/conviction_recalc_2026-10-25/ROHIT_REPLY_DRAFT.md; your 5.2 is noted for the next call. |
+| 42 | CE-41 | L | (empty) | 2026-10-26 |
+| 43 | CE-42 | F | Inprogress | Completed |
+| 43 | CE-42 | H | (current) | Done (answers drafted in the reply). |
+| 43 | CE-42 | J | (empty) | Done. Prod status and the MCY and SPK FS slice breakdowns are in the reply draft (MCY 57.5, SPK 72.5, both moderate-high; SPK's yield input flagged as likely inflated by the data-centre sale). |
+| 43 | CE-42 | L | (empty) | 2026-10-26 |
+| 45 | CE-44 | F | Inprogress | Completed |
+| 45 | CE-44 | H | (current) | Done on dev; status message to send. |
+| 45 | CE-44 | J | (empty) | Done on dev. All conviction issues from the website review are fixed on the dev site (8514); a short status message and the all-pages review call are still to be done on WhatsApp. |
+| 45 | CE-44 | L | (empty) | 2026-10-26 |
+| 46 | CE-45 | F | Inprogress | Completed |
+| 46 | CE-45 | H | (current) | Done on dev, prod pending merge (Parth's 8512 build). |
+| 46 | CE-45 | J | (empty) | Done on dev, prod pending merge. The July conviction fixes are on the dev site; they reach www.mindwealth.co with Parth's next prod build. |
+| 46 | CE-45 | L | (empty) | 2026-10-26 |
+| 47 | CE-46 | F | Inprogress | Completed |
+| 47 | CE-46 | H | (current) | Done on dev; prod recalc is an ops step. |
+| 47 | CE-46 | J | (empty) | Done on dev. The recalculation command and before/after check are in the deployment notes; prod data changes when ops runs it after the merge. |
+| 47 | CE-46 | L | (empty) | 2026-10-26 |
+| 48 | CE-47 | F | Inprogress | Completed |
+| 48 | CE-47 | H | (current) | Done on dev, prod pending merge. |
+| 48 | CE-47 | J | (empty) | Done on dev, prod pending merge. All conviction code is committed and pushed to chatbot-dev (e194e1140, f67a9629c); promotion is the chatbot-prod merge plus Parth's Nuxt build. |
+| 48 | CE-47 | L | (empty) | 2026-10-26 |
+
+</details>
+
 ## Pending batch
 
 _Empty — add rows here as new work lands._
@@ -214,3 +279,5 @@ _Empty — add rows here as new work lands._
 - 2026-10-25 — CE-24 built (src/conviction_engine/ceo_tenure.py + engine wiring + tests). First pass misread AMD/PLTR/HOOD as new CEOs (unnamed earlier years); fixed, caches cleared, US equities recalculated. Diff: reports/conviction_recalc_2026-10-25/ce24_ce06_us_pass/.
 - 2026-10-26 — CE-29 full replay done (scripts/sp500_pit_replay/, reports/sp500_pit_replay_2026-10-26/). CE-30 calibrated: no evidence-based cut; merge HARD/FULL recommended. Both added to the reply draft.
 - 2026-10-26 — Fourth batch written (53 cells). Tab now: 24 Completed, 14 Inprogress, 7 Pending from Rohit sir, 2 Pending from Ahil, 4 Not started.
+- 2026-10-26 — MCY/SPK FS slices added to the reply (CE-42). Fifth batch drafted: 14 rows → Completed.
+- 2026-10-26 — Fifth batch written (56 cells). Tab now: 38 Completed, 1 Inprogress (CE-21), 7 Pending from Rohit sir, 2 Pending from Ahil, 3 Not started.
